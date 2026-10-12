@@ -1,101 +1,917 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-message"
-         :class="{ 'is-own': isOwn, 'is-system': display.kind === 'system', 'is-deleted': display.kind === 'deleted' || display.kind === 'notice' }"
-         data-testid="message-row">
-        <div v-if="display.kind !== 'system'" class="chat-message-meta">
-            <span class="chat-message-sender">{{ senderName }}</span>
-            <span class="chat-message-time">{{ time }}</span>
-            <span v-if="message.edited_at && display.kind === 'message'" class="chat-message-edited">(edited)</span>
-        </div>
-        <MessageBody :text="display.text"
-                     :pieces="isDrawnFromServer ? message.pieces : null"
-                     :blocks="isDrawnFromServer ? message.blocks : null" />
-        <div v-if="isOwn && message.notice" class="chat-message-notice" data-testid="message-notice">{{ message.notice }}</div>
+    <div class="chat-msg"
+         :class="rootClasses"
+         :role="state === 'system' ? 'note' : 'article'"
+         :aria-label="ariaLabel"
+         tabindex="-1"
+         :data-testid="pending ? 'pending-row' : 'message-row'"
+         :data-status="pending ? pending.status : undefined"
+         :data-state="state"
+         :data-position="position"
+         @animationend="onAnimationEnd">
+
+        <!-- A system line: quiet, unattributed, centred in bubbles and in the text column in Community. -->
+        <template v-if="state === 'system'">
+            <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" size="xs" /></span>
+            <span class="chat-sys-text">
+                <MessageBody :text="display.text" :pieces="serverPieces" :personAliasGuid="personAliasGuid" />
+                <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
+            </span>
+        </template>
+
+        <!-- A block post: a card from its sender, or from the church when nobody sent it. -->
+        <template v-else-if="state === 'card'">
+            <template v-if="layout === 'community'">
+                <div class="chat-cm-gutter">
+                    <Avatar :people="[face]" :size="36" />
+                </div>
+                <div class="chat-cm-main">
+                    <div class="chat-cm-head" data-testid="message-head">
+                        <span class="chat-cm-name" data-testid="sender-name">{{ displayName }}</span>
+                        <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
+                    </div>
+                    <div class="chat-card" data-testid="block-card">
+                        <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" />
+                    </div>
+                </div>
+            </template>
+            <div v-else class="chat-card" data-testid="block-card">
+                <div class="chat-card-head">
+                    <Avatar :people="[face]" :size="22" />
+                    <span class="chat-card-name" data-testid="sender-name">{{ displayName }}</span>
+                    <span class="chat-card-time" data-testid="message-time">{{ time }}</span>
+                </div>
+                <div class="chat-card-body">
+                    <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" />
+                </div>
+            </div>
+        </template>
+
+        <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
+        <template v-else-if="layout === 'community'">
+            <div class="chat-cm-gutter">
+                <Avatar v-if="isHead" :people="[face]" :size="36" />
+                <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
+            </div>
+            <div class="chat-cm-main">
+                <div v-if="isHead" class="chat-cm-head" data-testid="message-head">
+                    <span class="chat-cm-name" data-testid="sender-name">{{ displayName }}</span>
+                    <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                    <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
+                </div>
+                <div class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
+                    <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
+                    <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
+                    <span v-if="isEdited" class="chat-cm-edited" data-testid="message-edited">(edited)</span>
+                    <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span data-testid="message-state">Sending…</span></span>
+                    <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
+                </div>
+                <div v-if="state === 'failed'" class="chat-meta is-failed" data-testid="message-meta">
+                    <Icon name="alert" size="xs" />
+                    <span data-testid="message-state">Not sent.</span>
+                    <button type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
+                    <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
+                </div>
+                <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
+            </div>
+        </template>
+
+        <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
+        <template v-else>
+            <div v-if="isNameShown" class="chat-msg-name" data-testid="sender-name">{{ displayName }}</div>
+            <div class="chat-msg-line">
+                <span v-if="!isOwn" class="chat-msg-face">
+                    <Avatar v-if="isLastOfGroup" :people="[face]" :size="34" />
+                </span>
+                <div class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
+                    <div v-if="isAnnouncement" class="chat-bubble-label">
+                        <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                    </div>
+                    <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
+                    <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
+                </div>
+            </div>
+            <div v-if="isEditedUnder" class="chat-msg-edited" data-testid="message-edited">Edited</div>
+            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
+                <template v-if="state === 'failed'">
+                    <Icon name="alert" size="xs" />
+                    <span data-testid="message-state">Not sent.</span>
+                    <button type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
+                    <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
+                </template>
+                <template v-else-if="state === 'sending'">
+                    <Icon name="clock" size="xs" />
+                    <span data-testid="message-state">Sending…</span>
+                </template>
+                <template v-else>
+                    <span class="chat-meta-time">{{ time }}</span>
+                    <span v-if="state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
+                    <template v-else-if="isEdited">
+                        <span aria-hidden="true">·</span>
+                        <span class="chat-meta-edited" data-testid="message-edited">Edited</span>
+                    </template>
+                </template>
+            </div>
+            <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
+        </template>
+
+        <!-- A failed send is spoken at once, wherever the person is looking. -->
+        <span v-if="state === 'failed'" class="chat-sr-only" aria-live="assertive">Your message was not sent. Try again.</span>
     </div>
 </template>
 
 <style scoped>
-.chat-message {
-    max-width: 70%;
-    padding: 6px 10px;
-    border-radius: 8px;
+/* Every row. Arrival, the edit crossfade and the jump flash are the row's own motion. */
+.chat-msg {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-radius: var(--chat-r-md);
+}
+
+.chat-msg:focus {
+    outline: none;
+}
+
+.chat-msg.is-arriving {
+    animation: chat-msg-in var(--chat-t-msg) var(--chat-ease-in) both;
+}
+
+.chat-msg.is-own.is-arriving {
+    transform-origin: bottom right;
+}
+
+.chat-msg.is-flashing::after {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+    border-radius: inherit;
+    animation: chat-flash-fade var(--chat-d-flash) var(--chat-ease-state) both;
+}
+
+.is-crossfading {
+    animation: chat-crossfade var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* Conversational. */
+.chat-msg.is-conversational {
+    align-items: flex-start;
+}
+
+.chat-msg.is-conversational.is-own {
+    align-items: flex-end;
+}
+
+.chat-msg-name {
+    padding: 0 12px 1px 54px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+.chat-msg-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 100%;
+}
+
+.chat-msg-face {
+    flex: none;
+    width: 34px;
+}
+
+.chat-bubble {
+    max-width: 100%;
+    padding: 6px 13px 7px;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--chat-text);
+    overflow-wrap: anywhere;
     background: var(--chat-bubble);
+    border-radius: var(--chat-r-bubble);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-message.is-own {
-    align-self: flex-end;
-    background: var(--chat-brand-tint);
+.chat-msg:hover .chat-bubble:not(.is-jumbo):not(.is-tomb) {
+    background-image: linear-gradient(var(--chat-bubble-hover), var(--chat-bubble-hover));
 }
 
-.chat-message.is-system {
-    align-self: center;
-    font-size: 12px;
+/* Within a group the corners toward the sender's side tighten, so the bubbles read as one run. */
+.is-conversational[data-position="first"] .chat-bubble {
+    border-bottom-left-radius: var(--chat-r-tail);
+}
+
+.is-conversational[data-position="middle"] .chat-bubble {
+    border-top-left-radius: var(--chat-r-tail);
+    border-bottom-left-radius: var(--chat-r-tail);
+}
+
+.is-conversational[data-position="last"] .chat-bubble {
+    border-top-left-radius: var(--chat-r-tail);
+}
+
+.is-conversational.is-own[data-position] .chat-bubble {
+    border-radius: var(--chat-r-bubble);
+}
+
+.is-conversational.is-own[data-position="first"] .chat-bubble {
+    border-bottom-right-radius: var(--chat-r-tail);
+}
+
+.is-conversational.is-own[data-position="middle"] .chat-bubble {
+    border-top-right-radius: var(--chat-r-tail);
+    border-bottom-right-radius: var(--chat-r-tail);
+}
+
+.is-conversational.is-own[data-position="last"] .chat-bubble {
+    border-top-right-radius: var(--chat-r-tail);
+}
+
+/* The person's own: a soft tint of the church color, never solid, and chips one step deeper. */
+.is-own .chat-bubble {
+    --chat-mn-bg: var(--chat-mn-bg-own);
+    --chat-mn-bg-hover: var(--chat-mn-bg-own);
+    background-color: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1px var(--chat-own-hairline);
+}
+
+.is-announcement .chat-bubble {
+    background-color: var(--chat-surface);
+    box-shadow: inset 0 0 0 1px var(--chat-announcement-ring);
+}
+
+.chat-bubble-label {
+    margin: 2px 0 4px;
+}
+
+.chat-bubble.is-jumbo {
+    padding: 0 4px;
+    font-size: 40px;
+    line-height: 1.15;
     background: none;
+    box-shadow: none;
+}
+
+.chat-bubble.is-tomb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-style: italic;
+    color: var(--chat-muted);
+    background: none;
+    box-shadow: inset 0 0 0 1px var(--chat-line-strong);
+}
+
+.is-sending .chat-bubble,
+.is-sending .chat-cm-text {
+    opacity: .62;
+}
+
+.is-failed .chat-bubble {
+    box-shadow: inset 0 0 0 1.5px var(--chat-danger);
+}
+
+.is-unknown .chat-bubble,
+.is-unknown .chat-cm-text {
     color: var(--chat-muted);
 }
 
-.chat-message.is-deleted :deep(.chat-message-body) {
+.chat-meta,
+.chat-msg-edited {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 16px;
+    padding: 1px 12px 0;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+}
+
+.is-conversational:not(.is-own) .chat-meta,
+.is-conversational:not(.is-own) .chat-msg-edited {
+    padding-left: 54px;
+}
+
+.chat-meta.is-failed {
+    font-weight: 600;
+    color: var(--chat-danger-ink);
+}
+
+.chat-meta-sent,
+.chat-meta-edited {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-meta-sent {
+    color: var(--chat-success);
+}
+
+.chat-link-button {
+    padding: 0;
+    font-weight: 600;
+    color: inherit;
+    text-decoration: underline;
+    background: none;
+    border: 0;
+}
+
+.chat-notice {
+    padding: 1px 12px 0;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+/* Community. */
+.chat-msg.is-community {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    column-gap: 12px;
+    padding: 2px 20px;
+    border-radius: 0;
+}
+
+.chat-msg.is-community.is-head {
+    padding-top: 6px;
+}
+
+.chat-msg.is-community:hover,
+.chat-msg.is-community:focus-within {
+    background-image: linear-gradient(var(--chat-hover), var(--chat-hover));
+}
+
+.is-community.is-announcement {
+    background-color: var(--chat-row-announcement);
+    box-shadow: inset 2px 0 0 var(--chat-brand);
+}
+
+.is-community.is-mention-me {
+    background-color: var(--chat-row-mention);
+    box-shadow: inset 2px 0 0 var(--chat-warning);
+}
+
+.is-community.is-failed {
+    background-color: var(--chat-danger-soft);
+    box-shadow: inset 2px 0 0 var(--chat-danger);
+}
+
+.chat-cm-gutter {
+    display: flex;
+    justify-content: center;
+}
+
+.chat-cm-gutter-time {
+    padding-top: 4px;
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+    opacity: 0;
+}
+
+.chat-msg:hover .chat-cm-gutter-time,
+.chat-msg:focus-within .chat-cm-gutter-time {
+    opacity: 1;
+}
+
+.chat-cm-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.chat-cm-name {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+.chat-cm-time {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+}
+
+.chat-cm-text {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--chat-text);
+    overflow-wrap: anywhere;
+}
+
+/* The body runs inline, so (edited), Sending… and Sent ride at its end and never move the rows below. */
+.chat-cm-text :deep(.chat-message-body),
+.chat-cm-text :deep(.chat-body-text) {
+    display: inline;
+}
+
+.chat-cm-text.is-jumbo {
+    font-size: 32px;
+    line-height: 1.25;
+}
+
+.chat-cm-text.is-tomb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
     font-style: italic;
     color: var(--chat-muted);
 }
 
-.chat-message-meta {
-    display: flex;
-    gap: 6px;
+.chat-cm-edited {
+    margin-left: 4px;
     font-size: 12px;
     color: var(--chat-muted);
 }
 
-.chat-message-sender {
+.chat-cm-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 6px;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+}
+
+.chat-cm-state.is-sent {
+    color: var(--chat-success);
+    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.is-community .chat-meta {
+    padding: 1px 0 0;
+}
+
+.is-community .chat-notice {
+    padding: 1px 0 0;
+}
+
+/* A system line. */
+.chat-msg.is-system {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 10px 24px;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+.chat-msg.is-community.is-system {
+    display: grid;
+    justify-content: stretch;
+    margin: 0;
+    font-size: 13px;
+    text-align: left;
+}
+
+.is-community .chat-sys-icon {
+    display: flex;
+    justify-content: center;
+}
+
+.chat-sys-text :deep(.chat-message-body),
+.chat-sys-text :deep(.chat-body-text) {
+    display: inline;
+}
+
+.chat-sys-time {
+    margin-left: 6px;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+}
+
+/* A block post: a card from the church. */
+.chat-card {
+    max-width: 540px;
+    overflow: hidden;
+    font-size: 14.5px;
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-xl);
+    box-shadow: var(--chat-shadow-card);
+}
+
+.is-conversational .chat-card {
+    margin: 14px 20px 0 40px;
+}
+
+.is-community .chat-card {
+    max-width: 520px;
+    margin-top: 4px;
+    border-radius: var(--chat-r-lg);
+    box-shadow: none;
+}
+
+.chat-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 0;
+    font-size: 12.5px;
     font-weight: 600;
 }
 
-.chat-message-notice {
-    font-size: 12px;
+.chat-card-time {
+    margin-left: auto;
+    font-weight: 400;
     color: var(--chat-muted);
+}
+
+.chat-card-body,
+.is-community .chat-card {
+    padding: 8px 14px 12px;
+}
+
+.chat-card :deep(.chat-block-context) {
+    display: flex;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+.chat-card :deep(.chat-block-divider) {
+    margin: 10px 0;
+    border: 0;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-card :deep(.chat-block-image img) {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    border-radius: var(--chat-r-lg);
+}
+
+@keyframes chat-msg-in {
+    from {
+        opacity: 0;
+        transform: translateY(var(--chat-rise)) scale(var(--chat-msg-scale));
+    }
+}
+
+@keyframes chat-crossfade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-meta-in {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+}
+
+/* Held for most of its length, then let go, so the eye finds the message before it fades. */
+@keyframes chat-flash-fade {
+    0%,
+    55% {
+        background: var(--chat-flash);
+    }
+
+    100% {
+        background: transparent;
+    }
 }
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import MessageBody from "./messageBody.partial.obs";
-    import { MessageDisplay, messageDisplay } from "../composables/useHistory.partial";
-    import { TimelineMessage } from "../types.partial";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
+    import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
+    import { DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
+
+    // #region Types
+
+    /** What the row is drawing, which is also the marker the styles and the screenshots key on. */
+    type RowState = "message" | "sending" | "sent" | "failed" | "deleted" | "hidden" | "removed" | "unknown" | "system" | "card";
+
+    /** One face, in the avatar's own shape. */
+    type Face = { name: string, photoUrl?: string | null };
+
+    // #endregion Types
 
     const props = defineProps({
+        /** The stored message, or null for a send that is not stored yet. */
         message: {
-            type: Object as PropType<TimelineMessage>,
-            required: true
+            type: Object as PropType<TimelineMessage | null>,
+            default: null
+        },
+
+        /** The person's own send that is not stored yet, or null for a stored message. */
+        pending: {
+            type: Object as PropType<PendingMessage | null>,
+            default: null
         },
 
         isOwn: {
             type: Boolean,
             default: false
+        },
+
+        /** The reader's alias guid, for the "you" mention chip. */
+        personAliasGuid: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The reader's own name, for their messages the platform sent no name with. */
+        personName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The reader's own photo, for their face in Community. */
+        personPhotoUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The church's name, the sender of a block post nobody signed. */
+        organizationName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        layout: {
+            type: String as PropType<FeedLayout>,
+            default: "conversational"
+        },
+
+        /** The row's place in its group. */
+        position: {
+            type: String as PropType<RowPosition>,
+            default: "single"
+        },
+
+        /** A direct message names nobody over a bubble: the header already says who it is with. */
+        isDirectMessage: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The person's own send was just confirmed, so "Sent" shows for a moment. */
+        isJustSent: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message arrived while the feed was open, so it rises in. */
+        isArriving: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message was jumped to, so it flashes. */
+        isFlashing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Each person's name this client holds, by alias guid in lower case, for a pending body's mentions. */
+        senderNames: {
+            type: Object as PropType<ReadonlyMap<string, string>>,
+            default: () => new Map<string, string>()
         }
     });
+
+    const emit = defineEmits<{
+        (e: "retry", localId: string): void,
+        (e: "discard", localId: string): void
+    }>();
+
+    // #region Values
+
+    /** One to six emoji and nothing else, joined sequences and skin tones included. */
+    const jumboPattern = new RegExp("^(?:\\p{Extended_Pictographic}|\\p{Emoji_Modifier}|\\u{FE0F}|\\u{200D})+$", "u");
+    const pictograph = new RegExp("\\p{Extended_Pictographic}", "gu");
+
+    /** When a pending row was first drawn, the time it shows until the platform gives it one. */
+    const drawnAt = new Date();
+
+    const isCrossfading = ref(false);
+
+    // #endregion Values
 
     // #region Computed Values
 
-    /** What the row draws, as the server decided it: a message type this client does not know is its text. */
-    const display = computed((): MessageDisplay => messageDisplay(props.message));
+    /** What the server decided the message shows; a pending send is its own text. */
+    const display = computed((): MessageDisplay => props.message
+        ? messageDisplay(props.message)
+        : { kind: "message", text: props.pending?.body ?? "" });
 
-    /** A deleted or hidden message shows only the sentence in its place, never its pieces or blocks. */
-    const isDrawnFromServer = computed((): boolean => display.value.kind === "message" || display.value.kind === "system");
+    const isBlockPost = computed((): boolean => Array.isArray(props.message?.blocks) && (props.message?.blocks?.length ?? 0) > 0);
 
-    const senderName = computed((): string => {
-        if (props.isOwn) {
-            return "You";
+    const state = computed((): RowState => {
+        if (props.pending) {
+            return props.pending.status === "failed" ? "failed" : "sending";
         }
 
-        const name = [props.message.sender_nick_name, props.message.sender_last_name].filter(Boolean).join(" ");
-        return name || "Someone";
+        const message = props.message;
+        if (!message) {
+            return "message";
+        }
+
+        if (display.value.kind === "deleted") {
+            return "deleted";
+        }
+
+        if (display.value.kind === "notice") {
+            return message.visibility === "removed" ? "removed" : "hidden";
+        }
+
+        if (isBlockPost.value) {
+            return "card";
+        }
+
+        if (message.message_type === "system") {
+            return "system";
+        }
+
+        // A type a newer platform sends is drawn by the text it carries, marked so it reads as such.
+        if (message.message_type !== "text" && message.message_type !== "announcement") {
+            return "unknown";
+        }
+
+        return props.isJustSent ? "sent" : "message";
     });
 
-    const time = computed((): string => {
-        const at = new Date(props.message.created_at);
-        return isNaN(at.getTime()) ? "" : at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const isTomb = computed((): boolean => state.value === "deleted" || state.value === "hidden" || state.value === "removed");
+
+    const isAnnouncement = computed((): boolean => !isTomb.value && props.message?.message_type === "announcement");
+
+    const isEdited = computed((): boolean => !isTomb.value && !props.pending && !!props.message?.edited_at);
+
+    const isLastOfGroup = computed((): boolean => props.position === "last" || props.position === "single");
+
+    const isHead = computed((): boolean => props.position === "first" || props.position === "single");
+
+    /** Bubbles name another person's group once, over its first message, and never in a direct message. */
+    const isNameShown = computed((): boolean => !props.isOwn && !props.isDirectMessage && isHead.value);
+
+    /** The meta sits under a group's last bubble, and under any send still going or failed. */
+    const isMetaShown = computed((): boolean => isLastOfGroup.value || !!props.pending);
+
+    const isEditedUnder = computed((): boolean => isEdited.value && !isMetaShown.value);
+
+    /** The server's pieces, which only a stored message that is shown has. */
+    const serverPieces = computed((): DisplayPiece[] | null => {
+        const kind = display.value.kind;
+        return props.message && (kind === "message" || kind === "system") ? props.message.pieces ?? null : null;
     });
+
+    /**
+     * What the body draws. A send not stored yet has no pieces from the server, so its mention
+     * tokens are drawn as the names this client holds, never as chips and never raw.
+     */
+    const drawnPieces = computed((): DisplayPiece[] | null => props.pending
+        ? pendingPieces(props.pending.body, props.senderNames)
+        : serverPieces.value);
+
+    /** The sender's name from the message, else the reader's own name for their own message. */
+    const displayName = computed((): string => {
+        const message = props.message;
+        const name = [message?.sender_nick_name, message?.sender_last_name].filter(part => !!part).join(" ");
+
+        if (name) {
+            return name;
+        }
+
+        if (props.isOwn && props.personName) {
+            return props.personName;
+        }
+
+        if (!message?.person_alias_guid && props.organizationName) {
+            return props.organizationName;
+        }
+
+        return "Someone";
+    });
+
+    const face = computed((): Face => ({
+        name: displayName.value,
+        photoUrl: props.message?.sender_avatar_url ?? (props.isOwn ? props.personPhotoUrl : null)
+    }));
+
+    const at = computed((): Date => {
+        const created = props.message ? new Date(props.message.created_at) : drawnAt;
+        return isNaN(created.getTime()) ? drawnAt : created;
+    });
+
+    const time = computed((): string => timeLabel(at.value));
+
+    const gutterTime = computed((): string => gutterTimeLabel(at.value));
+
+    /** The head time's tooltip, such as "Today at 9:02 AM". */
+    const longTime = computed((): string => `${dayLabel(at.value, new Date())} at ${time.value}`);
+
+    /** A mention of the reader by name, never @all, which Community tints the row for. */
+    const isMentionOfReader = computed((): boolean => {
+        const me = props.personAliasGuid.toLowerCase();
+        return !!me && !props.isOwn && !isTomb.value && (serverPieces.value ?? []).some(piece => piece.type === "mention"
+            && typeof piece.person_alias_guid === "string"
+            && piece.person_alias_guid.toLowerCase() === me);
+    });
+
+    const ariaLabel = computed((): string => {
+        const who = props.isOwn ? "You" : displayName.value;
+        const mentions = props.layout === "community" && isMentionOfReader.value ? ", mentions you" : "";
+        return `${who}, ${time.value}${mentions}`;
+    });
+
+    /** One to six emoji and nothing else draws large, from the text the body would draw. */
+    const isJumbo = computed((): boolean => {
+        if (isTomb.value || state.value === "system" || state.value === "card") {
+            return false;
+        }
+
+        const pieces = drawnPieces.value;
+        const text = (pieces && pieces.length > 0
+            ? pieces.map(piece => piece.type === "emoji" && typeof piece.emoji === "string" ? piece.emoji : piece.text).join("")
+            : display.value.text ?? "").trim();
+
+        if (!text || !jumboPattern.test(text)) {
+            return false;
+        }
+
+        const count = text.match(pictograph)?.length ?? 0;
+        return count >= 1 && count <= 6;
+    });
+
+    const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
+
+    /** A system line's icon in Community's gutter, by what it says happened. */
+    const systemIcon = computed((): string => {
+        const text = display.value.text ?? "";
+        if (/\b(joined|left)\b/.test(text)) {
+            return "door";
+        }
+
+        if (/\b(added|removed)\b/.test(text)) {
+            return "users";
+        }
+
+        return /\bnamed\b/.test(text) ? "pencil" : "info";
+    });
+
+    const rootClasses = computed((): Record<string, boolean> => ({
+        [`is-${props.layout}`]: true,
+        [`is-${state.value}`]: true,
+        "is-own": props.isOwn,
+        "is-head": isHead.value,
+        "is-announcement": isAnnouncement.value,
+        "is-jumbo": isJumbo.value,
+        "is-mention-me": props.layout === "community" && isMentionOfReader.value,
+        "is-arriving": props.isArriving,
+        "is-flashing": props.isFlashing
+    }));
 
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onRetry(): void {
+        if (props.pending) {
+            emit("retry", props.pending.localId);
+        }
+    }
+
+    function onDiscard(): void {
+        if (props.pending) {
+            emit("discard", props.pending.localId);
+        }
+    }
+
+    /** The crossfade is a one-off, so the next edit can play it again. */
+    function onAnimationEnd(event: AnimationEvent): void {
+        if (event.animationName.includes("chat-crossfade")) {
+            isCrossfading.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // An edit, a delete or a moderator's hide replaces what the bubble holds, so it crossfades.
+    watch(() => [props.message?.edited_at, props.message?.deleted_at, props.message?.visibility], (now, before) => {
+        if (before && now.some((value, index) => value !== before[index])) {
+            isCrossfading.value = true;
+        }
+    });
+
+    // #endregion Watchers
 </script>

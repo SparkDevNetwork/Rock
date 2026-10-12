@@ -1,99 +1,335 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="feed" class="chat-feed" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'">
-        <button v-if="timeline.hasMore" type="button" class="btn btn-link btn-xs chat-feed-older" @click="emit('loadOlder')">
-            Show older messages
+    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'has-strip': isStripShown, 'has-jump': isJumpShown }">
+        <div v-show="isStripShown" class="chat-unread-strip" data-testid="unread-strip">
+            <button type="button" class="chat-strip-jump" :aria-label="`${stripText}. Jump to the first`" @click="onStripJump">
+                <Icon :name="isDividerAbove ? 'arrow-up' : 'arrow-down'" size="xs" />
+                <b>{{ unreadCountText }}</b>
+                <span>since {{ unreadSince }}</span>
+            </button>
+            <button type="button" class="chat-ghost-button" data-testid="mark-read" @click="onMarkRead">Mark as read</button>
+        </div>
+
+        <div ref="feed" class="chat-feed" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'" @scroll="onScroll">
+            <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
+                <div v-for="index in 5" :key="index" class="chat-skeleton-row" :class="{ 'is-own': index % 3 === 0 }">
+                    <span class="chat-skeleton chat-skeleton-bubble"></span>
+                </div>
+            </div>
+
+            <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
+                Show older messages
+            </button>
+
+            <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
+                <div class="chat-day-pill" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
+
+                <template v-for="item in section.items" :key="item.key">
+                    <div v-if="item.kind === 'divider'"
+                         :ref="setDivider"
+                         class="chat-new-divider"
+                         :class="{ 'is-read': isMarkedRead }"
+                         role="separator"
+                         data-testid="unread-divider">
+                        <span>New</span>
+                    </div>
+
+                    <MessageRow v-else-if="item.kind !== 'group'"
+                                :message="item.message"
+                                :personAliasGuid="personAliasGuid"
+                                :organizationName="organizationName"
+                                :layout="layout"
+                                :isArriving="isArriving(item.message.id)"
+                                :data-message-id="item.message.id" />
+
+                    <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
+                        <MessageRow v-for="row in item.rows"
+                                    :key="row.key"
+                                    :message="row.message"
+                                    :pending="row.pending"
+                                    :isOwn="item.isOwn"
+                                    :personAliasGuid="personAliasGuid"
+                                    :personName="personName"
+                                    :personPhotoUrl="personPhotoUrl"
+                                    :organizationName="organizationName"
+                                    :layout="layout"
+                                    :position="row.position"
+                                    :isDirectMessage="isDirectMessage"
+                                    :isJustSent="!!row.message && justSentIds.has(row.message.id)"
+                                    :isArriving="!!row.pending || (!!row.message && isArriving(row.message.id))"
+                                    :senderNames="senderNames"
+                                    :data-message-id="row.message?.id"
+                                    @retry="emit('retry', $event)"
+                                    @discard="emit('discard', $event)" />
+                    </div>
+                </template>
+            </section>
+        </div>
+
+        <button v-show="isJumpShown" type="button" class="chat-jump" :class="{ 'has-count': newCount > 0 }" data-testid="jump-latest" @click="onJump">
+            <Icon name="arrow-down" size="sm" />{{ jumpText }}
         </button>
 
-        <template v-for="message in timeline.messages" :key="message.id">
-            <div v-if="message.id === firstUnreadId" class="chat-feed-divider" data-testid="unread-divider">
-                <span>{{ unreadLabel }}</span>
-            </div>
-            <MessageRow :message="message"
-                        :isOwn="message.person_alias_guid === personAliasGuid"
-                        :data-message-id="message.id" />
-        </template>
-
-        <div v-for="row in pending"
-             :key="row.localId"
-             class="chat-feed-pending"
-             :class="{ 'is-failed': row.status === 'failed' }"
-             data-testid="pending-row"
-             :data-status="row.status">
-            <div class="chat-feed-pending-body">
-                <MessageBody :text="row.body" :pieces="pendingPieces(row.body, senderNames)" />
-            </div>
-            <div v-if="row.status === 'failed'" class="chat-feed-pending-actions">
-                <span class="text-danger">Not sent.</span>
-                <button type="button" class="btn btn-link btn-xs" data-testid="retry-send" @click="emit('retry', row.localId)">Try again</button>
-                <button type="button" class="btn btn-link btn-xs" @click="emit('discard', row.localId)">Discard</button>
-            </div>
-            <div v-else class="chat-feed-pending-actions text-muted">Sending…</div>
-        </div>
+        <span class="chat-sr-only" role="status">{{ announcement }}</span>
     </div>
 </template>
 
 <style scoped>
+.chat-feed-frame {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    --chat-feed-top-mask: 40px;
+    --chat-feed-bottom-mask: 14px;
+    --chat-day-top: 8px;
+}
+
+.chat-feed-frame.has-strip {
+    --chat-feed-top-mask: 80px;
+    --chat-day-top: 46px;
+}
+
+.chat-feed-frame.has-jump {
+    --chat-feed-bottom-mask: 64px;
+}
+
+/* The edges fade, so text runs under the day pill and Jump to latest rather than into them. */
 .chat-feed {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px;
+    padding: 0 0 12px;
     overflow-y: auto;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
 
 .chat-feed-older {
     align-self: center;
+    margin-top: 12px;
 }
 
-.chat-feed-divider {
+/* Each day is its own section, so only that day's pill sticks while its messages are on screen. */
+.chat-day {
+    position: relative;
+}
+
+.chat-day-pill {
+    position: sticky;
+    top: var(--chat-day-top);
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    margin: 12px 0 4px;
+    pointer-events: none;
+    transition: top var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-day-pill span {
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-day);
+}
+
+/* Community draws the pill on a ruled line. */
+.is-community .chat-day-pill::before {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    left: 20px;
+    z-index: -1;
+    content: "";
+    border-top: 1px solid var(--chat-line);
+}
+
+.is-community .chat-new-divider {
+    margin: 10px 20px 2px;
+}
+
+.chat-new-divider {
     display: flex;
     align-items: center;
-    margin: 8px 0;
-    font-size: 12px;
+    gap: 8px;
+    margin: 12px 20px 8px 24px;
+    transition: opacity var(--chat-d-read-fade) var(--chat-ease-state);
+}
+
+.chat-new-divider::after {
+    flex: 1;
+    content: "";
+    border-top: 1px solid var(--chat-new-rule);
+}
+
+.chat-new-divider span {
+    padding: 1px 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--chat-danger-ink);
+    text-transform: uppercase;
+    border: 1px solid var(--chat-new-outline);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-new-divider.is-read {
+    opacity: 0;
+}
+
+/* A group: one sender's run of messages. Others keep room on the right, the person's own on the left. */
+.chat-grp {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 14px;
+    padding: 0 64px 0 20px;
+}
+
+.chat-grp.is-own {
+    padding: 0 20px 0 64px;
+}
+
+.is-community .chat-grp {
+    gap: 0;
+    margin-top: 0;
+    padding: 0;
+}
+
+.chat-grp :deep(.chat-msg.is-conversational) {
+    max-width: min(78%, 620px);
+}
+
+.chat-grp.is-own :deep(.chat-msg.is-conversational) {
+    align-self: flex-end;
+}
+
+.chat-unread-strip {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 38px;
+    padding: 0 12px 0 20px;
+    background: var(--chat-strip-bg);
+    border-bottom: 1px solid var(--chat-strip-line);
+    box-shadow: var(--chat-shadow-strip);
+    animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-strip-jump {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--chat-muted);
+    background: none;
+    border: 0;
+}
+
+.chat-strip-jump b {
+    font-weight: 650;
     color: var(--chat-danger-ink);
 }
 
-.chat-feed-divider::before,
-.chat-feed-divider::after {
-    flex: 1;
-    content: "";
-    border-top: 1px solid currentColor;
+.chat-ghost-button {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-full);
 }
 
-.chat-feed-divider span {
-    padding: 0 8px;
+.chat-ghost-button:hover {
+    background: var(--chat-hover);
 }
 
-.chat-feed-pending {
-    align-self: flex-end;
-    max-width: 70%;
-    padding: 6px 10px;
-    border-radius: 8px;
-    opacity: 0.7;
-    background: var(--chat-bubble);
+.chat-jump {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-raised);
+    border: 0;
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-pop);
+    transform: translateX(-50%);
+    animation: chat-jump-in var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-feed-pending.is-failed {
-    opacity: 1;
-    border: 1px solid var(--chat-danger-soft);
+.chat-jump.has-count {
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
 }
 
-.chat-feed-pending-body {
-    white-space: pre-wrap;
+.chat-feed-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
 }
 
-.chat-feed-pending-actions {
-    font-size: 12px;
+.chat-skeleton-row {
+    display: flex;
+}
+
+.chat-skeleton-row.is-own {
+    justify-content: flex-end;
+}
+
+.chat-skeleton-bubble {
+    width: 44%;
+    height: 34px;
+    border-radius: var(--chat-r-bubble);
+}
+
+.chat-skeleton-row:nth-child(2n) .chat-skeleton-bubble {
+    width: 62%;
+    height: 54px;
+}
+
+@keyframes chat-strip-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes chat-jump-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px) scale(.96);
+    }
 }
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import MessageBody from "./messageBody.partial.obs";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
     import MessageRow from "./messageRow.partial.obs";
-    import { pendingPieces, TimelineState } from "../composables/useHistory.partial";
+    import Icon from "../ui/icon.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
+    import { TimelineState } from "../composables/useHistory.partial";
+    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, sentHoldMs, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
     import { PendingMessage } from "../types.partial";
 
     const props = defineProps({
@@ -110,6 +346,33 @@
         personAliasGuid: {
             type: String,
             required: true
+        },
+
+        /** The reader's own name and photo, for their messages the platform sent none with. */
+        personName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        personPhotoUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The church's name, the sender of a block post nobody signed. */
+        organizationName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        layout: {
+            type: String as PropType<FeedLayout>,
+            default: "conversational"
+        },
+
+        isDirectMessage: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -118,28 +381,60 @@
         (e: "firstShown"): void,
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
-        (e: "loadOlder"): void
+        (e: "loadOlder"): void,
+        (e: "markRead", messageId: number): void
     }>();
 
     // #region Values
 
+    /** How far from the bottom the reader may be and still count as at the newest message. */
+    const atBottomPx = 48;
+
     const feed = ref<HTMLElement | null>(null);
     let observer: IntersectionObserver | null = null;
+    let dividerObserver: IntersectionObserver | null = null;
+    let dividerElement: Element | null = null;
+
+    /** Whether the New divider is out of view, and on which side, as the browser last reported. */
+    const isDividerOffScreen = ref(false);
+    const isDividerAbove = ref(false);
+
+    const isMarkedRead = ref(false);
+    const isScrolledUp = ref(false);
+
+    /** Messages that arrived while the reader was scrolled up, for Jump to latest. */
+    const newCount = ref(0);
+
+    const isSkeletonDue = ref(false);
+    let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** The person's own sends confirmed while the feed was open, each showing "Sent" for a moment. */
+    const justSentIds = reactive(new Set<number>());
+
+    /** Sends confirmed since the timeline last grew, counted the moment their pending row goes. */
+    let confirmedSends = 0;
+
+    /** The newest message when the feed first had any; anything newer arrived while it was open. */
+    let newestAtLoad: number | null = null;
+    let newestSeenInTimeline: number | null = null;
+
+    const announcement = ref("");
 
     // #endregion Values
 
     // #region Computed Values
 
-    /** The first message above the read position when the channel opened, for the divider. */
-    const firstUnreadId = computed((): number | null => {
-        if (props.timeline.readCursor === null || props.timeline.unreadCount === 0) {
-            return null;
-        }
+    const dividerBeforeId = computed((): number | null => newDividerBeforeId(
+        props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, props.personAliasGuid));
 
-        const cursor = props.timeline.readCursor;
-        const first = props.timeline.messages.find(m => m.id > cursor && m.message_type !== "system");
-        return first?.id ?? null;
-    });
+    const sections = computed((): FeedSection[] => layoutFeed({
+        messages: props.timeline.messages,
+        pending: props.pending,
+        personAliasGuid: props.personAliasGuid,
+        newDividerBeforeId: dividerBeforeId.value,
+        layout: props.layout,
+        now: new Date()
+    }));
 
     /**
      * The name of each person seen sending in this timeline, by alias guid, so a mention typed in
@@ -156,26 +451,109 @@
         return names;
     });
 
-    const unreadLabel = computed((): string => {
-        const count = props.timeline.unreadCount;
-        const shown = count >= 100 ? "99+" : String(count);
-        return count === 1 ? "1 new message" : `${shown} new messages`;
+    const isSkeletonShown = computed((): boolean => isSkeletonDue.value && !props.timeline.isLoaded);
+
+    /** Shown only while the divider is off screen, and gone once the person marks the channel read. */
+    const isStripShown = computed((): boolean => dividerBeforeId.value !== null && isDividerOffScreen.value && !isMarkedRead.value);
+
+    /** One control points down at a time: while the strip points down at the divider, Jump hides. */
+    const isJumpShown = computed((): boolean => isScrolledUp.value && !(isStripShown.value && !isDividerAbove.value));
+
+    const unreadCountText = computed((): string => newMessagesText(props.timeline.unreadCount));
+
+    const unreadSince = computed((): string => {
+        const first = props.timeline.messages.find(m => m.id === dividerBeforeId.value);
+        return first ? timeLabel(new Date(first.created_at)) : "";
     });
 
+    const stripText = computed((): string => {
+        const first = props.timeline.messages.find(m => m.id === dividerBeforeId.value);
+        return first ? unreadStripText(props.timeline.unreadCount, new Date(first.created_at)) : unreadCountText.value;
+    });
+
+    const jumpText = computed((): string => jumpLabel(newCount.value));
+
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onScroll(): void {
+        isScrolledUp.value = !isNearBottom(atBottomPx);
+        if (!isScrolledUp.value) {
+            newCount.value = 0;
+        }
+    }
+
+    /** Saves the read position at the newest stored message, as reading it would. */
+    function onMarkRead(): void {
+        const messages = props.timeline.messages;
+        if (messages.length === 0) {
+            return;
+        }
+
+        emit("markRead", messages[messages.length - 1].id);
+        isMarkedRead.value = true;
+        announcement.value = "Marked as read";
+    }
+
+    function onStripJump(): void {
+        if (!feed.value || !dividerElement) {
+            return;
+        }
+
+        // Just under the strip, so the divider is the first thing read.
+        const top = feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52;
+        feed.value.scrollTo?.({ top: Math.max(0, top), behavior: scrollBehavior() });
+    }
+
+    function onJump(): void {
+        if (feed.value) {
+            feed.value.scrollTo?.({ top: feed.value.scrollHeight, behavior: scrollBehavior() });
+        }
+        newCount.value = 0;
+    }
+
+    // #endregion Event Handlers
 
     // #region Functions
 
     /** Whether the person is at, or near, the bottom of the feed. */
-    function isNearBottom(): boolean {
+    function isNearBottom(threshold = 80): boolean {
         const element = feed.value;
-        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < 80;
+        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < threshold;
     }
 
     /** Scrolls to the newest message. */
     function scrollToBottom(): void {
         if (feed.value) {
             feed.value.scrollTop = feed.value.scrollHeight;
+        }
+    }
+
+    /** Smooth unless the person asked the system for less motion. */
+    function scrollBehavior(): ScrollBehavior {
+        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    }
+
+    /** Whether a message arrived while the feed was open, so it rises in rather than just being there. */
+    function isArriving(messageId: number): boolean {
+        return newestAtLoad !== null && messageId > newestAtLoad && !justSentIds.has(messageId);
+    }
+
+    /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
+    function setDivider(element: unknown): void {
+        const next = element instanceof Element ? element : null;
+        if (next === dividerElement) {
+            return;
+        }
+
+        if (dividerElement) {
+            dividerObserver?.unobserve(dividerElement);
+        }
+
+        dividerElement = next;
+        if (next) {
+            dividerObserver?.observe(next);
         }
     }
 
@@ -194,12 +572,54 @@
         });
     }
 
+    /** The newest id in the timeline, or null when it is empty. */
+    function newestId(): number | null {
+        const messages = props.timeline.messages;
+        return messages.length > 0 ? messages[messages.length - 1].id : null;
+    }
+
+    /**
+     * Notes what is new since the timeline last grew: the reader's own sends just confirmed show
+     * "Sent" for a moment, and what others sent while the reader was scrolled up is counted.
+     */
+    function noteArrivals(): void {
+        const previous = newestSeenInTimeline;
+        newestSeenInTimeline = newestId();
+        if (previous === null) {
+            newestAtLoad ??= newestSeenInTimeline;
+            confirmedSends = 0;
+            return;
+        }
+
+        const me = props.personAliasGuid.toLowerCase();
+        const arrived = props.timeline.messages.filter(m => m.id > previous);
+        const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
+
+        // Each confirmed send is one of the reader's own messages that just came in, newest last.
+        if (confirmedSends > 0) {
+            own.slice(-confirmedSends).forEach(message => holdSent(message.id));
+        }
+        confirmedSends = 0;
+
+        if (isScrolledUp.value) {
+            newCount.value += arrived.length - own.length;
+        }
+    }
+
+    /** Shows "Sent" under a confirmed send, then lets it settle to its time. */
+    function holdSent(messageId: number): void {
+        justSentIds.add(messageId);
+        const hold = feed.value ? tokenDuration(feed.value, "--chat-d-sent-hold", sentHoldMs) : sentHoldMs;
+        setTimeout(() => justSentIds.delete(messageId), hold);
+    }
+
     // #endregion Functions
 
     // #region Watchers
 
     watch(() => props.timeline.messages.length, async (length, previous) => {
         const shouldFollow = previous === 0 || isNearBottom();
+        noteArrivals();
         await nextTick();
         observeRows();
 
@@ -212,9 +632,24 @@
         }
     });
 
+    // Counted the moment a pending row goes, before the timeline's own watcher runs, because the
+    // send puts the confirmed message in first and takes the pending row out in the same turn.
+    watch(() => props.pending.length, (length, previous) => {
+        if (length < previous) {
+            confirmedSends += previous - length;
+        }
+    }, { flush: "sync" });
+
     watch(() => props.pending.length, async () => {
         await nextTick();
         scrollToBottom();
+    });
+
+    watch(() => props.timeline.isLoaded, isLoaded => {
+        if (isLoaded && skeletonTimer) {
+            clearTimeout(skeletonTimer);
+            skeletonTimer = null;
+        }
     });
 
     // #endregion Watchers
@@ -230,6 +665,29 @@
             }
         }, { root: feed.value });
 
+        // The divider's own watch: whether it is in view, and if not, above or below.
+        dividerObserver = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                isDividerOffScreen.value = !entry.isIntersecting;
+                isDividerAbove.value = !!entry.rootBounds && entry.boundingClientRect.bottom < entry.rootBounds.top;
+            }
+        }, { root: feed.value });
+
+        if (dividerElement) {
+            dividerObserver.observe(dividerElement);
+        }
+
+        // A first page that is quick never shows the skeleton, so a fast load does not flicker.
+        if (!props.timeline.isLoaded) {
+            skeletonTimer = setTimeout(() => {
+                isSkeletonDue.value = true;
+                skeletonTimer = null;
+            }, skeletonDelayMs);
+        }
+
+        newestSeenInTimeline = newestId();
+        newestAtLoad = newestSeenInTimeline;
+
         observeRows();
         if (props.timeline.messages.length > 0) {
             scrollToBottom();
@@ -240,6 +698,11 @@
     onBeforeUnmount(() => {
         observer?.disconnect();
         observer = null;
+        dividerObserver?.disconnect();
+        dividerObserver = null;
+        if (skeletonTimer) {
+            clearTimeout(skeletonTimer);
+        }
     });
 
     // #endregion Lifecycle Hooks

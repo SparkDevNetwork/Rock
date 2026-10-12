@@ -26,6 +26,7 @@ using Rock.Communication.Chat.Platform.Session;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.ViewModels.Controls;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
 {
@@ -88,12 +89,13 @@ namespace Rock.Blocks.Communication.Chat
             // stylesheet rather than a component, so it loads with the page and not with the script.
             RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Communication/Chat/chat.css" ), true );
 
-            return new ChatShellInitializationBox
-            {
-                Session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext ),
-                ChannelGuid = PageParameter( PageParameterKey.ChannelGuid ).AsGuidOrNull(),
-                AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean()
-            };
+            var session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext );
+            var box = ChatSessionHelper.BuildInitializationBox( session, GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME ) );
+
+            box.ChannelGuid = PageParameter( PageParameterKey.ChannelGuid ).AsGuidOrNull();
+            box.AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean();
+
+            return box;
         }
 
         #endregion RockBlockType Implementation

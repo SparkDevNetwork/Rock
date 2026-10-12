@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="rootElement" class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase">
+    <div ref="rootElement" class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase" :data-layout="layout">
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -30,7 +30,13 @@
                              :timeline="shell.timelines.state(activeChannelId)"
                              :pending="shell.sender.pending(activeChannelId)"
                              :personAliasGuid="personAliasGuid"
+                             :personName="personName"
+                             :personPhotoUrl="personPhotoUrl"
+                             :organizationName="organizationName"
+                             :layout="layout"
+                             :isDirectMessage="isActiveDirectMessage"
                              @seen="shell.seen"
+                             @markRead="shell.markRead"
                              @firstShown="shell.firstMessageShown"
                              @retry="onRetry"
                              @discard="shell.sender.discard"
@@ -106,6 +112,7 @@
     import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
     import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMembershipResultBag";
     import { ChatShellInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellInitializationBox";
+    import { ChatShellSessionBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellSessionBag";
     import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
     import { birthdateOutcome, isBirthdatePromptShown } from "./ChatShell/birthdate.partial";
     import BirthdatePrompt from "./ChatShell/components/birthdatePrompt.partial.obs";
@@ -116,6 +123,7 @@
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
+    import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
 
@@ -133,6 +141,15 @@
     // #region Values
 
     const personAliasGuid = ref(config.session?.personAliasGuid ?? "");
+
+    /** The reader's own name and photo, for their messages the platform has sent no name with yet. */
+    const personName = ref(fullName(config.session));
+    const personPhotoUrl = ref(config.session?.personPhotoUrl ?? null);
+
+    const organizationName = config.organizationName ?? "";
+
+    /** Bubbles unless Rock asks for Community's flat rows. */
+    const layout: FeedLayout = config.layout === "community" ? "community" : "conversational";
 
     // Replaced, not reloaded, when a birthdate lets the person in: the save answers with the
     // session a fresh page load would have had.
@@ -177,6 +194,12 @@
     const isComposerDisabled = computed((): boolean => (!activeChannelId.value && !draft.value)
         || !shell.value.state.isComposerOpen
         || draft.value?.status === "starting");
+
+    /** A conversation with one other person, where a name over each bubble would only repeat the header. */
+    const isActiveDirectMessage = computed((): boolean => {
+        const row = shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId);
+        return row?.channel_type === "dm" && (row.dm_other_count ?? 1) <= 1;
+    });
 
     const activeTitle = computed((): string => {
         if (draft.value) {
@@ -250,6 +273,8 @@
 
         await shell.value.stop();
         personAliasGuid.value = outcome.session.personAliasGuid ?? "";
+        personName.value = fullName(outcome.session);
+        personPhotoUrl.value = outcome.session.personPhotoUrl ?? null;
         shell.value = buildShell(outcome.session);
         void shell.value.start();
     }
@@ -345,6 +370,11 @@
     function firebaseApp(firebase: typeof import("@Obsidian/Libs/firebase"), web: Record<string, unknown>): ReturnType<typeof firebase.initializeApp> {
         firebaseAppInstance ??= firebase.initializeApp(web, "rock-chat");
         return firebaseAppInstance as ReturnType<typeof firebase.initializeApp>;
+    }
+
+    /** The person's name as the chat shows it, from the session Rock opened. */
+    function fullName(session: ChatShellSessionBag | null | undefined): string {
+        return [session?.personNickName, session?.personLastName].filter(part => !!part).join(" ");
     }
 
     /** The browser's local storage, or null where the browser blocks it. */

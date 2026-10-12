@@ -21,7 +21,8 @@
 // chat's root, each in a light and a dark form the sheet picks between.
 
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
-export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "flash" | "own-hairline", string>;
+export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "flash" | "own-hairline"
+    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet", string>;
 
 /** Rock's own orange, used when the page states no primary color. */
 const rockOrange = "#FF791D";
@@ -33,6 +34,9 @@ const white = "#FFFFFF";
 const lightSurface = "#FDFDFD";
 const lightSidebar = "#F8F8FC";
 const darkSidebar = "#0A0C10";
+const darkSurface = "#0D1117";
+const lightLine = "#E4E4EC";
+const darkLine = "#22272F";
 const darkTintBase = "#1E242E";
 
 /** The variable only Rock's newer themes define; the older themes have no dark mode. */
@@ -182,6 +186,18 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
     const { fill, onBrand } = brandFill(color);
     const ring = withAlpha(church, 0.32);
 
+    // The message row's tints. The chips and the pill are the church color over whatever lies
+    // under them, a bubble or a tinted row, so they stay alpha; the rest sit on a known background.
+    const row = (surface: string, line: string, sidebar: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet"> => ({
+        "mn-bg": withAlpha(church, 0.11),
+        "mn-bg-hover": withAlpha(church, 0.18),
+        "mn-bg-own": withAlpha(church, 0.16),
+        "announcement-pill": withAlpha(church, 0.13),
+        "announcement-ring": toHex(mixSrgb(church, parseColor(line)!, 0.40)),
+        "row-announcement": toHex(mixSrgb(church, parseColor(surface)!, 0.06)),
+        "badge-quiet": toHex(mixSrgb(church, parseColor(sidebar)!, 0.14))
+    });
+
     return {
         light: {
             "brand-fill": fill,
@@ -191,7 +207,8 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "brand-wash": toHex(mixSrgb(church, parseColor(lightSidebar)!, 0.10)),
             "brand-ring": ring,
             "flash": withAlpha(church, 0.20),
-            "own-hairline": "transparent"
+            "own-hairline": "transparent",
+            ...row(lightSurface, lightLine, lightSidebar)
         },
         dark: {
             "brand-fill": fill,
@@ -201,7 +218,8 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "brand-wash": toHex(mixSrgb(church, parseColor(darkSidebar)!, 0.15)),
             "brand-ring": ring,
             "flash": withAlpha(church, 0.26),
-            "own-hairline": withAlpha(church, 0.24)
+            "own-hairline": withAlpha(church, 0.24),
+            ...row(darkSurface, darkLine, darkSidebar)
         }
     };
 }
@@ -221,6 +239,25 @@ export function applyBrand(root: HTMLElement, color: string): void {
             root.style.setProperty(`--chat-${name}-${theme}`, value);
         }
     }
+}
+
+/**
+ * A person's avatar hue, from the name the chat shows. The sidebar knows people only by name, so a
+ * hue keyed on anything else would color one person two ways on one screen. A rename changes the
+ * hue, which is accepted. Shared by the avatar and the small face inside a mention chip.
+ *
+ * @param name The name as the chat shows it.
+ *
+ * @returns A hue from 0 to 359.
+ */
+export function avatarHue(name: string): number {
+    // FNV-1a: cheap, stable across loads, and spreads similar names apart.
+    let hash = 2166136261;
+    for (const character of name.trim()) {
+        hash = Math.imul(hash ^ character.codePointAt(0)!, 16777619);
+    }
+
+    return (hash >>> 0) % 360;
 }
 
 // #endregion Brand

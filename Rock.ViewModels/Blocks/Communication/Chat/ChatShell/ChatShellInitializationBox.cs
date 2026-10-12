@@ -41,5 +41,17 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// search and the rooms pinned for everyone to the person's campus.
         /// </summary>
         public bool AreSharedChannelsFilteredByCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the church's name, drawn at the top of the sidebar and as the sender of a
+        /// message posted by the church.
+        /// </summary>
+        public string OrganizationName { get; set; }
+
+        /// <summary>
+        /// Gets or sets how messages are laid out: "conversational" for bubbles, "community" for
+        /// flat rows with a name on every group.
+        /// </summary>
+        public string Layout { get; set; }
     }
 }

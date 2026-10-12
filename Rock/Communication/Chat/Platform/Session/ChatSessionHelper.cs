@@ -270,7 +270,29 @@ namespace Rock.Communication.Chat.Platform.Session
                 PublishableKey = configuration.PublishableKey,
                 TenantId = result.TenantId,
                 PersonAliasGuid = result.PersonAliasGuid,
-                CanStartDm = result.CanStartDm
+                CanStartDm = result.CanStartDm,
+                PersonNickName = person.NickName,
+                PersonLastName = person.LastName,
+                // Rock's photo address draws a placeholder for a person with none, which would
+                // hide the initials the chat draws in the person's own color.
+                PersonPhotoUrl = person.PhotoId.HasValue ? person.PhotoUrl : null
+            };
+        }
+
+        /// <summary>
+        /// Builds what the chat shell is given when it opens, around the session already opened.
+        /// The layout is conversational until the block offers the choice.
+        /// </summary>
+        /// <param name="session">The session the gates opened, or refused.</param>
+        /// <param name="organizationName">The church's name, from Rock's global attributes.</param>
+        /// <returns>The box, without the page's own values, which the block adds.</returns>
+        internal static ChatShellInitializationBox BuildInitializationBox( ChatShellSessionBag session, string organizationName )
+        {
+            return new ChatShellInitializationBox
+            {
+                Session = session,
+                OrganizationName = organizationName,
+                Layout = "conversational"
             };
         }
 

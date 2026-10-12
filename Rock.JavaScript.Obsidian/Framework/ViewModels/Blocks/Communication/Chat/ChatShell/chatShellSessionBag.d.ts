@@ -58,4 +58,19 @@ export type ChatShellSessionBag = {
      * Message Access data view, evaluated once when chat opens.
      */
     canStartDm: boolean;
+
+    /**
+     * Gets or sets the person's nick name, when the gates passed, so their own messages are
+     * named before the platform has sent a name back for them.
+     */
+    personNickName?: string | null;
+
+    /** Gets or sets the person's last name, when the gates passed. */
+    personLastName?: string | null;
+
+    /**
+     * Gets or sets the address of the person's photo, when the gates passed and they have
+     * one. Null otherwise, so the chat draws their initials rather than Rock's placeholder.
+     */
+    personPhotoUrl?: string | null;
 };

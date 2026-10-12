@@ -49,4 +49,16 @@ export type ChatShellInitializationBox = {
      * search and the rooms pinned for everyone to the person's campus.
      */
     areSharedChannelsFilteredByCampus: boolean;
+
+    /**
+     * Gets or sets the church's name, drawn at the top of the sidebar and as the sender of a
+     * message posted by the church.
+     */
+    organizationName?: string | null;
+
+    /**
+     * Gets or sets how messages are laid out: "conversational" for bubbles, "community" for
+     * flat rows with a name on every group.
+     */
+    layout?: string | null;
 };

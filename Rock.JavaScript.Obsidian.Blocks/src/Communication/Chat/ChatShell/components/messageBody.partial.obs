@@ -9,7 +9,16 @@
             <div v-else :class="row.cssClass" :data-testid="row.testId">
                 <template v-for="(piece, pieceIndex) in row.pieces" :key="pieceIndex">
                     <a v-if="piece.kind === 'link'" :href="piece.url" target="_blank" rel="noopener noreferrer nofollow">{{ piece.text }}</a>
-                    <span v-else-if="piece.kind === 'mention'" class="chat-mention" data-testid="piece-mention">{{ piece.text }}</span>
+                    <span v-else-if="piece.kind === 'mention'"
+                          class="chat-mn"
+                          :class="`is-${piece.mention}`"
+                          data-testid="piece-mention"
+                          :data-mention="piece.mention"
+                          :aria-label="piece.label"><span v-if="piece.mention === 'all'" class="chat-mn-glyph" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
+                          class="chat-av chat-mn-av"
+                          :data-initial="piece.initial"
+                          :style="{ '--chat-av-hue': piece.hue }"
+                          aria-hidden="true"></span><span class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></span>
                     <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
                     <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
                     <template v-else>{{ piece.text }}</template>
@@ -25,9 +34,60 @@
     word-break: break-word;
 }
 
-.chat-mention {
+.chat-mn {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 1px 6px 1px 2px;
     font-weight: 600;
     color: var(--chat-brand-ink);
+    white-space: nowrap;
+    background: var(--chat-mn-bg);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mn:hover {
+    background: var(--chat-mn-bg-hover);
+}
+
+.chat-mn.is-you {
+    color: var(--chat-text);
+    background: var(--chat-mn-me-bg);
+}
+
+.chat-mn.is-all {
+    color: var(--chat-info-ink);
+    background: var(--chat-mn-all-bg);
+}
+
+/*
+    A one-letter face in the sheet's avatar colors, its letter drawn by the style so the chip's
+    text stays the mention as written. Set 4px below the baseline, as the design draws it.
+*/
+.chat-mn-av {
+    position: relative;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+}
+
+.chat-mn-av::before {
+    content: attr(data-initial);
+}
+
+.chat-mn-glyph {
+    position: relative;
+    top: 3px;
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    color: var(--chat-on-info);
+    background: var(--chat-info);
+    border-radius: 50%;
 }
 
 .chat-emoji-image {
@@ -52,6 +112,8 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import Icon from "../ui/icon.partial.obs";
+    import { avatarHue } from "../ui/brand.partial";
 
     // #region Types
 
@@ -61,6 +123,12 @@
         text: string;
         url?: string;
         label?: string;
+
+        /** A mention's chip: someone else, the reader, or the whole room. */
+        mention?: "person" | "you" | "all";
+        name?: string;
+        initial?: string;
+        hue?: string;
     };
 
     /** One line of the body: the body's own pieces, or one block. */
@@ -92,6 +160,12 @@
         blocks: {
             type: Array as PropType<unknown[] | null>,
             default: null
+        },
+
+        /** The reader's alias guid, so a mention of them draws as the "you" chip. */
+        personAliasGuid: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
@@ -141,7 +215,7 @@
 
         const text = textOf(piece.text);
         if (piece.type === "mention") {
-            return { kind: "mention", text };
+            return mentionPiece(piece, text);
         }
 
         if (piece.type === "link" && isWebAddress(piece.url)) {
@@ -160,6 +234,30 @@
         }
 
         return { kind: "text", text };
+    }
+
+    /**
+     * A mention as a chip. Only the server makes a mention piece, after it admitted the person,
+     * so a chip is never drawn from anything typed; who it names decides its look.
+     */
+    function mentionPiece(piece: Record<string, unknown>, text: string): DrawnPiece {
+        const name = text.replace(/^@/, "");
+        const guid = textOf(piece.person_alias_guid).toLowerCase();
+
+        if (piece.all === true || (!guid && name.toLowerCase() === "all")) {
+            return { kind: "mention", text, mention: "all", name: "all", label: "@all, everyone in this channel" };
+        }
+
+        const isReader = !!guid && guid === props.personAliasGuid.toLowerCase();
+        return {
+            kind: "mention",
+            text,
+            mention: isReader ? "you" : "person",
+            name,
+            label: isReader ? `@${name}, you` : undefined,
+            initial: Array.from(name.trim())[0]?.toUpperCase() ?? "",
+            hue: String(avatarHue(name))
+        };
     }
 
     /** The pieces to draw, or the text as one piece when the server sent none. */

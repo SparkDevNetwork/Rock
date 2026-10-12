@@ -311,6 +311,20 @@ describe("createChatShell", () => {
         expect(h.shell.state.activeChannelId).toBe(channelB);
         expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelB}:20`]);
     });
+
+    test("Mark as read saves the open channel's position at the message named, without waiting for the page to lose focus", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        const before = h.saves.length;
+
+        h.shell.markRead(10);
+        await settle();
+
+        expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelA}:10`]);
+    });
 });
 
 

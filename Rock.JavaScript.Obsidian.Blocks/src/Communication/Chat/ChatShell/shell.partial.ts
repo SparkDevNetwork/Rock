@@ -174,6 +174,9 @@ export type ChatShell = {
     /** A message of the open channel was on screen. */
     seen: (messageId: number) => void;
 
+    /** The person asked to mark the open channel read up to a message: saved at once. */
+    markRead: (messageId: number) => void;
+
     /** The first message of the page load reached the screen. */
     firstMessageShown: () => void;
 
@@ -744,6 +747,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         seen: (messageId: number): void => tracker.seen(messageId),
+
+        // The same save as reading the message on screen, sent now rather than when the page
+        // next loses focus, because the person asked for it.
+        markRead: (messageId: number): void => {
+            tracker.seen(messageId);
+            void tracker.flush();
+        },
 
         firstMessageShown: (): void => {
             if (!isFirstMessageMarked) {

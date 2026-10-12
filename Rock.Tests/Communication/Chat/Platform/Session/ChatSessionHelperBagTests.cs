@@ -87,6 +87,44 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
+        public void OpenSession_Ok_CarriesThePersonsOwnNameForTheirOwnMessages()
+        {
+            var person = Adult();
+            person.NickName = "Jordan";
+            person.LastName = "Lee";
+
+            var bag = ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
+
+            Assert.AreEqual( "Jordan", bag.PersonNickName );
+            Assert.AreEqual( "Lee", bag.PersonLastName );
+        }
+
+        [TestMethod]
+        public void OpenSession_Ok_PersonWithoutAPhoto_CarriesNoPhotoSoTheirInitialsAreDrawn()
+        {
+            var person = Adult();
+            person.NickName = "Jordan";
+            person.LastName = "Lee";
+            person.PhotoId = null;
+
+            var bag = ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
+
+            Assert.IsNull( bag.PersonPhotoUrl, "Rock's placeholder avatar would hide the initials the chat draws" );
+        }
+
+        [TestMethod]
+        public void BuildInitializationBox_CarriesTheSessionTheChurchNameAndTheConversationalLayout()
+        {
+            var session = ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext );
+
+            var box = ChatSessionHelper.BuildInitializationBox( session, "Cedar Hill Church" );
+
+            Assert.AreSame( session, box.Session );
+            Assert.AreEqual( "Cedar Hill Church", box.OrganizationName );
+            Assert.AreEqual( "conversational", box.Layout );
+        }
+
+        [TestMethod]
         public void OpenSession_PersonOutsideTheDirectMessageDataView_MayNotStartOne()
         {
             // A church that names a Direct Message Access data view which resolved to someone else.
@@ -136,6 +174,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
                 Assert.IsNull( bag.TenantId, $"{c.Gate} was told the church's platform id" );
                 Assert.IsNull( bag.PersonAliasGuid, $"{c.Gate} was told their platform identity" );
                 Assert.IsFalse( bag.CanStartDm, $"{c.Gate} was offered direct messages" );
+                Assert.IsNull( bag.PersonNickName, $"{c.Gate} was told their name" );
+                Assert.IsNull( bag.PersonLastName, $"{c.Gate} was told their name" );
+                Assert.IsNull( bag.PersonPhotoUrl, $"{c.Gate} was given their photo" );
             }
         }
 

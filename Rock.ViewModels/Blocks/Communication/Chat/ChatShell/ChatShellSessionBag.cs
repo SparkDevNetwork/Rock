@@ -58,5 +58,22 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// Message Access data view, evaluated once when chat opens.
         /// </summary>
         public bool CanStartDm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's nick name, when the gates passed, so their own messages are
+        /// named before the platform has sent a name back for them.
+        /// </summary>
+        public string PersonNickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's last name, when the gates passed.
+        /// </summary>
+        public string PersonLastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the address of the person's photo, when the gates passed and they have
+        /// one. Null otherwise, so the chat draws their initials rather than Rock's placeholder.
+        /// </summary>
+        public string PersonPhotoUrl { get; set; }
     }
 }

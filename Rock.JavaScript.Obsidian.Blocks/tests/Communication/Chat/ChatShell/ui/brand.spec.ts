@@ -126,7 +126,14 @@ describe("the tokens drawn from the church color", () => {
             "brand-wash": "#F9EBE6",
             "brand-ring": "rgba(255, 121, 29, 0.32)",
             "flash": "rgba(255, 121, 29, 0.20)",
-            "own-hairline": "transparent"
+            "own-hairline": "transparent",
+            "mn-bg": "rgba(255, 121, 29, 0.11)",
+            "mn-bg-hover": "rgba(255, 121, 29, 0.18)",
+            "mn-bg-own": "rgba(255, 121, 29, 0.16)",
+            "announcement-pill": "rgba(255, 121, 29, 0.13)",
+            "announcement-ring": "#EFB999",
+            "row-announcement": "#FDF5F0",
+            "badge-quiet": "#F9E6DD"
         },
         dark: {
             "brand-fill": "#FF791D",
@@ -136,7 +143,14 @@ describe("the tokens drawn from the church color", () => {
             "brand-wash": "#2F1C12",
             "brand-ring": "rgba(255, 121, 29, 0.32)",
             "flash": "rgba(255, 121, 29, 0.26)",
-            "own-hairline": "rgba(255, 121, 29, 0.24)"
+            "own-hairline": "rgba(255, 121, 29, 0.24)",
+            "mn-bg": "rgba(255, 121, 29, 0.11)",
+            "mn-bg-hover": "rgba(255, 121, 29, 0.18)",
+            "mn-bg-own": "rgba(255, 121, 29, 0.16)",
+            "announcement-pill": "rgba(255, 121, 29, 0.13)",
+            "announcement-ring": "#7A4828",
+            "row-announcement": "#1C1717",
+            "badge-quiet": "#2C1B12"
         }
     };
 
@@ -144,7 +158,11 @@ describe("the tokens drawn from the church color", () => {
     // moves, and its fill is the darkened one while the tints still mix the church's own color.
     // Worked out with the design's mixes (ink 58% with black in oklab light, 62% with white in
     // srgb dark; tint 13% over the light surface in srgb, 24% over the dark bubble base in oklab;
-    // wash 10% and 15% over the sidebar in srgb).
+    // wash 10% and 15% over the sidebar in srgb). The message row's mixes, all in srgb: a mention
+    // chip at 11%, 18% on hover and 16% inside the person's own bubble, and the announcement pill
+    // at 13%, each as alpha over whatever is under it; the announcement bubble's ring 40% over the
+    // line (#E4E4EC, #22272F); Community's announcement row 6% over the surface (#FDFDFD,
+    // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10).
     const forest = {
         light: {
             "brand-fill": "#1D8350",
@@ -154,7 +172,14 @@ describe("the tokens drawn from the church color", () => {
             "brand-wash": "#E2EDEB",
             "brand-ring": "rgba(30, 138, 84, 0.32)",
             "flash": "rgba(30, 138, 84, 0.20)",
-            "own-hairline": "transparent"
+            "own-hairline": "transparent",
+            "mn-bg": "rgba(30, 138, 84, 0.11)",
+            "mn-bg-hover": "rgba(30, 138, 84, 0.18)",
+            "mn-bg-own": "rgba(30, 138, 84, 0.16)",
+            "announcement-pill": "rgba(30, 138, 84, 0.13)",
+            "announcement-ring": "#95C0AF",
+            "row-announcement": "#F0F6F3",
+            "badge-quiet": "#D9E9E4"
         },
         dark: {
             "brand-fill": "#1D8350",
@@ -164,7 +189,14 @@ describe("the tokens drawn from the church color", () => {
             "brand-wash": "#0D1F1A",
             "brand-ring": "rgba(30, 138, 84, 0.32)",
             "flash": "rgba(30, 138, 84, 0.26)",
-            "own-hairline": "rgba(30, 138, 84, 0.24)"
+            "own-hairline": "rgba(30, 138, 84, 0.24)",
+            "mn-bg": "rgba(30, 138, 84, 0.11)",
+            "mn-bg-hover": "rgba(30, 138, 84, 0.18)",
+            "mn-bg-own": "rgba(30, 138, 84, 0.16)",
+            "announcement-pill": "rgba(30, 138, 84, 0.13)",
+            "announcement-ring": "#204F3E",
+            "row-announcement": "#0E181B",
+            "badge-quiet": "#0D1E1A"
         }
     };
 

@@ -16,6 +16,7 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import Icon from "./icon.partial.obs";
+    import { avatarHue } from "./brand.partial";
 
     // #region Types
 
@@ -50,21 +51,6 @@
 
     // #region Functions
 
-    /**
-     * The person's hue, from the name the chat shows. The sidebar knows people only by name, so a
-     * hue keyed on anything else would color one person two ways on one screen. A rename changes
-     * the hue, which is accepted.
-     */
-    function hueOf(name: string): number {
-        // FNV-1a: cheap, stable across loads, and spreads similar names apart.
-        let hash = 2166136261;
-        for (const character of name.trim()) {
-            hash = Math.imul(hash ^ character.codePointAt(0)!, 16777619);
-        }
-
-        return (hash >>> 0) % 360;
-    }
-
     /** The first letter of the first and last words, or one letter where two would not fit. */
     function initialsOf(name: string): string {
         const words = name.trim().split(/\s+/).filter(word => word !== "");
@@ -83,7 +69,7 @@
     function faceStyle(person: AvatarPerson, index: number): Record<string, string> {
         const size = props.size;
         const style: Record<string, string> = {
-            "--chat-av-hue": String(hueOf(person.name)),
+            "--chat-av-hue": String(avatarHue(person.name)),
             width: `${size}px`,
             height: `${size}px`,
             fontSize: `${Math.round(size * 0.37 * 100) / 100}px`
