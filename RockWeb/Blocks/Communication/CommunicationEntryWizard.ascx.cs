@@ -2795,7 +2795,7 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
-                    divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
+                    divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgConfirmationSmsImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
                     imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
@@ -2816,19 +2816,16 @@ function onTaskCompleted( resultData )
                     }
 
                     string publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-                    var options = new GetImageUrlOptions
-                    {
-                        PublicAppRoot = publicAppRoot
-                    };
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
 
-                    imgConfirmationSmsImageAttachment.ImageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, options );
-                    divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
+                    // Non-image files can't be served by GetImage, so show the same file type icon as the editor.
+                    imgConfirmationSmsImageAttachment.ImageUrl = imgSMSImageAttachment.ImageUrl;
+                    divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgConfirmationSmsImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
                 }
 
                 if ( Rock.Communication.Transport.Twilio.SupportedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )

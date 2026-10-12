@@ -202,10 +202,14 @@
                                             <div class="bubble" v-if="!isNullOrWhiteSpace(message.smsMessage)">
                                                 {{ message.smsMessage }}
                                             </div>
-                                            <div v-for="attacmentUrl in message.attachmentUrls">
-                                                <a :href="attacmentUrl" target="_blank" rel="noopener noreferrer">
-                                                    <img :src="attacmentUrl" class="img-responsive sms-image">
+                                            <div v-for="attachment in message.attachments ?? []">
+                                                <a v-if="attachment.thumbnailUrl" :href="attachment.url ?? undefined" target="_blank" rel="noopener noreferrer">
+                                                    <img :src="attachment.thumbnailUrl" class="img-responsive sms-image">
                                                 </a>
+                                                <div v-else class="sms-file">
+                                                    <i class="fa fa-file"></i>
+                                                    <a :href="attachment.url ?? undefined" target="_blank" rel="noopener noreferrer">{{ attachment.fileName }}</a>
+                                                </div>
                                             </div>
                                             <div class="message-meta">
                                                 <span class="sender-name">
@@ -681,6 +685,20 @@
     margin-top: 5px;
     border-radius: 10px;
 }
+
+.conversation .message .sms-file {
+    display: inline-block;
+    padding: 4px 12px;
+    margin-top: 5px;
+    color: var(--text-color);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 6px;
+}
+
+.conversation .message .sms-file .fa {
+    margin-right: 12px;
+}
 </style>
 
 <script setup lang="ts">
@@ -848,7 +866,7 @@
     /**
      * Returns a preview of the last message in a conversation.
      * @param conversation the conversation containing the messages.
-     * @returns the message preview or "Image" if the last message contains an attachment.
+     * @returns the message preview, or "Image" or "File" if the last message only contains an attachment.
      */
     const getSmsMessagePreview = (conversation: ConversationBag): string | null | undefined => {
         if (!conversation.messages || conversation.messages.length === 0) {
@@ -856,8 +874,8 @@
         }
 
         const lastMessage = conversation.messages[conversation.messages.length - 1];
-        if (isNullOrWhiteSpace(lastMessage.smsMessage) && lastMessage.attachmentUrls?.length) {
-            return "Image";
+        if (isNullOrWhiteSpace(lastMessage.smsMessage) && lastMessage.attachments?.length) {
+            return lastMessage.attachments[0].thumbnailUrl ? "Image" : "File";
         }
         return lastMessage.smsMessage;
     };
@@ -1082,14 +1100,11 @@
 
         const conversationToUpdate = conversations.value.find(c => c.conversationKey === newMessageData.conversationKey);
 
-        let attachmentUrls: (string | null | undefined)[] = [];
-        if (newMessageData.attachments != null && newMessageData.attachments.length > 0) {
-            attachmentUrls = newMessageData.attachments.map(attachment => attachment.url);
-        }
+        const attachments = newMessageData.attachments ?? [];
 
         if (conversationToUpdate) {
             const newMessage = <MessageBag>{
-                attachmentUrls: attachmentUrls,
+                attachments: attachments,
                 createdDateTime: newMessageData.messageDateTime,
                 isOutbound: newMessageData.isOutbound,
                 messageKey: newMessageData.messageKey,
@@ -1122,7 +1137,7 @@
                 messages: [<MessageBag>{
                     isOutbound: newMessageData.isOutbound,
                     smsMessage: newMessageData.message,
-                    attachmentUrls: attachmentUrls,
+                    attachments: attachments,
                     createdDateTime: newMessageData.messageDateTime,
                     messageKey: newMessageData.messageKey,
                     outboundSenderFullName: newMessageData.outboundSenderFullName
