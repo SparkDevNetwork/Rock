@@ -3,11 +3,13 @@ name: Private Build Results
 # Receives AppVeyor results for public develop (sent by appveyor-relay.yml) and
 # matches them to shipped PRs labeled `awaiting-build`.
 #
-# Which PRs a build covers: a PR is covered when the develop commit it shipped
-# (recorded by private-ship.yml in a "develop-sha" marker comment) is the built
-# commit or an ancestor of it. That handles AppVeyor skipping commits: if
-# AppVeyor never built the shipped commit itself, the next build that includes
-# it counts.
+# Which PRs a build covers: a PR is covered when the commit it shipped as
+# (recorded by private-ship.yml in a "shipped-sha" marker comment) is included
+# in the built develop commit. That handles:
+#   - AppVeyor skipping commits: the next build that includes it counts.
+#   - `ship-only`: the PR waits until someone merges it up to develop by hand,
+#     and the first develop build after that covers it.
+# Older PRs carry a "develop-sha" marker instead; it's read the same way.
 #
 #   success  Deletes each covered PR's branch and clears `awaiting-build`.
 #   failure  Comments on each covered PR, labels it `build-failed`, keeps the
@@ -58,7 +60,7 @@ jobs:
           covered=""
           for pr in $(gh pr list -R "$GITHUB_REPOSITORY" -s closed -l awaiting-build -L 100 --json number -q '.[].number'); do
             shipped=$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments?per_page=100" -q '.[].body' \
-              | grep -oE 'develop-sha: [0-9a-f]{40}' | tail -1 | cut -d' ' -f2)
+              | grep -oE '(shipped|develop)-sha: [0-9a-f]{40}' | tail -1 | cut -d' ' -f2)
             [ -n "$shipped" ] || continue
 
             # "ahead": the build includes the shipped commit. "identical": it is
