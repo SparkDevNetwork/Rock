@@ -238,9 +238,19 @@
 
         try {
             // Perform the actual file upload using the helper function.
+            /*
+                10/12/2026 - MSE
+
+                Upload as a temporary file like the other uploaders. The block
+                that saves the image marks it permanent (the Person and
+                Location save hooks do this for photos and images).
+
+                Reason: Blocks only accept a new upload when it is a temporary
+                file uploaded by the current person, so non-temporary uploads
+                were rejected.
+            */
             const result = await uploadBinaryFile(fileToUpload, props.binaryFileTypeGuid || BinaryFiletype.Default, {
                 baseUrl: "/ImageUploader.ashx",
-                isTemporary: false,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
                 }
