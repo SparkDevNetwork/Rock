@@ -457,7 +457,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return { ok: false, error: result.error };
             }
             const sent = (result.data ?? {}) as Partial<SendAnswer>;
-            return { ok: true, id: sent.id as number, createdAt: sent.created_at ?? new Date().toISOString(), notice: sent.notice ?? null };
+            return {
+                ok: true,
+                id: sent.id as number,
+                createdAt: sent.created_at ?? new Date().toISOString(),
+                notice: sent.notice ?? null,
+                pieces: sent.pieces ?? null,
+                blocks: sent.blocks ?? null
+            };
         },
         timelines,
         join: options.joinChannel,

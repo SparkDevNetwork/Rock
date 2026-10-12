@@ -23,7 +23,7 @@
 // until they join, which is Rock's door, so the sender joins through it and sends again under the
 // same key.
 import { reactive } from "vue";
-import { ChatError, PendingMessage } from "../types.partial";
+import { ChatError, DisplayPiece, MessageBlock, PendingMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 
 /** What Rock's Join door answers. */
@@ -44,7 +44,7 @@ const joinWaits = 4;
 
 /** What the platform's send answers. */
 export type SendResult =
-    | { ok: true, id: number, createdAt: string, notice?: string | null }
+    | { ok: true, id: number, createdAt: string, notice?: string | null, pieces?: DisplayPiece[] | null, blocks?: MessageBlock[] | null }
     | { ok: false, error: ChatError };
 
 /**
@@ -224,6 +224,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
             sender_listed: true,
             message_type: "text",
             body: row.body,
+            // the pieces the server built, so a mention shows as one before the event arrives
+            pieces: result.pieces ?? null,
+            blocks: result.blocks ?? null,
             created_at: result.createdAt,
             notice: result.notice ?? null
         });

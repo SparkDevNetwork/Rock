@@ -31,7 +31,7 @@
 import { reactive } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
-import { HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "../types.partial";
+import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "../types.partial";
 
 /** How many messages the first page of a channel holds. */
 export const firstPageSize = 50;
@@ -67,6 +67,29 @@ export function messageDisplay(message: TimelineMessage): MessageDisplay {
     }
 
     return { kind: message.message_type === "system" ? "system" : "message", text: message.body };
+}
+
+/** A mention token as a person types it: a person's alias guid, or the whole room, in any case. */
+const mentionToken = /<@(all|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})>/gi;
+
+/**
+ * What a message not yet stored draws. Who may be mentioned is the platform's call, made when the
+ * message is stored, so until then each token is plain text: the name this client already holds
+ * for the person, else "someone". Never a mention piece, which would claim an admission the
+ * platform has not made, and never the raw token.
+ *
+ * @param body The body as typed.
+ * @param names Each person's name this client holds, by alias guid in lower case.
+ *
+ * @returns The body as text pieces.
+ */
+export function pendingPieces(body: string, names: ReadonlyMap<string, string>): DisplayPiece[] {
+    const text = body.replace(mentionToken, (_token, target: string) => {
+        const key = target.toLowerCase();
+        return key === "all" ? "@all" : `@${names.get(key) ?? "someone"}`;
+    });
+
+    return [{ type: "text", text }];
 }
 
 /** A channel's timeline. */
@@ -179,6 +202,18 @@ function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMess
 
     if (held.deleted_at && !incoming.deleted_at) {
         result.deleted_at = held.deleted_at;
+        result.body = null;
+        result.pieces = null;
+        result.blocks = null;
+        result.metadata = null;
+    }
+
+    // The person's own send is confirmed with the text they typed, and that answer can arrive after
+    // the platform hid the message, so a hide held is undone only by a copy that says so itself.
+    const isHiddenHeld = held.visibility === "hidden" || held.visibility === "removed";
+    if (isHiddenHeld && incoming.visibility === undefined) {
+        result.visibility = held.visibility;
+        result.visibility_notice = held.visibility_notice;
         result.body = null;
         result.pieces = null;
         result.blocks = null;

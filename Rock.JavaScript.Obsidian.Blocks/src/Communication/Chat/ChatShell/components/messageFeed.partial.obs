@@ -20,7 +20,9 @@
              :class="{ 'is-failed': row.status === 'failed' }"
              data-testid="pending-row"
              :data-status="row.status">
-            <div class="chat-feed-pending-body">{{ row.body }}</div>
+            <div class="chat-feed-pending-body">
+                <MessageBody :text="row.body" :pieces="pendingPieces(row.body, senderNames)" />
+            </div>
             <div v-if="row.status === 'failed'" class="chat-feed-pending-actions">
                 <span class="text-danger">Not sent.</span>
                 <button type="button" class="btn btn-link btn-xs" data-testid="retry-send" @click="emit('retry', row.localId)">Try again</button>
@@ -89,8 +91,9 @@
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import MessageBody from "./messageBody.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
-    import { TimelineState } from "../composables/useHistory.partial";
+    import { pendingPieces, TimelineState } from "../composables/useHistory.partial";
     import { PendingMessage } from "../types.partial";
 
     const props = defineProps({
@@ -136,6 +139,21 @@
         const cursor = props.timeline.readCursor;
         const first = props.timeline.messages.find(m => m.id > cursor && m.message_type !== "system");
         return first?.id ?? null;
+    });
+
+    /**
+     * The name of each person seen sending in this timeline, by alias guid, so a mention typed in
+     * a message not yet stored can show who it names without asking the platform.
+     */
+    const senderNames = computed((): ReadonlyMap<string, string> => {
+        const names = new Map<string, string>();
+        for (const message of props.timeline.messages) {
+            if (message.person_alias_guid && message.sender_nick_name) {
+                const name = [message.sender_nick_name, message.sender_last_name].filter(part => !!part).join(" ");
+                names.set(message.person_alias_guid.toLowerCase(), name);
+            }
+        }
+        return names;
     });
 
     const unreadLabel = computed((): string => {

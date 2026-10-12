@@ -117,6 +117,10 @@ export type SendAnswer = {
     id: number;
     created_at: string;
     notice: string | null;
+
+    /** The pieces the stored row draws, so the sender's own message shows them at once. */
+    pieces?: DisplayPiece[] | null;
+    blocks?: MessageBlock[] | null;
 };
 
 /** What chat_mark_read returns: the position as stored, and the channel's last message. */
