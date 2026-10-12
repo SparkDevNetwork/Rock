@@ -537,6 +537,12 @@ namespace Rock.Web.Cache
         [DataMember]
         public string ThumbnailFileUrl { get; private set; }
 
+        /// <summary>
+        /// Gets the domains configured for this site, such as <c>church.org</c> and <c>www.church.org</c>.
+        /// </summary>
+        [DataMember]
+        internal List<string> Domains { get; private set; }
+
         #endregion
 
         /// <summary>
@@ -617,7 +623,9 @@ namespace Rock.Web.Cache
             EnableVisitorTracking = site.EnableVisitorTracking;
             EnablePersonalization = site.EnablePersonalization;
 
-            foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
+            Domains = site.SiteDomains.Select( d => d.Domain ).ToList();
+
+            foreach ( var domain in Domains )
             {
                 _siteDomains.AddOrUpdate( domain, site.Id, ( k, v ) => site.Id );
             }
@@ -874,6 +882,58 @@ namespace Rock.Web.Cache
             allowedHosts.AddRange( redirectDomains );
 
             return redirectUrl.IsSafeRedirectUrl( allowedHosts );
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="host"/> is a domain configured on any site. Proxies send the original
+        /// host in headers that any caller can set, so a forwarded host is only trusted when it passes this check.
+        /// </summary>
+        /// <param name="host">The host name, which may include a port.</param>
+        /// <returns><c>true</c> if <paramref name="host"/> is a site domain; otherwise, <c>false</c>.</returns>
+        internal static bool IsHostAllowed( string host )
+        {
+            List<SiteCache> sites;
+
+            try
+            {
+                sites = All();
+            }
+            catch ( Exception )
+            {
+                // The sites can't be loaded without the database, such as on the error page.
+                return false;
+            }
+
+            return IsHostAllowed( host, sites.SelectMany( site => site.Domains ) );
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="host"/> matches one of <paramref name="domains"/>, ignoring case and
+        /// any port.
+        /// </summary>
+        /// <param name="host">The host name, which may include a port.</param>
+        /// <param name="domains">The domains configured on the sites.</param>
+        /// <returns>
+        /// <c>true</c> if <paramref name="host"/> is in <paramref name="domains"/>; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>This method is internal so that it can be used for unit testing.</remarks>
+        internal static bool IsHostAllowed( string host, IEnumerable<string> domains )
+        {
+            if ( host.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var hostName = host.Trim();
+
+            // Drop the port: "example.com:8443" becomes "example.com".
+            var portIndex = hostName.LastIndexOf( ':' );
+            if ( portIndex > 0 && hostName.Substring( portIndex + 1 ).All( char.IsDigit ) )
+            {
+                hostName = hostName.Substring( 0, portIndex );
+            }
+
+            return domains.Any( domain => string.Equals( domain, hostName, StringComparison.OrdinalIgnoreCase ) );
         }
 
         #endregion

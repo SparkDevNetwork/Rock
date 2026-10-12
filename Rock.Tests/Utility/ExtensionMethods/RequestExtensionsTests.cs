@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Net;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Utility.ExtensionMethods
 {
@@ -14,6 +15,8 @@ namespace Rock.Tests.Utility.ExtensionMethods
     public class RequestExtensionsTests
     {
         #region UrlProxySafe
+
+        private static readonly string[] SiteDomains = new[] { "www.rocksolidchurchdemo.com" };
 
         /// <summary>
         /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
@@ -31,7 +34,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns forwarded host name when header is present.
         /// </summary>
         [TestMethod]
@@ -43,13 +46,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-FORWARDED-HOST", "www.rocksolidchurchdemo.com" );
             request.Headers.Add( "X-FORWARDED-PROTO", "https" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns forwarded host name when header is present.
         /// </summary>
         [TestMethod]
@@ -61,13 +64,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-FORWARDED-HOST", "www.rocksolidchurchdemo.com" );
             request.Headers.Add( "X-FORWARDED-PROTO", "http" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns forwarded host name when header is present.
         /// </summary>
         [TestMethod]
@@ -79,13 +82,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-ORIGINAL-HOST", "www.rocksolidchurchdemo.com" );
             request.Headers.Add( "X-FORWARDED-PROTO", "https" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns a concise URL without the port number in the string
         /// when port 80 is used.
         /// </summary>
@@ -99,13 +102,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-FORWARDED-PROTO", "http" );
             request.Headers.Add( "X-FORWARDED-PORT", "80" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns a concise URL without the port number in the string
         /// when port 443 is used.
         /// </summary>
@@ -119,13 +122,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-FORWARDED-PROTO", "https" );
             request.Headers.Add( "X-FORWARDED-PORT", "443" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns a concise URL without the port number in the string
         /// when port 443 is used.
         /// </summary>
@@ -139,13 +142,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-FORWARDED-PROTO", "http" );
             request.Headers.Add( "X-FORWARDED-PORT", "8080" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
-        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest)"/> method
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
         /// and verifies that it returns a concise URL without the port number in the string
         /// when port 443 is used.
         /// </summary>
@@ -159,9 +162,69 @@ namespace Rock.Tests.Utility.ExtensionMethods
             request.Headers.Add( "X-FORWARDED-PROTO", "https" );
             request.Headers.Add( "X-FORWARDED-PORT", "443" );
 
-            var actualUri = request.UrlProxySafe();
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
 
             Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+        }
+
+        /// <summary>
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
+        /// and verifies that it ignores the proxy headers when X-Forwarded-Host is not a site domain.
+        /// </summary>
+        [TestMethod]
+        public void UrlProxySafe_UnknownXForwardedHostReturnsOriginalUrl()
+        {
+            var request = new Request( "https://rock.proxy.me/page/12" );
+            var expectedUrl = "https://rock.proxy.me/page/12";
+
+            request.Headers.Add( "X-FORWARDED-HOST", "unsafe.com" );
+            request.Headers.Add( "X-FORWARDED-PROTO", "http" );
+            request.Headers.Add( "X-FORWARDED-PORT", "8080" );
+
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
+
+            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+        }
+
+        /// <summary>
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
+        /// and verifies that it ignores the proxy headers when X-Original-Host is not a site domain.
+        /// </summary>
+        [TestMethod]
+        public void UrlProxySafe_UnknownXOriginalHostReturnsOriginalUrl()
+        {
+            var request = new Request( "https://rock.proxy.me/page/12" );
+            var expectedUrl = "https://rock.proxy.me/page/12";
+
+            request.Headers.Add( "X-ORIGINAL-HOST", "unsafe.com" );
+            request.Headers.Add( "X-FORWARDED-PROTO", "https" );
+
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
+
+            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+        }
+
+        /// <summary>
+        /// Tests the <see cref="global::Rock.ExtensionMethods.UrlProxySafe(IRequest, Func{string, bool})"/> method
+        /// and verifies that it ignores the proxy headers when weglot-forwarded-host is not a site domain.
+        /// </summary>
+        [TestMethod]
+        public void UrlProxySafe_UnknownWeglotForwardedHostReturnsOriginalUrl()
+        {
+            var request = new Request( "https://rock.proxy.me/page/12" );
+            var expectedUrl = "https://rock.proxy.me/page/12";
+
+            request.Headers.Add( "WEGLOT-FORWARDED-HOST", "unsafe.com" );
+            request.Headers.Add( "X-FORWARDED-PROTO", "https" );
+
+            var actualUri = request.UrlProxySafe( IsHostAllowed );
+
+            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+        }
+
+        private static bool IsHostAllowed( string host )
+        {
+            return SiteCache.IsHostAllowed( host, SiteDomains );
         }
 
         private class Request : IRequest

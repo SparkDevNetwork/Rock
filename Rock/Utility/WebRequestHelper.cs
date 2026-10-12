@@ -42,7 +42,7 @@ namespace Rock.Utility
         public static string GetHostNameFromRequest( HttpContext context )
         {
             var forwardedHost = context.Request.ServerVariables["HTTP_X_Forwarded_Host"];
-            if ( forwardedHost.IsNotNullOrWhiteSpace() )
+            if ( forwardedHost.IsNotNullOrWhiteSpace() && SiteCache.IsHostAllowed( forwardedHost ) )
             {
                 return forwardedHost;
             }

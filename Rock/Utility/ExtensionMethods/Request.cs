@@ -17,6 +17,8 @@
 using System;
 using System.Web;
 
+using Rock.Web.Cache;
+
 namespace Rock
 {
     /// <summary>
@@ -45,8 +47,8 @@ namespace Rock
             // would change to use the industry standard and were told no. Specifically the issue was when you use Weglot with Auth0. 
             var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
 
-            // If no proxy just return the request URL
-            var isRequestForwardedFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
+            // Use the request URL unless a proxy forwarded a host that is one of our site domains.
+            var isRequestForwardedFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null && SiteCache.IsHostAllowed( forwardedHost );
 
             if ( !isRequestForwardedFromProxy )
             {
@@ -93,8 +95,8 @@ namespace Rock
             // would change to use the industry standard and were told no. Specifically the issue was when you use Weglot with Auth0. 
             var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
 
-            // If no proxy just return the request URL
-            var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
+            // Use the request URL unless a proxy forwarded a host that is one of our site domains.
+            var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null && SiteCache.IsHostAllowed( forwardedHost );
 
             if ( !isRequestForwaredFromProxy )
             {
@@ -134,6 +136,19 @@ namespace Rock
         /// <returns></returns>
         internal static Uri UrlProxySafe( this Net.IRequest request )
         {
+            return request.UrlProxySafe( SiteCache.IsHostAllowed );
+        }
+
+        /// <summary>
+        /// Returns a URL from the request object, honoring the proxy headers only when <paramref name="isHostAllowed"/>
+        /// accepts the forwarded host.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="isHostAllowed">Determines whether a forwarded host may be trusted.</param>
+        /// <returns>The forwarded URL if the forwarded host is allowed; otherwise, the request URL.</returns>
+        /// <remarks>This method is internal so that it can be used for unit testing.</remarks>
+        internal static Uri UrlProxySafe( this Net.IRequest request, Func<string, bool> isHostAllowed )
+        {
             // Some proxies use X-Original-Host.
             // JME 2/22/2024
             // Added a custom header for forward hosts that is used by a language translation service called Weglot. Normally, we would not
@@ -141,8 +156,8 @@ namespace Rock
             // would change to use the industry standard and were told no. Specifically the issue was when you use Weglot with Auth0. 
             var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
 
-            // If no proxy just return the request URL
-            var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
+            // Use the request URL unless a proxy forwarded a host that is one of our site domains.
+            var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null && isHostAllowed( forwardedHost );
 
             if ( !isRequestForwaredFromProxy )
             {

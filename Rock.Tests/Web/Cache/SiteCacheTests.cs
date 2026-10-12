@@ -59,5 +59,53 @@ namespace Rock.Tests.Web.Cache
         }
 
         #endregion IsSafeRedirectUrl
+
+        #region IsHostAllowed
+
+        private static readonly string[] SiteDomains = new[] { "www.church.org", "rock.church.org" };
+
+        [TestMethod]
+        public void IsHostAllowed_AllowsSiteDomain()
+        {
+            var output = SiteCache.IsHostAllowed( "rock.church.org", SiteDomains );
+            Assert.That.AreEqual( true, output );
+        }
+
+        [TestMethod]
+        public void IsHostAllowed_IgnoresCase()
+        {
+            var output = SiteCache.IsHostAllowed( "ROCK.Church.org", SiteDomains );
+            Assert.That.AreEqual( true, output );
+        }
+
+        [TestMethod]
+        public void IsHostAllowed_IgnoresPort()
+        {
+            var output = SiteCache.IsHostAllowed( "rock.church.org:8443", SiteDomains );
+            Assert.That.AreEqual( true, output );
+        }
+
+        [TestMethod]
+        public void IsHostAllowed_RejectsOtherHosts()
+        {
+            var output = SiteCache.IsHostAllowed( "unsafe.com", SiteDomains );
+            Assert.That.AreEqual( false, output );
+        }
+
+        [TestMethod]
+        public void IsHostAllowed_RejectsHostContainingSiteDomain()
+        {
+            var output = SiteCache.IsHostAllowed( "rock.church.org.unsafe.com", SiteDomains );
+            Assert.That.AreEqual( false, output );
+        }
+
+        [TestMethod]
+        public void IsHostAllowed_RejectsEmptyHost()
+        {
+            var output = SiteCache.IsHostAllowed( " ", SiteDomains );
+            Assert.That.AreEqual( false, output );
+        }
+
+        #endregion IsHostAllowed
     }
 }
