@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Core
             var entitySetService = new EntitySetService( rockContext );
             var entitySetItemsService = new EntitySetItemService( rockContext );
             var entitySet = entitySetService.Get( entitySetId );
-            if ( entitySet == null )
+            if ( entitySet == null || !IsEntitySetOwnedByCurrentPerson( entitySet, rockContext ) )
             {
                 nbWarningMessage.Text = "Merge Records not found";
                 nbWarningMessage.Title = "Warning";
@@ -262,9 +262,10 @@ namespace RockWeb.Blocks.Core
 
         /// <summary>
         /// Gets the entity set identifier being merged. The posted hidden field
-        /// must match the Set page parameter the block was displayed with.
+        /// must match the Set page parameter the block was displayed with, and
+        /// the entity set must have been created by the current person.
         /// </summary>
-        /// <returns>The entity set identifier, or <c>null</c> if it does not match the page parameter.</returns>
+        /// <returns>The entity set identifier, or <c>null</c> if it does not match the page parameter or is not owned by the current person.</returns>
         private int? GetEntitySetId()
         {
             int? entitySetId = hfEntitySetId.Value.AsIntegerOrNull();
@@ -275,7 +276,46 @@ namespace RockWeb.Blocks.Core
                 return null;
             }
 
+            var rockContext = new RockContext();
+            var entitySet = new EntitySetService( rockContext ).Get( entitySetId.Value );
+
+            if ( entitySet == null || !IsEntitySetOwnedByCurrentPerson( entitySet, rockContext ) )
+            {
+                return null;
+            }
+
             return entitySetId;
+        }
+
+        /// <summary>
+        /// Determines whether the entity set was created by the current person.
+        /// </summary>
+        /// <param name="entitySet">The entity set.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the entity set was created by the current person; otherwise <c>false</c>.</returns>
+        private bool IsEntitySetOwnedByCurrentPerson( EntitySet entitySet, RockContext rockContext )
+        {
+            /*
+                10/12/2026 - MSE
+
+                Entity set identifiers are sequential, so the Set page parameter
+                could be changed to open a set another person created, such as
+                the rows of a report or giving list they can not view. Grids
+                create the set while the person is signed in, so the creator is
+                the person who should be able to merge it. The person Id is
+                compared instead of the alias Id so a merged person still matches.
+                Sets with no creator are rejected.
+
+                Reason: Prevent merging entity sets created by other people.
+            */
+            if ( !CurrentPersonId.HasValue || !entitySet.CreatedByPersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            var ownerPersonId = new PersonAliasService( rockContext ).GetPersonId( entitySet.CreatedByPersonAliasId.Value );
+
+            return ownerPersonId.HasValue && ownerPersonId.Value == CurrentPersonId.Value;
         }
 
         /// <summary>
