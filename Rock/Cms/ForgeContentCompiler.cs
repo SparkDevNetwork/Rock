@@ -125,6 +125,14 @@ namespace Rock.Cms
         private static readonly Regex SystemRegisterShape = new Regex( @"^\s*System\.register\s*\(\s*\[", RegexOptions.Compiled );
 
         /// <summary>
+        /// Matches the optional top-level <c>&lt;placeholder&gt;</c> block of an
+        /// authored single-file-component. Both tags must start at the beginning
+        /// of a line, matching how top-level SFC blocks are written, so an
+        /// indented tag inside the template is never mistaken for it.
+        /// </summary>
+        private static readonly Regex PlaceholderBlock = new Regex( @"^<placeholder(?:\s[^>]*)?>(?<content>.*?)^</placeholder\s*>", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.Singleline );
+
+        /// <summary>
         /// A minimal System.register capture, mirroring the shim technique the
         /// block's view panel uses to instantiate stored modules. The compiler
         /// bundle registers with an empty dependency array; the shim throws if
@@ -282,6 +290,35 @@ window.System = {
 
                 return ForgeContentCompileResult.Failure( DescribeFailure( actual ) );
             }
+        }
+
+        /// <summary>
+        /// Gets the static placeholder HTML the author declared in the source's
+        /// top-level <c>&lt;placeholder&gt;</c> block. The block renders as the
+        /// block's initial HTML until the compiled component finishes loading.
+        /// </summary>
+        /// <remarks>
+        /// The Vue SFC parser treats the block as a custom block and ignores it,
+        /// so it never affects the compiled output. Its content is plain HTML;
+        /// nothing compiles it.
+        /// </remarks>
+        /// <param name="source">The authored Vue single-file-component source.</param>
+        /// <returns>The placeholder HTML, or an empty string when the source declares none.</returns>
+        internal static string GetPlaceholderHtml( string source )
+        {
+            if ( source.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var match = PlaceholderBlock.Match( source );
+
+            if ( !match.Success )
+            {
+                return string.Empty;
+            }
+
+            return match.Groups["content"].Value.Trim();
         }
 
         /// <summary>
