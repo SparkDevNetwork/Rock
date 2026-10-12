@@ -29,15 +29,18 @@
 </template>
 
 <style scoped>
+/*
+    A word breaks only where it is wider than the line. break-word, unlike anywhere, still counts
+    the longest word in the body's narrowest width, so a bubble sized to its text never shrinks to
+    a letter a line.
+*/
 .chat-message-body {
     white-space: pre-wrap;
-    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
+/* Inline rather than a flex box, so the faces below can sit on the text's baseline. */
 .chat-mn {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 4px;
     padding: 1px 6px 1px 2px;
     font-weight: 600;
     color: var(--chat-brand-ink);
@@ -63,14 +66,18 @@
 
 /*
     A one-letter face in the sheet's avatar colors, its letter drawn by the style so the chip's
-    text stays the mention as written. Set 4px below the baseline, as the design draws it.
+    text stays the mention as written. Its bottom sits 4px below the name's baseline: an inline
+    block that clips takes its bottom edge as its baseline, where a grid would take its letter's.
 */
 .chat-mn-av {
-    position: relative;
-    top: 4px;
+    display: inline-block;
     width: 18px;
     height: 18px;
+    margin-right: 4px;
     font-size: 10px;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: -4px;
 }
 
 .chat-mn-av::before {
@@ -78,13 +85,13 @@
 }
 
 .chat-mn-glyph {
-    position: relative;
-    top: 3px;
     display: inline-grid;
     flex: none;
     place-items: center;
     width: 16px;
     height: 16px;
+    margin-right: 4px;
+    vertical-align: -3px;
     color: var(--chat-on-info);
     background: var(--chat-info);
     border-radius: 50%;

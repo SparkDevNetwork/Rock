@@ -333,8 +333,9 @@
 
 /*
     The reset. Rock's Bootstrap styles reach into any block, so the chat sets how its boxes measure
-    and how focus shows. The button reset sits at no specificity, so a Bootstrap button class
-    still drawn inside the chat keeps its look until its screen is restyled.
+    and how focus shows. Form controls take the chat's font, since a browser draws a text area in
+    its own monospace face. The control reset sits at no specificity, so a Bootstrap class still
+    drawn inside the chat keeps its look until its screen is restyled.
 */
 .chat-shell,
 .chat-shell *,
@@ -343,8 +344,11 @@
     box-sizing: border-box;
 }
 
-:where(.chat-shell) :where(button) {
+:where(.chat-shell) :where(button, input, select, textarea) {
     font: inherit;
+}
+
+:where(.chat-shell) :where(button) {
     cursor: pointer;
 }
 

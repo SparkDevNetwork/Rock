@@ -184,13 +184,14 @@
     width: 34px;
 }
 
+/* The zero minimum lets the bubble shrink to the line beside the face rather than push past it. */
 .chat-bubble {
+    min-width: 0;
     max-width: 100%;
     padding: 6px 13px 7px;
     font-size: 14.5px;
     line-height: 1.45;
     color: var(--chat-text);
-    overflow-wrap: anywhere;
     background: var(--chat-bubble);
     border-radius: var(--chat-r-bubble);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
