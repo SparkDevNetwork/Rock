@@ -893,8 +893,25 @@ namespace Rock.Blocks.Event
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            /*
+                10/12/2026 - MSE
+
+                The instance comes from the page parameter, so a person could
+                list the wait list of an instance in a template or category they
+                can not view. VIEW on the instance falls back to the template
+                and its category. Every caller already handles a null instance,
+                so the grid, export, add, delete and move all close.
+
+                Reason: Enforce registration template security on the wait list.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }
