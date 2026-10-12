@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.CategoryTreeView;
 using Rock.ViewModels.Cms;
@@ -175,12 +176,39 @@ namespace Rock.Blocks.Core
             var box = new CustomBlockBox<CategoryTreeViewBag, CategoryTreeViewOptionsBag>
             {
                 Options = GetBoxOptions(),
-                NavigationUrls = GetBoxNavigationUrls()
+                NavigationUrls = GetBoxNavigationUrls(),
+                SecurityGrantToken = GetSecurityGrantToken()
             };
 
             box.Bag = GetBoxBag();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that allows the tree to load the
+        /// categorized items of the configured entity type.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+            var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            var entityTypeId = entityTypeGuid.HasValue ? EntityTypeCache.GetId( entityTypeGuid.Value ) : null;
+
+            // Items are only requested when the block is not limited to categories.
+            if ( entityTypeId.HasValue && !GetAttributeValue( AttributeKey.ShowOnlyCategories ).AsBoolean() )
+            {
+                securityGrant.AddRule( new CategoryTreeItemsSecurityGrantRule( entityTypeId.Value ) );
+            }
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>
