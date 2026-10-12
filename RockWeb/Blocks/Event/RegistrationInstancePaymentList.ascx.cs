@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            SetUserPreferencePrefix( RegistrationTemplateId.Value );
+            SetUserPreferencePrefix( RegistrationTemplateId.GetValueOrDefault( 0 ) );
         }
 
         /// <summary>
