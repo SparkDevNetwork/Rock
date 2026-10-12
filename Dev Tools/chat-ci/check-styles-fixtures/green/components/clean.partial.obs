@@ -1,0 +1,24 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-row" :style="{ '--chat-av-hue': hue, width: `${size}px` }">
+        Mark as read
+        <svg><use href="#chat-i-bell"></use></svg>
+    </div>
+</template>
+
+<style scoped>
+.chat-row {
+    color: var(--chat-text);
+    background: color-mix(in srgb, var(--chat-brand) 12%, transparent);
+    border-color: currentColor;
+    fill: inherit;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+</style>
+
+<script setup lang="ts">
+    // Words that name a color in prose, a tone or a label are not styles.
+    const hue = 210;
+    const size = 34;
+    const tone = "warning";
+</script>

@@ -1,0 +1,16 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-row" style="color: #ffffff">A component written the way the gate exists to stop.</div>
+</template>
+
+<style scoped>
+.chat-row {
+    border: 1px solid var(--color-interface-soft, #dfe0e1);
+    transition: opacity 200ms;
+}
+</style>
+
+<script setup lang="ts">
+    // A color handed to the page from script is the same literal by another road.
+    const look = { backgroundColor: "rgb(1, 2, 3)" };
+</script>
