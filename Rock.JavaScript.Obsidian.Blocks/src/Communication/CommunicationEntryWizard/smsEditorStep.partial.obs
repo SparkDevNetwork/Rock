@@ -73,7 +73,6 @@
                                                       :disabled="isSaving || isSendingTest"
                                                       label="Attachments"
                                                       :fileProcessor="smsAttachmentFileProcessor"
-                                                      :uploadAsTemporary="false"
                                                       @update:modelValue="onAttachmentAdded" />
 
                                         <NotificationBox v-if="attachmentSizeMessage">{{ attachmentSizeMessage }}</NotificationBox>

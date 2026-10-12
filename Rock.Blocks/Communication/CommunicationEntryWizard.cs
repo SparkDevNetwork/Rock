@@ -1576,7 +1576,7 @@ namespace Rock.Blocks.Communication
                 ReplyToEmail = communication.ReplyToEmail,
                 SegmentCriteria = communication.SegmentCriteria,
                 PersonalizationSegmentIds = communication.PersonalizationSegments.SplitDelimitedValues().AsIntegerList(),
-                SmsAttachmentBinaryFiles = communication.GetAttachments( CommunicationType.SMS ).ToListItemBagList(),
+                SmsAttachmentBinaryFiles = communication.GetAttachments( CommunicationType.SMS )?.Select( a => a.BinaryFile )?.ToListItemBagList(),
                 SmsFromSystemPhoneNumberGuid = GetSmsFromSystemPhoneNumberGuid( communication ),
                 SmsMessage = communication.SMSMessage,
                 Status = communication.Status,
