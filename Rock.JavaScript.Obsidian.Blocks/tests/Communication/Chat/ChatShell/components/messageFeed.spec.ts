@@ -1,0 +1,387 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+// The feed, mounted: the timeline in day sections, the person's own sends settling in place among
+// the stored messages, and the furniture around them. The New divider marks where reading stopped;
+// the unread strip points to it only while it is off screen, and Mark as read saves the read
+// position at the newest message. Jump to latest appears once the reader has scrolled up and
+// counts what arrived meanwhile. A slow first page shows the skeleton, a quick one never does.
+//
+// jsdom lays nothing out, so the tests stand in for the browser twice: an IntersectionObserver
+// that the test reports through, and the feed's scroll sizes set by hand.
+import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick, reactive } from "vue";
+import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
+import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+
+const me = "a0000001-0000-4000-8000-000000000000";
+const anna = "a0000002-0000-4000-8000-000000000000";
+
+// #region Browser stand-ins
+
+/** An IntersectionObserver the test reports through, since jsdom computes no intersections. */
+class FakeIntersectionObserver {
+    static all: FakeIntersectionObserver[] = [];
+
+    readonly watched = new Set<Element>();
+
+    constructor(private readonly callback: IntersectionObserverCallback) {
+        FakeIntersectionObserver.all.push(this);
+    }
+
+    observe(element: Element): void {
+        this.watched.add(element);
+    }
+
+    unobserve(element: Element): void {
+        this.watched.delete(element);
+    }
+
+    disconnect(): void {
+        this.watched.clear();
+    }
+
+    takeRecords(): IntersectionObserverEntry[] {
+        return [];
+    }
+
+    /** Tells every observer watching the element whether it is on screen. */
+    static report(element: Element, isIntersecting: boolean, top = isIntersecting ? 100 : -200): void {
+        for (const observer of FakeIntersectionObserver.all) {
+            if (!observer.watched.has(element)) {
+                continue;
+            }
+
+            const rect = { top, bottom: top + 20, left: 0, right: 100, width: 100, height: 20, x: 0, y: top, toJSON: () => ({}) } as DOMRectReadOnly;
+            const rootBounds = { top: 0, bottom: 500, left: 0, right: 100, width: 100, height: 500, x: 0, y: 0, toJSON: () => ({}) } as DOMRectReadOnly;
+            const entry = {
+                target: element,
+                isIntersecting,
+                intersectionRatio: isIntersecting ? 1 : 0,
+                boundingClientRect: rect,
+                intersectionRect: rect,
+                rootBounds,
+                time: 0
+            } as IntersectionObserverEntry;
+            observer.callback([entry], observer as unknown as IntersectionObserver);
+        }
+    }
+}
+
+/** Gives the feed's scroller the sizes a browser would, and puts the reader at a scroll position. */
+function placeScroll(wrapper: VueWrapper, scrollTop: number, scrollHeight = 2000, clientHeight = 500): void {
+    const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+    let top = scrollTop;
+    Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => scrollHeight });
+    Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => clientHeight });
+    Object.defineProperty(scroller, "scrollTop", { configurable: true, get: () => top, set: (value: number) => top = value });
+    scroller.dispatchEvent(new Event("scroll"));
+}
+
+// #endregion Browser stand-ins
+
+/** Monday, October 12, 2026, 3 PM, in local time. */
+const now = new Date(2026, 9, 12, 15, 0);
+
+function at(hour: number, minute: number, daysBefore = 0): string {
+    return new Date(2026, 9, 12 - daysBefore, hour, minute).toISOString();
+}
+
+/** A stored message, in the shape chat_get_history returns. */
+function message(id: number, sender: string, createdAt: string, extra: Partial<TimelineMessage> = {}): TimelineMessage {
+    return {
+        id,
+        person_alias_guid: sender,
+        sender_nick_name: sender === anna ? "Anna" : "Jordan",
+        sender_last_name: sender === anna ? "Reyes" : "Lee",
+        sender_listed: true,
+        message_type: "text",
+        body: `m${id}`,
+        pieces: null,
+        blocks: null,
+        created_at: createdAt,
+        edited_at: null,
+        deleted_at: null,
+        visibility: "visible",
+        visibility_notice: null,
+        ...extra
+    };
+}
+
+function timeline(messages: TimelineMessage[], extra: Partial<TimelineState> = {}): TimelineState {
+    return reactive({
+        messages,
+        isLoaded: true,
+        hasMore: false,
+        readCursor: null,
+        unreadCount: 0,
+        isBehind: false,
+        verifiedThrough: messages.length ? messages[messages.length - 1].id : null,
+        ...extra
+    }) as TimelineState;
+}
+
+function pendingRow(localId: string, status: "sending" | "failed" = "sending"): PendingMessage {
+    return { localId, channelId: "c1", body: `pending ${localId}`, status, errorCode: status === "failed" ? "network" : null };
+}
+
+type FeedProps = {
+    timeline: TimelineState;
+    pending?: PendingMessage[];
+    layout?: "conversational" | "community";
+    isDirectMessage?: boolean;
+};
+
+function draw(props: FeedProps): VueWrapper {
+    return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, ...props } });
+}
+
+/** Whether an element is drawn and not hidden by a v-show. */
+function isShown(wrapper: VueWrapper, selector: string): boolean {
+    const found = wrapper.find(selector);
+    return found.exists() && (found.element as HTMLElement).style.display !== "none";
+}
+
+/** Whether a comes before b in the document. */
+function isBefore(a: Element, b: Element): boolean {
+    return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+}
+
+/** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
+function plain(text: string): string {
+    return text.replace(/\s+/g, " ").trim();
+}
+
+beforeEach(() => {
+    jest.useFakeTimers({ now, doNotFake: ["queueMicrotask", "nextTick"] });
+    FakeIntersectionObserver.all = [];
+    (window as unknown as { IntersectionObserver: unknown }).IntersectionObserver = FakeIntersectionObserver;
+});
+
+afterEach(() => {
+    jest.useRealTimers();
+});
+
+describe("the timeline", () => {
+    test("every message, pending and failed sends included, is drawn by the message row", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, anna, at(14, 51))]), pending: [pendingRow("a"), pendingRow("b", "failed")] });
+
+        expect(wrapper.findAllComponents(MessageRow)).toHaveLength(4);
+    });
+
+    test("pending and failed sends sit in the timeline after the newest stored message, in today's section", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, anna, at(14, 51))]), pending: [pendingRow("a"), pendingRow("b", "failed")] });
+
+        const stored = wrapper.findAll("[data-testid='message-row']").map(row => row.element);
+        const pending = wrapper.findAll("[data-testid='pending-row']").map(row => row.element);
+        expect(pending.map(row => row.getAttribute("data-status"))).toEqual(["sending", "failed"]);
+        expect(isBefore(stored[1], pending[0])).toBe(true);
+
+        const sections = wrapper.findAll("[data-testid='day-section']");
+        expect(sections[sections.length - 1].element.contains(pending[0])).toBe(true);
+        expect(sections[sections.length - 1].element.contains(pending[1])).toBe(true);
+    });
+
+    test("a failed send's Try again and Delete reach the shell by the row's local id", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("b", "failed")] });
+
+        await wrapper.get("[data-testid='retry-send']").trigger("click");
+        await wrapper.get("[data-testid='discard-send']").trigger("click");
+
+        expect(wrapper.emitted("retry")).toEqual([["b"]]);
+        expect(wrapper.emitted("discard")).toEqual([["b"]]);
+    });
+
+    test("each stored row still carries its message id, which the read position is saved from", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]) });
+
+        expect(wrapper.find("[data-message-id='1']").exists()).toBe(true);
+    });
+
+    test("the layout and a direct message reach every row", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), layout: "community", isDirectMessage: true });
+
+        const row = wrapper.findComponent(MessageRow);
+        expect(row.props("layout")).toBe("community");
+        expect(row.props("isDirectMessage")).toBe(true);
+    });
+
+    test("a send confirmed while the feed is open shows Sent for 2.2 seconds, then the time alone", async () => {
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = draw({ timeline: state, pending: [pendingRow("a")] });
+
+        // The confirmed message goes in before the pending row comes out, as the send does it.
+        state.messages.push(message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "pending a" }));
+        await wrapper.setProps({ pending: [] });
+        await nextTick();
+
+        const sent = (): boolean => wrapper.find("[data-message-id='2'] [data-testid='message-state']").exists()
+            && wrapper.get("[data-message-id='2'] [data-testid='message-state']").text() === "Sent";
+        expect(sent()).toBe(true);
+
+        jest.advanceTimersByTime(2199);
+        await nextTick();
+        expect(sent()).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        await nextTick();
+        expect(sent()).toBe(false);
+    });
+
+    test("an own message already there when the feed opens never shows Sent", () => {
+        const wrapper = draw({ timeline: timeline([message(1, me, at(14, 59))]) });
+
+        expect(wrapper.find("[data-testid='message-state']").exists()).toBe(false);
+    });
+});
+
+describe("day sections", () => {
+    test("each day is its own section with its own pill", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+
+        const sections = wrapper.findAll("[data-testid='day-section']");
+        expect(sections).toHaveLength(2);
+        expect(sections.map(section => section.get("[data-testid='day-pill']").text())).toEqual(["Yesterday", "Today"]);
+    });
+});
+
+describe("the New divider and the unread strip", () => {
+    function unread(): VueWrapper {
+        return draw({
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7 })
+        });
+    }
+
+    test("the divider reads New and sits above the first message past the read position", () => {
+        const wrapper = unread();
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(divider.text()).toBe("New");
+        expect(isBefore(wrapper.get("[data-message-id='1']").element, divider.element)).toBe(true);
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='2']").element)).toBe(true);
+    });
+
+    test("no divider and no strip with nothing unread", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(11, 0))], { readCursor: 1, unreadCount: 0 }) });
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
+    });
+
+    test("the strip shows only while the divider is off screen", async () => {
+        const wrapper = unread();
+        const divider = wrapper.get("[data-testid='unread-divider']").element;
+
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
+
+        FakeIntersectionObserver.report(divider, false);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(true);
+
+        FakeIntersectionObserver.report(divider, true);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
+    });
+
+    test("the strip says how many are new since the first of them", async () => {
+        const wrapper = unread();
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+
+        const strip = plain(wrapper.get("[data-testid='unread-strip']").text());
+        expect(strip).toContain("7 new messages");
+        expect(strip).toContain("since 11:30 AM");
+        expect(wrapper.get("[data-testid='mark-read']").text()).toBe("Mark as read");
+    });
+
+    test("Mark as read saves the read position at the newest stored message", async () => {
+        const wrapper = draw({
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2 }),
+            pending: [pendingRow("a")]
+        });
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+
+        await wrapper.get("[data-testid='mark-read']").trigger("click");
+
+        expect(wrapper.emitted("markRead")).toEqual([[3]]);
+    });
+});
+
+describe("Jump to latest", () => {
+    test("is hidden at the bottom and shows once the reader scrolls up", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0))]) });
+
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+
+        placeScroll(wrapper, 0);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("Jump to latest");
+
+        placeScroll(wrapper, 1500);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    test("counts the messages that arrive while the reader is scrolled up", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 0);
+        await nextTick();
+
+        state.messages.push(message(2, anna, at(14, 1)), message(3, anna, at(14, 2)), message(4, anna, at(14, 3)));
+        await nextTick();
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("3 new messages");
+    });
+});
+
+describe("the history skeleton", () => {
+    test("shows only once the first page has taken more than a second, and goes when it lands", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state });
+
+        jest.advanceTimersByTime(999);
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+
+        jest.advanceTimersByTime(1);
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(true);
+
+        state.isLoaded = true;
+        state.messages.push(message(1, anna, at(14, 0)));
+        await nextTick();
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+    });
+
+    test("never shows for a page that lands within the second", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state });
+
+        jest.advanceTimersByTime(500);
+        state.isLoaded = true;
+        await nextTick();
+        jest.advanceTimersByTime(2000);
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+    });
+});
