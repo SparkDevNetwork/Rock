@@ -547,14 +547,14 @@ namespace Rock.Blocks.Types.Mobile.Finance
             var campusList = CampusCache.All( this.IncludeInactiveCampuses );
             if ( IncludedCampusTypes?.Any() == true )
             {
-                var includedCampusIds = IncludedCampusTypes.Select( a => CampusCache.GetId( a ) ).ToList();
+                var includedCampusTypeIds = IncludedCampusTypes.Select( a => DefinedValueCache.GetId( a ) ).ToList();
 
-                campusList = campusList.Where( a => a.CampusTypeValueId.HasValue && includedCampusIds.Contains( a.CampusTypeValueId.Value ) ).ToList();
+                campusList = campusList.Where( a => a.CampusTypeValueId.HasValue && includedCampusTypeIds.Contains( a.CampusTypeValueId.Value ) ).ToList();
             }
 
             if ( IncludedCampusStatuses?.Any() == true )
             {
-                var includedCampusStatusIds = IncludedCampusStatuses.Select( a => CampusCache.GetId( a ) ).ToList();
+                var includedCampusStatusIds = IncludedCampusStatuses.Select( a => DefinedValueCache.GetId( a ) ).ToList();
 
                 campusList = campusList.Where( a => a.CampusStatusValueId.HasValue && includedCampusStatusIds.Contains( a.CampusStatusValueId.Value ) ).ToList();
             }
