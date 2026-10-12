@@ -17,6 +17,7 @@ using Rock.Security;
 using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.SmsConversations;
+using Rock.ViewModels.Communication;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
@@ -771,13 +772,42 @@ namespace Rock.Blocks.Communication
 
                     foreach ( var response in responses )
                     {
-                        List<string> attachmentUrls = new List<string>();
+                        var attachments = new List<ConversationAttachmentBag>();
                         if ( response.HasAttachments( rockContext ) )
                         {
-                            foreach ( var binaryFileGuid in response.GetBinaryFileGuids( rockContext ) )
+                            var binaryFileGuids = response.GetBinaryFileGuids( rockContext );
+                            var binaryFiles = new BinaryFileService( rockContext ).Queryable()
+                                .Where( bf => binaryFileGuids.Contains( bf.Guid ) )
+                                .Select( bf => new
+                                {
+                                    bf.Guid,
+                                    bf.FileName,
+                                    bf.MimeType
+                                } )
+                                .ToList();
+
+                            foreach ( var binaryFile in binaryFiles )
                             {
-                                string imageUrl = FileUrlHelper.GetImageUrl( binaryFileGuid, new GetImageUrlOptions { Width = 200 } );
-                                attachmentUrls.Add( imageUrl );
+                                // Only images can be served by GetImage, other files must link to GetFile.
+                                if ( binaryFile.MimeType?.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true )
+                                {
+                                    var imageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, new GetImageUrlOptions { Width = 200 } );
+                                    attachments.Add( new ConversationAttachmentBag
+                                    {
+                                        FileName = binaryFile.FileName,
+                                        Url = imageUrl,
+                                        ThumbnailUrl = imageUrl
+                                    } );
+                                }
+                                else
+                                {
+                                    var fileUrl = FileUrlHelper.GetFileUrl( binaryFile.Guid );
+                                    attachments.Add( new ConversationAttachmentBag
+                                    {
+                                        FileName = binaryFile.FileName,
+                                        Url = fileUrl
+                                    } );
+                                }
                             }
                         }
 
@@ -788,7 +818,7 @@ namespace Rock.Blocks.Communication
                             IsOutbound = response.IsOutbound,
                             OutboundSenderFullName = response.OutboundSenderFullName,
                             CreatedDateTime = response.CreatedDateTime,
-                            AttachmentUrls = attachmentUrls,
+                            Attachments = attachments,
                         } );
                     }
 

@@ -21,10 +21,15 @@
 // </copyright>
 //
 
+import { ConversationAttachmentBag } from "@Obsidian/ViewModels/Communication/conversationAttachmentBag";
+
 /** The Message Bag for SMS Conversations */
 export type MessageBag = {
-    /** Gets or sets a list of Attachment URL's */
-    attachmentUrls?: string[] | null;
+    /**
+     * Gets or sets the attachments. Non-image attachments will not have
+     * a Rock.ViewModels.Communication.ConversationAttachmentBag.ThumbnailUrl.
+     */
+    attachments?: ConversationAttachmentBag[] | null;
 
     /** Gets or sets the created date time offset. */
     createdDateTime?: string | null;

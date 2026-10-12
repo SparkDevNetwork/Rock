@@ -102,19 +102,19 @@ namespace Rock.Model
 
             bag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;
 
-            var attachmentGuids = recipient.Communication.Attachments
-                .Where( ca => ca.CommunicationType == CommunicationType.SMS )
-                .Select( ca => ca.Guid )
-                .ToList();
+            var smsAttachments = recipient.Communication.Attachments
+                .Where( ca => ca.CommunicationType == CommunicationType.SMS );
 
-            foreach ( var attachment in recipient.Communication.Attachments )
+            foreach ( var attachment in smsAttachments )
             {
                 var isImage = attachment.BinaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase );
 
                 bag.Attachments.Add( new ConversationAttachmentBag
                 {
                     FileName = attachment.BinaryFile.FileName,
-                    Url = FileUrlHelper.GetImageUrl( attachment.BinaryFile.Guid, new GetImageUrlOptions { PublicAppRoot = publicUrl } ),
+                    Url = isImage
+                        ? FileUrlHelper.GetImageUrl( attachment.BinaryFile.Guid, new GetImageUrlOptions { PublicAppRoot = publicUrl } )
+                        : FileUrlHelper.GetFileUrl( attachment.BinaryFile.Guid, new GetFileUrlOptions { PublicAppRoot = publicUrl } ),
                     ThumbnailUrl = isImage ? FileUrlHelper.GetImageUrl( attachment.BinaryFile.Guid, new GetImageUrlOptions { PublicAppRoot = publicUrl, Width = 512, Height = 512 } ) : null
                 } );
             }
