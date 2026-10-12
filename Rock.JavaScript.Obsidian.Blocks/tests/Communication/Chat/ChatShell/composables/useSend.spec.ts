@@ -238,6 +238,63 @@ describe("a send the platform can recognise again", () => {
     });
 });
 
+describe("the person's confirmed message draws what the server built", () => {
+    // The send answers the pieces the stored row draws, so the person's own message shows its
+    // mention as soon as it is confirmed rather than a raw token until its event arrives. The
+    // answer here is chat_send_message's, a person's send never carrying blocks.
+    const lee = "a0000007-0000-4000-8000-000000000000";
+    const pieces = [
+        { type: "text", text: "Hi " },
+        { type: "mention", text: "@Lee Leader", person_alias_guid: lee },
+        { type: "text", text: " there" }
+    ];
+
+    test("the confirmed message carries the answer's pieces and blocks", async () => {
+        const { sender, timelines } = await setup([
+            { ok: true, id: 49, createdAt: "2026-10-12T10:00:00Z", notice: null, pieces, blocks: null } as SendResult
+        ]);
+
+        await sender.send(channel, `Hi <@${lee}> there`);
+
+        const [confirmed] = timelines.state(channel).messages;
+        expect(confirmed.body).toBe(`Hi <@${lee}> there`);
+        expect(confirmed.pieces).toEqual(pieces);
+        expect(confirmed).toHaveProperty("blocks", null);
+    });
+
+    test("a confirmation arriving after the message was hidden never brings its body or pieces back", async () => {
+        // The live copy and the hide can both arrive before the send's own answer.
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+        const sending = sender.send(channel, `Hi <@${lee}> there`);
+
+        timelines.applyEvent(channel, "message.created", {
+            id: 51, channel_id: channel, person_alias_guid: me, message_type: "text", body: `Hi <@${lee}> there`,
+            pieces, blocks: null, parent_id: null, shown_in_channel: false, created_at: "2026-10-12T10:00:00Z"
+        });
+        timelines.applyEvent(channel, "message.visibility", { id: 51, channel_id: channel, state: "hidden", notice: "Hidden while it is reviewed." });
+        answer.resolve({ ok: true, id: 51, createdAt: "2026-10-12T10:00:00Z", notice: "Hidden while it is reviewed.", pieces: null, blocks: null } as SendResult);
+        await sending;
+
+        const [held] = timelines.state(channel).messages;
+        expect(held.visibility).toBe("hidden");
+        expect(held.body).toBeNull();
+        expect(held.pieces ?? null).toBeNull();
+    });
+
+    test("a plain body's confirmation carries no pieces", async () => {
+        const { sender, timelines } = await setup([
+            { ok: true, id: 50, createdAt: "2026-10-12T10:00:00Z", notice: null, pieces: null, blocks: null } as SendResult
+        ]);
+
+        await sender.send(channel, "plain words");
+
+        const [confirmed] = timelines.state(channel).messages;
+        expect(confirmed).toHaveProperty("pieces", null);
+        expect(confirmed).toHaveProperty("blocks", null);
+    });
+});
+
 describe("a send into a room the person has not joined", () => {
     // The refusal as the shell's call path hands it over: the platform's code, classified as a
     // permission, with the sentence the database gives it.

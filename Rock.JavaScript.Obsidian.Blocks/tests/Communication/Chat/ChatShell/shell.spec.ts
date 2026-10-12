@@ -29,6 +29,13 @@ const channelA = "c000000a-0000-4000-8000-000000000000";
 const channelB = "c000000b-0000-4000-8000-000000000000";
 const channelC = "c000000c-0000-4000-8000-000000000000";
 
+// A body naming Ada, and the pieces the platform answers for it.
+const mentionBody = "Hi <@a0000001-0000-4000-8000-000000000000>";
+const mentionPieces = [
+    { type: "text", text: "Hi " },
+    { type: "mention", text: "@Ada Member", person_alias_guid: "a0000001-0000-4000-8000-000000000000" }
+];
+
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
 
 function deferred<T>(): Deferred<T> {
@@ -157,7 +164,15 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
             }
             if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
                 sent.push({ channelId: body.p_channel_id, body: body.p_body });
-                return fakeResponse(200, { id: 900 + sent.length, created_at: "2026-10-06T10:00:00Z", notice: null });
+                // chat_send_message's answer: a body naming Ada carries her mention piece, as the
+                // platform builds it; a person's send never carries blocks
+                return fakeResponse(200, {
+                    id: 900 + sent.length,
+                    created_at: "2026-10-06T10:00:00Z",
+                    notice: null,
+                    pieces: body.p_body === mentionBody ? mentionPieces : null,
+                    blocks: null
+                });
             }
             const answer = deferred<Response>();
             const token = (init.headers as Record<string, string> | undefined)?.["Authorization"] ?? null;
@@ -804,5 +819,18 @@ describe("the error toast", () => {
         shell.dismissError(second);
 
         expect(shell.state.errors).toEqual([first]);
+    });
+});
+
+describe("the send's answer", () => {
+    test("the person's confirmed message carries the pieces the send answered", async () => {
+        const h = await started();
+
+        await h.shell.send(mentionBody);
+        await settle();
+
+        const confirmed = h.shell.timelines.state(channelA).messages.find(m => m.body === mentionBody);
+        expect(confirmed?.pieces).toEqual(mentionPieces);
+        expect(confirmed).toHaveProperty("blocks", null);
     });
 });
