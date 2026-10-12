@@ -270,6 +270,9 @@ namespace Rock.Blocks.Fundraising
                 return;
             }
 
+            // The introduction is plain text, so encode it before any Lava template prints it.
+            groupMember.SetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction, groupMember.GetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction ).EncodeHtml() );
+
             var currentPerson = RequestContext.CurrentPerson;
 
             // Set the page and browser title to the opportunity title.
@@ -361,6 +364,42 @@ namespace Rock.Blocks.Fundraising
             mergeFields.Add( "GroupMember", groupMember );
 
             return GetAttributeValue( AttributeKey.ProfileLavaTemplate ).ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Validates a changed personal opportunity introduction against the
+        /// attribute's own field type rules (e.g. a plain text Memo rejects HTML).
+        /// </summary>
+        /// <param name="groupMember">The group member with the posted attribute values.</param>
+        /// <param name="originalIntroduction">The introduction value before the posted values were applied.</param>
+        /// <param name="errorMessage">The error message if the introduction is not valid.</param>
+        /// <returns><c>true</c> if the introduction is unchanged or valid; otherwise <c>false</c>.</returns>
+        private static bool IsIntroductionValid( GroupMember groupMember, string originalIntroduction, out string errorMessage )
+        {
+            errorMessage = null;
+
+            AttributeCache introductionAttribute = null;
+            groupMember.Attributes?.TryGetValue( FundraisingAttributeKey.PersonalOpportunityIntroduction, out introductionAttribute );
+            var newIntroduction = groupMember.GetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction );
+
+            if ( introductionAttribute == null || newIntroduction == originalIntroduction )
+            {
+                return true;
+            }
+
+            var rules = introductionAttribute.FieldType.Field.GetValidationRules( introductionAttribute.ConfigurationValues );
+
+            try
+            {
+                StringValueValidator.Validate( newIntroduction, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+            }
+            catch ( PropertyValidationException ex )
+            {
+                errorMessage = $"{introductionAttribute.Name} {ex.Reason}.";
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -989,6 +1028,19 @@ namespace Rock.Blocks.Fundraising
                 return ActionNotFound();
             }
 
+            // Set the group member attribute values, re-enforcing the editable filter so a
+            // client cannot save attributes it was not allowed to edit. (Group member
+            // attributes are already loaded by GetGroupMember.) This runs before the photo
+            // handling so a refused introduction stops the save before anything changes.
+            var originalIntroduction = groupMember.GetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction );
+            var editableGroupMemberAttributeKeys = GetEditableGroupMemberAttributeKeys( groupMember, group, currentPerson );
+            groupMember.SetPublicAttributeValues( bag.GroupMemberAttributeValues, currentPerson, enforceSecurity: false, attributeFilter: a => editableGroupMemberAttributeKeys.Contains( a.Key ) );
+
+            if ( !IsIntroductionValid( groupMember, originalIntroduction, out var introductionErrorMessage ) )
+            {
+                return ActionBadRequest( introductionErrorMessage );
+            }
+
             var binaryFileService = new BinaryFileService( RockContext );
 
             // Resolve the newly selected photo (if any) and detect a change.
@@ -1020,12 +1072,6 @@ namespace Rock.Blocks.Fundraising
                 // Request group for re-verification.
                 AddOrUpdatePhotoVerifyPending( person );
             }
-
-            // Save the group member attribute values, re-enforcing the editable filter so a
-            // client cannot save attributes it was not allowed to edit. (Group member
-            // attributes are already loaded by GetGroupMember.)
-            var editableGroupMemberAttributeKeys = GetEditableGroupMemberAttributeKeys( groupMember, group, currentPerson );
-            groupMember.SetPublicAttributeValues( bag.GroupMemberAttributeValues, currentPerson, enforceSecurity: false, attributeFilter: a => editableGroupMemberAttributeKeys.Contains( a.Key ) );
 
             // Save the selected person attribute values (limited to those in the block setting).
             person.LoadAttributes( RockContext );
