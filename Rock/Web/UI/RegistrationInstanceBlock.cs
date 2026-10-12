@@ -518,6 +518,25 @@ namespace Rock.Web.UI
                     RegistrationInstance?.LoadAttributes();
                 }
             }
+
+            /*
+                10/12/2026 - MSE
+
+                The instance comes from the page parameter (or the page context),
+                so it must be checked here for every block that uses this base
+                class. VIEW on the instance falls back to the template and its
+                category. RegistrationInstanceId is set from the authorized
+                instance so code that queries by the Id can not reach an
+                instance that failed the check.
+
+                Reason: Enforce registration template security on instance blocks.
+            */
+            if ( RegistrationInstance != null && !RegistrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                RegistrationInstance = null;
+            }
+
+            RegistrationInstanceId = RegistrationInstance?.Id;
         }
 
         #endregion
@@ -1148,6 +1167,7 @@ namespace Rock.Web.UI
             var registrationInstance = new RegistrationInstanceService( rockContext )
                 .Queryable()
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .Include( a => a.Account )
                 .Include( a => a.RegistrationTemplate.Forms )
                 .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )

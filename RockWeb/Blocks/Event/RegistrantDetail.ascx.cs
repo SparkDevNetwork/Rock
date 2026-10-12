@@ -23,8 +23,10 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -754,7 +756,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
-            if ( RegistrantState.Id > 0 && RegistrantState.GroupMemberId.HasValue )
+            if ( RegistrantState != null && RegistrantState.Id > 0 && RegistrantState.GroupMemberId.HasValue )
             {
                 string editScript = string.Format( @"
     $('a.js-edit-registrant').on('click', function( e ){{
@@ -796,6 +798,7 @@ namespace RockWeb.Blocks.Event
                         .Queryable().AsNoTracking()
                         .Include( a => a.Registration.RegistrationInstance.RegistrationTemplate.Forms )
                         .Include( a => a.Registration.RegistrationInstance.RegistrationTemplate.Fees )
+                        .Include( a => a.Registration.RegistrationInstance.RegistrationTemplate.Category )
                         .Include( a => a.PersonAlias.Person )
                         .Include( a => a.Fees )
                         .Where( r => r.Id == registrantId.Value )
@@ -806,6 +809,12 @@ namespace RockWeb.Blocks.Event
                         registrant.Registration.RegistrationInstance != null &&
                         registrant.Registration.RegistrationInstance.RegistrationTemplate != null )
                     {
+                        if ( !CanViewRegistration( registrant.Registration ) )
+                        {
+                            ShowNotAuthorizedToView();
+                            return;
+                        }
+
                         RegistrantState = new RegistrantInfo( registrant, rockContext );
                         this.RegistrationTemplateId = registrant.Registration.RegistrationInstance.RegistrationTemplateId;
                         this.RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
@@ -828,6 +837,7 @@ namespace RockWeb.Blocks.Event
                         .Include( a => a.RegistrationInstance.RegistrationTemplate )
                         .Include( a => a.RegistrationInstance.RegistrationTemplate.Forms )
                         .Include( a => a.RegistrationInstance.RegistrationTemplate.Fees )
+                        .Include( a => a.RegistrationInstance.RegistrationTemplate.Category )
                         .Include( a => a.PersonAlias.Person )
                         .Where( r => r.Id == registrationId.Value )
                         .FirstOrDefault();
@@ -836,6 +846,12 @@ namespace RockWeb.Blocks.Event
                         registration.RegistrationInstance != null &&
                         registration.RegistrationInstance.RegistrationTemplate != null )
                     {
+                        if ( !CanViewRegistration( registration ) )
+                        {
+                            ShowNotAuthorizedToView();
+                            return;
+                        }
+
                         this.RegistrationTemplateId = registration.RegistrationInstance.RegistrationTemplateId;
                         this.RegistrationInstanceId = registration.RegistrationInstanceId;
 
@@ -937,6 +953,51 @@ namespace RockWeb.Blocks.Event
                 qryParams.Add( "RegistrationId", RegistrantState.RegistrationId.ToString() );
                 NavigateToParentPage( qryParams );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view the registration.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        /// <returns><c>true</c> if the current person can view the registration; otherwise <c>false</c>.</returns>
+        private bool CanViewRegistration( ISecured registration )
+        {
+            /*
+                10/12/2026 - MSE
+
+                The registrant and registration are loaded from the page
+                parameters, so any person who could open this page could read
+                and change registrants in a template or category they can not
+                view. Registrations inherit security from the instance,
+                template and category. Register, Edit and Administrate are also
+                accepted, matching the Registration Detail block.
+
+                Reason: Enforce registration template security on this block.
+            */
+            return registration != null
+                && ( registration.IsAuthorized( Authorization.VIEW, CurrentPerson )
+                    || registration.IsAuthorized( "Register", CurrentPerson )
+                    || registration.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                    || registration.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Clears the registrant state and shows the not authorized message.
+        /// </summary>
+        private void ShowNotAuthorizedToView()
+        {
+            RegistrantState = null;
+            RegistrationTemplateId = 0;
+            RegistrationInstanceId = 0;
+            _registrationTemplate = null;
+            lTitle.Text = string.Empty;
+            lWizardTemplateName.Text = "Template";
+            lWizardInstanceName.Text = "Instance";
+            lWizardRegistrationName.Text = "Registration";
+            lWizardRegistrantName.Text = "Registrant";
+            pnlDetails.Visible = false;
+            nbSecurityWarning.Text = EditModeMessage.NotAuthorizedToView( RegistrationRegistrant.FriendlyTypeName );
+            nbSecurityWarning.Visible = true;
         }
 
         #region Build Controls
