@@ -26,9 +26,12 @@ name: Ship to Public
 #
 # The `squash` label (add it BEFORE `ship` or `ship-only`) squashes the PR's
 # commits into one after step 2. The PR title becomes the commit message, so it
-# must be a release note. The first commit's author keeps authorship, other
-# committers get Co-authored-by credit, and the original commit messages are
-# listed in the description. Merge-ups are still real merge commits.
+# must be a release note, and it's the whole message. The first commit's author
+# keeps authorship, and any other person who committed gets Co-authored-by
+# credit. Merge-ups are still real merge commits.
+#
+# AI attribution trailers ("Co-Authored-By: Claude ...") are removed from every
+# shipped commit, squashed or not.
 #
 # Shipping does NOT wait on a build, so it takes about a minute. This matches
 # how Rock already works: code lands on develop, then AppVeyor builds it.
@@ -190,6 +193,15 @@ jobs:
             exit 1
           fi
 
+          # Remove AI attribution trailers (for example "Co-Authored-By: Claude ...")
+          # from every commit, so they never land in Rock's public history. The
+          # rest of each message, and its author, stay as they are.
+          if git log --format=%B "public/$BASE..HEAD" | grep -qiE '^co-authored-by: *claude'; then
+            FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f \
+              --msg-filter 'grep -viE "^co-authored-by: *claude" | git stripspace' \
+              "public/$BASE..HEAD"
+          fi
+
       - name: Squash into one commit
         # Only when the PR also has the `squash` label.
         if: env.SQUASH == 'true'
@@ -206,15 +218,14 @@ jobs:
             exit 1
           fi
 
-          # The author of the PR's first commit keeps authorship. Anyone else who
-          # committed to the PR gets a Co-authored-by credit.
+          # The author of the PR's first commit keeps authorship. Any other person
+          # who committed to the PR gets a Co-authored-by credit, so nobody loses
+          # credit. The message is otherwise the PR title only.
           author=$(git log --reverse --no-merges --format='%an <%ae>' "public/$BASE..HEAD" | head -1)
           coauthors=$(git log --no-merges --format='%an <%ae>' "public/$BASE..HEAD" | sort -u | grep -vxF "$author" || true)
 
           {
-            printf '%s\n\n' "$PR_TITLE"
-            echo "Squashed from $count commits:"
-            git log --reverse --no-merges --format='* %s' "public/$BASE..HEAD"
+            printf '%s\n' "$PR_TITLE"
             if [ -n "$coauthors" ]; then
               echo
               echo "$coauthors" | sed 's/^/Co-authored-by: /'
