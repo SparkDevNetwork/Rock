@@ -412,6 +412,43 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
+        /// Determines whether the current person can view and enroll the registrant.
+        /// </summary>
+        /// <param name="currentPerson">The person currently viewing this block.</param>
+        /// <param name="registrant">The person being registered for the class.</param>
+        /// <param name="learningClass">The class the registrant is being enrolled in.</param>
+        /// <returns><c>true</c> if the current person can act for the registrant; otherwise <c>false</c>.</returns>
+        private bool CanActForRegistrant( Person currentPerson, Person registrant, LearningClass learningClass )
+        {
+            /*
+                10/9/2026 - MSE
+
+                The RegistrantId page parameter comes from the browser, so it is
+                only honored for the current person, their family members, or
+                someone who can edit the class (such as a facilitator).
+
+                Reason: Limit who can be enrolled through this block.
+            */
+            if ( currentPerson == null || registrant == null )
+            {
+                return false;
+            }
+
+            if ( registrant.Id == currentPerson.Id )
+            {
+                return true;
+            }
+
+            if ( learningClass != null && learningClass.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            return currentPerson.GetFamilyMembers( false, RockContext )
+                .Any( m => m.PersonId == registrant.Id );
+        }
+
+        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
@@ -466,6 +503,12 @@ namespace Rock.Blocks.Lms
             if ( learningClass.Id == 0 )
             {
                 box.ErrorMessage = "It seems the course information is missing. Please select a course and try enrolling again.";
+                return;
+            }
+
+            if ( !CanActForRegistrant( currentPerson, registrant, learningClass ) )
+            {
+                box.ErrorMessage = "You are not allowed to enroll this person in this class.";
                 return;
             }
 
@@ -578,7 +621,19 @@ namespace Rock.Blocks.Lms
         {
             var currentPerson = GetCurrentPerson();
             var registrant = GetRegistrant( currentPerson );
+
+            if ( registrant == null )
+            {
+                return ActionBadRequest( "Unable to determine who to enroll." );
+            }
+
             var mergeFields = GetMergeFields( currentPerson, registrant, out var learningClass, out var unmetRequirements );
+
+            if ( !CanActForRegistrant( currentPerson, registrant, learningClass ) )
+            {
+                return ActionForbidden( "You are not allowed to enroll this person in this class." );
+            }
+
             var learningParticipantService = new LearningParticipantService( RockContext );
 
             try
