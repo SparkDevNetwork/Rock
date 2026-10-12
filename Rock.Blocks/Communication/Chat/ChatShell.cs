@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Doors;
 using Rock.Communication.Chat.Platform.Session;
+using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.ViewModels.Controls;
 
@@ -83,6 +84,10 @@ namespace Rock.Blocks.Communication.Chat
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            // The chat's token sheet: every color, radius and timing its components draw with. A
+            // stylesheet rather than a component, so it loads with the page and not with the script.
+            RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Communication/Chat/chat.css" ), true );
+
             return new ChatShellInitializationBox
             {
                 Session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext ),

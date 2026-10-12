@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Gates for the chat platform code on this branch: the reference check and the workflow shape.",
+  "description": "Gates for the chat platform code on this branch: the reference check, the style check and the workflow shape.",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "test": "node --test",
     "check:references": "node check-references.mjs",
+    "check:styles": "node check-styles.mjs",
     "ci": "node ci.mjs"
   },
   "devDependencies": {

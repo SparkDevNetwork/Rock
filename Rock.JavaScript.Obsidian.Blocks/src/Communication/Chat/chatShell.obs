@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase">
+    <div ref="rootElement" class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase">
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -70,8 +70,8 @@
     display: flex;
     flex: 1;
     min-height: 480px;
-    border: 1px solid var(--color-interface-soft, #dfe0e1);
-    border-radius: var(--rounded-small, 4px);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-sm);
     overflow: hidden;
 }
 
@@ -87,7 +87,7 @@
     flex: 1;
     align-items: center;
     justify-content: center;
-    color: var(--color-interface-medium, #6c757d);
+    color: var(--chat-muted);
 }
 
 .chat-shell-draft {
@@ -117,6 +117,7 @@
     import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
+    import { applyChatTheme } from "./ChatShell/ui/brand.partial";
 
     // #region Types
 
@@ -141,6 +142,8 @@
     const isSavingBirthdate = ref(false);
 
     const isPickerShown = ref(false);
+
+    const rootElement = ref<HTMLElement>();
 
     /** The cookie Rock reads at sign-out to take this browser out of push. */
     const pushCookieName = "rock_chat_push";
@@ -376,6 +379,11 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
+        // Once per load: the church color and whether the page's Rock theme can follow the system into dark.
+        if (rootElement.value) {
+            applyChatTheme(rootElement.value);
+        }
+
         navigator.serviceWorker?.addEventListener("message", onWorkerMessage);
         void shell.value.start();
     });

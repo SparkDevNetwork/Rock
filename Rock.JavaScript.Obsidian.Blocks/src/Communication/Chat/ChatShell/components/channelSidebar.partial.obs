@@ -30,7 +30,7 @@
     flex: 0 0 240px;
     flex-direction: column;
     overflow-y: auto;
-    border-right: 1px solid var(--color-interface-soft, #dfe0e1);
+    border-right: 1px solid var(--chat-line-strong);
 }
 
 .chat-sidebar-new {
@@ -48,7 +48,7 @@
 }
 
 .chat-sidebar-row.is-active {
-    background: var(--color-interface-softer, #f4f5f6);
+    background: var(--chat-sidebar);
 }
 
 .chat-sidebar-row.is-unread .chat-sidebar-name {
@@ -57,7 +57,7 @@
 
 .chat-sidebar-empty {
     padding: 12px;
-    color: var(--color-interface-medium, #6c757d);
+    color: var(--chat-muted);
 }
 </style>
 

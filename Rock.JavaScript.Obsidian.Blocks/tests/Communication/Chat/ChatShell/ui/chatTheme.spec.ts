@@ -24,7 +24,9 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
-const sheetPath = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/chatTheme.partial.obs");
+// A plain stylesheet the block links from RockWeb, so it loads with the page rather than with the script.
+const sheetPath = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
+const blockPath = resolve(__dirname, "../../../../../../Rock.Blocks/Communication/Chat/ChatShell.cs");
 
 // #region The sheet, parsed
 
@@ -115,6 +117,13 @@ function readSheet(): Sheet {
     const sheet: Sheet = { styleTags: [], rules: [], keyframes: [] };
     const styleBlock = /<style([^>]*)>([\s\S]*?)<\/style>/g;
     let match: RegExpExecArray | null;
+
+    // A stylesheet is one unscoped block of its own, read whole.
+    if (sheetPath.endsWith(".css")) {
+        sheet.styleTags.push("");
+        walk(source.replace(/\/\*[\s\S]*?\*\//g, ""), "", sheet);
+        return sheet;
+    }
 
     while ((match = styleBlock.exec(source)) !== null) {
         sheet.styleTags.push(match[1]);
@@ -355,9 +364,12 @@ describe("the chat token sheet", () => {
         sheet = readSheet();
     });
 
-    test("is one unscoped style block, so its tokens reach every chat component", () => {
-        expect(sheet.styleTags).toHaveLength(1);
-        expect(sheet.styleTags[0]).not.toMatch(/scoped/);
+    // A stylesheet reaches the page only when the block links it, so the link is what proves the
+    // tokens reach every chat component. The fingerprint makes a browser fetch a changed sheet.
+    test("is linked by the Chat block, fingerprinted", () => {
+        const block = readFileSync(blockPath, "utf8");
+
+        expect(block).toMatch(/AddCssLink\(\s*RequestContext\.ResolveRockUrl\(\s*"~\/Styles\/Blocks\/Communication\/Chat\/chat\.css"\s*\),\s*true\s*\)/);
     });
 
     test.each(tokens.map(t => [t.name, t] as const))("declares --chat-%s with its light value", (_name, token) => {

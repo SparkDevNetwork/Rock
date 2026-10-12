@@ -43,6 +43,12 @@ const gates = [
     cwd: here,
   },
   {
+    name: 'the chat components draw only from the token sheet',
+    cmd: process.execPath,
+    args: ['check-styles.mjs'],
+    cwd: here,
+  },
+  {
     name: "Rock's wire contract is the platform's bytes, when the platform's file is at hand",
     cmd: process.execPath,
     args: ['check-contract.mjs'],

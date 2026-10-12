@@ -6,33 +6,36 @@
            :isSaveButtonDisabled="chosen.length === 0"
            @update:modelValue="emit('update:modelValue', $event)"
            @save="onSave">
-        <div class="chat-picker-chosen" data-testid="picker-chosen">
-            <span v-for="person in chosen" :key="person.person_alias_guid" class="label label-default chat-picker-chip">
-                {{ nameOf(person) }}
-                <button type="button" class="chat-picker-remove" :aria-label="`Remove ${nameOf(person)}`" @click="emit('unchoose', person.person_alias_guid)">&times;</button>
-            </span>
+        <!-- Rock draws the dialog outside the chat, so its content carries the chat's root class to reach the tokens. -->
+        <div class="chat-shell chat-picker">
+            <div class="chat-picker-chosen" data-testid="picker-chosen">
+                <span v-for="person in chosen" :key="person.person_alias_guid" class="label label-default chat-picker-chip">
+                    {{ nameOf(person) }}
+                    <button type="button" class="chat-picker-remove" :aria-label="`Remove ${nameOf(person)}`" @click="emit('unchoose', person.person_alias_guid)">&times;</button>
+                </span>
+            </div>
+
+            <input v-model="query"
+                   type="text"
+                   class="form-control"
+                   placeholder="Search by name"
+                   data-testid="picker-search"
+                   :disabled="isFull" />
+            <p v-if="isFull" class="help-block">A conversation can have up to {{ maxOthers }} other people.</p>
+
+            <div class="chat-picker-results" data-testid="picker-results">
+                <button v-for="person in shownResults"
+                        :key="person.person_alias_guid"
+                        type="button"
+                        class="chat-picker-row"
+                        data-testid="picker-row"
+                        @click="onChoose(person)">
+                    {{ nameOf(person) }}
+                </button>
+            </div>
+
+            <div v-if="error" class="alert alert-warning" data-testid="picker-error">{{ error }}</div>
         </div>
-
-        <input v-model="query"
-               type="text"
-               class="form-control"
-               placeholder="Search by name"
-               data-testid="picker-search"
-               :disabled="isFull" />
-        <p v-if="isFull" class="help-block">A conversation can have up to {{ maxOthers }} other people.</p>
-
-        <div class="chat-picker-results" data-testid="picker-results">
-            <button v-for="person in shownResults"
-                    :key="person.person_alias_guid"
-                    type="button"
-                    class="chat-picker-row"
-                    data-testid="picker-row"
-                    @click="onChoose(person)">
-                {{ nameOf(person) }}
-            </button>
-        </div>
-
-        <div v-if="error" class="alert alert-warning" data-testid="picker-error">{{ error }}</div>
     </Modal>
 </template>
 
@@ -67,7 +70,7 @@
 }
 
 .chat-picker-row:hover {
-    background: var(--color-interface-softer, #f4f5f6);
+    background: var(--chat-sidebar);
 }
 </style>
 

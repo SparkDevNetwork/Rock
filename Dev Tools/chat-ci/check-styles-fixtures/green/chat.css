@@ -1,5 +1,3 @@
-<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
-<style>
 /* The token sheet is the one file allowed to hold the values every component reads. */
 .chat-shell {
     --chat-surface: var(--color-interface-softest, #fdfdfd);
@@ -8,4 +6,3 @@
     --chat-t-msg: 260ms;
     --chat-spin: .7s;
 }
-</style>

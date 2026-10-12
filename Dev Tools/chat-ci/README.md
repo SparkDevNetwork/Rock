@@ -8,6 +8,7 @@ failure.
 npm ci
 node ci.mjs                  every gate, with a wall time per gate
 npm run check:references     just the reference gate
+npm run check:styles         just the style gate
 npm test                     the gates' own tests
 ```
 
@@ -18,6 +19,12 @@ chat paths rather than everything tracked, because this is a branch of Rock and 
 tree is subject to that rule. Three folders are shared with the chat that already shipped in Rock;
 they are deliberately absent from the list, and a chat file landing in one of them is named there
 individually.
+
+`check-styles.mjs` refuses a chat component that holds a color, a duration or a curve of its own:
+a hex, `rgb()`, `rgba()`, `hsl()`, `hsla()` or named color, a number of `ms` or `s`, or `cubic-bezier()`,
+in a style block, an inline style or a style written from script. The chat draws all of those from
+its token sheet, `RockWeb/Styles/Blocks/Communication/Chat/chat.css`, so dark mode and a church's color reach every screen; that
+sheet and `brand.partial.ts`, which computes the church color's tokens, are the two files exempt.
 
 `check-contract.mjs` fails when Rock's vendored wire contract differs by a byte from the platform's, read from `CHAT_PLATFORM_CONTRACT` or else a platform checkout beside this repository; with neither, it says it skipped and passes.
 

@@ -1,0 +1,251 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <IconButton ref="anchor"
+                :icon="icon"
+                :label="label"
+                aria-haspopup="menu"
+                :aria-expanded="isOpen ? 'true' : 'false'"
+                :isTooltipDisabled="isOpen"
+                @click="onAnchorClick" />
+
+    <Transition name="chat-pop">
+        <div v-if="isOpen"
+             ref="menuElement"
+             class="chat-menu"
+             role="menu"
+             :aria-label="label"
+             :style="floatingStyles"
+             @keydown="onKeydown">
+            <button v-for="item in items"
+                    :key="item.key"
+                    type="button"
+                    class="chat-menu-item"
+                    :class="{ 'is-danger': item.isDanger }"
+                    role="menuitem"
+                    tabindex="-1"
+                    @click="choose(item.key)">
+                <Icon v-if="item.icon" :name="item.icon" />
+                <span>{{ item.label }}</span>
+            </button>
+        </div>
+    </Transition>
+</template>
+
+<style scoped>
+/* Fixed, so the chat's clipped frame cannot cut a menu near its edge. */
+.chat-menu {
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    max-width: min(360px, calc(100vw - 16px));
+    padding: 6px;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    box-shadow: var(--chat-shadow-pop);
+}
+
+.chat-menu-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13.5px;
+    color: var(--chat-text);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-item);
+}
+
+.chat-menu-item :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+.chat-menu-item:hover,
+.chat-menu-item:focus {
+    background: var(--chat-hover);
+    outline: none;
+}
+
+.chat-menu-item.is-danger,
+.chat-menu-item.is-danger :deep(.chat-ic) {
+    color: var(--chat-danger-ink);
+}
+
+/* Enters from just toward its button and a touch small; leaves faster than it came. */
+.chat-pop-enter-active {
+    transition: opacity var(--chat-t-base) var(--chat-ease-in), transform var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-pop-leave-active {
+    transition: opacity var(--chat-t-fast) var(--chat-ease-out), transform var(--chat-t-fast) var(--chat-ease-out);
+}
+
+.chat-pop-enter-from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+}
+
+.chat-pop-leave-to {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--chat-rise) * .3));
+}
+</style>
+
+<script setup lang="ts">
+    import { nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import Icon from "./icon.partial.obs";
+    import IconButton from "./iconButton.partial.obs";
+
+    // #region Types
+
+    /** One action in the menu. */
+    export type MenuItem = {
+        key: string;
+        label: string;
+        icon?: string;
+        isDanger?: boolean;
+    };
+
+    // #endregion Types
+
+    defineProps({
+        /** The icon on the button that opens the menu. */
+        icon: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** What the button and the menu are called, for a screen reader and the button's tooltip. */
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The actions, in order. */
+        items: {
+            type: Array as PropType<MenuItem[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", key: string): void;
+    }>();
+
+    // #region Values
+
+    const anchor = ref<InstanceType<typeof IconButton>>();
+    const anchorElement = ref<HTMLElement>();
+    const menuElement = ref<HTMLElement>();
+    const isOpen = ref(false);
+
+    // Below its button by default, above when it would leave the window, kept 8px inside it.
+    const { floatingStyles } = useFloating(anchorElement, menuElement, {
+        placement: "bottom-end",
+        strategy: "fixed",
+        middleware: [offset(8), flip(), shift({ padding: 8 })],
+        whileElementsMounted: autoUpdate
+    });
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    async function onAnchorClick(): Promise<void> {
+        if (isOpen.value) {
+            close(false);
+            return;
+        }
+
+        anchorElement.value = anchor.value?.buttonElement ?? undefined;
+        isOpen.value = true;
+        await nextTick();
+        menuItems()[0]?.focus();
+    }
+
+    /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves. */
+    function onKeydown(event: KeyboardEvent): void {
+        const items = menuItems();
+        const current = items.indexOf(document.activeElement as HTMLElement);
+
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            const step = event.key === "ArrowDown" ? 1 : -1;
+            items[(current + step + items.length) % items.length]?.focus();
+        }
+        else if (event.key === "Home" || event.key === "End") {
+            event.preventDefault();
+            items[event.key === "Home" ? 0 : items.length - 1]?.focus();
+        }
+        else if (event.key === "Escape") {
+            event.preventDefault();
+            close(true);
+        }
+        else if (event.key === "Tab") {
+            close(false);
+        }
+        else if ((event.key === "Enter" || event.key === " ") && current >= 0) {
+            // Handled here so the choice does not depend on the browser turning a key into a click.
+            event.preventDefault();
+            items[current].click();
+        }
+    }
+
+    /** A press anywhere outside the menu and its button closes it, leaving focus where the press put it. */
+    function onDocumentPointerDown(event: Event): void {
+        const target = event.target as Node;
+        if (menuElement.value?.contains(target) || anchorElement.value?.contains(target)) {
+            return;
+        }
+
+        close(false);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function menuItems(): HTMLElement[] {
+        return Array.from(menuElement.value?.querySelectorAll<HTMLElement>("[role='menuitem']") ?? []);
+    }
+
+    function choose(key: string): void {
+        emit("select", key);
+        close(true);
+    }
+
+    function close(isFocusReturned: boolean): void {
+        isOpen.value = false;
+        if (isFocusReturned) {
+            anchor.value?.focus();
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // The outside press is listened for only while open, so a closed menu costs the page nothing.
+    watch(isOpen, open => {
+        if (open) {
+            document.addEventListener("pointerdown", onDocumentPointerDown, true);
+        }
+        else {
+            document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

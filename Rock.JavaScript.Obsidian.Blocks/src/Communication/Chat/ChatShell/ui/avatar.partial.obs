@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="chat-pile" :class="{ 'is-pile': people.length > 1 }" aria-hidden="true">
+        <span v-for="(person, index) in people"
+              :key="index"
+              class="chat-av"
+              data-testid="avatar"
+              :style="faceStyle(person, index)">
+            <img v-if="person.photoUrl" class="chat-av-photo" :src="person.photoUrl" alt="" />
+            <template v-else-if="initialsOf(person.name)">{{ initialsOf(person.name) }}</template>
+            <Icon v-else name="users" size="xs" />
+        </span>
+    </span>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Icon from "./icon.partial.obs";
+
+    // #region Types
+
+    /** One face: the name the chat shows for the person, and their photo when the wire has one. */
+    export type AvatarPerson = {
+        name: string;
+        photoUrl?: string | null;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The people to draw. One is an avatar; more are a pile, each overlapping the one before. */
+        people: {
+            type: Array as PropType<AvatarPerson[]>,
+            required: true
+        },
+
+        /** The size of each face in pixels. */
+        size: {
+            type: Number as PropType<number>,
+            default: 32
+        }
+    });
+
+    // #region Values
+
+    /** At this size and below two letters do not fit, so one is drawn. */
+    const largestOneInitialSize = 22;
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * The person's hue, from the name the chat shows. The sidebar knows people only by name, so a
+     * hue keyed on anything else would color one person two ways on one screen. A rename changes
+     * the hue, which is accepted.
+     */
+    function hueOf(name: string): number {
+        // FNV-1a: cheap, stable across loads, and spreads similar names apart.
+        let hash = 2166136261;
+        for (const character of name.trim()) {
+            hash = Math.imul(hash ^ character.codePointAt(0)!, 16777619);
+        }
+
+        return (hash >>> 0) % 360;
+    }
+
+    /** The first letter of the first and last words, or one letter where two would not fit. */
+    function initialsOf(name: string): string {
+        const words = name.trim().split(/\s+/).filter(word => word !== "");
+        if (words.length === 0) {
+            return "";
+        }
+
+        // Array.from keeps a letter outside the basic plane whole.
+        const first = Array.from(words[0])[0].toUpperCase();
+        const last = words.length > 1 ? Array.from(words[words.length - 1])[0].toUpperCase() : "";
+
+        return props.size <= largestOneInitialSize ? first : first + last;
+    }
+
+    /** The face's size and hue, and its overlap with the face before it in a pile. */
+    function faceStyle(person: AvatarPerson, index: number): Record<string, string> {
+        const size = props.size;
+        const style: Record<string, string> = {
+            "--chat-av-hue": String(hueOf(person.name)),
+            width: `${size}px`,
+            height: `${size}px`,
+            fontSize: `${Math.round(size * 0.37 * 100) / 100}px`
+        };
+
+        if (index > 0) {
+            style.marginLeft = `${-Math.round(size * 0.18 * 100) / 100}px`;
+        }
+
+        return style;
+    }
+
+    // #endregion Functions
+</script>

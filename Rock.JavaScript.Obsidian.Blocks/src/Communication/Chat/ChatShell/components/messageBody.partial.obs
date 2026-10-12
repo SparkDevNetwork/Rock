@@ -27,7 +27,7 @@
 
 .chat-mention {
     font-weight: 600;
-    color: var(--color-primary-strong, #1d4ed8);
+    color: var(--chat-brand-ink);
 }
 
 .chat-emoji-image {
@@ -37,7 +37,7 @@
 
 .chat-block-context {
     font-size: 12px;
-    color: var(--color-interface-medium, #6c757d);
+    color: var(--chat-muted);
 }
 
 .chat-block-divider {

@@ -52,7 +52,7 @@
     align-items: center;
     margin: 8px 0;
     font-size: 12px;
-    color: var(--color-danger-strong, #c0392b);
+    color: var(--chat-danger-ink);
 }
 
 .chat-feed-divider::before,
@@ -72,12 +72,12 @@
     padding: 6px 10px;
     border-radius: 8px;
     opacity: 0.7;
-    background: var(--color-interface-softer, #f4f5f6);
+    background: var(--chat-bubble);
 }
 
 .chat-feed-pending.is-failed {
     opacity: 1;
-    border: 1px solid var(--color-danger-soft, #f5c6cb);
+    border: 1px solid var(--chat-danger-soft);
 }
 
 .chat-feed-pending-body {

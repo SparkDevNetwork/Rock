@@ -1,0 +1,431 @@
+/*
+    The chat's token sheet. Every color, radius, shadow and timing a chat component draws with is
+    named here, so a component holds no literal and dark mode and any church's color reach every
+    screen at once. This is the one chat file allowed to hold literal values.
+
+    Each token leans on Rock's own theme variable where Rock has one, with the chat's value behind
+    it for a theme that lacks it. The church color's tokens are worked out in script and set on the
+    root as a light and a dark form; the values written behind them here are Rock orange's.
+
+    The tokens sit on the chat's root rather than the page's, so nothing here changes Rock's page.
+*/
+.chat-shell {
+    /* The church color and what is drawn from it. */
+    --chat-brand: var(--color-primary, #FF791D);
+    --chat-brand-fill: var(--chat-brand-fill-light, #FF791D);
+    --chat-on-brand: var(--chat-on-brand-light, #0D1117);
+    --chat-brand-ink: var(--chat-brand-ink-light, #7A3608);
+    --chat-brand-tint: var(--chat-brand-tint-light, #FDECE0);
+    --chat-brand-wash: var(--chat-brand-wash-light, #F9EBE6);
+    --chat-brand-ring: var(--chat-brand-ring-light, rgba(255, 121, 29, .32));
+    --chat-own-hairline: var(--chat-own-hairline-light, transparent);
+    --chat-flash: var(--chat-flash-light, rgba(255, 121, 29, .20));
+    --chat-intro-k: 8%;
+
+    /* Surfaces, text and lines. */
+    --chat-surface: var(--color-interface-softest, #fdfdfd);
+    --chat-sidebar: var(--color-interface-softer, #F8F8FC);
+    --chat-raised: #ffffff;
+    --chat-bubble: #F0F0F5;
+    --chat-text: var(--color-interface-stronger, #0D1117);
+    --chat-text-2: var(--color-interface-strong, #3D444D);
+    /* Rock's medium grey reads 3.25 to 1 on white, too faint for body text, so the chat has its own. */
+    --chat-muted: #66667E;
+    --chat-icon: #7A7A94;
+    --chat-line: #E4E4EC;
+    --chat-line-strong: var(--color-interface-soft, #D9D9E3);
+    --chat-hover: rgba(13, 17, 23, .045);
+    --chat-press: rgba(13, 17, 23, .08);
+    --chat-tip-bg: #1B2029;
+    --chat-tip-fg: #F8F8FC;
+    --chat-scrim: rgba(13, 17, 23, .38);
+    --chat-pill-bg: #ECECED;
+
+    /* Status colors. The soft fills are written out, since the browsers Rock supports cannot mix them. */
+    --chat-danger: var(--base-danger, #D70015);
+    --chat-danger-ink: #B8000F;
+    --chat-danger-soft: #FAE9EA;
+    --chat-warning: var(--base-warning, #E58600);
+    --chat-warning-ink: #9A5A00;
+    --chat-warning-soft: #FAEFDF;
+    --chat-info: var(--base-info, #005DD7);
+    --chat-info-ink: #0049A8;
+    --chat-info-soft: #E6EFFA;
+    --chat-success: var(--base-success, #01A11E);
+    --chat-mn-me-bg: #F7E0C0;
+    --chat-mn-all-bg: #DFEAF8;
+
+    /* An initials avatar's saturation and lightness; the hue is the person's own. */
+    --chat-av-sat: 70%;
+    --chat-av-l: 90%;
+    --chat-av-tsat: 42%;
+    --chat-av-tl: 31%;
+
+    /* Radii, Rock's steps first, then the ones the design writes in a single place. */
+    --chat-r-xs: var(--rounded-xsmall, 4px);
+    --chat-r-sm: var(--rounded-small, 6px);
+    --chat-r-md: var(--rounded-medium, 8px);
+    --chat-r-lg: var(--rounded-large, 12px);
+    --chat-r-xl: var(--rounded-xlarge, 16px);
+    --chat-r-2xl: 20px;
+    --chat-r-full: var(--rounded-full, 9999px);
+    --chat-r-bubble: 20px;
+    --chat-r-tail: 6px;
+    --chat-r-pop: 14px;
+    --chat-r-item: 9px;
+    --chat-r-dialog: 18px;
+    --chat-r-sheet: 22px;
+    --chat-r-composer: 22px;
+    --chat-r-editor: 18px;
+    --chat-r-quote-top: 14px;
+    --chat-r-quote-bottom: 6px;
+    --chat-r-quote-ghost: 16px;
+    --chat-r-bar: 18px;
+    --chat-r-room-ic: 11px;
+    --chat-r-hdr-ic: 12px;
+    --chat-r-org: 10px;
+    --chat-r-search: 10px;
+    --chat-r-option: 10px;
+    --chat-r-intro: 14px;
+    --chat-r-details: 16px;
+    --chat-r-radio-ic: 10px;
+    --chat-r-empty-sm: 14px;
+    --chat-r-empty: 16px;
+    --chat-r-tip: 8px;
+
+    /* Type. */
+    --chat-font: var(--font-family-body, "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji");
+
+    /* Shadows. */
+    --chat-shadow-card: var(--box-shadow, 0 0 2px rgba(145, 158, 171, .2), 0 12px 24px -4px rgba(145, 158, 171, .12));
+    --chat-shadow-pop: 0 0 0 1px rgba(13, 17, 23, .06), 0 4px 8px rgba(13, 17, 23, .04), 0 16px 36px -8px rgba(30, 36, 52, .24);
+    --chat-shadow-bar: 0 0 0 1px var(--chat-line), 0 1px 2px rgba(13, 17, 23, .05), 0 6px 14px -4px rgba(30, 36, 52, .16);
+    --chat-shadow-frame: 0 1px 2px rgba(13, 17, 23, .04), 0 24px 48px -16px rgba(60, 66, 90, .22);
+    --chat-shadow-day: 0 2px 10px -4px rgba(13, 17, 23, .18);
+    --chat-shadow-strip: 0 6px 12px -10px rgba(13, 17, 23, .25);
+    --chat-shadow-composer: 0 1px 2px rgba(13, 17, 23, .04);
+    --chat-shadow-knob: 0 1px 2px rgba(13, 17, 23, .25);
+    --chat-shadow-thumb: 0 0 0 1px var(--chat-line), 0 1px 2px rgba(13, 17, 23, .08);
+
+    /* Motion: entrances decelerate, exits accelerate, the spring is for small delights only. */
+    --chat-ease-in: cubic-bezier(.1, .9, .2, 1);
+    --chat-ease-out: cubic-bezier(.4, 0, 1, 1);
+    --chat-ease-state: cubic-bezier(.42, 0, .58, 1);
+    --chat-ease-spring: cubic-bezier(.3, 1.45, .55, 1);
+    --chat-t-fast: 120ms;
+    --chat-t-base: 180ms;
+    --chat-t-msg: 260ms;
+    --chat-t-panel: 300ms;
+    --chat-rise: 10px;
+    --chat-msg-scale: .985;
+    --chat-pop-scale: .96;
+    --chat-react-from: .55;
+    --chat-drawer-shift: 28px;
+
+    /* Every other timing the design writes once. Timers in script read these too. */
+    --chat-d-flash: 2.2s;
+    --chat-d-row-flash: 1.2s;
+    --chat-d-rx-pop: 340ms;
+    --chat-d-roll: 220ms;
+    --chat-d-badge-in: 260ms;
+    --chat-d-pop-remove: 130ms;
+    --chat-d-tools-show: 90ms;
+    --chat-d-tools-move: 140ms;
+    --chat-d-tools-hide: 80ms;
+    --chat-d-hover-rest: 60ms;
+    --chat-d-hover-grace: 220ms;
+    --chat-d-glyph: 140ms;
+    --chat-d-glyph-press: 60ms;
+    --chat-d-dialog-in: 240ms;
+    --chat-d-toast-in: 240ms;
+    --chat-d-toast-out: 160ms;
+    --chat-d-toast-life: 2.6s;
+    --chat-d-view: 220ms;
+    --chat-d-tab-thumb: 240ms;
+    --chat-d-stagger: 26ms;
+    --chat-d-row-collapse: 200ms;
+    --chat-d-fd-pop: 420ms;
+    --chat-d-saved-hold: 1.6s;
+    --chat-d-sent-hold: 2.2s;
+    --chat-d-divider-fade: 600ms;
+    --chat-d-read-fade: 400ms;
+    --chat-d-pulse: 1.2s;
+    --chat-d-sweep: 1.1s;
+    --chat-d-spin: .7s;
+    --chat-d-refresh-spin: .8s;
+    --chat-d-skeleton: 1.6s;
+    --chat-d-tip-delay: 500ms;
+    --chat-d-tip-delay-rx: 350ms;
+    --chat-d-search-people: 250ms;
+    --chat-d-search-channels: 200ms;
+    --chat-d-lookup-line: 300ms;
+
+    font-family: var(--chat-font);
+    color: var(--chat-text);
+}
+
+/*
+    Dark, under the same two conditions as Rock's own dark theme. CSS cannot share one block across
+    a media query, so the two rules below hold the same values. The values are written out rather
+    than read from Rock's variables, because a page can ask for dark on a Rock theme whose variables
+    stay light.
+
+    The theme attribute set to dark always flips the chat.
+*/
+[theme=dark] .chat-shell {
+    --chat-brand-ink: var(--chat-brand-ink-dark, #FFAC73);
+    --chat-brand-tint: var(--chat-brand-tint-dark, #503A35);
+    --chat-brand-wash: var(--chat-brand-wash-dark, #2F1C12);
+    --chat-own-hairline: var(--chat-own-hairline-dark, rgba(255, 121, 29, .24));
+    --chat-flash: var(--chat-flash-dark, rgba(255, 121, 29, .26));
+    --chat-intro-k: 13%;
+    --chat-surface: #0D1117;
+    --chat-sidebar: #0a0c10;
+    --chat-raised: #161B22;
+    --chat-bubble: #1A1F27;
+    --chat-text: #F8F8FC;
+    --chat-text-2: #D9D9E3;
+    --chat-muted: #9C9CB6;
+    --chat-icon: var(--color-interface-medium, #8B8BA7);
+    --chat-line: #22272F;
+    --chat-line-strong: #30363D;
+    --chat-hover: rgba(248, 248, 252, .05);
+    --chat-press: rgba(248, 248, 252, .09);
+    --chat-tip-bg: #F8F8FC;
+    --chat-tip-fg: #0D1117;
+    --chat-scrim: rgba(0, 0, 0, .55);
+    --chat-pill-bg: #1D2127;
+    --chat-danger-ink: #FF7A85;
+    --chat-danger-soft: #310E17;
+    --chat-warning-ink: #FFB547;
+    --chat-warning-soft: #302413;
+    --chat-info-ink: #7DB3FF;
+    --chat-info-soft: #0A203D;
+    --chat-mn-me-bg: #4E3410;
+    --chat-mn-all-bg: #0A2241;
+    --chat-av-sat: 28%;
+    --chat-av-l: 23%;
+    --chat-av-tsat: 75%;
+    --chat-av-tl: 82%;
+    --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
+    --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
+    --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
+    --chat-shadow-frame: 0 0 0 1px rgba(255, 255, 255, .05), 0 24px 60px -16px rgba(0, 0, 0, .8);
+    color-scheme: dark;
+}
+
+/*
+    The system's dark, for a page that sets no theme or asks to follow the system. Rock's older
+    themes set no theme attribute and have no dark mode, so this applies only where the chat found
+    the newer theme's variables at mount and marked its root.
+*/
+@media (prefers-color-scheme: dark) {
+    :root:not([theme]) .chat-shell[data-rock-theme="v2"],
+    [theme=system] .chat-shell[data-rock-theme="v2"] {
+        --chat-brand-ink: var(--chat-brand-ink-dark, #FFAC73);
+        --chat-brand-tint: var(--chat-brand-tint-dark, #503A35);
+        --chat-brand-wash: var(--chat-brand-wash-dark, #2F1C12);
+        --chat-own-hairline: var(--chat-own-hairline-dark, rgba(255, 121, 29, .24));
+        --chat-flash: var(--chat-flash-dark, rgba(255, 121, 29, .26));
+        --chat-intro-k: 13%;
+        --chat-surface: #0D1117;
+        --chat-sidebar: #0a0c10;
+        --chat-raised: #161B22;
+        --chat-bubble: #1A1F27;
+        --chat-text: #F8F8FC;
+        --chat-text-2: #D9D9E3;
+        --chat-muted: #9C9CB6;
+        --chat-icon: var(--color-interface-medium, #8B8BA7);
+        --chat-line: #22272F;
+        --chat-line-strong: #30363D;
+        --chat-hover: rgba(248, 248, 252, .05);
+        --chat-press: rgba(248, 248, 252, .09);
+        --chat-tip-bg: #F8F8FC;
+        --chat-tip-fg: #0D1117;
+        --chat-scrim: rgba(0, 0, 0, .55);
+        --chat-pill-bg: #1D2127;
+        --chat-danger-ink: #FF7A85;
+        --chat-danger-soft: #310E17;
+        --chat-warning-ink: #FFB547;
+        --chat-warning-soft: #302413;
+        --chat-info-ink: #7DB3FF;
+        --chat-info-soft: #0A203D;
+        --chat-mn-me-bg: #4E3410;
+        --chat-mn-all-bg: #0A2241;
+        --chat-av-sat: 28%;
+        --chat-av-l: 23%;
+        --chat-av-tsat: 75%;
+        --chat-av-tl: 82%;
+        --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
+        --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
+        --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
+        --chat-shadow-frame: 0 0 0 1px rgba(255, 255, 255, .05), 0 24px 60px -16px rgba(0, 0, 0, .8);
+        color-scheme: dark;
+    }
+}
+
+/*
+    Reduced motion: no lift, no scale, no slide, shorter entrances, and motion that only decorates
+    (staggers, view switches, the tab thumb, a row collapsing, the "Joined" pop) skipped. Color
+    changes stay, so a jumped-to message still flashes. Looping decoration stops; a busy spinner
+    stays, since it says something is happening.
+*/
+@media (prefers-reduced-motion: reduce) {
+    .chat-shell {
+        --chat-rise: 0px;
+        --chat-drawer-shift: 0px;
+        --chat-msg-scale: 1;
+        --chat-pop-scale: 1;
+        --chat-react-from: 1;
+        --chat-t-msg: 140ms;
+        --chat-t-panel: 160ms;
+        --chat-d-view: 0ms;
+        --chat-d-tab-thumb: 0ms;
+        --chat-d-stagger: 0ms;
+        --chat-d-row-collapse: 0ms;
+        --chat-d-fd-pop: 0ms;
+    }
+
+    .chat-shell .chat-skeleton {
+        animation: none;
+    }
+}
+
+/*
+    The reset. Rock's Bootstrap styles reach into any block, so the chat sets how its boxes measure
+    and how focus shows. The button reset sits at no specificity, so a Bootstrap button class
+    still drawn inside the chat keeps its look until its screen is restyled.
+*/
+.chat-shell,
+.chat-shell *,
+.chat-shell *::before,
+.chat-shell *::after {
+    box-sizing: border-box;
+}
+
+:where(.chat-shell) :where(button) {
+    font: inherit;
+    cursor: pointer;
+}
+
+:where(.chat-shell) :where(button:disabled) {
+    cursor: not-allowed;
+}
+
+/* Brand ink rather than the church color itself, which can fall under 3 to 1 against white. */
+.chat-shell :focus-visible {
+    outline: 2px solid var(--chat-brand-ink);
+    outline-offset: 2px;
+}
+
+@keyframes chat-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes chat-skeleton-pulse {
+    from {
+        opacity: .55;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* An initials avatar in the person's hue; the avatar component sets the hue and the size. */
+.chat-av {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    overflow: hidden;
+    font-weight: 650;
+    line-height: 1;
+    letter-spacing: .01em;
+    color: hsl(var(--chat-av-hue) var(--chat-av-tsat) var(--chat-av-tl));
+    user-select: none;
+    background: hsl(var(--chat-av-hue) var(--chat-av-sat) var(--chat-av-l));
+    border-radius: 50%;
+}
+
+.chat-av-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chat-pile {
+    display: inline-flex;
+}
+
+/* Ringed in the background the pile sits on, so an overlapped face's initials are never cut. */
+.chat-pile.is-pile .chat-av {
+    box-shadow: 0 0 0 2px var(--chat-av-ring, var(--chat-surface));
+}
+
+/* A label pill, such as Leader. */
+.chat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 18px;
+    padding: 0 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    white-space: nowrap;
+    background: var(--chat-pill-bg);
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-pill.is-announcement {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+}
+
+/* A mention count. */
+.chat-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 7px 0 5px;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+    border-radius: var(--chat-r-full);
+}
+
+/* An unread or new dot. */
+.chat-dot {
+    display: inline-block;
+    flex: none;
+    width: 8px;
+    height: 8px;
+    background: var(--chat-brand-fill);
+    border-radius: 50%;
+}
+
+/* A busy spinner, in the color of the text around it. */
+.chat-spinner {
+    display: inline-block;
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: chat-spin var(--chat-d-spin) linear infinite;
+}
+
+/* A placeholder the size of what loads into it, so nothing jumps when it arrives. */
+.chat-skeleton {
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-md);
+    animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+}

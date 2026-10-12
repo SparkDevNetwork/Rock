@@ -1,0 +1,131 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <svg class="chat-ic" :class="sizeClass" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <template v-for="(shape, index) in shapes" :key="index">
+            <path v-if="'d' in shape" :d="shape.d" :class="{ 'is-filled': shape.isFilled }" />
+            <circle v-else-if="'r' in shape" :cx="shape.cx" :cy="shape.cy" :r="shape.r" />
+            <rect v-else :x="shape.x" :y="shape.y" :width="shape.width" :height="shape.height" :rx="shape.rx" />
+        </template>
+    </svg>
+</template>
+
+<style scoped>
+/* One stroke set, 24 units square, drawn in the color of the text around it. */
+.chat-ic {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.chat-ic.is-sm {
+    width: 15px;
+    height: 15px;
+}
+
+/* A thin stroke breaks up at 13px, so the smallest size draws heavier. */
+.chat-ic.is-xs {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2;
+}
+
+.chat-ic .is-filled {
+    fill: currentColor;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    // #region Types
+
+    /** One stroke of an icon: a path, a circle or a rounded rectangle, in the 24 unit box. */
+    type IconShape =
+        | { d: string, isFilled?: boolean }
+        | { cx: number, cy: number, r: number }
+        | { x: number, y: number, width: number, height: number, rx: number };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The icon's name. A name this set does not know draws nothing rather than failing. */
+        name: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The drawn size: 18px, 15px or 13px. */
+        size: {
+            type: String as PropType<"md" | "sm" | "xs">,
+            default: "md"
+        }
+    });
+
+    // #region Values
+
+    // The chat's whole icon set, drawn inline rather than from a sprite on the page, so an icon
+    // inside a dialog Rock draws elsewhere on the page still finds its shape. Chrome uses icons only.
+    const icons: Record<string, IconShape[]> = {
+        "hash": [{ d: "M5 9h14M5 15h14M11 4 7 20M17 4l-4 16" }],
+        "lock": [{ x: 5, y: 11, width: 14, height: 10, rx: 2 }, { d: "M8 11V7a4 4 0 0 1 8 0v4" }],
+        "speaker": [{ d: "M18 8a3 3 0 0 1 0 6M10 8v11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-5M12 8l4.5-3.8A.9.9 0 0 1 18 4.9v12.2a.9.9 0 0 1-1.5.7L12 14H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h8" }],
+        "star": [{ d: "m12 17.75-6.17 3.25 1.18-6.88-5-4.87 6.9-1L12 2l3.09 6.25 6.9 1-5 4.87 1.18 6.88z" }],
+        "star-f": [{ d: "m12 17.75-6.17 3.25 1.18-6.88-5-4.87 6.9-1L12 2l3.09 6.25 6.9 1-5 4.87 1.18 6.88z", isFilled: true }],
+        "bell": [{ d: "M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1" }],
+        "bell-off": [{ d: "M9.35 5.35c.2-.13.43-.25.65-.35a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3m-1 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 1.27-3.7M9 17v1a3 3 0 0 0 6 0v-1M3 3l18 18" }],
+        "at-bell": [{ d: "M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1" }, { cx: 12, cy: 11.5, r: 1.6 }],
+        "search": [{ cx: 10, cy: 10, r: 7 }, { d: "m21 21-6-6" }],
+        "compose": [{ d: "M7 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1M20.4 6.6a2.1 2.1 0 0 0-3-3L9 12v3h3zM16 5l3 3" }],
+        "pin": [{ d: "M12 21s-7-6.1-7-11.4A7 7 0 0 1 19 9.6C19 14.9 12 21 12 21z" }, { cx: 12, cy: 9.6, r: 2.6 }],
+        "drop": [{ d: "M12 3.5s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" }],
+        "heart": [{ d: "M12 20s-7.4-4.5-9.1-9.3C1.7 7.3 4 4 7.3 4c2 0 3.5 1.1 4.7 2.8C13.2 5.1 14.7 4 16.7 4 20 4 22.3 7.3 21.1 10.7 19.4 15.5 12 20 12 20z" }],
+        "home": [{ d: "M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" }],
+        "user-minus": [{ cx: 9, cy: 7, r: 4 }, { d: "M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 11h6" }],
+        "users": [{ cx: 9, cy: 7, r: 4 }, { d: "M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85" }],
+        "settings": [{ d: "M10.33 4.32c.43-1.76 2.93-1.76 3.35 0a1.72 1.72 0 0 0 2.57 1.07c1.54-.94 3.31.83 2.37 2.37a1.72 1.72 0 0 0 1.07 2.57c1.76.43 1.76 2.93 0 3.35a1.72 1.72 0 0 0-1.07 2.57c.94 1.54-.83 3.31-2.37 2.37a1.72 1.72 0 0 0-2.57 1.07c-.43 1.76-2.93 1.76-3.35 0a1.72 1.72 0 0 0-2.57-1.07c-1.54.94-3.31-.83-2.37-2.37a1.72 1.72 0 0 0-1.07-2.57c-1.76-.43-1.76-2.93 0-3.35a1.72 1.72 0 0 0 1.07-2.57c-.94-1.54.83-3.31 2.37-2.37a1.72 1.72 0 0 0 2.57-1.07" }, { cx: 12, cy: 12, r: 3 }],
+        "smile": [{ cx: 12, cy: 12, r: 9 }, { d: "M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 0 0 5 0" }],
+        "smile-plus": [{ d: "M20.98 12.53a9 9 0 1 0-8.45 8.46M16 19h6M19 16v6M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 0 0 5 0" }],
+        "arrow-up": [{ d: "M12 19V5M6 11l6-6 6 6" }],
+        "thread": [{ d: "M21 14l-3-3h-7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1zM14 15v2a1 1 0 0 1-1 1H6l-3 3V11a1 1 0 0 1 1-1h2" }],
+        "reply": [{ d: "m9 14-4-4 4-4M5 10h11a4 4 0 1 1 0 8h-1" }],
+        "dots": [{ cx: 5, cy: 12, r: 1 }, { cx: 12, cy: 12, r: 1 }, { cx: 19, cy: 12, r: 1 }],
+        "pencil": [{ d: "M4 20h4L18.5 9.5a2.83 2.83 0 0 0-4-4L4 16zM13.5 6.5l4 4" }],
+        "trash": [{ d: "M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" }],
+        "copy": [{ x: 8, y: 8, width: 12, height: 12, rx: 2 }, { d: "M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" }],
+        "mail": [{ x: 3, y: 5, width: 18, height: 14, rx: 2 }, { d: "m3 7 9 6 9-6" }],
+        "at": [{ cx: 12, cy: 12, r: 4 }, { d: "M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-5.5 8.28" }],
+        "x": [{ d: "M18 6 6 18M6 6l12 12" }],
+        "left": [{ d: "m15 6-6 6 6 6" }],
+        "down": [{ d: "m6 9 6 6 6-6" }],
+        "arrow-down": [{ d: "M12 5v14M18 13l-6 6-6-6" }],
+        "alert": [{ cx: 12, cy: 12, r: 9 }, { d: "M12 8v4M12 16h.01" }],
+        "check": [{ d: "m5 12 5 5L20 7" }],
+        "clock": [{ cx: 12, cy: 12, r: 9 }, { d: "M12 7v5l3 3" }],
+        "plus": [{ d: "M12 5v14M5 12h14" }],
+        "info": [{ cx: 12, cy: 12, r: 9 }, { d: "M12 8h.01M11 12h1v4h1" }],
+        "bolt": [{ d: "M13 3v7h6l-8 11v-7H5l8-11" }],
+        "eye-off": [{ d: "M10.59 10.59a2 2 0 0 0 2.83 2.83M16.68 16.67A8.7 8.7 0 0 1 12 18c-3.6 0-6.6-2-9-6 1.27-2.12 2.71-3.68 4.32-4.67M10.18 6.18A9 9 0 0 1 12 6c3.6 0 6.6 2 9 6-.67 1.11-1.38 2.07-2.14 2.87M3 3l18 18" }],
+        "door": [{ d: "M14 6h3a1 1 0 0 1 1 1v13M3 20h18M5 20V5.4a1 1 0 0 1 .8-.98l6-1.2A1 1 0 0 1 13 4.2V20M10 12v.01" }],
+        "wifi-off": [{ d: "M12 18h.01M9.17 15.17a4 4 0 0 1 5.66 0M6.34 12.34a8 8 0 0 1 3.87-2.14M14.37 10.36a8 8 0 0 1 3.29 2M3.52 9.52A12 12 0 0 1 7.06 7.06M10.16 6.14a12 12 0 0 1 10.32 3.37M3 3l18 18" }],
+        "refresh": [{ d: "M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" }],
+        "paperclip": [{ d: "m15 7-6.5 6.5a1.5 1.5 0 0 0 3 3L18 10a3 3 0 0 0-6-6l-6.5 6.5a4.5 4.5 0 0 0 9 9L21 13" }],
+        "history": [{ d: "M3 12a9 9 0 1 0 2.64-6.36L3 8.3" }, { d: "M3 3v5.3h5.3M12 7v5l3.5 2" }],
+        "user-plus": [{ cx: 9, cy: 7, r: 4 }, { d: "M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M19 8v6M16 11h6" }],
+        "message": [{ d: "M8 9h8M8 13h6M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-5l-5 3v-3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" }]
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const shapes = computed((): IconShape[] => icons[props.name] ?? []);
+
+    const sizeClass = computed((): string => props.size === "md" ? "" : `is-${props.size}`);
+
+    // #endregion Computed Values
+</script>

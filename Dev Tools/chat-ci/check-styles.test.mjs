@@ -142,17 +142,15 @@ test('it reads the script of a component as well as its style', () => {
 
 test('the token sheet is the one file allowed to hold literals', () => {
   const sheet = [
-    '<style>',
     '.chat-shell {',
     '    --chat-surface: var(--color-interface-softest, #fdfdfd);',
     '    --chat-hover: rgba(13, 17, 23, .045);',
     '    --chat-ease-in: cubic-bezier(.1, .9, .2, 1);',
     '    --chat-t-msg: 260ms;',
     '}',
-    '</style>',
   ].join('\n');
 
-  assert.deepEqual(scan(`${shell}/chatTheme.partial.obs`, sheet), []);
+  assert.deepEqual(scan('RockWeb/Styles/Blocks/Communication/Chat/chat.css', sheet), []);
 });
 
 test('run on the red fixtures, it fails and names each file', () => {

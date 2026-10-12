@@ -47,6 +47,10 @@ jobs:
         run: npm run check:references
         working-directory: ./Dev Tools/chat-ci
 
+      - name: The chat components draw only from the token sheet
+        run: npm run check:styles
+        working-directory: ./Dev Tools/chat-ci
+
       - name: The gates keep the shape these jobs assume
         run: npm test
         working-directory: ./Dev Tools/chat-ci
