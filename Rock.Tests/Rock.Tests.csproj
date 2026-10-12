@@ -257,6 +257,7 @@
     <Compile Include="Cms\ThemeOverrideBuilderTests.cs" />
     <Compile Include="Configuration\RockAppExtensionsTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchTests.cs" />
+    <Compile Include="Core\EntitySearch\EntitySearchRestrictedMemberTests.cs" />
     <Compile Include="Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Field\Types\SocialMediaAccountFieldTypeTests.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldTypeTests.cs" />

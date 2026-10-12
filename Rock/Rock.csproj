@@ -786,6 +786,7 @@
     <Compile Include="Core\EntitySearch\EntitySearchHelper.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
+    <Compile Include="Core\EntitySearch\RestrictedMemberExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Field\Types\DeviceFieldType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
