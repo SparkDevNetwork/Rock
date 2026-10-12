@@ -1553,6 +1553,12 @@ namespace RockWeb.Blocks.Event
                     Registration = GetRegistration( RegistrationId.Value, rockContext );
                     if ( Registration != null )
                     {
+                        if ( !CanViewRegistration( Registration ) )
+                        {
+                            ShowNotAuthorizedToView();
+                            return;
+                        }
+
                         Title = Registration.ToString();
                         RegistrationInstanceId = Registration.RegistrationInstanceId;
                         RegistrationTemplateId = Registration.RegistrationInstance.RegistrationTemplateId;
@@ -1571,11 +1577,18 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrationInstance = new RegistrationInstanceService( rockContext )
                         .Queryable()
-                        .Include( a => a.RegistrationTemplate ).AsNoTracking()
+                        .Include( a => a.RegistrationTemplate )
+                        .Include( a => a.RegistrationTemplate.Category ).AsNoTracking()
                         .Where( i => i.Id == RegistrationInstanceId.Value )
                         .FirstOrDefault();
                     if ( registrationInstance != null )
                     {
+                        if ( !CanViewRegistration( registrationInstance ) )
+                        {
+                            ShowNotAuthorizedToView();
+                            return;
+                        }
+
                         lWizardTemplateName.Text = registrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registrationInstance.Name;
                         lWizardRegistrationName.Text = "New Registration";
@@ -1620,6 +1633,54 @@ namespace RockWeb.Blocks.Event
             return null;
         }
 
+        /// <summary>
+        /// Determines whether the current person can view the registration
+        /// (or the registration instance for a new registration).
+        /// </summary>
+        /// <param name="item">The registration or registration instance.</param>
+        /// <returns><c>true</c> if the current person can view it; otherwise <c>false</c>.</returns>
+        private bool CanViewRegistration( ISecured item )
+        {
+            /*
+                10/12/2026 - MSE
+
+                The registration is loaded from the page parameters, so any
+                person who could open this page could read registrations in a
+                template or category they can not view. Registrations inherit
+                security from the instance, template and category. Register,
+                Edit and Administrate are also accepted because this block and
+                the registrations list already let those people manage a
+                registration. Block edit rights do not bypass this check.
+
+                Reason: Enforce registration template security on this block.
+            */
+            return item != null
+                && ( item.IsAuthorized( Authorization.VIEW, CurrentPerson )
+                    || item.IsAuthorized( "Register", CurrentPerson )
+                    || item.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                    || item.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Clears the registration state and shows the not authorized message.
+        /// </summary>
+        private void ShowNotAuthorizedToView()
+        {
+            Registration = null;
+            RegistrationId = null;
+            RegistrationInstanceId = null;
+            RegistrationTemplateId = 0;
+            _registrationTemplate = null;
+            EditAllowed = false;
+            Title = string.Empty;
+            lWizardTemplateName.Text = "Template";
+            lWizardInstanceName.Text = "Instance";
+            lWizardRegistrationName.Text = "Registration";
+            pnlDetails.Visible = false;
+            nbSecurityWarning.Text = EditModeMessage.NotAuthorizedToView( Rock.Model.Registration.FriendlyTypeName );
+            nbSecurityWarning.Visible = true;
+        }
+
         #endregion Load/Save Methods
 
         #region Display Methods
@@ -1658,6 +1719,12 @@ namespace RockWeb.Blocks.Event
 
             if ( Registration != null )
             {
+                if ( !CanViewRegistration( Registration ) )
+                {
+                    ShowNotAuthorizedToView();
+                    return;
+                }
+
                 RegistrationInstanceId = Registration.RegistrationInstanceId;
 
                 // render UI based on Authorized and IsSystem

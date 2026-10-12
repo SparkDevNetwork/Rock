@@ -92,6 +92,12 @@ namespace Rock.Blocks.Event
             var box = new DetailBlockBox<RegistrantBag, RegistrantDetailOptionsBag>();
             var entity = GetInitialEntity();
 
+            if ( entity != null && !CanViewRegistration( GetRegistration( entity ) ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToView( RegistrationRegistrant.FriendlyTypeName );
+                return box;
+            }
+
             SetBoxInitialEntityState( box, entity );
             box.NavigationUrls = GetBoxNavigationUrls( entity );
             box.Options = GetBoxOptions( entity?.RegistrationId ?? 0 );
@@ -348,18 +354,17 @@ namespace Rock.Blocks.Event
                     registrationKey = box.Bag.RegistrationIdKey;
                 }
 
-                var registrationId = registrationKey.IsNotNullOrWhiteSpace()
+                var registration = registrationKey.IsNotNullOrWhiteSpace()
                     ? new RegistrationService( RockContext )
                         .Get( registrationKey, !PageCache.Layout.Site.DisablePredictableIds )
-                        ?.Id
                     : null;
 
-                if ( !registrationId.HasValue || registrationId.Value == 0 )
+                if ( registration == null || !CanViewRegistration( registration ) )
                 {
                     return false;
                 }
 
-                entity.RegistrationId = registrationId.Value;
+                entity.RegistrationId = registration.Id;
                 entity.RegistrationTemplateId = new RegistrationService( RockContext )
                     .GetSelect( entity.RegistrationId, r => r.RegistrationTemplateId ) ?? 0;
             }
@@ -520,6 +525,12 @@ namespace Rock.Blocks.Event
             }
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {RegistrationRegistrant.FriendlyTypeName}." );
+                return false;
+            }
+
+            if ( entity.Id != 0 && !CanViewRegistration( GetRegistration( entity ) ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {RegistrationRegistrant.FriendlyTypeName}." );
                 return false;
@@ -745,9 +756,39 @@ namespace Rock.Blocks.Event
                 .Include( r => r.RegistrationInstance.RegistrationTemplate.Forms.Select( f => f.Fields ) )
                 .Include( r => r.RegistrationInstance.RegistrationTemplate.Fees )
                 .Include( r => r.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate.BinaryFileType )
+                .Include( r => r.RegistrationInstance.RegistrationTemplate.Category )
                 .FirstOrDefault( r => r.Id == entity.RegistrationId );
 
             return _registration;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view the registration.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        /// <returns><c>true</c> if the current person can view the registration; otherwise <c>false</c>.</returns>
+        private bool CanViewRegistration( ISecured registration )
+        {
+            /*
+                10/12/2026 - MSE
+
+                The registrant and registration come from the page parameters
+                or the posted bag, and the block only checked block Edit, so a
+                person could read, change or add registrants in a template or
+                category they can not view. Registrations inherit security from
+                the instance, template and category. Register, Edit and
+                Administrate are also accepted, matching the Registration
+                Detail block. Block Edit does not bypass this check.
+
+                Reason: Enforce registration template security on this block.
+            */
+            var person = RequestContext.CurrentPerson;
+
+            return registration != null
+                && ( registration.IsAuthorized( Authorization.VIEW, person )
+                    || registration.IsAuthorized( Authorization.REGISTER, person )
+                    || registration.IsAuthorized( Authorization.EDIT, person )
+                    || registration.IsAuthorized( Authorization.ADMINISTRATE, person ) );
         }
 
         #endregion Methods
