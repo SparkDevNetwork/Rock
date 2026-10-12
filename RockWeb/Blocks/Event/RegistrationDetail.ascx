@@ -51,6 +51,8 @@
             </div>
         </div>
 
+        <Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
         <asp:Panel ID="pnlDetails" runat="server">
 
             <div class="panel panel-block">
