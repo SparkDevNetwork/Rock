@@ -747,8 +747,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return null;
             }
 
-            // Ensure the scheduled transaction belongs to the current user.
-            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            // Ensure the scheduled transaction belongs to the current person's giving unit.
+            if ( !IsAuthorizedForScheduledTransaction( scheduledTransaction ) )
             {
                 errorMessage = "You are not authorized to access this scheduled transaction.";
                 return null;
@@ -1346,6 +1346,34 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
+        /// Determines whether the current person may access the given scheduled
+        /// transaction. The transaction must belong to the current person's giving
+        /// unit (their own GivingId, or the GivingId of a business they manage).
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction to check.</param>
+        /// <returns><c>true</c> if the current person may access the transaction; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedForScheduledTransaction( FinancialScheduledTransaction scheduledTransaction )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( currentPerson == null )
+            {
+                return false;
+            }
+
+            var transactionGivingId = scheduledTransaction.AuthorizedPersonAlias?.Person?.GivingId;
+            if ( transactionGivingId.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var personService = new PersonService( RockContext );
+            var validGivingIds = new List<string> { currentPerson.GivingId };
+            validGivingIds.AddRange( personService.GetBusinesses( currentPerson.Id ).Select( b => b.GivingId ) );
+
+            return validGivingIds.Contains( transactionGivingId );
+        }
+
+        /// <summary>
         /// Processes the account amount selections based on the campus (see <seealso cref="FinancialAccountCache.UsesCampusChildAccounts" />).
         /// </summary>
         /// <param name="options"></param>
@@ -1419,7 +1447,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return false;
             }
 
-            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            if ( !IsAuthorizedForScheduledTransaction( scheduledTransaction ) )
             {
                 errorMessage = "You are not authorized to delete this scheduled transaction.";
                 return false;
@@ -1612,7 +1640,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return ActionNotFound( "Scheduled transaction not found." );
             }
 
-            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            if ( !IsAuthorizedForScheduledTransaction( scheduledTransaction ) )
             {
                 return ActionUnauthorized( "You are not authorized to update this scheduled transaction." );
             }
