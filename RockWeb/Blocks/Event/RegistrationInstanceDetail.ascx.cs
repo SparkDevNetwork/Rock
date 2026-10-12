@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Event
             {
                 var registrationInstance = GetSharedRegistrationInstance( registrationInstanceId.Value );
 
-                if ( registrationInstance != null )
+                if ( registrationInstance != null && registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     var breadCrumbReference = new PageReference( pageReference );
                     breadCrumbReference.Parameters.AddOrReplace( PageParameterKey.RegistrationInstanceId, registrationInstanceId.ToString() );
@@ -599,6 +599,24 @@ namespace RockWeb.Blocks.Event
                     nbEntityNotFound.Text = "The specified Registration Instance could not be found.";
                     nbEntityNotFound.Visible = true;
                     pnlMainContent.Visible = false;
+                    return;
+                }
+
+                /*
+                    10/12/2026 - MSE
+
+                    The instance is loaded from the page parameter and was shown
+                    read only to anyone without Edit, so a person could read an
+                    instance in a template or category they can not view. VIEW
+                    falls back to the template and its category.
+
+                    Reason: Enforce registration template security on this block.
+                */
+                if ( registrationInstance != null && !registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    nbEntityNotFound.Text = EditModeMessage.NotAuthorizedToView( Rock.Model.RegistrationInstance.FriendlyTypeName );
+                    nbEntityNotFound.Visible = true;
+                    pnlMainContent.Visible = false; 
                     return;
                 }
 

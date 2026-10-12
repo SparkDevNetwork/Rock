@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <Rock:NotificationBox ID="nbNotFound" runat="server" NotificationBoxType="Warning" Text="The specified reminder was not found." Visible="false" />
+
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">

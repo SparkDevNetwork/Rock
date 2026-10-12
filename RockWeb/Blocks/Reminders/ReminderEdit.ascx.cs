@@ -116,11 +116,20 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="reminderId">The reminder identifier.</param>
         private void LoadExistingReminder( int reminderId )
         {
-            hfReminderId.Value = reminderId.ToString();
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.Get( reminderId );
+
+                // Only the reminder's owner may view or edit it.
+                if ( !IsReminderOwnedByCurrentPerson( reminder ) )
+                {
+                    nbNotFound.Visible = true;
+                    pnlView.Visible = false;
+                    return;
+                }
+
+                hfReminderId.Value = reminderId.ToString();
 
                 IEntity entity = new EntityTypeService( rockContext ).GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
                 lEntity.Text = entity.ToString();
@@ -200,7 +209,7 @@ namespace RockWeb.Blocks.Reminders
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.Get( reminderId );
 
-                if ( reminder == null )
+                if ( !IsReminderOwnedByCurrentPerson( reminder ) )
                 {
                     return;
                 }
@@ -234,6 +243,34 @@ namespace RockWeb.Blocks.Reminders
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Determines whether the reminder exists and belongs to the current person.
+        /// </summary>
+        /// <param name="reminder">The reminder.</param>
+        /// <returns><c>true</c> if the reminder belongs to the current person; otherwise <c>false</c>.</returns>
+        private bool IsReminderOwnedByCurrentPerson( Reminder reminder )
+        {
+            /*
+                10/12/2026 - MSE
+
+                Reminder identifiers are sequential, so the ReminderId page
+                parameter (and the hidden reminder Id on save) could be changed
+                to read or rewrite another person's reminder. Reminders are
+                private to their owner everywhere else in Rock, so the block
+                now only loads and saves reminders owned by the current person.
+                Missing and not owned reminders get the same answer so Ids can
+                not be probed.
+
+                Reason: Prevent viewing and editing other people's reminders.
+            */
+            if ( reminder == null || !CurrentPersonId.HasValue )
+            {
+                return false;
+            }
+
+            return reminder.PersonAlias?.PersonId == CurrentPersonId.Value;
         }
 
         /// <summary>
