@@ -3649,10 +3649,26 @@ namespace Rock.Rest.v2
                 // to the REST action. The category picker only requests categories.
                 var canViewItems = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ );
 
+                /*
+                    10/12/2026 - MSE
+
+                    The Category Tree View block loads its items through this
+                    endpoint. People who can view that block but are not in a
+                    role with EXECUTE_READ on this controller still need to see
+                    the items, so the block issues a grant for its configured
+                    entity type. The grant only allows items, not the item
+                    filter, and each item is still checked for VIEW access.
+
+                    Reason: Allow the Category Tree View block to show items to people who can view the block.
+                */
+                var entityTypeId = options.EntityTypeGuid.HasValue ? EntityTypeCache.GetId( options.EntityTypeGuid.Value ) : null;
+                var canViewGrantedItems = entityTypeId.HasValue
+                    && grant?.IsAccessGranted( new CategoryTreeItemsSecurityGrantRule.CategoryTreeItemsAccess( entityTypeId.Value ), Security.Authorization.VIEW ) == true;
+
                 var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
                 {
                     ParentGuid = options.ParentGuid,
-                    GetCategorizedItems = options.GetCategorizedItems && canViewItems,
+                    GetCategorizedItems = options.GetCategorizedItems && ( canViewItems || canViewGrantedItems ),
                     EntityTypeGuid = options.EntityTypeGuid,
                     EntityTypeQualifierColumn = options.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = GetQualifierValueLookupResult( options.EntityTypeQualifierValue, rockContext ),
