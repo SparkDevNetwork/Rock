@@ -152,7 +152,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Resolves the entity set identified by the <c>Set</c> page parameter.
         /// </summary>
-        /// <returns>The entity set, or <c>null</c> when one was not provided or could not be found.</returns>
+        /// <returns>The entity set, or <c>null</c> when one was not provided, could not be found or was not created by the current person.</returns>
         private EntitySet GetEntitySet()
         {
             var entitySetKey = PageParameter( PageParameterKey.Set );
@@ -161,7 +161,44 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
-            return new EntitySetService( RockContext ).Get( entitySetKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var entitySet = new EntitySetService( RockContext ).Get( entitySetKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( entitySet == null || !IsEntitySetOwnedByCurrentPerson( entitySet ) )
+            {
+                return null;
+            }
+
+            return entitySet;
+        }
+
+        /// <summary>
+        /// Determines whether the entity set was created by the current person.
+        /// </summary>
+        /// <param name="entitySet">The entity set.</param>
+        /// <returns><c>true</c> if the entity set was created by the current person; otherwise <c>false</c>.</returns>
+        private bool IsEntitySetOwnedByCurrentPerson( EntitySet entitySet )
+        {
+            /*
+                10/12/2026 - MSE
+
+                Entity set identifiers are sequential, so the Set page parameter
+                could be changed to open a set another person created, such as
+                the rows of a report or giving list they can not view. Grids
+                create the set while the person is signed in, so the creator is
+                the person who should be able to merge it. The person Id is
+                compared instead of the alias Id so a merged person still matches.
+                Sets with no creator are rejected.
+
+                Reason: Prevent merging entity sets created by other people.
+            */
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( currentPerson == null || !entitySet.CreatedByPersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            var ownerPersonId = new PersonAliasService( RockContext ).GetPersonId( entitySet.CreatedByPersonAliasId.Value );
+
+            return ownerPersonId.HasValue && ownerPersonId.Value == currentPerson.Id;
         }
 
         /// <summary>
