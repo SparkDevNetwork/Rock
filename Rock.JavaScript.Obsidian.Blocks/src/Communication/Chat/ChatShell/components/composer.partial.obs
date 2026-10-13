@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-phone': isPhone }">
+    <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-thread': isThread, 'is-phone': isPhone }">
         <div v-if="isLocked" class="chat-composer-locked" data-testid="composer-locked">
             <Icon name="lock" />
             <span>Sending is paused for maintenance.</span>
@@ -27,7 +27,10 @@
             </form>
 
             <div class="chat-composer-foot">
-                <span v-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
+                <label v-if="isThread" class="chat-composer-also" data-testid="composer-also">
+                    <input v-model="isAlsoSent" type="checkbox"> {{ alsoText }}
+                </label>
+                <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
             </div>
         </template>
     </div>
@@ -40,6 +43,11 @@
     flex-direction: column;
     gap: 6px;
     padding: 0 20px 14px;
+}
+
+/* A thread's composer sits tighter in the narrower panel; a phone's padding, after it, wins there too. */
+.chat-composer.is-thread {
+    padding: 0 14px 12px;
 }
 
 .chat-composer.is-phone {
@@ -143,6 +151,24 @@
     box-shadow: none;
 }
 
+.chat-composer-also {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin: 0;
+    font-weight: 500;
+    color: var(--chat-text-2);
+    cursor: pointer;
+}
+
+/* Rock's theme nudges a checkbox down and sizes it; here it sits on the label's line at 15px. */
+.chat-composer-also input {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--chat-brand);
+}
+
 .chat-composer-locked {
     display: flex;
     gap: 10px;
@@ -233,11 +259,21 @@
         isTextKeptOnSend: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * Whether the box answers a thread: it asks for a reply and its foot offers to send the
+         * reply to the conversation too, in place of the key hint.
+         */
+        isThread: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
-        (e: "send", body: string): void;
+        /** The text, and for a thread's reply whether it is also sent to the conversation. */
+        (e: "send", body: string, isAlsoSent?: boolean): void;
         (e: "edit", body: string): void
     }>();
 
@@ -247,11 +283,23 @@
 
     const inputElement = ref<HTMLTextAreaElement>();
 
+    /** A thread reply's choice to show it in the conversation too, cleared with each send. */
+    const isAlsoSent = ref(false);
+
     // #endregion Values
 
     // #region Computed Values
 
-    const placeholder = computed((): string => props.title ? `Message ${props.title}` : "");
+    const placeholder = computed((): string => {
+        if (props.isThread) {
+            return "Reply in thread";
+        }
+
+        return props.title ? `Message ${props.title}` : "";
+    });
+
+    /** A channel is named, plain, as everywhere else; a direct message's people are "the conversation". */
+    const alsoText = computed((): string => props.isChannel && props.title ? `Also send to ${props.title}` : "Also send to the conversation");
 
     /** Whether there is something to send, which turns the send button to the church's fill. */
     const isReady = computed((): boolean => text.value.trim() !== "");
@@ -269,8 +317,14 @@
             return;
         }
 
-        emit("send", text.value);
+        if (props.isThread) {
+            emit("send", text.value, isAlsoSent.value);
+        }
+        else {
+            emit("send", text.value);
+        }
         text.value = textAfterSend(text.value, props.isTextKeptOnSend);
+        isAlsoSent.value = false;
     }
 
     /** Enter sends; Shift and Enter starts a new line. */

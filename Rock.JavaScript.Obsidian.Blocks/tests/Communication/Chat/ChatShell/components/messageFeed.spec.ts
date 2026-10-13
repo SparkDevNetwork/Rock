@@ -185,6 +185,15 @@ describe("the timeline", () => {
         expect(wrapper.findAllComponents(MessageRow)).toHaveLength(4);
     });
 
+    test("a reply still sending is drawn here only when it is also sent to the conversation", () => {
+        const threadOnly = { ...pendingRow("thread-only"), parentId: 1, isShownInChannel: false };
+        const alsoHere = { ...pendingRow("also-here"), parentId: 1, isShownInChannel: true };
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a"), threadOnly, alsoHere] });
+
+        const drawn = wrapper.findAllComponents(MessageRow).map(row => (row.props("pending") as PendingMessage | null)?.localId ?? null);
+        expect(drawn).toEqual([null, "a", "also-here"]);
+    });
+
     test("pending and failed sends sit in the timeline after the newest stored message, in today's section", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, anna, at(14, 51))]), pending: [pendingRow("a"), pendingRow("b", "failed")] });
 

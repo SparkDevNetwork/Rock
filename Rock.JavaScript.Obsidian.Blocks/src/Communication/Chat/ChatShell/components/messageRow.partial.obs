@@ -911,6 +911,15 @@
         senderNames: {
             type: Object as PropType<ReadonlyMap<string, string>>,
             default: () => new Map<string, string>()
+        },
+
+        /**
+         * Drawn in the thread drawer, where the root's thread pill and a reply's "Replied to a
+         * thread" label would only open the thread already on screen.
+         */
+        isInThread: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -1092,12 +1101,12 @@
      */
     const hasThread = computed((): boolean => {
         const message = props.message;
-        return !!message && !message.parent_id && (message.reply_count ?? 0) > 0
+        return !!message && !props.isInThread && !message.parent_id && (message.reply_count ?? 0) > 0
             && state.value !== "system" && state.value !== "card";
     });
 
     /** A reply also sent to the conversation, which says so above it and opens its thread. */
-    const isThreadReply = computed((): boolean => !!props.message?.parent_id && !!props.message.shown_in_channel);
+    const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);
 
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 

@@ -27,7 +27,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
-import { SidebarRow } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Stand-ins
 
@@ -72,6 +72,43 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
 /** The shell the test mounted last, so a test can open a draft on it. */
 let mockShell: Record<string, unknown> | null = null;
 
+/** Each conversation's timeline as the stand-in holds it, so a test can put messages in one. */
+const mockTimelines = new Map<string, { messages: TimelineMessage[] }>();
+
+/** A conversation's timeline, made once and kept, as the shell's timelines are. */
+function timelineOf(channelId: string): { messages: TimelineMessage[] } {
+    let timeline = mockTimelines.get(channelId);
+    if (!timeline) {
+        timeline = reactive({ messages: [] as TimelineMessage[], isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: null });
+        mockTimelines.set(channelId, timeline);
+    }
+
+    return timeline;
+}
+
+/** A stored text message in the shape history answers, from Anna unless a test says otherwise. */
+function storedMessage(id: number, extra: Partial<TimelineMessage> = {}): TimelineMessage {
+    return {
+        id,
+        parent_id: null,
+        person_alias_guid: "a0000002-0000-4000-8000-000000000000",
+        sender_nick_name: "Anna",
+        sender_last_name: "Kim",
+        sender_avatar_url: null,
+        sender_listed: true,
+        message_type: "text",
+        body: `message ${id}`,
+        pieces: null,
+        blocks: null,
+        created_at: new Date().toISOString(),
+        edited_at: null,
+        deleted_at: null,
+        visibility: "visible",
+        visibility_notice: null,
+        ...extra
+    } as unknown as TimelineMessage;
+}
+
 /**
  * The init box the block reads. A test may add a field an older Rock sent, to show the block no
  * longer reads it.
@@ -110,7 +147,7 @@ function fakeShell(): Record<string, unknown> {
         state,
         channels: reactive({ rows: [team, dmAnna] }),
         timelines: {
-            state: () => reactive({ messages: [], isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: null })
+            state: timelineOf
         },
         sender: { pending: () => [], retry: jest.fn(), discard: jest.fn() },
         directMessages: reactive({ draft: null, held: null, chosen: [], error: null, search: jest.fn(), choose: jest.fn(), unchoose: jest.fn(), edit: jest.fn() }),
@@ -144,7 +181,7 @@ function fakeShell(): Record<string, unknown> {
 function fakeThreads(): Record<string, unknown> {
     const state = reactive({
         list: { tab: "channel", channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isRefreshing: false, error: null, busyRootId: null, rowError: null },
-        thread: null
+        thread: null as Record<string, unknown> | null
     });
 
     return {
@@ -160,10 +197,16 @@ function fakeThreads(): Record<string, unknown> {
         loadMore: jest.fn(async () => undefined),
         closeList: jest.fn(),
         follow: jest.fn(async () => true),
-        openThread: jest.fn(async () => undefined),
+        // The open thread as the drawer draws it, its root taken from the conversation that holds it.
+        openThread: jest.fn(async (channelId: string, rootId: number) => {
+            const root = timelineOf(channelId).messages.find(m => m.id === rootId) ?? storedMessage(rootId);
+            state.thread = { channelId, rootId, root, replies: [], following: false, readCursor: null, hasMore: false, isLoading: false, error: null };
+        }),
         loadOlderReplies: jest.fn(async () => undefined),
         seen: jest.fn(),
-        closeThread: jest.fn(async () => undefined),
+        closeThread: jest.fn(async () => {
+            state.thread = null;
+        }),
         attach: jest.fn(() => () => undefined),
         applyEvent: jest.fn(),
         stop: jest.fn()
@@ -290,6 +333,7 @@ afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     mockShell = null;
+    mockTimelines.clear();
     resetConfig();
     FakeResizeObserver.all = [];
     document.body.innerHTML = "";
@@ -690,5 +734,113 @@ describe("the panel column", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
         expect(isPaneHidden(w, "frame-main")).toBe(false);
         expect(isPaneHidden(w, "frame-panel")).toBe(true);
+    });
+});
+
+describe("the thread drawer", () => {
+    // A thread pill, the "Replied to a thread" label over a reply and a row of the threads list
+    // each open the thread drawer in the panel column at the thread's root, through
+    // shell.threads.openThread(channelId, rootId). Closing it lets the thread go through
+    // closeThread and returns focus to what opened it; one opened from the list goes back to the
+    // list by its "Back to Threads" chevron, to the row that opened it.
+
+    const threadsOf = (): Record<string, jest.Mock> => mockShell!.threads as Record<string, jest.Mock>;
+
+    function panelOpen(w: VueWrapper): string | undefined {
+        return w.get("[data-testid='chat-frame']").attributes("data-panel-open");
+    }
+
+    async function openWithRoot(w: VueWrapper, extra: TimelineMessage[] = []): Promise<void> {
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>), ...extra);
+        await settle();
+    }
+
+    test("opens from a thread pill at its root, titled by the conversation, and closes back to the pill", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w);
+
+        const pill = w.get("[data-testid='frame-main'] [data-testid='thread-summary']");
+        await pill.trigger("click");
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(panelOpen(w)).toBe("true");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-subtitle']").text()).toBe("Worship Team");
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+        await settle();
+
+        expect(threadsOf().closeThread).toHaveBeenCalledTimes(1);
+        expect(panelOpen(w)).toBe("false");
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='thread-summary']").element);
+    });
+
+    test("opens from the \"Replied to a thread\" label over a reply also sent to the conversation", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w, [storedMessage(41, { parent_id: 40, shown_in_channel: true } as Partial<TimelineMessage>)]);
+
+        await w.get("[data-testid='frame-main'] [data-testid='thread-reply-label']").trigger("click");
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(panelOpen(w)).toBe("true");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+    });
+
+    test("sends a reply to the root through the shell, as asked for the conversation", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w);
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        const input = w.get("[data-testid='frame-panel'] [data-testid='composer-input']");
+        await w.get("[data-testid='frame-panel'] [data-testid='composer-also'] input").setValue(true);
+        await input.setValue("Count me in");
+        await input.trigger("keydown", { key: "Enter" });
+
+        expect(mockShell!.sendReply).toHaveBeenCalledWith(40, "Count me in", true);
+    });
+
+    test("opens from a row of the threads list with a way back to the list and the row", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        const root = timelineOf(team.channel_id).messages[0];
+        (threadsOf().state as unknown as { list: { rows: unknown[] } }).list.rows = [{
+            channel_id: team.channel_id, root, reply_count: 2, last_reply_at: root.created_at, last_reply_id: 42,
+            participant_count: 2, following: true, has_unread: false, mention_count: 0
+        }];
+        await settle();
+
+        await w.get("[data-testid='thread-row-open'][data-root-id='40']").trigger("click");
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        const back = w.get("[data-testid='frame-panel'] [data-testid='panel-back']");
+        expect(back.attributes("aria-label")).toBe("Back to Threads");
+
+        await back.trigger("click");
+        await settle();
+
+        expect(threadsOf().closeThread).toHaveBeenCalledTimes(1);
+        expect(panelOpen(w)).toBe("true");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='40']").element);
+    });
+
+    test("leaves out the drawer's reply still on its way from the conversation", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w);
+        const sending = { localId: "mine", channelId: team.channel_id, body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
+        (mockShell!.sender as { pending: () => unknown[] }).pending = () => [sending];
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        expect(w.findAll("[data-testid='frame-main'] [data-testid='pending-row']")).toHaveLength(0);
+        expect(w.findAll("[data-testid='frame-panel'] [data-testid='pending-row']")).toHaveLength(1);
     });
 });

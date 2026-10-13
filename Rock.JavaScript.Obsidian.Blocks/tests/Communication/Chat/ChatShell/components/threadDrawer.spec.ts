@@ -188,6 +188,23 @@ describe("the body", () => {
         expect(rows.every(r => r.props("isChannel") === true)).toBe(true);
     });
 
+    test("draws no thread pill under the root and no reply label over a reply also sent", () => {
+        const w = draw({ replies: [...replies(2), message(43, { parent_id: 40, shown_in_channel: true })] });
+
+        expect(w.find("[data-testid='thread-summary']").exists()).toBe(false);
+        expect(w.find("[data-testid='thread-reply-label']").exists()).toBe(false);
+    });
+
+    test("draws this root's replies still on their way after the stored ones, and no other root's", () => {
+        const sending = { localId: "mine", channelId: "c1", body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
+        const elsewhere = { ...sending, localId: "elsewhere", parentId: 99 };
+        const plainSend = { ...sending, localId: "conversation", parentId: null };
+        const w = draw({ pending: [sending, elsewhere, plainSend] });
+
+        const rows = w.findAllComponents(MessageRow);
+        expect(rows.map(r => (r.props("pending") as { localId: string } | null)?.localId ?? null)).toEqual([null, null, null, null, "mine"]);
+    });
+
     test("draws a direct message's thread in its look", () => {
         const w = draw({ conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true });
 

@@ -596,9 +596,15 @@
         return id !== null && clearedThroughId.value !== null && id <= clearedThroughId.value ? null : id;
     });
 
+    /**
+     * The sends this conversation draws: a reply that stays in its thread is drawn in the thread
+     * drawer alone, so it neither shows nor moves the conversation while it is on its way.
+     */
+    const channelPending = computed((): PendingMessage[] => props.pending.filter(row => typeof row.parentId !== "number" || row.isShownInChannel === true));
+
     const sections = computed((): FeedSection[] => layoutFeed({
         messages: props.timeline.messages,
-        pending: props.pending,
+        pending: channelPending.value,
         personAliasGuid: props.personAliasGuid,
         newDividerBeforeId: dividerBeforeId.value,
         layout: layout.value,
@@ -753,7 +759,7 @@
 
     /** Whether any of the person's sends here is still waiting on the platform's answer. */
     function isSendInFlight(): boolean {
-        return props.pending.some(row => row.status === "sending");
+        return channelPending.value.some(row => row.status === "sending");
     }
 
     /** The newest id in the timeline, or null when it is empty. */
@@ -826,7 +832,7 @@
     });
 
     // A row that goes with the id of the message it became was confirmed; one discarded has none.
-    watch(() => props.pending, (pending, previous) => {
+    watch(channelPending, (pending, previous) => {
         const kept = new Set(pending.map(row => row.localId));
         for (const row of previous ?? []) {
             if (!kept.has(row.localId) && row.confirmedId !== undefined) {
@@ -840,7 +846,7 @@
         }
     }, { flush: "sync" });
 
-    watch(() => props.pending.length, async (length, previous) => {
+    watch(() => channelPending.value.length, async (length, previous) => {
         if (length > previous) {
             const newest = newestId();
             if (newest !== null) {
@@ -854,7 +860,7 @@
 
     // A send that fails grows its row by the Not sent line, which would sit under the feed's
     // bottom fade, so the feed brings it into view.
-    watch(() => props.pending.filter(row => row.status === "failed").length, async (failed, previous) => {
+    watch(() => channelPending.value.filter(row => row.status === "failed").length, async (failed, previous) => {
         if (failed > previous) {
             await nextTick();
             scrollToBottom();

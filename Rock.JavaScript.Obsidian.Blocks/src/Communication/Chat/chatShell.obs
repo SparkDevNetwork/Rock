@@ -76,7 +76,8 @@
                              @firstShown="shell.firstMessageShown"
                              @retry="onRetry"
                              @discard="shell.sender.discard"
-                             @loadOlder="shell.loadOlder" />
+                             @loadOlder="shell.loadOlder"
+                             @openThread="onOpenThread" />
                 <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
                     {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
                     <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
@@ -131,6 +132,34 @@
                                   @follow="onFollowFromList"
                                   @loadMore="onThreadsLoadMore"
                                   @close="closePanel" />
+
+                    <ThreadDrawer v-else-if="shownPanel === 'thread' && drawnThread"
+                                  :key="drawnThread.rootId"
+                                  :root="drawnThread.root"
+                                  :replies="drawnThread.replies"
+                                  :pending="shell.sender.pending(drawnThread.channelId)"
+                                  :isFollowing="drawnThread.following"
+                                  :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
+                                  :isChannel="threadKind === 'channel'"
+                                  :isDirectMessage="threadKind === 'person'"
+                                  :isPhone="isPhone"
+                                  :isFromList="isThreadFromList"
+                                  :personAliasGuid="personAliasGuid"
+                                  :hasMore="drawnThread.hasMore"
+                                  :isLoading="drawnThread.isLoading"
+                                  :error="drawnThread.error"
+                                  :isLocked="!shell.state.isComposerOpen"
+                                  :personName="personName"
+                                  :personPhotoUrl="personPhotoUrl"
+                                  :organizationName="organizationName"
+                                  @close="closeThreadDrawer"
+                                  @back="onThreadBack"
+                                  @follow="onFollowThread"
+                                  @send="onSendReply"
+                                  @seen="shell.threads.seen"
+                                  @loadOlder="onLoadOlderReplies"
+                                  @retry="onRetry"
+                                  @discard="shell.sender.discard" />
                 </div>
             </aside>
         </div>
@@ -310,8 +339,9 @@
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
+    import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
-    import { followNotice, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
+    import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
     import { joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
@@ -320,8 +350,8 @@
 
     // #region Types
 
-    /** What the panel column can hold. */
-    type PanelKind = "threads";
+    /** What the panel column can hold: the threads list, or one thread in its drawer. */
+    type PanelKind = "threads" | "thread";
 
     /** What the push worker posts to a window of the site, in the worker's own names. */
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -389,6 +419,15 @@
     const panelElement = ref<HTMLElement>();
 
     let panelClearTimer: number | undefined;
+
+    /**
+     * The thread the drawer draws, kept after the threads let it go so the drawer narrows over its
+     * content as it closes rather than over nothing.
+     */
+    const drawnThread = shallowRef<OpenThreadState | null>(null);
+
+    /** Whether the open thread came from the threads list, so its back chevron and Escape return there. */
+    const isThreadFromList = ref(false);
 
     // The block's own width, not the window's or a container query's, since the oldest Safari Rock
     // supports has no container queries and a narrow zone of a wide window is still narrow.
@@ -526,6 +565,9 @@
         return kinds;
     });
 
+    /** The open thread's conversation kind, which picks its look and its composer's foot. */
+    const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
+
     const isSidebarHidden = computed((): boolean => isPhone.value && pane.value !== "list");
 
     const isConversationHidden = computed((): boolean => isPhone.value && pane.value !== "conversation");
@@ -606,6 +648,8 @@
             return;
         }
 
+        // The column holds one panel at a time, so the list takes an open thread's place.
+        leaveThread();
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
         panelKind.value = "threads";
@@ -643,12 +687,47 @@
     }
 
     /**
-     * A row of the threads list chose its thread. This is the thread drawer's entry: it opens the
-     * thread of that root in that conversation, which may not be the one open, in the panel column
-     * over the list, with a back chevron that returns to the list and the row that opened it.
+     * A row of the threads list chose its thread: it opens in that conversation, which may not be
+     * the one open, in the panel column in the list's place, with a back chevron that returns to
+     * the list and the row that opened it.
      */
-    function openThreadFromList(_rootId: number, _channelId: string): void {
-        // The drawer is not built yet, so choosing a row leaves the list as it is.
+    function openThreadFromList(rootId: number, channelId: string): void {
+        void openThreadDrawer(channelId, rootId, true);
+    }
+
+    /** A thread pill, or the "Replied to a thread" label over a reply, in the open conversation. */
+    function onOpenThread(rootId: number): void {
+        if (activeChannelId.value) {
+            void openThreadDrawer(activeChannelId.value, rootId, false);
+        }
+    }
+
+    /** Back to the threads list the thread was opened from, with focus on the row that opened it. */
+    async function onThreadBack(): Promise<void> {
+        const rootId = drawnThread.value?.rootId;
+        leaveThread();
+        panelKind.value = "threads";
+        shownPanel.value = "threads";
+
+        await nextTick();
+        panelElement.value?.querySelector<HTMLElement>(`[data-testid='thread-row-open'][data-root-id='${rootId}']`)?.focus();
+    }
+
+    /** The drawer's toggle: the toast says what changed once the platform took it, as the list's does. */
+    function onFollowThread(isFollowing: boolean): void {
+        if (drawnThread.value) {
+            void onFollowFromList(drawnThread.value.rootId, isFollowing);
+        }
+    }
+
+    function onSendReply(body: string, isShownInChannel: boolean): void {
+        if (drawnThread.value) {
+            void shell.value.sendReply(drawnThread.value.rootId, body, isShownInChannel);
+        }
+    }
+
+    function onLoadOlderReplies(): void {
+        void shell.value.threads.loadOlderReplies();
     }
 
     function onTurnOnPush(): void {
@@ -720,10 +799,7 @@
             shell.value.threads.closeList();
         }
 
-        window.clearTimeout(panelClearTimer);
-        panelClearTimer = window.setTimeout(() => {
-            shownPanel.value = panelKind.value ? shownPanel.value : null;
-        }, panelSlideMs());
+        finishClosing();
 
         void nextTick(() => {
             const root = rootElement.value;
@@ -731,6 +807,61 @@
                 ?? root?.querySelector<HTMLElement>("[data-testid='header-more'] button")
                 ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
         });
+    }
+
+    /**
+     * Opens a thread in the drawer. One opened from the conversation replaces whatever the column
+     * held; one opened from the list keeps the list to go back to.
+     */
+    async function openThreadDrawer(channelId: string, rootId: number, isFromList: boolean): Promise<void> {
+        if (panelKind.value === "threads" && !isFromList) {
+            shell.value.threads.closeList();
+        }
+
+        window.clearTimeout(panelClearTimer);
+        isPaneMotionOn.value = true;
+        isThreadFromList.value = isFromList;
+        panelKind.value = "thread";
+        shownPanel.value = "thread";
+        await shell.value.threads.openThread(channelId, rootId);
+    }
+
+    /** Lets go of the open thread, which saves where the reader got to, without moving focus. */
+    function leaveThread(): void {
+        if (panelKind.value === "thread") {
+            panelKind.value = null;
+            void shell.value.threads.closeThread();
+        }
+    }
+
+    /**
+     * Closes the drawer. Focus returns to the thread pill that opened it, else the root message,
+     * else the conversation's title.
+     */
+    function closeThreadDrawer(): void {
+        const rootId = drawnThread.value?.rootId;
+        const wasFromList = isThreadFromList.value;
+        leaveThread();
+        if (wasFromList) {
+            shell.value.threads.closeList();
+        }
+        finishClosing();
+
+        void nextTick(() => {
+            const root = rootElement.value;
+            const message = root?.querySelector<HTMLElement>(`[data-testid='frame-main'] [data-message-id='${rootId}']`);
+            (message?.querySelector<HTMLElement>("[data-testid='thread-summary']")
+                ?? message
+                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+        });
+    }
+
+    /** Keeps what the column drew until it has finished narrowing, then lets it go. */
+    function finishClosing(): void {
+        window.clearTimeout(panelClearTimer);
+        panelClearTimer = window.setTimeout(() => {
+            shownPanel.value = panelKind.value ? shownPanel.value : null;
+        }, panelSlideMs());
     }
 
     /** Builds the shell for a session, as the page load described it or a birthdate save did. */
@@ -899,6 +1030,21 @@
     // Any conversation that opens, from a row, a push or a new message, comes forward on a phone.
     watch([activeChannelId, draft], () => {
         isListChosen.value = false;
+    });
+
+    // The drawer keeps the thread it last drew, so a closing drawer still has its content.
+    watch(() => shell.value.threads.state.thread, thread => {
+        if (thread) {
+            drawnThread.value = thread;
+        }
+    });
+
+    // A thread belongs to the conversation it was opened over, so another conversation closes it.
+    watch([activeChannelId, draft], () => {
+        if (panelKind.value === "thread") {
+            leaveThread();
+            finishClosing();
+        }
     });
 
     // The threads list follows the open conversation; a draft has no threads, so it closes.

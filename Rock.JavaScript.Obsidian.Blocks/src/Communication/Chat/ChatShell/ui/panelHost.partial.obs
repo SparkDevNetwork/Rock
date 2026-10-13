@@ -31,6 +31,9 @@
         <div class="chat-panel-body">
             <slot />
         </div>
+
+        <!-- Under the scroller, so a thread's composer stays put while its replies scroll. -->
+        <slot name="foot" />
     </section>
 </template>
 

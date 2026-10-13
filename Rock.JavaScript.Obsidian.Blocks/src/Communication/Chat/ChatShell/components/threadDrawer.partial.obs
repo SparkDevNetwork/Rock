@@ -1,0 +1,562 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PanelHost title="Thread"
+               :subtitle="conversationTitle || null"
+               :isPhone="isPhone"
+               :backLabel="isFromList ? 'Back to Threads' : null"
+               closeLabel="Close thread"
+               @close="emit('close')"
+               @back="emit('back')">
+        <template #actions>
+            <button type="button"
+                    class="chat-th-follow"
+                    :aria-pressed="isFollowing ? 'true' : 'false'"
+                    data-testid="thread-follow"
+                    @click="emit('follow', !isFollowing)">
+                <Icon :name="isFollowing ? 'bell' : 'bell-off'" size="sm" />{{ isFollowing ? "Following" : "Follow" }}
+            </button>
+        </template>
+
+        <div ref="bodyElement" class="chat-th-body" :class="{ 'is-community': isChannel, 'is-phone': isPhone }">
+            <div v-if="hasMore" ref="topElement" class="chat-th-topmark" aria-hidden="true"></div>
+
+            <div v-if="error" class="chat-th-err" role="status" data-testid="thread-error">
+                <Icon name="alert" size="sm" />
+                <span>{{ errorSentence }}</span>
+            </div>
+
+            <template v-if="!root && isLoading">
+                <span class="chat-sr-only">Loading thread</span>
+                <div class="chat-th-skeleton" aria-hidden="true">
+                    <span v-for="index in 3" :key="index" class="chat-skeleton chat-th-sk"></span>
+                </div>
+            </template>
+
+            <template v-for="item in items" :key="item.key">
+                <div v-if="item.kind === 'thread-divider'" class="chat-th-div" data-testid="thread-divider">{{ dividerText }}</div>
+
+                <MessageRow v-else-if="item.kind !== 'group'"
+                            :message="item.message"
+                            :personAliasGuid="personAliasGuid"
+                            :organizationName="organizationName"
+                            :isChannel="isChannel"
+                            :isPhone="isPhone"
+                            :isInThread="true"
+                            :data-reply-id="item.isReply ? item.message.id : undefined" />
+
+                <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
+                    <MessageRow v-for="row in item.rows"
+                                :key="row.key"
+                                :message="row.message"
+                                :pending="row.pending"
+                                :isOwn="item.isOwn"
+                                :personAliasGuid="personAliasGuid"
+                                :personName="personName"
+                                :personPhotoUrl="personPhotoUrl"
+                                :organizationName="organizationName"
+                                :isChannel="isChannel"
+                                :position="row.position"
+                                :isPhone="isPhone"
+                                :isDirectMessage="isDirectMessage"
+                                :isArriving="!!row.pending || (!!row.message && isArriving(row.message.id))"
+                                :senderNames="senderNames"
+                                :isInThread="true"
+                                :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
+                                @retry="emit('retry', $event)"
+                                @discard="emit('discard', $event)" />
+                </div>
+            </template>
+        </div>
+
+        <template #foot>
+            <Composer isThread
+                      :title="conversationTitle"
+                      :isChannel="isChannel"
+                      :isPhone="isPhone"
+                      :isLocked="isLocked"
+                      @send="onSend" />
+        </template>
+    </PanelHost>
+</template>
+
+<style scoped>
+/* The design's Follow pill: an outline at rest, the church's tint once following. */
+.chat-th-follow {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
+    height: 30px;
+    padding: 0 12px 0 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: none;
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* The border is the church color mixed at 45 percent, the same mix the unread thread pill draws. */
+.chat-th-follow[aria-pressed="true"] {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-color: var(--chat-thread-unread-line);
+}
+
+/* Older replies are asked for as this comes into view at the top of the scroller. */
+.chat-th-topmark {
+    height: 1px;
+}
+
+.chat-th-err {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 8px 8px 11px;
+    margin: 8px 14px 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-danger-ink);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-md);
+}
+
+.chat-th-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px;
+}
+
+.chat-th-sk {
+    display: block;
+    width: 70%;
+    height: 34px;
+}
+
+.chat-th-sk:nth-child(2n) {
+    width: 52%;
+}
+
+/* "3 replies", a rule running from the words to the panel's edge. */
+.chat-th-div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 16px 18px 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+.chat-th-div::after {
+    flex: 1;
+    height: 1px;
+    content: "";
+    background: var(--chat-line);
+}
+
+/*
+    A group, as the feed draws one, in the panel's narrower room: 16px on the sender's side and 40px
+    on the far side. A phone keeps the feed's own phone padding.
+*/
+.chat-grp {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 14px;
+    padding: 0 40px 0 16px;
+}
+
+.chat-grp.is-own {
+    padding: 0 16px 0 40px;
+}
+
+.is-phone:not(.is-community) .chat-grp {
+    padding: 0 36px 0 12px;
+}
+
+.is-phone:not(.is-community) .chat-grp.is-own {
+    padding: 0 12px 0 44px;
+}
+
+.is-community .chat-grp {
+    gap: 0;
+    margin-top: 6px;
+    padding: 0;
+}
+
+/* Community's rows come 4px in from the panel's edges, except on a phone, which keeps its 12px. */
+.chat-th-body.is-community:not(.is-phone) :deep(.chat-msg.is-community) {
+    --chat-cm-pad: 16px;
+}
+
+.chat-grp :deep(.chat-msg.is-conversational) {
+    max-width: calc(min(78%, 620px) + 42px);
+}
+
+.chat-grp.is-own :deep(.chat-msg.is-conversational) {
+    align-self: flex-end;
+    max-width: min(78%, 620px);
+}
+
+.is-phone .chat-grp :deep(.chat-msg.is-conversational) {
+    max-width: calc(86% + 42px);
+}
+
+.is-phone .chat-grp.is-own :deep(.chat-msg.is-conversational) {
+    max-width: 86%;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import Composer from "./composer.partial.obs";
+    import MessageRow from "./messageRow.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import PanelHost from "../ui/panelHost.partial.obs";
+    import { messageForError } from "../errors.partial";
+    import { FeedItem, layoutFeed } from "../feedLayout.partial";
+    import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
+
+    // #region Types
+
+    /** What the drawer draws, in order: the feed's items, each marked root or reply, and the divider between. */
+    type DrawerItem =
+        | (Exclude<FeedItem, { kind: "divider" }> & { isReply: boolean })
+        | { kind: "thread-divider", key: string };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The thread's root, null until its first page arrives. */
+        root: {
+            type: Object as PropType<TimelineMessage | null>,
+            default: null
+        },
+
+        /** The replies held, oldest first. */
+        replies: {
+            type: Array as PropType<TimelineMessage[]>,
+            required: true
+        },
+
+        /** The person's sends of the thread's conversation that are not stored yet; this root's replies are drawn. */
+        pending: {
+            type: Array as PropType<PendingMessage[]>,
+            default: () => []
+        },
+
+        isFollowing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The conversation's name as the header writes it: a channel's plain, a direct message's people. */
+        conversationTitle: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** A channel's thread is drawn in Community's flat rows, a direct message's in bubbles. */
+        isChannel: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A two-person direct message names nobody over a bubble. */
+        isDirectMessage: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A phone leaves by the back chevron and never focuses the composer, whose keyboard would cover the thread. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Opened from the threads list, so Escape and the chevron go back to it. */
+        isFromList: {
+            type: Boolean,
+            default: false
+        },
+
+        personAliasGuid: {
+            type: String,
+            required: true
+        },
+
+        /** Whether older replies than those held remain. */
+        hasMore: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The first page is on its way. */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why the last page failed, shown over the replies that are held. */
+        error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** Whether the service is read only or in maintenance, so the composer gives way to a locked bar. */
+        isLocked: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The reader's own name and photo, for their messages the platform sent none with. */
+        personName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        personPhotoUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The church's name, the sender of a block post nobody signed. */
+        organizationName: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void,
+        (e: "back"): void,
+        (e: "follow", isFollowing: boolean): void,
+        (e: "send", body: string, isShownInChannel: boolean): void,
+        (e: "seen", messageId: number): void,
+        (e: "loadOlder"): void,
+        (e: "retry", localId: string): void,
+        (e: "discard", localId: string): void
+    }>();
+
+    // #region Values
+
+    /** How far from the bottom the reader may be and still be following the newest reply. */
+    const atBottomPx = 48;
+
+    /** The design's wait before the composer takes focus, so the panel has started to open. */
+    const focusDelayMs = 60;
+
+    const bodyElement = ref<HTMLElement | null>(null);
+    const topElement = ref<HTMLElement | null>(null);
+
+    let rowObserver: IntersectionObserver | null = null;
+    let topObserver: IntersectionObserver | null = null;
+    let focusTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** The newest reply when the thread was placed; anything newer arrived while it was open and rises in. */
+    let newestAtOpen: number | null = null;
+
+    /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
+    let isPlaced = false;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** This root's replies the person is still sending, as the conversation draws its own. */
+    const pendingReplies = computed((): PendingMessage[] => props.root ? props.pending.filter(row => row.parentId === props.root?.id) : []);
+
+    const items = computed((): DrawerItem[] => {
+        if (!props.root) {
+            return [];
+        }
+
+        const layout = props.isChannel ? "community" : "conversational";
+        const flatten = (messages: TimelineMessage[], pending: PendingMessage[], isReply: boolean): DrawerItem[] => layoutFeed({
+            messages,
+            pending,
+            personAliasGuid: props.personAliasGuid,
+            newDividerBeforeId: null,
+            layout,
+            now: new Date()
+        }).flatMap(section => section.items)
+            .filter((item): item is Exclude<FeedItem, { kind: "divider" }> => item.kind !== "divider")
+            .map(item => ({ ...item, isReply }));
+
+        return [
+            ...flatten([props.root], [], false),
+            { kind: "thread-divider", key: "thread-divider" },
+            ...flatten(props.replies, pendingReplies.value, true)
+        ];
+    });
+
+    /** Every reply of the thread, not only those loaded, as the root counts them. */
+    const dividerText = computed((): string => {
+        const count = props.root?.reply_count ?? props.replies.length;
+        if (count <= 0) {
+            return "No replies yet. Start the thread below.";
+        }
+
+        return `${count} ${count === 1 ? "reply" : "replies"}`;
+    });
+
+    const errorSentence = computed((): string => props.error ? messageForError(props.error) : "");
+
+    /** Each sender's name this thread holds, so a mention in a reply not stored yet can show who it names. */
+    const senderNames = computed((): ReadonlyMap<string, string> => {
+        const names = new Map<string, string>();
+        for (const message of props.root ? [props.root, ...props.replies] : props.replies) {
+            if (message.person_alias_guid && message.sender_nick_name) {
+                names.set(message.person_alias_guid.toLowerCase(), [message.sender_nick_name, message.sender_last_name].filter(part => !!part).join(" "));
+            }
+        }
+
+        return names;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSend(body: string, isAlsoSent?: boolean): void {
+        emit("send", body, isAlsoSent === true);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** The panel host's scroller, which holds this body. */
+    function scroller(): HTMLElement | null {
+        return bodyElement.value?.closest<HTMLElement>(".chat-panel-body") ?? null;
+    }
+
+    function isNearBottom(): boolean {
+        const element = scroller();
+        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < atBottomPx;
+    }
+
+    function scrollToBottom(): void {
+        const element = scroller();
+        if (element) {
+            element.scrollTop = element.scrollHeight;
+        }
+    }
+
+    function isArriving(messageId: number): boolean {
+        return newestAtOpen !== null && messageId > newestAtOpen;
+    }
+
+    function newestReplyId(): number | null {
+        return props.replies.length > 0 ? props.replies[props.replies.length - 1].id : null;
+    }
+
+    /** Opens at the newest reply, once the root is there to open at. */
+    async function place(): Promise<void> {
+        if (!props.root || isPlaced) {
+            return;
+        }
+
+        newestAtOpen = newestReplyId() ?? props.root.id;
+        await nextTick();
+        scrollToBottom();
+        observeRows();
+        isPlaced = true;
+    }
+
+    /**
+     * Watches every reply row not watched yet. A reply counts as seen once any of it is on screen,
+     * the same rule as the conversation's, and the shell keeps only the newest it is told of.
+     */
+    function observeRows(): void {
+        bodyElement.value?.querySelectorAll<HTMLElement>("[data-reply-id]:not([data-observed])").forEach(element => {
+            element.dataset.observed = "true";
+            rowObserver?.observe(element);
+        });
+    }
+
+    /** Watches the top of the scroller, so scrolling up to it asks for older replies. */
+    function observeTop(): void {
+        topObserver?.disconnect();
+        topObserver = null;
+        if (!topElement.value || typeof IntersectionObserver === "undefined") {
+            return;
+        }
+
+        topObserver = new IntersectionObserver(entries => {
+            if (isPlaced && entries.some(entry => entry.isIntersecting)) {
+                emit("loadOlder");
+            }
+        }, { root: scroller() });
+        topObserver.observe(topElement.value);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.root, () => void place());
+
+    // Older replies go in above without moving what the reader is looking at; newer ones are
+    // followed when the reader is at the bottom, and the reader's own always are.
+    watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
+        const element = scroller();
+        const fromBottom = element ? element.scrollHeight - element.scrollTop : 0;
+        const shouldFollow = isNearBottom() || pendingCount > oldPendingCount;
+
+        await nextTick();
+        observeRows();
+        if (!isPlaced || !element) {
+            return;
+        }
+
+        if (firstId !== oldFirstId && oldFirstId !== undefined && newestId === oldNewestId) {
+            element.scrollTop = element.scrollHeight - fromBottom;
+        }
+        else if (shouldFollow) {
+            scrollToBottom();
+        }
+    });
+
+    watch(topElement, observeTop);
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (typeof IntersectionObserver !== "undefined") {
+            rowObserver = new IntersectionObserver(entries => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting && document.visibilityState === "visible") {
+                        emit("seen", Number((entry.target as HTMLElement).dataset.replyId));
+                    }
+                }
+            }, { root: scroller() });
+        }
+
+        observeTop();
+        void place();
+
+        // A phone never focuses the composer on its own: the keyboard would rise over the thread.
+        if (!props.isPhone) {
+            focusTimer = setTimeout(() => {
+                focusTimer = null;
+                bodyElement.value?.closest(".chat-panel")?.querySelector<HTMLElement>("[data-testid='composer-input']")?.focus({ preventScroll: true });
+            }, focusDelayMs);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        rowObserver?.disconnect();
+        topObserver?.disconnect();
+        if (focusTimer) {
+            clearTimeout(focusTimer);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
