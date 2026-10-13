@@ -286,6 +286,11 @@ namespace Rock.Workflow.Action
                         {
                             fromEmailAddress = fromAttributeValue;
                         }
+
+                        // The email transport renders the From values as Lava. These came
+                        // from data (possibly submitted), so do not use one that contains Lava.
+                        fromEmailAddress = GetValueWithoutLava( fromEmailAddress, "From", action );
+                        fromName = GetValueWithoutLava( fromName, "From Name", action );
                     }
                 }
             }
@@ -403,10 +408,7 @@ namespace Rock.Workflow.Action
 
                 Reason: Submitted values were rendered as Lava.
             */
-            var recipients = recipientEmails
-                .SplitDelimitedValues()
-                .Select( e => e.Trim() )
-                .Where( e => e.IsNotNullOrWhiteSpace() && e.IndexOfAny( new[] { '{', '}' } ) < 0 && EmailAddressFieldValidator.IsValid( e ) )
+            var recipients = EmailAddressFieldValidator.GetValidEmailAddresses( recipientEmails, out _, out _ )
                 .Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) )
                 .ToList();
 

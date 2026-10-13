@@ -355,20 +355,30 @@ namespace Rock.Workflow.Action
                 replyToEmailAddress = replyTo.ResolveMergeFields( mergeFields );
             }
 
+            // The email transport renders these values as Lava, so do not use one
+            // that still contains Lava, for example from a submitted value.
+            fromEmailAddress = GetValueWithoutLava( fromEmailAddress, "From", action );
+            fromName = GetValueWithoutLava( fromName, "From Name", action );
+            replyToEmailAddress = GetValueWithoutLava( replyToEmailAddress, "Reply To", action );
+
             // To Email recipients list.
             if ( GetEmailsFromAttributeValue( RecipientType.SendTo, to, action, mergeFields, rockContext, out string toDelimitedEmails, out List<RockEmailMessageRecipient> toRecipients ) )
             {
                 // CC emails recipients list.
                 GetEmailsFromAttributeValue( RecipientType.CC, cc, action, mergeFields, rockContext, out string ccDelimitedEmails, out List<RockEmailMessageRecipient> ccRecipients );
-                List<string> ccEmails = BuildEmailList( ccDelimitedEmails, mergeFields, ccRecipients );
+                List<string> ccEmails = BuildEmailList( ccDelimitedEmails, ccRecipients, "CC ", action );
 
                 // BCC emails recipients list.
                 GetEmailsFromAttributeValue( RecipientType.BCC, bcc, action, mergeFields, rockContext, out string bccDelimitedEmails, out List<RockEmailMessageRecipient> bccRecipients );
-                List<string> bccEmails = BuildEmailList( bccDelimitedEmails, mergeFields, bccRecipients );
+                List<string> bccEmails = BuildEmailList( bccDelimitedEmails, bccRecipients, "BCC ", action );
 
                 if ( !string.IsNullOrWhiteSpace( toDelimitedEmails ) )
                 {
-                    Send( toDelimitedEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, attachments, out errorMessages );
+                    var toEmails = GetValidEmailAddresses( toDelimitedEmails, string.Empty, action );
+                    if ( toEmails.Any() )
+                    {
+                        Send( toEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, attachments, out errorMessages );
+                    }
                 }
                 else if ( toRecipients != null )
                 {
@@ -546,7 +556,9 @@ namespace Rock.Workflow.Action
             }
             else if ( !string.IsNullOrWhiteSpace( attributeValue ) )
             {
-                delimitedEmails = attributeValue;
+                // A value typed into the action is rendered once here. Text and Email
+                // attribute values above are used as data and are not rendered.
+                delimitedEmails = attributeValue.ResolveMergeFields( mergeFields );
                 return true;
             }
 
@@ -577,14 +589,15 @@ namespace Rock.Workflow.Action
         /// Builds a list of email addresses from either a delimited string of emails or a list of recipients.
         /// </summary>
         /// <param name="delimitedEmails">The delimited emails.</param>
-        /// <param name="mergeFields">The merge fields.</param>
         /// <param name="recipients">The recipients.</param>
+        /// <param name="recipientTypePrefix">The recipient type prefix used in log entries, for example "CC ".</param>
+        /// <param name="action">The action.</param>
         /// <returns></returns>
-        private List<string> BuildEmailList( string delimitedEmails, Dictionary<string, object> mergeFields, List<RockEmailMessageRecipient> recipients )
+        private List<string> BuildEmailList( string delimitedEmails, List<RockEmailMessageRecipient> recipients, string recipientTypePrefix, WorkflowAction action )
         {
             if ( !string.IsNullOrWhiteSpace( delimitedEmails ) )
             {
-                return delimitedEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => e ).ToList();
+                return GetValidEmailAddresses( delimitedEmails, recipientTypePrefix, action );
             }
 
             if ( recipients != null )
@@ -611,9 +624,9 @@ namespace Rock.Workflow.Action
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( string recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( List<string> recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
         {
-            var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
+            var recipients = recipientEmails.Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
             Send( recipients, fromPersonId, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
         }
 
