@@ -527,7 +527,6 @@ namespace Rock.Blocks.Group
                 .AddField( "didAttendCount", a => a.DidAttendCount )
                 .AddField( "attendanceRate", a => a.AttendanceRate )
                 .AddTextField( "notes", a => a.Notes )
-                .AddTextField( "notesPlain", a => a.Notes.StripHtml() )
                 .AddTextField( "attendanceType", a => a.AttendanceType )
                 .AddField( "locationId", a => a.LocationId )
                 .AddField( "scheduleId", a => a.ScheduleId )
