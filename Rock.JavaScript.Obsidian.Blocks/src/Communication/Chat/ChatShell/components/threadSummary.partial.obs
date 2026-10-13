@@ -2,11 +2,12 @@
 <template>
     <button type="button"
             class="chat-tsum"
-            :class="{ 'is-community': isCommunity, 'is-unread': isUnread }"
+            :class="{ 'is-community': isCommunity, 'is-unread': isUnread, 'is-popping': isPopping }"
             data-testid="thread-summary"
             :aria-label="ariaLabel"
             :title="isCommunity ? undefined : `Last reply ${lastTime}`"
-            @click="emit('open', message.id)">
+            @click="emit('open', message.id)"
+            @animationend.self="isPopping = false">
 
         <!-- The pill: icon, count and the newest repliers, the unread dot at its outer top corner. -->
         <template v-if="!isCommunity">
@@ -48,6 +49,25 @@
     border-radius: var(--chat-r-full);
     box-shadow: 0 0 0 2px var(--chat-surface);
     transition: border-color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
+}
+
+/* A thread that starts while the reader watches pops in as a new reaction does. */
+.chat-tsum.is-popping {
+    animation: chat-tsum-pop var(--chat-d-rx-pop) var(--chat-ease-spring);
+}
+
+@keyframes chat-tsum-pop {
+    from {
+        opacity: .2;
+        transform: scale(var(--chat-react-from));
+    }
+}
+
+/* Reduced motion: the sheet holds the pop at full size, so what is left is a short fade. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-tsum.is-popping {
+        animation-duration: var(--chat-t-fast);
+    }
 }
 
 .chat-tsum :deep(.chat-ic) {
@@ -205,7 +225,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, getCurrentInstance, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { dayLabel, timeLabel } from "../feedLayout.partial";
@@ -228,6 +248,17 @@
     const emit = defineEmits<{
         (e: "open", rootId: number): void
     }>();
+
+    // #region Values
+
+    /*
+        The summary is drawn only once a root has a reply, so it mounts either with its row, as a
+        conversation draws, or later, when the first reply arrives under a row already on screen.
+        Only the second pops; a page load popping every thread at once would be noise.
+    */
+    const isPopping = ref(getCurrentInstance()?.parent?.isMounted === true);
+
+    // #endregion Values
 
     // #region Computed Values
 

@@ -132,6 +132,7 @@ describe("the tokens drawn from the church color", () => {
             "mn-bg-own": "rgba(255, 121, 29, 0.16)",
             "announcement-pill": "rgba(255, 121, 29, 0.13)",
             "announcement-ring": "#EFB999",
+            "thread-unread-line": "#F0B48F",
             "row-announcement": "#FDF5F0",
             "badge-quiet": "#F9E6DD",
             "current-line": "#ECC4AE",
@@ -153,6 +154,7 @@ describe("the tokens drawn from the church color", () => {
             "mn-bg-own": "rgba(255, 121, 29, 0.16)",
             "announcement-pill": "rgba(255, 121, 29, 0.13)",
             "announcement-ring": "#7A4828",
+            "thread-unread-line": "#854C27",
             "row-announcement": "#1C1717",
             "badge-quiet": "#2C1B12",
             "current-line": "#64402A",
@@ -169,7 +171,7 @@ describe("the tokens drawn from the church color", () => {
     // wash 10% and 15% over the sidebar in srgb). The message row's mixes, all in srgb: a mention
     // chip at 11%, 18% on hover and 16% inside the person's own bubble, and the announcement pill
     // at 13%, each as alpha over whatever is under it; the announcement bubble's ring 40% over the
-    // line (#E4E4EC, #22272F); Community's announcement row 6% over the surface (#FDFDFD,
+    // line (#E4E4EC, #22272F), and an unread thread's border 45% over it; Community's announcement row 6% over the surface (#FDFDFD,
     // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10); the open room's
     // icon box 30% and the focused search box 55% over the line; the focused composer's border 60% over
     // the line, and its glow the church color at 60% alpha.
@@ -188,6 +190,7 @@ describe("the tokens drawn from the church color", () => {
             "mn-bg-own": "rgba(30, 138, 84, 0.16)",
             "announcement-pill": "rgba(30, 138, 84, 0.13)",
             "announcement-ring": "#95C0AF",
+            "thread-unread-line": "#8BBCA8",
             "row-announcement": "#F0F6F3",
             "badge-quiet": "#D9E9E4",
             "current-line": "#A9C9BE",
@@ -209,6 +212,7 @@ describe("the tokens drawn from the church color", () => {
             "mn-bg-own": "rgba(30, 138, 84, 0.16)",
             "announcement-pill": "rgba(30, 138, 84, 0.13)",
             "announcement-ring": "#204F3E",
+            "thread-unread-line": "#205440",
             "row-announcement": "#0E181B",
             "badge-quiet": "#0D1E1A",
             "current-line": "#21453A",

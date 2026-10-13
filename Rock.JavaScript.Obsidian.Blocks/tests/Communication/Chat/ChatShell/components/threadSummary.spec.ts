@@ -207,6 +207,31 @@ describe("in the message row", () => {
         expect(summary.attributes("disabled")).toBeUndefined();
     });
 
+    // A thread that starts while the reader watches pops in; one already there when the
+    // conversation draws does not, or a page load would pop every thread at once.
+    test.each([["a direct message", false], ["a channel", true]] as const)("a root's first reply pops its thread in %s", async (_kind, isChannel) => {
+        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root({ reply_count: 0, last_reply_at: null, repliers: null }), isChannel, position: "single" } });
+
+        await row.setProps({ message: root({ reply_count: 1, repliers: fivePeople.slice(0, 1) }) });
+
+        expect(row.get("[data-testid='thread-summary']").classes()).toContain("is-popping");
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a thread already there when the row draws does not pop in %s", (_kind, isChannel) => {
+        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root(), isChannel, position: "single" } });
+
+        expect(row.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
+    });
+
+    test("the pop ends with its animation, so a later redraw does not replay it", async () => {
+        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root({ reply_count: 0, last_reply_at: null, repliers: null }), position: "single" } });
+        await row.setProps({ message: root({ reply_count: 1, repliers: fivePeople.slice(0, 1) }) });
+
+        await row.get("[data-testid='thread-summary']").trigger("animationend", { animationName: "chat-tsum-pop" });
+
+        expect(row.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
+    });
+
     test("opening the thread from the row names the root", async () => {
         const row = mount(MessageRow, { props: { personAliasGuid: me, message: root(), position: "single" } });
 

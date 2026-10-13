@@ -22,8 +22,8 @@
 
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
 export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "flash" | "own-hairline"
-    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet"
-    | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
+    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"
+    | "badge-quiet" | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
 
 /** The variable only Rock's newer themes define; the older themes have no dark mode. */
 const rockThemeV2Probe = "--popup-box-shadow";
@@ -191,12 +191,14 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
 
     // The message row's tints. The chips and the pill are the church color over whatever lies
     // under them, a bubble or a tinted row, so they stay alpha; the rest sit on a known background.
-    const row = (surface: string, line: string, sidebar: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet"> => ({
+    // An unread thread's border is drawn a little stronger than the announcement ring, 45% over the line.
+    const row = (surface: string, line: string, sidebar: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement" | "badge-quiet"> => ({
         "mn-bg": withAlpha(church, 0.11),
         "mn-bg-hover": withAlpha(church, 0.18),
         "mn-bg-own": withAlpha(church, 0.16),
         "announcement-pill": withAlpha(church, 0.13),
         "announcement-ring": toHex(mixSrgb(church, parseColor(line)!, 0.40)),
+        "thread-unread-line": toHex(mixSrgb(church, parseColor(line)!, 0.45)),
         "row-announcement": toHex(mixSrgb(church, parseColor(surface)!, 0.06)),
         "badge-quiet": toHex(mixSrgb(church, parseColor(sidebar)!, 0.14))
     });
