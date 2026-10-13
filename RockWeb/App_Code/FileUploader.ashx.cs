@@ -388,10 +388,48 @@ namespace RockWeb
         private const string UnknownMimeType = "application/octet-stream";
 
         /// <summary>
+        /// The mime types that clients and remote servers send when they do not know the type
+        /// of the file.
+        /// </summary>
+        private static readonly HashSet<string> _unknownMimeTypes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            UnknownMimeType,
+            "binary/octet-stream",
+            "application/x-octet-stream"
+        };
+
+        /// <summary>
         /// The image mime types that can be inferred from the file name when the client did not
         /// supply a usable mime type.
         /// </summary>
         private static readonly HashSet<string> _inferableMimeTypes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            "image/png",
+            "image/jpeg",
+            "image/gif",
+            "image/bmp",
+            "image/tiff",
+            "image/webp",
+            "image/heic",
+            "image/heif"
+        };
+
+        /// <summary>
+        /// The image file extensions that MimeMapping does not know or maps to a non-standard
+        /// mime type.
+        /// </summary>
+        private static readonly Dictionary<string, string> _imageExtensionMimeTypes = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            { ".webp", "image/webp" },
+            { ".heic", "image/heic" },
+            { ".heif", "image/heif" },
+            { ".jfif", "image/jpeg" }
+        };
+
+        /// <summary>
+        /// The inferable image mime types that System.Drawing can decode to check dimensions.
+        /// </summary>
+        private static readonly HashSet<string> _decodableMimeTypes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
         {
             "image/png",
             "image/jpeg",
@@ -435,12 +473,15 @@ namespace RockWeb
 
             var mimeType = uploadedFile.ContentType;
 
-            if ( mimeType.IsNotNullOrWhiteSpace() && !mimeType.Equals( UnknownMimeType, StringComparison.OrdinalIgnoreCase ) )
+            if ( mimeType.IsNotNullOrWhiteSpace() && !_unknownMimeTypes.Contains( mimeType.Trim() ) )
             {
                 return mimeType;
             }
 
-            var inferredMimeType = MimeMapping.GetMimeMapping( uploadedFile.FileName );
+            if ( !_imageExtensionMimeTypes.TryGetValue( Path.GetExtension( uploadedFile.FileName ?? string.Empty ), out var inferredMimeType ) )
+            {
+                inferredMimeType = MimeMapping.GetMimeMapping( uploadedFile.FileName );
+            }
 
             if ( _inferableMimeTypes.Contains( inferredMimeType ) )
             {
@@ -511,7 +552,12 @@ namespace RockWeb
                     {
                         // The inferred image type could not be decoded, so store the
                         // file as an unknown type rather than failing the upload.
-                        mimeType = UnknownMimeType;
+                        // System.Drawing cannot decode types such as webp and heic,
+                        // so those keep their inferred type without a size check.
+                        if ( _decodableMimeTypes.Contains( mimeType ) )
+                        {
+                            mimeType = UnknownMimeType;
+                        }
                     }
 
                     if ( image != null )

@@ -34,6 +34,49 @@ namespace Rock.Utility
     public static class FileUtilities
     {
         /// <summary>
+        /// Gets the image mime type of the content by reading its first bytes.
+        /// Use this instead of trusting a mime type sent by a client or remote
+        /// server. The stream is returned to its original position.
+        /// </summary>
+        /// <param name="stream">The content stream. It must be able to seek.</param>
+        /// <returns>The image mime type, such as "image/jpeg", or <c>null</c> if the stream can't seek or the content is not a supported image.</returns>
+        public static string GetImageMimeType( Stream stream )
+        {
+            // Reading a stream that can't seek would lose the bytes we read,
+            // and the caller would then save a file missing its start.
+            if ( stream == null || !stream.CanSeek )
+            {
+                return null;
+            }
+
+            var startPosition = stream.Position;
+
+            // This is more than any supported image format needs to be detected.
+            var header = new byte[1024];
+            var length = 0;
+            int read;
+
+            while ( length < header.Length && ( read = stream.Read( header, length, header.Length - length ) ) > 0 )
+            {
+                length += read;
+            }
+
+            stream.Position = startPosition;
+
+            if ( length == 0 )
+            {
+                return null;
+            }
+
+            if ( length < header.Length )
+            {
+                Array.Resize( ref header, length );
+            }
+
+            return SixLabors.ImageSharp.Image.DetectFormat( header )?.DefaultMimeType;
+        }
+
+        /// <summary>
         /// Determines whether the path is the folder itself or something inside
         /// of it once both have been fully resolved. This should be used before
         /// accessing any path that was built from untrusted input, such as a

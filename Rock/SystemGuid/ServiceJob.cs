@@ -615,5 +615,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.11 Data Migrations to clean up unsafe Social Media Account attribute values.
         /// </summary>
         public const string DATA_MIGRATIONS_1711_CLEAN_SOCIAL_MEDIA_ACCOUNT_VALUES = "230F32E9-68A9-4741-BEA2-5B5C020A761E";
+
+        /// <summary>
+        /// The job to run Post v17.11 Data Migrations to fix the mime type of person photos uploaded through the profile photo REST API.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1711_FIX_PERSON_IMAGE_MIME_TYPES = "A7ABFE1B-8160-4507-BAE2-505A3DB96217";
     }
 }
