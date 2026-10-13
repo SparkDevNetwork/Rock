@@ -28,6 +28,13 @@
         </div>
 
         <div class="chat-header-actions">
+            <IconButton v-if="isThreadsOffered && !isPhone"
+                        icon="thread"
+                        label="Threads"
+                        data-testid="header-threads"
+                        :aria-expanded="isThreadsOpen ? 'true' : 'false'"
+                        @click="emit('threads')" />
+
             <IconButton v-if="isPushOffered && !isPhone"
                         icon="bell"
                         label="Turn on notifications"
@@ -322,7 +329,8 @@
     const emit = defineEmits<{
         (e: "turnOnPush"): void,
         (e: "back"): void,
-        (e: "backOnline"): void
+        (e: "backOnline"): void,
+        (e: "threads"): void
     }>();
 
     const props = defineProps({
@@ -391,6 +399,18 @@
             default: false
         },
 
+        /** Whether to offer the Threads panel, which needs a conversation that exists. */
+        isThreadsOffered: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the Threads panel is open, which its button shows as expanded. */
+        isThreadsOpen: {
+            type: Boolean,
+            default: false
+        },
+
         /** Whether no conversation or draft is open, which leaves the bar out and keeps only the banners. */
         isEmpty: {
             type: Boolean,
@@ -411,7 +431,19 @@
     const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(name => ({ name })));
 
     /** The phone's overflow menu; empty leaves the button out, since a menu of nothing is a dead end. */
-    const moreItems = computed((): MenuItem[] => props.isPushOffered ? [{ key: "push", label: "Turn on notifications", icon: "bell" }] : []);
+    const moreItems = computed((): MenuItem[] => {
+        const items: MenuItem[] = [];
+
+        if (props.isThreadsOffered) {
+            items.push({ key: "threads", label: "Threads", icon: "thread" });
+        }
+
+        if (props.isPushOffered) {
+            items.push({ key: "push", label: "Turn on notifications", icon: "bell" });
+        }
+
+        return items;
+    });
 
     /** Which banner the connection opens: offline while lost, then back online while catching up after it. */
     const connectionBanner = computed((): "warning" | "info" | null => {
@@ -429,6 +461,9 @@
     function onMoreSelect(key: string): void {
         if (key === "push") {
             emit("turnOnPush");
+        }
+        else if (key === "threads") {
+            emit("threads");
         }
     }
 

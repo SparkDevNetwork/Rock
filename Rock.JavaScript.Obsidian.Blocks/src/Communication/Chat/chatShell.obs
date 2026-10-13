@@ -14,7 +14,12 @@
             {{ refusal }}
         </NotificationBox>
 
-        <div v-else class="chat-frame" :class="{ 'is-pane-motion-on': isPaneMotionOn }" data-testid="chat-frame" :data-pane="pane">
+        <div v-else
+             class="chat-frame"
+             :class="{ 'is-pane-motion-on': isPaneMotionOn }"
+             data-testid="chat-frame"
+             :data-pane="pane"
+             :data-panel-open="panelKind ? 'true' : 'false'">
             <div class="chat-frame-side"
                  data-testid="frame-sidebar"
                  :aria-hidden="isSidebarHidden ? 'true' : undefined"
@@ -48,6 +53,9 @@
                             :isPushOffered="shell.state.isPushOffered"
                             :isPhone="isPhone"
                             :isEmpty="!activeChannelId && !draft"
+                            :isThreadsOffered="!!activeChannelId"
+                            :isThreadsOpen="panelKind === 'threads'"
+                            @threads="onThreads"
                             @turnOnPush="onTurnOnPush"
                             @back="onBack"
                             @backOnline="onBackOnline" />
@@ -90,8 +98,24 @@
                           @edit="shell.directMessages.edit" />
             </section>
 
-            <!-- The panel column, closed until a thread or a list opens in it. -->
-            <aside class="chat-frame-panel" data-testid="frame-panel" aria-hidden="true"></aside>
+            <!--
+                The panel column, closed until a thread or a list opens in it. It holds one panel
+                at a time, each drawn in the shared panel host; what it held stays while it closes,
+                so the column narrows over its content rather than over nothing.
+            -->
+            <aside ref="panelElement"
+                   class="chat-frame-panel"
+                   data-testid="frame-panel"
+                   :aria-hidden="isPanelHidden ? 'true' : undefined"
+                   :inert="isPanelHidden || undefined"
+                   :style="isPanelGone ? goneStyle : undefined">
+                <div class="chat-frame-panel-inner">
+                    <PanelHost v-if="shownPanel === 'threads'"
+                               title="Threads"
+                               :isPhone="isPhone"
+                               @close="closePanel" />
+                </div>
+            </aside>
         </div>
 
         <DirectMessagePicker v-model="isPickerShown"
@@ -155,9 +179,34 @@
     background: var(--chat-surface);
 }
 
+.chat-frame[data-panel-open="true"] {
+    grid-template-columns: 296px minmax(0, 1fr) 392px;
+}
+
 .chat-frame-panel {
     min-width: 0;
+    min-height: 0;
     overflow: hidden;
+    background: var(--chat-surface);
+    border-left: 1px solid var(--chat-line);
+}
+
+.chat-frame[data-panel-open="false"] .chat-frame-panel {
+    border-left-color: transparent;
+}
+
+/* The content keeps its full width while the column opens around it, fading in as it slides home. */
+.chat-frame-panel-inner {
+    width: 392px;
+    height: 100%;
+    opacity: 0;
+    transform: translateX(var(--chat-drawer-shift));
+    transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-panel) var(--chat-ease-in);
+}
+
+.chat-frame[data-panel-open="true"] .chat-frame-panel-inner {
+    opacity: 1;
+    transform: none;
 }
 
 /* A phone: one pane fills the frame and the other waits beside it, the list a little to the left. */
@@ -166,7 +215,8 @@
 }
 
 .chat-shell[data-phone="true"] .chat-frame-side,
-.chat-shell[data-phone="true"] .chat-frame-main {
+.chat-shell[data-phone="true"] .chat-frame-main,
+.chat-shell[data-phone="true"] .chat-frame-panel {
     position: absolute;
     top: 0;
     right: 0;
@@ -176,15 +226,28 @@
 
 /* Only a move the person made slides; the conversation a link opens is simply there. */
 .chat-shell[data-phone="true"] .chat-frame.is-pane-motion-on .chat-frame-side,
-.chat-shell[data-phone="true"] .chat-frame.is-pane-motion-on .chat-frame-main {
+.chat-shell[data-phone="true"] .chat-frame.is-pane-motion-on .chat-frame-main,
+.chat-shell[data-phone="true"] .chat-frame.is-pane-motion-on .chat-frame-panel {
     transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
+/* The panel is a third pane over the conversation, waiting off to the right until it opens. */
 .chat-shell[data-phone="true"] .chat-frame-panel {
-    display: none;
+    z-index: 8;
+    border-left: 0;
+    transform: translateX(100%);
 }
 
-.chat-shell[data-phone="true"] .chat-frame[data-pane="conversation"] .chat-frame-side {
+.chat-shell[data-phone="true"] .chat-frame[data-pane="panel"] .chat-frame-panel {
+    transform: none;
+}
+
+.chat-shell[data-phone="true"] .chat-frame-panel-inner {
+    width: 100%;
+}
+
+.chat-shell[data-phone="true"] .chat-frame[data-pane="conversation"] .chat-frame-side,
+.chat-shell[data-phone="true"] .chat-frame[data-pane="panel"] .chat-frame-side {
     pointer-events: none;
     opacity: 0;
     transform: translateX(-24%);
@@ -230,6 +293,7 @@
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
+    import PanelHost from "./ChatShell/ui/panelHost.partial.obs";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
     import { joinNames } from "./ChatShell/stores/channelStore.partial";
@@ -237,6 +301,9 @@
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
 
     // #region Types
+
+    /** What the panel column can hold. */
+    type PanelKind = "threads";
 
     /** What the push worker posts to a window of the site, in the worker's own names. */
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -287,12 +354,23 @@
     // Safari Rock supports ignores inert and would still let Tab walk into it.
     const isSidebarGone = ref(false);
     const isConversationGone = ref(false);
+    const isPanelGone = ref(true);
     const goneStyle: StyleValue = { visibility: "hidden" };
 
     /** The design's pane slide, used when the sheet is not on the page. */
     const fallbackPaneSlideMs = 300;
 
     let paneGoneTimer: number | undefined;
+
+    /** The panel open in the right-hand column, or null while it is closed. */
+    const panelKind = ref<PanelKind | null>(null);
+
+    /** What the column draws: the open panel, kept through its close so it narrows over its content. */
+    const shownPanel = ref<PanelKind | null>(null);
+
+    const panelElement = ref<HTMLElement>();
+
+    let panelClearTimer: number | undefined;
 
     // The block's own width, not the window's or a container query's, since the oldest Safari Rock
     // supports has no container queries and a narrow zone of a wide window is still narrow.
@@ -395,12 +473,24 @@
         return `${others + 1} people`;
     });
 
-    /** Which pane a phone shows: the conversation once one is open, until Back asks for the list. */
-    const pane = computed((): "list" | "conversation" => (activeChannelId.value || draft.value) && !isListChosen.value ? "conversation" : "list");
+    /**
+     * Which pane a phone shows: the conversation once one is open, until Back asks for the list,
+     * and an open panel over it.
+     */
+    const pane = computed((): "list" | "conversation" | "panel" => {
+        if (!(activeChannelId.value || draft.value) || isListChosen.value) {
+            return "list";
+        }
 
-    const isSidebarHidden = computed((): boolean => isPhone.value && pane.value === "conversation");
+        return panelKind.value ? "panel" : "conversation";
+    });
 
-    const isConversationHidden = computed((): boolean => isPhone.value && pane.value === "list");
+    const isSidebarHidden = computed((): boolean => isPhone.value && pane.value !== "list");
+
+    const isConversationHidden = computed((): boolean => isPhone.value && pane.value !== "conversation");
+
+    /** A closed panel is out of reach everywhere; an open one only while a phone shows another pane. */
+    const isPanelHidden = computed((): boolean => !panelKind.value || (isPhone.value && pane.value !== "panel"));
 
     // #endregion Computed Values
 
@@ -464,6 +554,30 @@
         notices.value = notices.value.filter(n => n.code !== notice.code);
     }
 
+    /** The header's Threads opens the open conversation's threads, or closes them when they are open. */
+    async function onThreads(): Promise<void> {
+        if (panelKind.value === "threads") {
+            closePanel();
+            return;
+        }
+
+        if (!activeChannelId.value) {
+            return;
+        }
+
+        window.clearTimeout(panelClearTimer);
+        isPaneMotionOn.value = true;
+        panelKind.value = "threads";
+        shownPanel.value = "threads";
+        void shell.value.threads.openList(activeChannelId.value);
+
+        // Focus goes to the panel's first control, or its X or back chevron when it has none yet.
+        await nextTick();
+        const panel = panelElement.value;
+        (panel?.querySelector<HTMLElement>("[data-autofocus]")
+            ?? panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']"))?.focus();
+    }
+
     function onTurnOnPush(): void {
         void shell.value.turnOnPush();
     }
@@ -517,6 +631,34 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Closes the panel column. Focus returns to the header button that opened it, or on a phone
+     * to the overflow button it was chosen from, else the conversation's title.
+     */
+    function closePanel(): void {
+        if (!panelKind.value) {
+            return;
+        }
+
+        const closed = panelKind.value;
+        panelKind.value = null;
+        if (closed === "threads") {
+            shell.value.threads.closeList();
+        }
+
+        window.clearTimeout(panelClearTimer);
+        panelClearTimer = window.setTimeout(() => {
+            shownPanel.value = panelKind.value ? shownPanel.value : null;
+        }, panelSlideMs());
+
+        void nextTick(() => {
+            const root = rootElement.value;
+            (root?.querySelector<HTMLElement>(`[data-testid='header-${closed}']`)
+                ?? root?.querySelector<HTMLElement>("[data-testid='header-more'] button")
+                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+        });
+    }
 
     /** Builds the shell for a session, as the page load described it or a birthdate save did. */
     function buildShell(session: ShellOptions["session"]): ReturnType<typeof createChatShell> {
@@ -622,6 +764,16 @@
         return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
     }
 
+    /** How long the panel column takes to close, which its content stays drawn through. */
+    function panelSlideMs(): number {
+        const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+        if (isReduced || !rootElement.value) {
+            return 0;
+        }
+
+        return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
+    }
+
     /** The browser's local storage, or null where the browser blocks it. */
     function safeLocalStorage(): Storage | null {
         try {
@@ -650,14 +802,16 @@
     });
 
     // A pane coming into view is reachable at once; one leaving is hidden after it has slid away.
-    watch([isSidebarHidden, isConversationHidden], () => {
+    watch([isSidebarHidden, isConversationHidden, isPanelHidden], () => {
         window.clearTimeout(paneGoneTimer);
         isSidebarGone.value &&= isSidebarHidden.value;
         isConversationGone.value &&= isConversationHidden.value;
+        isPanelGone.value &&= isPanelHidden.value;
 
         const finish = (): void => {
             isSidebarGone.value = isSidebarHidden.value;
             isConversationGone.value = isConversationHidden.value;
+            isPanelGone.value = isPanelHidden.value;
         };
 
         const slideMs = paneSlideMs();
@@ -672,6 +826,20 @@
     // Any conversation that opens, from a row, a push or a new message, comes forward on a phone.
     watch([activeChannelId, draft], () => {
         isListChosen.value = false;
+    });
+
+    // The threads list follows the open conversation; a draft has no threads, so it closes.
+    watch(activeChannelId, channelId => {
+        if (panelKind.value !== "threads") {
+            return;
+        }
+
+        if (channelId) {
+            void shell.value.threads.openList(channelId);
+        }
+        else {
+            closePanel();
+        }
     });
 
     // #endregion Watchers
@@ -696,6 +864,7 @@
     onBeforeUnmount(() => {
         resizeObserver?.disconnect();
         window.clearTimeout(paneGoneTimer);
+        window.clearTimeout(panelClearTimer);
         navigator.serviceWorker?.removeEventListener("message", onWorkerMessage);
         void shell.value.stop();
     });

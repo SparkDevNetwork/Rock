@@ -67,6 +67,12 @@
     --chat-announcement-pill: var(--chat-announcement-pill-light, rgba(255, 121, 29, .13));
     --chat-announcement-ring: var(--chat-announcement-ring-light, #EFB999);
     --chat-row-announcement: var(--chat-row-announcement-light, #FDF5F0);
+    /*
+        An unread thread pill's border: the church color mixed into the line. The design writes 45
+        percent; the announcement ring's 40 percent is the nearest mix already worked out in script
+        for both themes, which the browsers Rock supports cannot do in CSS.
+    */
+    --chat-thread-unread-line: var(--chat-announcement-ring);
     --chat-badge-quiet: var(--chat-badge-quiet-light, #F9E6DD);
     /* The sidebar: the open room's icon box and the focused search box, in the church color. */
     --chat-current-line: var(--chat-current-line-light, #ECC4AE);

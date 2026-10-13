@@ -74,7 +74,8 @@
                                     :senderNames="senderNames"
                                     :data-message-id="row.message?.id"
                                     @retry="emit('retry', $event)"
-                                    @discard="emit('discard', $event)" />
+                                    @discard="emit('discard', $event)"
+                                    @openThread="emit('openThread', $event)" />
                     </div>
                 </template>
             </section>
@@ -530,7 +531,8 @@
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
         (e: "loadOlder"): void,
-        (e: "markRead", messageId: number): void
+        (e: "markRead", messageId: number): void,
+        (e: "openThread", rootId: number): void
     }>();
 
     // #region Values

@@ -1,0 +1,175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <section class="chat-panel"
+             data-testid="panel-host"
+             :aria-label="title"
+             @keydown="onKeydown">
+        <div class="chat-panel-hdr">
+            <IconButton v-if="isBackShown"
+                        class="chat-panel-back"
+                        icon="left"
+                        :label="backLabel ?? 'Back'"
+                        data-testid="panel-back"
+                        @click="leave" />
+
+            <span class="chat-panel-title">
+                <b data-testid="panel-title">{{ title }}</b>
+                <span v-if="subtitle" data-testid="panel-subtitle">{{ subtitle }}</span>
+            </span>
+
+            <slot name="actions" />
+
+            <IconButton v-if="!isPhone"
+                        icon="x"
+                        :label="closeLabel"
+                        data-testid="panel-close"
+                        @click="emit('close')" />
+        </div>
+
+        <slot name="top" />
+
+        <div class="chat-panel-body">
+            <slot />
+        </div>
+    </section>
+</template>
+
+<style scoped>
+/* The panel column's one frame: the thread drawer and every list share it. */
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+/* 64px with its rule, so it lines up with the sidebar's and the conversation's headers. */
+.chat-panel-hdr {
+    display: flex;
+    flex: none;
+    gap: 8px;
+    align-items: center;
+    height: 64px;
+    padding: 0 10px 0 18px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+/* Reached through the button's own root, which a scoped rule here does not mark. */
+.chat-panel-hdr :deep(.chat-panel-back) {
+    margin-left: -8px;
+}
+
+.chat-panel-title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.chat-panel-title b {
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-panel-title span {
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-panel-body {
+    flex: 1;
+    min-height: 0;
+    padding: 4px 0 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+/* Clipped where the browser can, so a scroll into view never moves the body sideways. */
+@supports (overflow: clip) {
+    .chat-panel-body {
+        overflow-x: clip;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import IconButton from "./iconButton.partial.obs";
+
+    const props = defineProps({
+        /** The panel's name, in its header and as its label. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The line under the title, such as the conversation a thread belongs to; null for none. */
+        subtitle: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Whether the chat is in its one-pane phone layout, where a panel leaves by its back chevron and has no X. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A back chevron with this label, which goes back rather than closing; null for none. */
+        backLabel: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** What the X says to a screen reader and in its tooltip. */
+        closeLabel: {
+            type: String as PropType<string>,
+            default: "Close panel"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void,
+        (e: "back"): void
+    }>();
+
+    // #region Computed Values
+
+    /** A phone always leaves by the chevron; a wide block shows one only when there is somewhere to go back to. */
+    const isBackShown = computed((): boolean => props.isPhone || props.backLabel !== null);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape" && !event.defaultPrevented) {
+            event.preventDefault();
+            leave();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Back to where the panel was opened from when it has a back label, else closed. */
+    function leave(): void {
+        if (props.backLabel !== null) {
+            emit("back");
+        }
+        else {
+            emit("close");
+        }
+    }
+
+    // #endregion Functions
+</script>

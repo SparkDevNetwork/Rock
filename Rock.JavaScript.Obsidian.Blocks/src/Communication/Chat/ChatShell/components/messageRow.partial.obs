@@ -50,6 +50,13 @@
 
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
         <template v-else-if="layout === 'community'">
+            <button v-if="isThreadReply"
+                    type="button"
+                    class="chat-thread-label"
+                    data-testid="thread-reply-label"
+                    @click="onOpenRepliedThread">
+                <Icon name="thread" size="xs" />Replied to a thread
+            </button>
             <div class="chat-cm-gutter">
                 <span v-if="isHead" class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
                 <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
@@ -74,12 +81,20 @@
                     <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
+                <ThreadSummary v-if="hasThread && message" :message="message" isCommunity @open="emit('openThread', $event)" />
             </div>
         </template>
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
         <template v-else>
             <div v-if="isNameShown" class="chat-msg-name" data-testid="sender-name">{{ displayName }}</div>
+            <button v-if="isThreadReply"
+                    type="button"
+                    class="chat-thread-label"
+                    data-testid="thread-reply-label"
+                    @click="onOpenRepliedThread">
+                <Icon name="thread" size="xs" />Replied to a thread
+            </button>
             <div class="chat-msg-line">
                 <span v-if="!isOwn" class="chat-msg-face">
                     <Avatar v-if="isLastOfGroup" :people="[face]" :size="34" />
@@ -91,6 +106,10 @@
                     <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
                     <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
                 </div>
+            </div>
+            <!-- The row reactions will share, the thread pill first at the bubble's aligned edge. -->
+            <div v-if="hasThread && message" class="chat-reacts">
+                <ThreadSummary :message="message" @open="emit('openThread', $event)" />
             </div>
             <div v-if="isEditedUnder" class="chat-msg-edited" data-testid="message-edited">Edited</div>
             <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
@@ -377,6 +396,79 @@
     padding: 1px 12px 0;
     font-size: 12px;
     color: var(--chat-muted);
+}
+
+/*
+    The row under a bubble tucks 4px up into the bubble's bottom padding, which grows to make room,
+    so it overlaps the bubble's edge and never its text. Another person's row starts 10px in from
+    the bubble, past the face column and its gap; the reader's own mirrors it from the right.
+*/
+.chat-reacts {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    max-width: 100%;
+    margin-top: -4px;
+    padding: 0 0 0 52px;
+}
+
+.is-own .chat-reacts {
+    flex-direction: row-reverse;
+    padding: 0 10px 0 0;
+}
+
+.has-thread.is-conversational .chat-bubble:not(.is-jumbo) {
+    padding-bottom: 10px;
+}
+
+/* A large emoji or an announcement has no padding to tuck into, so the row sits below it. */
+.is-jumbo .chat-reacts,
+.is-announcement .chat-reacts {
+    margin-top: 4px;
+}
+
+.is-own .chat-reacts :deep(.chat-tsum-dot) {
+    right: auto;
+    left: -1px;
+}
+
+/* "Replied to a thread", in the quote label's recipe, over the bubble's side or the text column. */
+.chat-thread-label {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0 12px 3px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--chat-muted);
+    background: none;
+    border: 0;
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-thread-label :deep(.chat-ic) {
+    width: 12px;
+    height: 12px;
+    color: var(--chat-icon);
+}
+
+.chat-thread-label:hover {
+    color: var(--chat-text-2);
+}
+
+.is-conversational:not(.is-own) .chat-thread-label {
+    margin-left: 42px;
+}
+
+/* In Community it takes the text column's first line, so the face and the head stay together under it. */
+.is-community .chat-thread-label {
+    grid-column: 2;
+    justify-self: start;
+    padding: 0 0 3px;
 }
 
 /*
@@ -714,6 +806,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import MessageBody from "./messageBody.partial.obs";
+    import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
@@ -823,7 +916,8 @@
 
     const emit = defineEmits<{
         (e: "retry", localId: string): void,
-        (e: "discard", localId: string): void
+        (e: "discard", localId: string): void,
+        (e: "openThread", rootId: number): void
     }>();
 
     // #region Values
@@ -992,6 +1086,19 @@
         return count >= 1 && count <= 6;
     });
 
+    /**
+     * A root with a reply draws its thread under it, a deleted or hidden root included, since
+     * its replies are still there.
+     */
+    const hasThread = computed((): boolean => {
+        const message = props.message;
+        return !!message && !message.parent_id && (message.reply_count ?? 0) > 0
+            && state.value !== "system" && state.value !== "card";
+    });
+
+    /** A reply also sent to the conversation, which says so above it and opens its thread. */
+    const isThreadReply = computed((): boolean => !!props.message?.parent_id && !!props.message.shown_in_channel);
+
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 
     /** A system line's icon: in Community's gutter, by what it says happened; in bubbles, always the quiet info mark. */
@@ -1022,7 +1129,8 @@
         "is-jumbo": isJumbo.value,
         "is-mention-me": layout.value === "community" && isMentionOfReader.value,
         "is-arriving": props.isArriving,
-        "is-flashing": props.isFlashing
+        "is-flashing": props.isFlashing,
+        "has-thread": hasThread.value
     }));
 
     // #endregion Computed Values
@@ -1038,6 +1146,12 @@
     function onDiscard(): void {
         if (props.pending) {
             emit("discard", props.pending.localId);
+        }
+    }
+
+    function onOpenRepliedThread(): void {
+        if (props.message?.parent_id) {
+            emit("openThread", props.message.parent_id);
         }
     }
 
