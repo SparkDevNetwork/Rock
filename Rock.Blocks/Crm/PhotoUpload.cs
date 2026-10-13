@@ -192,7 +192,15 @@ namespace Rock.Blocks.Crm
                 return ActionBadRequest( "Person not found." );
             }
 
-            person.PhotoId = new BinaryFileService( RockContext ).GetId( photoGuid );
+            var binaryFileService = new BinaryFileService( RockContext );
+
+            // Only accept the person's current photo or a new upload by the current person.
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( photoGuid, person.Photo?.Guid, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Profile photo not found." );
+            }
+
+            person.PhotoId = binaryFileService.GetId( photoGuid );
 
             if ( person.PhotoId == null )
             {
