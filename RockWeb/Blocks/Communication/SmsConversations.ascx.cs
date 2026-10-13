@@ -941,14 +941,31 @@ namespace RockWeb.Blocks.Communication
                     var lSMSAttachments = ( Literal ) e.Item.FindControl( "lSMSAttachments" );
                     string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
 
-                    foreach ( var binaryFileGuid in communicationRecipientResponse.GetBinaryFileGuids( rockContext ) )
-                    {
-                        // Show the image thumbnail by appending the html to lSMSMessage.Text
-                        string imageUrl = FileUrlHelper.GetImageUrl( binaryFileGuid, new GetImageUrlOptions{ Width = 200 } );
-                        string imageElement = $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}' class='img-responsive sms-image'></a>";
+                    var binaryFileGuids = communicationRecipientResponse.GetBinaryFileGuids( rockContext );
+                    var binaryFiles = new BinaryFileService( rockContext ).Queryable()
+                        .Where( bf => binaryFileGuids.Contains( bf.Guid ) )
+                        .Select( bf => new
+                        {
+                            bf.Guid,
+                            bf.FileName,
+                            bf.MimeType
+                        } )
+                        .ToList();
 
-                        // If there is a text portion or previous image then drop down a line before appending the image element
-                        lSMSAttachments.Text += imageElement;
+                    foreach ( var binaryFile in binaryFiles )
+                    {
+                        if ( binaryFile.MimeType?.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true )
+                        {
+                            // Show the image thumbnail by appending the html to lSMSMessage.Text
+                            string imageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, new GetImageUrlOptions { Width = 200 } );
+                            lSMSAttachments.Text += $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}' class='img-responsive sms-image'></a>";
+                        }
+                        else
+                        {
+                            // Non-image files can't be served by GetImage, so link to the file instead.
+                            string fileUrl = FileUrlHelper.GetFileUrl( binaryFile.Guid );
+                            lSMSAttachments.Text += $"<div class='sms-file'><i class='fa fa-file'></i><a href='{fileUrl}' target='_blank' rel='noopener noreferrer'>{binaryFile.FileName.EncodeHtml()}</a></div>";
+                        }
                     }
                 }
 
