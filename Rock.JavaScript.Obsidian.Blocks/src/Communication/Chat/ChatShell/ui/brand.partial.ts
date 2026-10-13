@@ -25,6 +25,15 @@ export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "br
     | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet"
     | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
 
+/** The variable only Rock's newer themes define; the older themes have no dark mode. */
+const rockThemeV2Probe = "--popup-box-shadow";
+
+type Rgb = [number, number, number];
+
+// #region Color arithmetic
+
+// The colors the arithmetic starts from. The style gate allows a literal inside this region only.
+
 /** Rock's own orange, used when the page states no primary color. */
 const rockOrange = "#FF791D";
 const ink = "#0D1117";
@@ -39,13 +48,6 @@ const darkSurface = "#0D1117";
 const lightLine = "#E4E4EC";
 const darkLine = "#22272F";
 const darkTintBase = "#1E242E";
-
-/** The variable only Rock's newer themes define; the older themes have no dark mode. */
-const rockThemeV2Probe = "--popup-box-shadow";
-
-type Rgb = [number, number, number];
-
-// #region Color arithmetic
 
 /** Reads #rgb, #rrggbb or rgb()/rgba() into channels of 0 to 255, or null for anything else. */
 function parseColor(color: string): Rgb | null {
