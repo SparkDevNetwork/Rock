@@ -113,7 +113,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
-        public void BuildInitializationBox_CarriesTheSessionTheChurchNameAndTheConversationalLayout()
+        public void BuildInitializationBox_CarriesTheSessionAndTheChurchName()
         {
             var session = ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext );
 
@@ -121,7 +121,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             Assert.AreSame( session, box.Session );
             Assert.AreEqual( "Cedar Hill Church", box.OrganizationName );
-            Assert.AreEqual( "conversational", box.Layout );
+        }
+
+        [TestMethod]
+        public void InitializationBox_CarriesNoLayout()
+        {
+            // The chat draws a channel and a direct message each in its own look, so nothing Rock
+            // sends may choose one for the whole block.
+            Assert.IsNull( typeof( ChatShellInitializationBox ).GetProperty( "Layout" ) );
         }
 
         [TestMethod]

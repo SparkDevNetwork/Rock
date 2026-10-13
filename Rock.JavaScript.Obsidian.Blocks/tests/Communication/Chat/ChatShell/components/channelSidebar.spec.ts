@@ -15,7 +15,8 @@
 // </copyright>
 //
 // The sidebar, mounted: the church at its top, a search over the rooms already loaded, and the
-// rooms in three sections, starred first. A row says what needs the person's attention without
+// rooms in three sections, starred first. A channel is one dense line and a direct message carries
+// its face, preview and time, whichever section it sits in. A row says what needs the person's attention without
 // shouting: a direct message waiting to be read carries a dot, a channel only goes bold unless it
 // names them, a muted room's mention badge is the quiet one, and a screen reader hears the same
 // facts as a suffix on the row's name. A two-person conversation is named by the other person,
@@ -113,7 +114,6 @@ function mountSidebar(props: Record<string, unknown> = {}): VueWrapper {
             activeChannelId: null,
             isNewMessageShown: true,
             organizationName: "Sun Valley Church",
-            layout: "conversational",
             ...props
         },
         attachTo: document.body
@@ -255,10 +255,12 @@ describe("a row's states", () => {
         expect(rowOf(w, muted.channel_id).find("[data-testid='row-dot']").exists()).toBe(false);
     });
 
-    test("draws the dot on an unread direct message in Community too", () => {
-        const w = mountSidebar({ layout: "community" });
+    test("draws the dot on an unread direct message's row beside the channels' Community rows", () => {
+        const w = mountSidebar();
 
+        expect(rowOf(w, dmAnna.channel_id).attributes("data-layout")).toBe("conversational");
         expect(rowOf(w, dmAnna.channel_id).find("[data-testid='row-dot']").exists()).toBe(true);
+        expect(rowOf(w, youth.channel_id).attributes("data-layout")).toBe("community");
         expect(rowOf(w, youth.channel_id).find("[data-testid='row-dot']").exists()).toBe(false);
     });
 
@@ -329,23 +331,38 @@ describe("a row's states", () => {
     });
 });
 
-describe("a row's look", () => {
-    test("Conversational draws a preview, prefixed by who wrote it in a channel, and the time", () => {
+describe("a row's look, by the room's kind", () => {
+    test("a channel draws the Community row and a direct message the Conversational row, in one list, Starred included", () => {
+        const starredDm = { ...dmRead, is_favorite: true };
+        const w = mountSidebar({ rows: [team, youth, starred, muted, dmAnna, dmGroup, dmBig, starredDm] });
+
+        for (const channel of [team, youth, starred, muted]) {
+            expect(rowOf(w, channel.channel_id).attributes("data-layout")).toBe("community");
+            expect(rowOf(w, channel.channel_id).classes()).toContain("is-cs");
+        }
+        for (const direct of [dmAnna, dmGroup, dmBig, starredDm]) {
+            expect(rowOf(w, direct.channel_id).attributes("data-layout")).toBe("conversational");
+            expect(rowOf(w, direct.channel_id).classes()).not.toContain("is-cs");
+        }
+        expect(rowIdsIn(w, "starred")).toEqual([starred.channel_id, starredDm.channel_id]);
+    });
+
+    test("Conversational draws a preview, prefixed by who wrote it in a group, and the time", () => {
         const w = mountSidebar();
 
-        expect(rowOf(w, team.channel_id).get("[data-testid='row-preview']").text()).toBe("Marcus: Are we doing the extended bridge again?");
-        expect(rowOf(w, team.channel_id).find("[data-testid='row-time']").exists()).toBe(true);
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Marcus: Are we doing the extended bridge again?");
+        expect(rowOf(w, dmGroup.channel_id).find("[data-testid='row-time']").exists()).toBe(true);
     });
 
     test("Conversational reads 'No messages yet' for an empty room", () => {
-        const empty = { ...team, last_message_id: null, last_message_at: null, last_message_preview: null, last_sender_nick_name: null, last_sender_last_name: null };
+        const empty = { ...dmRead, last_message_id: null, last_message_at: null, last_message_preview: null, last_sender_nick_name: null, last_sender_last_name: null };
         const w = mountSidebar({ rows: [empty] });
 
-        expect(rowOf(w, team.channel_id).get("[data-testid='row-preview']").text()).toBe("No messages yet");
+        expect(rowOf(w, dmRead.channel_id).get("[data-testid='row-preview']").text()).toBe("No messages yet");
     });
 
     test("Community draws the name alone, with no preview and no time", () => {
-        const w = mountSidebar({ layout: "community" });
+        const w = mountSidebar();
         const r = rowOf(w, team.channel_id);
 
         expect(r.attributes("data-layout")).toBe("community");

@@ -143,7 +143,7 @@ function pendingRow(localId: string, status: "sending" | "failed" = "sending"): 
 type FeedProps = {
     timeline: TimelineState;
     pending?: PendingMessage[];
-    layout?: "conversational" | "community";
+    isChannel?: boolean;
     isDirectMessage?: boolean;
 };
 
@@ -213,12 +213,20 @@ describe("the timeline", () => {
         expect(wrapper.find("[data-message-id='1']").exists()).toBe(true);
     });
 
-    test("the layout and a direct message reach every row", () => {
-        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), layout: "community", isDirectMessage: true });
+    test("a channel's kind reaches every row, and the feed takes Community's look from it", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isChannel: true });
+
+        expect(wrapper.findComponent(MessageRow).props("isChannel")).toBe(true);
+        expect(wrapper.get(".chat-feed-frame").classes()).toContain("is-community");
+    });
+
+    test("a direct message reaches every row, and the feed keeps Conversational's look", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true });
 
         const row = wrapper.findComponent(MessageRow);
-        expect(row.props("layout")).toBe("community");
+        expect(row.props("isChannel")).toBe(false);
         expect(row.props("isDirectMessage")).toBe(true);
+        expect(wrapper.get(".chat-feed-frame").classes()).not.toContain("is-community");
     });
 
     test("a send confirmed while the feed is open shows Sent for 2.2 seconds, then the time alone", async () => {

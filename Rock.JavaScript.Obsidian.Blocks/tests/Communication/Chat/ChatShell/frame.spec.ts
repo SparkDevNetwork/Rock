@@ -67,6 +67,30 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
     };
 }
 
+/** The shell the test mounted last, so a test can open a draft on it. */
+let mockShell: Record<string, unknown> | null = null;
+
+/**
+ * The init box the block reads. A test may add a field an older Rock sent, to show the block no
+ * longer reads it.
+ */
+const mockConfig: Record<string, unknown> = {};
+
+function resetConfig(): void {
+    for (const key of Object.keys(mockConfig)) {
+        delete mockConfig[key];
+    }
+
+    Object.assign(mockConfig, {
+        session: { gate: "ok", personAliasGuid: "a0000001-0000-4000-8000-000000000000", personNickName: "Jordan", personLastName: "Ellis", canStartDm: true },
+        channelGuid: null,
+        areSharedChannelsFilteredByCampus: false,
+        organizationName: "Sun Valley Church"
+    });
+}
+
+resetConfig();
+
 /** The shell the block drives, reduced to what the frame reads, ready with two rooms loaded. */
 function fakeShell(): Record<string, unknown> {
     const state = reactive({
@@ -80,7 +104,7 @@ function fakeShell(): Record<string, unknown> {
         isPushOffered: false
     });
 
-    return {
+    mockShell = {
         state,
         channels: reactive({ rows: [team, dmAnna] }),
         timelines: {
@@ -105,16 +129,12 @@ function fakeShell(): Record<string, unknown> {
         loadOlder: jest.fn(),
         dismissError: jest.fn()
     };
+
+    return mockShell;
 }
 
 jest.mock("@Obsidian/Utility/block", () => ({
-    useConfigurationValues: () => ({
-        session: { gate: "ok", personAliasGuid: "a0000001-0000-4000-8000-000000000000", personNickName: "Jordan", personLastName: "Ellis", canStartDm: true },
-        channelGuid: null,
-        areSharedChannelsFilteredByCampus: false,
-        organizationName: "Sun Valley Church",
-        layout: "conversational"
-    }),
+    useConfigurationValues: () => mockConfig,
     useInvokeBlockAction: () => jest.fn()
 }));
 
@@ -232,6 +252,8 @@ beforeAll(() => {
 afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
+    mockShell = null;
+    resetConfig();
     FakeResizeObserver.all = [];
     document.body.innerHTML = "";
 });
@@ -396,5 +418,57 @@ describe("the header's title", () => {
         await openRow(w, team.channel_id);
 
         expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team");
+    });
+});
+
+describe("the look, by the open conversation's kind", () => {
+    /** The look the open conversation is drawn in, which the feed and the frame's main column carry. */
+    function lookOf(w: VueWrapper): string | undefined {
+        return w.get("[data-testid='frame-main']").attributes("data-look");
+    }
+
+    function isFeedCommunity(w: VueWrapper): boolean {
+        return w.get(".chat-feed-frame").classes().includes("is-community");
+    }
+
+    test("a channel draws Community and a direct message Conversational", async () => {
+        const w = await mountBlock(1200);
+
+        await openRow(w, team.channel_id);
+        expect(lookOf(w)).toBe("community");
+        expect(isFeedCommunity(w)).toBe(true);
+
+        await openRow(w, dmAnna.channel_id);
+        expect(lookOf(w)).toBe("conversational");
+        expect(isFeedCommunity(w)).toBe(false);
+    });
+
+    test("a New message draft is Conversational", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        (mockShell!.state as { activeChannelId: string | null }).activeChannelId = null;
+        (mockShell!.directMessages as { draft: unknown }).draft = { people: [{ nick_name: "Anna", last_name: "Kim" }], status: "draft", body: "" };
+        await settle();
+
+        expect(w.find("[data-testid='dm-draft']").exists()).toBe(true);
+        expect(lookOf(w)).toBe("conversational");
+    });
+
+    test("the sidebar draws each row by its room's kind, the channel's Community and the direct message's Conversational", async () => {
+        const w = await mountBlock(1200);
+
+        expect(w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`).attributes("data-layout")).toBe("community");
+        expect(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).attributes("data-layout")).toBe("conversational");
+    });
+
+    test("reads no layout from the init box: a direct message stays Conversational beside an older box's layout field", async () => {
+        mockConfig.layout = "community";
+        const w = await mountBlock(1200);
+
+        await openRow(w, dmAnna.channel_id);
+        expect(lookOf(w)).toBe("conversational");
+        expect(isFeedCommunity(w)).toBe(false);
+        expect(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).attributes("data-layout")).toBe("conversational");
     });
 });

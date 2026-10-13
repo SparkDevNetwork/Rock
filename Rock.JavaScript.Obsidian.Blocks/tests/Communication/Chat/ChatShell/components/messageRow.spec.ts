@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-// One message row, mounted, in both layouts. A stored message and the person's own message that
+// One message row, mounted, in both looks: a channel's Community rows and a direct message's
+// Conversational bubbles, picked by the conversation's kind alone. A stored message and the person's own message that
 // is still sending or failed draw through the same row, so a send settles in place rather than
 // jumping from a list below the timeline. Every state draws its words and a marker the styles and
 // the screenshots key on. A mention the server admitted is a chip; anything the server has not
@@ -68,7 +69,7 @@ type RowProps = {
     pending?: PendingMessage | null;
     isOwn?: boolean;
     personAliasGuid?: string;
-    layout?: "conversational" | "community";
+    isChannel?: boolean;
     position?: "single" | "first" | "middle" | "last";
     isDirectMessage?: boolean;
     isJustSent?: boolean;
@@ -110,11 +111,35 @@ describe("every message row", () => {
         expect(row.classList.contains("is-own")).toBe(true);
     });
 
-    test.each(["conversational", "community"] as const)("is the same article in %s", layout => {
-        const row = root(draw({ message: message(), layout }));
+    test.each([["a direct message", false], ["a channel", true]] as const)("is the same article in %s", (_kind, isChannel) => {
+        const row = root(draw({ message: message(), isChannel }));
 
         expect(row.getAttribute("role")).toBe("article");
         expect(plain(row.getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM");
+    });
+});
+
+describe("the look, by the conversation's kind", () => {
+    test("a channel draws Community's head row with the name on every group, with no layout input", () => {
+        const channel = draw({ message: message(), isChannel: true, position: "first" });
+
+        expect(root(channel).classList.contains("is-community")).toBe(true);
+        expect(channel.get("[data-testid='message-head'] [data-testid='sender-name']").text()).toBe("Anna Reyes");
+        expect(channel.findComponent(Avatar).props("size")).toBe(36);
+    });
+
+    test("a direct message draws Conversational bubbles, the name hidden in a two-person one", () => {
+        const direct = draw({ message: message(), isDirectMessage: true, position: "single" });
+        const group = draw({ message: message(), position: "first" });
+
+        expect(root(direct).classList.contains("is-conversational")).toBe(true);
+        expect(direct.find("[data-testid='message-head']").exists()).toBe(false);
+        expect(direct.find("[data-testid='sender-name']").exists()).toBe(false);
+        expect(direct.findComponent(Avatar).props("size")).toBe(34);
+
+        expect(root(group).classList.contains("is-conversational")).toBe(true);
+        expect(group.find("[data-testid='message-head']").exists()).toBe(false);
+        expect(group.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
     });
 });
 
@@ -288,9 +313,9 @@ describe("the group's furniture, in Conversational", () => {
     });
 });
 
-describe("Community", () => {
+describe("Community, in a channel", () => {
     test("a group's head row draws a 36px avatar, the bold name and the time", () => {
-        const wrapper = draw({ message: message(), layout: "community", position: "first" });
+        const wrapper = draw({ message: message(), isChannel: true, position: "first" });
 
         const head = wrapper.get("[data-testid='message-head']");
         expect(head.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
@@ -298,17 +323,17 @@ describe("Community", () => {
         expect(wrapper.findComponent(Avatar).props("size")).toBe(36);
     });
 
-    test("the head names every group, the reader's own and a direct message's included", () => {
-        const own = draw({ message: ownConfirmed({ sender_nick_name: "Jordan", sender_last_name: "Lee" }), isOwn: true, layout: "community", position: "single" });
-        const direct = draw({ message: message(), layout: "community", position: "single", isDirectMessage: true });
+    test("the head names every group, the reader's own and another person's", () => {
+        const own = draw({ message: ownConfirmed({ sender_nick_name: "Jordan", sender_last_name: "Lee" }), isOwn: true, isChannel: true, position: "single" });
+        const other = draw({ message: message(), isChannel: true, position: "single" });
 
         expect(own.get("[data-testid='sender-name']").text()).toBe("Jordan Lee");
         expect(own.findComponent(Avatar).exists()).toBe(true);
-        expect(direct.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
+        expect(other.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
     });
 
     test("a continuation row has no head, and its time in the gutter without AM or PM", () => {
-        const wrapper = draw({ message: message(), layout: "community", position: "middle" });
+        const wrapper = draw({ message: message(), isChannel: true, position: "middle" });
 
         expect(wrapper.find("[data-testid='message-head']").exists()).toBe(false);
         expect(wrapper.findComponent(Avatar).exists()).toBe(false);
@@ -316,21 +341,21 @@ describe("Community", () => {
     });
 
     test("edited reads (edited) inline after the text", () => {
-        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), layout: "community" });
+        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), isChannel: true });
 
         expect(wrapper.get("[data-testid='message-edited']").text()).toBe("(edited)");
     });
 
     test("Sending… and Sent ride inline after the text", () => {
-        const sending = draw({ pending: pendingRow(), isOwn: true, layout: "community" });
-        const sent = draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, layout: "community" });
+        const sending = draw({ pending: pendingRow(), isOwn: true, isChannel: true });
+        const sent = draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, isChannel: true });
 
         expect(sending.get("[data-testid='message-state']").text()).toBe("Sending…");
         expect(sent.get("[data-testid='message-state']").text()).toBe("Sent");
     });
 
     test("a failed send keeps Not sent., Try again and Delete under the text", () => {
-        const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, layout: "community" });
+        const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true });
 
         expect(root(wrapper).getAttribute("data-state")).toBe("failed");
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent.");
@@ -339,16 +364,16 @@ describe("Community", () => {
     });
 
     test("tombstones and the announcement pill draw as in Conversational", () => {
-        const deleted = draw({ message: message({ deleted_at: nineOhTwo }), layout: "community" });
-        const announcement = draw({ message: message({ message_type: "announcement" }), layout: "community", position: "single" });
+        const deleted = draw({ message: message({ deleted_at: nineOhTwo }), isChannel: true });
+        const announcement = draw({ message: message({ message_type: "announcement" }), isChannel: true, position: "single" });
 
         expect(deleted.get("[data-testid='message-body']").text()).toBe("This message was deleted.");
         expect(announcement.get("[data-testid='announcement-pill']").text()).toBe("Announcement");
     });
 
     test("a mention of the reader by name tints the row and says so; @all does not", () => {
-        const byName = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), layout: "community" });
-        const toAll = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), layout: "community" });
+        const byName = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), isChannel: true });
+        const toAll = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel: true });
 
         expect(root(byName).classList.contains("is-mention-me")).toBe(true);
         expect(plain(root(byName).getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM, mentions you");
@@ -417,8 +442,8 @@ describe("mentions", () => {
 });
 
 describe("system lines and block posts", () => {
-    test.each(["conversational", "community"] as const)("a system line in %s draws its text with no name and no avatar", layout => {
-        const wrapper = draw({ message: message({ message_type: "system", person_alias_guid: null, body: "Grace Kim added Sam Ortiz to the conversation." }), layout });
+    test.each([["a direct message", false], ["a channel", true]] as const)("a system line in %s draws its text with no name and no avatar", (_kind, isChannel) => {
+        const wrapper = draw({ message: message({ message_type: "system", person_alias_guid: null, body: "Grace Kim added Sam Ortiz to the conversation." }), isChannel });
 
         expect(wrapper.text()).toContain("Grace Kim added Sam Ortiz to the conversation.");
         expect(root(wrapper).getAttribute("data-state")).toBe("system");
@@ -426,12 +451,12 @@ describe("system lines and block posts", () => {
         expect(wrapper.findComponent(Avatar).exists()).toBe(false);
     });
 
-    test.each(["conversational", "community"] as const)("a block post in %s is a card with its sender, its blocks and an unknown block's fallback", layout => {
+    test.each([["a direct message", false], ["a channel", true]] as const)("a block post in %s is a card with its sender, its blocks and an unknown block's fallback", (_kind, isChannel) => {
         const blocks = [
             { type: "text", text: "Easter signups are open", pieces: null, fallback: { type: "text", text: "Easter signups are open" } },
             { type: "poll", options: ["a", "b"], fallback: { type: "text", text: "Vote: a or b" } }
         ];
-        const wrapper = draw({ message: message({ message_type: "system", body: "Easter signups are open", blocks }), layout });
+        const wrapper = draw({ message: message({ message_type: "system", body: "Easter signups are open", blocks }), isChannel });
 
         const card = wrapper.get("[data-testid='block-card']");
         expect(card.get("[data-testid='block-text']").text()).toBe("Easter signups are open");
