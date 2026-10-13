@@ -128,7 +128,7 @@ describe("the connection's states", () => {
         const offline = w.get("[data-testid='connection-banner']");
         expect(offline.attributes("data-tone")).toBe("warning");
         expect(offline.text()).toContain("You're offline.");
-        expect(offline.text()).toContain("Reconnecting now. Messages you send will go out when you're back.");
+        expect(offline.text()).toContain("Reconnecting now. You can send again once you're back.");
 
         await w.setProps({ connection: null, isBehind: true });
         const back = w.get("[data-testid='connection-banner']");
