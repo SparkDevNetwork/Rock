@@ -1,0 +1,1093 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PanelHost title="Threads"
+               :subtitle="subtitle"
+               :isPhone="isPhone"
+               @close="emit('close')">
+        <template #actions>
+            <IconButton class="chat-ls-refresh"
+                        icon="refresh"
+                        label="Refresh threads"
+                        data-testid="threads-refresh"
+                        :aria-busy="isRefreshing ? 'true' : undefined"
+                        :aria-disabled="isRefreshing ? 'true' : undefined"
+                        @click="onRefresh" />
+        </template>
+
+        <template #top>
+            <div class="chat-ls-top">
+                <div class="chat-ls-tabs" role="tablist" aria-label="Which threads" :data-on="tab" @keydown="onTabKeydown">
+                    <span class="chat-ls-thumb" aria-hidden="true"></span>
+                    <button v-for="option in tabs"
+                            :id="`${uid}-tab-${option.value}`"
+                            :key="option.value"
+                            :ref="element => setTabElement(option.value, element)"
+                            type="button"
+                            role="tab"
+                            class="chat-ls-tab"
+                            :aria-selected="tab === option.value ? 'true' : 'false'"
+                            :aria-controls="`${uid}-tabpanel`"
+                            :tabindex="tab === option.value ? 0 : -1"
+                            :data-autofocus="tab === option.value ? '' : undefined"
+                            @click="chooseTab(option.value)">
+                        {{ option.label }}
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <div :id="`${uid}-tabpanel`"
+             role="tabpanel"
+             :aria-labelledby="`${uid}-tab-${tab}`"
+             :aria-busy="isLoading ? 'true' : 'false'">
+            <div v-if="error" class="chat-ls-err" role="status" data-testid="threads-error">
+                <Icon name="alert" size="sm" />
+                <span>{{ errorSentence }}</span>
+                <button type="button" class="chat-ls-btn" @click="emit('refresh')">Try again</button>
+            </div>
+
+            <template v-if="isLoading">
+                <span class="chat-sr-only">Loading threads</span>
+                <ul class="chat-ls-list" aria-hidden="true">
+                    <li v-for="index in 3" :key="index" class="chat-ls-skel" data-testid="thread-skeleton">
+                        <span class="chat-ls-sk chat-ls-sk-av"></span>
+                        <span class="chat-ls-sk-lines">
+                            <i v-for="(width, line) in skeletonWidths[index - 1]" :key="line" class="chat-ls-sk" :style="{ width: `${width}%` }"></i>
+                        </span>
+                    </li>
+                </ul>
+            </template>
+
+            <div v-else-if="rows.length === 0" class="chat-ls-empty" data-testid="threads-empty">
+                <span class="chat-ls-empty-ic" aria-hidden="true"><Icon :name="tab === 'channel' ? 'thread' : 'bell'" /></span>
+                <b data-testid="threads-empty-title">{{ emptyTitle }}</b>
+                <span data-testid="threads-empty-body">{{ emptyBody }}</span>
+                <button v-if="tab === 'channel'" type="button" class="chat-ls-btn" @click="chooseTab('all')">See all followed threads</button>
+            </div>
+
+            <template v-else>
+                <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between rows. Right arrow reaches the row's follow switch.</span>
+                <ul ref="listElement"
+                    class="chat-ls-list"
+                    :class="{ 'is-phone': isPhone }"
+                    :aria-label="listLabel"
+                    @keydown="onListKeydown">
+                    <li v-for="(drawn, index) in drawnRows"
+                        :key="drawn.rootId"
+                        class="chat-ls-row"
+                        :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff, 'is-busy': drawn.isBusy }"
+                        :style="{ '--chat-ls-i': Math.min(index, maxStaggered) }"
+                        data-testid="thread-row">
+                        <button type="button"
+                                class="chat-ls-hit"
+                                data-testid="thread-row-open"
+                                :data-root-id="drawn.rootId"
+                                :aria-label="drawn.label"
+                                :aria-describedby="`${uid}-hint`"
+                                :tabindex="isTabStop(drawn.rootId, index) ? 0 : -1"
+                                @focus="roveId = drawn.rootId"
+                                @click="emit('open', drawn.rootId, drawn.channelId)"></button>
+
+                        <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
+                        <div class="chat-ls-in" aria-hidden="true" inert>
+                            <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
+                            <div class="chat-ls-main">
+                                <div class="chat-ls-head">
+                                    <b>{{ drawn.who }}</b>
+                                    <span v-if="tab === 'all'" class="chat-ls-sub">
+                                        <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
+                                        <span>{{ drawn.room }}</span>
+                                    </span>
+                                    <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
+                                </div>
+                                <div class="chat-ls-text">
+                                    <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" />
+                                </div>
+                                <div class="chat-ls-foot">
+                                    <span class="chat-ls-faces">
+                                        <Avatar v-for="(face, faceIndex) in drawn.faces" :key="faceIndex" :people="[face]" :size="18" />
+                                    </span>
+                                    <span class="chat-ls-count">{{ drawn.count }}</span>
+                                    <span class="chat-ls-sep">&middot;</span>
+                                    <span>Started {{ drawn.started }}</span>
+                                    <span v-if="drawn.status || drawn.mentions" class="chat-ls-end">
+                                        <span v-if="drawn.status"
+                                              class="chat-ls-fol"
+                                              :class="{ 'is-off': drawn.isOff }"
+                                              data-testid="thread-row-status"><Icon v-if="!drawn.isOff" name="bell" size="xs" />{{ drawn.status }}</span>
+                                        <span v-if="drawn.mentions" class="chat-badge" data-testid="thread-row-mentions">
+                                            <Icon name="at" /><span>{{ drawn.mentions }}</span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <IconButton class="chat-ls-follow"
+                                    :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
+                                    :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.who}`"
+                                    data-testid="thread-row-follow"
+                                    tabindex="-1"
+                                    :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
+                                    :aria-busy="drawn.isBusy ? 'true' : undefined"
+                                    :aria-disabled="drawn.isBusy ? 'true' : undefined"
+                                    @click="onFollow(drawn)" />
+
+                        <p v-if="drawn.error" class="chat-ls-rowerr" role="status" data-testid="thread-row-error">
+                            <Icon name="alert" size="xs" />{{ drawn.error }}
+                        </p>
+                    </li>
+                </ul>
+                <div v-if="hasMore" ref="endElement" class="chat-ls-endmark" aria-hidden="true"></div>
+            </template>
+
+            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
+        </div>
+    </PanelHost>
+</template>
+
+<style scoped>
+/* The tabs' band under the header. */
+.chat-ls-top {
+    flex: none;
+    padding: 10px 14px 4px;
+}
+
+/* A segmented control: two equal tabs on a soft track, the shown one under a raised thumb. */
+.chat-ls-tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 3px;
+    background: var(--chat-tab-track);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-ls-thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-thumb);
+    transition: transform var(--chat-d-tab-thumb) var(--chat-ease-in);
+}
+
+.chat-ls-tabs[data-on="all"] .chat-ls-thumb {
+    transform: translateX(100%);
+}
+
+.chat-ls-tab {
+    position: relative;
+    z-index: 1;
+    height: 28px;
+    padding: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-ls-tab[aria-selected="true"] {
+    color: var(--chat-text);
+}
+
+.chat-ls-tab:hover:not([aria-selected="true"]) {
+    color: var(--chat-text-2);
+}
+
+.chat-ls-tab:focus-visible {
+    outline-offset: 0;
+}
+
+.chat-ls-list {
+    padding: 2px 8px 4px;
+    margin: 0;
+    list-style: none;
+}
+
+.chat-ls-list.is-phone {
+    padding-right: 6px;
+    padding-left: 6px;
+}
+
+/* Fetched rows rise in, a little apart, so a fresh list reads as arriving rather than blinking. */
+.chat-ls-row {
+    position: relative;
+    border-radius: var(--chat-r-md);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+    animation: chat-ls-rise var(--chat-t-msg) var(--chat-ease-in) both;
+    animation-delay: calc(var(--chat-ls-i, 0) * var(--chat-d-stagger));
+}
+
+@keyframes chat-ls-rise {
+    from {
+        opacity: 0;
+        transform: translateY(var(--chat-rise));
+    }
+}
+
+.chat-ls-row + .chat-ls-row {
+    margin-top: 1px;
+}
+
+.chat-ls-row:hover {
+    background: var(--chat-hover);
+}
+
+/* The one button under the whole row; what is drawn sits over it and lets every press through. */
+.chat-ls-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: inherit;
+}
+
+.chat-ls-hit:focus-visible {
+    outline-offset: -2px;
+    border-radius: var(--chat-r-md);
+}
+
+.chat-ls-hit:active {
+    background: var(--chat-press);
+}
+
+.chat-ls-in {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 10px 10px 11px;
+    pointer-events: none;
+}
+
+.chat-ls-avw {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    margin-top: 1px;
+}
+
+.chat-ls-main {
+    min-width: 0;
+}
+
+.chat-ls-head {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.chat-ls-head b {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--chat-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-ls-sub {
+    display: inline-flex;
+    flex: 0 1 auto;
+    gap: 2px;
+    align-items: center;
+    min-width: 0;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+}
+
+.chat-ls-sub > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-ls-sub :deep(.chat-ic) {
+    flex: none;
+    align-self: center;
+    width: 12px;
+    height: 12px;
+}
+
+.chat-ls-t {
+    flex: none;
+    padding-left: 8px;
+    margin-left: auto;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* Two lines of the root, its chips and links drawn as they are in the conversation. */
+.chat-ls-text {
+    display: -webkit-box;
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--chat-text-2);
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.chat-ls-foot {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 20px;
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+}
+
+.chat-ls-faces {
+    display: inline-flex;
+}
+
+/* 18px faces overlap 4px, ringed in the panel's own fill so an initial is never cut. */
+.chat-ls-faces :deep(.chat-av) {
+    font-size: 9px !important;
+    box-shadow: 0 0 0 1.5px var(--chat-surface);
+}
+
+.chat-ls-faces > :deep(.chat-pile + .chat-pile) {
+    margin-left: -4px;
+}
+
+.chat-ls-count {
+    margin-left: 2px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+.chat-ls-sep {
+    opacity: .7;
+}
+
+.chat-ls-end {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.chat-ls-fol {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    font-weight: 600;
+    color: var(--chat-brand-ink);
+}
+
+.chat-ls-fol :deep(.chat-ic) {
+    width: 12px;
+    height: 12px;
+}
+
+.chat-ls-fol.is-off {
+    font-weight: 500;
+    color: var(--chat-muted);
+}
+
+/* A row's badge was already counted where the person saw it first, so it does not spring again. */
+.chat-ls-foot .chat-badge {
+    animation: none;
+}
+
+/* Bold is the only unread mark; the badge is for mentions alone. */
+.chat-ls-row.is-unread .chat-ls-head b {
+    font-weight: 700;
+}
+
+.chat-ls-row.is-unread .chat-ls-text {
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-ls-row.is-unread .chat-ls-count {
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+/* Unfollowed on the All tab: kept in place until the next fetch, so taking it back is one press. */
+.chat-ls-row.is-off .chat-ls-in {
+    opacity: .62;
+}
+
+/* The follow toggle takes the time's place where the row is pointed at, focused, off or busy. */
+.chat-ls-row :deep(.chat-ls-follow) {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-ls-row :deep(.chat-ls-follow .chat-ic) {
+    width: 16px;
+    height: 16px;
+}
+
+.chat-ls-row:hover :deep(.chat-ls-follow),
+.chat-ls-row:focus-within :deep(.chat-ls-follow),
+.chat-ls-row.is-off :deep(.chat-ls-follow),
+.chat-ls-row.is-busy :deep(.chat-ls-follow),
+.chat-ls-list.is-phone :deep(.chat-ls-follow) {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.chat-ls-row:hover .chat-ls-t,
+.chat-ls-row:focus-within .chat-ls-t,
+.chat-ls-row.is-off .chat-ls-t,
+.chat-ls-row.is-busy .chat-ls-t,
+.chat-ls-list.is-phone .chat-ls-t {
+    opacity: 0;
+}
+
+/* A touch screen has no hover to bring the toggle out, so it is always there. */
+@media (hover: none) {
+    .chat-ls-row :deep(.chat-ls-follow) {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .chat-ls-row .chat-ls-t {
+        opacity: 0;
+    }
+}
+
+/* Busy: the bell gives way to a spinner, drawn as the shared one is. */
+.chat-ls-row :deep(.chat-ls-follow[aria-busy="true"] .chat-ic) {
+    display: none;
+}
+
+.chat-ls-row :deep(.chat-ls-follow[aria-busy="true"])::after {
+    width: 13px;
+    height: 13px;
+    content: "";
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: chat-spin var(--chat-d-spin) linear infinite;
+}
+
+.chat-ls-rowerr {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding-bottom: 10px;
+    margin: -4px 10px 0 52px;
+    font-size: 12px;
+    color: var(--chat-danger-ink);
+}
+
+.chat-ls-rowerr :deep(.chat-ic) {
+    flex: none;
+}
+
+/* Over the list: the failure, beside the rows it could not replace. */
+.chat-ls-err {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 8px 8px 11px;
+    margin: 8px 14px 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-danger-ink);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-md);
+}
+
+.chat-ls-err .chat-ls-btn {
+    flex: none;
+    height: 26px;
+    margin-left: auto;
+    color: var(--chat-text);
+}
+
+:deep(.chat-ls-refresh[aria-busy="true"]) {
+    color: var(--chat-text);
+    cursor: progress;
+}
+
+:deep(.chat-ls-refresh[aria-busy="true"] .chat-ic) {
+    animation: chat-spin var(--chat-d-refresh-spin) linear infinite;
+}
+
+/* A small outlined button. */
+.chat-ls-btn {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 28px;
+    padding: 0 11px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-ls-btn:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-ls-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 52px 28px 24px;
+    text-align: center;
+}
+
+.chat-ls-empty-ic {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 6px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: 14px;
+}
+
+.chat-ls-empty-ic :deep(.chat-ic) {
+    width: 22px;
+    height: 22px;
+}
+
+.chat-ls-empty b {
+    font-size: 14.5px;
+}
+
+.chat-ls-empty > span {
+    max-width: 32ch;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-ls-empty .chat-ls-btn {
+    margin-top: 10px;
+}
+
+.chat-ls-skel {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 11px 10px;
+}
+
+.chat-ls-sk {
+    display: block;
+    background: var(--chat-skeleton-line);
+    border-radius: 6px;
+    animation: chat-skeleton-pulse var(--chat-d-list-pulse) var(--chat-ease-state) infinite alternate;
+}
+
+.chat-ls-sk-av {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.chat-ls-sk-lines i {
+    height: 9px;
+    margin: 4px 0 9px;
+}
+
+.chat-ls-sk-lines i:last-child {
+    margin-bottom: 0;
+}
+
+.chat-ls-endmark {
+    height: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-ls-sk {
+        animation: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, PropType, ref, watch } from "vue";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import PanelHost from "../ui/panelHost.partial.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import MessageBody from "./messageBody.partial.obs";
+    import { messageForError } from "../errors.partial";
+    import { dayLabel, timeLabel } from "../feedLayout.partial";
+    import { messageDisplay } from "../composables/useHistory.partial";
+    import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
+
+    // #region Types
+
+    type Tab = "channel" | "all";
+
+    type RoomKind = "channel" | "person" | "group";
+
+    /** One row as it is drawn and read. */
+    type DrawnRow = {
+        rootId: number;
+        channelId: string;
+        who: string;
+        author: AvatarPerson;
+        room: string;
+        roomIcon: string | null;
+        text: string | null;
+        pieces: DisplayPiece[] | null;
+        blocks: MessageBlock[] | null;
+        faces: AvatarPerson[];
+        count: string;
+        lastWhen: string;
+        started: string;
+        status: string | null;
+        mentions: number;
+        isUnread: boolean;
+        isFollowing: boolean;
+        isOff: boolean;
+        isBusy: boolean;
+        error: string | null;
+        label: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** Which tab is shown: the open conversation's threads, or every thread followed. */
+        tab: {
+            type: String as PropType<Tab>,
+            required: true
+        },
+
+        /** The list's rows as chat_list_threads answers them. */
+        rows: {
+            type: Array as PropType<ThreadListRow[]>,
+            required: true
+        },
+
+        /** Whether more rows wait after the last, fetched when the list is scrolled to its end. */
+        hasMore: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A fresh list is on its way with nothing of it on screen yet. */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The rows on screen are being fetched again. */
+        isRefreshing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why the list's last fetch failed, or null. */
+        error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** The row whose follow change was refused, and why. */
+        rowError: {
+            type: Object as PropType<{ rootId: number, error: ChatError } | null>,
+            default: null
+        },
+
+        /** The row whose follow change is on its way. */
+        busyRootId: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The open conversation, whose threads the first tab shows. */
+        channelId: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The open conversation's kind, which names the first tab and its empty state. */
+        kind: {
+            type: String as PropType<RoomKind>,
+            default: "channel"
+        },
+
+        /** Each conversation's title by channel id, as the header shows it. */
+        roomTitles: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        /** Each conversation's kind by channel id, for the room's icon on the All tab; a room missing here draws no icon. */
+        roomKinds: {
+            type: Object as PropType<Record<string, RoomKind>>,
+            default: () => ({})
+        },
+
+        /** Whether the chat is in its one-pane phone layout. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The reader, whose own root is named You. */
+        personAliasGuid: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "open", rootId: number, channelId: string): void,
+        (e: "tab", tab: Tab): void,
+        (e: "refresh"): void,
+        (e: "follow", rootId: number, isFollowing: boolean): void,
+        (e: "loadMore"): void,
+        (e: "close"): void
+    }>();
+
+    // #region Values
+
+    /** Ids this panel's tabs, hint and tab panel are tied together by, unique per panel drawn. */
+    const uid = `chat-ls-${newGuid()}`;
+
+    /** The design staggers the first rows only, so a long list does not trickle in. */
+    const maxStaggered = 8;
+
+    const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70]];
+
+    const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
+    const offlineFollow = "Couldn't change this. You're offline, so try again in a moment.";
+
+    /** The row that holds the list's one tab stop, once one has been focused. */
+    const roveId = ref<number | null>(null);
+
+    const announcement = ref("");
+
+    const listElement = ref<HTMLElement>();
+    const endElement = ref<HTMLElement>();
+    const tabElements: Partial<Record<Tab, HTMLElement>> = {};
+
+    let endObserver: IntersectionObserver | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const here = computed((): string => props.roomTitles[props.channelId] ?? "");
+
+    const subtitle = computed((): string | null => props.tab === "all" ? "Threads you follow" : (here.value || null));
+
+    const tabs = computed((): { value: Tab, label: string }[] => [
+        { value: "channel", label: props.kind === "channel" ? "This channel" : "This conversation" },
+        { value: "all", label: "All" }
+    ]);
+
+    const listLabel = computed((): string => props.tab === "all" ? "Threads you follow" : `Threads in ${here.value}`);
+
+    const emptyTitle = computed((): string => {
+        if (props.tab === "all") {
+            return "You're not following any threads";
+        }
+
+        if (props.kind === "person") {
+            return `No threads with ${here.value} yet`;
+        }
+
+        return props.kind === "group" ? "No threads in this conversation yet" : `No threads in ${here.value} yet`;
+    });
+
+    const emptyBody = computed((): string => props.tab === "all"
+        ? "You follow a thread when you start it, reply in it or are mentioned in it. New replies to those threads collect here."
+        : "Reply to any message to start one. Threads you follow from every conversation are under All.");
+
+    const errorSentence = computed((): string => props.error ? sentenceFor(props.error, offlineRefresh) : "");
+
+    const drawnRows = computed((): DrawnRow[] => props.rows.map(drawRow));
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onRefresh(): void {
+        // a refresh already out answers for this press too
+        if (!props.isRefreshing) {
+            emit("refresh");
+        }
+    }
+
+    function onFollow(row: DrawnRow): void {
+        // one change at a time, as the list holds one busy row
+        if (props.busyRootId === null) {
+            emit("follow", row.rootId, !row.isFollowing);
+        }
+    }
+
+    /** The tablist's own keys: either arrow flips between the two tabs, Home and End go to the ends. */
+    function onTabKeydown(event: KeyboardEvent): void {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+            return;
+        }
+
+        event.preventDefault();
+        const next: Tab = event.key === "Home" ? "channel" : event.key === "End" ? "all" : props.tab === "all" ? "channel" : "all";
+        chooseTab(next);
+    }
+
+    /** Up, Down, Home and End move between rows; Right reaches a row's follow toggle and Left returns. */
+    function onListKeydown(event: KeyboardEvent): void {
+        const target = event.target as HTMLElement | null;
+        const row = target?.closest<HTMLElement>(".chat-ls-row");
+        const hit = row?.querySelector<HTMLElement>(".chat-ls-hit");
+        if (!row || !hit) {
+            return;
+        }
+
+        const isOnHit = target === hit;
+        if (event.key === "ArrowRight" && isOnHit) {
+            event.preventDefault();
+            row.querySelector<HTMLElement>("[data-testid='thread-row-follow']")?.focus();
+            return;
+        }
+
+        if (event.key === "ArrowLeft" && !isOnHit) {
+            event.preventDefault();
+            hit.focus();
+            return;
+        }
+
+        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+            return;
+        }
+
+        const hits = Array.from(listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-hit") ?? []);
+        const index = hits.indexOf(hit);
+        if (index < 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const wanted = event.key === "Home" ? 0 : event.key === "End" ? hits.length - 1 : index + (event.key === "ArrowDown" ? 1 : -1);
+        const next = hits[Math.max(0, Math.min(hits.length - 1, wanted))];
+        next.focus();
+        next.closest(".chat-ls-row")?.scrollIntoView({ block: "nearest" });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Asks for a tab, and keeps focus on the tab the person moved to. */
+    function chooseTab(tab: Tab): void {
+        if (tab !== props.tab) {
+            emit("tab", tab);
+        }
+
+        void nextTick(() => tabElements[tab]?.focus({ preventScroll: true }));
+    }
+
+    function setTabElement(tab: Tab, element: unknown): void {
+        if (element instanceof HTMLElement) {
+            tabElements[tab] = element;
+        }
+    }
+
+    /** The first row holds the tab stop until another is focused, or when the one focused is gone. */
+    function isTabStop(rootId: number, index: number): boolean {
+        const isRoveShown = roveId.value !== null && props.rows.some(r => r.root.id === roveId.value);
+        return isRoveShown ? roveId.value === rootId : index === 0;
+    }
+
+    /**
+     * A refusal's sentence is the server's; a call that never reached the platform carries none,
+     * and says the person is offline in the words of the place it failed.
+     */
+    function sentenceFor(error: ChatError, offline: string): string {
+        return error.text || error.severity === "session" ? messageForError(error) : offline;
+    }
+
+    function fullName(nickName: string | null | undefined, lastName: string | null | undefined): string {
+        return `${nickName ?? ""} ${lastName ?? ""}`.trim();
+    }
+
+    /** "9:41 AM" today, else the day as the feed's divider names it, in the case the sentence needs. */
+    function whenOf(at: string | null | undefined, isInSentence: boolean): string {
+        const date = at ? new Date(at) : null;
+        if (!date || isNaN(date.getTime())) {
+            return "";
+        }
+
+        const day = dayLabel(date, new Date());
+        if (day === "Today") {
+            return timeLabel(date);
+        }
+
+        return isInSentence && day === "Yesterday" ? "yesterday" : day;
+    }
+
+    /** The root as a sentence: its text, or the sentence shown in its place, ending in a stop. */
+    function spokenText(root: TimelineMessage): string {
+        const display = messageDisplay(root);
+        let text = display.text ?? "";
+        if (display.kind === "message" || display.kind === "system") {
+            const firstBlock = root.blocks?.[0];
+            if (firstBlock) {
+                text = typeof firstBlock.text === "string" ? firstBlock.text : firstBlock.fallback?.text ?? text;
+            }
+            else if (Array.isArray(root.pieces) && root.pieces.length > 0) {
+                text = root.pieces.map(p => p.text).join("");
+            }
+        }
+
+        text = text.replace(/\s+/g, " ").trim();
+        return /[.!?…]$/.test(text) ? text : `${text}.`;
+    }
+
+    function drawRow(row: ThreadListRow): DrawnRow {
+        const root = row.root;
+        const rootId = root.id;
+        const display = messageDisplay(root);
+        const isShown = display.kind === "message" || display.kind === "system";
+        const isMine = !!props.personAliasGuid && root.person_alias_guid?.toLowerCase() === props.personAliasGuid.toLowerCase();
+        const name = fullName(root.sender_nick_name, root.sender_last_name);
+        const who = isMine ? "You" : name || "Someone";
+        const room = props.roomTitles[row.channel_id] ?? "";
+        const roomKind = props.roomKinds[row.channel_id];
+        const replies = row.reply_count;
+        const count = replies > 99 ? "99+ replies" : `${replies} ${replies === 1 ? "reply" : "replies"}`;
+        const isFollowing = row.following;
+        const mentions = row.mention_count > 0 ? row.mention_count : 0;
+        const lastSaid = whenOf(row.last_reply_at, true);
+
+        let status: string | null = null;
+        if (props.tab === "channel" && isFollowing) {
+            status = "Following";
+        }
+        else if (props.tab === "all" && !isFollowing) {
+            status = "Not following";
+        }
+
+        const followWords = !isFollowing ? ", not following" : props.tab === "channel" ? ", following" : "";
+        const mentionWords = mentions ? `, ${mentions} ${mentions === 1 ? "mention" : "mentions"} of you` : "";
+        const label = `${row.has_unread ? "New replies. " : ""}${who} in ${room}: ${spokenText(root)} ${count}, last reply ${lastSaid}${mentionWords}${followWords}. Open thread`;
+
+        return {
+            rootId,
+            channelId: row.channel_id,
+            who,
+            author: { name: name || who, photoUrl: root.sender_avatar_url ?? null },
+            room,
+            roomIcon: roomKind === "channel" ? "hash" : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
+            text: display.text,
+            pieces: isShown ? root.pieces ?? null : null,
+            blocks: isShown ? root.blocks ?? null : null,
+            // the newest three repliers, as the conversation's thread pill draws them
+            faces: (root.repliers ?? []).slice(0, 3).map(r => ({ name: fullName(r.nick_name, r.last_name), photoUrl: r.avatar_url ?? null })),
+            count,
+            lastWhen: whenOf(row.last_reply_at, false),
+            started: whenOf(root.created_at, true),
+            status,
+            mentions,
+            isUnread: row.has_unread,
+            isFollowing,
+            isOff: !isFollowing && props.tab === "all",
+            isBusy: props.busyRootId === rootId,
+            error: props.rowError?.rootId === rootId ? sentenceFor(props.rowError.error, offlineFollow) : null,
+            label
+        };
+    }
+
+    /**
+     * Takes the root's links out of the tab order. The drawn row is inert, which a browser that
+     * knows inert honours; the oldest Safari Rock supports does not, and would stop on each link.
+     */
+    function quietLinks(): void {
+        listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-in a").forEach(link => {
+            link.tabIndex = -1;
+        });
+    }
+
+    /** Watches the end of the list, so scrolling to it asks for the next page. */
+    function observeEnd(): void {
+        endObserver?.disconnect();
+        endObserver = null;
+        if (!endElement.value || typeof IntersectionObserver === "undefined") {
+            return;
+        }
+
+        endObserver = new IntersectionObserver(entries => {
+            if (entries.some(entry => entry.isIntersecting)) {
+                emit("loadMore");
+            }
+        });
+        endObserver.observe(endElement.value);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // A screen reader hears what a fetch brought, since the rows change under it without a word.
+    watch(() => props.isLoading, (isLoading, wasLoading) => {
+        if (wasLoading && !isLoading && !props.error) {
+            const count = props.rows.length;
+            const what = `${count} ${count === 1 ? "thread" : "threads"}`;
+            announcement.value = props.tab === "channel" ? `${what} in ${here.value}` : `${what} you follow`;
+        }
+    });
+
+    watch(() => props.isRefreshing, (isRefreshing, wasRefreshing) => {
+        if (wasRefreshing && !isRefreshing && !props.error) {
+            announcement.value = "Threads are up to date";
+        }
+    });
+
+    watch(endElement, observeEnd);
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(quietLinks);
+    onUpdated(quietLinks);
+
+    onBeforeUnmount(() => {
+        endObserver?.disconnect();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

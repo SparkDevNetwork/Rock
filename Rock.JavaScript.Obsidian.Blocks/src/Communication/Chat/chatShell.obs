@@ -110,10 +110,27 @@
                    :inert="isPanelHidden || undefined"
                    :style="isPanelGone ? goneStyle : undefined">
                 <div class="chat-frame-panel-inner">
-                    <PanelHost v-if="shownPanel === 'threads'"
-                               title="Threads"
-                               :isPhone="isPhone"
-                               @close="closePanel" />
+                    <ThreadsPanel v-if="shownPanel === 'threads'"
+                                  :tab="threadList.tab"
+                                  :rows="threadList.rows"
+                                  :hasMore="threadList.hasMore"
+                                  :isLoading="threadList.isLoading"
+                                  :isRefreshing="threadList.isRefreshing"
+                                  :error="threadList.error"
+                                  :rowError="threadList.rowError"
+                                  :busyRootId="threadList.busyRootId"
+                                  :channelId="threadList.channelId ?? activeChannelId ?? ''"
+                                  :kind="activeKind ?? 'channel'"
+                                  :roomTitles="roomTitles"
+                                  :roomKinds="roomKinds"
+                                  :isPhone="isPhone"
+                                  :personAliasGuid="personAliasGuid"
+                                  @open="openThreadFromList"
+                                  @tab="onThreadsTab"
+                                  @refresh="onThreadsRefresh"
+                                  @follow="onFollowFromList"
+                                  @loadMore="onThreadsLoadMore"
+                                  @close="closePanel" />
                 </div>
             </aside>
         </div>
@@ -293,10 +310,11 @@
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
-    import PanelHost from "./ChatShell/ui/panelHost.partial.obs";
+    import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
+    import { followNotice, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
-    import { joinNames } from "./ChatShell/stores/channelStore.partial";
+    import { joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
     import { SidebarRow } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
 
@@ -485,6 +503,29 @@
         return panelKind.value ? "panel" : "conversation";
     });
 
+    /** The threads list the panel draws, as the shell's threads hold it. */
+    const threadList = computed((): ThreadListState => shell.value.threads.state.list);
+
+    /** Each conversation's title by channel id, as the header writes it, for the rooms the threads list names. */
+    const roomTitles = computed((): Record<string, string> => {
+        const titles: Record<string, string> = {};
+        for (const row of shell.value.channels.rows) {
+            titles[row.channel_id] = roomTitle(row);
+        }
+
+        return titles;
+    });
+
+    /** Each conversation's kind by channel id, which picks the room's icon on the All tab. */
+    const roomKinds = computed((): Record<string, HeaderRoomKind> => {
+        const kinds: Record<string, HeaderRoomKind> = {};
+        for (const row of shell.value.channels.rows) {
+            kinds[row.channel_id] = row.channel_type !== "dm" ? "channel" : (row.dm_other_count ?? 1) <= 1 ? "person" : "group";
+        }
+
+        return kinds;
+    });
+
     const isSidebarHidden = computed((): boolean => isPhone.value && pane.value !== "list");
 
     const isConversationHidden = computed((): boolean => isPhone.value && pane.value !== "conversation");
@@ -576,6 +617,38 @@
         const panel = panelElement.value;
         (panel?.querySelector<HTMLElement>("[data-autofocus]")
             ?? panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']"))?.focus();
+    }
+
+    function onThreadsTab(tab: ThreadListTab): void {
+        void shell.value.threads.switchTab(tab);
+    }
+
+    function onThreadsRefresh(): void {
+        void shell.value.threads.refresh();
+    }
+
+    function onThreadsLoadMore(): void {
+        void shell.value.threads.loadMore();
+    }
+
+    /** A follow change from a row; the toast says what changed once the platform took it, and a refusal stays on the row. */
+    async function onFollowFromList(rootId: number, isFollowing: boolean): Promise<void> {
+        if (!await shell.value.threads.follow(rootId, isFollowing)) {
+            return;
+        }
+
+        // one follow toast at a time: a quick follow then unfollow shows only where it ended
+        const notice = followNotice(isFollowing);
+        notices.value = [...notices.value.filter(n => n.code !== "thread-followed" && n.code !== "thread-unfollowed"), notice];
+    }
+
+    /**
+     * A row of the threads list chose its thread. This is the thread drawer's entry: it opens the
+     * thread of that root in that conversation, which may not be the one open, in the panel column
+     * over the list, with a back chevron that returns to the list and the row that opened it.
+     */
+    function openThreadFromList(_rootId: number, _channelId: string): void {
+        // The drawer is not built yet, so choosing a row leaves the list as it is.
     }
 
     function onTurnOnPush(): void {
