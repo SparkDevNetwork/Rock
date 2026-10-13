@@ -1151,10 +1151,16 @@ namespace Rock.Model
                             fileName = "PersonPhoto";
                         }
 
+                        // Remote servers often send images as binary/octet-stream, which
+                        // GetImage.ashx refuses to serve. Use the type from the image's
+                        // contents when we can, otherwise keep what the server sent.
+                        photoData.Position = 0;
+                        var mimeType = Rock.Utility.FileUtilities.GetImageMimeType( photoData ) ?? imageResponse.ContentType;
+
                         var binaryFile = new BinaryFile()
                         {
                             FileName = fileName,
-                            MimeType = imageResponse.ContentType,
+                            MimeType = mimeType,
                             BinaryFileTypeId = binaryFileType.Id,
                             IsTemporary = true
                         };
