@@ -154,22 +154,21 @@ test('it refuses a hex color anywhere inside a script string, not only a string 
   assert.deepEqual(linesOf(hits), [1, 2, 3], hits.join(' | '));
 });
 
-test('it passes a number written after a hash in prose, and still refuses a hex color in a value', () => {
+test('it refuses an all-digit hex in any script string, and passes a hash glued to a word or an entity', () => {
   const planted = [
+    'el.style.background = "linear-gradient(#111, #222)";',
+    'const pair = "#000 #111";',
+    'const words = "fill #222 now";',
     'const label = "Issue #1234";',
-    'const room = `Room #12, then Issue #4096 again`;',
     'const entity = "&#1234;";',
     'const glued = "abc#123";',
-    'element.style.border = "1px solid #123";',
-    'const shade = "#1234";',
-    'const pair = "#fff #000";',
   ].join('\n');
 
   const hits = scan(`${shell}/composables/example.partial.ts`, planted);
 
-  // A number after a hash is a color only where the string is one or reads as a CSS value; a
-  // hash glued to a word or an entity's ampersand starts no color at all.
-  assert.deepEqual(linesOf(hits), [5, 6, 7], hits.join(' | '));
+  // A script string cannot say whether it ends up in a style, so a hash and digits is a color
+  // even in words; only a hash glued to a word or an entity's ampersand starts no color.
+  assert.deepEqual(linesOf(hits), [1, 2, 3, 4], hits.join(' | '));
 });
 
 test('it refuses a named color inside a script string that reads as a CSS value, and passes prose', () => {

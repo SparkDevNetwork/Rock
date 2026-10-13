@@ -513,6 +513,47 @@ describe("the New divider and the unread strip", () => {
         expect(wrapper.emitted("markRead")).toBeUndefined();
     });
 
+    test("after a send, a catch-up whose divider falls past the newest message at the send brings the divider and the strip back", async () => {
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7 });
+        const wrapper = draw({ timeline: state });
+
+        await wrapper.setProps({ pending: [pendingRow("a")] });
+        await nextTick();
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+
+        // A reconnect's newest page: the send stored, then Anna wrote after it.
+        state.messages.push(message(4, me, at(11, 40)), message(5, anna, at(11, 45)));
+        state.readCursor = 4;
+        state.unreadCount = 1;
+        await nextTick();
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(isBefore(wrapper.get("[data-message-id='4']").element, divider.element)).toBe(true);
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='5']").element)).toBe(true);
+        FakeIntersectionObserver.report(divider.element, false);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(true);
+    });
+
+    test("after a send, a catch-up whose divider falls at or before the newest message at the send keeps them hidden", async () => {
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7 });
+        const wrapper = draw({ timeline: state });
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+
+        await wrapper.setProps({ pending: [pendingRow("a")] });
+        await nextTick();
+
+        // The same read position comes back with the send stored after it: nothing new from others.
+        state.messages.push(message(4, me, at(11, 40)));
+        state.readCursor = 1;
+        state.unreadCount = 3;
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
+    });
+
     test("a send that only fails still takes them away, since the reader has moved on", async () => {
         const wrapper = unread();
 
