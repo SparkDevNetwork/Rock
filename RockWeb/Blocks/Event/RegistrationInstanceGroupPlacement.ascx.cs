@@ -456,7 +456,14 @@ namespace RockWeb.Blocks.Event
 
             var placementConfiguration = GetPlacementConfiguration();
 
-            hfOptionsRegistrantPersonDataViewFilterId.Value = placementConfiguration.RegistrantPersonDataViewFilterId.ToString();
+            // The filter Id comes from a person preference, so only pass along a filter this block created for this person.
+            var registrantPersonDataViewFilter = placementConfiguration.RegistrantPersonDataViewFilterId.HasValue
+                ? new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantPersonDataViewFilterId.Value )
+                : null;
+
+            hfOptionsRegistrantPersonDataViewFilterId.Value = IsBlockOwnedPlacementFilter( registrantPersonDataViewFilter, rockContext )
+                ? registrantPersonDataViewFilter.Id.ToString()
+                : string.Empty;
 
             hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
             hfOptionsDisplayedGroupMemberAttributeIds.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.ToJson();
@@ -929,6 +936,11 @@ namespace RockWeb.Blocks.Event
             if ( placementConfiguration.RegistrantPersonDataViewFilterId.HasValue )
             {
                 dataViewFilter = new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantPersonDataViewFilterId.Value );
+
+                if ( !IsBlockOwnedPlacementFilter( dataViewFilter, rockContext ) )
+                {
+                    dataViewFilter = null;
+                }
             }
 
             if ( dataViewFilter == null || dataViewFilter.ExpressionType == FilterExpressionType.Filter )
@@ -1067,7 +1079,13 @@ namespace RockWeb.Blocks.Event
             if ( dataViewFilterId.HasValue )
             {
                 var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+
+                // The Id comes from a person preference the person controls, so only
+                // delete a filter this block created for this person.
+                if ( IsBlockOwnedPlacementFilter( oldDataViewFilter, rockContext ) )
+                {
+                    DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+                }
             }
 
             dataViewFilterService.Add( dataViewFilter );
@@ -1737,6 +1755,55 @@ namespace RockWeb.Blocks.Event
 
                 service.Delete( dataViewFilter );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the filter is a placement filter this block created
+        /// for the current person. The filter Id comes from a person preference,
+        /// so ownership must be proved from the database.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the filter belongs to this block and the current person; otherwise <c>false</c>.</returns>
+        private bool IsBlockOwnedPlacementFilter( DataViewFilter filter, RockContext rockContext )
+        {
+            /*
+                10/13/2026 - MSE
+
+                The placement configuration is stored in a person preference, which
+                the person can change. Without this check the configuration modal
+                would show, and Save would delete, any DataView filter named there,
+                including filters of DataViews and of Content Channel View blocks.
+                Filters this block creates are always parentless group filters with
+                no DataView, created by the person whose preference holds them.
+
+                Reason: Staff could view and delete filters they do not own.
+            */
+            if ( filter == null
+                || filter.ParentId.HasValue
+                || filter.DataViewId.HasValue
+                || filter.ExpressionType == FilterExpressionType.Filter
+                || !CurrentPersonId.HasValue
+                || !filter.CreatedByPersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            if ( new PersonAliasService( rockContext ).GetPersonId( filter.CreatedByPersonAliasId.Value ) != CurrentPersonId )
+            {
+                return false;
+            }
+
+            if ( new DataViewService( rockContext ).Queryable().Any( dv => dv.DataViewFilterId == filter.Id ) )
+            {
+                return false;
+            }
+
+            // Content Channel View and Content Component keep their filter Id in a block setting with this key.
+            var filterIdText = filter.Id.ToString();
+
+            return !new AttributeValueService( rockContext ).Queryable()
+                .Any( av => av.Attribute.Key == "FilterId" && av.Value == filterIdText );
         }
 
         #endregion Person Filter
