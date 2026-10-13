@@ -467,7 +467,9 @@ namespace RockWeb.Blocks.Cms
                         var binaryFile = new BinaryFile();
                         binaryFileService.Add( binaryFile );
                         binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                        binaryFile.IsTemporary = false;
+                        // The file is only needed while the email is sent, so leave
+                        // it temporary and let the cleanup job remove it later.
+                        binaryFile.IsTemporary = true;
                         binaryFile.MimeType = uploadedFile.ContentType;
                         binaryFile.FileSize = uploadedFile.ContentLength;
                         binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
