@@ -110,7 +110,15 @@ namespace Rock.Rest.Controllers
 
                 binaryFile.IsTemporary = false;
                 binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                binaryFile.MimeType = uploadedFile.ContentType;
+                // Clients often send images as application/octet-stream, which
+                // GetImage.ashx refuses to serve. When the client did not send an
+                // image type, use the type from the file's contents. Image types
+                // are kept because GetFileContentStream re-encodes the image in
+                // that format.
+                var isImageContentType = uploadedFile.ContentType?.StartsWith( "image/" ) == true;
+                binaryFile.MimeType = isImageContentType
+                    ? uploadedFile.ContentType
+                    : FileUtilities.GetImageMimeType( uploadedFile.InputStream ) ?? uploadedFile.ContentType;
                 binaryFile.FileName = FileUtilities.ScrubFileName( uploadedFile.FileName );
                 binaryFile.FileSize = uploadedFile.ContentLength;
                 binaryFile.ContentStream = FileUtilities.GetFileContentStream( uploadedFile );
