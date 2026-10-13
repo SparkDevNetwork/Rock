@@ -3301,7 +3301,16 @@ namespace Rock.Utility
                 binaryFile.FileSize = imageData.Length;
                 binaryFile.ContentStream = new MemoryStream( imageData );
 
-                if ( webClient.ResponseHeaders != null )
+                // Remote servers often send images as binary/octet-stream, which
+                // GetImage.ashx refuses to serve. Use the type from the image's
+                // contents when we can.
+                var detectedMimeType = Rock.Utility.FileUtilities.GetImageMimeType( binaryFile.ContentStream );
+
+                if ( detectedMimeType != null )
+                {
+                    binaryFile.MimeType = detectedMimeType;
+                }
+                else if ( webClient.ResponseHeaders != null )
                 {
                     binaryFile.MimeType = webClient.ResponseHeaders["content-type"];
                 }
