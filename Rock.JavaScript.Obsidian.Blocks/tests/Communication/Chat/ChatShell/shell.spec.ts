@@ -152,6 +152,10 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
             // Every platform call is a POST through the shell's one call path.
             if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
                 counts.bootstraps++;
+                // an error here is a fetch that never reached the platform, as when offline
+                if (bootstrap.value instanceof Error) {
+                    throw bootstrap.value;
+                }
                 return fakeResponse(200, bootstrap.value);
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_history")) {
@@ -679,6 +683,54 @@ describe("what the platform may send a released client", () => {
 
         expect(h.counts.mints).toBe(before.mints + 1);
         expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+});
+
+// While the connection is lost the banner says so, and a call that could not reach the platform
+// for the same reason is part of that outage, not a failure of its own worth a toast.
+describe("an outage", () => {
+    test("a call that cannot reach the platform while the banner shows the outage adds no toast, during it or after", async () => {
+        const h = await started();
+        h.bootstrap.value = new TypeError("Failed to fetch");
+        const open = topicOf(h, channelTopic(tenant, channelA));
+
+        // the socket drops in words the client does not know, which also reloads the sidebar
+        open.status?.("CHANNEL_ERROR", new Error("channel error: connection lost"));
+        await settle();
+
+        expect(h.shell.state.connection).not.toBeNull();
+        expect(h.counts.bootstraps).toBeGreaterThan(1);
+        expect(h.shell.state.errors).toEqual([]);
+
+        h.bootstrap.value = [];
+        open.status?.("SUBSCRIBED");
+        await settle();
+
+        expect(h.shell.state.connection).toBeNull();
+        expect(h.shell.state.errors).toEqual([]);
+    });
+
+    test("one that failed just before the drop was noticed is taken back once the banner explains it", async () => {
+        const h = await started();
+        h.bootstrap.value = new TypeError("Failed to fetch");
+        personal(h, "resync", {});
+        await settle();
+        expect(h.shell.state.errors.map(e => e.code)).toEqual(["rpc.transport"]);
+
+        topicOf(h, channelTopic(tenant, channelA)).status?.("CHANNEL_ERROR");
+        await settle();
+
+        expect(h.shell.state.errors).toEqual([]);
+    });
+
+    test("with the connection healthy, a call that cannot reach the platform still toasts", async () => {
+        const h = await started();
+        h.bootstrap.value = new TypeError("Failed to fetch");
+
+        personal(h, "resync", {});
+        await settle();
+
+        expect(h.shell.state.errors.map(e => e.code)).toEqual(["rpc.transport"]);
     });
 });
 

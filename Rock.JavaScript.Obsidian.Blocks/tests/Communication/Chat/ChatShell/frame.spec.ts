@@ -353,6 +353,77 @@ describe("the phone panes", () => {
     });
 });
 
+describe("focus across the phone panes", () => {
+    test("goes to the conversation's title when a row opens it, never to its composer", async () => {
+        const w = await mountBlock(390);
+        (w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`).element as HTMLElement).focus();
+
+        await openRow(w, team.channel_id);
+
+        expect(document.activeElement).toBe(w.get("[data-testid='header-title']").element);
+    });
+
+    test("returns on Back to the row of the conversation just left", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, dmAnna.channel_id);
+
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+
+        expect(document.activeElement).toBe(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).element);
+    });
+
+    test("stays on the row a wide block's person clicked", async () => {
+        const w = await mountBlock(1200);
+        const row = w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`).element as HTMLElement;
+        row.focus();
+
+        await openRow(w, team.channel_id);
+
+        expect(document.activeElement).toBe(row);
+    });
+});
+
+describe("with nothing open", () => {
+    test("draws no header bar and no composer, and asks for a conversation", async () => {
+        const w = await mountBlock(1200);
+
+        expect(w.find("[data-testid='chat-header']").exists()).toBe(false);
+        expect(w.find("[data-testid='composer-input']").exists()).toBe(false);
+        expect(w.get("[data-testid='frame-main']").text()).toContain("Choose a conversation.");
+    });
+
+    test("still shows the service banner, which is about chat as a whole", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.state as { banner: string | null }).banner = "Chat is read-only while we do some maintenance.";
+        await settle();
+
+        expect(w.find("[data-testid='service-banner']").exists()).toBe(true);
+    });
+
+    test("draws the header and the composer once a conversation opens", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        expect(w.find("[data-testid='chat-header']").exists()).toBe(true);
+        expect(w.find("[data-testid='composer-input']").exists()).toBe(true);
+    });
+});
+
+describe("the reader's own send in a channel", () => {
+    test("is headed with the session's name and photo", async () => {
+        mockConfig.session = { ...(mockConfig.session as object), personPhotoUrl: "/GetImage.ashx?id=7" };
+        const w = await mountBlock(1200);
+        (mockShell!.sender as { pending: () => unknown[] }).pending = () => [{ localId: "l1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport" }];
+
+        await openRow(w, team.channel_id);
+
+        const row = w.get("[data-testid='pending-row']");
+        expect(row.get("[data-testid='sender-name']").text()).toBe("Jordan Ellis");
+        expect(row.find("img").attributes("src")).toBe("/GetImage.ashx?id=7");
+    });
+});
+
 describe("a phone pane out of view", () => {
     /** Whether a pane is taken out of the page's tab order by its style, which every browser honours, unlike inert. */
     function isOutOfReach(w: VueWrapper, testId: string): boolean {

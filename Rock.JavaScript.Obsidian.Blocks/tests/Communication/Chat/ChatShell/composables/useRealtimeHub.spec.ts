@@ -191,6 +191,43 @@ describe("createRealtimeHub", () => {
         expect(seen).toEqual([]);
     });
 
+    test("leaving a topic for another is not an outage, though the library closes the left topic as it leaves", async () => {
+        // The client library marks a topic as leaving before it asks whether it can still push,
+        // so it always closes the topic at once, inside removeChannel, before the leave is acked.
+        const f = fakeClient();
+        f.client.removeChannel = async channel => {
+            const left = channel as FakeChannel;
+            left.status?.("CLOSED");
+            left.system?.({ status: "error", message: "Channel closed" } as never);
+            f.removed.push(left.topic);
+            return "ok";
+        };
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[1].status?.("SUBSCRIBED");
+
+        hub.openChannel(channelTwo);
+        f.channels[2].status?.("SUBSCRIBED");
+
+        expect(seen).toEqual([`joined ${channelOne}`, `joined ${channelTwo}`]);
+        expect(f.removed).toEqual([channelTopic(tenant, channelOne)]);
+    });
+
+    test("an error about a topic that has been left is not reported", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        const left = f.channels[1];
+        left.status?.("SUBSCRIBED");
+        hub.openChannel(channelTwo);
+
+        left.system?.({ status: "error", message: "Token has expired 1 seconds ago" } as never);
+
+        expect(seen).toEqual([`joined ${channelOne}`]);
+    });
+
     test("stop leaves every topic", async () => {
         const f = fakeClient();
         const { hub } = hubWith(f.client);

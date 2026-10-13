@@ -76,6 +76,18 @@ describe("the menu", () => {
         return anchor;
     }
 
+    test("is placed by its position, so its own entrance and exit can move it", async () => {
+        // A transform the placement set would override the pop motion's, and the menu would only fade.
+        await open();
+        for (let i = 0; i < 10; i++) {
+            await Promise.resolve();
+        }
+        await settle();
+
+        expect(menu()?.style.transform ?? "").toBe("");
+        expect(menu()?.style.left).not.toBe("");
+    });
+
     test("is closed until its button is pressed", () => {
         wrapper = mount(Menu, { props: { icon: "dots", label: "More", items }, attachTo: document.body });
 

@@ -23,10 +23,11 @@
 // jsdom lays nothing out, so the tests stand in for the browser twice: an IntersectionObserver
 // that the test reports through, and the feed's scroll sizes set by hand.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick, reactive } from "vue";
+import { defineComponent, h, nextTick, reactive } from "vue";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -233,8 +234,10 @@ describe("the timeline", () => {
         const state = timeline([message(1, anna, at(14, 50))]);
         const wrapper = draw({ timeline: state, pending: [pendingRow("a")] });
 
-        // The confirmed message goes in before the pending row comes out, as the send does it.
+        // The confirmed message goes in before the pending row comes out, naming the message it
+        // became, as the send does it.
         state.messages.push(message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "pending a" }));
+        (wrapper.props("pending") as PendingMessage[])[0].confirmedId = 2;
         await wrapper.setProps({ pending: [] });
         await nextTick();
 
@@ -255,6 +258,110 @@ describe("the timeline", () => {
         const wrapper = draw({ timeline: timeline([message(1, me, at(14, 59))]) });
 
         expect(wrapper.find("[data-testid='message-state']").exists()).toBe(false);
+    });
+});
+
+// The send's answer and the message's live copy race each other to the page. The person's own
+// message shows Sent for 2.2 seconds from whichever comes first, and the second neither restarts
+// nor cancels it. Both orders are driven by hand: the answer is a deferred the test resolves, the
+// live copy is the message put into the timeline as the live event does.
+describe("the Sent hold, whichever of the answer and the live copy comes first", () => {
+    type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
+
+    function deferred<T>(): Deferred<T> {
+        let resolve!: (value: T) => void;
+        const promise = new Promise<T>(r => resolve = r);
+        return { promise, resolve };
+    }
+
+    /** The feed fed by a real sender, whose send answers when the test says so. */
+    function race(): { wrapper: VueWrapper, state: TimelineState, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: () => void } {
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const answer = deferred<SendResult>();
+        const confirmed = message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "On my way" });
+        const put = (m: TimelineMessage): void => {
+            const index = state.messages.findIndex(existing => existing.id === m.id);
+            if (index >= 0) {
+                state.messages.splice(index, 1, m);
+            }
+            else {
+                state.messages.push(m);
+            }
+        };
+        const sender = createSender({
+            send: () => answer.promise,
+            timelines: { upsert: (_channelId, m) => put(m) },
+            personAliasGuid: me,
+            newLocalId: () => "local-1"
+        });
+        const Host = defineComponent({
+            setup: () => () => h(MessageFeed, { timeline: state, pending: sender.pending("c1"), personAliasGuid: me })
+        });
+        const wrapper = mount(Host);
+
+        return { wrapper, state, answer, send: () => sender.send("c1", "On my way"), liveCopy: () => put({ ...confirmed }) };
+    }
+
+    const confirmedAnswer: SendResult = { ok: true, id: 2, createdAt: at(15, 0) };
+
+    async function flush(): Promise<void> {
+        for (let i = 0; i < 5; i++) {
+            await Promise.resolve();
+            await nextTick();
+        }
+    }
+
+    function isSent(wrapper: VueWrapper): boolean {
+        const state = wrapper.find("[data-message-id='2'] [data-testid='message-state']");
+        return state.exists() && state.text() === "Sent";
+    }
+
+    test("the answer first: Sent from the answer, and the live copy after it changes nothing", async () => {
+        const r = race();
+        const sending = r.send();
+        await flush();
+
+        r.answer.resolve(confirmedAnswer);
+        await sending;
+        await flush();
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(400);
+        r.liveCopy();
+        await flush();
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(1799);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(false);
+    });
+
+    test("the live copy first: Sent once the answer names it, held from the live copy, the answer not restarting it", async () => {
+        const r = race();
+        const sending = r.send();
+        await flush();
+
+        r.liveCopy();
+        await flush();
+        jest.advanceTimersByTime(400);
+
+        r.answer.resolve(confirmedAnswer);
+        await sending;
+        await flush();
+        expect(r.wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(1799);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(false);
     });
 });
 
@@ -359,6 +466,37 @@ describe("Jump to latest", () => {
 
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("3 new messages");
     });
+
+    test("from the keyboard, hands focus to the newest message, since the button hides once there", async () => {
+        const wrapper = mount(MessageFeed, {
+            props: { pending: [], personAliasGuid: me, timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) },
+            attachTo: document.body
+        });
+        placeScroll(wrapper, 0);
+        await nextTick();
+
+        const jump = wrapper.get("[data-testid='jump-latest']");
+        (jump.element as HTMLElement).focus();
+        await jump.trigger("click");
+
+        expect(document.activeElement).toBe(wrapper.get("[data-message-id='2']").element);
+        wrapper.unmount();
+    });
+});
+
+describe("a send that fails", () => {
+    test("is scrolled into view, out from under the feed's bottom fade", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")] });
+        await nextTick();
+        // the failed row grows by its Not sent line
+        placeScroll(wrapper, 1500, 2060);
+
+        await wrapper.setProps({ pending: [pendingRow("a", "failed")] });
+        await nextTick();
+        await nextTick();
+
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2060);
+    });
 });
 
 describe("the history skeleton", () => {
@@ -378,6 +516,20 @@ describe("the history skeleton", () => {
         state.messages.push(message(1, anna, at(14, 0)));
         await nextTick();
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+    });
+
+    test("draws a channel's flat rows with 36px faces and a direct message's bubbles", async () => {
+        const channel = draw({ timeline: timeline([], { isLoaded: false }), isChannel: true });
+        const direct = draw({ timeline: timeline([], { isLoaded: false }), isDirectMessage: true });
+
+        jest.advanceTimersByTime(1000);
+        await nextTick();
+
+        expect(channel.findAll("[data-testid='skeleton-row']")).toHaveLength(5);
+        expect(channel.findAll("[data-testid='skeleton-face']")).toHaveLength(5);
+        expect(channel.find("[data-testid='skeleton-bubble']").exists()).toBe(false);
+        expect(direct.findAll("[data-testid='skeleton-bubble']")).toHaveLength(5);
+        expect(direct.find("[data-testid='skeleton-face']").exists()).toBe(false);
     });
 
     test("never shows for a page that lands within the second", async () => {

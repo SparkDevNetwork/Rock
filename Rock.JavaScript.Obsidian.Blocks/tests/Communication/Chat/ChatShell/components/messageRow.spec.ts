@@ -332,6 +332,33 @@ describe("Community, in a channel", () => {
         expect(other.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
     });
 
+    test.each(["sending", "failed"] as const)("the reader's own %s row that starts a group is headed with their name and photo", status => {
+        const wrapper = mount(MessageRow, {
+            props: {
+                personAliasGuid: me,
+                pending: pendingRow({ status }),
+                isOwn: true,
+                isChannel: true,
+                position: "single",
+                personName: "Jordan Lee",
+                personPhotoUrl: "/GetImage.ashx?id=7",
+                organizationName: "Cedar Hill Church"
+            }
+        });
+
+        expect(wrapper.get("[data-testid='sender-name']").text()).toBe("Jordan Lee");
+        expect(wrapper.findComponent(Avatar).props("people")).toEqual([{ name: "Jordan Lee", photoUrl: "/GetImage.ashx?id=7" }]);
+    });
+
+    test("an own row with no name from the session is still the reader's, never the church's", () => {
+        const wrapper = mount(MessageRow, {
+            props: { personAliasGuid: me, pending: pendingRow(), isOwn: true, isChannel: true, position: "single", organizationName: "Cedar Hill Church" }
+        });
+
+        expect(wrapper.get("[data-testid='sender-name']").text()).toBe("You");
+        expect(wrapper.findComponent(Avatar).props("people")).toEqual([{ name: "You", photoUrl: null }]);
+    });
+
     test("a continuation row has no head, and its time in the gutter without AM or PM", () => {
         const wrapper = draw({ message: message(), isChannel: true, position: "middle" });
 

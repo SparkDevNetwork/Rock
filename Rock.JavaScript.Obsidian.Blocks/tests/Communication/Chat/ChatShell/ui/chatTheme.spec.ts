@@ -91,7 +91,8 @@ function walk(css: string, media: string, sheet: Sheet): void {
         const prelude = css.slice(i, open).trim();
         const inner = css.slice(open + 1, close - 1);
 
-        if (prelude.startsWith("@media")) {
+        // A feature query is read as a condition of its own, as a media query is.
+        if (prelude.startsWith("@media") || prelude.startsWith("@supports")) {
             walk(inner, normalize(prelude), sheet);
         }
         else if (/^@(-webkit-)?keyframes/.test(prelude)) {
@@ -112,14 +113,14 @@ function walk(css: string, media: string, sheet: Sheet): void {
     }
 }
 
-function readSheet(): Sheet {
-    const source = readFileSync(sheetPath, "utf8");
+function readSheet(path = sheetPath): Sheet {
+    const source = readFileSync(path, "utf8");
     const sheet: Sheet = { styleTags: [], rules: [], keyframes: [] };
     const styleBlock = /<style([^>]*)>([\s\S]*?)<\/style>/g;
     let match: RegExpExecArray | null;
 
     // A stylesheet is one unscoped block of its own, read whole.
-    if (sheetPath.endsWith(".css")) {
+    if (path.endsWith(".css")) {
         sheet.styleTags.push("");
         walk(source.replace(/\/\*[\s\S]*?\*\//g, ""), "", sheet);
         return sheet;
@@ -432,6 +433,20 @@ describe("the chat token sheet", () => {
         expect(normalize(focus[0].declarations.get("outline-offset") ?? "")).toBe("2px");
     });
 
+    test("outlines focus on :focus too, for the oldest Safari Rock supports, which has no :focus-visible", () => {
+        // Safari before 15.4 ignores a rule it cannot read, so the outline on :focus-visible alone
+        // never shows there. Browsers that can tell a keyboard focus apart take the outline back
+        // from a focus a click made.
+        const onFocus = sheet.rules.find(r => r.media === "" && r.selector.includes(".chat-shell") && /:focus(?![-\w])/.test(r.selector)
+            && !r.selector.includes(":not(") && r.declarations.has("outline"));
+        const takenBack = sheet.rules.find(r => r.media.includes("@supportsselector(:focus-visible)") && r.selector.includes(".chat-shell")
+            && r.selector.includes(":focus:not(:focus-visible)"));
+
+        expect(normalize(onFocus?.declarations.get("outline") ?? "")).toContain("var(--chat-brand-ink");
+        expect(normalize(onFocus?.declarations.get("outline-offset") ?? "")).toBe("2px");
+        expect(normalize(takenBack?.declarations.get("outline") ?? "")).toMatch(/^(none|0)$/);
+    });
+
     test("resets box sizing under the chat's root, so Rock's Bootstrap cannot change how a box measures", () => {
         const reset = sheet.rules.filter(r => r.selector.includes(".chat-shell") && normalize(r.declarations.get("box-sizing") ?? "") === "border-box");
 
@@ -481,5 +496,69 @@ describe("the chat token sheet", () => {
         const explicit = sheet.rules.filter(isDarkExplicit).flatMap(r => splitTopLevel(r.selector, ",")).filter(part => /\[theme=["']?dark["']?\]/.test(part));
 
         expect(explicit.some(part => !part.includes("data-rock-theme"))).toBe(true);
+    });
+});
+
+// The components' own style blocks, read as text: what jsdom cannot lay out or animate is checked
+// as the rules that do it.
+describe("the components' own styles", () => {
+    const components = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/components");
+    const feedPath = resolve(components, "messageFeed.partial.obs");
+    const rowPath = resolve(components, "messageRow.partial.obs");
+
+    /** The body of a keyframes block in a component, by its name. */
+    function keyframesBody(path: string, name: string): string | null {
+        const source = readFileSync(path, "utf8");
+        const start = source.search(new RegExp(`@keyframes\\s+${name}\\s*\\{`));
+        if (start < 0) {
+            return null;
+        }
+
+        let depth = 0;
+        for (let i = source.indexOf("{", start); i < source.length; i++) {
+            depth += source[i] === "{" ? 1 : source[i] === "}" ? -1 : 0;
+            if (depth === 0) {
+                return source.slice(start, i + 1);
+            }
+        }
+
+        return null;
+    }
+
+    test("a short conversation sits at the bottom of the feed, by the composer", () => {
+        const feed = readSheet(feedPath);
+        const spacer = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed::before");
+
+        expect(normalize(spacer?.declarations.get("flex") ?? "")).toMatch(/^1/);
+        expect(spacer?.declarations.has("content")).toBe(true);
+    });
+
+    test("the sticky day pill steps to its place under the unread strip rather than animating top", () => {
+        const feed = readSheet(feedPath);
+        const moving = feed.rules.filter(r => r.selector.includes("chat-day-pill") && /(^|,|\s)top(\s|$)/.test(r.declarations.get("transition") ?? ""));
+
+        expect(moving).toEqual([]);
+    });
+
+    test("under reduced motion the unread strip fades in without sliding", () => {
+        const feed = readSheet(feedPath);
+        const strip = feed.rules.find(r => isReducedMotion(r) && r.selector.includes(".chat-unread-strip"));
+        const name = strip?.declarations.get("animation-name") ?? "";
+        const frames = keyframesBody(feedPath, name);
+
+        expect(name).not.toBe("");
+        expect(frames).not.toBeNull();
+        expect(frames).toContain("opacity");
+        expect(frames).not.toContain("transform");
+    });
+
+    test("a block image keeps its 16 to 7 shape in a browser without aspect-ratio, by a padding box", () => {
+        const row = readSheet(rowPath);
+        const fallback = row.rules.filter(r => r.media.includes("@supportsnot(aspect-ratio"));
+        const box = fallback.find(r => /chat-block-image\)?$/.test(r.selector));
+        const image = fallback.find(r => r.selector.includes("chat-block-image img"));
+
+        expect(normalize(box?.declarations.get("padding-top") ?? "")).toBe("43.75%");
+        expect(normalize(image?.declarations.get("position") ?? "")).toBe("absolute");
     });
 });
