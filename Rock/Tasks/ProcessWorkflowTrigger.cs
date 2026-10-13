@@ -38,7 +38,6 @@ namespace Rock.Tasks
         public override void Execute( Message message )
         {
             var triggerGuids = message.WorkflowTriggerGuids ?? new List<Guid>();
-            var hasTagsBeenSet = false;
             EntityTypeCache entityTypeCache = null;
 
             if ( message.WorkflowTriggerGuid.HasValue )
@@ -58,6 +57,21 @@ namespace Rock.Tasks
 
             using ( var activity = Observability.ObservabilityHelper.StartActivity( $"WT: {entityTypeCache?.FriendlyName}" ) )
             {
+                /*
+                    10/13/2026 - KH
+
+                    Tag the activity from the message rather than the entity loaded below.
+                    GetEntity() returns null when the entity no longer exists: always for
+                    Post Delete triggers, and sometimes for Post Save triggers when the
+                    entity is deleted right after the save (such as the losing record of a
+                    person merge). The workflow must still run in that case.
+
+                    Reason: Avoid a NullReferenceException when observability is enabled.
+                */
+                activity?.SetTag( "rock.trigger.entity_type_id", message.EntityTypeId );
+                activity?.SetTag( "rock.trigger.entity_type", entityTypeCache?.Name );
+                activity?.SetTag( "rock.trigger.entity_id", message.EntityId );
+
                 foreach ( var triggerGuid in triggerGuids )
                 {
                     using ( var rockContext = RockApp.Current.CreateRockContext() )
@@ -71,15 +85,6 @@ namespace Rock.Tasks
                                 var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
                                 var entity = GetEntity( rockContext, message );
-
-                                if ( !hasTagsBeenSet && activity != null )
-                                {
-                                    activity.SetTag( "rock.trigger.entity_type_id", entity.TypeId );
-                                    activity.SetTag( "rock.trigger.entity_type", entity.TypeName );
-                                    activity.SetTag( "rock.trigger.entity_id", entity.Id );
-
-                                    hasTagsBeenSet = true;
-                                }
 
                                 new Rock.Model.WorkflowService( rockContext ).Process( workflow, entity, out var _ );
                             }
