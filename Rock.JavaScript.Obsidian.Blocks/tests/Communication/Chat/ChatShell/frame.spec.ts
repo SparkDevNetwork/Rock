@@ -1,0 +1,332 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+// The chat's frame, mounted as the block: three columns side by side while the block is wide, and
+// one pane at a time once the block itself is narrower than 760px, whatever the window's width,
+// since a block in a narrow zone of a wide screen has no more room than a phone. Opening a
+// conversation on a phone brings its pane in over the list, Back returns to the list, and nothing
+// focuses the composer on its own there, because that would raise the keyboard over the messages.
+//
+// The shell behind the block is replaced with a plain reactive stand-in, so the frame is tested
+// without a platform. jsdom lays nothing out, so the block's width comes from a ResizeObserver the
+// test reports through.
+import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick, reactive } from "vue";
+import { SidebarRow } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+
+// #region Stand-ins
+
+const team: SidebarRow = sidebarRow({ channel_id: "c0000001-0000-4000-8000-000000000000", name: "Worship Team" });
+const dmAnna: SidebarRow = sidebarRow({
+    channel_id: "c0000005-0000-4000-8000-000000000000",
+    channel_type: "dm",
+    dm_names: ["Anna"],
+    dm_other_count: 1
+});
+
+/** A sidebar row in the exact shape chat_get_bootstrap answers. */
+function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRow {
+    return {
+        name: null,
+        icon_url: null,
+        channel_type: "shared",
+        is_public: false,
+        always_shown: false,
+        is_member: true,
+        is_favorite: false,
+        notify_mode: "all",
+        is_leader: false,
+        can_post_announcements: false,
+        can_mention_all: false,
+        last_message_id: null,
+        last_message_at: null,
+        last_message_type: null,
+        last_sender_nick_name: null,
+        last_sender_last_name: null,
+        last_sender_listed: false,
+        last_message_preview: null,
+        read_cursor: null,
+        is_unread: false,
+        mention_count: 0,
+        dm_names: null,
+        dm_other_count: null,
+        ...overrides
+    };
+}
+
+/** The shell the block drives, reduced to what the frame reads, ready with two rooms loaded. */
+function fakeShell(): Record<string, unknown> {
+    const state = reactive({
+        phase: "ready",
+        gate: "ok",
+        connection: null,
+        errors: [],
+        activeChannelId: null as string | null,
+        banner: null,
+        isComposerOpen: true,
+        isPushOffered: false
+    });
+
+    return {
+        state,
+        channels: reactive({ rows: [team, dmAnna] }),
+        timelines: {
+            state: () => reactive({ messages: [], isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: null })
+        },
+        sender: { pending: () => [], retry: jest.fn(), discard: jest.fn() },
+        directMessages: reactive({ draft: null, held: null, chosen: [], error: null, search: jest.fn(), choose: jest.fn(), unchoose: jest.fn(), edit: jest.fn() }),
+        isNewMessageShown: true,
+        openDirectMessage: jest.fn(),
+        start: jest.fn(async () => undefined),
+        stop: jest.fn(async () => undefined),
+        selectChannel: jest.fn(async (channelId: string) => {
+            state.activeChannelId = channelId;
+        }),
+        seen: jest.fn(),
+        markRead: jest.fn(),
+        firstMessageShown: jest.fn(),
+        send: jest.fn(),
+        turnOnPush: jest.fn(),
+        isChannelOnScreen: () => false,
+        mentionBadge: () => 0,
+        loadOlder: jest.fn(),
+        dismissError: jest.fn()
+    };
+}
+
+jest.mock("@Obsidian/Utility/block", () => ({
+    useConfigurationValues: () => ({
+        session: { gate: "ok", personAliasGuid: "a0000001-0000-4000-8000-000000000000", personNickName: "Jordan", personLastName: "Ellis", canStartDm: true },
+        channelGuid: null,
+        areSharedChannelsFilteredByCampus: false,
+        organizationName: "Sun Valley Church",
+        layout: "conversational"
+    }),
+    useInvokeBlockAction: () => jest.fn()
+}));
+
+jest.mock("@Obsidian/Libs/supabase", () => ({ createClient: jest.fn() }));
+
+jest.mock("../../../../src/Communication/Chat/ChatShell/shell.partial", () => ({
+    ...jest.requireActual("../../../../src/Communication/Chat/ChatShell/shell.partial"),
+    createChatShell: () => fakeShell()
+}));
+
+/** The block's width as the test says it is, read by the ResizeObserver stand-in and by any size read. */
+let blockWidth = 1200;
+
+/** A ResizeObserver the test reports through, since jsdom computes no sizes. */
+class FakeResizeObserver {
+    static all: FakeResizeObserver[] = [];
+
+    readonly watched = new Set<Element>();
+
+    constructor(private readonly callback: ResizeObserverCallback) {
+        FakeResizeObserver.all.push(this);
+    }
+
+    observe(element: Element): void {
+        this.watched.add(element);
+        sizeElement(element);
+        // A browser reports a first size as soon as an element is observed.
+        this.callback([entryFor(element)], this as unknown as ResizeObserver);
+    }
+
+    unobserve(element: Element): void {
+        this.watched.delete(element);
+    }
+
+    disconnect(): void {
+        this.watched.clear();
+    }
+
+    /** Sets the block's width and tells every observer of every element it watches. */
+    static resize(width: number): void {
+        blockWidth = width;
+        for (const observer of FakeResizeObserver.all) {
+            const entries = Array.from(observer.watched).map(element => entryFor(element));
+            if (entries.length > 0) {
+                observer.callback(entries, observer as unknown as ResizeObserver);
+            }
+        }
+    }
+}
+
+/** Gives an element the test's width wherever a size might be read from it. */
+function sizeElement(element: Element): void {
+    for (const property of ["clientWidth", "offsetWidth", "scrollWidth"]) {
+        Object.defineProperty(element, property, { configurable: true, get: () => blockWidth });
+    }
+    element.getBoundingClientRect = (): DOMRect => ({ x: 0, y: 0, top: 0, left: 0, right: blockWidth, bottom: 800, width: blockWidth, height: 800, toJSON: () => ({}) }) as DOMRect;
+}
+
+function entryFor(element: Element): ResizeObserverEntry {
+    const rect = { x: 0, y: 0, top: 0, left: 0, right: blockWidth, bottom: 800, width: blockWidth, height: 800, toJSON: () => ({}) } as DOMRectReadOnly;
+    const size = [{ inlineSize: blockWidth, blockSize: 800 }];
+    return { target: element, contentRect: rect, borderBoxSize: size, contentBoxSize: size, devicePixelContentBoxSize: size } as unknown as ResizeObserverEntry;
+}
+
+// #endregion Stand-ins
+
+// #region Helpers
+
+let wrapper: VueWrapper | null = null;
+
+async function settle(): Promise<void> {
+    for (let i = 0; i < 4; i++) {
+        await nextTick();
+    }
+    await Promise.resolve();
+}
+
+async function mountBlock(width: number): Promise<VueWrapper> {
+    blockWidth = width;
+    const ChatShell = (await import("../../../../src/Communication/Chat/chatShell.obs")).default;
+    wrapper = mount(ChatShell, { attachTo: document.body });
+    await settle();
+    return wrapper;
+}
+
+function shellRoot(w: VueWrapper): HTMLElement {
+    return w.get("[data-testid='chat-shell']").element as HTMLElement;
+}
+
+/** Whether a pane is taken out of view and out of reach, as a phone's off-screen pane must be. */
+function isPaneHidden(w: VueWrapper, testId: string): boolean {
+    const pane = w.get(`[data-testid='${testId}']`).element as HTMLElement;
+    return pane.getAttribute("aria-hidden") === "true" || pane.hasAttribute("inert");
+}
+
+async function openRow(w: VueWrapper, channelId: string): Promise<void> {
+    await w.get(`[data-testid='channel-row'][data-channel-id='${channelId}']`).trigger("click");
+    await settle();
+}
+
+// #endregion Helpers
+
+beforeAll(() => {
+    window.ResizeObserver = FakeResizeObserver as unknown as typeof ResizeObserver;
+    window.IntersectionObserver ??= class {
+        observe(): void { /* jsdom computes no intersections. */ }
+        unobserve(): void { /* As above. */ }
+        disconnect(): void { /* As above. */ }
+        takeRecords(): IntersectionObserverEntry[] {
+            return [];
+        }
+    } as unknown as typeof IntersectionObserver;
+});
+
+afterEach(() => {
+    wrapper?.unmount();
+    wrapper = null;
+    FakeResizeObserver.all = [];
+    document.body.innerHTML = "";
+});
+
+describe("the frame on a wide block", () => {
+    test("draws the sidebar, the conversation and an empty panel column side by side", async () => {
+        const w = await mountBlock(1200);
+
+        expect(shellRoot(w).getAttribute("data-phone")).toBe("false");
+        const frame = w.get("[data-testid='chat-frame']");
+        expect(frame.find("[data-testid='frame-sidebar']").exists()).toBe(true);
+        expect(frame.find("[data-testid='frame-main']").exists()).toBe(true);
+        expect(frame.find("[data-testid='frame-panel']").exists()).toBe(true);
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+    });
+
+    test("keeps both panes and draws no Back once a conversation is open", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+        expect(w.find("[data-testid='header-back']").exists()).toBe(false);
+    });
+
+    test("titles a two-person conversation by the other person, as the sidebar does", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, dmAnna.channel_id);
+
+        expect(w.get("[data-testid='header-title']").text()).toBe("Anna");
+    });
+});
+
+describe("the switch to phone panes", () => {
+    test("follows the block's own width below 760px, not the window's", async () => {
+        const w = await mountBlock(1200);
+        expect(shellRoot(w).getAttribute("data-phone")).toBe("false");
+
+        FakeResizeObserver.resize(759);
+        await settle();
+        expect(shellRoot(w).getAttribute("data-phone")).toBe("true");
+
+        FakeResizeObserver.resize(760);
+        await settle();
+        expect(shellRoot(w).getAttribute("data-phone")).toBe("false");
+    });
+
+    test("starts in phone panes when the block is narrow from the first size", async () => {
+        const w = await mountBlock(390);
+
+        expect(shellRoot(w).getAttribute("data-phone")).toBe("true");
+    });
+});
+
+describe("the phone panes", () => {
+    test("show the list alone until a conversation is opened", async () => {
+        const w = await mountBlock(390);
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
+        expect(isPaneHidden(w, "frame-main")).toBe(true);
+    });
+
+    test("show the conversation alone once opened, without focusing the composer", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(true);
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+        expect(document.activeElement?.getAttribute("data-testid")).not.toBe("composer-input");
+    });
+
+    test("return to the list from the header's Back", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
+        expect(isPaneHidden(w, "frame-main")).toBe(true);
+    });
+
+    test("keep the open conversation when the block widens again, with both panes shown", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        FakeResizeObserver.resize(1200);
+        await settle();
+
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+        expect(w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`).attributes("aria-current")).toBeTruthy();
+    });
+});
