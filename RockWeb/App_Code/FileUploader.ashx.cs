@@ -399,8 +399,8 @@ namespace RockWeb
         };
 
         /// <summary>
-        /// The image mime types that can be inferred from the file name when the client did not
-        /// supply a usable mime type.
+        /// The image mime types that can be inferred from the file's contents when the client
+        /// did not supply a usable mime type.
         /// </summary>
         private static readonly HashSet<string> _inferableMimeTypes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
         {
@@ -409,21 +409,17 @@ namespace RockWeb
             "image/gif",
             "image/bmp",
             "image/tiff",
-            "image/webp",
-            "image/heic",
-            "image/heif"
+            "image/webp"
         };
 
         /// <summary>
-        /// The image file extensions that MimeMapping does not know or maps to a non-standard
-        /// mime type.
+        /// The image file extensions whose types cannot be detected from the file's contents,
+        /// so they are inferred from the file name instead.
         /// </summary>
         private static readonly Dictionary<string, string> _imageExtensionMimeTypes = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
         {
-            { ".webp", "image/webp" },
             { ".heic", "image/heic" },
-            { ".heif", "image/heif" },
-            { ".jfif", "image/jpeg" }
+            { ".heif", "image/heif" }
         };
 
         /// <summary>
@@ -440,8 +436,8 @@ namespace RockWeb
 
         /// <summary>
         /// Gets the mime type to use for the uploaded file. If the client did not supply a
-        /// specific mime type then an attempt is made to infer an image type from the file
-        /// name.
+        /// specific mime type then an attempt is made to infer an image type from the file's
+        /// contents, and then from the file name for image types that cannot be detected.
         /// </summary>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <param name="isInferred">Set to <c>true</c> if the returned mime type was inferred rather than supplied by the client.</param>
@@ -469,6 +465,20 @@ namespace RockWeb
 
                 Reason: Issue #7083
             */
+
+            /*
+                10/13/2026 - CH
+
+                The type is detected from the file's contents before the file name is
+                considered, the same way api/BinaryFiles/Upload does. A real image with
+                no extension is then stored with its image type, and a non-image named
+                with an image extension is not stored as an image.
+
+                HEIC and HEIF cannot be detected from their contents by the image library
+                we use, so those two types are still inferred from the file name.
+
+                Reason: Issue #7089 follow-up (DEV-16466)
+            */
             isInferred = false;
 
             var mimeType = uploadedFile.ContentType;
@@ -478,12 +488,16 @@ namespace RockWeb
                 return mimeType;
             }
 
-            if ( !_imageExtensionMimeTypes.TryGetValue( Path.GetExtension( uploadedFile.FileName ?? string.Empty ), out var inferredMimeType ) )
+            var detectedMimeType = Rock.Utility.FileUtilities.GetImageMimeType( uploadedFile.InputStream );
+
+            if ( detectedMimeType != null && _inferableMimeTypes.Contains( detectedMimeType ) )
             {
-                inferredMimeType = MimeMapping.GetMimeMapping( uploadedFile.FileName );
+                isInferred = true;
+
+                return detectedMimeType;
             }
 
-            if ( _inferableMimeTypes.Contains( inferredMimeType ) )
+            if ( _imageExtensionMimeTypes.TryGetValue( Path.GetExtension( uploadedFile.FileName ?? string.Empty ), out var inferredMimeType ) )
             {
                 isInferred = true;
 
@@ -552,8 +566,8 @@ namespace RockWeb
                     {
                         // The inferred image type could not be decoded, so store the
                         // file as an unknown type rather than failing the upload.
-                        // System.Drawing cannot decode types such as webp and heic,
-                        // so those keep their inferred type without a size check.
+                        // System.Drawing cannot decode webp, heic or heif, so those
+                        // keep their inferred type without a size check.
                         if ( _decodableMimeTypes.Contains( mimeType ) )
                         {
                             mimeType = UnknownMimeType;
