@@ -363,6 +363,68 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         await flush();
         expect(isSent(r.wrapper)).toBe(false);
     });
+
+    /**
+     * The maps that were handed the arrival time of message 2, which is how the feed remembers
+     * when a live copy came in. Only the feed stores a number against a message id, so a map
+     * written that way is the feed's.
+     */
+    function arrivalMaps(): { maps: Map<unknown, unknown>[], restore: () => void } {
+        const maps: Map<unknown, unknown>[] = [];
+        const set = Map.prototype.set;
+        const spy = jest.spyOn(Map.prototype, "set").mockImplementation(function (this: Map<unknown, unknown>, key: unknown, value: unknown) {
+            if (key === 2 && typeof value === "number") {
+                maps.push(this);
+            }
+            return set.call(this, key, value);
+        });
+        return { maps, restore: () => spy.mockRestore() };
+    }
+
+    test("the live copy first: once the hold ends, the feed keeps nothing of the message", async () => {
+        const watch = arrivalMaps();
+        try {
+            const r = race();
+            const sending = r.send();
+            await flush();
+            r.liveCopy();
+            await flush();
+            r.answer.resolve(confirmedAnswer);
+            await sending;
+            await flush();
+            jest.advanceTimersByTime(2200);
+            await flush();
+
+            expect(watch.maps.length).toBeGreaterThan(0);
+            expect(watch.maps.filter(map => map.has(2))).toEqual([]);
+        }
+        finally {
+            watch.restore();
+        }
+    });
+
+    test("the answer first: the live copy that follows leaves nothing behind once the hold ends", async () => {
+        const watch = arrivalMaps();
+        try {
+            const r = race();
+            const sending = r.send();
+            await flush();
+            r.answer.resolve(confirmedAnswer);
+            await sending;
+            await flush();
+            jest.advanceTimersByTime(400);
+            r.liveCopy();
+            await flush();
+            jest.advanceTimersByTime(1800);
+            await flush();
+
+            expect(isSent(r.wrapper)).toBe(false);
+            expect(watch.maps.filter(map => map.has(2))).toEqual([]);
+        }
+        finally {
+            watch.restore();
+        }
+    });
 });
 
 describe("day sections", () => {
@@ -435,6 +497,49 @@ describe("the New divider and the unread strip", () => {
         await wrapper.get("[data-testid='mark-read']").trigger("click");
 
         expect(wrapper.emitted("markRead")).toEqual([[3]]);
+    });
+
+    test("the reader's own send takes the divider and the strip away, and saves no read position", async () => {
+        const wrapper = unread();
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(true);
+
+        await wrapper.setProps({ pending: [pendingRow("a")] });
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+        expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
+        expect(wrapper.emitted("markRead")).toBeUndefined();
+    });
+
+    test("a send that only fails still takes them away, since the reader has moved on", async () => {
+        const wrapper = unread();
+
+        await wrapper.setProps({ pending: [pendingRow("a", "failed")] });
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+    });
+
+    test("with the reader's own messages past the read position, the strip counts only the others' after the divider", async () => {
+        // The platform's count is everything past the read position, the reader's own included.
+        const wrapper = draw({
+            timeline: timeline([
+                message(1, anna, at(11, 0)),
+                message(2, me, at(11, 20)),
+                message(3, anna, at(11, 30)),
+                message(4, me, at(11, 31)),
+                message(5, anna, at(11, 32)),
+                message(6, anna, at(11, 33), { message_type: "system" })
+            ], { readCursor: 1, unreadCount: 4 })
+        });
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+
+        const strip = plain(wrapper.get("[data-testid='unread-strip']").text());
+        expect(strip).toContain("2 new messages");
+        expect(strip).toContain("since 11:30 AM");
     });
 });
 

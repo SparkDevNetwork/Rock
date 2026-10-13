@@ -373,6 +373,20 @@ describe("focus across the phone panes", () => {
         expect(document.activeElement).toBe(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).element);
     });
 
+    test("returns on Back from a New message draft, which has no row, to the New message button", async () => {
+        const w = await mountBlock(390);
+        (mockShell!.directMessages as { draft: unknown }).draft = { people: [{ nick_name: "Anna", last_name: "Kim" }], status: "draft", body: "" };
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+
+        const back = w.get("[data-testid='header-back']");
+        (back.element as HTMLElement).focus();
+        await back.trigger("click");
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='new-message']").element);
+    });
+
     test("stays on the row a wide block's person clicked", async () => {
         const w = await mountBlock(1200);
         const row = w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`).element as HTMLElement;
