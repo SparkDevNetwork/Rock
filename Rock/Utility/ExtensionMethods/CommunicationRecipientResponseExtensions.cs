@@ -99,7 +99,7 @@ namespace Rock
                         bag.Attachments.Add( new ConversationAttachmentBag
                         {
                             FileName = attachment.FileName,
-                            Url = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid ) ),
+                            Url = MobileHelper.BuildPublicApplicationRootUrl( isImage ? FileUrlHelper.GetImageUrl( attachment.Guid ) : FileUrlHelper.GetFileUrl( attachment.Guid ) ),
                             ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid, new GetImageUrlOptions { Width = 512, Height = 512 } ) ) : null
                         } );
                     }
@@ -214,7 +214,7 @@ namespace Rock
                                 bag.Attachments.Add( new ConversationAttachmentBag
                                 {
                                     FileName = attachment.FileName,
-                                    Url = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid ) ),
+                                    Url = MobileHelper.BuildPublicApplicationRootUrl( isImage ? FileUrlHelper.GetImageUrl( attachment.Guid ) : FileUrlHelper.GetFileUrl( attachment.Guid ) ),
                                     ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid, new GetImageUrlOptions { Width = 512, Height = 512 } ) ) : null
                                 } );
                             }
