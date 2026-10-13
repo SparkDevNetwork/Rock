@@ -4109,6 +4109,16 @@ namespace Rock.Model
                 return string.Empty;
             }
 
+            // Get the mime type from the photo's contents. The caller doesn't
+            // send one, and GetImage.ashx won't serve a file unless its mime
+            // type is an image type. If it isn't an image we can read, fail.
+            var mimeType = FileUtilities.GetImageMimeType( new MemoryStream( photoBytes ) );
+
+            if ( mimeType.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
             // Get the BinaryFileType object for person images.
             BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
@@ -4120,7 +4130,7 @@ namespace Rock.Model
             // Set properties for the new BinaryFile object.
             binaryFile.IsTemporary = false;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
-            binaryFile.MimeType = "octet/stream";
+            binaryFile.MimeType = mimeType;
             binaryFile.FileSize = photoBytes.Length;
             binaryFile.FileName = filename;
             binaryFile.ContentStream = new MemoryStream( photoBytes );

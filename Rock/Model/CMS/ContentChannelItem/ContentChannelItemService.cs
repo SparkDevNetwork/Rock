@@ -32,6 +32,7 @@ using Rock.Logging;
 using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Store;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Utility.ContentLibraryApi;
 using Rock.Web.Cache;
 
@@ -265,12 +266,18 @@ namespace Rock.Model
                                 // Do not use a using block for the memory stream since it needs to remain open until the BinaryFile is saved.
                                 var memoryStream = new System.IO.MemoryStream();
                                 stream.CopyTo( memoryStream );
+                                memoryStream.Position = 0;
+
+                                // Remote servers often send images as binary/octet-stream, which
+                                // GetImage.ashx refuses to serve. Use the type from the image's
+                                // contents when we can, otherwise keep what the server sent.
+                                var mimeType = FileUtilities.GetImageMimeType( memoryStream ) ?? imageResponse.ContentType;
 
                                 var binaryFile = new BinaryFile
                                 {
                                     IsTemporary = false,
                                     BinaryFileTypeId = BinaryFileTypeCache.GetId( SystemGuid.BinaryFiletype.CONTENT_CHANNEL_ITEM_IMAGE.AsGuid() ),
-                                    MimeType = imageResponse.ContentType,
+                                    MimeType = mimeType,
                                     // Use the BinaryFile guid as the filename if the filename isn't in the response headers.
                                     FileName = fileNameMatch.Success && fileNameMatch.Groups.Count > 1 && fileNameMatch.Groups[1].Value.IsNotNullOrWhiteSpace() ? fileNameMatch.Groups[1].Value : binaryFileGuid.ToString(),
                                     FileSize = imageResponse.ContentLength,
