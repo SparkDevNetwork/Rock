@@ -6,10 +6,12 @@
 // literal by another road. The keywords transparent, currentColor and inherit are not colors, and
 // a color-mix() of tokens is allowed; a color-mix() with a literal in it is caught by the literal.
 //
-// Two files are exempt, because they are where the values live: the token sheet, chat.css, which
-// the block links from RockWeb's Styles folder, and brand.partial.ts, which works out the church
-// color's tokens in script since the browsers Rock supports cannot mix colors in CSS. A stylesheet
-// anywhere else in the gate's reach is read whole, as a style block.
+// Two places are exempt, because they are where the values live: the token sheet, chat.css, which
+// the block links from RockWeb's Styles folder, and the color arithmetic region of
+// brand.partial.ts, which works out the church color's tokens in script since the browsers Rock
+// supports cannot mix colors in CSS. The rest of that file is held to the rule like any other, and
+// without the region it is read whole. A stylesheet anywhere else in the gate's reach is read
+// whole, as a style block.
 //
 //   node check-styles.mjs                checks the chat block and everything under its folder
 //   node check-styles.mjs --root <dir>   checks every component under a folder, which is how the
@@ -24,7 +26,22 @@ const chatFolder = 'Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat';
 const chatBlock = `${chatFolder}/chatShell.obs`;
 const shellFolder = `${chatFolder}/ChatShell`;
 
-const exempt = new Set(['chat.css', 'brand.partial.ts']);
+/** Where literals may live, by file name: the whole file, or only the region named. */
+const exempt = new Map([
+  ['chat.css', null],
+  ['brand.partial.ts', 'Color arithmetic'],
+]);
+
+/**
+ * The text with an exempt region's characters blanked and its line breaks kept, so the rest is
+ * scanned as it is and every line number still holds. A region without both markers blanks nothing.
+ */
+function withoutRegion(text, name) {
+  const open = text.indexOf(`// #region ${name}`);
+  const close = text.indexOf(`// #endregion ${name}`, open);
+  if (open < 0 || close < 0) return text;
+  return text.slice(0, open) + text.slice(open, close).replace(/[^\n]/g, ' ') + text.slice(close);
+}
 
 // The CSS named colors. A word from this list standing alone in a style value is a color; the
 // same word inside a longer name, such as a token or a keyframe name, is not.
@@ -58,7 +75,14 @@ const COLOR_FUNCTION = /(?<![\w-])(rgba?|hsla?)\(/i;
 const CURVE = /cubic-bezier\(/i;
 const DURATION = /(?<![\w.-])\d*\.?\d+m?s(?![\w-])/i;
 const NAMED = new RegExp(`(?<![\\w-])(${NAMED_COLORS.join('|')})(?![\\w-])`, 'i');
-const WHOLE_HEX = /^#[0-9a-f]{3,8}$/i;
+// A script string reads as a CSS value when it holds a length, a token, a border style or a
+// declaration, which is what separates "0 0 0 2px red" from a sentence that mentions red.
+const READS_AS_CSS = new RegExp([
+  /(?<![\w.])-?\d*\.?\d+(px|r?em|%|vh|vw|ch|deg)(?![\w-])/.source,
+  /var\(--/.source,
+  /\b(solid|dashed|dotted|double|inset|outset)\b/.source,
+  /(^|;)\s*(color|background|border|outline|fill|stroke|[a-z]+-[a-z-]+)\s*:/.source,
+].join('|'), 'i');
 const WHOLE_NAMED = new RegExp(`^(${NAMED_COLORS.join('|')})$`, 'i');
 
 /** The line a character offset falls on, counting from one. */
@@ -83,8 +107,10 @@ function cssLiteral(value) {
 /** What a string literal in script holds that a component may not, or null when it is clean. */
 function scriptLiteral(content) {
   const trimmed = content.trim();
-  if (WHOLE_HEX.test(trimmed)) return `a hex color (${trimmed})`;
+  // A hex is a color wherever it sits in a string, alone or inside a longer value.
+  if (HEX.test(content)) return `a hex color (${HEX.exec(content)[0]})`;
   if (WHOLE_NAMED.test(trimmed)) return `a named color (${trimmed})`;
+  if (NAMED.test(content) && READS_AS_CSS.test(content)) return `a named color (${NAMED.exec(content)[1]})`;
   if (COLOR_FUNCTION.test(content)) return `a ${COLOR_FUNCTION.exec(content)[1]}() color`;
   if (CURVE.test(content)) return 'a cubic-bezier() curve';
   if (DURATION.test(content)) return `a duration (${DURATION.exec(content)[0]})`;
@@ -178,20 +204,26 @@ function scanScript(file, text, start, end, hits) {
 /** Reads a template's style attributes: a static one as CSS, a bound one as script. */
 function scanTemplate(file, text, start, end, hits) {
   const template = text.slice(start, end);
-  for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*"([^"]*)"/g)) {
-    const valueStart = start + match.index + match[0].length - match[3].length - 1;
+  // Either quote may wrap an attribute, so the value runs to the quote that opened it.
+  for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
+    const value = match[4];
+    const valueStart = start + match.index + match[0].length - value.length - 1;
     if (match[2] === 'style') {
-      const found = cssLiteral(match[3]);
+      const found = cssLiteral(value);
       if (found) hits.push(`${file}:${lineAt(text, valueStart)}: ${found} in an inline style`);
     } else {
-      scanScript(file, text, valueStart, valueStart + match[3].length, hits);
+      scanScript(file, text, valueStart, valueStart + value.length, hits);
     }
   }
 }
 
 /** Every literal a chat file holds that it should take from the token sheet, as `file:line: what`. */
 export function scan(file, text) {
-  if (exempt.has(basename(file))) return [];
+  const name = basename(file);
+  if (exempt.has(name)) {
+    if (exempt.get(name) === null) return [];
+    text = withoutRegion(text, exempt.get(name));
+  }
 
   const hits = [];
   if (file.endsWith('.css')) {

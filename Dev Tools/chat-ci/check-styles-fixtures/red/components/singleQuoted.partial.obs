@@ -1,0 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-row" style='color: #123456'>A static style written in single quotes.</div>
+</template>

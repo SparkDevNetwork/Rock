@@ -140,6 +140,61 @@ test('it reads the script of a component as well as its style', () => {
   assert.deepEqual(linesOf(hits), [3], hits.join(' | '));
 });
 
+test('it refuses a hex color anywhere inside a script string, not only a string that is one', () => {
+  const planted = [
+    'element.style.border = "1px solid #fff";',
+    'const ring = `0 0 0 1px #0D1117`;',
+    'element.style.setProperty("--chat-line", "solid 2px #abcdef80");',
+    'const icon = "#chat-i-bell";',
+    'const anchor = `#${id}`;',
+  ].join('\n');
+
+  const hits = scan(`${shell}/composables/example.partial.ts`, planted);
+
+  assert.deepEqual(linesOf(hits), [1, 2, 3], hits.join(' | '));
+});
+
+test('it refuses a named color inside a script string that reads as a CSS value, and passes prose', () => {
+  const planted = [
+    'element.style.boxShadow = "0 0 0 2px red";',
+    'const edge = "solid white";',
+    'const look = "color: navy";',
+    'element.style.setProperty("--chat-x", "var(--chat-line) black");',
+    'const label = "Mark the red one as read";',
+    'const tone = "white";',
+    'const words = "Green room at 2";',
+  ].join('\n');
+
+  const hits = scan(`${shell}/composables/example.partial.ts`, planted);
+
+  // A lone named color is refused already; a sentence that mentions one is not a style.
+  assert.deepEqual(linesOf(hits), [1, 2, 3, 4, 6], hits.join(' | '));
+});
+
+test('it refuses a literal inside a bound style value and in a static style in single quotes', () => {
+  const planted = [
+    '<template>',
+    '    <div class="chat-row" :style="{ border: \'1px solid #abc\' }"></div>',
+    "    <div class=\"chat-row\" style='color: #123456'></div>",
+    "    <div class=\"chat-row\" style='box-shadow: 0 0 0 2px red'></div>",
+    "    <div class=\"chat-row\" style='width: 34px'></div>",
+    '</template>',
+  ].join('\n');
+
+  const hits = scan(`${shell}/components/example.partial.obs`, planted);
+
+  assert.deepEqual(linesOf(hits), [2, 3, 4], hits.join(' | '));
+});
+
+test('run on the red fixtures, it names each hole a whole-string check would miss', () => {
+  const result = run('--root', 'check-styles-fixtures/red');
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  for (const fixture of ['hexInString.partial.ts', 'namedInValue.partial.ts', 'boundStyle.partial.obs', 'singleQuoted.partial.obs']) {
+    assert.match(result.stderr, new RegExp(fixture.replace('.', '\\.')), `${fixture} should be refused: ${result.stderr}`);
+  }
+});
+
 test('the token sheet is the one file allowed to hold literals', () => {
   const sheet = [
     '.chat-shell {',
@@ -151,6 +206,29 @@ test('the token sheet is the one file allowed to hold literals', () => {
   ].join('\n');
 
   assert.deepEqual(scan('RockWeb/Styles/Blocks/Communication/Chat/chat.css', sheet), []);
+});
+
+test('the brand script may hold literals only inside its color arithmetic', () => {
+  const brand = [
+    '// #region Color arithmetic',
+    'const rockOrange = "#FF791D";',
+    'const ring = (rgb) => `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .32)`;',
+    '// #endregion Color arithmetic',
+    'export function paint(root) {',
+    '    root.style.setProperty("--chat-x", "#0D1117");',
+    '    root.style.transition = "opacity 200ms";',
+    '}',
+  ].join('\n');
+
+  const hits = scan(`${shell}/ui/brand.partial.ts`, brand);
+
+  assert.deepEqual(linesOf(hits), [6, 7], hits.join(' | '));
+});
+
+test('the brand script without its color arithmetic region is read whole', () => {
+  const brand = 'const rockOrange = "#FF791D";';
+
+  assert.deepEqual(linesOf(scan(`${shell}/ui/brand.partial.ts`, brand)), [1]);
 });
 
 test('run on the red fixtures, it fails and names each file', () => {

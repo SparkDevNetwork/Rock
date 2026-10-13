@@ -1,0 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-row" :style="{ border: '1px solid #abc' }">A bound style with a hex inside its value.</div>
+</template>
