@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <header class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
+    <header v-if="!isEmpty" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
         <IconButton v-if="isPhone"
                     class="chat-header-back"
                     icon="left"
@@ -15,7 +15,8 @@
             <Avatar v-else-if="faces.length > 0" :people="faces" :size="kind === 'person' ? 36 : 28" />
 
             <span class="chat-header-title">
-                <b class="chat-header-name" data-testid="header-title">{{ title }}</b>
+                <!-- Focusable from script, so a phone can move focus here when a conversation slides in. -->
+                <b class="chat-header-name" data-testid="header-title" tabindex="-1">{{ title }}</b>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
                     <span class="chat-header-live" data-testid="connection-dot"></span>Reconnecting…
                 </span>
@@ -386,6 +387,12 @@
 
         /** Whether the chat is in its one-pane phone layout, which leads with Back and folds actions into a menu. */
         isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether no conversation or draft is open, which leaves the bar out and keeps only the banners. */
+        isEmpty: {
             type: Boolean,
             default: false
         }

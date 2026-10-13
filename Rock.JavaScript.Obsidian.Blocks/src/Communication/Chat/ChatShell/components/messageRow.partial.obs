@@ -632,6 +632,22 @@
     border-radius: var(--chat-r-lg);
 }
 
+/* Before Safari 15 there is no aspect-ratio, so the box is held to 16 to 7 by its padding instead. */
+@supports not (aspect-ratio: 16 / 7) {
+    .chat-card :deep(.chat-block-image) {
+        position: relative;
+        height: 0;
+        padding-top: 43.75%;
+    }
+
+    .chat-card :deep(.chat-block-image img) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+    }
+}
+
 @keyframes chat-msg-in {
     from {
         opacity: 0;
@@ -880,8 +896,10 @@
             return name;
         }
 
-        if (props.isOwn && props.personName) {
-            return props.personName;
+        // The reader's own row, a send not stored yet above all, carries no sender of its own and
+        // is never the church's, whatever the session left out.
+        if (props.isOwn) {
+            return props.personName || "You";
         }
 
         if (!message?.person_alias_guid && props.organizationName) {

@@ -47,6 +47,7 @@
                             :isBehind="isActiveBehind"
                             :isPushOffered="shell.state.isPushOffered"
                             :isPhone="isPhone"
+                            :isEmpty="!activeChannelId && !draft"
                             @turnOnPush="onTurnOnPush"
                             @back="onBack"
                             @backOnline="onBackOnline" />
@@ -73,10 +74,11 @@
                     <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
                 </div>
                 <div v-else class="chat-shell-empty">
-                    {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
+                    {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
                 </div>
 
-                <Composer :isDisabled="isComposerDisabled"
+                <Composer v-if="activeChannelId || draft"
+                          :isDisabled="isComposerDisabled"
                           :title="activeKind ? activeTitle : null"
                           :isChannel="activeKind === 'channel'"
                           :isPhone="isPhone"
@@ -208,7 +210,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, ref, shallowRef, StyleValue, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, StyleValue, watch } from "vue";
     import { createClient } from "@Obsidian/Libs/supabase";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -325,11 +327,10 @@
     const held = computed((): { body: string } | null => shell.value.directMessages.held);
 
     /**
-     * Closed with nothing to write into and while a draft's first message is on its way. Read only
-     * and maintenance lock the composer instead, which says why.
+     * Closed while a draft's first message is on its way; with nothing open there is no composer at
+     * all. Read only and maintenance lock the composer instead, which says why.
      */
-    const isComposerDisabled = computed((): boolean => (!activeChannelId.value && !draft.value)
-        || draft.value?.status === "starting");
+    const isComposerDisabled = computed((): boolean => draft.value?.status === "starting");
 
     /** The sidebar row of the open conversation, which carries everything the header draws. */
     const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
@@ -405,16 +406,31 @@
 
     // #region Event Handlers
 
-    function onSelect(channelId: string): void {
+    async function onSelect(channelId: string): Promise<void> {
         // Choosing the conversation already open behind the list brings it back too.
         isListChosen.value = false;
         isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
+
+        // The row that had focus has slid out of view and out of reach, so focus goes to what
+        // slid in: the conversation's title, never its composer, which would raise the keyboard.
+        if (isPhone.value) {
+            await nextTick();
+            rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus();
+        }
     }
 
-    function onBack(): void {
+    async function onBack(): Promise<void> {
+        const leftChannelId = activeChannelId.value;
         isListChosen.value = true;
         isPaneMotionOn.value = true;
+
+        // Back on a phone hides the button that had focus, so focus returns to the row of the
+        // conversation just left, where the person was in the list.
+        if (isPhone.value && leftChannelId) {
+            await nextTick();
+            rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)?.focus();
+        }
     }
 
     function onResize(entries: ResizeObserverEntry[]): void {

@@ -11,10 +11,22 @@
         </div>
 
         <div ref="feed" class="chat-feed" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'" @scroll="onScroll">
+            <!-- Rows of the look the conversation will draw, so nothing jumps when the page lands. -->
             <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
-                <div v-for="index in 5" :key="index" class="chat-skeleton-row" :class="{ 'is-own': index % 3 === 0 }">
-                    <span class="chat-skeleton chat-skeleton-bubble"></span>
-                </div>
+                <template v-if="layout === 'community'">
+                    <div v-for="index in 5" :key="index" class="chat-skeleton-row is-flat" data-testid="skeleton-row">
+                        <span class="chat-skeleton chat-skeleton-face" data-testid="skeleton-face"></span>
+                        <span class="chat-skeleton-lines">
+                            <span class="chat-skeleton chat-skeleton-line is-name"></span>
+                            <span class="chat-skeleton chat-skeleton-line"></span>
+                        </span>
+                    </div>
+                </template>
+                <template v-else>
+                    <div v-for="index in 5" :key="index" class="chat-skeleton-row" :class="{ 'is-own': index % 3 === 0 }" data-testid="skeleton-row">
+                        <span class="chat-skeleton chat-skeleton-bubble" data-testid="skeleton-bubble"></span>
+                    </div>
+                </template>
             </div>
 
             <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
@@ -108,6 +120,16 @@
     mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
 
+/*
+    Takes the room above the messages, so a short conversation sits at the bottom by the composer
+    as a longer one does; it shrinks to nothing once the messages fill the feed, so scrolling is
+    untouched.
+*/
+.chat-feed::before {
+    flex: 1 1 auto;
+    content: "";
+}
+
 .chat-feed-older {
     align-self: center;
     margin-top: 12px;
@@ -139,7 +161,6 @@
     justify-content: center;
     margin: 14px 0 6px;
     pointer-events: none;
-    transition: top var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-day-pill span {
@@ -365,10 +386,72 @@
     height: 54px;
 }
 
+/* Community's flat rows: the 36px face in the gutter, a name and a line of text beside it. */
+.is-community .chat-feed-skeleton {
+    gap: 18px;
+    padding: 20px 0;
+}
+
+.chat-skeleton-row.is-flat {
+    gap: 12px;
+    padding: 2px 20px;
+}
+
+.is-phone .chat-skeleton-row.is-flat {
+    gap: 10px;
+    padding: 2px 12px;
+}
+
+.chat-skeleton-face {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--chat-r-full);
+}
+
+.is-phone .chat-skeleton-face {
+    width: 32px;
+    height: 32px;
+}
+
+.chat-skeleton-lines {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.chat-skeleton-line {
+    width: 64%;
+    height: 12px;
+}
+
+.chat-skeleton-line.is-name {
+    width: 22%;
+}
+
+.chat-skeleton-row.is-flat:nth-child(2n) .chat-skeleton-line:not(.is-name) {
+    width: 46%;
+}
+
+/* Asked for less motion, the strip fades in where it stands. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-unread-strip {
+        animation-name: chat-strip-fade;
+    }
+}
+
 @keyframes chat-strip-in {
     from {
         opacity: 0;
         transform: translateY(-4px);
+    }
+}
+
+@keyframes chat-strip-fade {
+    from {
+        opacity: 0;
     }
 }
 
@@ -475,8 +558,8 @@
     /** The person's own sends confirmed while the feed was open, each showing "Sent" for a moment. */
     const justSentIds = reactive(new Set<number>());
 
-    /** Sends confirmed since the timeline last grew, counted the moment their pending row goes. */
-    let confirmedSends = 0;
+    /** When each of the reader's own messages first came into the timeline, by id. */
+    const ownArrivedAt = new Map<number, number>();
 
     /** The newest message when the feed first had any; anything newer arrived while it was open. */
     let newestAtLoad: number | null = null;
@@ -573,11 +656,18 @@
         feed.value.scrollTo?.({ top: Math.max(0, top), behavior: scrollBehavior() });
     }
 
-    function onJump(): void {
+    function onJump(event: Event): void {
         if (feed.value) {
             feed.value.scrollTo?.({ top: feed.value.scrollHeight, behavior: scrollBehavior() });
         }
         newCount.value = 0;
+
+        // The button hides once the feed is at the bottom, which would drop a keyboard's focus
+        // to the page, so focus goes where the person jumped to: the newest message.
+        if (document.activeElement === event.currentTarget) {
+            const rows = feed.value?.querySelectorAll<HTMLElement>(".chat-msg") ?? [];
+            rows[rows.length - 1]?.focus({ preventScroll: true });
+        }
     }
 
     // #endregion Event Handlers
@@ -646,38 +736,41 @@
     }
 
     /**
-     * Notes what is new since the timeline last grew: the reader's own sends just confirmed show
-     * "Sent" for a moment, and what others sent while the reader was scrolled up is counted.
+     * Notes what is new since the timeline last grew: when each of the reader's own messages came
+     * in, and how many others sent while the reader was scrolled up.
      */
     function noteArrivals(): void {
         const previous = newestSeenInTimeline;
         newestSeenInTimeline = newestId();
         if (previous === null) {
             newestAtLoad ??= newestSeenInTimeline;
-            confirmedSends = 0;
             return;
         }
 
         const me = props.personAliasGuid.toLowerCase();
         const arrived = props.timeline.messages.filter(m => m.id > previous);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
-
-        // Each confirmed send is one of the reader's own messages that just came in, newest last.
-        if (confirmedSends > 0) {
-            own.slice(-confirmedSends).forEach(message => holdSent(message.id));
-        }
-        confirmedSends = 0;
+        own.forEach(message => {
+            if (!ownArrivedAt.has(message.id)) {
+                ownArrivedAt.set(message.id, Date.now());
+            }
+        });
 
         if (isScrolledUp.value) {
             newCount.value += arrived.length - own.length;
         }
     }
 
-    /** Shows "Sent" under a confirmed send, then lets it settle to its time. */
+    /**
+     * Shows "Sent" under a confirmed send, then lets it settle to its time. The send's answer and
+     * its live copy race; the hold runs from whichever came first, and only the answer starts it,
+     * so the live copy arriving second leaves it alone.
+     */
     function holdSent(messageId: number): void {
         justSentIds.add(messageId);
         const hold = feed.value ? tokenDuration(feed.value, "--chat-d-sent-hold", sentHoldMs) : sentHoldMs;
-        setTimeout(() => justSentIds.delete(messageId), hold);
+        const sinceArrival = Date.now() - (ownArrivedAt.get(messageId) ?? Date.now());
+        setTimeout(() => justSentIds.delete(messageId), Math.max(0, hold - sinceArrival));
     }
 
     // #endregion Functions
@@ -699,17 +792,28 @@
         }
     });
 
-    // Counted the moment a pending row goes, before the timeline's own watcher runs, because the
-    // send puts the confirmed message in first and takes the pending row out in the same turn.
-    watch(() => props.pending.length, (length, previous) => {
-        if (length < previous) {
-            confirmedSends += previous - length;
+    // A row that goes with the id of the message it became was confirmed; one discarded has none.
+    watch(() => props.pending, (pending, previous) => {
+        const kept = new Set(pending.map(row => row.localId));
+        for (const row of previous ?? []) {
+            if (!kept.has(row.localId) && row.confirmedId !== undefined) {
+                holdSent(row.confirmedId);
+            }
         }
     }, { flush: "sync" });
 
     watch(() => props.pending.length, async () => {
         await nextTick();
         scrollToBottom();
+    });
+
+    // A send that fails grows its row by the Not sent line, which would sit under the feed's
+    // bottom fade, so the feed brings it into view.
+    watch(() => props.pending.filter(row => row.status === "failed").length, async (failed, previous) => {
+        if (failed > previous) {
+            await nextTick();
+            scrollToBottom();
+        }
     });
 
     watch(() => props.timeline.isLoaded, isLoaded => {

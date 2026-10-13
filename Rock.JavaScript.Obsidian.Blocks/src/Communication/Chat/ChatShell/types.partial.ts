@@ -221,6 +221,12 @@ export type PendingMessage = {
     body: string;
     status: "sending" | "failed";
     errorCode: string | null;
+
+    /**
+     * The stored message's id once the platform confirmed the send, set as the row goes, so the
+     * feed knows which message to show as just sent.
+     */
+    confirmedId?: number;
 };
 
 /**

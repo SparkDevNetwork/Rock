@@ -301,8 +301,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
     let push: PushRegistration | null = null;
     let isFirstMessageMarked = false;
 
+    /**
+     * Whether a failure is the connection itself: a call that never reached the platform. While
+     * the connection is lost the banner already says so, and a toast beside it would outlive it.
+     */
+    function isConnectionFailure(error: ChatError): boolean {
+        return error.code === "rpc.transport";
+    }
+
     /** Tells the person about a failure, once per code until it is dismissed. */
     function report(error: ChatError): void {
+        if (state.connection && isConnectionFailure(error)) {
+            return;
+        }
+
         // The same failure twice shows once; two refused messages under one code are two
         // different sentences, so the text is part of what makes an error the same one.
         if (!state.errors.some(e => e.code === error.code && e.text === error.text)) {
@@ -713,6 +725,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         return;
                     }
                     state.connection = error;
+
+                    // A call that failed just before the drop was noticed was the same outage,
+                    // which the banner now explains.
+                    if (error) {
+                        state.errors = state.errors.filter(e => !isConnectionFailure(e));
+                    }
                 }
             });
 

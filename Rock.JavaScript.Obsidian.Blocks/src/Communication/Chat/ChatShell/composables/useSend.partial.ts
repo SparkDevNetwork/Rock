@@ -231,6 +231,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
             notice: result.notice ?? null
         });
 
+        // Named on the row as it goes, since the live copy may have put the message in first and
+        // the row's going is then the only sign of which message it became.
+        row.confirmedId = result.id;
         const index = rows.indexOf(row);
         if (index >= 0) {
             rows.splice(index, 1);

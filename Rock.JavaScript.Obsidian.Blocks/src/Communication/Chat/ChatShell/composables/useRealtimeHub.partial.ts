@@ -177,11 +177,13 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
      * read, and that topic is kept, since the session's end is what closes it.
      */
     function onSystem(channel: RealtimeChannelLike, message: RealtimeMessageLike): void {
-        if (message.status !== "error") {
+        const isOpen = open?.channel === channel;
+
+        // A topic that has been left says nothing about the connection now.
+        if (message.status !== "error" || (!isOpen && channel !== personal)) {
             return;
         }
 
-        const isOpen = open?.channel === channel;
         const error = classifyRealtimeMessage(message.message ?? "", isOpen && open!.isJoined);
 
         if (isOpen && error.code === "rt.read_revoked") {
@@ -219,8 +221,13 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
                 return;
             }
 
-            if (open) {
-                void client.removeChannel(open.channel);
+            // The open topic is let go before it is removed: the client library closes a topic the
+            // moment it starts to leave, before the leave is acknowledged, and a close heard while
+            // the topic still counted as open would be taken for a lost connection on every switch.
+            const left = open;
+            open = null;
+            if (left) {
+                void client.removeChannel(left.channel);
             }
 
             // A channel that has been left can still deliver what was already in flight; only

@@ -394,6 +394,22 @@
     outline-offset: 2px;
 }
 
+/*
+    The same outline on every focus, in a rule of its own: the oldest Safari Rock supports has no
+    :focus-visible and drops any rule that names it. A browser that can tell a keyboard's focus
+    from a click's takes it back from the click's.
+*/
+.chat-shell :focus {
+    outline: 2px solid var(--chat-brand-ink);
+    outline-offset: 2px;
+}
+
+@supports selector(:focus-visible) {
+    .chat-shell :focus:not(:focus-visible) {
+        outline: none;
+    }
+}
+
 @keyframes chat-spin {
     to {
         transform: rotate(360deg);

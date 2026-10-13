@@ -144,9 +144,12 @@
     const isOpen = ref(false);
 
     // Below its button by default, above when it would leave the window, kept 8px inside it.
+    // Placed by left and top, since a transform here would override the pop motion's own and the
+    // menu would only fade in and out.
     const { floatingStyles } = useFloating(anchorElement, menuElement, {
         placement: "bottom-end",
         strategy: "fixed",
+        transform: false,
         middleware: [offset(8), flip(), shift({ padding: 8 })],
         whileElementsMounted: autoUpdate
     });
