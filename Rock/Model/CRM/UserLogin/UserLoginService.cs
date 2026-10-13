@@ -33,6 +33,19 @@ namespace Rock.Model
     /// </summary>
     public partial class UserLoginService
     {
+        /// <inheritdoc/>
+        public override void SetValues( UserLogin sourceItem, UserLogin targetItem )
+        {
+            // Neither property is serialized, so a null source value means the caller didn't supply one.
+            var password = targetItem.Password;
+            var apiKey = targetItem.ApiKey;
+
+            base.SetValues( sourceItem, targetItem );
+
+            targetItem.Password = sourceItem.Password ?? password;
+            targetItem.ApiKey = sourceItem.ApiKey ?? apiKey;
+        }
+
         /// <summary>
         /// How long a confirmation code is valid after it is issued.
         /// </summary>
