@@ -550,6 +550,21 @@ namespace RockWeb
 
             // assume file is temporary unless specified otherwise so that files that don't end up getting used will get cleaned up
             binaryFile.IsTemporary = context.Request.QueryString[ParameterKey.IsTemporary].AsBooleanOrNull() ?? true;
+
+            /*
+                10/13/2026 - MSE
+
+                Uploads from people who are not signed in are always temporary,
+                even if the request asks for a permanent file. The block that
+                saves the file marks it permanent.
+
+                Reason: Permanent files are never cleaned up, so anonymous
+                uploads that are never saved would stay in the database forever.
+            */
+            if ( currentPerson == null )
+            {
+                binaryFile.IsTemporary = true;
+            }
             binaryFile.ParentEntityTypeId = context.Request.QueryString[ParameterKey.ParentEntityTypeId].AsIntegerOrNull();
             binaryFile.ParentEntityId = context.Request.QueryString[ParameterKey.ParentEntityId].AsIntegerOrNull();
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
