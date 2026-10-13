@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-side" :class="{ 'is-phone': isPhone, 'is-community': layout === 'community' }" data-testid="channel-sidebar">
+    <div class="chat-side" :class="{ 'is-phone': isPhone }" data-testid="channel-sidebar">
         <div class="chat-side-top" data-testid="sidebar-top">
             <span class="chat-org-mark" data-testid="sidebar-org-mark" aria-hidden="true">{{ organizationInitial }}</span>
             <span class="chat-org-name" data-testid="sidebar-org-name">{{ organizationName }}</span>
@@ -55,29 +55,25 @@
                             :class="rowClasses(row)"
                             data-testid="channel-row"
                             :data-channel-id="row.channel_id"
-                            :data-layout="layout"
+                            :data-layout="lookOf(row)"
                             :data-unread="isUnread(row) ? 'true' : 'false'"
                             :data-muted="isMuted(row) ? 'true' : 'false'"
                             :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
                             :aria-current="isActive(row) ? 'true' : undefined"
                             @click="emit('select', row.channel_id)"
                             @animationend="onFlashEnd(row.channel_id)">
-                        <template v-if="layout === 'community'">
+                        <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
+                        <template v-if="lookOf(row) === 'community'">
                             <span class="chat-cs-slot" aria-hidden="true">
-                                <Icon v-if="kindOf(row) === 'channel'" :name="row.is_public ? 'hash' : 'lock'" size="sm" />
-                                <Avatar v-else-if="kindOf(row) === 'person'" :people="facesOf(row)" :size="20" />
-                                <span v-else-if="row.dm_names?.length" class="chat-cs-n">{{ row.dm_other_count }}</span>
-                                <Icon v-else name="users" size="sm" />
+                                <Icon :name="row.is_public ? 'hash' : 'lock'" size="sm" />
                             </span>
                             <span class="chat-row-name" data-testid="row-name">{{ nameOf(row) }}</span>
                             <Icon v-if="isMuted(row)" name="bell-off" class="chat-row-mute" data-testid="row-muted-icon" />
                         </template>
 
+                        <!-- A direct message: the face, the name and time over the preview and the end mark. -->
                         <template v-else>
-                            <span v-if="kindOf(row) === 'channel'" class="chat-row-ic" aria-hidden="true">
-                                <Icon :name="row.is_public ? 'hash' : 'lock'" />
-                            </span>
-                            <span v-else class="chat-row-face" aria-hidden="true">
+                            <span class="chat-row-face" aria-hidden="true">
                                 <Avatar :people="facesOf(row)" :size="kindOf(row) === 'person' ? 36 : 22" />
                             </span>
                             <span class="chat-row-main">
@@ -98,7 +94,7 @@
                             </span>
                         </template>
 
-                        <span v-if="layout === 'community'" class="chat-row-end">
+                        <span v-if="lookOf(row) === 'community'" class="chat-row-end">
                             <span v-if="mentionsOf(row) > 0" class="chat-badge" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
                                 <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
                             </span>
@@ -230,11 +226,6 @@
 }
 
 /* Rock's theme styles every heading, so this one states its whole face. */
-/* Community's denser list sits its headings a little closer to the rows above. */
-.chat-side.is-community .chat-sec {
-    padding-top: 12px;
-}
-
 .chat-sec h3 {
     margin: 0;
     font-family: inherit;
@@ -251,14 +242,17 @@
     height: 26px;
 }
 
-/* A room. Conversational: its icon beside the name and time over the preview and the end mark. */
+/*
+    A direct message's room: its face beside the name and time over the preview and the end mark.
+    Its left padding is a channel row's, so faces and channel icons start on one edge.
+*/
 .chat-row {
     position: relative;
     display: flex;
     gap: 10px;
     align-items: center;
     width: 100%;
-    padding: 7px 8px;
+    padding: 7px 8px 7px 10px;
     font: inherit;
     color: inherit;
     text-align: left;
@@ -276,24 +270,7 @@
     background: var(--chat-brand-wash);
 }
 
-.chat-row-ic {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    color: var(--chat-icon);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-room-ic);
-}
-
-.chat-row[aria-current="true"] .chat-row-ic {
-    color: var(--chat-brand-ink);
-    border-color: var(--chat-current-line);
-}
-
-/* A person's face, or a group's two, centred in the same 36px a channel's icon box takes. */
+/* A person's face, or a group's two, centred in 36px. */
 .chat-row-face {
     display: grid;
     flex: none;
@@ -402,7 +379,7 @@
     }
 }
 
-/* Community: one dense line per room, a 20px mark before its name. */
+/* A channel's room: one dense line, a 20px mark before its name. */
 .chat-row.is-cs {
     min-height: 32px;
     padding: 5px 10px;
@@ -425,19 +402,6 @@
 .chat-cs-slot .chat-ic {
     width: 16px;
     height: 16px;
-}
-
-.chat-cs-n {
-    display: grid;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--chat-text-2);
-    background: var(--chat-line-strong);
-    border-radius: var(--chat-r-sm);
 }
 
 .chat-row.is-cs .chat-row-name {
@@ -571,12 +535,6 @@
             default: ""
         },
 
-        /** Conversational rows carry a preview and a time; Community's are one line. */
-        layout: {
-            type: String as PropType<FeedLayout>,
-            default: "conversational"
-        },
-
         /** Whether the block is drawn one pane at a time, as on a phone. */
         isPhone: {
             type: Boolean,
@@ -642,6 +600,11 @@
 
     // #region Functions
 
+    /** A channel's row is Community's one dense line; a direct message's is Conversational's two lines. */
+    function lookOf(row: SidebarRow): FeedLayout {
+        return kindOf(row) === "channel" ? "community" : "conversational";
+    }
+
     function nameOf(row: SidebarRow): string {
         return roomTitle(row);
     }
@@ -702,7 +665,7 @@
 
     function rowClasses(row: SidebarRow): Record<string, boolean> {
         return {
-            "is-cs": props.layout === "community",
+            "is-cs": lookOf(row) === "community",
             "is-unread": isUnread(row),
             "is-muted": isMuted(row),
             "is-mention": mentionsOf(row) > 0,

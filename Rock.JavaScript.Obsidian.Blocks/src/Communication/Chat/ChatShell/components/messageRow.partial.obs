@@ -726,9 +726,10 @@
             default: ""
         },
 
-        layout: {
-            type: String as PropType<FeedLayout>,
-            default: "conversational"
+        /** A channel's message is a flat Community row; a direct message's is a Conversational bubble. */
+        isChannel: {
+            type: Boolean,
+            default: false
         },
 
         /** The row's place in its group. */
@@ -793,6 +794,9 @@
     // #endregion Values
 
     // #region Computed Values
+
+    /** The look the conversation's kind picks, which the row draws in. */
+    const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
     /** What the server decided the message shows; a pending send is its own text. */
     const display = computed((): MessageDisplay => props.message
@@ -917,7 +921,7 @@
 
     const ariaLabel = computed((): string => {
         const who = props.isOwn ? "You" : displayName.value;
-        const mentions = props.layout === "community" && isMentionOfReader.value ? ", mentions you" : "";
+        const mentions = layout.value === "community" && isMentionOfReader.value ? ", mentions you" : "";
         return `${who}, ${time.value}${mentions}`;
     });
 
@@ -944,7 +948,7 @@
 
     /** A system line's icon: in Community's gutter, by what it says happened; in bubbles, always the quiet info mark. */
     const systemIcon = computed((): string => {
-        if (props.layout !== "community") {
+        if (layout.value !== "community") {
             return "info";
         }
 
@@ -961,14 +965,14 @@
     });
 
     const rootClasses = computed((): Record<string, boolean> => ({
-        [`is-${props.layout}`]: true,
+        [`is-${layout.value}`]: true,
         [`is-${state.value}`]: true,
         "is-own": props.isOwn,
         "is-phone": props.isPhone,
         "is-head": isHead.value,
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,
-        "is-mention-me": props.layout === "community" && isMentionOfReader.value,
+        "is-mention-me": layout.value === "community" && isMentionOfReader.value,
         "is-arriving": props.isArriving,
         "is-flashing": props.isFlashing
     }));

@@ -55,10 +55,4 @@ export type ChatShellInitializationBox = {
      * message posted by the church.
      */
     organizationName?: string | null;
-
-    /**
-     * Gets or sets how messages are laid out: "conversational" for bubbles, "community" for
-     * flat rows with a name on every group.
-     */
-    layout?: string | null;
 };

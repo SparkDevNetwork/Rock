@@ -281,7 +281,7 @@ namespace Rock.Communication.Chat.Platform.Session
 
         /// <summary>
         /// Builds what the chat shell is given when it opens, around the session already opened.
-        /// The layout is conversational until the block offers the choice.
+        /// It carries no layout: the chat draws each conversation in the look its kind picks.
         /// </summary>
         /// <param name="session">The session the gates opened, or refused.</param>
         /// <param name="organizationName">The church's name, from Rock's global attributes.</param>
@@ -291,8 +291,7 @@ namespace Rock.Communication.Chat.Platform.Session
             return new ChatShellInitializationBox
             {
                 Session = session,
-                OrganizationName = organizationName,
-                Layout = "conversational"
+                OrganizationName = organizationName
             };
         }
 

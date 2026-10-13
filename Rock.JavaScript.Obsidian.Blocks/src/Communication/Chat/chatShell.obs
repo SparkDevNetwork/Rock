@@ -4,7 +4,6 @@
          class="chat-shell"
          data-testid="chat-shell"
          :data-phase="shell.state.phase"
-         :data-layout="layout"
          :data-phone="isPhone ? 'true' : 'false'">
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
@@ -25,7 +24,6 @@
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"
                                 :organizationName="organizationName"
-                                :layout="layout"
                                 :isPhone="isPhone"
                                 @select="onSelect"
                                 @newMessage="isPickerShown = true" />
@@ -34,6 +32,7 @@
             <section class="chat-frame-main"
                      data-testid="frame-main"
                      aria-label="Conversation"
+                     :data-look="look ?? undefined"
                      :aria-hidden="isConversationHidden ? 'true' : undefined"
                      :inert="isConversationHidden || undefined"
                      :style="isConversationGone ? goneStyle : undefined">
@@ -59,7 +58,7 @@
                              :personName="personName"
                              :personPhotoUrl="personPhotoUrl"
                              :organizationName="organizationName"
-                             :layout="layout"
+                             :isChannel="activeKind === 'channel'"
                              :isDirectMessage="isActiveDirectMessage"
                              :isPhone="isPhone"
                              @seen="shell.seen"
@@ -258,9 +257,6 @@
 
     const organizationName = config.organizationName ?? "";
 
-    /** Bubbles unless Rock asks for Community's flat rows. */
-    const layout: FeedLayout = config.layout === "community" ? "community" : "conversational";
-
     // Replaced, not reloaded, when a birthdate lets the person in: the save answers with the
     // session a fresh page load would have had.
     const shell = shallowRef(buildShell(config.session ?? {}));
@@ -371,6 +367,18 @@
         // A group the platform names only its first few people for says how many more there are.
         const others = draft.value ? draft.value.people.length : (activeRow.value?.dm_other_count ?? activePeople.value.length);
         return joinNames(activePeople.value, others - activePeople.value.length);
+    });
+
+    /**
+     * The look the open conversation is drawn in, by its kind alone: a channel in Community's flat
+     * rows, a direct message or a New message draft in Conversational's bubbles.
+     */
+    const look = computed((): FeedLayout | null => {
+        if (!activeKind.value) {
+            return null;
+        }
+
+        return activeKind.value === "channel" ? "community" : "conversational";
     });
 
     /** A group's head count, the one subtitle the wire carries; a channel's description and a person's campus are not on it yet. */

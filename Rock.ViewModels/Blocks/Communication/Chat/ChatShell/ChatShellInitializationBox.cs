@@ -47,11 +47,5 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// message posted by the church.
         /// </summary>
         public string OrganizationName { get; set; }
-
-        /// <summary>
-        /// Gets or sets how messages are laid out: "conversational" for bubbles, "community" for
-        /// flat rows with a name on every group.
-        /// </summary>
-        public string Layout { get; set; }
     }
 }

@@ -38,7 +38,7 @@
                                 :message="item.message"
                                 :personAliasGuid="personAliasGuid"
                                 :organizationName="organizationName"
-                                :layout="layout"
+                                :isChannel="isChannel"
                                 :isPhone="isPhone"
                                 :isArriving="isArriving(item.message.id)"
                                 :data-message-id="item.message.id" />
@@ -53,7 +53,7 @@
                                     :personName="personName"
                                     :personPhotoUrl="personPhotoUrl"
                                     :organizationName="organizationName"
-                                    :layout="layout"
+                                    :isChannel="isChannel"
                                     :position="row.position"
                                     :isPhone="isPhone"
                                     :isDirectMessage="isDirectMessage"
@@ -422,9 +422,10 @@
             default: ""
         },
 
-        layout: {
-            type: String as PropType<FeedLayout>,
-            default: "conversational"
+        /** A channel draws Community's flat rows; a direct message, Conversational's bubbles. */
+        isChannel: {
+            type: Boolean,
+            default: false
         },
 
         isDirectMessage: {
@@ -487,6 +488,9 @@
 
     // #region Computed Values
 
+    /** The look the conversation's kind picks: a channel's flat rows, a direct message's bubbles. */
+    const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
+
     const dividerBeforeId = computed((): number | null => newDividerBeforeId(
         props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, props.personAliasGuid));
 
@@ -495,7 +499,7 @@
         pending: props.pending,
         personAliasGuid: props.personAliasGuid,
         newDividerBeforeId: dividerBeforeId.value,
-        layout: props.layout,
+        layout: layout.value,
         now: new Date()
     }));
 
