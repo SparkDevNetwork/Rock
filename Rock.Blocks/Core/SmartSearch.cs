@@ -25,8 +25,11 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Cms;
 using Rock.Enums.Cms;
+using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SmartSearch;
+using Rock.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
 {
@@ -45,6 +48,11 @@ namespace Rock.Blocks.Core
     [Rock.SystemGuid.BlockTypeGuid( "9D406BD5-88C1-45E5-AFEA-70F9CFB66C74" )]
     public class SmartSearch : RockBlockType
     {
+        /// <summary>
+        /// The separator placed between the titles of a page's ancestors.
+        /// </summary>
+        private static readonly string PagePathSeparator = " › ";
+
         private List<SearchFilterBag> _searchFilters;
 
         #region Methods
@@ -138,6 +146,78 @@ namespace Rock.Blocks.Core
             return _searchFilters;
         }
 
+        /// <summary>
+        /// Gets the title to display for a page, falling back to its internal
+        /// name when it has no page title.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns>The title to display.</returns>
+        private static string GetPageTitle( PageCache page )
+        {
+            return page.PageTitle.IsNotNullOrWhiteSpace() ? page.PageTitle : page.InternalName;
+        }
+
+        /// <summary>
+        /// Gets the titles of the ancestors of a page, from the top-level page
+        /// down to the page's parent, joined into a single breadcrumb string.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns>The breadcrumb string, or an empty string for a top-level page.</returns>
+        private static string GetPagePath( PageCache page )
+        {
+            var ancestorTitles = new List<string>();
+            var ancestor = page.ParentPage;
+
+            while ( ancestor != null )
+            {
+                ancestorTitles.Insert( 0, GetPageTitle( ancestor ) );
+                ancestor = ancestor.ParentPage;
+            }
+
+            return string.Join( PagePathSeparator, ancestorTitles );
+        }
+
         #endregion Methods
+
+        #region Block Actions
+
+        /// <summary>
+        /// Gets the pages of the current site that the current person is
+        /// allowed to navigate to.
+        /// </summary>
+        /// <returns>A list of <see cref="SmartSearchPageBag"/> objects.</returns>
+        [BlockAction]
+        public BlockActionResult GetPages()
+        {
+            /*
+                10/12/26 - CLAUDE
+
+                Pages whose DisplayInNavWhen is Never are skipped because they are usually detail
+                pages that need a query string or route value to work. Unlike the navigation
+                menu, pages set to Always are also checked for VIEW access, since sending a
+                person to a page they cannot open is not useful.
+
+                Reason: Keep the command palette to pages that can actually be opened.
+            */
+            var currentPerson = RequestContext.CurrentPerson;
+            var siteId = PageCache.SiteId;
+
+            var pages = PageCache.All()
+                .Where( p => p.SiteId == siteId && p.DisplayInNavWhen != DisplayInNavWhen.Never )
+                .Where( p => p.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .OrderBy( p => p.InternalName )
+                .Select( p => new SmartSearchPageBag
+                {
+                    Title = GetPageTitle( p ),
+                    Path = GetPagePath( p ),
+                    Url = new PageReference( p.Id, 0 ).BuildUrl(),
+                    IconCssClass = p.IconCssClass
+                } )
+                .ToList();
+
+            return ActionOk( pages );
+        }
+
+        #endregion Block Actions
     }
 }

@@ -1,0 +1,231 @@
+//
+// Command Palette - the Ctrl+K search overlay opened from the Smart Search
+// block, for jumping to pages and searching people, groups, etc. (Rock Component)
+
+// =============================================================
+// Table of Content
+//  + Overlay and Panel
+//  + Search Row
+//  + Results
+//  + Footer
+// =============================================================
+
+
+// ======================== OVERLAY AND PANEL ========================
+.command-palette-overlay {
+  position:           fixed;
+  inset:              0;
+  z-index:            1100;
+  display:            flex;
+  align-items:        center;
+  justify-content:    center;
+  padding:            var(--spacing-medium);
+  background-color:   rgba(13, 17, 23, .5);
+}
+
+.command-palette {
+  display:            flex;
+  flex-direction:     column;
+  width:              640px;
+  max-width:          100%;
+  max-height:         calc(100vh - (var(--spacing-large) * 2));
+  overflow:           hidden;
+  color:              var(--color-interface-strongest);
+  background-color:   var(--color-interface-softest);
+  border:             1px solid var(--color-interface-soft);
+  border-radius:      var(--rounded-large);
+  box-shadow:         var(--popup-box-shadow);
+}
+
+// ======================== SEARCH ROW ========================
+.command-palette-search {
+  display:            flex;
+  flex-shrink:        0;
+  align-items:        center;
+  gap:                var(--spacing-small);
+  height:             56px;
+  padding:            0 var(--spacing-medium);
+  border-bottom:      1px solid var(--color-interface-soft);
+}
+
+.command-palette-search-icon {
+  font-size:          20px;
+  color:              var(--color-interface-strong);
+}
+
+.command-palette-input {
+  flex-grow:          1;
+  min-width:          0;
+  padding:            0;
+  font-size:          var(--font-size-regular);
+  color:              var(--color-interface-strongest);
+  background:         transparent;
+  border:             0;
+  outline:            0;
+  box-shadow:         none;
+
+  // The search row is the visible field, so the input itself never shows Rock's
+  // default input hover and focus border.
+  &:hover,
+  &:focus {
+    border:           0 !important;
+    outline:          0 !important;
+    box-shadow:       none !important;
+  }
+
+  &::placeholder {
+    color:            var(--color-interface-strong);
+  }
+}
+
+.command-palette-scope {
+  display:            flex;
+  flex-shrink:        0;
+  align-items:        center;
+  gap:                var(--spacing-tiny);
+  height:             28px;
+  padding:            0 var(--spacing-tiny) 0 10px;
+  font-size:          var(--font-size-small);
+  font-weight:        600;
+  color:              var(--color-info-strong);
+  background-color:   var(--color-info-soft);
+  border-radius:      var(--rounded-full);
+}
+
+.command-palette-scope-remove {
+  display:            flex;
+  align-items:        center;
+  justify-content:    center;
+  width:              18px;
+  height:             18px;
+  padding:            0;
+  color:              inherit;
+  background:         transparent;
+  border:             0;
+  border-radius:      var(--rounded-full);
+}
+
+// ======================== RESULTS ========================
+.command-palette-list {
+  flex-grow:          1;
+  min-height:         0;
+  overflow-y:         auto;
+  padding-bottom:     var(--spacing-xsmall);
+}
+
+.command-palette-group {
+  padding:            var(--spacing-small) var(--spacing-medium) var(--spacing-tiny);
+  font-size:          var(--font-size-xsmall);
+  font-weight:        600;
+  color:              var(--color-interface-strong);
+}
+
+.command-palette-empty {
+  padding:            var(--spacing-large) var(--spacing-medium) var(--spacing-small);
+  color:              var(--color-interface-strongest);
+}
+
+.command-palette-empty-help {
+  display:            block;
+  margin-top:         2px;
+  font-size:          var(--font-size-xsmall);
+  color:              var(--color-interface-strong);
+}
+
+.command-palette-row {
+  display:            flex;
+  align-items:        center;
+  gap:                var(--spacing-small);
+  width:              100%;
+  min-height:         48px;
+  padding:            0 var(--spacing-medium);
+  color:              inherit;
+  text-align:         left;
+  background:         transparent;
+  border:             0;
+
+  &.is-active {
+    background-color: var(--color-primary-soft);
+
+    .command-palette-tile {
+      background-color: var(--color-interface-softest);
+    }
+  }
+}
+
+.command-palette-tile {
+  display:            flex;
+  flex-shrink:        0;
+  align-items:        center;
+  justify-content:    center;
+  width:              28px;
+  height:             28px;
+  font-size:          var(--font-size-regular);
+  color:              var(--color-interface-strong);
+  background-color:   var(--color-interface-softer);
+  border-radius:      var(--rounded-small);
+}
+
+.command-palette-text {
+  display:            flex;
+  flex-direction:     column;
+  flex-grow:          1;
+  gap:                1px;
+  min-width:          0;
+}
+
+.command-palette-title {
+  overflow:           hidden;
+  font-size:          var(--font-size-small);
+  color:              var(--color-interface-strongest);
+  text-overflow:      ellipsis;
+  white-space:        nowrap;
+}
+
+.command-palette-subtitle {
+  overflow:           hidden;
+  font-size:          var(--font-size-xsmall);
+  color:              var(--color-interface-strong);
+  text-overflow:      ellipsis;
+  white-space:        nowrap;
+}
+
+.command-palette-enter {
+  color:              var(--color-interface-strong);
+}
+
+// ======================== FOOTER ========================
+.command-palette-footer {
+  display:            flex;
+  flex-shrink:        0;
+  align-items:        center;
+  gap:                var(--spacing-medium);
+  height:             40px;
+  padding:            0 var(--spacing-medium);
+  font-size:          var(--font-size-xsmall);
+  color:              var(--color-interface-strong);
+  background-color:   var(--color-interface-softer);
+  border-top:         1px solid var(--color-interface-soft);
+
+  span {
+    display:          flex;
+    align-items:      center;
+    gap:              6px;
+  }
+}
+
+.command-palette-footer-end {
+  margin-left:        auto;
+}
+
+.command-palette-kbd {
+  padding:            1px 6px;
+  font-family:        var(--font-family-monospace, monospace);
+  font-size:          11px;
+  line-height:        16px;
+  color:              var(--color-interface-strong);
+  background-color:   var(--color-interface-softer);
+  border:             1px solid var(--color-interface-soft);
+  border-bottom-width: 2px;
+  border-radius:      var(--rounded-xsmall);
+}

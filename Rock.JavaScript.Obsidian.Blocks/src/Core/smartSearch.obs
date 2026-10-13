@@ -11,11 +11,13 @@
         </ul>
         <input type="search" ref="inputElement" :id="uniqueId" v-model="internalValue" accesskey="q" class="searchinput tt-query" autocomplete="off" spellcheck="false" style="position: relative; vertical-align: top; background-color: transparent;" dir="auto">
         <input type="hidden" ref="hiddenFilterInput" name="searchField_hSearchFilter" id="searchField_hSearchFilter">
+        <CommandPalette v-if="isPaletteOpen" :searchFilters="searchFilters ?? []" @close="closePalette" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import CommandPalette from "./SmartSearch/commandPalette.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { SmartSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/smartSearchOptionsBag";
@@ -32,6 +34,7 @@
     const uniqueId = `rock-searchField-${newGuid()}`;
     const inputElement = ref<HTMLInputElement>();
     const hiddenFilterInput = ref<HTMLInputElement>();
+    const isPaletteOpen = ref(false);
 
     /**
      * The available search filters.
@@ -52,6 +55,25 @@
 
         return searchFilters.value[0].label ?? "";
     });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Opens the command palette when Ctrl+K (Cmd+K on a Mac) is pressed, and closes it if it is already open. */
+    function onWindowKeyDown(event: KeyboardEvent): void {
+        const isCommandKey = event.ctrlKey || event.metaKey;
+
+        if (isCommandKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "k") {
+            event.preventDefault();
+            isPaletteOpen.value = !isPaletteOpen.value;
+        }
+    }
+
+    /** Closes the command palette. */
+    function closePalette(): void {
+        isPaletteOpen.value = false;
+    }
 
     // #endregion
 
@@ -83,6 +105,18 @@
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window["Rock"] as any).controls.searchField.initialize({ controlId: uniqueId });
         }
+    });
+
+    // #endregion
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        window.addEventListener("keydown", onWindowKeyDown);
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("keydown", onWindowKeyDown);
     });
 
     // #endregion

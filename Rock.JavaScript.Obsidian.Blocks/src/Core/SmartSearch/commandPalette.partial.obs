@@ -1,0 +1,562 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Teleport to="body">
+        <div class="command-palette-overlay" @mousedown.self="close">
+            <div class="command-palette" role="dialog" aria-modal="true" aria-label="Search">
+                <div class="command-palette-search">
+                    <i class="ti ti-search command-palette-search-icon"></i>
+
+                    <span v-if="scopeFilter" class="command-palette-scope">
+                        {{ scopeFilter.label }}
+                        <button type="button" class="command-palette-scope-remove" :aria-label="`Remove ${scopeFilter.label} scope`" @click="clearScope">
+                            <i class="ti ti-x"></i>
+                        </button>
+                    </span>
+
+                    <input ref="inputElement"
+                           v-model="term"
+                           type="text"
+                           class="command-palette-input"
+                           role="combobox"
+                           aria-expanded="true"
+                           aria-controls="command-palette-list"
+                           :aria-activedescendant="activeItem ? itemId(activeItem.flatIndex) : undefined"
+                           :aria-label="inputLabel"
+                           :placeholder="inputPlaceholder"
+                           autocomplete="off"
+                           spellcheck="false"
+                           @keydown="onInputKeyDown">
+
+                    <kbd class="command-palette-kbd">Esc</kbd>
+                </div>
+
+                <div id="command-palette-list" class="command-palette-list" role="listbox">
+                    <div v-if="emptyMessage" class="command-palette-empty">
+                        {{ emptyMessage }}
+                        <span v-if="emptyHelp" class="command-palette-empty-help">{{ emptyHelp }}</span>
+                    </div>
+
+                    <template v-for="section in sections" :key="section.label">
+                        <div class="command-palette-group">{{ section.label }}</div>
+
+                        <button v-for="item in section.items"
+                                :id="itemId(item.flatIndex)"
+                                :key="item.flatIndex"
+                                type="button"
+                                role="option"
+                                class="command-palette-row"
+                                :class="{ 'is-active': item.flatIndex === activeIndex }"
+                                :aria-selected="item.flatIndex === activeIndex"
+                                @mousemove="activeIndex = item.flatIndex"
+                                @click="choose(item)">
+                            <span class="command-palette-tile"><i :class="item.iconCssClass"></i></span>
+                            <span class="command-palette-text">
+                                <span class="command-palette-title">
+                                    <template v-for="(segment, segmentIndex) in item.titleSegments" :key="segmentIndex">
+                                        <strong v-if="segment.isMatch">{{ segment.text }}</strong>
+                                        <template v-else>{{ segment.text }}</template>
+                                    </template>
+                                </span>
+                                <span v-if="item.subtitle" class="command-palette-subtitle">{{ item.subtitle }}</span>
+                            </span>
+                            <i v-if="item.flatIndex === activeIndex" class="ti ti-corner-down-left command-palette-enter"></i>
+                        </button>
+                    </template>
+                </div>
+
+                <div class="command-palette-footer">
+                    <span><kbd class="command-palette-kbd">&#8593;</kbd><kbd class="command-palette-kbd">&#8595;</kbd> Navigate</span>
+                    <span><kbd class="command-palette-kbd">&#8629;</kbd> Open</span>
+                    <span v-if="scopeFilter"><kbd class="command-palette-kbd">Backspace</kbd> Remove scope</span>
+                    <span v-else><kbd class="command-palette-kbd">Tab</kbd> Search one type</span>
+                    <span class="command-palette-footer-end"><kbd class="command-palette-kbd">Esc</kbd> Close</span>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/searchFilterBag";
+    import { SmartSearchPageBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/smartSearchPageBag";
+
+    // #region Types
+
+    /** A piece of a title, flagged when it is the part that matched the search term. */
+    type TitleSegment = {
+        text: string;
+        isMatch: boolean;
+    };
+
+    /** A result returned by one of the search types, such as a person or group. */
+    type SearchResult = {
+        title: string;
+        subtitle: string;
+        filter: SearchFilterBag;
+        returnType: string | null;
+        returnId: string | null;
+        extraParameters: Record<string, string>;
+    };
+
+    /** A row in the palette, regardless of whether it opens a page or runs a search. */
+    type PaletteItem = {
+        flatIndex: number;
+        titleSegments: TitleSegment[];
+        subtitle: string;
+        iconCssClass: string;
+        navigate: () => void;
+    };
+
+    type PaletteSection = {
+        label: string;
+        items: PaletteItem[];
+    };
+
+    /** The number of page results shown when searching every type. */
+    const maxPageResults = 6;
+
+    /** The number of search results shown below the pages when searching every type. */
+    const maxCombinedSearchResults = 5;
+
+    /** The number of search results shown when the palette is scoped to one type. */
+    const maxScopedSearchResults = 10;
+
+    /** How long to wait after typing stops before searching, in milliseconds. */
+    const searchDelayMs = 200;
+
+    const props = defineProps({
+        /** The search types available in the header search box. */
+        searchFilters: {
+            type: Array as PropType<SearchFilterBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+    }>();
+
+    // #endregion
+
+    // #region Values
+
+    const http = useHttp();
+    const invokeBlockAction = useInvokeBlockAction();
+    const inputElement = ref<HTMLInputElement>();
+    const term = ref("");
+    const pages = ref<SmartSearchPageBag[]>([]);
+    const searchResults = ref<SearchResult[]>([]);
+    const scopeFilter = ref<SearchFilterBag | null>(null);
+    const activeIndex = ref(0);
+    let searchTimeout: number | undefined;
+    let searchRequestCounter = 0;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const trimmedTerm = computed<string>(() => term.value.trim());
+
+    /** The search type used for results, which is the scoped type or the default (first) type. */
+    const activeSearchFilter = computed<SearchFilterBag | null>(() => scopeFilter.value ?? props.searchFilters[0] ?? null);
+
+    const inputLabel = computed<string>(() => scopeFilter.value ? `Search by ${scopeFilter.value.label}` : "Search pages and records");
+
+    const inputPlaceholder = computed<string>(() => scopeFilter.value ? `Search by ${scopeFilter.value.label}` : "Search pages, people, groups and more");
+
+    /** The pages that match the term, best match first. Empty when scoped to a search type. */
+    const matchingPages = computed<SmartSearchPageBag[]>(() => {
+        const query = trimmedTerm.value.toLowerCase();
+
+        if (!query || scopeFilter.value) {
+            return [];
+        }
+
+        return pages.value
+            .map(page => ({ page, score: scorePage(page, query) }))
+            .filter(match => match.score > 0)
+            .sort((a, b) => b.score - a.score || (a.page.title ?? "").localeCompare(b.page.title ?? ""))
+            .slice(0, maxPageResults)
+            .map(match => match.page);
+    });
+
+    const sections = computed<PaletteSection[]>(() => {
+        const query = trimmedTerm.value;
+        const filter = activeSearchFilter.value;
+        const result: PaletteSection[] = [];
+        let flatIndex = 0;
+
+        if (!query || !filter) {
+            return result;
+        }
+
+        if (matchingPages.value.length > 0) {
+            result.push({
+                label: "Pages",
+                items: matchingPages.value.map(page => ({
+                    flatIndex: flatIndex++,
+                    titleSegments: getTitleSegments(page.title ?? "", query),
+                    subtitle: page.path ?? "",
+                    iconCssClass: page.iconCssClass || "ti ti-file",
+                    navigate: () => navigateTo(page.url ?? "")
+                }))
+            });
+        }
+
+        const limit = scopeFilter.value ? maxScopedSearchResults : maxCombinedSearchResults;
+
+        if (searchResults.value.length > 0) {
+            const items: PaletteItem[] = searchResults.value.slice(0, limit).map(searchResult => ({
+                flatIndex: flatIndex++,
+                titleSegments: getTitleSegments(searchResult.title, query),
+                subtitle: searchResult.subtitle,
+                iconCssClass: "ti ti-user",
+                navigate: () => navigateTo(getSearchResultUrl(searchResult))
+            }));
+
+            if (!scopeFilter.value) {
+                items.push({
+                    flatIndex: flatIndex++,
+                    titleSegments: [{ text: `Show all results for “${query}”`, isMatch: false }],
+                    subtitle: filter.label ?? "",
+                    iconCssClass: "ti ti-search",
+                    navigate: () => navigateTo(getSearchTermUrl(filter, query))
+                });
+            }
+
+            result.push({ label: filter.label ?? "Results", items });
+        }
+
+        // With no page matches, offer every search type so the person can still search for the term.
+        if (matchingPages.value.length === 0 && !scopeFilter.value) {
+            result.push({
+                label: `Search for “${query}” by`,
+                items: props.searchFilters.map(searchFilter => ({
+                    flatIndex: flatIndex++,
+                    titleSegments: [{ text: searchFilter.label ?? "", isMatch: false }],
+                    subtitle: "",
+                    iconCssClass: "ti ti-search",
+                    navigate: () => navigateTo(getSearchTermUrl(searchFilter, query))
+                }))
+            });
+        }
+
+        return result;
+    });
+
+    const flatItems = computed<PaletteItem[]>(() => sections.value.flatMap(section => section.items));
+
+    const activeItem = computed<PaletteItem | undefined>(() => flatItems.value[activeIndex.value]);
+
+    const emptyMessage = computed<string>(() => {
+        if (!trimmedTerm.value) {
+            return "Type to search pages, people, groups and more.";
+        }
+
+        if (matchingPages.value.length === 0 && !scopeFilter.value) {
+            return `No pages match “${trimmedTerm.value}”.`;
+        }
+
+        return "";
+    });
+
+    const emptyHelp = computed<string>(() => {
+        if (!trimmedTerm.value) {
+            return "Press Tab to search one type, such as Phone or Email.";
+        }
+
+        return emptyMessage.value ? "Search for it as a person, group or business instead." : "";
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Handles the keys that move through, choose from, or scope the palette. */
+    function onInputKeyDown(event: KeyboardEvent): void {
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            moveActive(1);
+        }
+        else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            moveActive(-1);
+        }
+        else if (event.key === "Enter") {
+            event.preventDefault();
+            activeItem.value?.navigate();
+        }
+        else if (event.key === "Escape") {
+            event.preventDefault();
+            close();
+        }
+        else if (event.key === "Tab") {
+            event.preventDefault();
+            cycleScope(event.shiftKey ? -1 : 1);
+        }
+        else if (event.key === "Backspace" && !term.value && scopeFilter.value) {
+            event.preventDefault();
+            clearScope();
+        }
+    }
+
+    /** Closes the palette. */
+    function close(): void {
+        emit("close");
+    }
+
+    /** Removes the search type scope. */
+    function clearScope(): void {
+        scopeFilter.value = null;
+        inputElement.value?.focus();
+    }
+
+    /** Opens the page or runs the search for a chosen row. */
+    function choose(item: PaletteItem): void {
+        item.navigate();
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    /** Gets the id of the row at the given position, used for keyboard accessibility. */
+    function itemId(flatIndex: number): string {
+        return `command-palette-item-${flatIndex}`;
+    }
+
+    /** Moves the highlighted row up or down, wrapping at either end. */
+    function moveActive(step: number): void {
+        const count = flatItems.value.length;
+
+        if (count === 0) {
+            return;
+        }
+
+        activeIndex.value = (activeIndex.value + step + count) % count;
+    }
+
+    /**
+     * Scopes the palette to the next or previous search type. The choices are no
+     * scope followed by each search type, and they wrap around at either end.
+     */
+    function cycleScope(step: number): void {
+        if (props.searchFilters.length === 0) {
+            return;
+        }
+
+        const choices: (SearchFilterBag | null)[] = [null, ...props.searchFilters];
+
+        // The scope is reactive, so match it to its choice by key rather than by reference.
+        const currentIndex = Math.max(0, choices.findIndex(choice => choice?.key === scopeFilter.value?.key));
+
+        scopeFilter.value = choices[(currentIndex + step + choices.length) % choices.length];
+    }
+
+    /**
+     * Scores how well a page matches the term. A page whose title starts with the term
+     * ranks first, then a title with a word that starts with it, then a title or path
+     * that contains it, and last a title with the term's letters in order.
+     * A score of zero means no match.
+     */
+    function scorePage(page: SmartSearchPageBag, query: string): number {
+        const title = (page.title ?? "").toLowerCase();
+        const path = (page.path ?? "").toLowerCase();
+
+        if (title.startsWith(query)) {
+            return 100;
+        }
+
+        if (title.split(/\s+/).some(word => word.startsWith(query))) {
+            return 80;
+        }
+
+        if (title.includes(query)) {
+            return 60;
+        }
+
+        if (path.includes(query)) {
+            return 30;
+        }
+
+        let queryIndex = 0;
+
+        for (const character of title) {
+            if (character === query[queryIndex]) {
+                queryIndex++;
+            }
+        }
+
+        return queryIndex === query.length ? 20 : 0;
+    }
+
+    /** Splits a title around the first place the term appears so that part can be shown in bold. */
+    function getTitleSegments(title: string, query: string): TitleSegment[] {
+        const matchStart = title.toLowerCase().indexOf(query.toLowerCase());
+
+        if (matchStart < 0) {
+            return [{ text: title, isMatch: false }];
+        }
+
+        const matchEnd = matchStart + query.length;
+
+        return [
+            { text: title.substring(0, matchStart), isMatch: false },
+            { text: title.substring(matchStart, matchEnd), isMatch: true },
+            { text: title.substring(matchEnd), isMatch: false }
+        ].filter(segment => segment.text.length > 0);
+    }
+
+    /** Gets the site's base URL, which the search types' result URLs are relative to. */
+    function getBaseUrl(): string {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (window["Rock"] as any)?.settings?.get("baseUrl") ?? "/";
+    }
+
+    /** Sends the browser to a URL. */
+    function navigateTo(url: string): void {
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /** Gets the URL of the search page for a search type and a term. */
+    function getSearchTermUrl(filter: SearchFilterBag, searchTerm: string): string {
+        return getBaseUrl() + (filter.resultUrl ?? "").replace("{0}", encodeURIComponent(searchTerm));
+    }
+
+    /**
+     * Gets the URL to open for a chosen search result. This matches what the header
+     * search box does: a universal search result goes to its record, and any other
+     * result goes to the search page for the result's text.
+     */
+    function getSearchResultUrl(result: SearchResult): string {
+        const resultUrl = result.filter.resultUrl ?? "";
+
+        if (result.returnType && result.returnId) {
+            return getBaseUrl() + resultUrl.replace("{0}", `${encodeURIComponent(result.returnType)}/${encodeURIComponent(result.returnId)}`);
+        }
+
+        let url = getSearchTermUrl(result.filter, result.title);
+        const extraParameters = Object.entries(result.extraParameters)
+            .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
+            .join("&");
+
+        if (extraParameters) {
+            url += `${url.includes("?") ? "&" : "?"}${extraParameters}`;
+        }
+
+        return url;
+    }
+
+    /**
+     * Turns one of the search types' result strings into a result. These strings can
+     * contain markup, such as a campus label or a data element that holds the id of the
+     * record, so they are read in an inert document that never runs scripts or loads images.
+     */
+    function parseSearchResult(html: string, filter: SearchFilterBag): SearchResult {
+        const parsedDocument = new DOMParser().parseFromString(html, "text/html");
+        const dataElement = parsedDocument.querySelector("data");
+        const extraParameters: Record<string, string> = {};
+
+        if (dataElement) {
+            for (const attribute of Array.from(dataElement.attributes)) {
+                extraParameters[attribute.name] = attribute.value;
+            }
+        }
+
+        const accessories = Array.from(parsedDocument.querySelectorAll(".search-accessory"));
+        const subtitle = accessories.map(accessory => accessory.textContent?.trim() ?? "").filter(text => text).join(" · ");
+
+        accessories.forEach(accessory => accessory.remove());
+
+        return {
+            title: parsedDocument.body.textContent?.trim() ?? "",
+            subtitle,
+            filter,
+            returnType: dataElement?.getAttribute("return-type") ?? null,
+            returnId: dataElement?.getAttribute("return-id") ?? null,
+            extraParameters
+        };
+    }
+
+    /** Loads the pages the current person can open. */
+    async function loadPages(): Promise<void> {
+        const response = await invokeBlockAction<SmartSearchPageBag[]>("GetPages");
+
+        if (response.isSuccess && response.data) {
+            pages.value = response.data;
+        }
+        else {
+            console.error("Error fetching pages from server", response.errorMessage);
+        }
+    }
+
+    /** Searches the active search type for the term, ignoring any response that has been replaced by a newer search. */
+    function scheduleSearch(): void {
+        window.clearTimeout(searchTimeout);
+
+        const query = trimmedTerm.value;
+        const filter = activeSearchFilter.value;
+        const requestNumber = ++searchRequestCounter;
+
+        if (!query || !filter) {
+            searchResults.value = [];
+            return;
+        }
+
+        searchTimeout = window.setTimeout(async () => {
+            const limit = scopeFilter.value ? maxScopedSearchResults : maxCombinedSearchResults;
+            const url = `/api/search?type=${encodeURIComponent(filter.key ?? "")}&term=${encodeURIComponent(query)}&$top=${limit}`;
+            const response = await http.get<string[]>(url);
+
+            if (requestNumber !== searchRequestCounter) {
+                return;
+            }
+
+            searchResults.value = response.isSuccess && response.data
+                ? response.data.map(html => parseSearchResult(html, filter))
+                : [];
+        }, searchDelayMs);
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([term, scopeFilter], () => {
+        activeIndex.value = 0;
+        scheduleSearch();
+    });
+
+    // Keep the results from shifting the highlighted row out of range.
+    watch(flatItems, () => {
+        if (activeIndex.value >= flatItems.value.length) {
+            activeIndex.value = 0;
+        }
+    });
+
+    // Keep the highlighted row visible when moving through a long list.
+    watch(activeIndex, async () => {
+        await nextTick();
+        document.getElementById(itemId(activeIndex.value))?.scrollIntoView({ block: "nearest" });
+    });
+
+    // #endregion
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        inputElement.value?.focus();
+        loadPages();
+    });
+
+    onBeforeUnmount(() => {
+        window.clearTimeout(searchTimeout);
+    });
+
+    // #endregion
+</script>
