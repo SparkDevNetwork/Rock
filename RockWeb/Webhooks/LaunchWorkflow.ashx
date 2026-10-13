@@ -163,11 +163,12 @@ public class LaunchWorkflow : IHttpHandler
             }
         }
 
-        // set workflow name
-        string nameTemplate = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
-        if ( nameTemplate.IsNotNullOrWhiteSpace() )
+        // set workflow name. The template is rendered once here; rendering the
+        // result again would run request data as Lava.
+        string workflowName = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
+        if ( workflowName.IsNotNullOrWhiteSpace() )
         {
-            workflow.Name = nameTemplate.ResolveMergeFields( mergeFields );
+            workflow.Name = workflowName;
         }
     }
 

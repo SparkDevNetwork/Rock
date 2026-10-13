@@ -2526,9 +2526,14 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-                // If this isn't a Person, assume it is an email address.
-                string recipientEmailAddress = recipientWorkflowAttributeValue;
-                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, workflowMergeFields ) );
+                // If this isn't a Person, assume it is an email address. The value may have
+                // been submitted on the form and the email transport renders the address as
+                // Lava, so only send to a valid address that contains no Lava.
+                string recipientEmailAddress = recipientWorkflowAttributeValue?.Trim();
+                if ( recipientEmailAddress.IsNotNullOrWhiteSpace() && !recipientEmailAddress.IsLavaTemplate() && EmailAddressFieldValidator.IsValid( recipientEmailAddress ) )
+                {
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, workflowMergeFields ) );
+                }
             }
 
             SendFormBuilderCommunication( confirmationEmailSettings.Source, recipients );
@@ -2635,13 +2640,13 @@ namespace RockWeb.Blocks.WorkFlow
                     customBody = formEmailSourceSettings.Body;
                 }
 
-                Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
-
+                // The body is rendered once by the email transport using each recipient's
+                // merge fields. Rendering it here too would run submitted values as Lava.
                 var emailMessage = new RockEmailMessage
                 {
                     ReplyToEmail = formEmailSourceSettings.ReplyTo,
                     Subject = formEmailSourceSettings.Subject,
-                    Message = customBody?.ResolveMergeFields( workflowMergeFields )
+                    Message = customBody
                 };
 
                 emailMessage.SetRecipients( recipients );
