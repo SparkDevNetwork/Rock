@@ -218,3 +218,23 @@ describe("the header on a phone", () => {
         expect(w.find("[data-testid='header-more']").exists()).toBe(false);
     });
 });
+
+describe("the end of an outage", () => {
+    test("is told once the connection is back and the catch-up after it is done, so the shell can say it", async () => {
+        const w = mountHeader({ connection: lostConnection });
+
+        await w.setProps({ connection: null, isBehind: true });
+        expect(w.emitted("backOnline")).toBeUndefined();
+
+        await w.setProps({ isBehind: false });
+        expect(w.emitted("backOnline")).toEqual([[]]);
+    });
+
+    test("is never told when the connection was never lost", async () => {
+        const w = mountHeader({ isBehind: true });
+
+        await w.setProps({ isBehind: false });
+
+        expect(w.emitted("backOnline")).toBeUndefined();
+    });
+});

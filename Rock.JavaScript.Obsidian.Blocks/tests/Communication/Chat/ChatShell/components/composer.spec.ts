@@ -65,3 +65,102 @@ describe("the composer's held text", () => {
         expect((wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement).value).toBe("");
     });
 });
+
+describe("the composer's placeholder", () => {
+    test("names a channel plainly, with no hash character, since the hash is an icon", () => {
+        const wrapper = mount(Composer, { props: { title: "young-adults", isChannel: true } });
+
+        expect(wrapper.get("[data-testid='composer-input']").attributes("placeholder")).toBe("Message young-adults");
+    });
+
+    test("names the other person of a direct message", () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
+
+        expect(wrapper.get("[data-testid='composer-input']").attributes("placeholder")).toBe("Message Anna Reyes");
+    });
+});
+
+describe("the composer's key hint", () => {
+    test("says how to send and how to start a new line", () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
+
+        expect(wrapper.get("[data-testid='composer-hint']").text()).toBe("Enter to send, Shift + Enter for a new line");
+    });
+
+    test("is left out on a phone, which has no Enter key worth naming", () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes", isPhone: true } });
+
+        expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
+    });
+});
+
+describe("the composer's keys", () => {
+    test("Enter sends the text", async () => {
+        const wrapper = mount(Composer);
+        const input = wrapper.get("[data-testid='composer-input']");
+        await input.setValue("hello");
+
+        await input.trigger("keydown", { key: "Enter" });
+
+        expect(wrapper.emitted("send")).toEqual([["hello"]]);
+    });
+
+    test("Shift and Enter does not send, leaving the new line to the box", async () => {
+        const wrapper = mount(Composer);
+        const input = wrapper.get("[data-testid='composer-input']");
+        await input.setValue("hello");
+
+        await input.trigger("keydown", { key: "Enter", shiftKey: true });
+
+        expect(wrapper.emitted("send")).toBeUndefined();
+    });
+});
+
+describe("the composer's send button", () => {
+    test("is ready, in the church's fill, only once there is text to send", async () => {
+        const wrapper = mount(Composer);
+        const send = wrapper.get("[data-testid='composer-send']");
+        expect(send.classes()).not.toContain("is-ready");
+        expect(send.attributes("aria-label")).toBe("Send");
+
+        await wrapper.get("[data-testid='composer-input']").setValue("hello");
+
+        expect(send.classes()).toContain("is-ready");
+    });
+});
+
+describe("the composer's text box", () => {
+    test("grows to the height of what is typed, which the sheet caps before it scrolls", async () => {
+        const wrapper = mount(Composer, { attachTo: document.body });
+        const input = wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement;
+        Object.defineProperty(input, "scrollHeight", { configurable: true, get: () => 98 });
+
+        await wrapper.get("[data-testid='composer-input']").setValue("one\ntwo\nthree\nfour");
+
+        expect(input.style.height).toBe("98px");
+        wrapper.unmount();
+    });
+
+    test("goes back to one line once it is emptied by a send", async () => {
+        const wrapper = mount(Composer, { attachTo: document.body });
+        const input = wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement;
+        let contentHeight = 98;
+        Object.defineProperty(input, "scrollHeight", { configurable: true, get: () => contentHeight });
+        await wrapper.get("[data-testid='composer-input']").setValue("one\ntwo\nthree\nfour");
+
+        contentHeight = 35;
+        await wrapper.get("form").trigger("submit");
+
+        expect(input.style.height).toBe("35px");
+        wrapper.unmount();
+    });
+});
+
+describe("the composer while the service is paused", () => {
+    test("is a locked bar saying sending is paused, with no box to type into", () => {
+        const wrapper = mount(Composer, { props: { title: "young-adults", isChannel: true, isLocked: true } });
+
+        expect(wrapper.get("[data-testid='composer-locked']").text()).toBe("Sending is paused for maintenance.");
+        expect(wrapper.find("[data-testid='composer-input']").exists()).toBe(false);
+    });
+});

@@ -135,7 +135,9 @@ describe("the tokens drawn from the church color", () => {
             "row-announcement": "#FDF5F0",
             "badge-quiet": "#F9E6DD",
             "current-line": "#ECC4AE",
-            "focus-line": "#F3A97A"
+            "focus-line": "#F3A97A",
+            "composer-line": "#F4A470",
+            "composer-glow": "rgba(255, 121, 29, 0.6)"
         },
         dark: {
             "brand-fill": "#FF791D",
@@ -154,7 +156,9 @@ describe("the tokens drawn from the church color", () => {
             "row-announcement": "#1C1717",
             "badge-quiet": "#2C1B12",
             "current-line": "#64402A",
-            "focus-line": "#9C5425"
+            "focus-line": "#9C5425",
+            "composer-line": "#A75824",
+            "composer-glow": "rgba(255, 121, 29, 0.6)"
         }
     };
 
@@ -167,7 +171,8 @@ describe("the tokens drawn from the church color", () => {
     // at 13%, each as alpha over whatever is under it; the announcement bubble's ring 40% over the
     // line (#E4E4EC, #22272F); Community's announcement row 6% over the surface (#FDFDFD,
     // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10); the open room's
-    // icon box 30% and the focused search box 55% over the line.
+    // icon box 30% and the focused search box 55% over the line; the focused composer's border 60% over
+    // the line, and its glow the church color at 60% alpha.
     const forest = {
         light: {
             "brand-fill": "#1D8350",
@@ -186,7 +191,9 @@ describe("the tokens drawn from the church color", () => {
             "row-announcement": "#F0F6F3",
             "badge-quiet": "#D9E9E4",
             "current-line": "#A9C9BE",
-            "focus-line": "#77B398"
+            "focus-line": "#77B398",
+            "composer-line": "#6DAE91",
+            "composer-glow": "rgba(30, 138, 84, 0.6)"
         },
         dark: {
             "brand-fill": "#1D8350",
@@ -205,7 +212,9 @@ describe("the tokens drawn from the church color", () => {
             "row-announcement": "#0E181B",
             "badge-quiet": "#0D1E1A",
             "current-line": "#21453A",
-            "focus-line": "#205D43"
+            "focus-line": "#205D43",
+            "composer-line": "#206245",
+            "composer-glow": "rgba(30, 138, 84, 0.6)"
         }
     };
 
