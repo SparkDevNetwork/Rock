@@ -42,9 +42,8 @@
     --chat-toast-close-hover: rgba(248, 248, 252, .16);
     --chat-scrim: rgba(13, 17, 23, .38);
     --chat-pill-bg: #ECECED;
-    /* The threads list's tab track, text at 6 percent over the surface, and its skeleton lines at 7. */
+    /* The threads list's tab track, text at 6 percent over the surface. */
     --chat-tab-track: #EFEFEF;
-    --chat-skeleton-line: rgba(13, 17, 23, .07);
 
     /* Status colors. The soft fills are written out, since the browsers Rock supports cannot mix them. */
     --chat-danger: var(--base-danger, #D70015);
@@ -191,7 +190,6 @@
     --chat-d-spin: .7s;
     --chat-d-refresh-spin: .8s;
     --chat-d-skeleton: 1.6s;
-    --chat-d-list-pulse: 1.1s;
     --chat-d-tip-delay: 500ms;
     --chat-d-tip-delay-rx: 350ms;
     --chat-d-search-people: 250ms;
@@ -254,7 +252,6 @@
     --chat-scrim: rgba(0, 0, 0, .55);
     --chat-pill-bg: #1D2127;
     --chat-tab-track: #1B1F25;
-    --chat-skeleton-line: rgba(248, 248, 252, .07);
     --chat-danger-ink: #FF7A85;
     --chat-danger-soft: #310E17;
     --chat-warning-ink: #FFB547;
@@ -323,7 +320,6 @@
         --chat-scrim: rgba(0, 0, 0, .55);
         --chat-pill-bg: #1D2127;
         --chat-tab-track: #1B1F25;
-        --chat-skeleton-line: rgba(248, 248, 252, .07);
         --chat-danger-ink: #FF7A85;
         --chat-danger-soft: #310E17;
         --chat-warning-ink: #FFB547;

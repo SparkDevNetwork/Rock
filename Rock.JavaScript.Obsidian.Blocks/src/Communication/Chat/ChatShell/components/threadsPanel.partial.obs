@@ -50,9 +50,9 @@
                 <span class="chat-sr-only">Loading threads</span>
                 <ul class="chat-ls-list" aria-hidden="true">
                     <li v-for="index in 3" :key="index" class="chat-ls-skel" data-testid="thread-skeleton">
-                        <span class="chat-ls-sk chat-ls-sk-av"></span>
+                        <span class="chat-skeleton chat-ls-sk chat-ls-sk-av"></span>
                         <span class="chat-ls-sk-lines">
-                            <i v-for="(width, line) in skeletonWidths[index - 1]" :key="line" class="chat-ls-sk" :style="{ width: `${width}%` }"></i>
+                            <i v-for="(width, line) in skeletonWidths[index - 1]" :key="line" class="chat-skeleton chat-ls-sk" :style="{ width: `${width}%` }"></i>
                         </span>
                     </li>
                 </ul>
@@ -606,11 +606,10 @@
     padding: 11px 10px;
 }
 
+/* The fill and pulse are the sheet's one skeleton, the history's; only the shape is the list's own. */
 .chat-ls-sk {
     display: block;
-    background: var(--chat-skeleton-line);
     border-radius: 6px;
-    animation: chat-skeleton-pulse var(--chat-d-list-pulse) var(--chat-ease-state) infinite alternate;
 }
 
 .chat-ls-sk-av {
@@ -632,11 +631,6 @@
     height: 1px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .chat-ls-sk {
-        animation: none;
-    }
-}
 </style>
 
 <script setup lang="ts">
