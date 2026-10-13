@@ -98,7 +98,7 @@
         for (const [name, value] of formData.entries()) {
             if (value instanceof File && value.size > 0) {
                 try {
-                    const result = await uploadBinaryFile(value, binaryFileTypeGuid, { isTemporary: false, progress: () => { } });
+                    const result = await uploadBinaryFile(value, binaryFileTypeGuid, { progress: () => { } });
                     if (result?.value) {
                         attachmentGuids.push(result.value as Guid);
                     }
