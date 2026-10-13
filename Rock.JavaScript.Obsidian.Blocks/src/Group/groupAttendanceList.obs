@@ -87,18 +87,11 @@
                 </template>
             </Column>
 
-            <Column v-if="config.options?.isNotesColumnVisible"
-                    name="notes"
-                    title="Notes"
-                    field="notes"
-                    sortField="notesPlain"
-                    :filter="textValueFilter"
-                    :filterValue="getNotesFilterValue"
-                    :quickFilterValue="getNotesFilterValue">
-                <template #format="{ row }">
-                    <span v-html="(row.notes as string | null) ?? ''"></span>
-                </template>
-            </Column>
+            <TextColumn v-if="config.options?.isNotesColumnVisible"
+                        name="notes"
+                        title="Notes"
+                        field="notes"
+                        :filter="textValueFilter" />
 
             <TextColumn v-if="config.options?.isAttendanceTypeColumnVisible"
                         name="attendanceType"
@@ -265,15 +258,6 @@
      */
     function isDeleteDisabled(row: Record<string, unknown>): boolean {
         return row["isDeleteDisabled"] as boolean ?? false;
-    }
-
-    /**
-     * Gets the filter value for the Notes column. Uses the server-provided plain-text
-     * field so text searches match the visible content rather than HTML markup.
-     * (Notes render via v-html to preserve the WebForms block's HtmlEncode="false" behavior.)
-     */
-    function getNotesFilterValue(row: Record<string, unknown>): string {
-        return (row["notesPlain"] as string) ?? "";
     }
 
     // #endregion
