@@ -15,7 +15,7 @@
 // </copyright>
 //
 // The shell's wiring: one place that builds the session, the live connection, the timelines,
-// the sender, the read tracker and the sidebar, and joins them. Each of those is its own tested
+// the sender, the read tracker, the threads and the sidebar, and joins them. Each of those is its own tested
 // module; what is here decides only which one hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
@@ -31,6 +31,7 @@ import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } f
 import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
 import { createSender, isComposerOpen, JoinResult, newLocalId, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
+import { createThreads, Threads } from "./composables/useThreads.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -162,6 +163,9 @@ export type ChatShell = {
     sender: Sender;
     directMessages: DirectMessages;
 
+    /** The threads list, the open thread and the live counts of thread roots. */
+    threads: Threads;
+
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
 
@@ -185,6 +189,12 @@ export type ChatShell = {
 
     /** Sends a message to the open channel, or a draft's first message. */
     send: (body: string) => Promise<void>;
+
+    /**
+     * Sends a reply to a root: in the open thread's conversation when the root is the open
+     * thread's, else in the open conversation. Also shown in the conversation when asked.
+     */
+    sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void>;
 
     /** The person clicked "Turn on notifications". */
     turnOnPush: () => Promise<void>;
@@ -298,6 +308,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     let client: PlatformClientLike | null = null;
     let hub: RealtimeHub | null = null;
     let detachPage: (() => void) | null = null;
+    let detachThreads: (() => void) | null = null;
     let push: PushRegistration | null = null;
     let isFirstMessageMarked = false;
 
@@ -400,6 +411,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isStopped = true;
         cancelRecheck();
         timelines.stop();
+        threads.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -427,9 +439,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * refusal for read only or maintenance puts its banner on the page at once, since the state
      * changed after the last exchange.
      */
-    async function call(name: string, args: Record<string, unknown>): Promise<CallResult> {
+    async function call(name: string, args: Record<string, unknown>, callOptions?: { keepalive?: boolean }): Promise<CallResult> {
         const result = await session.withFreshToken(
-            () => platform.call(name, args),
+            () => platform.call(name, args, callOptions),
             answer => !answer.ok && answer.error.code === "auth.expired"
         );
 
@@ -470,9 +482,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onSaved: (channelId, result) => channels.applyMarkRead(channelId, result)
     });
 
+    const threads = createThreads({ call, timelines, personAliasGuid });
+
     const sender = createSender({
-        send: async (channelId, body, key) => {
-            const result = await call("chat_send_message", { p_channel_id: channelId, p_body: body, p_client_key: key ?? null });
+        send: async (channelId, body, key, reply) => {
+            const result = await call("chat_send_message", {
+                p_channel_id: channelId,
+                p_body: body,
+                p_client_key: key ?? null,
+                ...(reply ? { p_parent_id: reply.parentId, p_shown_in_channel: reply.isShownInChannel } : {})
+            });
             if (!result.ok) {
                 return { ok: false, error: result.error };
             }
@@ -487,6 +506,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             };
         },
         timelines,
+        onReplyConfirmed: (channelId, message) => threads.upsertReply(channelId, message),
         join: options.joinChannel,
         waitBeforeResend: attempt => new Promise(resolve => setTimeout(resolve,
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
@@ -635,6 +655,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         timelines,
         sender,
         directMessages,
+        threads,
         isNewMessageShown: isNewMessageShown(options.session),
 
         openDirectMessage: async (): Promise<void> => {
@@ -681,7 +702,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         }
                         return;
                     }
-                    timelines.applyEvent(channelId, event, payload);
+                    // A thread's counts move its root wherever it is held, and a reply reaches the
+                    // open thread; the timeline takes every message event it shows itself.
+                    threads.applyEvent(channelId, event, payload);
+                    if (event !== "thread.updated") {
+                        timelines.applyEvent(channelId, event, payload);
+                    }
                 },
                 onPersonalEvent: (event, payload) => {
                     if (event === "resync") {
@@ -740,6 +766,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
             detachPage = tracker.attach(options.pageTargets);
+            detachThreads = threads.attach(options.pageTargets);
             state.phase = "ready";
 
             await startPageLoad({
@@ -795,6 +822,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
         },
 
+        sendReply: async (rootId: number, body: string, isShownInChannel: boolean): Promise<void> => {
+            // A thread opened from the All tab can belong to a conversation other than the open one.
+            const thread = threads.state.thread;
+            const channelId = thread?.rootId === rootId ? thread.channelId : state.activeChannelId;
+            if (channelId) {
+                await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel });
+                notePushSend();
+            }
+        },
+
         turnOnPush: async (): Promise<void> => {
             await push?.turnOn();
             state.isPushOffered = push?.isOffered() ?? false;
@@ -831,11 +868,17 @@ export function createChatShell(options: ShellOptions): ChatShell {
             timelines.stop();
             directMessages.stop();
 
+            // The thread's save leaves before the threads stop, so it still goes out; nothing it
+            // answers reaches the screen.
+            const threadSaved = threads.closeThread();
+            threads.stop();
+
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.
             session.stop();
-            await tracker.leave();
+            await Promise.all([tracker.leave(), threadSaved]);
             detachPage?.();
+            detachThreads?.();
             await hub?.stop();
         }
     };

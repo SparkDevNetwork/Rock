@@ -21,9 +21,11 @@
 // message the first try posted rather than posting it twice; the live echo of a confirmed send
 // is matched by its id. A send into a public or pinned room the person has not joined is refused
 // until they join, which is Rock's door, so the sender joins through it and sends again under the
-// same key.
+// same key. A reply names its root and whether it is also sent to the conversation, and keeps both
+// on its row so every try sends the same reply; one shown only in its thread never enters the
+// conversation's timeline.
 import { reactive } from "vue";
-import { ChatError, DisplayPiece, MessageBlock, PendingMessage } from "../types.partial";
+import { ChatError, DisplayPiece, MessageBlock, PendingMessage, TimelineMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 
 /** What Rock's Join door answers. */
@@ -91,13 +93,22 @@ export function newLocalId(): string {
     });
 }
 
+/** A reply's place: the root it answers, and whether it is also sent to the conversation. */
+export type ReplyTarget = {
+    parentId: number;
+    isShownInChannel: boolean;
+};
+
 /** What the sender reaches outside itself. */
 export type SenderDependencies = {
-    /** Sends a text message to a channel, with the key that makes a retry safe. */
-    send: (channelId: string, body: string, key?: string) => Promise<SendResult>;
+    /** Sends a text message to a channel, with the key that makes a retry safe, as a reply when one is named. */
+    send: (channelId: string, body: string, key?: string, reply?: ReplyTarget) => Promise<SendResult>;
 
     /** The timelines a confirmed message is put into. */
     timelines: Pick<Timelines, "upsert">;
+
+    /** A confirmed reply, for the open thread to put in place without waiting for its live copy. */
+    onReplyConfirmed?: (channelId: string, message: TimelineMessage) => void;
 
     /**
      * Rock's Join door, for a send refused until the person joins a public or pinned room.
@@ -134,9 +145,9 @@ export type Sender = {
 
     /**
      * Sends a message. Resolves true when the platform confirmed it. Blank text sends nothing.
-     * A try names the row it shares with the message's other tries.
+     * A try names the row it shares with the message's other tries; a reply names its root.
      */
-    send: (channelId: string, body: string, attempt?: SendTry) => Promise<boolean>;
+    send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget) => Promise<boolean>;
 
     /** Sends a failed row's text again. */
     retry: (localId: string) => Promise<boolean>;
@@ -162,7 +173,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
         // A send that rejects is a failure like any other, so its row ends failed with a Retry
         // and a Discard rather than sending for good.
         try {
-            return await dependencies.send(row.channelId, row.body, row.localId);
+            // read off the row, so a retry sends the same reply the first try did
+            const reply = typeof row.parentId === "number" ? { parentId: row.parentId, isShownInChannel: row.isShownInChannel === true } : undefined;
+            return await dependencies.send(row.channelId, row.body, row.localId, reply);
         }
         catch {
             return { ok: false, error: { code: "rpc.transport", severity: "failed" } };
@@ -218,8 +231,10 @@ export function createSender(dependencies: SenderDependencies): Sender {
 
         // The confirmed message goes in before the row comes out, so the person never sees
         // their message disappear between the two.
-        dependencies.timelines.upsert(row.channelId, {
+        const isReply = typeof row.parentId === "number";
+        const confirmed: TimelineMessage = {
             id: result.id,
+            ...(isReply ? { parent_id: row.parentId, shown_in_channel: row.isShownInChannel === true } : {}),
             person_alias_guid: dependencies.personAliasGuid,
             sender_listed: true,
             message_type: "text",
@@ -229,7 +244,14 @@ export function createSender(dependencies: SenderDependencies): Sender {
             blocks: result.blocks ?? null,
             created_at: result.createdAt,
             notice: result.notice ?? null
-        });
+        };
+        if (isReply) {
+            dependencies.onReplyConfirmed?.(row.channelId, confirmed);
+        }
+        // a reply shown only in its thread is the thread's, never a row of the conversation
+        if (!isReply || row.isShownInChannel === true) {
+            dependencies.timelines.upsert(row.channelId, confirmed);
+        }
 
         // Named on the row as it goes, since the live copy may have put the message in first and
         // the row's going is then the only sign of which message it became.
@@ -245,7 +267,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
     return {
         pending: (channelId: string): PendingMessage[] => rows.filter(row => row.channelId === channelId),
 
-        send: async (channelId: string, body: string, attempt?: SendTry): Promise<boolean> => {
+        send: async (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget): Promise<boolean> => {
             if (body.trim() === "") {
                 return false;
             }
@@ -259,7 +281,14 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return deliver(earlier, attempt?.isLast);
             }
 
-            rows.push({ localId: attempt?.localId ?? dependencies.newLocalId(), channelId, body, status: "sending", errorCode: null });
+            rows.push({
+                localId: attempt?.localId ?? dependencies.newLocalId(),
+                channelId,
+                body,
+                status: "sending",
+                errorCode: null,
+                ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {})
+            });
 
             // The row read back from the list is the reactive one, so the status the person
             // sees follows every change made to it.

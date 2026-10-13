@@ -92,6 +92,52 @@ export function pendingPieces(body: string, names: ReadonlyMap<string, string>):
     return [{ type: "text", text }];
 }
 
+/**
+ * Lays an edit, a delete or a change of visibility over a message held on screen, wherever it is
+ * held: the conversation's timeline or an open thread. A deleted message keeps no edit, and a
+ * hidden or removed body never stays on screen.
+ *
+ * @param message The message held, changed in place.
+ * @param event The live event's name.
+ * @param payload The live event's payload, about this message.
+ */
+export function applyMessageChange(message: TimelineMessage, event: string, payload: unknown): void {
+    if (event === "message.edited") {
+        const edited = payload as MessageEditedEvent;
+        if (!message.deleted_at) {
+            message.body = edited.body;
+            message.pieces = edited.pieces ?? null;
+            message.edited_at = edited.edited_at;
+        }
+    }
+    else if (event === "message.deleted") {
+        message.deleted_at = (payload as MessageDeletedEvent).deleted_at;
+        message.body = null;
+        message.pieces = null;
+        message.blocks = null;
+        message.metadata = null;
+    }
+    else if (event === "message.visibility") {
+        const changed = payload as MessageVisibilityEvent;
+        message.visibility = changed.state;
+        message.visibility_notice = changed.notice;
+
+        // A hidden or removed body must not stay on screen. One shown again carries its body
+        // back, so the row draws it without waiting for a page.
+        if (changed.state !== "visible") {
+            message.body = null;
+            message.pieces = null;
+            message.blocks = null;
+            message.metadata = null;
+        }
+        else if (typeof changed.body === "string" && !message.deleted_at) {
+            message.body = changed.body;
+            message.pieces = changed.pieces ?? null;
+            message.blocks = changed.blocks ?? null;
+        }
+    }
+}
+
 /** A channel's timeline. */
 export type TimelineState = {
     /** The messages, oldest first, by id. */
@@ -430,23 +476,16 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         else if (event === "message.edited") {
             const edited = payload as MessageEditedEvent;
             const message = find(channelId, edited.id);
-            const pieces = edited.pieces ?? null;
-            if (message && !message.deleted_at) {
-                message.body = edited.body;
-                message.pieces = pieces;
-                message.edited_at = edited.edited_at;
+            if (message) {
+                applyMessageChange(message, event, edited);
             }
-            recordLive(edited.id, { body: edited.body, pieces, edited_at: edited.edited_at });
+            recordLive(edited.id, { body: edited.body, pieces: edited.pieces ?? null, edited_at: edited.edited_at });
         }
         else if (event === "message.deleted") {
             const deleted = payload as MessageDeletedEvent;
             const message = find(channelId, deleted.id);
             if (message) {
-                message.deleted_at = deleted.deleted_at;
-                message.body = null;
-                message.pieces = null;
-                message.blocks = null;
-                message.metadata = null;
+                applyMessageChange(message, event, deleted);
             }
             recordLive(deleted.id, { deleted_at: deleted.deleted_at, body: null, pieces: null, blocks: null, metadata: null });
         }
@@ -454,22 +493,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             const changed = payload as MessageVisibilityEvent;
             const message = find(channelId, changed.id);
             if (message) {
-                message.visibility = changed.state;
-                message.visibility_notice = changed.notice;
-
-                // A hidden or removed body must not stay on screen. One shown again carries its
-                // body back, so the row draws it without waiting for a page.
-                if (changed.state !== "visible") {
-                    message.body = null;
-                    message.pieces = null;
-                    message.blocks = null;
-                    message.metadata = null;
-                }
-                else if (typeof changed.body === "string" && !message.deleted_at) {
-                    message.body = changed.body;
-                    message.pieces = changed.pieces ?? null;
-                    message.blocks = changed.blocks ?? null;
-                }
+                applyMessageChange(message, event, changed);
             }
             const shown = changed.state === "visible";
             recordLive(changed.id, {

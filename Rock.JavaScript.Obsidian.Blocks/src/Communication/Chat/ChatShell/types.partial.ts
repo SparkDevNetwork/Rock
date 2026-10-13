@@ -90,6 +90,18 @@ export type TimelineMessage = {
     reply_count?: number;
     last_reply_at?: string | null;
     participant_count?: number;
+
+    /** The newest people to reply, newest first, at most four; null when there is no live reply. */
+    repliers?: Replier[] | null;
+
+    /** Whether the reader follows this root's thread; null when it is not a root with live replies. */
+    thread_following?: boolean | null;
+
+    /**
+     * Whether the reader follows this root and someone replied past their place in the thread;
+     * null when it is not a root with live replies.
+     */
+    thread_unread?: boolean | null;
     created_at: string;
     edited_at?: string | null;
     deleted_at?: string | null;
@@ -104,12 +116,63 @@ export type TimelineMessage = {
     notice?: string | null;
 };
 
+/** One person who replied in a thread, under their primary alias. */
+export type Replier = {
+    person_alias_guid: string;
+    nick_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+};
+
 /** A page of history, as chat_get_history returns it. */
 export type HistoryPage = {
     messages: TimelineMessage[];
     read_cursor: number | null;
     unread_count: number;
     has_more: boolean;
+};
+
+/** A page of a thread, as chat_get_thread_history returns it: the replies newest first. */
+export type ThreadPage = {
+    root: TimelineMessage | null;
+    messages: TimelineMessage[];
+    read_cursor: number | null;
+    unread_count: number;
+    following: boolean;
+    has_more: boolean;
+};
+
+/** One row of the threads list, as chat_list_threads returns it. */
+export type ThreadListRow = {
+    channel_id: string;
+
+    /** The root, carrying its repliers as every message does. */
+    root: TimelineMessage;
+    reply_count: number;
+    last_reply_at: string | null;
+    last_reply_id: number | null;
+    participant_count: number;
+    following: boolean;
+    has_unread: boolean;
+    mention_count: number;
+};
+
+/** What chat_list_threads returns. */
+export type ThreadListPage = {
+    threads: ThreadListRow[];
+    has_more: boolean;
+};
+
+/** What chat_follow_thread returns. */
+export type FollowThreadAnswer = {
+    following: boolean;
+    read_cursor: number | null;
+};
+
+/** What chat_mark_thread_read returns: the position as stored, and the thread's last reply. */
+export type MarkThreadReadAnswer = {
+    read_cursor: number | null;
+    last_reply_id: number | null;
 };
 
 /** What chat_send_message returns: the stored message, and the server's sentence about it. */
@@ -191,6 +254,19 @@ export type MessageVisibilityEvent = {
     blocks?: MessageBlock[] | null;
 };
 
+/**
+ * A thread's root changed its counts, on the channel topic: once per reply sent and per reply
+ * deleted. repliers is null once no live reply is left.
+ */
+export type ThreadUpdatedEvent = {
+    channel_id: string;
+    root_id: number;
+    reply_count: number;
+    last_reply_at: string | null;
+    participant_count: number;
+    repliers: Replier[] | null;
+};
+
 /** The person's own "something new here" signal, on their personal topic. */
 export type ChannelUnreadEvent = {
     channel_id: string;
@@ -212,7 +288,8 @@ export type ChannelTopicEvent =
     | { event: "message.created", payload: MessageCreatedEvent }
     | { event: "message.edited", payload: MessageEditedEvent }
     | { event: "message.deleted", payload: MessageDeletedEvent }
-    | { event: "message.visibility", payload: MessageVisibilityEvent };
+    | { event: "message.visibility", payload: MessageVisibilityEvent }
+    | { event: "thread.updated", payload: ThreadUpdatedEvent };
 
 /** A person's own message that has not been confirmed yet, or whose send failed. */
 export type PendingMessage = {
@@ -221,6 +298,12 @@ export type PendingMessage = {
     body: string;
     status: "sending" | "failed";
     errorCode: string | null;
+
+    /** The root a reply answers, so the thread draws the row and the conversation does not. */
+    parentId?: number | null;
+
+    /** Whether a reply is also sent to the conversation. */
+    isShownInChannel?: boolean;
 
     /**
      * The stored message's id once the platform confirmed the send, set as the row goes, so the
