@@ -550,11 +550,12 @@
     const isMarkedRead = ref(false);
 
     /**
-     * Whether the person has sent here since the feed opened. Sending means they have caught up,
-     * so the divider and the strip go, as reading would take them; the read position is still
-     * saved only from what is seen.
+     * The newest message when the person last sent here, or null before any send. Sending means
+     * they have caught up to that point, so a divider at or before it goes, with its strip, as
+     * reading would take them; one for others' messages after it, as a catch-up after a reconnect
+     * can bring, still shows. The read position is still saved only from what is seen.
      */
-    const isClearedBySend = ref(false);
+    const clearedThroughId = ref<number | null>(null);
 
     const isScrolledUp = ref(false);
 
@@ -588,8 +589,10 @@
     /** The look the conversation's kind picks: a channel's flat rows, a direct message's bubbles. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
-    const dividerBeforeId = computed((): number | null => isClearedBySend.value ? null : newDividerBeforeId(
-        props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, props.personAliasGuid));
+    const dividerBeforeId = computed((): number | null => {
+        const id = newDividerBeforeId(props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, props.personAliasGuid);
+        return id !== null && clearedThroughId.value !== null && id <= clearedThroughId.value ? null : id;
+    });
 
     const sections = computed((): FeedSection[] => layoutFeed({
         messages: props.timeline.messages,
@@ -837,7 +840,10 @@
 
     watch(() => props.pending.length, async (length, previous) => {
         if (length > previous) {
-            isClearedBySend.value = true;
+            const newest = newestId();
+            if (newest !== null) {
+                clearedThroughId.value = Math.max(clearedThroughId.value ?? newest, newest);
+            }
         }
 
         await nextTick();
