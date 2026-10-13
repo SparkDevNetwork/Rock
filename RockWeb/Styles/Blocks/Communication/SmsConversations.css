@@ -304,3 +304,17 @@
   margin-top: 5px;
   border-radius: 10px;
 }
+
+.conversation .message .sms-file {
+  display: inline-block;
+  padding: 4px 12px;
+  margin-top: 5px;
+  color: var(--text-color);
+  background-color: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: 6px;
+}
+
+.conversation .message .sms-file .fa {
+  margin-right: 12px;
+}
