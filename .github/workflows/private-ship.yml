@@ -28,13 +28,8 @@ name: Ship to Public
 # the reason and removes the label.
 #
 # The `ship-only` label does steps 1 to 3 and 5 for the target branch only, with
-# no merge-up. Then it opens a merge-up PR in the mirror for each next branch in
-# MERGE_CHAIN (branch `mergeup/<target>-into-<next>`):
-#   - clean merge: the bot does the merge, so the PR is ready to `ship`
-#   - conflicts: the PR starts from the next branch; the developer merges the
-#     target in, resolves, pushes, and adds `ship`
-# Shipping a merge-up PR with `ship` continues the merge-up from there. This is
-# how a merge-up conflict gets resolved without anyone pushing to public by hand.
+# no merge-up. It's the escape hatch when a merge-up conflicts: ship with
+# `ship-only`, then do that merge-up by hand.
 #
 # The `squash` label (add it BEFORE `ship` or `ship-only`) squashes the PR's
 # commits into one after step 2. The PR title becomes the commit message, so it
@@ -362,7 +357,7 @@ jobs:
                 echo "Merging \`$from\` into \`$into\` hit conflicts. Nothing was pushed to any branch."
                 echo "$files"
                 echo ""
-                echo "To ship now: add the \`ship-only\` label. It ships to \`$BASE\` without merging up, then opens a merge-up PR in the mirror for each next branch. Resolve the conflict in that PR and add \`ship\` to it to continue the merge-up."
+                echo "To ship now: add the \`ship-only\` label to ship to \`$BASE\` without merging up, then do the merge-up by hand in SmartGit."
                 echo "EOF"
               } >> "$GITHUB_ENV"
               exit 1
@@ -403,101 +398,8 @@ jobs:
             echo "REACHED_DEVELOP=true" >> "$GITHUB_ENV"
           fi
 
-      - name: Open merge-up PRs
-        # After `ship-only`, open a mirror PR for each next branch in the chain,
-        # so the merge-up (and any conflict in it) goes through review instead of
-        # a manual push to public.
-        if: env.LABEL == 'ship-only'
-        env:
-          MERGE_CHAIN: ${{ vars.MERGE_CHAIN }}
-          TOKEN: ${{ steps.app.outputs.token }}
-        run: |
-          nexts=$(python3 -c 'import json, os; print(" ".join(json.loads(os.environ.get("MERGE_CHAIN") or "{}").get(os.environ["BASE"], [])))')
-          if [ -z "$nexts" ]; then
-            echo "No branches after $BASE in MERGE_CHAIN."
-            exit 0
-          fi
-
-          links=""
-          for next in $nexts; do
-            branch="mergeup/$BASE-into-$next"
-
-            existing=$(gh pr list -R "$GITHUB_REPOSITORY" --head "$branch" --state open --json url -q '.[0].url')
-            if [ -n "$existing" ]; then
-              links="$links
-          - \`$BASE\` into \`$next\`: $existing (already open)"
-              continue
-            fi
-
-            # Start from the live public version of the next branch.
-            git fetch -q "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" \
-              "+refs/heads/$next:refs/remotes/public/$next"
-            git switch -q -C "$branch" "public/$next"
-
-            if git merge --no-ff -m "Merge branch '$BASE' into $next" "$BASE"; then
-              state="clean"
-            else
-              files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
-              git merge --abort
-              state="conflict"
-            fi
-
-            # Push the branch to the mirror. If GitHub refuses the merge commit
-            # (it does when the merge changes workflow files, which this token
-            # can't push), fall back to the plain next-branch commit and let the
-            # developer do the merge.
-            mirror="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-            if ! git push -q "$mirror" "HEAD:refs/heads/$branch"; then
-              git push -q "$mirror" "public/$next:refs/heads/$branch"
-              state="manual"
-            fi
-
-            case "$state" in
-              clean)
-                body="Merge-up after #$PR shipped to \`$BASE\` with \`ship-only\`.
-
-          The merge was clean, so this PR already contains it. Add \`ship\` to land it on \`$next\` and continue the merge-up from there."
-                ;;
-              conflict)
-                body="Merge-up after #$PR shipped to \`$BASE\` with \`ship-only\`.
-
-          Merging \`$BASE\` into \`$next\` conflicts in:
-          $files
-
-          To finish it:
-          1. Check out \`$branch\`.
-          2. Merge \`origin/$BASE\` into it and resolve the conflicts.
-          3. Push, then add \`ship\` to this PR. It lands on \`$next\` and continues the merge-up from there."
-                ;;
-              manual)
-                body="Merge-up after #$PR shipped to \`$BASE\` with \`ship-only\`.
-
-          The bot couldn't push the merge itself (it changes workflow files). To finish it:
-          1. Check out \`$branch\`.
-          2. Merge \`origin/$BASE\` into it (resolve any conflicts).
-          3. Push, then add \`ship\` to this PR."
-                ;;
-            esac
-
-            url=$(gh pr create -R "$GITHUB_REPOSITORY" -B "$next" -H "$branch" \
-              -t "- Merge $BASE into $next" -b "$body")
-            links="$links
-          - \`$BASE\` into \`$next\`: $url ($state)"
-          done
-
-          {
-            echo "MERGEUP_LINKS<<EOF"
-            echo "$links"
-            echo "EOF"
-          } >> "$GITHUB_ENV"
-
       - name: Close the PR
         run: |
-          if [ -n "$MERGEUP_LINKS" ]; then
-            mergeups="Merge-up PRs opened for the next branches:
-          $MERGEUP_LINKS"
-          fi
-
           if [ "$REACHED_DEVELOP" = "true" ]; then
             next="AppVeyor will build \`develop\`. When it passes, this PR's branch is deleted. If it fails, you'll get a comment here with an analysis, and the branch is kept."
           else
@@ -509,8 +411,6 @@ jobs:
           gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
             -c "Shipped to public by \`$ACTOR\` ($LABEL):
           $SHIPPED
-
-          $mergeups
 
           $next
 
