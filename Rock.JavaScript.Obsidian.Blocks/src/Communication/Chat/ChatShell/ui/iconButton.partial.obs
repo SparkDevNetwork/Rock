@@ -11,7 +11,7 @@
             @focus="onFocus"
             @blur="onBlur"
             @click="onClick">
-        <Icon :name="icon" />
+        <Icon :name="icon" :size="iconSize" />
     </button>
 
     <div v-if="isTipShown"
@@ -84,6 +84,12 @@
         icon: {
             type: String as PropType<string>,
             required: true
+        },
+
+        /** The icon's drawn size; a small button, such as a section's plus, takes the smaller icon. */
+        iconSize: {
+            type: String as PropType<"md" | "sm" | "xs">,
+            default: "md"
         },
 
         /** What the button does, read by a screen reader and shown as its tooltip. The chrome has no words of its own, so this is required. */

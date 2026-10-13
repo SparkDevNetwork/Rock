@@ -24,6 +24,9 @@
                 <ChannelSidebar :rows="shell.channels.rows"
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"
+                                :organizationName="organizationName"
+                                :layout="layout"
+                                :isPhone="isPhone"
                                 @select="onSelect"
                                 @newMessage="isPickerShown = true" />
             </div>
@@ -230,6 +233,7 @@
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
+    import { joinNames } from "./ChatShell/stores/channelStore.partial";
     import { SidebarRow } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
 
@@ -564,19 +568,6 @@
     /** The person's name as the chat shows it, from the session Rock opened. */
     function fullName(session: ChatShellSessionBag | null | undefined): string {
         return [session?.personNickName, session?.personLastName].filter(part => !!part).join(" ");
-    }
-
-    /** Names as a list reads them, "A and B" or "A, B and C", with any the list left out as "and 2 more". */
-    function joinNames(names: string[], unnamed: number): string {
-        if (unnamed > 0) {
-            return `${names.join(", ")} and ${unnamed} more`;
-        }
-
-        if (names.length <= 1) {
-            return names[0] ?? "";
-        }
-
-        return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
     }
 
     /** How long a pane slides: none for a move the person did not make, or when they ask for reduced motion. */

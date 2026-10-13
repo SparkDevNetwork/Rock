@@ -1,71 +1,555 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <nav class="chat-sidebar" data-testid="channel-sidebar">
-        <button v-if="isNewMessageShown"
-                type="button"
-                class="btn btn-default btn-sm chat-sidebar-new"
-                data-testid="new-message"
-                @click="emit('newMessage')">
-            New message
-        </button>
-        <button v-for="row in rows"
-                :key="row.channel_id"
-                type="button"
-                class="chat-sidebar-row"
-                :class="{ 'is-active': row.channel_id === activeChannelId, 'is-unread': row.is_unread }"
-                data-testid="channel-row"
-                :data-channel-id="row.channel_id"
-                :data-unread="row.is_unread ? 'true' : 'false'"
-                @click="emit('select', row.channel_id)">
-            <span class="chat-sidebar-name">{{ nameOf(row) }}</span>
-            <span v-if="row.mention_count > 0" class="badge badge-danger chat-sidebar-mentions">@{{ row.mention_count }}</span>
-        </button>
-        <div v-if="rows.length === 0" class="chat-sidebar-empty">No channels yet.</div>
-    </nav>
+    <div class="chat-side" :class="{ 'is-phone': isPhone, 'is-community': layout === 'community' }" data-testid="channel-sidebar">
+        <div class="chat-side-top" data-testid="sidebar-top">
+            <span class="chat-org-mark" data-testid="sidebar-org-mark" aria-hidden="true">{{ organizationInitial }}</span>
+            <span class="chat-org-name" data-testid="sidebar-org-name">{{ organizationName }}</span>
+            <IconButton v-if="isNewMessageShown"
+                        class="chat-side-new"
+                        icon="compose"
+                        label="New message"
+                        data-testid="new-message"
+                        @click="emit('newMessage')" />
+        </div>
+
+        <label class="chat-side-search">
+            <Icon name="search" size="sm" />
+            <input v-model="query"
+                   type="text"
+                   placeholder="Find a conversation"
+                   aria-label="Find a conversation"
+                   autocomplete="off"
+                   data-testid="sidebar-search" />
+        </label>
+
+        <nav class="chat-side-list" aria-label="Conversations">
+            <div v-if="rows.length === 0" class="chat-side-empty" data-testid="sidebar-empty">
+                <span class="chat-side-empty-ic"><Icon name="message" /></span>
+                <b>No conversations yet</b>
+                <span>Message someone from your groups, or browse channels to join.</span>
+                <div v-if="isNewMessageShown" class="chat-side-empty-actions">
+                    <button type="button" class="chat-side-empty-btn" data-testid="empty-new-message" @click="emit('newMessage')">New message</button>
+                </div>
+            </div>
+
+            <template v-else>
+                <div v-for="section in sections"
+                     :key="section.key"
+                     data-testid="sidebar-section"
+                     :data-section="section.key">
+                    <div class="chat-sec">
+                        <h3 data-testid="section-heading">{{ section.title }}</h3>
+                        <IconButton v-if="section.key === 'dms' && isNewMessageShown"
+                                    class="chat-sec-btn"
+                                    icon="plus"
+                                    iconSize="sm"
+                                    label="New message"
+                                    data-testid="section-new-message"
+                                    @click="emit('newMessage')" />
+                    </div>
+
+                    <button v-for="row in section.rows"
+                            :key="row.channel_id"
+                            type="button"
+                            class="chat-row"
+                            :class="rowClasses(row)"
+                            data-testid="channel-row"
+                            :data-channel-id="row.channel_id"
+                            :data-layout="layout"
+                            :data-unread="isUnread(row) ? 'true' : 'false'"
+                            :data-muted="isMuted(row) ? 'true' : 'false'"
+                            :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
+                            :aria-current="isActive(row) ? 'true' : undefined"
+                            @click="emit('select', row.channel_id)"
+                            @animationend="onFlashEnd(row.channel_id)">
+                        <template v-if="layout === 'community'">
+                            <span class="chat-cs-slot" aria-hidden="true">
+                                <Icon v-if="kindOf(row) === 'channel'" :name="row.is_public ? 'hash' : 'lock'" size="sm" />
+                                <Avatar v-else-if="kindOf(row) === 'person'" :people="facesOf(row)" :size="20" />
+                                <span v-else-if="row.dm_names?.length" class="chat-cs-n">{{ row.dm_other_count }}</span>
+                                <Icon v-else name="users" size="sm" />
+                            </span>
+                            <span class="chat-row-name" data-testid="row-name">{{ nameOf(row) }}</span>
+                            <Icon v-if="isMuted(row)" name="bell-off" class="chat-row-mute" data-testid="row-muted-icon" />
+                        </template>
+
+                        <template v-else>
+                            <span v-if="kindOf(row) === 'channel'" class="chat-row-ic" aria-hidden="true">
+                                <Icon :name="row.is_public ? 'hash' : 'lock'" />
+                            </span>
+                            <span v-else class="chat-row-face" aria-hidden="true">
+                                <Avatar :people="facesOf(row)" :size="kindOf(row) === 'person' ? 36 : 22" />
+                            </span>
+                            <span class="chat-row-main">
+                                <span class="chat-row-top">
+                                    <span class="chat-row-name" data-testid="row-name">{{ nameOf(row) }}</span>
+                                    <Icon v-if="isMuted(row)" name="bell-off" class="chat-row-mute" data-testid="row-muted-icon" />
+                                    <span class="chat-row-time" data-testid="row-time">{{ timeOf(row) }}</span>
+                                </span>
+                                <span class="chat-row-sub">
+                                    <span class="chat-row-prev" data-testid="row-preview">{{ previewOf(row) }}</span>
+                                    <span class="chat-row-end">
+                                        <span v-if="mentionsOf(row) > 0" class="chat-badge" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
+                                            <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
+                                        </span>
+                                        <span v-else-if="isDotShown(row)" class="chat-dot" data-testid="row-dot" aria-hidden="true"></span>
+                                    </span>
+                                </span>
+                            </span>
+                        </template>
+
+                        <span v-if="layout === 'community'" class="chat-row-end">
+                            <span v-if="mentionsOf(row) > 0" class="chat-badge" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
+                                <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
+                            </span>
+                            <span v-else-if="isDotShown(row)" class="chat-dot" data-testid="row-dot" aria-hidden="true"></span>
+                        </span>
+
+                        <span class="chat-sr-only" data-testid="row-label-suffix">{{ labelSuffixOf(row) }}</span>
+                    </button>
+                </div>
+            </template>
+        </nav>
+    </div>
 </template>
 
 <style scoped>
-.chat-sidebar {
+/* The sidebar column, ported from the design: the church's line, the search, then the rooms. */
+.chat-side {
     display: flex;
-    flex: 0 0 240px;
     flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--chat-sidebar);
+    border-right: 1px solid var(--chat-line);
+}
+
+/* On a phone the list fills the frame, so there is nothing beside it to rule off. */
+.chat-side.is-phone {
+    border-right: 0;
+}
+
+/* As tall as the conversation's header, so the two columns' tops line up. */
+.chat-side-top {
+    display: flex;
+    flex: none;
+    gap: 10px;
+    align-items: center;
+    min-height: 64px;
+    padding: 0 14px 0 16px;
+}
+
+.chat-org-mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+    border-radius: var(--chat-r-org);
+}
+
+.chat-org-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The New message button wears a ring, so it reads as the top's one action. */
+.chat-side-top :deep(.chat-side-new) {
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+}
+
+/* The ring keeps its fill on hover, as the design's ring rule outranks the plain button's. */
+.chat-side-top :deep(.chat-side-new.chat-icon-btn:hover) {
+    background: var(--chat-surface);
+    border-color: var(--chat-line-strong);
+}
+
+.chat-side-search {
+    display: flex;
+    flex: none;
+    gap: 8px;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    margin: 0 14px 8px;
+    /* Rock's theme bolds a label, and the field inside takes its face from this one. */
+    font-weight: 400;
+    color: var(--chat-muted);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-side-search:focus-within {
+    border-color: var(--chat-focus-line);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+/* The box shows focus, so the field inside it draws no outline of its own. */
+.chat-side-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.chat-side-search input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+.chat-side-list {
+    flex: 1;
+    min-height: 0;
+    padding: 4px 8px 12px;
     overflow-y: auto;
-    border-right: 1px solid var(--chat-line-strong);
+    scrollbar-width: thin;
 }
 
-.chat-sidebar-new {
-    margin: 8px 12px;
-}
-
-.chat-sidebar-row {
+.chat-sec {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 14px 8px 4px 10px;
+}
+
+/* Rock's theme styles every heading, so this one states its whole face. */
+/* Community's denser list sits its headings a little closer to the rows above. */
+.chat-side.is-community .chat-sec {
+    padding-top: 12px;
+}
+
+.chat-sec h3 {
+    margin: 0;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: inherit;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+}
+
+.chat-sec :deep(.chat-sec-btn) {
+    width: 26px;
+    height: 26px;
+}
+
+/* A room. Conversational: its icon beside the name and time over the preview and the end mark. */
+.chat-row {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 7px 8px;
+    font: inherit;
+    color: inherit;
     text-align: left;
     background: none;
     border: 0;
+    border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-sidebar-row.is-active {
-    background: var(--chat-sidebar);
+.chat-row:hover {
+    background: var(--chat-hover);
 }
 
-.chat-sidebar-row.is-unread .chat-sidebar-name {
-    font-weight: 700;
+.chat-row[aria-current="true"] {
+    background: var(--chat-brand-wash);
 }
 
-.chat-sidebar-empty {
-    padding: 12px;
+.chat-row-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--chat-icon);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-room-ic);
+}
+
+.chat-row[aria-current="true"] .chat-row-ic {
+    color: var(--chat-brand-ink);
+    border-color: var(--chat-current-line);
+}
+
+/* A person's face, or a group's two, centred in the same 36px a channel's icon box takes. */
+.chat-row-face {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+}
+
+.chat-row-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.chat-row-top {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.chat-row-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 450;
+    color: var(--chat-row-name);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-row-time {
+    flex: none;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
+}
+
+.chat-row-sub {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+}
+
+.chat-row-prev {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* One mark per row, on the preview's line under the time: the mention badge or the dot. */
+.chat-row-end {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 18px;
+    height: 18px;
+}
+
+.chat-row .chat-row-mute {
+    flex: none;
+    align-self: center;
+    width: 13px;
+    height: 13px;
+    color: var(--chat-icon);
+}
+
+.chat-row.is-muted .chat-row-name,
+.chat-row.is-muted .chat-row-prev {
+    color: var(--chat-muted);
+}
+
+/* After the muted rule: a muted room that is unread still reads bold. */
+.chat-row.is-unread .chat-row-name {
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+.chat-row.is-unread:not(.is-muted) .chat-row-prev {
+    color: var(--chat-text-2);
+}
+
+.chat-row.is-mention .chat-row-time {
+    font-weight: 600;
+    color: var(--chat-brand-ink);
+}
+
+/* A room that arrives or moves up glows once in the church color and fades. */
+.chat-row.is-flash {
+    animation: chat-row-flash var(--chat-d-row-flash) var(--chat-ease-state);
+}
+
+@keyframes chat-row-flash {
+    0% {
+        background: var(--chat-flash);
+    }
+
+    100% {
+        background: transparent;
+    }
+}
+
+/* Community: one dense line per room, a 20px mark before its name. */
+.chat-row.is-cs {
+    min-height: 32px;
+    padding: 5px 10px;
+    border-radius: var(--chat-r-md);
+}
+
+.is-phone .chat-row.is-cs {
+    min-height: 44px;
+}
+
+.chat-cs-slot {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: var(--chat-icon);
+}
+
+.chat-cs-slot .chat-ic {
+    width: 16px;
+    height: 16px;
+}
+
+.chat-cs-n {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-text-2);
+    background: var(--chat-line-strong);
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-row.is-cs .chat-row-name {
+    font-size: 14px;
+}
+
+.chat-row.is-cs .chat-row-end {
+    min-width: 0;
+}
+
+.chat-row.is-cs.is-unread .chat-cs-slot {
+    color: var(--chat-text);
+}
+
+.chat-row.is-cs[aria-current="true"] .chat-cs-slot {
+    color: var(--chat-brand-ink);
+}
+
+.chat-row.is-cs[aria-current="true"] .chat-row-name {
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-row.is-cs.is-out .chat-row-name {
+    color: var(--chat-muted);
+}
+
+/* A new person with nothing to list yet. */
+.chat-side-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    padding: 18px 20px 4px;
+    text-align: center;
+}
+
+.chat-side-empty-ic {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--chat-muted);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-empty);
+}
+
+.chat-side-empty-ic .chat-ic {
+    width: 26px;
+    height: 26px;
+}
+
+.chat-side-empty b {
+    font-size: 15px;
+}
+
+.chat-side-empty > span:not(.chat-side-empty-ic) {
+    max-width: 34ch;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-side-empty-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.chat-side-empty-btn {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    height: 30px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-side-empty-btn:hover {
+    box-shadow: inset 0 0 0 999px var(--chat-press);
 }
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
+    import { roomTitle } from "../stores/channelStore.partial";
     import { SidebarRow } from "../types.partial";
 
-    defineProps({
+    // #region Types
+
+    /** How a room is drawn: a channel's icon, one person's face, or a group's faces or head count. */
+    type RoomKind = "channel" | "person" | "group";
+
+    /** One of the sidebar's sections and the rooms under it. */
+    type Section = {
+        key: "starred" | "channels" | "dms";
+        title: string;
+        rows: SidebarRow[];
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
         rows: {
             type: Array as PropType<SidebarRow[]>,
             required: true
@@ -79,6 +563,24 @@
         isNewMessageShown: {
             type: Boolean,
             default: false
+        },
+
+        /** The church's name, drawn at the top with its initial in the mark. */
+        organizationName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Conversational rows carry a preview and a time; Community's are one line. */
+        layout: {
+            type: String as PropType<FeedLayout>,
+            default: "conversational"
+        },
+
+        /** Whether the block is drawn one pane at a time, as on a phone. */
+        isPhone: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -87,18 +589,190 @@
         (e: "newMessage"): void
     }>();
 
-    // #region Functions
+    // #region Values
 
-    /** A channel's name, or for an unnamed direct message the people in it. */
-    function nameOf(row: SidebarRow): string {
-        if (row.name) {
-            return row.name;
+    /** What "Find a conversation" holds. */
+    const query = ref("");
+
+    /** The rooms glowing because they just arrived or moved up. */
+    const flashIds = ref(new Set<string>());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The first letter of the church's name, kept whole outside the basic plane. */
+    const organizationInitial = computed((): string => (Array.from(props.organizationName.trim())[0] ?? "").toUpperCase());
+
+    /**
+     * The rooms by section, filtered by the search over the names they are drawn under. Starred
+     * shows only while it holds a room; a channel the person has not joined follows the ones they
+     * have, as the design lists a pinned room after the person's own.
+     */
+    const sections = computed((): Section[] => {
+        const needle = query.value.trim().toLowerCase();
+        const shown = needle ? props.rows.filter(row => nameOf(row).toLowerCase().includes(needle)) : props.rows;
+        const channels = shown.filter(row => !row.is_favorite && row.channel_type !== "dm");
+
+        const list: Section[] = [];
+        const starred = shown.filter(row => row.is_favorite);
+        if (starred.length > 0) {
+            list.push({ key: "starred", title: "Starred", rows: starred });
         }
 
-        const names = (row.dm_names ?? []).join(", ");
-        const others = row.dm_other_count ?? 0;
-        return others > 0 ? `${names} and ${others} more` : names;
+        list.push({ key: "channels", title: "Channels", rows: [...channels.filter(row => row.is_member), ...channels.filter(row => !row.is_member)] });
+        list.push({ key: "dms", title: "Direct messages", rows: shown.filter(row => !row.is_favorite && row.channel_type === "dm") });
+
+        return list;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onFlashEnd(channelId: string): void {
+        if (flashIds.value.has(channelId)) {
+            const next = new Set(flashIds.value);
+            next.delete(channelId);
+            flashIds.value = next;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function nameOf(row: SidebarRow): string {
+        return roomTitle(row);
+    }
+
+    /**
+     * Only a group can be given a name, so a named direct message is a group even though the
+     * platform, which names a room by its people only when it has no name, sends no people for it.
+     */
+    function kindOf(row: SidebarRow): RoomKind {
+        if (row.channel_type !== "dm") {
+            return "channel";
+        }
+
+        return !row.name && (row.dm_other_count ?? 1) <= 1 ? "person" : "group";
+    }
+
+    /**
+     * The faces a direct message draws: the other person, or a group's first two. A named group
+     * comes without its people, so it draws one face with the people icon in it.
+     */
+    function facesOf(row: SidebarRow): AvatarPerson[] {
+        const names = row.dm_names ?? [];
+        if (kindOf(row) === "person") {
+            return [{ name: names[0] ?? nameOf(row) }];
+        }
+
+        return names.length > 0 ? names.slice(0, 2).map(name => ({ name })) : [{ name: "" }];
+    }
+
+    function isActive(row: SidebarRow): boolean {
+        return row.channel_id === props.activeChannelId;
+    }
+
+    /**
+     * The room on screen is being read, so it never shows as unread; nor does a room the person
+     * has not joined, which has no reading of theirs to be behind.
+     */
+    function isUnread(row: SidebarRow): boolean {
+        return row.is_unread && row.is_member && !isActive(row);
+    }
+
+    function isMuted(row: SidebarRow): boolean {
+        return row.notify_mode === "silent";
+    }
+
+    /**
+     * The mentions a row counts. Only a channel counts them: a direct message is addressed to the
+     * person, so its bold and its dot already say it.
+     */
+    function mentionsOf(row: SidebarRow): number {
+        return kindOf(row) !== "channel" || isActive(row) ? 0 : row.mention_count;
+    }
+
+    /** The dot marks an unread direct message only; an unread channel is bold alone. */
+    function isDotShown(row: SidebarRow): boolean {
+        return kindOf(row) !== "channel" && isUnread(row) && !isMuted(row);
+    }
+
+    function rowClasses(row: SidebarRow): Record<string, boolean> {
+        return {
+            "is-cs": props.layout === "community",
+            "is-unread": isUnread(row),
+            "is-muted": isMuted(row),
+            "is-mention": mentionsOf(row) > 0,
+            "is-out": !row.is_member,
+            "is-flash": flashIds.value.has(row.channel_id)
+        };
+    }
+
+    /** A count as every count in the chat reads it, "99+" above 99. */
+    function countText(count: number): string {
+        return count > 99 ? "99+" : String(count);
+    }
+
+    /** Today's last message by its time, an older one by its day. */
+    function timeOf(row: SidebarRow): string {
+        if (!row.last_message_at) {
+            return "";
+        }
+
+        const at = new Date(row.last_message_at);
+        const day = dayLabel(at, new Date());
+        return day === "Today" ? timeLabel(at) : day;
+    }
+
+    /**
+     * The last message's text, after the sender's first name in a room of more than two people,
+     * where the reader cannot otherwise tell who wrote it.
+     */
+    function previewOf(row: SidebarRow): string {
+        if (row.last_message_id === null) {
+            return row.is_member ? "No messages yet" : "Preview this channel";
+        }
+
+        const text = row.last_message_preview ?? "";
+        const sender = row.last_sender_nick_name ?? row.last_sender_last_name;
+        const isNamed = kindOf(row) !== "person" && row.last_message_type !== "system" && !!sender;
+        return isNamed ? `${sender}: ${text}` : text;
+    }
+
+    /** What a screen reader hears after the room's name, for the marks it cannot see. */
+    function labelSuffixOf(row: SidebarRow): string {
+        const mentions = mentionsOf(row);
+        const parts = [
+            row.is_member ? "" : "not joined",
+            mentions > 0 ? `${mentions} mention${mentions === 1 ? "" : "s"}` : "",
+            isUnread(row) ? "unread" : "",
+            isMuted(row) ? "muted" : ""
+        ].filter(part => part !== "");
+
+        return parts.map(part => `, ${part}`).join("");
     }
 
     // #endregion Functions
+
+    // #region Watchers
+
+    // A room that is new to the list, or that moved up it as a new message does, glows once. The
+    // first list a page loads glows nothing, and a room moving down because another passed it is
+    // not news.
+    watch(() => props.rows.map(row => row.channel_id), (ids, previous) => {
+        if (!previous || previous.length === 0) {
+            return;
+        }
+
+        const before = new Map(previous.map((id, index) => [id, index]));
+        const moved = ids.filter((id, index) => !before.has(id) || index < before.get(id)!);
+        if (moved.length > 0) {
+            flashIds.value = new Set([...flashIds.value, ...moved]);
+        }
+    });
+
+    // #endregion Watchers
 </script>

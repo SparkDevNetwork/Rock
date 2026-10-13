@@ -128,3 +128,42 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         }
     });
 }
+
+/**
+ * People's names as one title: "Anna", "Anna and Ben", "Anna, Ben and Cara", or "Anna, Ben, Cara,
+ * Dee and 2 more" when the platform names only the first few of a group.
+ *
+ * @param names The names the platform sent.
+ * @param unnamed How many more people there are than names.
+ *
+ * @returns The title.
+ */
+export function joinNames(names: string[], unnamed: number): string {
+    if (unnamed > 0) {
+        return `${names.join(", ")} and ${unnamed} more`;
+    }
+
+    if (names.length <= 1) {
+        return names[0] ?? "";
+    }
+
+    return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+/**
+ * A room's title as the sidebar and the header draw it: its own name, or for a direct message
+ * without one the people in it. The platform's count of others includes the people it names, so
+ * only the rest are "more".
+ *
+ * @param row The sidebar row.
+ *
+ * @returns The title.
+ */
+export function roomTitle(row: SidebarRow): string {
+    if (row.name) {
+        return row.name;
+    }
+
+    const names = row.dm_names ?? [];
+    return joinNames(names, (row.dm_other_count ?? names.length) - names.length);
+}

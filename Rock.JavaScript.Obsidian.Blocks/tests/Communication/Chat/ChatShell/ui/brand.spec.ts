@@ -133,7 +133,9 @@ describe("the tokens drawn from the church color", () => {
             "announcement-pill": "rgba(255, 121, 29, 0.13)",
             "announcement-ring": "#EFB999",
             "row-announcement": "#FDF5F0",
-            "badge-quiet": "#F9E6DD"
+            "badge-quiet": "#F9E6DD",
+            "current-line": "#ECC4AE",
+            "focus-line": "#F3A97A"
         },
         dark: {
             "brand-fill": "#FF791D",
@@ -150,7 +152,9 @@ describe("the tokens drawn from the church color", () => {
             "announcement-pill": "rgba(255, 121, 29, 0.13)",
             "announcement-ring": "#7A4828",
             "row-announcement": "#1C1717",
-            "badge-quiet": "#2C1B12"
+            "badge-quiet": "#2C1B12",
+            "current-line": "#64402A",
+            "focus-line": "#9C5425"
         }
     };
 
@@ -162,7 +166,8 @@ describe("the tokens drawn from the church color", () => {
     // chip at 11%, 18% on hover and 16% inside the person's own bubble, and the announcement pill
     // at 13%, each as alpha over whatever is under it; the announcement bubble's ring 40% over the
     // line (#E4E4EC, #22272F); Community's announcement row 6% over the surface (#FDFDFD,
-    // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10).
+    // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10); the open room's
+    // icon box 30% and the focused search box 55% over the line.
     const forest = {
         light: {
             "brand-fill": "#1D8350",
@@ -179,7 +184,9 @@ describe("the tokens drawn from the church color", () => {
             "announcement-pill": "rgba(30, 138, 84, 0.13)",
             "announcement-ring": "#95C0AF",
             "row-announcement": "#F0F6F3",
-            "badge-quiet": "#D9E9E4"
+            "badge-quiet": "#D9E9E4",
+            "current-line": "#A9C9BE",
+            "focus-line": "#77B398"
         },
         dark: {
             "brand-fill": "#1D8350",
@@ -196,7 +203,9 @@ describe("the tokens drawn from the church color", () => {
             "announcement-pill": "rgba(30, 138, 84, 0.13)",
             "announcement-ring": "#204F3E",
             "row-announcement": "#0E181B",
-            "badge-quiet": "#0D1E1A"
+            "badge-quiet": "#0D1E1A",
+            "current-line": "#21453A",
+            "focus-line": "#205D43"
         }
     };
 

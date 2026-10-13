@@ -66,6 +66,12 @@
     --chat-announcement-ring: var(--chat-announcement-ring-light, #EFB999);
     --chat-row-announcement: var(--chat-row-announcement-light, #FDF5F0);
     --chat-badge-quiet: var(--chat-badge-quiet-light, #F9E6DD);
+    /* The sidebar: the open room's icon box and the focused search box, in the church color. */
+    --chat-current-line: var(--chat-current-line-light, #ECC4AE);
+    --chat-focus-line: var(--chat-focus-line-light, #F3A97A);
+    /* A read room's name, stepped back from the second text color toward muted (78 to 22), so a
+       bold unread name stands out beside it. */
+    --chat-row-name: #464B58;
     --chat-bubble-hover: rgba(13, 17, 23, .07);
     --chat-on-info: #ffffff;
     --chat-row-mention: #FBF2E6;
@@ -212,6 +218,9 @@
     --chat-announcement-ring: var(--chat-announcement-ring-dark, #7A4828);
     --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
     --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
+    --chat-current-line: var(--chat-current-line-dark, #64402A);
+    --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
+    --chat-row-name: #CCCCD9;
     --chat-intro-k: 13%;
     --chat-surface: #0D1117;
     --chat-sidebar: #0a0c10;
@@ -272,6 +281,9 @@
         --chat-announcement-ring: var(--chat-announcement-ring-dark, #7A4828);
         --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
         --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
+        --chat-current-line: var(--chat-current-line-dark, #64402A);
+        --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
+        --chat-row-name: #CCCCD9;
         --chat-intro-k: 13%;
         --chat-surface: #0D1117;
         --chat-sidebar: #0a0c10;
@@ -437,21 +449,36 @@
     background: var(--chat-announcement-pill);
 }
 
-/* A mention count. */
+/* A mention count: the mentions icon and the number, springing in as it appears. */
 .chat-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 3px;
     min-width: 20px;
     height: 20px;
     padding: 0 7px 0 5px;
     font-size: 11px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
     color: var(--chat-on-brand);
     background: var(--chat-brand-fill);
     border-radius: var(--chat-r-full);
+    animation: chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring);
+}
+
+/* Under the root as well, so it outranks the icon's own scoped size. */
+.chat-shell .chat-badge .chat-ic {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2.2;
+}
+
+/* A muted room's count, there but not calling for attention. */
+.chat-badge.is-quiet {
+    color: var(--chat-brand-ink);
+    background: var(--chat-badge-quiet);
 }
 
 /* An unread or new dot. */
@@ -462,6 +489,28 @@
     height: 8px;
     background: var(--chat-brand-fill);
     border-radius: 50%;
+    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-state);
+}
+
+@keyframes chat-badge-in {
+    from {
+        opacity: 0;
+        transform: scale(.5);
+    }
+}
+
+@keyframes chat-crossfade {
+    from {
+        opacity: 0;
+    }
+}
+
+/* Reduced motion: the badge fades in rather than springing. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-badge {
+        animation-name: chat-crossfade;
+        animation-duration: var(--chat-t-fast);
+    }
 }
 
 /* A busy spinner, in the color of the text around it. */

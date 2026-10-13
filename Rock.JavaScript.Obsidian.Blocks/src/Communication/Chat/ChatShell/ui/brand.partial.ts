@@ -22,7 +22,8 @@
 
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
 export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "flash" | "own-hairline"
-    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet", string>;
+    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "row-announcement" | "badge-quiet"
+    | "current-line" | "focus-line", string>;
 
 /** Rock's own orange, used when the page states no primary color. */
 const rockOrange = "#FF791D";
@@ -198,6 +199,13 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
         "badge-quiet": toHex(mixSrgb(church, parseColor(sidebar)!, 0.14))
     });
 
+    // The sidebar's lines in the church color: the open room's icon box at 30% over the line, and
+    // the search box's border while it has focus at 55%.
+    const lines = (line: string): Pick<BrandTokenSet, "current-line" | "focus-line"> => ({
+        "current-line": toHex(mixSrgb(church, parseColor(line)!, 0.30)),
+        "focus-line": toHex(mixSrgb(church, parseColor(line)!, 0.55))
+    });
+
     return {
         light: {
             "brand-fill": fill,
@@ -208,7 +216,8 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "brand-ring": ring,
             "flash": withAlpha(church, 0.20),
             "own-hairline": "transparent",
-            ...row(lightSurface, lightLine, lightSidebar)
+            ...row(lightSurface, lightLine, lightSidebar),
+            ...lines(lightLine)
         },
         dark: {
             "brand-fill": fill,
@@ -219,7 +228,8 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "brand-ring": ring,
             "flash": withAlpha(church, 0.26),
             "own-hairline": withAlpha(church, 0.24),
-            ...row(darkSurface, darkLine, darkSidebar)
+            ...row(darkSurface, darkLine, darkSidebar),
+            ...lines(darkLine)
         }
     };
 }
