@@ -23,6 +23,8 @@
 // The shell behind the block is replaced with a plain reactive stand-in, so the frame is tested
 // without a platform. jsdom lays nothing out, so the block's width comes from a ResizeObserver the
 // test reports through.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import { SidebarRow } from "../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -127,10 +129,45 @@ function fakeShell(): Record<string, unknown> {
         isChannelOnScreen: () => false,
         mentionBadge: () => 0,
         loadOlder: jest.fn(),
-        dismissError: jest.fn()
+        dismissError: jest.fn(),
+        sendReply: jest.fn(),
+        threads: fakeThreads()
     };
 
     return mockShell;
+}
+
+/**
+ * The threads the shell holds, as useThreads' createThreads answers them, reduced to state the
+ * block reads and calls it makes: opening the list names the conversation and its tab.
+ */
+function fakeThreads(): Record<string, unknown> {
+    const state = reactive({
+        list: { tab: "channel", channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isRefreshing: false, error: null, busyRootId: null, rowError: null },
+        thread: null
+    });
+
+    return {
+        state,
+        openList: jest.fn(async (channelId: string, tab?: string) => {
+            state.list.channelId = channelId;
+            state.list.tab = tab ?? "channel";
+        }),
+        switchTab: jest.fn(async (tab: string) => {
+            state.list.tab = tab;
+        }),
+        refresh: jest.fn(async () => undefined),
+        loadMore: jest.fn(async () => undefined),
+        closeList: jest.fn(),
+        follow: jest.fn(async () => true),
+        openThread: jest.fn(async () => undefined),
+        loadOlderReplies: jest.fn(async () => undefined),
+        seen: jest.fn(),
+        closeThread: jest.fn(async () => undefined),
+        attach: jest.fn(() => () => undefined),
+        applyEvent: jest.fn(),
+        stop: jest.fn()
+    };
 }
 
 jest.mock("@Obsidian/Utility/block", () => ({
@@ -555,5 +592,103 @@ describe("the look, by the open conversation's kind", () => {
         expect(lookOf(w)).toBe("conversational");
         expect(isFeedCommunity(w)).toBe(false);
         expect(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).attributes("data-layout")).toBe("conversational");
+    });
+});
+
+describe("the panel column", () => {
+    // The header's Threads entry opens the threads list in the right-hand panel: a third column
+    // on a wide block, opening from 0 to 392px, and a third pane on a phone, left by its back
+    // chevron. The frame marks the column open with data-panel-open, which its styles widen.
+    // The shell holds the threads as shell.threads, the list opened with openList(channelId, tab).
+
+    /** The frame's own style rules, selector and body, read from the block's source. */
+    function frameRules(): Array<{ selector: string, body: string }> {
+        const source = readFileSync(join(__dirname, "../../../../src/Communication/Chat/chatShell.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] }));
+    }
+
+    function panelOpen(w: VueWrapper): string | undefined {
+        return w.get("[data-testid='chat-frame']").attributes("data-panel-open");
+    }
+
+    test("is 0px closed and 392px open in the frame's styles", () => {
+        const rules = frameRules();
+
+        expect(rules.some(r => /(^|,)\s*\.chat-frame\s*$/.test(r.selector) && /grid-template-columns:\s*296px minmax\(0, 1fr\) 0px/.test(r.body))).toBe(true);
+        expect(rules.some(r => r.selector.includes("data-panel-open=\"true\"") && /grid-template-columns:\s*296px minmax\(0, 1fr\) 392px/.test(r.body))).toBe(true);
+    });
+
+    test("opens from the header's Threads button on a wide block, for the open conversation", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        const threadsButton = w.get("[data-testid='header-threads']");
+        expect(threadsButton.attributes("aria-label")).toBe("Threads");
+        expect(threadsButton.attributes("aria-expanded")).toBe("false");
+        expect(panelOpen(w)).toBe("false");
+        expect(isPaneHidden(w, "frame-panel")).toBe(true);
+
+        await threadsButton.trigger("click");
+        await settle();
+
+        expect(panelOpen(w)).toBe("true");
+        expect(isPaneHidden(w, "frame-panel")).toBe(false);
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(w.get("[data-testid='header-threads']").attributes("aria-expanded")).toBe("true");
+        const openList = (mockShell!.threads as { openList: jest.Mock }).openList;
+        expect(openList).toHaveBeenCalledTimes(1);
+        expect(openList.mock.calls[0][0]).toBe(team.channel_id);
+    });
+
+    test("closes to nothing from the panel's X", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+
+        expect(panelOpen(w)).toBe("false");
+        expect(isPaneHidden(w, "frame-panel")).toBe(true);
+        expect(w.get("[data-testid='header-threads']").attributes("aria-expanded")).toBe("false");
+    });
+
+    test("on a phone, Threads is in the header's overflow menu, not a button of its own", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        expect(w.find("[data-testid='header-threads']").exists()).toBe(false);
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
+        expect(items.map(i => i.textContent?.trim())).toContain("Threads");
+    });
+
+    test("on a phone, the panel is the third pane, left by its back chevron", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Threads")!.click();
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(true);
+        expect(isPaneHidden(w, "frame-main")).toBe(true);
+        expect(isPaneHidden(w, "frame-panel")).toBe(false);
+        expect(w.find("[data-testid='panel-close']").exists()).toBe(false);
+
+        const back = w.get("[data-testid='panel-back']");
+        expect(back.attributes("aria-label")).toBe("Back");
+        await back.trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+        expect(isPaneHidden(w, "frame-panel")).toBe(true);
     });
 });

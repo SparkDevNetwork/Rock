@@ -453,3 +453,104 @@ describe("the composer's text after a send", () => {
         expect(textAfterSend("hello", false)).toBe("");
     });
 });
+
+describe("a reply in a thread", () => {
+    // A reply names its root and whether it is also sent to the conversation. The sender passes
+    // both to the platform on every try, beside the row's key, as the fourth argument of its send:
+    // send(channelId, body, key, { parentId, isShownInChannel }), which the shell turns into
+    // chat_send_message's p_parent_id and p_shown_in_channel. The person asks for a reply with the
+    // same fourth argument: sender.send(channelId, body, attempt?, { parentId, isShownInChannel }).
+    type Reply = { parentId: number, isShownInChannel: boolean };
+    type Sent = { body: string, key: string | undefined, reply: Reply | undefined };
+
+    async function replySetup(answers: SendResult[]): Promise<{
+        sender: ReturnType<typeof createSender>,
+        timelines: ReturnType<typeof createTimelines>,
+        sent: Sent[]
+    }> {
+        const sent: Sent[] = [];
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        const sender = createSender({
+            send: ((_c: string, body: string, key?: string, reply?: Reply) => {
+                sent.push({ body, key, reply });
+                return Promise.resolve(answers.shift() as SendResult);
+            }) as Parameters<typeof createSender>[0]["send"],
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => "5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d"
+        });
+        return { sender, timelines, sent };
+    }
+
+    /** Sends a reply through the sender's fourth argument. */
+    function sendReply(sender: ReturnType<typeof createSender>, body: string, reply: Reply): Promise<boolean> {
+        return (sender.send as (channelId: string, body: string, attempt?: unknown, reply?: Reply) => Promise<boolean>)(channel, body, undefined, reply);
+    }
+
+    test("sends its root and whether it is also sent to the conversation", async () => {
+        const { sender, sent } = await replySetup([
+            { ok: true, id: 60, createdAt: "2026-10-13T10:00:00Z" },
+            { ok: true, id: 61, createdAt: "2026-10-13T10:01:00Z" }
+        ]);
+
+        await sendReply(sender, "count me in", { parentId: 40, isShownInChannel: false });
+        await sendReply(sender, "and me", { parentId: 40, isShownInChannel: true });
+
+        expect(sent.map(s => s.reply)).toEqual([
+            { parentId: 40, isShownInChannel: false },
+            { parentId: 40, isShownInChannel: true }
+        ]);
+    });
+
+    test("a retry keeps the root, the choice and the key", async () => {
+        const { sender, sent } = await replySetup([
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 62, createdAt: "2026-10-13T10:02:00Z" }
+        ]);
+        await sendReply(sender, "count me in", { parentId: 40, isShownInChannel: true });
+
+        expect(await sender.retry("5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d")).toBe(true);
+
+        expect(sent).toEqual([
+            { body: "count me in", key: "5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d", reply: { parentId: 40, isShownInChannel: true } },
+            { body: "count me in", key: "5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d", reply: { parentId: 40, isShownInChannel: true } }
+        ]);
+    });
+
+    test("a failed reply's row names its root, so the thread draws it and the conversation does not", async () => {
+        const { sender } = await replySetup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }]);
+
+        await sendReply(sender, "count me in", { parentId: 40, isShownInChannel: false });
+
+        expect(sender.pending(channel)[0]).toEqual(expect.objectContaining({ status: "failed", parentId: 40, isShownInChannel: false }));
+    });
+
+    test("a confirmed reply shown only in its thread stays out of the conversation's timeline", async () => {
+        const { sender, timelines } = await replySetup([{ ok: true, id: 63, createdAt: "2026-10-13T10:03:00Z" }]);
+
+        await sendReply(sender, "just here", { parentId: 40, isShownInChannel: false });
+
+        expect(timelines.state(channel).messages).toEqual([]);
+        expect(sender.pending(channel)).toEqual([]);
+    });
+
+    test("a confirmed reply also sent to the conversation enters it as a reply, so its label draws", async () => {
+        const { sender, timelines } = await replySetup([{ ok: true, id: 64, createdAt: "2026-10-13T10:04:00Z" }]);
+
+        await sendReply(sender, "everyone", { parentId: 40, isShownInChannel: true });
+
+        const [confirmed] = timelines.state(channel).messages;
+        expect(confirmed.id).toBe(64);
+        expect(confirmed.parent_id).toBe(40);
+        expect(confirmed.shown_in_channel).toBe(true);
+    });
+
+    test("an ordinary message sends no reply", async () => {
+        const { sender, sent } = await replySetup([{ ok: true, id: 65, createdAt: "2026-10-13T10:05:00Z" }]);
+
+        await sender.send(channel, "plain");
+
+        expect(sent[0].reply ?? null).toBeNull();
+    });
+});

@@ -83,7 +83,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     mintGate: { value: string },
     bootstrap: { value: unknown },
     pageDocument: { visibilityState: string },
-    sent: Array<{ channelId: string, body: string }>,
+    sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }>,
     tokenPerson: { value: string | null },
     reloads: { count: number }
 } {
@@ -96,7 +96,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     const joined: string[] = [];
     const removed: string[] = [];
     const stored: Record<string, string> = {};
-    const sent: Array<{ channelId: string, body: string }> = [];
+    const sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }> = [];
     // The person the platform token names; null hands out a token that is not a JWT.
     const tokenPerson: { value: string | null } = { value: null };
     const reloads = { count: 0 };
@@ -167,7 +167,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
                 return fakeResponse(200, { channel_id: null });
             }
             if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
-                sent.push({ channelId: body.p_channel_id, body: body.p_body });
+                sent.push({ channelId: body.p_channel_id, body: body.p_body, args: body });
                 // chat_send_message's answer: a body naming Ada carries her mention piece, as the
                 // platform builds it; a person's send never carries blocks
                 return fakeResponse(200, {
@@ -803,7 +803,7 @@ describe("a direct message's first message", () => {
         await settle();
 
         expect(starts.length).toBe(1);
-        expect(h.sent).toEqual([{ channelId: created, body: "hello" }]);
+        expect(h.sent.map(s => ({ channelId: s.channelId, body: s.body }))).toEqual([{ channelId: created, body: "hello" }]);
         expect(h.shell.state.activeChannelId).toBe(channelB);
     });
 
@@ -898,5 +898,35 @@ describe("the send's answer", () => {
         const confirmed = h.shell.timelines.state(channelA).messages.find(m => m.body === mentionBody);
         expect(confirmed?.pieces).toEqual(mentionPieces);
         expect(confirmed).toHaveProperty("blocks", null);
+    });
+});
+
+describe("a reply in a thread", () => {
+    // The shell sends a reply to the open conversation as shell.sendReply(rootId, body,
+    // isShownInChannel), through the same sender and retry key as any message.
+    type ReplyingShell = { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> };
+
+    test("sends chat_send_message with its root, whether it is also shown in the conversation, and a key", async () => {
+        const h = await started();
+        const shell = h.shell as unknown as ReplyingShell;
+
+        await shell.sendReply(10, "count me in", false);
+        await shell.sendReply(10, "and everyone", true);
+        await settle();
+
+        expect(h.sent.map(s => s.args)).toEqual([
+            expect.objectContaining({ p_channel_id: channelA, p_body: "count me in", p_parent_id: 10, p_shown_in_channel: false, p_client_key: expect.any(String) }),
+            expect.objectContaining({ p_channel_id: channelA, p_body: "and everyone", p_parent_id: 10, p_shown_in_channel: true, p_client_key: expect.any(String) })
+        ]);
+    });
+
+    test("an ordinary send still names no root", async () => {
+        const h = await started();
+
+        await h.shell.send("plain");
+        await settle();
+
+        expect(h.sent[0].args.p_parent_id ?? null).toBeNull();
+        expect(h.sent[0].args.p_shown_in_channel ?? false).toBe(false);
     });
 });

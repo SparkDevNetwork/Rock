@@ -23,6 +23,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
+import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -489,5 +490,39 @@ describe("system lines and block posts", () => {
         expect(card.get("[data-testid='block-text']").text()).toBe("Easter signups are open");
         expect(card.get("[data-testid='block-fallback']").text()).toBe("Vote: a or b");
         expect(wrapper.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
+    });
+});
+
+describe("a reply also sent to the conversation", () => {
+    // Drawn as an ordinary message under a label in the quote label's recipe: the thread icon and
+    // "Replied to a thread", a button that opens the thread at its root, emitted as
+    // openThread(rootId). Marked data-testid="thread-reply-label".
+    function alsoSent(extra: Partial<TimelineMessage> = {}): TimelineMessage {
+        return message({ id: 51, parent_id: 40, shown_in_channel: true, body: "Count me in", ...extra });
+    }
+
+    test.each([["a channel", true], ["a direct message", false]] as const)("draws the label as a button in %s", (_kind, isChannel) => {
+        const wrapper = draw({ message: alsoSent(), isChannel, position: "single" });
+
+        const label = wrapper.get("[data-testid='thread-reply-label']");
+        expect(label.element.tagName).toBe("BUTTON");
+        expect(plain(label.text())).toBe("Replied to a thread");
+        const icons = wrapper.findAllComponents(Icon).filter(icon => label.element.contains(icon.element));
+        expect(icons.map(icon => icon.props("name"))).toContain("thread");
+        expect(wrapper.get("[data-testid='message-body']").text()).toBe("Count me in");
+    });
+
+    test("opens the thread at its root", async () => {
+        const wrapper = draw({ message: alsoSent(), isChannel: true, position: "single" });
+
+        await wrapper.get("[data-testid='thread-reply-label']").trigger("click");
+
+        expect(wrapper.emitted("openThread")).toEqual([[40]]);
+    });
+
+    test("is not drawn on a root", () => {
+        const wrapper = draw({ message: message({ parent_id: null, shown_in_channel: false }), isChannel: true, position: "single" });
+
+        expect(wrapper.find("[data-testid='thread-reply-label']").exists()).toBe(false);
     });
 });
