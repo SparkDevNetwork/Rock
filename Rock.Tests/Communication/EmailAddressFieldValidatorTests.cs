@@ -168,5 +168,85 @@ namespace Rock.Tests.Communication
             Assert.That.IsTrue( EmailAddressFieldValidator.IsValid( "ted@rocksolidchurchdemo.com" ) );
         }
 
+        #region GetValidEmailAddresses
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithSingleValidAddress_ReturnsAddress()
+        {
+            var emails = EmailAddressFieldValidator.GetValidEmailAddresses( " ted@rocksolidchurchdemo.com ", out var hasLavaAddress, out var hasInvalidAddress );
+
+            CollectionAssert.AreEqual( new[] { "ted@rocksolidchurchdemo.com" }, emails );
+            Assert.IsFalse( hasLavaAddress );
+            Assert.IsFalse( hasInvalidAddress );
+        }
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithDelimitedList_ReturnsEachAddress()
+        {
+            var emails = EmailAddressFieldValidator.GetValidEmailAddresses( "ted@rocksolidchurchdemo.com,cindy+test@rocksolidchurchdemo.com; Alex.Decker@RockSolidChurchDemo.com", out var hasLavaAddress, out var hasInvalidAddress );
+
+            CollectionAssert.AreEqual( new[] { "ted@rocksolidchurchdemo.com", "cindy+test@rocksolidchurchdemo.com", "Alex.Decker@RockSolidChurchDemo.com" }, emails );
+            Assert.IsFalse( hasLavaAddress );
+            Assert.IsFalse( hasInvalidAddress );
+        }
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithLavaTag_SkipsEveryPiece()
+        {
+            // The split on pipes leaves "PersonTokenCreate}}@evil.example", which is
+            // a valid looking address and must still be skipped.
+            var emails = EmailAddressFieldValidator.GetValidEmailAddresses( "{{1|PersonTokenCreate}}@evil.example", out var hasLavaAddress, out _ );
+
+            Assert.AreEqual( 0, emails.Count );
+            Assert.IsTrue( hasLavaAddress );
+        }
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithSpacedLavaTag_SkipsEveryPiece()
+        {
+            var emails = EmailAddressFieldValidator.GetValidEmailAddresses( "tester+{{ 7 | Plus:7 }}@example.com", out var hasLavaAddress, out _ );
+
+            Assert.AreEqual( 0, emails.Count );
+            Assert.IsTrue( hasLavaAddress );
+        }
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithLavaAndValidAddress_ReturnsOnlyValidAddress()
+        {
+            var emails = EmailAddressFieldValidator.GetValidEmailAddresses( "ted@rocksolidchurchdemo.com,{{ Workflow | Attribute:'Email' }}", out var hasLavaAddress, out _ );
+
+            CollectionAssert.AreEqual( new[] { "ted@rocksolidchurchdemo.com" }, emails );
+            Assert.IsTrue( hasLavaAddress );
+        }
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithInvalidAddress_SkipsAddress()
+        {
+            var emails = EmailAddressFieldValidator.GetValidEmailAddresses( "not-an-email ted@rocksolidchurchdemo.com", out var hasLavaAddress, out var hasInvalidAddress );
+
+            CollectionAssert.AreEqual( new[] { "ted@rocksolidchurchdemo.com" }, emails );
+            Assert.IsFalse( hasLavaAddress );
+            Assert.IsTrue( hasInvalidAddress );
+        }
+
+        [TestMethod]
+        public void GetValidEmailAddresses_WithEmptyInput_ReturnsEmptyList()
+        {
+            Assert.AreEqual( 0, EmailAddressFieldValidator.GetValidEmailAddresses( null, out _, out _ ).Count );
+            Assert.AreEqual( 0, EmailAddressFieldValidator.GetValidEmailAddresses( "  ", out _, out _ ).Count );
+        }
+
+        [TestMethod]
+        public void ContainsLavaBrace_DetectsEitherBrace()
+        {
+            Assert.IsTrue( EmailAddressFieldValidator.ContainsLavaBrace( "{{ Person.FullName }}" ) );
+            Assert.IsTrue( EmailAddressFieldValidator.ContainsLavaBrace( "Name}" ) );
+            Assert.IsTrue( EmailAddressFieldValidator.ContainsLavaBrace( "{Name" ) );
+            Assert.IsFalse( EmailAddressFieldValidator.ContainsLavaBrace( "Ted Decker" ) );
+            Assert.IsFalse( EmailAddressFieldValidator.ContainsLavaBrace( null ) );
+        }
+
+        #endregion GetValidEmailAddresses
+
     }
 }
