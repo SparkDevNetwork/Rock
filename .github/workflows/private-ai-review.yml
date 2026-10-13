@@ -42,6 +42,16 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Load review conventions from develop
+        # Older release and hotfix branches don't have CLAUDE.md or .claude/rules,
+        # so the review would run without any Rock conventions. Copy them from
+        # develop. Skipped for PRs into develop, so a PR that edits the rules is
+        # reviewed against its own copy.
+        if: github.event.pull_request.base.ref != 'develop'
+        run: |
+          git fetch --no-tags --depth=1 origin develop
+          git checkout FETCH_HEAD -- CLAUDE.md .claude/rules
+
       - name: Run code review
         uses: anthropics/claude-code-action@v1
         with:
@@ -82,6 +92,17 @@ jobs:
           # HEAD is the PR merged into its target branch. Depth 2 also brings in
           # the target branch's commit, so `git diff HEAD^1 HEAD` is the PR's change.
           fetch-depth: 2
+
+      - name: Load review conventions from develop
+        # Older release and hotfix branches don't have CLAUDE.md, .claude/rules or
+        # the Sentinel agent, so copy them from develop. Skipped for PRs into
+        # develop, so a PR that edits them is reviewed against its own copy.
+        # Checking out files doesn't change HEAD, so `git diff HEAD^1 HEAD` is
+        # still the PR's change.
+        if: github.event.pull_request.base.ref != 'develop'
+        run: |
+          git fetch --no-tags --depth=1 origin develop
+          git checkout FETCH_HEAD -- CLAUDE.md .claude/rules .claude/agents
 
       - name: Run Sentinel security review
         uses: anthropics/claude-code-action@v1
