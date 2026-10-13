@@ -491,7 +491,7 @@ namespace Rock.Blocks.Crm.PersonDetail
                     // already set). Otherwise a tampered Guid could attach any file
                     // as the photo, and a later change would mark that file
                     // temporary so cleanup deletes it.
-                    if ( newPhotoBinaryFile != null && !IsPhotoAllowedForPerson( newPhotoBinaryFile, entity.PhotoId ) )
+                    if ( newPhotoBinaryFile != null && !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( newPhotoBinaryFile.Id, entity.PhotoId, RequestContext.CurrentPerson ) )
                     {
                         isPhotoInvalid = true;
                         return;
@@ -699,46 +699,6 @@ namespace Rock.Blocks.Crm.PersonDetail
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Determines whether the posted photo may be set as the person's photo.
-        /// </summary>
-        /// <param name="photoBinaryFile">The binary file posted as the new photo.</param>
-        /// <param name="currentPhotoId">The identifier of the person's current photo.</param>
-        /// <returns><c>true</c> if the photo may be used; otherwise <c>false</c>.</returns>
-        private bool IsPhotoAllowedForPerson( BinaryFile photoBinaryFile, int? currentPhotoId )
-        {
-            var currentPerson = RequestContext.CurrentPerson;
-
-            if ( new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( photoBinaryFile.Id, currentPhotoId, currentPerson ) )
-            {
-                return true;
-            }
-
-            /*
-                9/30/26 - CLAUDE
-
-                The ImageEditor control used for the photo uploads with
-                isTemporary set to false, so the shared helper rejects a photo
-                that was just uploaded. Also accept a person image file that
-                was created by the current person, which is what the upload
-                handler records for that upload. Same rule as the Fundraising
-                Participant block.
-
-                Reason: ImageEditor uploads are not temporary files.
-            */
-            var personImageFileTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
-            var isPersonImage = personImageFileTypeId.HasValue && photoBinaryFile.BinaryFileTypeId == personImageFileTypeId.Value;
-
-            if ( currentPerson == null || !isPersonImage || !photoBinaryFile.CreatedByPersonAliasId.HasValue )
-            {
-                return false;
-            }
-
-            var createdByPersonId = new PersonAliasService( RockContext ).GetPersonId( photoBinaryFile.CreatedByPersonAliasId.Value );
-
-            return createdByPersonId.HasValue && createdByPersonId.Value == currentPerson.Id;
         }
 
         /// <summary>
