@@ -252,6 +252,30 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
+            /*
+                10/13/2026 - MSE
+
+                The logo is only referenced from the message body, so nothing
+                else marks the uploaded file permanent. Keep a new upload by
+                the current person so the cleanup job does not delete it.
+
+                Reason: The logo disappeared from the message a day after it
+                was uploaded.
+            */
+            var logoBinaryFileId = imgTemplateLogo.BinaryFileId;
+            if ( logoBinaryFileId.HasValue )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var logoBinaryFile = binaryFileService.Get( logoBinaryFileId.Value );
+
+                if ( logoBinaryFile != null
+                    && logoBinaryFile.IsTemporary
+                    && binaryFileService.IsUploadedBinaryFileAllowedForPerson( logoBinaryFile.Id, null, CurrentPerson ) )
+                {
+                    logoBinaryFile.IsTemporary = false;
+                }
+            }
+
             rockContext.SaveChanges();
 
             NavigateToParentPage();
