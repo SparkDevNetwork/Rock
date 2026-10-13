@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Rock.SystemKey
 {
     /// <summary>
@@ -39,6 +41,8 @@ namespace Rock.SystemKey
         /// <summary>
         /// The enable validation
         /// </summary>
+        [Obsolete( "Twilio webhook signatures are always validated. This setting is no longer used." )]
+        [RockObsolete( "17.11" )]
         public const string EnableValidation = "EnableValidation";
 
         /// <summary>
