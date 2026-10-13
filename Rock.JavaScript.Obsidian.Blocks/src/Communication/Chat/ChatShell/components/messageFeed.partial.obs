@@ -455,10 +455,11 @@
     }
 }
 
+/* From the motion tokens, so under reduced motion the lift and the scale fall away to a fade. */
 @keyframes chat-jump-in {
     from {
         opacity: 0;
-        transform: translate(-50%, 10px) scale(.96);
+        transform: translate(-50%, var(--chat-rise)) scale(var(--chat-pop-scale));
     }
 }
 </style>
@@ -469,7 +470,7 @@
     import Icon from "../ui/icon.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { TimelineState } from "../composables/useHistory.partial";
-    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, sentHoldMs, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
+    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, sentHoldMs, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
     import { PendingMessage } from "../types.partial";
 
     const props = defineProps({
@@ -547,6 +548,14 @@
     const isDividerAbove = ref(false);
 
     const isMarkedRead = ref(false);
+
+    /**
+     * Whether the person has sent here since the feed opened. Sending means they have caught up,
+     * so the divider and the strip go, as reading would take them; the read position is still
+     * saved only from what is seen.
+     */
+    const isClearedBySend = ref(false);
+
     const isScrolledUp = ref(false);
 
     /** Messages that arrived while the reader was scrolled up, for Jump to latest. */
@@ -558,7 +567,12 @@
     /** The person's own sends confirmed while the feed was open, each showing "Sent" for a moment. */
     const justSentIds = reactive(new Set<number>());
 
-    /** When each of the reader's own messages first came into the timeline, by id. */
+    /**
+     * When each of the reader's own messages came into the timeline while its send was still
+     * waiting on its answer, by id, so the Sent hold can run from the earlier of the two. An entry
+     * goes once its hold has read it, and all go whenever nothing is waiting, so the map holds
+     * only the sends in flight.
+     */
     const ownArrivedAt = new Map<number, number>();
 
     /** The newest message when the feed first had any; anything newer arrived while it was open. */
@@ -574,7 +588,7 @@
     /** The look the conversation's kind picks: a channel's flat rows, a direct message's bubbles. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
-    const dividerBeforeId = computed((): number | null => newDividerBeforeId(
+    const dividerBeforeId = computed((): number | null => isClearedBySend.value ? null : newDividerBeforeId(
         props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, props.personAliasGuid));
 
     const sections = computed((): FeedSection[] => layoutFeed({
@@ -609,7 +623,10 @@
     /** One control points down at a time: while the strip points down at the divider, Jump hides. */
     const isJumpShown = computed((): boolean => isScrolledUp.value && !(isStripShown.value && !isDividerAbove.value));
 
-    const unreadCountText = computed((): string => newMessagesText(props.timeline.unreadCount));
+    const unreadCount = computed((): number => unreadStripCount(
+        props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, dividerBeforeId.value, props.personAliasGuid));
+
+    const unreadCountText = computed((): string => newMessagesText(unreadCount.value));
 
     const unreadSince = computed((): string => {
         const first = props.timeline.messages.find(m => m.id === dividerBeforeId.value);
@@ -618,7 +635,7 @@
 
     const stripText = computed((): string => {
         const first = props.timeline.messages.find(m => m.id === dividerBeforeId.value);
-        return first ? unreadStripText(props.timeline.unreadCount, new Date(first.created_at)) : unreadCountText.value;
+        return first ? unreadStripText(unreadCount.value, new Date(first.created_at)) : unreadCountText.value;
     });
 
     const jumpText = computed((): string => jumpLabel(newCount.value));
@@ -729,6 +746,11 @@
         });
     }
 
+    /** Whether any of the person's sends here is still waiting on the platform's answer. */
+    function isSendInFlight(): boolean {
+        return props.pending.some(row => row.status === "sending");
+    }
+
     /** The newest id in the timeline, or null when it is empty. */
     function newestId(): number | null {
         const messages = props.timeline.messages;
@@ -750,11 +772,16 @@
         const me = props.personAliasGuid.toLowerCase();
         const arrived = props.timeline.messages.filter(m => m.id > previous);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
-        own.forEach(message => {
-            if (!ownArrivedAt.has(message.id)) {
-                ownArrivedAt.set(message.id, Date.now());
-            }
-        });
+
+        // Only a live copy that beats its answer is noted: one whose hold already started, or
+        // that arrives with no send waiting, would never be read.
+        if (isSendInFlight()) {
+            own.forEach(message => {
+                if (!ownArrivedAt.has(message.id) && !justSentIds.has(message.id)) {
+                    ownArrivedAt.set(message.id, Date.now());
+                }
+            });
+        }
 
         if (isScrolledUp.value) {
             newCount.value += arrived.length - own.length;
@@ -770,6 +797,7 @@
         justSentIds.add(messageId);
         const hold = feed.value ? tokenDuration(feed.value, "--chat-d-sent-hold", sentHoldMs) : sentHoldMs;
         const sinceArrival = Date.now() - (ownArrivedAt.get(messageId) ?? Date.now());
+        ownArrivedAt.delete(messageId);
         setTimeout(() => justSentIds.delete(messageId), Math.max(0, hold - sinceArrival));
     }
 
@@ -800,9 +828,18 @@
                 holdSent(row.confirmedId);
             }
         }
+
+        // With no answer left to wait for, no noted arrival can be read again.
+        if (!isSendInFlight()) {
+            ownArrivedAt.clear();
+        }
     }, { flush: "sync" });
 
-    watch(() => props.pending.length, async () => {
+    watch(() => props.pending.length, async (length, previous) => {
+        if (length > previous) {
+            isClearedBySend.value = true;
+        }
+
         await nextTick();
         scrollToBottom();
     });

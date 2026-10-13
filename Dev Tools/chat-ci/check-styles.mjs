@@ -70,7 +70,9 @@ const NAMED_COLORS = [
   'whitesmoke', 'yellow', 'yellowgreen',
 ];
 
-const HEX = /#[0-9a-f]{3,8}(?![\w-])/i;
+// A hash glued to a word or to an entity's ampersand, as in "abc#123" or "&#1234;", starts no color.
+const HEX = /(?<![\w&])#[0-9a-f]{3,8}(?![\w-])/i;
+const HEXES = new RegExp(HEX.source, 'gi');
 const COLOR_FUNCTION = /(?<![\w-])(rgba?|hsla?)\(/i;
 const CURVE = /cubic-bezier\(/i;
 const DURATION = /(?<![\w.-])\d*\.?\d+m?s(?![\w-])/i;
@@ -107,8 +109,12 @@ function cssLiteral(value) {
 /** What a string literal in script holds that a component may not, or null when it is clean. */
 function scriptLiteral(content) {
   const trimmed = content.trim();
-  // A hex is a color wherever it sits in a string, alone or inside a longer value.
-  if (HEX.test(content)) return `a hex color (${HEX.exec(content)[0]})`;
+  // A hex is a color wherever it sits in a string, alone or inside a longer value. The one
+  // exception is a plain number after a hash in words, "Issue #1234", which is a color only when
+  // the string is that hex alone or reads as a CSS value.
+  const isProse = !READS_AS_CSS.test(content);
+  const hex = [...content.matchAll(HEXES)].find((match) => !(isProse && /^#\d+$/.test(match[0]) && match[0] !== trimmed));
+  if (hex) return `a hex color (${hex[0]})`;
   if (WHOLE_NAMED.test(trimmed)) return `a named color (${trimmed})`;
   if (NAMED.test(content) && READS_AS_CSS.test(content)) return `a named color (${NAMED.exec(content)[1]})`;
   if (COLOR_FUNCTION.test(content)) return `a ${COLOR_FUNCTION.exec(content)[1]}() color`;

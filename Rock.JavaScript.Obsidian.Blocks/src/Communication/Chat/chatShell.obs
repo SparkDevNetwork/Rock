@@ -426,10 +426,14 @@
         isPaneMotionOn.value = true;
 
         // Back on a phone hides the button that had focus, so focus returns to the row of the
-        // conversation just left, where the person was in the list.
-        if (isPhone.value && leftChannelId) {
+        // conversation just left, where the person was in the list. A New message draft has no
+        // row yet, so focus goes to the New message button that opened it.
+        if (isPhone.value) {
             await nextTick();
-            rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)?.focus();
+            const row = leftChannelId
+                ? rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)
+                : null;
+            (row ?? rootElement.value?.querySelector<HTMLElement>("[data-testid='new-message']"))?.focus();
         }
     }
 

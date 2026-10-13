@@ -131,8 +131,38 @@
     border-radius: var(--chat-r-md);
 }
 
+/*
+    A row takes focus when a jump lands on it. A channel's row shows it with the hover tint across
+    the row; a direct message's has no tint, so a keyboard's focus rings what the person reads,
+    the bubble, or a system line or card that has none. The ring is the chat's focus outline,
+    written as the sheet writes it: the oldest Safari Rock supports has no :focus-visible and drops
+    any rule naming it, so every focus rings, and a browser that can tell a click's focus apart
+    takes the ring back from the click's.
+*/
 .chat-msg:focus {
     outline: none;
+}
+
+.chat-msg.is-conversational:focus-visible .chat-bubble,
+.chat-msg.is-conversational.is-system:focus-visible,
+.chat-msg.is-conversational.is-card:focus-visible .chat-card {
+    outline: 2px solid var(--chat-brand-ink);
+    outline-offset: 2px;
+}
+
+.chat-msg.is-conversational:focus .chat-bubble,
+.chat-msg.is-conversational.is-system:focus,
+.chat-msg.is-conversational.is-card:focus .chat-card {
+    outline: 2px solid var(--chat-brand-ink);
+    outline-offset: 2px;
+}
+
+@supports selector(:focus-visible) {
+    .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bubble,
+    .chat-msg.is-conversational.is-system:focus:not(:focus-visible),
+    .chat-msg.is-conversational.is-card:focus:not(:focus-visible) .chat-card {
+        outline: none;
+    }
 }
 
 .chat-msg.is-arriving {
