@@ -1539,12 +1539,17 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                // If this isn't a Person, assume it is an email address.
+                // If this isn't a Person, assume it is an email address. The value may have
+                // been submitted on the form and the email transport renders the address as
+                // Lava, so only send to a valid address that contains no Lava.
                 // The Spouse / Both recipient variants only make sense when a
                 // person is resolvable; for raw e-mail attributes we send to
                 // the configured address as today.
-                string recipientEmailAddress = recipientWorkflowAttributeValue;
-                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, mergeFields ) );
+                string recipientEmailAddress = recipientWorkflowAttributeValue?.Trim();
+                if ( recipientEmailAddress.IsNotNullOrWhiteSpace() && !recipientEmailAddress.IsLavaTemplate() && EmailAddressFieldValidator.IsValid( recipientEmailAddress ) )
+                {
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, mergeFields ) );
+                }
             }
 
             SendFormBuilderCommunication( confirmationEmailSettings.Source, recipients, mergeFields );
@@ -1664,11 +1669,13 @@ namespace Rock.Workflow.Action
                     customBody = formEmailSourceSettings.Body;
                 }
 
+                // The body is rendered once by the email transport using each recipient's
+                // merge fields. Rendering it here too would run submitted values as Lava.
                 var emailMessage = new RockEmailMessage
                 {
                     ReplyToEmail = formEmailSourceSettings.ReplyTo,
                     Subject = formEmailSourceSettings.Subject,
-                    Message = customBody?.ResolveMergeFields( mergeFields )
+                    Message = customBody
                 };
 
                 emailMessage.SetRecipients( recipients );
