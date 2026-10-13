@@ -62,11 +62,12 @@ const youth = row({ channel_id: "c0000002-0000-4000-8000-000000000000", name: "Y
 const starred = row({ channel_id: "c0000003-0000-4000-8000-000000000000", name: "Prayer", is_favorite: true });
 const muted = row({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "Announcements", notify_mode: "silent", is_unread: true, mention_count: 2 });
 
-// A two-person direct message: the wire names the other person and counts them in dm_other_count.
+// A two-person direct message: the wire names the other person in full and counts them in
+// dm_other_count; a group's names are first names.
 const dmAnna = row({
     channel_id: "c0000005-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Anna"],
+    dm_names: ["Anna Kim"],
     dm_other_count: 1,
     last_sender_nick_name: "Anna",
     last_sender_last_name: "Kim",
@@ -92,7 +93,7 @@ const dmBig = row({
 const dmRead = row({
     channel_id: "c0000008-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Priya"],
+    dm_names: ["Priya Shah"],
     dm_other_count: 1,
     is_unread: false
 });
@@ -219,10 +220,10 @@ describe("Find a conversation", () => {
 });
 
 describe("a direct message's name", () => {
-    test("is the other person's name in a two-person conversation, never 'and 1 more'", () => {
+    test("is the other person's full name in a two-person conversation, never 'and 1 more'", () => {
         const w = mountSidebar();
 
-        expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-name']").text()).toBe("Anna");
+        expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-name']").text()).toBe("Anna Kim");
     });
 
     test("joins a group's members as 'A and B'", () => {
