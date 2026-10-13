@@ -906,8 +906,16 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Photo ),
-                () => entity.PhotoId = box.Bag.Photo.GetEntityId<BinaryFile>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Photo ), () =>
+            {
+                var photoId = box.Bag.Photo.GetEntityId<BinaryFile>( RockContext );
+
+                // Only accept the current photo or a new upload by the current person, otherwise keep the current photo.
+                if ( new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, entity.PhotoId, RequestContext.CurrentPerson ) )
+                {
+                    entity.PhotoId = photoId;
+                }
+            } );
 
             box.IfValidProperty( nameof( box.Bag.PublicName ),
                 () => entity.PublicName = box.Bag.PublicName );
@@ -1114,6 +1122,17 @@ namespace Rock.Blocks.Engagement
             }
 
             var isNew = entity.Id == 0;
+
+            // A new photo is uploaded as a temporary file, so keep it now that it is in use.
+            if ( entity.PhotoId.HasValue && entity.PhotoId != originalPhotoId )
+            {
+                var newPhoto = new BinaryFileService( RockContext ).Get( entity.PhotoId.Value );
+
+                if ( newPhoto != null )
+                {
+                    newPhoto.IsTemporary = false;
+                }
+            }
 
             RockContext.WrapTransaction( () =>
             {

@@ -402,9 +402,6 @@ namespace Rock.Blocks.Cms
             var binaryFileType = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() );
 
             // Form Attachments
-            var currentPersonId = RequestContext.CurrentPerson?.Id;
-            var earliestUploadDateTime = RockDateTime.Now.AddDays( -1 );
-
             foreach ( var guid in bag.AttachmentGuids ?? new List<Guid>() )
             {
                 var binaryFile = binaryFileService.Get( guid );
@@ -415,24 +412,17 @@ namespace Rock.Blocks.Cms
                 }
 
                 // The attachment guids come from the client, and the client uploads
-                // attachments as non-temporary files of the default type. So only
-                // accept files of that type that were recently uploaded by the
-                // current person (or with no creator if nobody is logged in). The
-                // file type is not changed, since that would change who can view
-                // the file.
-                //
-                // BinaryFileService.IsUploadedBinaryFileAllowedForPerson() is the
-                // preferred check, but it only accepts temporary files, so it
-                // requires emailForm.obs to upload attachments as temporary first.
+                // attachments as temporary files of the default type. So only
+                // accept new uploads of that type by the current person. The file
+                // type is not changed, since that would change who can view the
+                // file. The attachments are only needed while the email is sent,
+                // so they stay temporary and the cleanup job removes them later.
                 if ( binaryFile.BinaryFileTypeId != binaryFileType.Id
-                    || binaryFile.CreatedByPersonAlias?.PersonId != currentPersonId
-                    || !binaryFile.CreatedDateTime.HasValue
-                    || binaryFile.CreatedDateTime.Value < earliestUploadDateTime )
+                    || !binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFile.Id, null, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( "Invalid attachment." );
                 }
 
-                binaryFile.IsTemporary = false;
                 attachments.Add( binaryFile );
             }
 
