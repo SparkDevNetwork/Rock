@@ -48,7 +48,7 @@
              :role="connectionBanner === 'warning' ? 'alert' : 'status'">
             <div v-if="connectionBanner === 'warning'" class="chat-conn-banner-row">
                 <Icon name="wifi-off" size="sm" />
-                <span><b>You're offline.</b> Reconnecting now. Messages you send will go out when you're back.</span>
+                <span><b>You're offline.</b> Reconnecting now. You can send again once you're back.</span>
             </div>
             <div v-else class="chat-conn-banner-row">
                 <span class="chat-spinner"></span>
