@@ -162,30 +162,60 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the name of the series partition using POST
+        /// Gets the comma-delimited display names of the partition values for a series of the specified metric.
         /// </summary>
-        /// <param name="metricId">The metric identifier.</param>
-        /// <param name="metricValuePartitionEntityIdList">The metric value partition entity identifier list.</param>
-        /// <returns></returns>
+        /// <param name="metricId">The identifier of the metric the partition values belong to.</param>
+        /// <param name="metricValuePartitionEntityIdList">The partition values, each formatted as "EntityTypeId|EntityId".</param>
+        /// <returns>The display names, or <c>null</c> if the metric is not viewable or no names could be resolved.</returns>
+        [Authenticate, Secured( Rock.Security.Authorization.VIEW )]
         [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}" )]
         [HttpPost]
         [Rock.SystemGuid.RestActionGuid( "00BAFAF2-D393-4423-A8E0-38F1EDC179D7" )]
         public string GetSeriesPartitionName( int metricId, [FromBody] List<string> metricValuePartitionEntityIdList )
         {
-            var entityTypeEntityIdList = metricValuePartitionEntityIdList.Select( a => a.Split( '|' ) ).Select( a =>
-                new
-                {
-                    EntityTypeId = a[0].AsIntegerOrNull(),
-                    EntityId = a[1].AsIntegerOrNull()
-                } );
+            var currentPerson = GetPerson();
+
+            if ( currentPerson == null )
+            {
+                throw new HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+            }
+
+            if ( metricValuePartitionEntityIdList == null )
+            {
+                return null;
+            }
 
             var rockContext = new RockContext();
+
+            var metric = new MetricService( rockContext ).Get( metricId );
+            if ( metric == null || !metric.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+            {
+                return null;
+            }
+
+            var allowedEntityTypeIds = metric.MetricPartitions
+                .Where( p => p.EntityTypeId.HasValue )
+                .Select( p => p.EntityTypeId.Value )
+                .ToList();
+
+            var entityTypeEntityIdList = metricValuePartitionEntityIdList
+                .Where( a => a != null )
+                .Select( a => a.Split( '|' ) )
+                .Where( a => a.Length >= 2 )
+                .Select( a =>
+                    new
+                    {
+                        EntityTypeId = a[0].AsIntegerOrNull(),
+                        EntityId = a[1].AsIntegerOrNull()
+                    } );
 
             List<string> seriesPartitionValues = new List<string>();
 
             foreach ( var entityTypeEntity in entityTypeEntityIdList )
             {
-                if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
+                if ( entityTypeEntity.EntityTypeId.HasValue
+                    && entityTypeEntity.EntityId.HasValue
+                    && allowedEntityTypeIds.Contains( entityTypeEntity.EntityTypeId.Value ) )
                 {
                     var entityTypeCache = EntityTypeCache.Get( entityTypeEntity.EntityTypeId.Value );
                     if ( entityTypeCache != null )
@@ -214,7 +244,10 @@ namespace Rock.Rest.Controllers
                             var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
                             var result = getMethod.Invoke( serviceInstance, new object[] { entityTypeEntity.EntityId } );
-                            if ( result != null )
+
+                            // Partition entity types are admin configured, so a record's display text is only
+                            // returned when that record is itself securable and viewable by the caller.
+                            if ( result is Rock.Security.ISecured securedResult && securedResult.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                             {
                                 seriesPartitionValues.Add( result.ToString() );
                             }
