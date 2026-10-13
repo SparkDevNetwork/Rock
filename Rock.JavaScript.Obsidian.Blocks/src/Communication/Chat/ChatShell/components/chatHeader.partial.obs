@@ -1,46 +1,356 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <header class="chat-header">
-        <span class="chat-header-title">{{ title }}</span>
-        <span v-if="connection" class="label label-warning" data-testid="connection-badge">Reconnecting…</span>
-        <span v-else-if="isBehind" class="label label-default" data-testid="catching-up-badge">Catching up…</span>
-        <button v-if="isPushOffered" type="button" class="btn btn-xs btn-default" data-testid="push-offer" @click="emit('turnOnPush')">Turn on notifications</button>
+    <header class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
+        <IconButton v-if="isPhone"
+                    class="chat-header-back"
+                    icon="left"
+                    label="Back"
+                    data-testid="header-back"
+                    @click="emit('back')" />
+
+        <div class="chat-header-id">
+            <span v-if="kind === 'channel'" class="chat-header-ic">
+                <Icon :name="isPublic ? 'hash' : 'lock'" />
+            </span>
+            <Avatar v-else-if="faces.length > 0" :people="faces" :size="kind === 'person' ? 36 : 28" />
+
+            <span class="chat-header-title">
+                <b class="chat-header-name" data-testid="header-title">{{ title }}</b>
+                <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
+                    <span class="chat-header-live" data-testid="connection-dot"></span>Reconnecting…
+                </span>
+                <span v-else-if="isBehind" class="chat-header-sub" data-testid="catching-up-badge" data-tone="info">
+                    <span class="chat-header-live"></span>Catching up on new messages…
+                </span>
+                <span v-else-if="subtitle" class="chat-header-sub" data-testid="header-subtitle">{{ subtitle }}</span>
+            </span>
+        </div>
+
+        <div class="chat-header-actions">
+            <IconButton v-if="isPushOffered && !isPhone"
+                        icon="bell"
+                        label="Turn on notifications"
+                        data-testid="push-offer"
+                        @click="emit('turnOnPush')" />
+
+            <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more">
+                <Menu icon="dots" label="More" :items="moreItems" @select="onMoreSelect" />
+            </span>
+        </div>
     </header>
-    <div v-if="banner" class="alert alert-warning chat-header-banner" data-testid="service-banner">{{ banner }}</div>
+
+    <Transition name="chat-banner" @enter="onBannerEnter" @afterEnter="onBannerSettled" @leave="onBannerLeave">
+        <div v-if="connectionBanner"
+             class="chat-conn-banner"
+             data-testid="connection-banner"
+             :data-tone="connectionBanner"
+             :role="connectionBanner === 'warning' ? 'alert' : 'status'">
+            <div v-if="connectionBanner === 'warning'" class="chat-conn-banner-row">
+                <Icon name="wifi-off" size="sm" />
+                <span><b>You're offline.</b> Reconnecting now. Messages you send will go out when you're back.</span>
+            </div>
+            <div v-else class="chat-conn-banner-row">
+                <span class="chat-spinner"></span>
+                <span>Back online. Catching up on new messages…</span>
+            </div>
+        </div>
+    </Transition>
+
+    <div v-if="banner"
+         class="chat-service-banner"
+         data-testid="service-banner"
+         :data-tone="isUpdateRequired ? 'info' : 'warning'"
+         role="status">
+        <Icon :name="isUpdateRequired ? 'refresh' : 'alert'" />
+        <span>{{ banner }}</span>
+    </div>
+
+    <!-- A line of no height at the feed's top, so the sweep sits over the messages rather than pushing them down. -->
+    <div class="chat-conn-bar-host">
+        <Transition name="chat-fade">
+            <div v-if="connection" class="chat-conn-bar" data-testid="connection-sweep"></div>
+        </Transition>
+    </div>
 </template>
 
 <style scoped>
 .chat-header {
     display: flex;
+    flex: none;
+    gap: 12px;
     align-items: center;
-    justify-content: space-between;
-    min-height: 44px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--chat-line-strong);
+    height: 64px;
+    padding: 0 12px 0 20px;
+    background: var(--chat-surface);
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-header.is-phone {
+    padding-left: 12px;
+}
+
+/* Reached through the button's own root, which a scoped rule here does not mark. */
+.chat-header :deep(.chat-header-back) {
+    margin-left: -8px;
+}
+
+/*
+    The room's mark and title, padded as the button that opens the room's details will be, and
+    pulled back by its left padding so the mark still lines up with the feed's edge.
+*/
+.chat-header-id {
+    display: flex;
+    flex: 0 1 auto;
+    gap: 12px;
+    align-items: center;
+    min-width: 0;
+    padding: 4px 10px 4px 6px;
+    margin-left: -6px;
+    border-radius: var(--chat-r-lg);
+}
+
+.is-phone .chat-header-id {
+    gap: 10px;
+    padding-right: 6px;
+}
+
+.chat-header-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-hdr-ic);
 }
 
 .chat-header-title {
-    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
 }
 
-.chat-header-banner {
-    margin: 0;
-    border-radius: 0;
+.chat-header-name {
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-header-sub {
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The live dot pulses while the connection's state is being worked out. */
+.chat-header-live {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    vertical-align: 1px;
+    background: var(--chat-warning);
+    border-radius: 50%;
+    animation: chat-header-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+}
+
+.chat-header-sub[data-tone="info"] .chat-header-live {
+    background: var(--chat-info);
+}
+
+.chat-header-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.chat-header-more {
+    display: inline-flex;
+}
+
+/* The banner opens by its own height, which script measures, since grid rows do not animate in Safari 14. */
+.chat-conn-banner {
+    flex: none;
+    overflow: hidden;
+    background: var(--chat-warning-soft);
+}
+
+.chat-conn-banner[data-tone="info"] {
+    background: var(--chat-info-soft);
+}
+
+.chat-conn-banner-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 20px;
+    font-size: 13px;
+    color: var(--chat-text);
+    border-bottom: 1px solid var(--chat-conn-line-warning);
+}
+
+.chat-conn-banner-row :deep(.chat-ic) {
+    color: var(--chat-warning-ink);
+}
+
+.chat-conn-banner[data-tone="info"] .chat-conn-banner-row {
+    color: var(--chat-text);
+    border-bottom-color: var(--chat-conn-line-info);
+}
+
+.chat-conn-banner[data-tone="info"] .chat-spinner {
+    color: var(--chat-info-ink);
+}
+
+.chat-banner-enter-active,
+.chat-banner-leave-active {
+    transition: height var(--chat-t-panel) var(--chat-ease-in);
+}
+
+.chat-service-banner {
+    display: flex;
+    flex: none;
+    gap: 10px;
+    align-items: center;
+    margin: 10px 16px 0;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--chat-text);
+    background: var(--chat-warning-soft);
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-service-banner :deep(.chat-ic) {
+    color: var(--chat-warning-ink);
+}
+
+.chat-service-banner[data-tone="info"] {
+    background: var(--chat-info-soft);
+}
+
+.chat-service-banner[data-tone="info"] :deep(.chat-ic) {
+    color: var(--chat-info-ink);
+}
+
+.chat-conn-bar-host {
+    position: relative;
+    z-index: 6;
+    flex: none;
+    height: 0;
+}
+
+.chat-conn-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 2px;
+    overflow: hidden;
+}
+
+.chat-conn-bar::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 40%;
+    content: "";
+    background: linear-gradient(90deg, transparent, var(--chat-warning), transparent);
+    animation: chat-header-sweep var(--chat-d-sweep) var(--chat-ease-state) infinite;
+}
+
+.chat-fade-enter-active,
+.chat-fade-leave-active {
+    transition: opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-fade-enter-from,
+.chat-fade-leave-to {
+    opacity: 0;
+}
+
+@keyframes chat-header-pulse {
+    50% {
+        opacity: .3;
+    }
+}
+
+@keyframes chat-header-sweep {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(260%);
+    }
+}
+
+/* Looping decoration stops; the words beside it still say what is happening. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-header-live,
+    .chat-conn-bar::after {
+        animation: none;
+    }
 }
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { ChatError } from "../types.partial";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
+
+    // #region Types
+
+    /** What the room is, which decides the mark beside its title. */
+    export type HeaderRoomKind = "channel" | "person" | "group";
+
+    // #endregion Types
 
     const emit = defineEmits<{
-        (e: "turnOnPush"): void
+        (e: "turnOnPush"): void,
+        (e: "back"): void
     }>();
 
-    defineProps({
+    const props = defineProps({
         title: {
             type: String,
             default: ""
+        },
+
+        /** The line under the title the wire has, such as a group's "3 people"; null for none. */
+        subtitle: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** What the room is, or null to draw no mark beside the title. */
+        kind: {
+            type: String as PropType<HeaderRoomKind | null>,
+            default: null
+        },
+
+        /** Whether a channel is open to anyone who may join, which draws a hash rather than a lock. */
+        isPublic: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The other people of a direct message or group, by the names the sidebar shows them under. */
+        people: {
+            type: Array as PropType<string[]>,
+            default: () => []
         },
 
         /** The live connection's trouble, or null when it is healthy. */
@@ -55,6 +365,12 @@
             default: null
         },
 
+        /** Whether the banner says Rock must be updated, which is told in the info tone. */
+        isUpdateRequired: {
+            type: Boolean,
+            default: false
+        },
+
         /** Whether the channel's catch-up failed and is trying again, so messages may be missing. */
         isBehind: {
             type: Boolean,
@@ -65,6 +381,82 @@
         isPushOffered: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether the chat is in its one-pane phone layout, which leads with Back and folds actions into a menu. */
+        isPhone: {
+            type: Boolean,
+            default: false
         }
     });
+
+    // #region Values
+
+    /** Set while the connection is lost and kept until the catch-up after it is done, so "Back online" follows only an outage. */
+    const wasOffline = ref(!!props.connection);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** A person's one face, or a group's first two. */
+    const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(name => ({ name })));
+
+    /** The phone's overflow menu; empty leaves the button out, since a menu of nothing is a dead end. */
+    const moreItems = computed((): MenuItem[] => props.isPushOffered ? [{ key: "push", label: "Turn on notifications", icon: "bell" }] : []);
+
+    /** Which banner the connection opens: offline while lost, then back online while catching up after it. */
+    const connectionBanner = computed((): "warning" | "info" | null => {
+        if (props.connection) {
+            return "warning";
+        }
+
+        return wasOffline.value && props.isBehind ? "info" : null;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onMoreSelect(key: string): void {
+        if (key === "push") {
+            emit("turnOnPush");
+        }
+    }
+
+    /** Opens from no height to the banner's own, measured now since its text wraps to the width. */
+    function onBannerEnter(element: Element): void {
+        const box = element as HTMLElement;
+        box.style.height = "0px";
+        // Read once so the browser lays out the closed height before the open one is set.
+        void box.offsetHeight;
+        box.style.height = `${box.scrollHeight}px`;
+    }
+
+    /** Hands the height back to the content, so a banner whose text changes still fits it. */
+    function onBannerSettled(element: Element): void {
+        (element as HTMLElement).style.height = "";
+    }
+
+    function onBannerLeave(element: Element): void {
+        const box = element as HTMLElement;
+        box.style.height = `${box.scrollHeight}px`;
+        void box.offsetHeight;
+        box.style.height = "0px";
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => [props.connection, props.isBehind] as const, ([connection, isBehind]) => {
+        if (connection) {
+            wasOffline.value = true;
+        }
+        else if (!isBehind) {
+            wasOffline.value = false;
+        }
+    });
+
+    // #endregion Watchers
 </script>

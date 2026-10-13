@@ -1,6 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="rootElement" class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase" :data-layout="layout">
+    <div ref="rootElement"
+         class="chat-shell"
+         data-testid="chat-shell"
+         :data-phase="shell.state.phase"
+         :data-layout="layout"
+         :data-phone="isPhone ? 'true' : 'false'">
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -10,20 +15,38 @@
             {{ refusal }}
         </NotificationBox>
 
-        <div v-else class="chat-shell-layout">
-            <ChannelSidebar :rows="shell.channels.rows"
-                            :activeChannelId="shell.state.activeChannelId"
-                            :isNewMessageShown="shell.isNewMessageShown"
-                            @select="onSelect"
-                            @newMessage="isPickerShown = true" />
+        <div v-else class="chat-frame" :class="{ 'is-pane-motion-on': isPaneMotionOn }" data-testid="chat-frame" :data-pane="pane">
+            <div class="chat-frame-side"
+                 data-testid="frame-sidebar"
+                 :aria-hidden="isSidebarHidden ? 'true' : undefined"
+                 :inert="isSidebarHidden || undefined"
+                 :style="isSidebarGone ? goneStyle : undefined">
+                <ChannelSidebar :rows="shell.channels.rows"
+                                :activeChannelId="shell.state.activeChannelId"
+                                :isNewMessageShown="shell.isNewMessageShown"
+                                @select="onSelect"
+                                @newMessage="isPickerShown = true" />
+            </div>
 
-            <div class="chat-shell-main">
+            <section class="chat-frame-main"
+                     data-testid="frame-main"
+                     aria-label="Conversation"
+                     :aria-hidden="isConversationHidden ? 'true' : undefined"
+                     :inert="isConversationHidden || undefined"
+                     :style="isConversationGone ? goneStyle : undefined">
                 <ChatHeader :title="activeTitle"
+                            :subtitle="activeSubtitle"
+                            :kind="activeKind"
+                            :isPublic="activeRow?.is_public ?? false"
+                            :people="activePeople"
                             :connection="shell.state.connection"
                             :banner="shell.state.banner"
+                            :isUpdateRequired="shell.state.isUpdateRequired"
                             :isBehind="isActiveBehind"
                             :isPushOffered="shell.state.isPushOffered"
-                            @turnOnPush="onTurnOnPush" />
+                            :isPhone="isPhone"
+                            @turnOnPush="onTurnOnPush"
+                            @back="onBack" />
 
                 <MessageFeed v-if="activeChannelId"
                              :key="activeChannelId"
@@ -35,6 +58,7 @@
                              :organizationName="organizationName"
                              :layout="layout"
                              :isDirectMessage="isActiveDirectMessage"
+                             :isPhone="isPhone"
                              @seen="shell.seen"
                              @markRead="shell.markRead"
                              @firstShown="shell.firstMessageShown"
@@ -50,7 +74,10 @@
                 </div>
 
                 <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? held?.body ?? ''" :heldBy="draft ?? held" :isTextKeptOnSend="isTextKeptOnSend(draft)" @send="shell.send" @edit="shell.directMessages.edit" />
-            </div>
+            </section>
+
+            <!-- The panel column, closed until a thread or a list opens in it. -->
+            <aside class="chat-frame-panel" data-testid="frame-panel" aria-hidden="true"></aside>
         </div>
 
         <DirectMessagePicker v-model="isPickerShown"
@@ -61,31 +88,99 @@
                              @unchoose="shell.directMessages.unchoose"
                              @open="onOpenDirectMessage" />
 
-        <ErrorToast :errors="shell.state.errors" @dismiss="shell.dismissError" />
+        <div class="chat-shell-toasts">
+            <ErrorToast :errors="shell.state.errors" @dismiss="shell.dismissError" />
+        </div>
     </div>
 </template>
 
 <style scoped>
+/*
+    Fills the Full Worksurface zone it is placed in, flush, with no card around it. The height is
+    the one that layout gives its zone, the window less Rock's header, 36px and any context slicer,
+    written out because Rock wraps a block in a container of its own that a percentage cannot
+    reach through.
+*/
 .chat-shell {
+    position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 480px;
+    height: calc(100vh - var(--top-header-height, 80px) - 36px - var(--context-slicer-height, 0px));
 }
 
-.chat-shell-layout {
-    display: flex;
+.chat-frame {
+    position: relative;
+    display: grid;
     flex: 1;
-    min-height: 480px;
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-sm);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: 296px minmax(0, 1fr) 0px;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--chat-surface);
+    transition: grid-template-columns var(--chat-t-panel) var(--chat-ease-in);
+}
+
+/* Clipped where the browser can, so a scroll into view never moves the frame itself sideways. */
+@supports (overflow: clip) {
+    .chat-frame {
+        overflow: clip;
+    }
+}
+
+.chat-frame-side {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    min-width: 0;
+    min-height: 0;
+}
+
+.chat-frame-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--chat-surface);
+}
+
+.chat-frame-panel {
+    min-width: 0;
     overflow: hidden;
 }
 
-.chat-shell-main {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-width: 0;
+/* A phone: one pane fills the frame and the other waits beside it, the list a little to the left. */
+.chat-shell[data-phone="true"] .chat-frame {
+    display: block;
+}
+
+.chat-shell[data-phone="true"] .chat-frame-side,
+.chat-shell[data-phone="true"] .chat-frame-main {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+/* Only a move the person made slides; the conversation a link opens is simply there. */
+.chat-shell[data-phone="true"] .chat-frame.is-pane-motion-on .chat-frame-side,
+.chat-shell[data-phone="true"] .chat-frame.is-pane-motion-on .chat-frame-main {
+    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-shell[data-phone="true"] .chat-frame-panel {
+    display: none;
+}
+
+.chat-shell[data-phone="true"] .chat-frame[data-pane="conversation"] .chat-frame-side {
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-24%);
+}
+
+.chat-shell[data-phone="true"] .chat-frame[data-pane="list"] .chat-frame-main {
+    pointer-events: none;
+    transform: translateX(100%);
 }
 
 .chat-shell-empty {
@@ -100,10 +195,20 @@
     flex-direction: column;
     gap: 8px;
 }
+
+/* Over the conversation rather than under the frame, so a failure never shortens it. */
+.chat-shell-toasts {
+    position: absolute;
+    top: 124px;
+    left: 50%;
+    z-index: 20;
+    width: min(420px, calc(100% - 32px));
+    transform: translateX(-50%);
+}
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref, shallowRef, StyleValue, watch } from "vue";
     import { createClient } from "@Obsidian/Libs/supabase";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -117,7 +222,7 @@
     import { birthdateOutcome, isBirthdatePromptShown } from "./ChatShell/birthdate.partial";
     import BirthdatePrompt from "./ChatShell/components/birthdatePrompt.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
-    import ChatHeader from "./ChatShell/components/chatHeader.partial.obs";
+    import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
@@ -125,7 +230,8 @@
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
-    import { applyChatTheme } from "./ChatShell/ui/brand.partial";
+    import { SidebarRow } from "./ChatShell/types.partial";
+    import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
 
     // #region Types
 
@@ -162,6 +268,33 @@
 
     const rootElement = ref<HTMLElement>();
 
+    /** Below this width the block shows one pane at a time, as on a phone. */
+    const phoneWidth = 760;
+
+    /** Whether the block itself is narrower than a phone's layout allows, wherever it sits in the window. */
+    const isPhone = ref(false);
+
+    /** Set by Back on a phone, so the list shows while the conversation stays open behind it. */
+    const isListChosen = ref(false);
+
+    /** Turned on by the person's first move between panes, so the pane a page load opens does not slide in. */
+    const isPaneMotionOn = ref(false);
+
+    // A pane that has slid out of view is also hidden, once its slide is over, because the oldest
+    // Safari Rock supports ignores inert and would still let Tab walk into it.
+    const isSidebarGone = ref(false);
+    const isConversationGone = ref(false);
+    const goneStyle: StyleValue = { visibility: "hidden" };
+
+    /** The design's pane slide, used when the sheet is not on the page. */
+    const fallbackPaneSlideMs = 300;
+
+    let paneGoneTimer: number | undefined;
+
+    // The block's own width, not the window's or a container query's, since the oldest Safari Rock
+    // supports has no container queries and a narrow zone of a wide window is still narrow.
+    let resizeObserver: ResizeObserver | null = null;
+
     /** The cookie Rock reads at sign-out to take this browser out of push. */
     const pushCookieName = "rock_chat_push";
 
@@ -195,34 +328,90 @@
         || !shell.value.state.isComposerOpen
         || draft.value?.status === "starting");
 
+    /** The sidebar row of the open conversation, which carries everything the header draws. */
+    const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
+
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
-    const isActiveDirectMessage = computed((): boolean => {
-        const row = shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId);
-        return row?.channel_type === "dm" && (row.dm_other_count ?? 1) <= 1;
+    const isActiveDirectMessage = computed((): boolean => activeRow.value?.channel_type === "dm" && (activeRow.value.dm_other_count ?? 1) <= 1);
+
+    /** The other people of the open direct message or draft, by the names the sidebar shows. */
+    const activePeople = computed((): string[] => {
+        if (draft.value) {
+            return draft.value.people.map(p => `${p.nick_name} ${p.last_name}`);
+        }
+
+        return activeRow.value?.dm_names ?? [];
+    });
+
+    const activeKind = computed((): HeaderRoomKind | null => {
+        if (draft.value) {
+            return draft.value.people.length > 1 ? "group" : "person";
+        }
+
+        if (!activeRow.value) {
+            return null;
+        }
+
+        if (activeRow.value.channel_type !== "dm") {
+            return "channel";
+        }
+
+        return isActiveDirectMessage.value ? "person" : "group";
     });
 
     const activeTitle = computed((): string => {
-        if (draft.value) {
-            return draft.value.people.map(p => `${p.nick_name} ${p.last_name}`).join(", ");
+        if (activeRow.value?.name) {
+            return activeRow.value.name;
         }
 
-        const row = shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId);
-        if (!row) {
-            return "";
-        }
-        return row.name || (row.dm_names ?? []).join(", ");
+        // A group the platform names only its first few people for says how many more there are.
+        const others = draft.value ? draft.value.people.length : (activeRow.value?.dm_other_count ?? activePeople.value.length);
+        return joinNames(activePeople.value, others - activePeople.value.length);
     });
+
+    /** A group's head count, the one subtitle the wire carries; a channel's description and a person's campus are not on it yet. */
+    const activeSubtitle = computed((): string | null => {
+        if (activeKind.value !== "group") {
+            return null;
+        }
+
+        const others = draft.value ? draft.value.people.length : (activeRow.value?.dm_other_count ?? activePeople.value.length);
+        return `${others + 1} people`;
+    });
+
+    /** Which pane a phone shows: the conversation once one is open, until Back asks for the list. */
+    const pane = computed((): "list" | "conversation" => (activeChannelId.value || draft.value) && !isListChosen.value ? "conversation" : "list");
+
+    const isSidebarHidden = computed((): boolean => isPhone.value && pane.value === "conversation");
+
+    const isConversationHidden = computed((): boolean => isPhone.value && pane.value === "list");
 
     // #endregion Computed Values
 
     // #region Event Handlers
 
     function onSelect(channelId: string): void {
+        // Choosing the conversation already open behind the list brings it back too.
+        isListChosen.value = false;
+        isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
+    }
+
+    function onBack(): void {
+        isListChosen.value = true;
+        isPaneMotionOn.value = true;
+    }
+
+    function onResize(entries: ResizeObserverEntry[]): void {
+        const width = entries[entries.length - 1]?.contentRect.width;
+        if (width !== undefined) {
+            isPhone.value = width < phoneWidth;
+        }
     }
 
     /** The picker closes once a conversation or a draft is open, and stays to show a failure. */
     async function onOpenDirectMessage(): Promise<void> {
+        isPaneMotionOn.value = true;
         await shell.value.openDirectMessage();
         if (!shell.value.directMessages.error) {
             isPickerShown.value = false;
@@ -377,6 +566,29 @@
         return [session?.personNickName, session?.personLastName].filter(part => !!part).join(" ");
     }
 
+    /** Names as a list reads them, "A and B" or "A, B and C", with any the list left out as "and 2 more". */
+    function joinNames(names: string[], unnamed: number): string {
+        if (unnamed > 0) {
+            return `${names.join(", ")} and ${unnamed} more`;
+        }
+
+        if (names.length <= 1) {
+            return names[0] ?? "";
+        }
+
+        return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+    }
+
+    /** How long a pane slides: none for a move the person did not make, or when they ask for reduced motion. */
+    function paneSlideMs(): number {
+        const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+        if (!isPaneMotionOn.value || isReduced || !rootElement.value) {
+            return 0;
+        }
+
+        return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
+    }
+
     /** The browser's local storage, or null where the browser blocks it. */
     function safeLocalStorage(): Storage | null {
         try {
@@ -404,6 +616,31 @@
         void done?.catch(() => undefined);
     });
 
+    // A pane coming into view is reachable at once; one leaving is hidden after it has slid away.
+    watch([isSidebarHidden, isConversationHidden], () => {
+        window.clearTimeout(paneGoneTimer);
+        isSidebarGone.value &&= isSidebarHidden.value;
+        isConversationGone.value &&= isConversationHidden.value;
+
+        const finish = (): void => {
+            isSidebarGone.value = isSidebarHidden.value;
+            isConversationGone.value = isConversationHidden.value;
+        };
+
+        const slideMs = paneSlideMs();
+        if (slideMs === 0) {
+            finish();
+        }
+        else {
+            paneGoneTimer = window.setTimeout(finish, slideMs);
+        }
+    });
+
+    // Any conversation that opens, from a row, a push or a new message, comes forward on a phone.
+    watch([activeChannelId, draft], () => {
+        isListChosen.value = false;
+    });
+
     // #endregion Watchers
 
     // #region Lifecycle Hooks
@@ -412,6 +649,11 @@
         // Once per load: the church color and whether the page's Rock theme can follow the system into dark.
         if (rootElement.value) {
             applyChatTheme(rootElement.value);
+
+            if (typeof ResizeObserver !== "undefined") {
+                resizeObserver = new ResizeObserver(onResize);
+                resizeObserver.observe(rootElement.value);
+            }
         }
 
         navigator.serviceWorker?.addEventListener("message", onWorkerMessage);
@@ -419,6 +661,8 @@
     });
 
     onBeforeUnmount(() => {
+        resizeObserver?.disconnect();
+        window.clearTimeout(paneGoneTimer);
         navigator.serviceWorker?.removeEventListener("message", onWorkerMessage);
         void shell.value.stop();
     });

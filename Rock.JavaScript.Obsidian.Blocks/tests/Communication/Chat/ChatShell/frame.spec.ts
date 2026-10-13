@@ -33,7 +33,7 @@ const team: SidebarRow = sidebarRow({ channel_id: "c0000001-0000-4000-8000-00000
 const dmAnna: SidebarRow = sidebarRow({
     channel_id: "c0000005-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Anna"],
+    dm_names: ["Anna Kim"],
     dm_other_count: 1
 });
 
@@ -258,11 +258,11 @@ describe("the frame on a wide block", () => {
         expect(w.find("[data-testid='header-back']").exists()).toBe(false);
     });
 
-    test("titles a two-person conversation by the other person, as the sidebar does", async () => {
+    test("titles a two-person conversation by the other person's full name, as the sidebar does", async () => {
         const w = await mountBlock(1200);
         await openRow(w, dmAnna.channel_id);
 
-        expect(w.get("[data-testid='header-title']").text()).toBe("Anna");
+        expect(w.get("[data-testid='header-title']").text()).toBe("Anna Kim");
     });
 });
 
@@ -328,5 +328,73 @@ describe("the phone panes", () => {
         expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
         expect(isPaneHidden(w, "frame-main")).toBe(false);
         expect(w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}']`).attributes("aria-current")).toBeTruthy();
+    });
+});
+
+describe("a phone pane out of view", () => {
+    /** Whether a pane is taken out of the page's tab order by its style, which every browser honours, unlike inert. */
+    function isOutOfReach(w: VueWrapper, testId: string): boolean {
+        return (w.get(`[data-testid='${testId}']`).element as HTMLElement).style.visibility === "hidden";
+    }
+
+    /** Longer than any pane's slide, so a pane that slid away has finished. */
+    async function afterSlide(): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve, 450));
+        await settle();
+    }
+
+    afterEach(() => {
+        delete (window as { matchMedia?: unknown }).matchMedia;
+    });
+
+    test("is out of reach once the conversation has slid over the list, and not before", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        // Still sliding: the list stays drawn until the conversation covers it.
+        expect(isOutOfReach(w, "frame-sidebar")).toBe(false);
+
+        await afterSlide();
+        expect(isOutOfReach(w, "frame-sidebar")).toBe(true);
+        expect(isOutOfReach(w, "frame-main")).toBe(false);
+    });
+
+    test("comes back into reach at once on Back, and the conversation leaves reach after its slide", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await afterSlide();
+
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+        expect(isOutOfReach(w, "frame-sidebar")).toBe(false);
+
+        await afterSlide();
+        expect(isOutOfReach(w, "frame-main")).toBe(true);
+    });
+
+    test("is out of reach at once when the person asks for reduced motion", async () => {
+        window.matchMedia = ((query: string) => ({ matches: query.includes("reduce"), media: query })) as unknown as typeof window.matchMedia;
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        expect(isOutOfReach(w, "frame-sidebar")).toBe(true);
+    });
+
+    test("never applies to a wide block, where both panes show", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await afterSlide();
+
+        expect(isOutOfReach(w, "frame-sidebar")).toBe(false);
+        expect(isOutOfReach(w, "frame-main")).toBe(false);
+    });
+});
+
+describe("the header's title", () => {
+    test("is a channel's name as Rock writes it, with no '#' before it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team");
     });
 });

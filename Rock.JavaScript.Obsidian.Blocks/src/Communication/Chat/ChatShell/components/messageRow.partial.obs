@@ -13,7 +13,7 @@
 
         <!-- A system line: quiet, unattributed, centred in bubbles and in the text column in Community. -->
         <template v-if="state === 'system'">
-            <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" size="xs" /></span>
+            <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
             <span class="chat-sys-text">
                 <MessageBody :text="display.text" :pieces="serverPieces" :personAliasGuid="personAliasGuid" />
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
@@ -24,7 +24,7 @@
         <template v-else-if="state === 'card'">
             <template v-if="layout === 'community'">
                 <div class="chat-cm-gutter">
-                    <Avatar :people="[face]" :size="36" />
+                    <span class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
                 </div>
                 <div class="chat-cm-main">
                     <div class="chat-cm-head" data-testid="message-head">
@@ -51,7 +51,7 @@
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
         <template v-else-if="layout === 'community'">
             <div class="chat-cm-gutter">
-                <Avatar v-if="isHead" :people="[face]" :size="36" />
+                <span v-if="isHead" class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
                 <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
             </div>
             <div class="chat-cm-main">
@@ -165,8 +165,10 @@
     align-items: flex-end;
 }
 
+/* The name, every bubble and the time stand 2px apart, as one column. */
 .chat-msg-name {
     padding: 0 12px 1px 54px;
+    margin-bottom: 2px;
     font-size: 12.5px;
     font-weight: 600;
     color: var(--chat-text-2);
@@ -179,9 +181,21 @@
     max-width: 100%;
 }
 
+/*
+    The face hangs from the bubble's bottom edge and adds no height of its own, so a bubble shorter
+    than the face, a deleted message or a large emoji, sits right under the name like any other.
+*/
 .chat-msg-face {
+    position: relative;
     flex: none;
+    align-self: stretch;
     width: 34px;
+}
+
+.chat-msg-face > :deep(.chat-pile) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
 
 /* The zero minimum lets the bubble shrink to the line beside the face rather than push past it. */
@@ -258,9 +272,9 @@
 }
 
 .chat-bubble.is-tomb {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     font-size: 13.5px;
     font-style: italic;
     color: var(--chat-muted);
@@ -286,12 +300,16 @@
 .chat-msg-edited {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     min-height: 16px;
     padding: 1px 12px 0;
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
+}
+
+.is-conversational .chat-meta {
+    margin-top: 2px;
 }
 
 .is-conversational:not(.is-own) .chat-meta,
@@ -331,13 +349,26 @@
     color: var(--chat-muted);
 }
 
-/* Community. */
+/*
+    Community. The gutter, its gap to the text and the row's side padding are one set, shared with
+    the system line, and narrower on a phone so the text keeps its width.
+*/
 .chat-msg.is-community {
+    --chat-cm-gut: 36px;
+    --chat-cm-gap: 12px;
+    --chat-cm-pad: 20px;
     display: grid;
-    grid-template-columns: 36px minmax(0, 1fr);
-    column-gap: 12px;
-    padding: 2px 20px;
+    grid-template-columns: var(--chat-cm-gut) minmax(0, 1fr);
+    align-items: start;
+    column-gap: var(--chat-cm-gap);
+    padding: 2px var(--chat-cm-pad);
     border-radius: 0;
+}
+
+.chat-msg.is-community.is-phone {
+    --chat-cm-gut: 32px;
+    --chat-cm-gap: 10px;
+    --chat-cm-pad: 12px;
 }
 
 .chat-msg.is-community.is-head {
@@ -367,13 +398,24 @@
 .chat-cm-gutter {
     display: flex;
     justify-content: center;
+    min-width: 0;
 }
 
+/* The face sits 2px down, so its middle meets the name's line rather than the row's top. */
+.chat-cm-av {
+    padding-top: 2px;
+    line-height: 0;
+}
+
+/* One line as tall as the text's, so the time sits on the text it belongs to. */
 .chat-cm-gutter-time {
-    padding-top: 4px;
+    width: 100%;
     font-size: 10.5px;
     font-variant-numeric: tabular-nums;
+    line-height: 22px;
     color: var(--chat-muted);
+    text-align: center;
+    white-space: nowrap;
     opacity: 0;
 }
 
@@ -382,25 +424,47 @@
     opacity: 1;
 }
 
+.chat-cm-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+/* The head line is 22px whatever sits in it, so a pill beside the name never moves the text. */
 .chat-cm-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 8px;
+    column-gap: 8px;
+    max-width: 100%;
+    min-height: 22px;
+    line-height: 22px;
+}
+
+.chat-cm-head .chat-pill {
+    align-self: center;
 }
 
 .chat-cm-name {
+    max-width: 100%;
+    overflow: hidden;
     font-size: 14.5px;
     font-weight: 700;
     color: var(--chat-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .chat-cm-time {
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
+    white-space: nowrap;
 }
 
 .chat-cm-text {
+    max-width: 100%;
     font-size: 14.5px;
     line-height: 1.5;
     color: var(--chat-text);
@@ -419,7 +483,7 @@
 }
 
 .chat-cm-text.is-tomb {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 13.5px;
@@ -427,19 +491,26 @@
     color: var(--chat-muted);
 }
 
-.chat-cm-edited {
-    margin-left: 4px;
+.chat-cm-edited,
+.chat-cm-state {
+    margin-left: 6px;
     font-size: 12px;
+    line-height: 1;
     color: var(--chat-muted);
+    white-space: nowrap;
 }
 
 .chat-cm-state {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    margin-left: 6px;
-    font-size: 11.5px;
-    color: var(--chat-muted);
+    margin-left: 8px;
+    vertical-align: 1px;
+}
+
+.chat-cm-text.is-jumbo .chat-cm-edited,
+.chat-cm-text.is-jumbo .chat-cm-state {
+    vertical-align: middle;
 }
 
 .chat-cm-state.is-sent {
@@ -448,7 +519,8 @@
 }
 
 .is-community .chat-meta {
-    padding: 1px 0 0;
+    min-height: 0;
+    padding: 2px 0 0;
 }
 
 .is-community .chat-notice {
@@ -467,16 +539,23 @@
     text-align: center;
 }
 
+/* In Community it sits on the text column, its icon in the gutter, a little roomier than a row. */
 .chat-msg.is-community.is-system {
-    display: grid;
+    align-items: center;
     justify-content: stretch;
-    margin: 0;
+    gap: 0 var(--chat-cm-gap);
+    margin: 6px 0 0;
+    padding: 3px var(--chat-cm-pad);
     font-size: 13px;
     text-align: left;
 }
 
-.is-community .chat-sys-icon {
+.chat-sys-icon {
     display: flex;
+    color: var(--chat-icon);
+}
+
+.is-community .chat-sys-icon {
     justify-content: center;
 }
 
@@ -486,9 +565,9 @@
 }
 
 .chat-sys-time {
-    margin-left: 6px;
+    margin-left: 8px;
     font-size: 11.5px;
-    color: var(--chat-muted);
+    font-variant-numeric: tabular-nums;
 }
 
 /* A block post: a card from the church. */
@@ -658,6 +737,12 @@
             default: "single"
         },
 
+        /** Whether the chat is in its one-pane phone layout, where Community's gutter and faces are smaller. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
         /** A direct message names nobody over a bubble: the header already says who it is with. */
         isDirectMessage: {
             type: Boolean,
@@ -802,6 +887,9 @@
         return "Someone";
     });
 
+    /** Community's face fills its gutter, which is narrower on a phone. */
+    const communityFaceSize = computed((): number => props.isPhone ? 32 : 36);
+
     const face = computed((): Face => ({
         name: displayName.value,
         photoUrl: props.message?.sender_avatar_url ?? (props.isOwn ? props.personPhotoUrl : null)
@@ -854,8 +942,12 @@
 
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 
-    /** A system line's icon in Community's gutter, by what it says happened. */
+    /** A system line's icon: in Community's gutter, by what it says happened; in bubbles, always the quiet info mark. */
     const systemIcon = computed((): string => {
+        if (props.layout !== "community") {
+            return "info";
+        }
+
         const text = display.value.text ?? "";
         if (/\b(joined|left)\b/.test(text)) {
             return "door";
@@ -872,6 +964,7 @@
         [`is-${props.layout}`]: true,
         [`is-${state.value}`]: true,
         "is-own": props.isOwn,
+        "is-phone": props.isPhone,
         "is-head": isHead.value,
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,

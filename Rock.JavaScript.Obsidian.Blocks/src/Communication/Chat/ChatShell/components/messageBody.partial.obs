@@ -8,17 +8,17 @@
             </div>
             <div v-else :class="row.cssClass" :data-testid="row.testId">
                 <template v-for="(piece, pieceIndex) in row.pieces" :key="pieceIndex">
-                    <a v-if="piece.kind === 'link'" :href="piece.url" target="_blank" rel="noopener noreferrer nofollow">{{ piece.text }}</a>
-                    <span v-else-if="piece.kind === 'mention'"
+                    <a v-if="piece.kind === 'link'" class="chat-lnk" :href="piece.url" target="_blank" rel="noopener noreferrer nofollow">{{ piece.text }}</a>
+                    <span v-else-if="piece.kind === 'mention'" :class="{ 'chat-mn-wrap': !!piece.trail }"><span
                           class="chat-mn"
-                          :class="`is-${piece.mention}`"
+                          :class="[`is-${piece.mention}`, { 'is-punctuated': !!piece.trail }]"
                           data-testid="piece-mention"
                           :data-mention="piece.mention"
                           :aria-label="piece.label"><span v-if="piece.mention === 'all'" class="chat-mn-glyph" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
                           class="chat-av chat-mn-av"
                           :data-initial="piece.initial"
                           :style="{ '--chat-av-hue': piece.hue }"
-                          aria-hidden="true"></span><span class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></span>
+                          aria-hidden="true"></span><span v-if="piece.mention !== 'all'" class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></span>{{ piece.trail }}</span>
                     <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
                     <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
                     <template v-else>{{ piece.text }}</template>
@@ -39,8 +39,12 @@
     overflow-wrap: break-word;
 }
 
-/* Inline rather than a flex box, so the faces below can sit on the text's baseline. */
+/*
+    An inline block on the text's baseline, so its 1px top and bottom padding count toward the
+    line: a line holding a chip is that much taller, as a pill needs room above and below its text.
+*/
 .chat-mn {
+    display: inline-block;
     padding: 1px 6px 1px 2px;
     font-weight: 600;
     color: var(--chat-brand-ink);
@@ -64,6 +68,16 @@
     background: var(--chat-mn-all-bg);
 }
 
+/* Punctuation right after a chip stays on its line, and the chip's end padding gives way to it. */
+.chat-mn-wrap {
+    white-space: nowrap;
+}
+
+.chat-mn.is-punctuated {
+    padding-right: 3px;
+    margin-right: -1px;
+}
+
 /*
     A one-letter face in the sheet's avatar colors, its letter drawn by the style so the chip's
     text stays the mention as written. Its bottom sits 4px below the name's baseline: an inline
@@ -84,17 +98,32 @@
     content: attr(data-initial);
 }
 
+/* The room's mark, 16px with a 10px glyph centred by its top padding, sunk like the faces. */
 .chat-mn-glyph {
-    display: inline-grid;
-    flex: none;
-    place-items: center;
+    display: inline-block;
     width: 16px;
     height: 16px;
+    padding-top: 3px;
     margin-right: 4px;
-    vertical-align: -3px;
+    overflow: hidden;
+    line-height: 0;
     color: var(--chat-on-info);
+    text-align: center;
+    vertical-align: -4px;
     background: var(--chat-info);
     border-radius: 50%;
+}
+
+.chat-mn-glyph :deep(.chat-ic) {
+    width: 10px;
+    height: 10px;
+    stroke-width: 2.4;
+}
+
+.chat-lnk {
+    color: var(--chat-brand-ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .chat-emoji-image {
@@ -133,6 +162,9 @@
 
         /** A mention's chip: someone else, the reader, or the whole room. */
         mention?: "person" | "you" | "all";
+
+        /** Punctuation that follows a chip with no space, kept on the chip's line. */
+        trail?: string;
         name?: string;
         initial?: string;
         hue?: string;
@@ -226,7 +258,7 @@
         }
 
         if (piece.type === "link" && isWebAddress(piece.url)) {
-            return { kind: "link", text, url: piece.url };
+            return { kind: "link", text: linkText(text), url: piece.url };
         }
 
         if (piece.type === "emoji") {
@@ -251,8 +283,9 @@
         const name = text.replace(/^@/, "");
         const guid = textOf(piece.person_alias_guid).toLowerCase();
 
+        // The room's chip reads "@all" on screen; a person's chip shows the name, its "@" spoken only.
         if (piece.all === true || (!guid && name.toLowerCase() === "all")) {
-            return { kind: "mention", text, mention: "all", name: "all", label: "@all, everyone in this channel" };
+            return { kind: "mention", text, mention: "all", name: "@all", label: "@all, everyone in this channel" };
         }
 
         const isReader = !!guid && guid === props.personAliasGuid.toLowerCase();
@@ -267,13 +300,42 @@
         };
     }
 
+    /**
+     * A link reads as its address without the scheme, as "cedarhill.church/hike"; the scheme says
+     * nothing a reader needs, and the link still opens the full address.
+     */
+    function linkText(text: string): string {
+        return text.replace(/^https?:\/\//i, "") || text;
+    }
+
     /** The pieces to draw, or the text as one piece when the server sent none. */
     function drawnPieces(pieces: unknown, text: string | null): DrawnPiece[] {
         if (Array.isArray(pieces) && pieces.length > 0) {
-            return pieces.map(drawnPiece).filter((piece): piece is DrawnPiece => piece !== null);
+            return withChipPunctuation(pieces.map(drawnPiece).filter((piece): piece is DrawnPiece => piece !== null));
         }
 
         return text ? [{ kind: "text", text }] : [];
+    }
+
+    /** Moves the punctuation that follows a chip onto the chip, so the two never break apart. */
+    function withChipPunctuation(pieces: DrawnPiece[]): DrawnPiece[] {
+        const out: DrawnPiece[] = [];
+        for (const piece of pieces) {
+            const previous = out[out.length - 1];
+            const trail = piece.kind === "text" ? /^[.,!?;:)]+/.exec(piece.text)?.[0] : undefined;
+
+            if (trail && previous?.kind === "mention" && !previous.trail) {
+                out[out.length - 1] = { ...previous, trail };
+                const rest = piece.text.slice(trail.length);
+                if (rest) {
+                    out.push({ ...piece, text: rest });
+                }
+                continue;
+            }
+
+            out.push(piece);
+        }
+        return out;
     }
 
     /** One block as drawn: a kind this client knows, else its fallback text. */

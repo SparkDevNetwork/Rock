@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'has-strip': isStripShown, 'has-jump': isJumpShown }">
+    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-jump': isJumpShown }">
         <div v-show="isStripShown" class="chat-unread-strip" data-testid="unread-strip">
             <button type="button" class="chat-strip-jump" :aria-label="`${stripText}. Jump to the first`" @click="onStripJump">
                 <Icon :name="isDividerAbove ? 'arrow-up' : 'arrow-down'" size="xs" />
@@ -39,6 +39,7 @@
                                 :personAliasGuid="personAliasGuid"
                                 :organizationName="organizationName"
                                 :layout="layout"
+                                :isPhone="isPhone"
                                 :isArriving="isArriving(item.message.id)"
                                 :data-message-id="item.message.id" />
 
@@ -54,6 +55,7 @@
                                     :organizationName="organizationName"
                                     :layout="layout"
                                     :position="row.position"
+                                    :isPhone="isPhone"
                                     :isDirectMessage="isDirectMessage"
                                     :isJustSent="!!row.message && justSentIds.has(row.message.id)"
                                     :isArriving="!!row.pending || (!!row.message && isArriving(row.message.id))"
@@ -100,7 +102,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding: 0 0 12px;
+    padding: 8px 0 18px;
     overflow-y: auto;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
@@ -116,13 +118,26 @@
     position: relative;
 }
 
+/*
+    Community draws the pill on a ruled line. The rule is the section's background rather than a
+    piece of the pill, so it stays where the day starts while the pill sticks to the top.
+*/
+.is-community .chat-day {
+    background: linear-gradient(var(--chat-line), var(--chat-line)) no-repeat 20px 26px / calc(100% - 40px) 1px;
+}
+
+.is-community.is-phone .chat-day {
+    background-position: 12px 26px;
+    background-size: calc(100% - 24px) 1px;
+}
+
 .chat-day-pill {
     position: sticky;
     top: var(--chat-day-top);
     z-index: 2;
     display: flex;
     justify-content: center;
-    margin: 12px 0 4px;
+    margin: 14px 0 6px;
     pointer-events: none;
     transition: top var(--chat-t-base) var(--chat-ease-in);
 }
@@ -138,41 +153,38 @@
     box-shadow: var(--chat-shadow-day);
 }
 
-/* Community draws the pill on a ruled line. */
-.is-community .chat-day-pill::before {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    left: 20px;
-    z-index: -1;
-    content: "";
-    border-top: 1px solid var(--chat-line);
+/* The New divider: a rule that runs up to its label at the line's right end. */
+.chat-new-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 20px 8px 24px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--chat-danger-ink);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    transition: opacity var(--chat-d-read-fade) var(--chat-ease-state);
 }
 
 .is-community .chat-new-divider {
     margin: 10px 20px 2px;
 }
 
-.chat-new-divider {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 12px 20px 8px 24px;
-    transition: opacity var(--chat-d-read-fade) var(--chat-ease-state);
+.is-community.is-phone .chat-new-divider {
+    margin-right: 12px;
+    margin-left: 12px;
 }
 
-.chat-new-divider::after {
+.chat-new-divider::before {
     flex: 1;
+    height: 1px;
     content: "";
-    border-top: 1px solid var(--chat-new-rule);
+    background: var(--chat-new-rule);
 }
 
 .chat-new-divider span {
     padding: 1px 8px;
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--chat-danger-ink);
-    text-transform: uppercase;
     border: 1px solid var(--chat-new-outline);
     border-radius: var(--chat-r-full);
 }
@@ -194,18 +206,39 @@
     padding: 0 20px 0 64px;
 }
 
+.is-phone:not(.is-community) .chat-grp {
+    padding: 0 36px 0 12px;
+}
+
+.is-phone:not(.is-community) .chat-grp.is-own {
+    padding: 0 12px 0 44px;
+}
+
 .is-community .chat-grp {
     gap: 0;
-    margin-top: 0;
+    margin-top: 6px;
     padding: 0;
 }
 
+/*
+    A bubble is at most 78 percent of the group's width and 620px, 86 percent on a phone; another
+    person's row also holds their face and its gap, so it is that much wider.
+*/
 .chat-grp :deep(.chat-msg.is-conversational) {
-    max-width: min(78%, 620px);
+    max-width: calc(min(78%, 620px) + 42px);
 }
 
 .chat-grp.is-own :deep(.chat-msg.is-conversational) {
     align-self: flex-end;
+    max-width: min(78%, 620px);
+}
+
+.is-phone .chat-grp :deep(.chat-msg.is-conversational) {
+    max-width: calc(86% + 42px);
+}
+
+.is-phone .chat-grp.is-own :deep(.chat-msg.is-conversational) {
+    max-width: 86%;
 }
 
 .chat-unread-strip {
@@ -217,28 +250,52 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     height: 38px;
-    padding: 0 12px 0 20px;
+    padding: 0 8px 0 14px;
+    font-size: 13px;
+    font-weight: 500;
     background: var(--chat-strip-bg);
     border-bottom: 1px solid var(--chat-strip-line);
     box-shadow: var(--chat-shadow-strip);
     animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
 }
 
+/* Its padding reaches back into the strip's, so the hover fill has room and the text stays put. */
 .chat-strip-jump {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 0;
-    font-size: 13px;
-    color: var(--chat-muted);
+    min-width: 0;
+    height: 28px;
+    padding: 0 8px;
+    margin-left: -8px;
+    overflow: hidden;
+    color: var(--chat-text-2);
+    white-space: nowrap;
     background: none;
     border: 0;
+    border-radius: var(--chat-r-sm);
 }
 
 .chat-strip-jump b {
     font-weight: 650;
     color: var(--chat-danger-ink);
+}
+
+.chat-strip-jump :deep(.chat-ic) {
+    color: var(--chat-danger-ink);
+}
+
+.chat-strip-jump span {
+    overflow: hidden;
+    color: var(--chat-muted);
+    text-overflow: ellipsis;
+}
+
+.chat-strip-jump:hover b {
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .chat-ghost-button {
@@ -371,6 +428,12 @@
         },
 
         isDirectMessage: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the chat is in its one-pane phone layout, where the feed's edges come in. */
+        isPhone: {
             type: Boolean,
             default: false
         }

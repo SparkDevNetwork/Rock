@@ -125,7 +125,7 @@ export function readSettings(raw: unknown): ChatSettings {
  */
 export function serviceBanner(settings: ChatSettings): string | null {
     if (settings.client.update_required) {
-        return "This version of Rock is too old for chat. Please ask your church to update Rock.";
+        return "Chat needs a newer version of Rock. Ask your church's Rock administrator to update.";
     }
 
     if (settings.service.state === "normal") {
@@ -138,7 +138,7 @@ export function serviceBanner(settings: ChatSettings): string | null {
 
     switch (settings.service.state) {
         case "read_only":
-            return "Chat is read only for now. You can read messages but not send them.";
+            return "Chat is read-only while we do some maintenance. You can read messages but not send them.";
         case "maintenance":
             return "Chat is down for maintenance. Try again later.";
         default:

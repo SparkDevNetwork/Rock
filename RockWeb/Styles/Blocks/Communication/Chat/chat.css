@@ -51,6 +51,9 @@
     --chat-info: var(--base-info, #005DD7);
     --chat-info-ink: #0049A8;
     --chat-info-soft: #E6EFFA;
+    /* The rule under the connection banner: its status color at 30 percent, in both themes. */
+    --chat-conn-line-warning: rgba(229, 134, 0, .30);
+    --chat-conn-line-info: rgba(0, 93, 215, .30);
     --chat-success: var(--base-success, #01A11E);
     --chat-mn-me-bg: #F7E0C0;
     --chat-mn-all-bg: #DFEAF8;
@@ -178,7 +181,13 @@
     --chat-d-search-channels: 200ms;
     --chat-d-lookup-line: 300ms;
 
+    /*
+        The chat's own base size and leading, so every line box measures the same whatever the
+        Rock theme sets on the page's body: names, times and system lines take their height from it.
+    */
     font-family: var(--chat-font);
+    font-size: 14px;
+    line-height: 1.45;
     color: var(--chat-text);
 }
 

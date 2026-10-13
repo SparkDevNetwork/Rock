@@ -54,13 +54,73 @@ describe("a message body's pieces", () => {
         expect(link.attributes("href")).toBe("https://x.org/a");
         expect(link.attributes("target")).toBe("_blank");
         expect(link.attributes("rel")).toBe("noopener noreferrer nofollow");
-        expect(link.text()).toBe("https://x.org/a");
+        expect(link.text()).toBe("x.org/a");
         expect(body.get("[data-testid='piece-emoji']").text()).toBe("👍");
         expect(body.get("[data-testid='piece-emoji']").attributes("title")).toBe("Thumbs up");
         const image = body.get("img");
         expect(image.attributes("src")).toBe("https://cdn.example/party.png");
         expect(image.attributes("alt")).toBe("Party");
         expect(body.text()).not.toContain("raw");
+    });
+
+    test("a link reads as its address without the scheme, and still opens the whole address", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "link", text: "https://cedarhill.church/hike", url: "https://cedarhill.church/hike" },
+                { type: "text", text: " or " },
+                { type: "link", text: "HTTP://cedarhill.church", url: "HTTP://cedarhill.church" }
+            ]
+        });
+        const links = body.findAll("a");
+
+        expect(links.map(link => link.text())).toEqual(["cedarhill.church/hike", "cedarhill.church"]);
+        expect(links.map(link => link.attributes("href"))).toEqual(["https://cedarhill.church/hike", "HTTP://cedarhill.church"]);
+    });
+
+    test("the room's chip reads @all on screen, where a person's chip shows only the name", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "mention", text: "@all", all: true },
+                { type: "text", text: " and " },
+                { type: "mention", text: "@Lee Leader", person_alias_guid: "a0000007-0000-4000-8000-000000000000" }
+            ]
+        });
+        const names = body.findAll(".chat-mn-name").map(name => name.text());
+
+        expect(names).toEqual(["@all", "Lee Leader"]);
+        expect(body.text()).toBe("@all and @Lee Leader");
+    });
+
+    test("punctuation right after a chip stays on the chip's line, and the text after it is kept", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "text", text: "Welcome " },
+                { type: "mention", text: "@Priya Shah", person_alias_guid: "a0000008-0000-4000-8000-000000000000" },
+                { type: "text", text: "! So glad you came." }
+            ]
+        });
+        const wrap = body.get(".chat-mn-wrap");
+
+        expect(wrap.text()).toBe("@Priya Shah!");
+        expect(wrap.get("[data-testid='piece-mention']").classes()).toContain("is-punctuated");
+        expect(body.text()).toBe("Welcome @Priya Shah! So glad you came.");
+    });
+
+    test("a chip followed by a space keeps its full padding and no wrapper", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "mention", text: "@Priya Shah", person_alias_guid: "a0000008-0000-4000-8000-000000000000" },
+                { type: "text", text: " thanks." }
+            ]
+        });
+
+        expect(body.find(".chat-mn-wrap").exists()).toBe(false);
+        expect(body.get("[data-testid='piece-mention']").classes()).not.toContain("is-punctuated");
+        expect(body.text()).toBe("@Priya Shah thanks.");
     });
 
     test("a piece of a kind this client does not know is drawn as its text", () => {

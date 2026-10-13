@@ -144,6 +144,9 @@ export type ShellState = {
     /** The platform's banner for the service state, or null when there is none to show. */
     banner: string | null;
 
+    /** Whether the banner says this Rock is too old for the platform, which is told in its own tone. */
+    isUpdateRequired: boolean;
+
     /** Whether the composer takes a message in the service state the platform last named. */
     isComposerOpen: boolean;
 
@@ -283,6 +286,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         errors: [],
         activeChannelId: null,
         banner: null,
+        isUpdateRequired: false,
         isComposerOpen: true,
         isPushOffered: false
     }) as ShellState;
@@ -349,6 +353,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     function showSettings(): void {
         const settings = session.settings();
         state.banner = serviceBanner(settings);
+        state.isUpdateRequired = settings.client.update_required;
         state.isComposerOpen = isComposerOpen(settings.service.state);
     }
 

@@ -562,7 +562,7 @@ describe("settings from the token exchange", () => {
     });
 
     test("a Rock older than the platform's minimum is asked to update", () => {
-        expect(serviceBanner(readSettings({ client: { update_required: true } }))).toMatch(/update Rock/);
+        expect(serviceBanner(readSettings({ client: { update_required: true } }))).toBe("Chat needs a newer version of Rock. Ask your church's Rock administrator to update.");
         expect(serviceBanner(readSettings({}))).toBeNull();
     });
 

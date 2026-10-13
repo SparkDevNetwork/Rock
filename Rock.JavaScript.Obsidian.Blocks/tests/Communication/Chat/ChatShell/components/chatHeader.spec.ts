@@ -32,7 +32,7 @@ let wrapper: VueWrapper | null = null;
 
 function mountHeader(props: Record<string, unknown> = {}): VueWrapper {
     wrapper = mount(ChatHeader, {
-        props: { title: "#worship-team", ...props },
+        props: { title: "worship-team", ...props },
         attachTo: document.body
     });
     return wrapper;
@@ -77,6 +77,20 @@ describe("the title and subtitle", () => {
         const w = mountHeader({ subtitle: null });
 
         expect(w.find("[data-testid='header-subtitle']").exists()).toBe(false);
+    });
+    test("names a channel plainly and marks it with the hash icon, or the lock when it is private", async () => {
+        const w = mountHeader({ title: "Worship Team", kind: "channel", isPublic: true });
+        expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team");
+        expect(hasIcon(w, w.get(".chat-header-ic"), "hash")).toBe(true);
+
+        await w.setProps({ isPublic: false });
+        expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team");
+        expect(hasIcon(w, w.get(".chat-header-ic"), "lock")).toBe(true);
+        expect(hasIcon(w, w.get(".chat-header-ic"), "hash")).toBe(false);
+
+        await w.setProps({ title: "Anna Kim", kind: "person", people: ["Anna Kim"] });
+        expect(w.get("[data-testid='header-title']").text()).toBe("Anna Kim");
+        expect(w.find(".chat-header-ic").exists()).toBe(false);
     });
 });
 
