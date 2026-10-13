@@ -48,7 +48,8 @@
                             :isPushOffered="shell.state.isPushOffered"
                             :isPhone="isPhone"
                             @turnOnPush="onTurnOnPush"
-                            @back="onBack" />
+                            @back="onBack"
+                            @backOnline="onBackOnline" />
 
                 <MessageFeed v-if="activeChannelId"
                              :key="activeChannelId"
@@ -75,7 +76,16 @@
                     {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
                 </div>
 
-                <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? held?.body ?? ''" :heldBy="draft ?? held" :isTextKeptOnSend="isTextKeptOnSend(draft)" @send="shell.send" @edit="shell.directMessages.edit" />
+                <Composer :isDisabled="isComposerDisabled"
+                          :title="activeKind ? activeTitle : null"
+                          :isChannel="activeKind === 'channel'"
+                          :isPhone="isPhone"
+                          :isLocked="!shell.state.isComposerOpen"
+                          :heldText="draft?.body ?? held?.body ?? ''"
+                          :heldBy="draft ?? held"
+                          :isTextKeptOnSend="isTextKeptOnSend(draft)"
+                          @send="shell.send"
+                          @edit="shell.directMessages.edit" />
             </section>
 
             <!-- The panel column, closed until a thread or a list opens in it. -->
@@ -90,9 +100,7 @@
                              @unchoose="shell.directMessages.unchoose"
                              @open="onOpenDirectMessage" />
 
-        <div class="chat-shell-toasts">
-            <ErrorToast :errors="shell.state.errors" @dismiss="shell.dismissError" />
-        </div>
+        <ErrorToast :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
     </div>
 </template>
 
@@ -197,16 +205,6 @@
     flex-direction: column;
     gap: 8px;
 }
-
-/* Over the conversation rather than under the frame, so a failure never shortens it. */
-.chat-shell-toasts {
-    position: absolute;
-    top: 124px;
-    left: 50%;
-    z-index: 20;
-    width: min(420px, calc(100% - 32px));
-    transform: translateX(-50%);
-}
 </style>
 
 <script setup lang="ts">
@@ -228,7 +226,7 @@
     import Composer from "./ChatShell/components/composer.partial.obs";
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
-    import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
+    import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
@@ -265,6 +263,9 @@
     const isSavingBirthdate = ref(false);
 
     const isPickerShown = ref(false);
+
+    /** Toasts that are not failures, such as being back online after an outage. */
+    const notices = ref<ToastNotice[]>([]);
 
     const rootElement = ref<HTMLElement>();
 
@@ -323,9 +324,11 @@
     /** Text Rock refused earlier, for the box of the conversation the same people now share. */
     const held = computed((): { body: string } | null => shell.value.directMessages.held);
 
-    /** Closed with nothing to write into, in read only or maintenance, and while a draft's first message is on its way. */
+    /**
+     * Closed with nothing to write into and while a draft's first message is on its way. Read only
+     * and maintenance lock the composer instead, which says why.
+     */
     const isComposerDisabled = computed((): boolean => (!activeChannelId.value && !draft.value)
-        || !shell.value.state.isComposerOpen
         || draft.value?.status === "starting");
 
     /** The sidebar row of the open conversation, which carries everything the header draws. */
@@ -428,6 +431,17 @@
         if (!shell.value.directMessages.error) {
             isPickerShown.value = false;
         }
+    }
+
+    /** Says the outage is over, once, however many times the connection came and went. */
+    function onBackOnline(): void {
+        if (!notices.value.some(n => n.code === "back-online")) {
+            notices.value.push({ code: "back-online", text: "You're back online", icon: "check" });
+        }
+    }
+
+    function onDismissNotice(notice: ToastNotice): void {
+        notices.value = notices.value.filter(n => n.code !== notice.code);
     }
 
     function onTurnOnPush(): void {

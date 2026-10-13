@@ -1,45 +1,253 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="shown.length > 0" class="chat-error-toast" data-testid="error-toast">
-        <div v-for="error in shown" :key="`${error.code} ${error.text ?? ''}`" class="alert alert-warning chat-error-toast-item" :data-code="error.code">
-            <span>{{ messageForError(error) }}</span>
-            <button type="button" class="close" aria-label="Dismiss" @click="emit('dismiss', error)">&times;</button>
-        </div>
+    <!-- Always on the page, so a screen reader is already listening when a toast is added to it. -->
+    <div ref="toastsElement" class="chat-toasts" data-testid="error-toast" role="status">
+        <TransitionGroup name="chat-toast">
+            <div v-for="toast in toasts"
+                 :key="toast.key"
+                 class="chat-toast"
+                 :class="{ 'is-error': toast.isError }"
+                 :data-code="toast.code">
+                <Icon :name="toast.icon" size="sm" />{{ toast.text }}
+                <button v-if="toast.isError"
+                        type="button"
+                        class="chat-toast-close"
+                        aria-label="Dismiss"
+                        @click="toast.dismiss()">
+                    <Icon name="x" size="xs" />
+                </button>
+            </div>
+        </TransitionGroup>
     </div>
 </template>
 
 <style scoped>
-.chat-error-toast {
-    margin-top: 8px;
+/* At the top of the conversation, away from the composer and the newest messages. */
+.chat-toasts {
+    position: absolute;
+    top: 124px;
+    left: 50%;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+    transform: translateX(-50%);
 }
 
-.chat-error-toast-item {
-    display: flex;
+.chat-toast {
+    display: inline-flex;
+    gap: 8px;
     align-items: center;
-    justify-content: space-between;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--chat-tip-fg);
+    white-space: nowrap;
+    pointer-events: auto;
+    background: var(--chat-tip-bg);
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-pop);
+}
+
+.chat-toast :deep(.chat-ic) {
+    opacity: .8;
+}
+
+/* A failure stays until it is let go, so its pill ends in a small close button, tight to the edge. */
+.chat-toast.is-error {
+    padding-right: 6px;
+}
+
+.chat-toast-close {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    margin-left: -2px;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-toast-close:hover {
+    background: var(--chat-toast-close-hover);
+}
+
+.chat-toast-enter-active {
+    animation: chat-toast-in var(--chat-d-toast-in) var(--chat-ease-in);
+}
+
+.chat-toast-leave-active {
+    animation: chat-toast-out var(--chat-d-toast-out) var(--chat-ease-out) forwards;
+}
+
+@keyframes chat-toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.97);
+    }
+}
+
+@keyframes chat-toast-out {
+    to {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+/* Reduced motion: the toast fades in and out where it stands. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-toast-enter-active {
+        animation-name: chat-toast-fade-in;
+    }
+
+    .chat-toast-leave-active {
+        animation-name: chat-toast-fade-out;
+    }
+
+    @keyframes chat-toast-fade-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    @keyframes chat-toast-fade-out {
+        to {
+            opacity: 0;
+        }
+    }
 }
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { messageForError } from "../errors.partial";
     import { ChatError } from "../types.partial";
+    import { tokenDuration } from "../ui/brand.partial";
+    import Icon from "../ui/icon.partial.obs";
+
+    // #region Types
+
+    /** A toast that is not a failure, such as being back online, with the icon it is drawn with. */
+    export type ToastNotice = {
+        code: string;
+        text: string;
+        icon: string;
+    };
+
+    /** One pill as drawn, a failure or a notice. */
+    type ShownToast = {
+        key: string;
+        code: string;
+        text: string;
+        icon: string;
+        isError: boolean;
+        dismiss: () => void;
+    };
+
+    // #endregion Types
 
     const props = defineProps({
         errors: {
             type: Array as PropType<ChatError[]>,
             required: true
+        },
+
+        notices: {
+            type: Array as PropType<ToastNotice[]>,
+            default: () => []
         }
     });
 
     const emit = defineEmits<{
-        (e: "dismiss", error: ChatError): void
+        (e: "dismiss", error: ChatError): void;
+        (e: "dismissNotice", notice: ToastNotice): void
     }>();
+
+    // #region Values
+
+    /** The design's toast life, used when the sheet is not on the page. */
+    const fallbackLifeMs = 2600;
+
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
+
+    const toastsElement = ref<HTMLElement>();
+
+    // #endregion Values
 
     // #region Computed Values
 
-    /** The live connection's trouble is shown on the header badge, not here. */
-    const shown = computed((): ChatError[] => props.errors.filter(e => e.severity !== "degraded"));
+    /**
+     * Every pill, failures first. The live connection's trouble is shown in the header, not here.
+     * Two failures under one code with different sentences are two pills, since each says
+     * something the other does not.
+     */
+    const toasts = computed((): ShownToast[] => [
+        ...props.errors
+            .filter(e => e.severity !== "degraded")
+            .map(e => ({ key: `error ${e.code} ${e.text ?? ""}`, code: e.code, text: messageForError(e), icon: "alert", isError: true, dismiss: () => emit("dismiss", e) })),
+        ...props.notices
+            .map(n => ({ key: `notice ${n.code}`, code: n.code, text: n.text, icon: n.icon, isError: false, dismiss: () => emit("dismissNotice", n) }))
+    ]);
 
     // #endregion Computed Values
+
+    // #region Functions
+
+    /** Tells the shell a notice is done with, once, and forgets its timer. */
+    function expire(key: string): void {
+        clearTimeout(timers.get(key));
+        timers.delete(key);
+        toasts.value.find(t => t.key === key)?.dismiss();
+    }
+
+    /** How long a toast stays, as the sheet names it. */
+    function lifeMs(): number {
+        return toastsElement.value ? tokenDuration(toastsElement.value, "--chat-d-toast-life", fallbackLifeMs) : fallbackLifeMs;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // A notice's life starts when it is first drawn; one the shell let go of some other way takes
+    // its timer with it. A failure has no timer: the person may need to act on it, so it stays
+    // until they dismiss it.
+    watch(toasts, all => {
+        const shown = all.filter(t => !t.isError);
+        const keys = new Set(shown.map(t => t.key));
+
+        for (const [key, timer] of timers) {
+            if (!keys.has(key)) {
+                clearTimeout(timer);
+                timers.delete(key);
+            }
+        }
+
+        for (const toast of shown) {
+            if (!timers.has(toast.key)) {
+                timers.set(toast.key, setTimeout(() => expire(toast.key), lifeMs()));
+            }
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        for (const timer of timers.values()) {
+            clearTimeout(timer);
+        }
+        timers.clear();
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

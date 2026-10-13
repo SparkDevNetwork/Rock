@@ -1,43 +1,207 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <form class="chat-composer" @submit.prevent="onSubmit">
-        <textarea v-model="text"
-                  class="form-control chat-composer-input"
-                  rows="2"
-                  placeholder="Write a message"
-                  data-testid="composer-input"
-                  :disabled="isDisabled"
-                  @keydown="onKeydown"></textarea>
-        <button type="submit"
-                class="btn btn-primary"
-                data-testid="composer-send"
-                :disabled="isDisabled || text.trim() === ''">
-            Send
-        </button>
-    </form>
+    <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-phone': isPhone }">
+        <div v-if="isLocked" class="chat-composer-locked" data-testid="composer-locked">
+            <Icon name="lock" />
+            <span>Sending is paused for maintenance.</span>
+        </div>
+
+        <template v-else>
+            <form class="chat-composer-box" @submit.prevent="onSubmit">
+                <textarea ref="inputElement"
+                          v-model="text"
+                          class="chat-composer-input"
+                          rows="1"
+                          :placeholder="placeholder"
+                          data-testid="composer-input"
+                          :disabled="isDisabled"
+                          @keydown="onKeydown"></textarea>
+                <button type="submit"
+                        class="chat-composer-send"
+                        :class="{ 'is-ready': isReady }"
+                        aria-label="Send"
+                        data-testid="composer-send"
+                        :disabled="isDisabled || !isReady">
+                    <Icon name="arrow-up" />
+                </button>
+            </form>
+
+            <div class="chat-composer-foot">
+                <span v-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
+            </div>
+        </template>
+    </div>
 </template>
 
 <style scoped>
 .chat-composer {
     display: flex;
-    gap: 8px;
-    align-items: flex-end;
-    padding: 8px 12px;
-    border-top: 1px solid var(--chat-line-strong);
+    flex: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 20px 14px;
 }
 
+.chat-composer.is-phone {
+    padding: 0 10px 10px;
+}
+
+/* The box draws the focus for the text inside it, a ring and a soft glow in the church color. */
+.chat-composer-box {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    padding: 6px;
+    margin: 0;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-composer);
+    box-shadow: var(--chat-shadow-composer);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* A channel's look is squarer, matching its flat rows. */
+.chat-composer.is-channel .chat-composer-box {
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-composer-box:focus-within {
+    border-color: var(--chat-composer-line);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring), 0 6px 18px -10px var(--chat-composer-glow);
+}
+
+/* One 21px line at 14.5px, grown by script to what is typed until the cap, then it scrolls. */
 .chat-composer-input {
     flex: 1;
+    min-width: 0;
+    height: 35px;
+    min-height: 35px;
+    max-height: 180px;
+    padding: 7px 4px;
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--chat-text);
     resize: none;
+    background: none;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.chat-composer-input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+.chat-composer-send {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: var(--chat-icon);
+    background: var(--chat-hover);
+    border: 0;
+    border-radius: 50%;
+    transition: background-color var(--chat-t-base) var(--chat-ease-state), color var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
+}
+
+.chat-composer-send.is-ready {
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+}
+
+.chat-composer-send.is-ready:hover {
+    transform: translateY(-1px);
+}
+
+.chat-composer-send.is-ready:active {
+    transform: scale(.94);
+}
+
+.chat-composer-foot {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-height: 16px;
+    padding: 0 14px;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+}
+
+/* Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight. */
+.chat-composer-hint kbd {
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.chat-composer-locked {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-bar);
+}
+
+.chat-composer-locked :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+/* Reduced motion: the send button does not lift or press. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-composer-send.is-ready:hover,
+    .chat-composer-send.is-ready:active {
+        transform: none;
+    }
 }
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { textAfterSend } from "../composables/useSend.partial";
+    import Icon from "../ui/icon.partial.obs";
 
     const props = defineProps({
         isDisabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The open conversation's name as the header shows it, for the placeholder: a channel's
+         * name, plain, or the other people of a direct message.
+         */
+        title: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Whether the open conversation is a channel, which draws the squarer box of its look. */
+        isChannel: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the chat is in its phone layout, which has tighter padding and no key hint. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the service is read only or in maintenance, so the box gives way to a locked bar. */
+        isLocked: {
             type: Boolean,
             default: false
         },
@@ -81,7 +245,18 @@
 
     const text = ref("");
 
+    const inputElement = ref<HTMLTextAreaElement>();
+
     // #endregion Values
+
+    // #region Computed Values
+
+    const placeholder = computed((): string => props.title ? `Message ${props.title}` : "");
+
+    /** Whether there is something to send, which turns the send button to the church's fill. */
+    const isReady = computed((): boolean => text.value.trim() !== "");
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 
@@ -108,6 +283,25 @@
 
     // #endregion Event Handlers
 
+    // #region Functions
+
+    /**
+     * Sizes the box to what is typed. The height is let go first so a shorter text can shrink
+     * it, and the sheet's minimum and maximum keep it between one line and the cap, past which
+     * the text scrolls.
+     */
+    function fitToText(): void {
+        const input = inputElement.value;
+        if (!input) {
+            return;
+        }
+
+        input.style.height = "auto";
+        input.style.height = `${input.scrollHeight}px`;
+    }
+
+    // #endregion Functions
+
     // #region Watchers
 
     watch([() => props.heldText, () => props.heldBy], ([held]) => {
@@ -115,9 +309,10 @@
     });
 
     // The shell keeps a failed draft's text when the person leaves it, so it is told what the
-    // box holds now, not only what was last sent.
+    // box holds now, not only what was last sent. The box is sized once the text is in it.
     watch(text, value => {
         emit("edit", value);
+        void nextTick(fitToText);
     });
 
     // #endregion Watchers

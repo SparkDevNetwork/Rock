@@ -320,7 +320,8 @@
 
     const emit = defineEmits<{
         (e: "turnOnPush"): void,
-        (e: "back"): void
+        (e: "back"): void,
+        (e: "backOnline"): void
     }>();
 
     const props = defineProps({
@@ -453,8 +454,11 @@
         if (connection) {
             wasOffline.value = true;
         }
-        else if (!isBehind) {
+        else if (!isBehind && wasOffline.value) {
+            // The outage is over only once what was missed has been caught up, so the shell says
+            // so then and not while the catch-up banner still shows.
             wasOffline.value = false;
+            emit("backOnline");
         }
     });
 

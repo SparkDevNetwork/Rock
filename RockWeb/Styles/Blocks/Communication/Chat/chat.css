@@ -38,6 +38,8 @@
     --chat-press: rgba(13, 17, 23, .08);
     --chat-tip-bg: #1B2029;
     --chat-tip-fg: #F8F8FC;
+    /* The hover behind a toast's close button, a lift of the toast's own text color. */
+    --chat-toast-close-hover: rgba(248, 248, 252, .16);
     --chat-scrim: rgba(13, 17, 23, .38);
     --chat-pill-bg: #ECECED;
 
@@ -69,6 +71,9 @@
     /* The sidebar: the open room's icon box and the focused search box, in the church color. */
     --chat-current-line: var(--chat-current-line-light, #ECC4AE);
     --chat-focus-line: var(--chat-focus-line-light, #F3A97A);
+    /* The composer's box while it has focus: its border and the soft glow under it. */
+    --chat-composer-line: var(--chat-composer-line-light, #F4A470);
+    --chat-composer-glow: var(--chat-composer-glow-light, rgba(255, 121, 29, .6));
     /* A read room's name, stepped back from the second text color toward muted (78 to 22), so a
        bold unread name stands out beside it. */
     --chat-row-name: #464B58;
@@ -220,6 +225,8 @@
     --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
     --chat-current-line: var(--chat-current-line-dark, #64402A);
     --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
+    --chat-composer-line: var(--chat-composer-line-dark, #A75824);
+    --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
     --chat-row-name: #CCCCD9;
     --chat-intro-k: 13%;
     --chat-surface: #0D1117;
@@ -236,6 +243,7 @@
     --chat-press: rgba(248, 248, 252, .09);
     --chat-tip-bg: #F8F8FC;
     --chat-tip-fg: #0D1117;
+    --chat-toast-close-hover: rgba(13, 17, 23, .08);
     --chat-scrim: rgba(0, 0, 0, .55);
     --chat-pill-bg: #1D2127;
     --chat-danger-ink: #FF7A85;
@@ -283,6 +291,8 @@
         --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
         --chat-current-line: var(--chat-current-line-dark, #64402A);
         --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
+        --chat-composer-line: var(--chat-composer-line-dark, #A75824);
+        --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
         --chat-row-name: #CCCCD9;
         --chat-intro-k: 13%;
         --chat-surface: #0D1117;
@@ -299,6 +309,7 @@
         --chat-press: rgba(248, 248, 252, .09);
         --chat-tip-bg: #F8F8FC;
         --chat-tip-fg: #0D1117;
+        --chat-toast-close-hover: rgba(13, 17, 23, .08);
         --chat-scrim: rgba(0, 0, 0, .55);
         --chat-pill-bg: #1D2127;
         --chat-danger-ink: #FF7A85;
