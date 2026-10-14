@@ -38,6 +38,18 @@ namespace Rock.Badge.Component
     [AccountsField( "Accounts", "The accounts to limit this to, or leave blank to include all accounts", false, order: 1 )]
     [DecimalField( "Minimum Amount", "The minimum contribution amount", required: false, order: 2 )]
     [SlidingDateRangeField( "Date Range", "The date range in which the contributions were made.", defaultValue: "Last|6|Month||", required: false, order: 3 )]
+
+    /*
+        10/14/2026 - MSE
+
+        The default template puts the tooltip in an HTML attribute, which the browser
+        decodes once, and badge tooltips are then rendered as HTML (BadgeControl sets
+        html: true). A person can set their own name (for example through a public
+        signup form), so the tooltip is escaped twice to still be encoded when it is
+        rendered.
+
+        Reason: Prevent stored XSS through a person's name in the badge tooltip.
+    */
     [CodeEditorField( "Lava Template", "The lava template to use for the badge display", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, order: 4, defaultValue:
         @"
 {% if DateRange and DateRange.Summary != '' %}
@@ -54,7 +66,7 @@ namespace Rock.Badge.Component
   {% capture tooltipText %}{{ Person.NickName }} has not contributed{{ dateRangeText }}.{% endcapture %}
 {% endif %}
 
-<div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
+<div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText | Escape | Escape }}'>
   <i class='badge-icon fa fa-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 " )]

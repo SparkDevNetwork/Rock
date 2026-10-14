@@ -58,6 +58,16 @@ namespace Rock.Badge.Component
             var signalCount = validSignals.Count();
             if ( !string.IsNullOrWhiteSpace( person.TopSignalColor ) && signalCount > 0 )
             {
+                /*
+                    10/14/2026 - MSE
+
+                    The tooltip is placed in a title attribute, which the browser decodes once,
+                    and badge tooltips are then rendered as HTML (BadgeControl sets html: true).
+                    A person can set their own name (for example through a public signup form),
+                    so the nick name is HTML encoded twice to still be encoded when it is rendered.
+
+                    Reason: Prevent stored XSS through a person's name in the badge tooltip.
+                */
                 writer.Write( string.Format( @"
 <div class='rockbadge rockbadge-overlay rockbadge-overlay-invert rockbadge-signal rockbadge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}' style='color: {1};'>
         <i class='badge-icon fa fa-flag'></i>
@@ -66,7 +76,7 @@ namespace Rock.Badge.Component
                     badge.Id,
                     person.TopSignalColor,
                     signalCount,
-                    person.NickName,
+                    person.NickName.EncodeHtml().EncodeHtml(),
                     "signal".PluralizeIf( person.Signals.Count != 1 ),
                     string.Join( ", ", validSignals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
             }
