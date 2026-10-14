@@ -624,11 +624,27 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult GetPersonName( string personAliasGuid )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( $"Not authorized to edit {PrayerRequest.FriendlyTypeName}." );
+            }
+
+            var aliasGuid = personAliasGuid.AsGuidOrNull();
+
+            if ( !aliasGuid.HasValue || aliasGuid.Value == Guid.Empty )
+            {
+                return ActionNotFound();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
-                var person = personAliasService.Get( personAliasGuid ).Person;
+                var person = personAliasService.Get( aliasGuid.Value )?.Person;
 
+                if ( person == null )
+                {
+                    return ActionNotFound();
+                }
 
                 return ActionOk( new PrayerRequestDetailAddPersonResponseBag
                 {
