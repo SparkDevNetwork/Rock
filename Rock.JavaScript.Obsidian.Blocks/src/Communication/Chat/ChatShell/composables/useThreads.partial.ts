@@ -218,6 +218,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     let newestSeen: number | null = null;
     let lastSaved: number | null = null;
 
+    // The newest thread.updated for the open thread while its root is still on its way, laid over
+    // the root the page brings: the page may have been read before the reply it reports.
+    let pendingRootUpdate: ThreadUpdatedEvent | null = null;
+
     /** The root the conversation's timeline holds, if any. */
     function timelineRoot(channelId: string, rootId: number): TimelineMessage | undefined {
         return dependencies.timelines.state(channelId).messages.find(m => m.id === rootId);
@@ -337,6 +341,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         state.thread = null;
         newestSeen = null;
         lastSaved = null;
+        pendingRootUpdate = null;
 
         if (isStopped || !thread || messageId === null || (saved !== null && messageId <= saved)) {
             return;
@@ -348,36 +353,40 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
     }
 
-    /** Moves a root's counts and faces, and marks it unread when someone else replied. */
-    function applyThreadUpdated(channelId: string, update: ThreadUpdatedEvent): void {
+    /** Moves one held copy of a root by a thread.updated, marking it unread when someone else replied. */
+    function moveRoot(root: TimelineMessage, update: ThreadUpdatedEvent, isOpen: boolean): void {
         const newest = update.repliers?.[0]?.person_alias_guid?.toLowerCase() ?? null;
+        const isNewReply = update.reply_count > (root.reply_count ?? 0);
+        root.reply_count = update.reply_count;
+        root.last_reply_at = update.last_reply_at;
+        root.participant_count = update.participant_count;
+        root.repliers = update.repliers;
+
+        if (isNewReply && newest === me) {
+            // the platform makes whoever replies follow the thread
+            root.thread_following = true;
+        }
+        else if (isNewReply && root.thread_following === true && !isOpen) {
+            root.thread_unread = true;
+        }
+        if (update.reply_count === 0 && root.thread_unread === true) {
+            root.thread_unread = false;
+        }
+    }
+
+    /** Moves a root's counts and faces wherever it is held, and keeps them for a drawer still loading it. */
+    function applyThreadUpdated(channelId: string, update: ThreadUpdatedEvent): void {
         const isOpen = state.thread?.channelId === channelId && state.thread.rootId === update.root_id;
-
-        const move = (root: TimelineMessage): void => {
-            const isNewReply = update.reply_count > (root.reply_count ?? 0);
-            root.reply_count = update.reply_count;
-            root.last_reply_at = update.last_reply_at;
-            root.participant_count = update.participant_count;
-            root.repliers = update.repliers;
-
-            if (isNewReply && newest === me) {
-                // the platform makes whoever replies follow the thread
-                root.thread_following = true;
-            }
-            else if (isNewReply && root.thread_following === true && !isOpen) {
-                root.thread_unread = true;
-            }
-            if (update.reply_count === 0 && root.thread_unread === true) {
-                root.thread_unread = false;
-            }
-        };
 
         const held = timelineRoot(channelId, update.root_id);
         if (held) {
-            move(held);
+            moveRoot(held, update, isOpen);
         }
         if (isOpen && state.thread?.root) {
-            move(state.thread.root);
+            moveRoot(state.thread.root, update, true);
+        }
+        else if (isOpen) {
+            pendingRootUpdate = update;
         }
     }
 
@@ -530,6 +539,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null };
             newestSeen = null;
             lastSaved = null;
+            pendingRootUpdate = null;
 
             // Opening the thread is reading it, so its mark goes from the conversation and the list
             // at once rather than at the next save.
@@ -554,8 +564,20 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             }
 
             const page = body<ThreadPage>(result);
-            thread.root = page.root ?? null;
+            const pageRoot = page.root ?? null;
+            if (pageRoot && pendingRootUpdate) {
+                moveRoot(pageRoot, pendingRootUpdate, true);
+            }
+            pendingRootUpdate = null;
+            thread.root = pageRoot;
+
+            // A reply that arrived live while the page was on its way may be newer than the page,
+            // so what is held joins the page by id rather than being replaced by it.
+            const live = thread.replies;
             thread.replies = [...(page.messages ?? [])].sort((a, b) => a.id - b.id);
+            for (const reply of live) {
+                insertReply(reply);
+            }
             thread.following = page.following === true;
             thread.readCursor = page.read_cursor ?? null;
             thread.hasMore = page.has_more === true;

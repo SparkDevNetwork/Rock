@@ -152,6 +152,47 @@ describe("createTimelines", () => {
         expect(two.body).toBeNull();
     });
 
+    test("a thread's live counts, faces and unread mark are not undone by a page read before them", async () => {
+        const anna = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Reyes", avatar_url: null };
+        const ben = { person_alias_guid: "a0000003-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+        // the root as chat_get_history carries it, before Ben's reply
+        const rootBefore = (): TimelineMessage => ({
+            ...message(10), reply_count: 1, last_reply_at: "2026-09-23T10:01:00Z", participant_count: 1,
+            repliers: [anna], thread_following: true, thread_unread: false
+        });
+        const rejoinPage = deferred<HistoryPage>();
+        const answers: Array<HistoryPage | Deferred<HistoryPage>> = [
+            { messages: [rootBefore()], read_cursor: null, unread_count: 0, has_more: false },
+            page([]),
+            rejoinPage
+        ];
+        const timelines = createTimelines({
+            fetchPage: () => {
+                const next = answers.shift() as HistoryPage | Deferred<HistoryPage>;
+                return "promise" in next ? next.promise : Promise.resolve(next);
+            }
+        });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        // a rejoin reads the root again; Ben replies while that page is on its way, and the
+        // threads have marked the followed root unread before the timeline records the counts
+        const rejoining = timelines.onJoined(channel);
+        timelines.state(channel).messages[0].thread_unread = true;
+        timelines.applyEvent(channel, "thread.updated", {
+            channel_id: channel, root_id: 10, reply_count: 2, last_reply_at: "2026-09-23T10:05:00Z", participant_count: 2, repliers: [ben, anna]
+        });
+        rejoinPage.resolve({ messages: [rootBefore()], read_cursor: null, unread_count: 0, has_more: false });
+        await rejoining;
+
+        const held = timelines.state(channel).messages[0];
+        expect(held.reply_count).toBe(2);
+        expect(held.last_reply_at).toBe("2026-09-23T10:05:00Z");
+        expect(held.participant_count).toBe(2);
+        expect(held.repliers).toEqual([ben, anna]);
+        expect(held.thread_unread).toBe(true);
+    });
+
     test("a live event for a message not held is ignored for an edit and a delete", async () => {
         const timelines = createTimelines({ fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);

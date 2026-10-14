@@ -495,6 +495,39 @@ describe("the thread page", () => {
 
         expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42]);
     });
+
+    test("keeps a reply that arrived live while the page was on its way", async () => {
+        const { threads, answers } = await setup();
+        const answer = deferred<CallResult>();
+        answers.chat_get_thread_history = [answer];
+        const opening = threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "message.created", {
+            id: 44, channel_id: channel, parent_id: 40, shown_in_channel: false, person_alias_guid: ben,
+            message_type: "text", body: "just now", created_at: "2026-10-13T10:05:00Z"
+        });
+        answer.resolve(threadAnswer(root(40), [reply(43, 40), reply(42, 40), reply(41, 40)]));
+        await opening;
+
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43, 44]);
+    });
+
+    test("a reply in both the page and the live copy is held once, as the page carries it", async () => {
+        const { threads, answers } = await setup();
+        const answer = deferred<CallResult>();
+        answers.chat_get_thread_history = [answer];
+        const opening = threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "message.created", {
+            id: 43, channel_id: channel, parent_id: 40, shown_in_channel: false, person_alias_guid: anna,
+            message_type: "text", body: "message 43", created_at: "2026-10-13T10:05:00Z"
+        });
+        answer.resolve(threadAnswer(root(40), [reply(43, 40), reply(42, 40)]));
+        await opening;
+
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([42, 43]);
+        expect(threads.state.thread?.replies[1].sender_nick_name).toBe("Anna");
+    });
 });
 
 describe("the thread's read position", () => {
@@ -628,6 +661,39 @@ describe("thread.updated", () => {
         const drawerRoot = threads.state.thread?.root as unknown as Record<string, unknown>;
         expect(drawerRoot.reply_count).toBe(3);
         expect(drawerRoot.repliers).toEqual([benReplier, annaReplier]);
+    });
+
+    test("that lands while the drawer's page is on its way is laid over the root the page brings", async () => {
+        const { threads, answers } = await setup();
+        const answer = deferred<CallResult>();
+        answers.chat_get_thread_history = [answer];
+        const opening = threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [annaReplier, benReplier], 2));
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [benReplier, annaReplier], 3));
+        // the page was read before the newest reply
+        answer.resolve(threadAnswer(root(40), [reply(42, 40), reply(41, 40)]));
+        await opening;
+
+        const drawerRoot = threads.state.thread?.root as unknown as Record<string, unknown>;
+        expect(drawerRoot.reply_count).toBe(3);
+        expect(drawerRoot.last_reply_at).toBe("2026-10-13T10:05:00Z");
+        expect(drawerRoot.repliers).toEqual([benReplier, annaReplier]);
+    });
+
+    test("for a thread left while its page was on its way is not laid over the next thread's root", async () => {
+        const { threads, answers } = await setup();
+        const first = deferred<CallResult>();
+        answers.chat_get_thread_history = [first, threadAnswer(root(40), [reply(41, 40)])];
+        void threads.openThread(channel, 40);
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [benReplier, annaReplier], 3));
+        await threads.closeThread();
+
+        await threads.openThread(channel, 40);
+        first.resolve(threadAnswer(root(40), [reply(41, 40)]));
+        await settle();
+
+        expect((threads.state.thread?.root as unknown as Record<string, unknown>).reply_count).toBe(2);
     });
 
     test("marks a followed root unread when someone else replied", async () => {

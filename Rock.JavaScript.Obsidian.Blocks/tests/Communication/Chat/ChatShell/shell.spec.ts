@@ -901,6 +901,37 @@ describe("the send's answer", () => {
     });
 });
 
+describe("a thread's live counts", () => {
+    test("reach the conversation's timeline, so a page read before them does not take them back", async () => {
+        const h = await started();
+        const live = topicOf(h, channelTopic(tenant, channelA));
+        // the join's catch-up finds nothing newer, and a rejoin reads the held root again
+        h.history[channelA].shift()?.resolve(fakeResponse(200, { messages: [], read_cursor: 9, unread_count: 0, has_more: false }));
+        await settle();
+        live.status?.("SUBSCRIBED");
+        await settle();
+        const rejoin = h.history[channelA].shift();
+        expect(rejoin).toBeDefined();
+
+        const ben = { person_alias_guid: "a0000003-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+        live.listeners["broadcast"]?.({
+            event: "thread.updated",
+            payload: { channel_id: channelA, root_id: 10, reply_count: 1, last_reply_at: "2026-09-23T10:05:00Z", participant_count: 1, repliers: [ben] }
+        });
+        rejoin?.resolve(fakeResponse(200, {
+            messages: [{ ...page(10).messages[0], reply_count: 0, last_reply_at: null, participant_count: 0, repliers: null }],
+            read_cursor: 9,
+            unread_count: 1,
+            has_more: false
+        }));
+        await settle();
+
+        const rootHeld = h.shell.timelines.state(channelA).messages.find(m => m.id === 10);
+        expect(rootHeld?.reply_count).toBe(1);
+        expect(rootHeld?.repliers).toEqual([ben]);
+    });
+});
+
 describe("a reply in a thread", () => {
     // The shell sends a reply to the open conversation as shell.sendReply(rootId, body,
     // isShownInChannel), through the same sender and retry key as any message.

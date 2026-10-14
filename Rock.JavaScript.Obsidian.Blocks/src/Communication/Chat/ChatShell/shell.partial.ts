@@ -703,11 +703,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         return;
                     }
                     // A thread's counts move its root wherever it is held, and a reply reaches the
-                    // open thread; the timeline takes every message event it shows itself.
+                    // open thread. The threads go first: they set the root's marks, which the
+                    // timeline then records with the counts so a page read earlier cannot undo them.
                     threads.applyEvent(channelId, event, payload);
-                    if (event !== "thread.updated") {
-                        timelines.applyEvent(channelId, event, payload);
-                    }
+                    timelines.applyEvent(channelId, event, payload);
                 },
                 onPersonalEvent: (event, payload) => {
                     if (event === "resync") {

@@ -31,7 +31,7 @@
 import { reactive } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
-import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "../types.partial";
+import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
 
 /** How many messages the first page of a channel holds. */
 export const firstPageSize = 50;
@@ -442,8 +442,41 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         return { oldest: Math.min(...pageIds), newest: Math.max(...pageIds) };
     }
 
+    /**
+     * Records a thread's live counts against its root, held or not, so a page read before them
+     * does not take them back. The threads have already moved a root held here and set its
+     * following and unread marks by rules only they know, so what those marks now say is recorded
+     * with the counts, and a page's older mark does not undo them either.
+     */
+    function applyThreadCounts(channelId: string, update: ThreadUpdatedEvent): void {
+        const fields: Partial<TimelineMessage> = {
+            reply_count: update.reply_count,
+            last_reply_at: update.last_reply_at,
+            participant_count: update.participant_count,
+            repliers: update.repliers
+        };
+
+        const root = find(channelId, update.root_id);
+        if (root) {
+            Object.assign(root, fields);
+            if (root.thread_following !== undefined) {
+                fields.thread_following = root.thread_following;
+            }
+            if (root.thread_unread !== undefined) {
+                fields.thread_unread = root.thread_unread;
+            }
+        }
+        recordLive(update.root_id, fields);
+    }
+
     /** Applies one live event to a loaded timeline. A live event never moves where catch-up resumes. */
     function apply(channelId: string, event: string, payload: unknown): void {
+        if (event === "thread.updated") {
+            if (payload && typeof (payload as { root_id?: unknown }).root_id === "number") {
+                applyThreadCounts(channelId, payload as ThreadUpdatedEvent);
+            }
+            return;
+        }
         if (!hasId(payload)) {
             return;
         }
