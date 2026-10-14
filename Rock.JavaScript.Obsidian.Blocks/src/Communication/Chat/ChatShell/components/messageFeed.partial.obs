@@ -496,12 +496,12 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { tokenDuration } from "../ui/brand.partial";
     import { TimelineState } from "../composables/useHistory.partial";
-    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, sentHoldMs, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
+    import { useSentHold } from "../composables/useSend.partial";
+    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
     import { PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -610,12 +610,6 @@
     let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * The keys of the person's sends that settled while the feed was open, each showing "Sent"
-     * for a moment. By key, since every copy of the message carries it, whichever came first.
-     */
-    const justSentKeys = reactive(new Set<string>());
-
-    /**
      * The keys whose row has risen in this feed. A row moved into another group is a new element,
      * as when someone else's message takes the next id while the person's send is out, and a key
      * here never rises again. Kept while the feed is open: one short string per message drawn new.
@@ -648,6 +642,9 @@
      * drawer alone, so it neither shows nor moves the conversation while it is on its way.
      */
     const channelPending = computed((): PendingMessage[] => props.pending.filter(row => typeof row.parentId !== "number" || row.isShownInChannel === true));
+
+    /** The keys of the person's sends that settled while the feed was open, each showing "Sent" for a moment. */
+    const justSentKeys = useSentHold(() => channelPending.value, feed);
 
     const sections = computed((): FeedSection[] => layoutFeed({
         messages: props.timeline.messages,
@@ -852,17 +849,6 @@
         }
     }
 
-    /**
-     * Shows "Sent" under a send that settled, then lets it settle to its time. A send settles at
-     * the first copy of its message to land, the answer, the live copy or a page, so the hold runs
-     * from that moment and a later copy, already carrying the key, neither restarts nor ends it.
-     */
-    function holdSent(key: string): void {
-        justSentKeys.add(key);
-        const hold = feed.value ? tokenDuration(feed.value, "--chat-d-sent-hold", sentHoldMs) : sentHoldMs;
-        setTimeout(() => justSentKeys.delete(key), hold);
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -881,16 +867,6 @@
             emit("firstShown");
         }
     });
-
-    // A row that goes with the id of the message it became was sent; one discarded has none.
-    watch(channelPending, (pending, previous) => {
-        const kept = new Set(pending.map(row => row.localId));
-        for (const row of previous ?? []) {
-            if (!kept.has(row.localId) && row.confirmedId !== undefined) {
-                holdSent(row.localId);
-            }
-        }
-    }, { flush: "sync" });
 
     watch(() => channelPending.value.length, async (length, previous) => {
         if (length > previous) {

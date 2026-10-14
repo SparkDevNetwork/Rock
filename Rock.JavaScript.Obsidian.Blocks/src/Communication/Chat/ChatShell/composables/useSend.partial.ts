@@ -28,8 +28,10 @@
 // and whichever copy lands first settles the send: its row goes and the send resolves, even when
 // the answer is lost. A key stands for one text from its first try, since that try may have been
 // stored with its answer lost; changed words are a new message under a new key.
-import { reactive } from "vue";
+import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { ChatError, DisplayPiece, MessageBlock, PendingMessage, TimelineMessage } from "../types.partial";
+import { sentHoldMs } from "../feedLayout.partial";
+import { tokenDuration } from "../ui/brand.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 
 /** What Rock's Join door answers. */
@@ -431,4 +433,42 @@ export function createSender(dependencies: SenderDependencies): Sender {
         sentKeys,
         landed
     };
+}
+
+/**
+ * The keys of the person's sends that settled while a view was open, each held for a moment so
+ * its message shows "Sent" before it settles to its time. The conversation and the thread drawer
+ * each hold their own, over the rows they draw. By key, since every copy of the message carries
+ * it, and from the first copy to land, so a later copy neither restarts nor ends the hold: a row
+ * goes with the id of the message it became, and one discarded goes with none.
+ *
+ * @param pending The view's pending rows, read again as they change.
+ * @param element An element inside the chat, whose sheet names the hold's length.
+ *
+ * @returns The keys showing "Sent" now.
+ */
+export function useSentHold(pending: () => PendingMessage[], element: Ref<HTMLElement | null>): ReadonlySet<string> {
+    const keys = reactive(new Set<string>());
+    const timers = new Set<ReturnType<typeof setTimeout>>();
+
+    watch(pending, (rows, previous) => {
+        const kept = new Set(rows.map(row => row.localId));
+        for (const row of previous ?? []) {
+            if (kept.has(row.localId) || row.confirmedId === undefined) {
+                continue;
+            }
+
+            keys.add(row.localId);
+            const hold = element.value ? tokenDuration(element.value, "--chat-d-sent-hold", sentHoldMs) : sentHoldMs;
+            const timer = setTimeout(() => {
+                timers.delete(timer);
+                keys.delete(row.localId);
+            }, hold);
+            timers.add(timer);
+        }
+    }, { flush: "sync" });
+
+    onBeforeUnmount(() => timers.forEach(timer => clearTimeout(timer)));
+
+    return keys;
 }

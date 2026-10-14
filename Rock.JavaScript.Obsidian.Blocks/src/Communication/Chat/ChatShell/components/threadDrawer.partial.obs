@@ -61,6 +61,7 @@
                                 :isPhone="isPhone"
                                 :isDirectMessage="isDirectMessage"
                                 :isArriving="isRowArriving(row.key, row.message)"
+                                :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                 :senderNames="senderNames"
                                 :isInThread="true"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
@@ -218,6 +219,7 @@
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import { useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, replyCountText } from "../feedLayout.partial";
     import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
@@ -388,6 +390,9 @@
 
     /** This root's replies the person is still sending, as the conversation draws its own. */
     const pendingReplies = computed((): PendingMessage[] => props.root ? props.pending.filter(row => row.parentId === props.root?.id) : []);
+
+    /** The keys of the person's replies that settled while the thread was open, each showing "Sent" for a moment, as in the conversation. */
+    const justSentKeys = useSentHold(() => pendingReplies.value, bodyElement);
 
     const items = computed((): DrawerItem[] => {
         if (!props.root) {

@@ -247,6 +247,40 @@ describe("the person's own reply", () => {
         expect(w.get("[data-reply-id='51']").classes()).toContain("is-arriving");
         expect(w.get("[data-reply-id='52']").classes()).toContain("is-arriving");
     });
+
+    test("a reply that settles while the thread is open shows Sent for 2.2 seconds, then the time alone; another tab's never does", async () => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const row = { ...sending };
+            const w = draw({ replies: replies(1), pending: [row], sentKeys: new Set(["k1"]) });
+            await nextTick();
+
+            // The confirmed reply goes in before the row comes out, naming the message it
+            // became, as the send does it.
+            await w.setProps({ replies: [...replies(1), mine(50, "k1"), mine(52, "another-tab")] });
+            row.confirmedId = 50;
+            await w.setProps({ pending: [] });
+            await nextTick();
+
+            const state = (id: number): string | null => {
+                const found = w.find(`[data-reply-id='${id}'] [data-testid='message-state']`);
+                return found.exists() ? found.text() : null;
+            };
+            expect(state(50)).toBe("Sent");
+            expect(state(52)).toBeNull();
+
+            jest.advanceTimersByTime(2199);
+            await nextTick();
+            expect(state(50)).toBe("Sent");
+
+            jest.advanceTimersByTime(1);
+            await nextTick();
+            expect(state(50)).toBeNull();
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
 });
 
 describe("the divider", () => {
