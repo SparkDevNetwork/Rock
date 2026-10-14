@@ -147,16 +147,20 @@ type FeedProps = {
     pending?: PendingMessage[];
     isChannel?: boolean;
     isDirectMessage?: boolean;
+    isEntering?: boolean;
 };
 
 function draw(props: FeedProps): VueWrapper {
     return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, ...props } });
 }
 
-/** Whether an element is drawn and not hidden by a v-show. */
+/**
+ * Whether an element is drawn and shown. The unread strip and Jump to latest stay drawn while they
+ * fade out, so they say they are out of sight by being hidden from assistive technology.
+ */
 function isShown(wrapper: VueWrapper, selector: string): boolean {
     const found = wrapper.find(selector);
-    return found.exists() && (found.element as HTMLElement).style.display !== "none";
+    return found.exists() && (found.element as HTMLElement).style.display !== "none" && found.attributes("aria-hidden") !== "true";
 }
 
 /** Whether a comes before b in the document. */
@@ -275,6 +279,29 @@ describe("the timeline", () => {
 // and every copy of the message share the send's key, and the feed keys its rows by it. A message
 // newer than the feed's first page rises in as it is drawn, unless this session sent it, since its
 // pending row already rose; a copy drawn afresh in another group does not rise a second time.
+// A conversation opened in place of another enters, as the switch's one motion; the first one
+// the block draws is simply there. Decided as the feed mounts and never again, so nothing a
+// redraw changes can replay it.
+describe("the feed's entrance", () => {
+    test("a feed told it replaces another conversation enters, and keeps that once drawn", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isEntering: true });
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+
+        await wrapper.setProps({ isEntering: false });
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("a feed drawn first does not enter, whatever it is told later", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]) });
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
+        await wrapper.setProps({ isEntering: true });
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+    });
+});
+
 describe("the person's own message is one row from send to stored", () => {
     test("a copy that arrives while the row is still out takes the row's place, in the same element", async () => {
         const state = timeline([message(1, anna, at(14, 50))]);
@@ -554,6 +581,23 @@ describe("the New divider and the unread strip", () => {
         expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
     });
 
+    // It leaves the way it came, so it stays drawn as it goes, in its off state and out of reach.
+    test("the strip stays drawn as it goes, switched off and out of reach rather than removed", async () => {
+        const wrapper = unread();
+        const divider = wrapper.get("[data-testid='unread-divider']").element;
+        FakeIntersectionObserver.report(divider, false);
+        await nextTick();
+        expect(wrapper.get("[data-testid='unread-strip']").classes()).toContain("is-on");
+
+        FakeIntersectionObserver.report(divider, true);
+        await nextTick();
+        const strip = wrapper.get("[data-testid='unread-strip']");
+        expect((strip.element as HTMLElement).style.display).not.toBe("none");
+        expect(strip.classes()).not.toContain("is-on");
+        expect(strip.attributes("aria-hidden")).toBe("true");
+        expect(strip.attributes("inert")).toBeDefined();
+    });
+
     test("the strip says how many are new since the first of them", async () => {
         const wrapper = unread();
         FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
@@ -677,6 +721,22 @@ describe("Jump to latest", () => {
         placeScroll(wrapper, 1500);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // It leaves the way it came, so it stays drawn as it goes, in its off state and out of reach.
+    test("stays drawn as it goes, switched off and out of reach rather than removed", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0))]) });
+        placeScroll(wrapper, 0);
+        await nextTick();
+        expect(wrapper.get("[data-testid='jump-latest']").classes()).toContain("is-on");
+
+        placeScroll(wrapper, 1500);
+        await nextTick();
+        const jump = wrapper.get("[data-testid='jump-latest']");
+        expect((jump.element as HTMLElement).style.display).not.toBe("none");
+        expect(jump.classes()).not.toContain("is-on");
+        expect(jump.attributes("aria-hidden")).toBe("true");
+        expect(jump.attributes("inert")).toBeDefined();
     });
 
     test("counts the messages that arrive while the reader is scrolled up", async () => {

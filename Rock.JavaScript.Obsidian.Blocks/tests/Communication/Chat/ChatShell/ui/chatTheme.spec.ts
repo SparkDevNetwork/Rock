@@ -568,16 +568,68 @@ describe("the components' own styles", () => {
         expect(moving).toEqual([]);
     });
 
-    test("under reduced motion the unread strip fades in without sliding", () => {
-        const feed = readSheet(feedPath);
-        const strip = feed.rules.find(r => isReducedMotion(r) && r.selector.includes(".chat-unread-strip"));
-        const name = strip?.declarations.get("animation-name") ?? "";
-        const frames = keyframesBody(feedPath, name);
+    /** The transitions a component's rule for a selector declares outside any media query, each normalized. */
+    function transitionsOf(path: string, selector: string, media = ""): string[] {
+        const rule = selectorsOf(readSheet(path)).find(s => s.rule.media === media && s.selector === selector)?.rule;
+        return splitTopLevel(rule?.declarations.get("transition") ?? "", ",").map(normalize);
+    }
 
-        expect(name).not.toBe("");
-        expect(frames).not.toBeNull();
-        expect(frames).toContain("opacity");
-        expect(frames).not.toContain("transform");
+    /** A declaration a component's rule for a selector makes under a condition, normalized. */
+    function declarationOf(path: string, selector: string, property: string, where: (rule: Rule) => boolean = r => r.media === ""): string {
+        const rule = selectorsOf(readSheet(path)).find(s => where(s.rule) && s.selector === selector)?.rule;
+        return normalize(rule?.declarations.get(property) ?? "");
+    }
+
+    // The unread strip and Jump to latest come and go as the design does: the opacity on the
+    // state curve, the movement on the entrance curve, both over t-base, and leaving the way they
+    // came rather than vanishing. Each is always drawn and switched by its on state, so the same
+    // transition runs both ways; it is set out of sight only once its fade has ended.
+    test.each([
+        ["the unread strip", ".chat-unread-strip", "unread-strip"],
+        ["Jump to latest", ".chat-jump", "jump-latest"]
+    ])("%s fades and moves in and out, rather than appearing and vanishing", (_name, selector, testId) => {
+        const source = readFileSync(feedPath, "utf8");
+        const element = new RegExp(`<[a-z]+[^>]*data-testid="${testId}"[^>]*>`).exec(source)?.[0] ?? "";
+        expect(element).not.toBe("");
+        expect(element).not.toContain("v-show");
+        expect(element).not.toContain("v-if");
+
+        const transitions = transitionsOf(feedPath, selector);
+        expect(transitions).toContain(normalize("opacity var(--chat-t-base) var(--chat-ease-state)"));
+        expect(transitions).toContain(normalize("transform var(--chat-t-base) var(--chat-ease-in)"));
+        expect(transitions).toContain(normalize("visibility 0s linear var(--chat-t-base)"));
+        expect(declarationOf(feedPath, selector, "opacity")).toBe("0");
+        expect(declarationOf(feedPath, selector, "visibility")).toBe("hidden");
+
+        expect(declarationOf(feedPath, `${selector}.is-on`, "opacity")).toBe("1");
+        expect(declarationOf(feedPath, `${selector}.is-on`, "visibility")).toBe("visible");
+        expect(declarationOf(feedPath, `${selector}.is-on`, "transition-delay")).toBe("0s");
+        expect(source).not.toMatch(/chat-strip-in|chat-strip-fade|chat-jump-in/);
+    });
+
+    test("the unread strip comes from 4px above and Jump to latest from the rise below at the pop scale", () => {
+        expect(declarationOf(feedPath, ".chat-unread-strip", "transform")).toBe(normalize("translateY(-4px)"));
+        expect(declarationOf(feedPath, ".chat-unread-strip.is-on", "transform")).toBe("none");
+        expect(declarationOf(feedPath, ".chat-jump", "transform")).toBe(normalize("translate(-50%, var(--chat-rise)) scale(var(--chat-pop-scale))"));
+        expect(declarationOf(feedPath, ".chat-jump.is-on", "transform")).toBe(normalize("translate(-50%, 0)"));
+    });
+
+    test("under reduced motion the unread strip fades in and out without sliding", () => {
+        expect(declarationOf(feedPath, ".chat-unread-strip", "transform", isReducedMotion)).toBe("none");
+    });
+
+    // A conversation opened in place of another rises 6px into view over the view time on the
+    // entrance curve; under reduced motion a switch is not animated at all.
+    test("a conversation switch enters its feed from 6px below, and not at all under reduced motion", () => {
+        const animation = declarationOf(feedPath, ".chat-feed.is-entering", "animation");
+        expect(animation).toContain(normalize("var(--chat-d-view) var(--chat-ease-in)"));
+
+        const name = animation.split(/\s|var\(/)[0];
+        const frames = normalize(keyframesBody(feedPath, name) ?? "");
+        expect(frames).toContain("opacity:0");
+        expect(frames).toContain(normalize("transform: translateY(6px)"));
+
+        expect(declarationOf(feedPath, ".chat-feed.is-entering", "animation", isReducedMotion)).toBe("none");
     });
 
     test("a block image keeps its 16 to 7 shape in a browser without aspect-ratio, by a padding box", () => {

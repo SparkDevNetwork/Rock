@@ -369,6 +369,23 @@ describe("the frame on a wide block", () => {
     });
 });
 
+describe("a conversation switch", () => {
+    /** Whether the open conversation's feed plays the switch's entrance. */
+    function isFeedEntering(w: VueWrapper): boolean {
+        return w.get("[data-testid='message-feed']").classes().includes("is-entering");
+    }
+
+    test("the first conversation opened is simply there, and the next one enters in its place", async () => {
+        const w = await mountBlock(1200);
+
+        await openRow(w, team.channel_id);
+        expect(isFeedEntering(w)).toBe(false);
+
+        await openRow(w, dmAnna.channel_id);
+        expect(isFeedEntering(w)).toBe(true);
+    });
+});
+
 describe("the switch to phone panes", () => {
     test("follows the block's own width below 760px, not the window's", async () => {
         const w = await mountBlock(1200);

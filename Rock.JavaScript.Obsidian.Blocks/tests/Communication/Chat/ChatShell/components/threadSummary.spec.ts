@@ -242,6 +242,16 @@ describe("in the message row", () => {
         expect(row.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
     });
 
+    // A page opened straight onto a conversation draws its rows before it knows the conversation's
+    // kind, then redraws them in that kind's look; a thread that was there all along is not new.
+    test.each([["a direct message", true], ["a channel", false]] as const)("a thread already there does not pop when its row is redrawn in %s's look", async (_kind, wasChannel) => {
+        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root(), isChannel: wasChannel, position: "single" } });
+
+        await row.setProps({ isChannel: !wasChannel });
+
+        expect(row.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
+    });
+
     // Whether the row was on screen is the row's to say, not read from whichever component is
     // the summary's parent.
     test("pops only when told its row was already on screen, whatever holds it", async () => {
