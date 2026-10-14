@@ -1,7 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-jump': isJumpShown }">
-        <div v-show="isStripShown" class="chat-unread-strip" data-testid="unread-strip">
+        <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
+        <div class="chat-unread-strip"
+             :class="{ 'is-on': isStripShown }"
+             data-testid="unread-strip"
+             :aria-hidden="isStripShown ? undefined : 'true'"
+             :inert="!isStripShown || undefined">
             <button type="button" class="chat-strip-jump" :aria-label="`${stripText}. Jump to the first`" @click="onStripJump">
                 <Icon :name="isDividerAbove ? 'arrow-up' : 'arrow-down'" size="xs" />
                 <b>{{ unreadCountText }}</b>
@@ -292,7 +297,16 @@
     background: var(--chat-strip-bg);
     border-bottom: 1px solid var(--chat-strip-line);
     box-shadow: var(--chat-shadow-strip);
-    animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in), visibility var(--chat-t-base) linear;
+}
+
+.chat-unread-strip.is-on {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
 }
 
 /* Its padding reaches back into the strip's, so the hover fill has room and the text stays put. */
@@ -457,10 +471,10 @@
     width: 46%;
 }
 
-/* Asked for less motion, the strip fades in where it stands, and a switch is not animated. */
+/* Asked for less motion, the strip fades in and out where it stands, and a switch is not animated. */
 @media (prefers-reduced-motion: reduce) {
     .chat-unread-strip {
-        animation-name: chat-strip-fade;
+        transform: none;
     }
 
     .chat-feed.is-entering {
@@ -477,19 +491,6 @@
     to {
         opacity: 1;
         transform: none;
-    }
-}
-
-@keyframes chat-strip-in {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-}
-
-@keyframes chat-strip-fade {
-    from {
-        opacity: 0;
     }
 }
 </style>
