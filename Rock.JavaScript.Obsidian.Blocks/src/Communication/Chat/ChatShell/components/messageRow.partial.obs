@@ -83,7 +83,7 @@
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
                 <!-- The same pill as a direct message's, under the text at the text column's left edge. -->
                 <div v-if="hasThread && message" class="chat-reacts">
-                    <ThreadSummary :message="message" :isRowOnScreen="isMounted" @open="emit('openThread', $event)" />
+                    <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
                 </div>
             </div>
         </template>
@@ -112,7 +112,7 @@
             </div>
             <!-- The row reactions will share, the thread pill first at the bubble's aligned edge. -->
             <div v-if="hasThread && message" class="chat-reacts">
-                <ThreadSummary :message="message" :isRowOnScreen="isMounted" @open="emit('openThread', $event)" />
+                <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
             </div>
             <div v-if="isEditedUnder" class="chat-msg-edited" data-testid="message-edited">Edited</div>
             <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
@@ -830,7 +830,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import MessageBody from "./messageBody.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
@@ -973,8 +973,13 @@
      */
     const isArrivalDrawn = props.isArriving;
 
-    /** Whether the row is on screen, so a thread summary that mounts after it was a reply arriving live. */
-    const isMounted = ref(false);
+    /**
+     * Whether this row's thread started while the row was on screen: its first reply arrived
+     * live. Read from the thread appearing, not from when the summary mounts, since a page opened
+     * straight onto a conversation redraws its rows in the conversation's look once its kind is
+     * known, and a thread that was there all along must not pop then.
+     */
+    const isThreadStartedHere = ref(false);
 
     // #endregion Values
 
@@ -1218,13 +1223,12 @@
         }
     });
 
-    // #endregion Watchers
-
-    // #region Lifecycle Hooks
-
-    onMounted(() => {
-        isMounted.value = true;
+    // Not immediate, so a thread already there when the row draws is not taken for a new one.
+    watch(hasThread, (now, before) => {
+        if (now && !before) {
+            isThreadStartedHere.value = true;
+        }
     });
 
-    // #endregion Lifecycle Hooks
+    // #endregion Watchers
 </script>
