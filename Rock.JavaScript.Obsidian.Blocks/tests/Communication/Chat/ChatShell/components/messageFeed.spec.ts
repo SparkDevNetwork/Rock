@@ -28,6 +28,7 @@ import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/compone
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -245,7 +246,7 @@ describe("the timeline", () => {
 
         // The confirmed message goes in before the pending row comes out, naming the message it
         // became, as the send does it.
-        state.messages.push(message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "pending a" }));
+        state.messages.push(message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "pending a", client_key: "a" }));
         (wrapper.props("pending") as PendingMessage[])[0].confirmedId = 2;
         await wrapper.setProps({ pending: [] });
         await nextTick();
@@ -323,11 +324,12 @@ describe("the person's own message is one row from send to stored", () => {
     });
 });
 
-// The send's answer and the message's live copy race each other to the page. The person's own
-// message shows Sent for 2.2 seconds from whichever comes first, and the second neither restarts
-// nor cancels it. Both orders are driven by hand: the answer is a deferred the test resolves, the
-// live copy is the message put into the timeline as the live event does.
-describe("the Sent hold, whichever of the answer and the live copy comes first", () => {
+// The send's answer and the message's live copy race each other to the page, and either may never
+// come. The person's own message shows Sent for 2.2 seconds from the first copy that lands, which
+// is when its row goes, and a later copy neither restarts nor cancels it. Every order is driven by
+// hand: the answer is a deferred the test resolves, the live copy is applied to the timelines as
+// the shell applies a live event, and the timelines tell the sender what lands, as the shell does.
+describe("the Sent hold, from whichever copy of the message comes first", () => {
     type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
 
     function deferred<T>(): Deferred<T> {
@@ -336,32 +338,39 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         return { promise, resolve };
     }
 
-    /** The feed fed by a real sender, whose send answers when the test says so. */
-    function race(isChannel = false): { wrapper: VueWrapper, state: TimelineState, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: () => void } {
-        const state = timeline([message(1, anna, at(14, 50))]);
+    type Race = { wrapper: VueWrapper, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: () => void, other: (id: number) => void };
+
+    /** The feed fed by a real sender and real timelines, whose send answers when the test says so. */
+    async function race(isChannel = false): Promise<Race> {
         const answer = deferred<SendResult>();
-        const confirmed = message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "On my way" });
-        const put = (m: TimelineMessage): void => {
-            const index = state.messages.findIndex(existing => existing.id === m.id);
-            if (index >= 0) {
-                state.messages.splice(index, 1, m);
-            }
-            else {
-                state.messages.push(m);
-            }
-        };
-        const sender = createSender({
+        let sender: ReturnType<typeof createSender> | null = null;
+        const timelines = createTimelines({
+            fetchPage: async () => ({ messages: [message(1, anna, at(14, 50))], read_cursor: null, unread_count: 0, has_more: false }),
+            onLanded: m => sender?.landed(m)
+        });
+        await timelines.loadNewest("c1");
+        sender = createSender({
             send: () => answer.promise,
-            timelines: { upsert: (_channelId, m) => put(m), applyEvent: () => undefined },
+            timelines,
             personAliasGuid: me,
             newLocalId: () => "local-1"
         });
+        const created = (id: number, sender: string, key: string | null): Record<string, unknown> => ({
+            id, channel_id: "c1", parent_id: null, shown_in_channel: false, person_alias_guid: sender,
+            message_type: "text", body: id === 2 ? "On my way" : `m${id}`, created_at: at(15, 0), client_key: key
+        });
         const Host = defineComponent({
-            setup: () => () => h(MessageFeed, { timeline: state, pending: sender.pending("c1"), personAliasGuid: me, isChannel })
+            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, sentKeys: sender?.sentKeys })
         });
         const wrapper = mount(Host);
 
-        return { wrapper, state, answer, send: () => sender.send("c1", "On my way"), liveCopy: () => put({ ...confirmed }) };
+        return {
+            wrapper,
+            answer,
+            send: () => (sender as ReturnType<typeof createSender>).send("c1", "On my way"),
+            liveCopy: () => timelines.applyEvent("c1", "message.created", created(2, me, "local-1")),
+            other: (id: number) => timelines.applyEvent("c1", "message.created", created(id, anna, null))
+        };
     }
 
     const confirmedAnswer: SendResult = { ok: true, id: 2, createdAt: at(15, 0) };
@@ -379,7 +388,7 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
     }
 
     test("the answer first: Sent from the answer, and the live copy after it changes nothing", async () => {
-        const r = race();
+        const r = await race();
         const sending = r.send();
         await flush();
 
@@ -402,19 +411,20 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         expect(isSent(r.wrapper)).toBe(false);
     });
 
-    test("the live copy first: Sent once the answer names it, held from the live copy, the answer not restarting it", async () => {
-        const r = race();
+    test("the live copy first: Sent from the live copy, the answer after it not restarting it", async () => {
+        const r = await race();
         const sending = r.send();
         await flush();
 
         r.liveCopy();
         await flush();
+        expect(r.wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
+        expect(isSent(r.wrapper)).toBe(true);
         jest.advanceTimersByTime(400);
 
         r.answer.resolve(confirmedAnswer);
         await sending;
         await flush();
-        expect(r.wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
         expect(isSent(r.wrapper)).toBe(true);
 
         jest.advanceTimersByTime(1799);
@@ -424,12 +434,57 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         jest.advanceTimersByTime(1);
         await flush();
         expect(isSent(r.wrapper)).toBe(false);
+    });
+
+    test("an answer that never comes: the live copy alone shows Sent for 2.2 seconds, then the time", async () => {
+        const r = await race();
+        void r.send();
+        await flush();
+
+        r.liveCopy();
+        await flush();
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(2199);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(false);
+    });
+
+    // Anna's message takes the next id while the send is out, so the person's message is drawn
+    // above hers in a group of its own once a copy of it lands: one row, which does not rise a
+    // second time and still says Sent.
+    test.each([["a direct message", false], ["a channel", true]] as const)("in %s, another person's newer message before the answer: one row, no second rise, Sent still shown", async (_kind, isChannel) => {
+        const r = await race(isChannel);
+        const sending = r.send();
+        await flush();
+        const drawn = r.wrapper.get("[data-testid='pending-row']").element;
+
+        r.other(3);
+        await flush();
+        r.answer.resolve(confirmedAnswer);
+        await sending;
+        await flush();
+
+        // Either the row's own element, moved with its group, or a new one that does not rise.
+        const settled = r.wrapper.get("[data-message-id='2']").element;
+        expect(settled === drawn || !settled.classList.contains("is-arriving")).toBe(true);
+        expect(r.wrapper.findAll(".chat-msg")).toHaveLength(3);
+        expect(r.wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
+        expect(isSent(r.wrapper)).toBe(true);
+
+        r.liveCopy();
+        await flush();
+        expect(r.wrapper.findAll(".chat-msg")).toHaveLength(3);
     });
 
     // The row a send is drawn as is the element its message settles in: a new element would cut
     // the rise short at the answer, and a class that changed with Sent would play it again after.
     test.each([["a direct message", false], ["a channel", true]] as const)("in %s, the sending row becomes the sent message in place and rises once", async (_kind, isChannel) => {
-        const r = race(isChannel);
+        const r = await race(isChannel);
         const sending = r.send();
         await flush();
         const drawn = r.wrapper.get("[data-testid='pending-row']").element;
@@ -448,68 +503,6 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         expect(isSent(r.wrapper)).toBe(false);
         expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
         expect(drawn.classList.contains("is-arriving")).toBe(true);
-    });
-
-    /**
-     * The maps that were handed the arrival time of message 2, which is how the feed remembers
-     * when a live copy came in. Only the feed stores a number against a message id, so a map
-     * written that way is the feed's.
-     */
-    function arrivalMaps(): { maps: Map<unknown, unknown>[], restore: () => void } {
-        const maps: Map<unknown, unknown>[] = [];
-        const set = Map.prototype.set;
-        const spy = jest.spyOn(Map.prototype, "set").mockImplementation(function (this: Map<unknown, unknown>, key: unknown, value: unknown) {
-            if (key === 2 && typeof value === "number") {
-                maps.push(this);
-            }
-            return set.call(this, key, value);
-        });
-        return { maps, restore: () => spy.mockRestore() };
-    }
-
-    test("the live copy first: once the hold ends, the feed keeps nothing of the message", async () => {
-        const watch = arrivalMaps();
-        try {
-            const r = race();
-            const sending = r.send();
-            await flush();
-            r.liveCopy();
-            await flush();
-            r.answer.resolve(confirmedAnswer);
-            await sending;
-            await flush();
-            jest.advanceTimersByTime(2200);
-            await flush();
-
-            expect(watch.maps.length).toBeGreaterThan(0);
-            expect(watch.maps.filter(map => map.has(2))).toEqual([]);
-        }
-        finally {
-            watch.restore();
-        }
-    });
-
-    test("the answer first: the live copy that follows leaves nothing behind once the hold ends", async () => {
-        const watch = arrivalMaps();
-        try {
-            const r = race();
-            const sending = r.send();
-            await flush();
-            r.answer.resolve(confirmedAnswer);
-            await sending;
-            await flush();
-            jest.advanceTimersByTime(400);
-            r.liveCopy();
-            await flush();
-            jest.advanceTimersByTime(1800);
-            await flush();
-
-            expect(isSent(r.wrapper)).toBe(false);
-            expect(watch.maps.filter(map => map.has(2))).toEqual([]);
-        }
-        finally {
-            watch.restore();
-        }
     });
 });
 

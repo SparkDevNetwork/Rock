@@ -69,7 +69,7 @@
                                     :position="row.position"
                                     :isPhone="isPhone"
                                     :isDirectMessage="isDirectMessage"
-                                    :isJustSent="!!row.message && justSentIds.has(row.message.id)"
+                                    :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                     :isArriving="isRowArriving(row.key, row.message)"
                                     :senderNames="senderNames"
                                     :data-message-id="row.message?.id"
@@ -573,16 +573,11 @@
     const isSkeletonDue = ref(false);
     let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
 
-    /** The person's own sends confirmed while the feed was open, each showing "Sent" for a moment. */
-    const justSentIds = reactive(new Set<number>());
-
     /**
-     * When each of the reader's own messages came into the timeline while its send was still
-     * waiting on its answer, by id, so the Sent hold can run from the earlier of the two. An entry
-     * goes once its hold has read it, and all go whenever nothing is waiting, so the map holds
-     * only the sends in flight.
+     * The keys of the person's sends that settled while the feed was open, each showing "Sent"
+     * for a moment. By key, since every copy of the message carries it, whichever came first.
      */
-    const ownArrivedAt = new Map<number, number>();
+    const justSentKeys = reactive(new Set<string>());
 
     /**
      * The keys whose row has risen in this feed. A row moved into another group is a new element,
@@ -794,21 +789,13 @@
         });
     }
 
-    /** Whether any of the person's sends here is still waiting on the platform's answer. */
-    function isSendInFlight(): boolean {
-        return channelPending.value.some(row => row.status === "sending");
-    }
-
     /** The newest id in the timeline, or null when it is empty. */
     function newestId(): number | null {
         const messages = props.timeline.messages;
         return messages.length > 0 ? messages[messages.length - 1].id : null;
     }
 
-    /**
-     * Notes what is new since the timeline last grew: when each of the reader's own messages came
-     * in, and how many others sent while the reader was scrolled up.
-     */
+    /** Notes what is new since the timeline last grew: how many others sent while the reader was scrolled up. */
     function noteArrivals(): void {
         const previous = newestSeenInTimeline;
         newestSeenInTimeline = newestId();
@@ -821,32 +808,20 @@
         const arrived = props.timeline.messages.filter(m => m.id > previous);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
 
-        // Only a live copy that beats its answer is noted: one whose hold already started, or
-        // that arrives with no send waiting, would never be read.
-        if (isSendInFlight()) {
-            own.forEach(message => {
-                if (!ownArrivedAt.has(message.id) && !justSentIds.has(message.id)) {
-                    ownArrivedAt.set(message.id, Date.now());
-                }
-            });
-        }
-
         if (isScrolledUp.value) {
             newCount.value += arrived.length - own.length;
         }
     }
 
     /**
-     * Shows "Sent" under a confirmed send, then lets it settle to its time. The send's answer and
-     * its live copy race; the hold runs from whichever came first, and only the answer starts it,
-     * so the live copy arriving second leaves it alone.
+     * Shows "Sent" under a send that settled, then lets it settle to its time. A send settles at
+     * the first copy of its message to land, the answer, the live copy or a page, so the hold runs
+     * from that moment and a later copy, already carrying the key, neither restarts nor ends it.
      */
-    function holdSent(messageId: number): void {
-        justSentIds.add(messageId);
+    function holdSent(key: string): void {
+        justSentKeys.add(key);
         const hold = feed.value ? tokenDuration(feed.value, "--chat-d-sent-hold", sentHoldMs) : sentHoldMs;
-        const sinceArrival = Date.now() - (ownArrivedAt.get(messageId) ?? Date.now());
-        ownArrivedAt.delete(messageId);
-        setTimeout(() => justSentIds.delete(messageId), Math.max(0, hold - sinceArrival));
+        setTimeout(() => justSentKeys.delete(key), hold);
     }
 
     // #endregion Functions
@@ -868,18 +843,13 @@
         }
     });
 
-    // A row that goes with the id of the message it became was confirmed; one discarded has none.
+    // A row that goes with the id of the message it became was sent; one discarded has none.
     watch(channelPending, (pending, previous) => {
         const kept = new Set(pending.map(row => row.localId));
         for (const row of previous ?? []) {
             if (!kept.has(row.localId) && row.confirmedId !== undefined) {
-                holdSent(row.confirmedId);
+                holdSent(row.localId);
             }
-        }
-
-        // With no answer left to wait for, no noted arrival can be read again.
-        if (!isSendInFlight()) {
-            ownArrivedAt.clear();
         }
     }, { flush: "sync" });
 
