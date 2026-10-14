@@ -309,8 +309,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 pnlContent.Attributes.Add( "class", "card card-profile card-profile-bio" );
             }
 
+            /*
+                10/14/2026 - MSE
+
+                The browser title is written into the page's <title> element without
+                encoding, and a person can choose their own name (for example when
+                signing up), so the name must be HTML encoded here.
+
+                Reason: Prevent script injection through the person's name.
+            */
             // Set the browser page title to include person's name
-            RockPage.BrowserTitle = Person.FullName;
+            RockPage.BrowserTitle = Person.FullName.EncodeHtml();
 
             ShowProtectionLevel();
             ShowBadgeList();
@@ -350,9 +359,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     return;
                 }
 
-                string quickReturnLava = "{{ Person.FullName | AddQuickReturn:'People', 10 }}";
+                /*
+                    10/14/2026 - MSE
+
+                    The quick return filter places its input inside a single quoted JavaScript
+                    string in an inline script and only escapes quotes. The name is JavaScript
+                    string encoded first (double quotes become \u0022 so the filter does not
+                    escape them again), so a backslash or a closing script tag in the name
+                    cannot break out of the script.
+
+                    Reason: Prevent script injection through the person's name.
+                */
+                string quickReturnLava = "{{ QuickReturnName | AddQuickReturn:'People', 10 }}";
                 var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Person", Person );
+                quickReturnMergeFields.Add( "QuickReturnName", System.Web.HttpUtility.JavaScriptStringEncode( Person.FullName ).Replace( "\\\"", "\\u0022" ) );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 
                 ShowPersonImage();
@@ -451,7 +472,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 ).Value;
             var messaging = phoneNumber.IsMessagingEnabled ? @"<i class=""ti ti-message text-muted text-sm ml-1""></i>" : string.Empty;
             var formattedOptOutDate = phoneNumber.MessagingOptedOutDateTime?.ToString( "MMMM d, yyyy" );
-            var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{phoneNumber.Person.NickName} opted out from messaging on {formattedOptOutDate}" : $"{phoneNumber.Person.NickName} opted out from messaging.";
+            /*
+                10/14/2026 - MSE
+
+                The tooltip text is placed inside title and aria-label attributes, so the
+                nick name is HTML encoded to keep a quote in the name from closing the
+                attribute.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            var nickName = phoneNumber.Person.NickName.EncodeHtml();
+            var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{nickName} opted out from messaging on {formattedOptOutDate}" : $"{nickName} opted out from messaging.";
             var optedOut = phoneNumber.IsMessagingOptedOut ? $@"<i class=""ti ti-ban text-danger text-sm ml-1"" data-toggle=""tooltip"" data-placement=""top"" title=""{optedOutTooltip}"" aria-label=""{optedOutTooltip}""></i>" : string.Empty;
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
@@ -465,8 +496,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
                     if ( pbxComponent != null )
                     {
-                        var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{phoneNumber.Number}', '{CurrentPerson.FullName}','{Person.FullName}','{formattedNumber}');";
-                        phoneMarkup = $"<a class='originate-call js-originate-call text-link stretched-link' href=\"{jsScript}\">{formattedNumber}</a>";
+                        /*
+                            10/14/2026 - MSE
+
+                            The names are placed inside JavaScript strings in a javascript: URL
+                            inside an HTML attribute, so each value is encoded for the
+                            JavaScript string and the URL, and the whole URL is HTML encoded
+                            for the attribute.
+
+                            Reason: Prevent script injection through the person's name.
+                        */
+                        var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{EncodeForJavaScriptUrl( phoneNumber.Number )}', '{EncodeForJavaScriptUrl( CurrentPerson.FullName )}','{EncodeForJavaScriptUrl( Person.FullName )}','{EncodeForJavaScriptUrl( formattedNumber )}');";
+                        phoneMarkup = $"<a class='originate-call js-originate-call text-link stretched-link' href=\"{jsScript.EncodeHtml()}\">{formattedNumber}</a>";
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
@@ -539,9 +580,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
 
+            /*
+                10/14/2026 - MSE
+
+                Person names are plain text that anyone can set (for example through a public
+                signup form), so each name part is HTML encoded before being placed in the
+                header markup.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( isBusiness )
             {
-                lName.Text = $@"<h1>{Person.LastName}</h1>";
+                lName.Text = $@"<h1>{Person.LastName.EncodeHtml()}</h1>";
                 return;
             }
 
@@ -574,7 +624,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 middleName = $" {Person.MiddleName}";
             }
 
-            string nameText = $"{titleText}{Person.NickName}{middleName} {Person.LastName}{suffixText}";
+            string nameText = $"{titleText.EncodeHtml()}{Person.NickName.EncodeHtml()}{middleName.EncodeHtml()} {Person.LastName.EncodeHtml()}{suffixText.EncodeHtml()}";
 
             // Add First Name if different from NickName.
             string firstName = string.Empty;
@@ -582,7 +632,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
                 {
-                    firstName = $"{Person.FirstName}";
+                    firstName = $"{Person.FirstName.EncodeHtml()}";
                 }
             }
 
@@ -594,7 +644,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 if ( previousNames.Any() )
                 {
-                    previousNameText = $"<br><span class='previous-names'>(Previous Names: {previousNames.ToList().AsDelimited( ", " )})</span>";
+                    previousNameText = $"<br><span class='previous-names'>(Previous Names: {previousNames.ToList().Select( n => n.EncodeHtml() ).ToList().AsDelimited( ", " )})</span>";
                 }
             }
 
@@ -1032,6 +1082,27 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 NavigateToPage( Rock.SystemGuid.Page.NEW_COMMUNICATION.AsGuid(), queryParams );
             }
+        }
+
+        /// <summary>
+        /// Encodes a value so it can be placed inside a single quoted JavaScript
+        /// string that is part of a javascript: URL. The caller must still HTML
+        /// encode the full URL when placing it in an attribute.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
+        private static string EncodeForJavaScriptUrl( string value )
+        {
+            /*
+                10/14/2026 - MSE
+
+                A javascript: URL is percent decoded before the script runs, so a
+                percent sign is replaced with its JavaScript escape to keep a value
+                like %27 from turning into a quote that closes the string.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            return System.Web.HttpUtility.JavaScriptStringEncode( value ?? string.Empty ).Replace( "%", "\\u0025" );
         }
 
         #endregion Methods
