@@ -525,6 +525,20 @@ describe("the components' own styles", () => {
         return null;
     }
 
+    /** Each selector of a rule on its own, its spacing collapsed, beside the rule it came from. */
+    function selectorsOf(sheet: Sheet): { selector: string, rule: Rule }[] {
+        return sheet.rules.flatMap(rule => splitTopLevel(rule.selector, ",").map(selector => ({ selector: selector.replace(/\s+/g, " "), rule })));
+    }
+
+    // A send shows at reduced strength while it is on its way and eases to full as it settles,
+    // rather than snapping, in the bubble and in Community's text alike.
+    test.each([".chat-bubble", ".chat-cm-text"])("%s eases its strength as a send settles", selector => {
+        const rule = selectorsOf(readSheet(rowPath)).find(s => s.rule.media === "" && s.selector === selector)?.rule;
+        const transitions = splitTopLevel(rule?.declarations.get("transition") ?? "", ",").map(normalize);
+
+        expect(transitions).toContain(normalize("opacity var(--chat-t-base) var(--chat-ease-state)"));
+    });
+
     test("a short conversation sits at the bottom of the feed, by the composer", () => {
         const feed = readSheet(feedPath);
         const spacer = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed::before");

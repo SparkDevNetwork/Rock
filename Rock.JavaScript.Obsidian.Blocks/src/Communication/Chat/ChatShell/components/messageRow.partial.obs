@@ -260,7 +260,8 @@
     color: var(--chat-text);
     background: var(--chat-bubble);
     border-radius: var(--chat-r-bubble);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+    /* A send eases from its sending strength to full as it settles, rather than snapping. */
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
 .chat-msg:hover .chat-bubble:not(.is-jumbo):not(.is-tomb) {
@@ -606,6 +607,7 @@
     line-height: 1.5;
     color: var(--chat-text);
     overflow-wrap: anywhere;
+    transition: opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
 /* The body runs inline, so (edited), Sending… and Sent ride at its end and never move the rows below. */
