@@ -977,7 +977,11 @@ describe("a first message whose conversation cannot be shown yet", () => {
         expect(h.reports).toEqual([]);
     });
 
-    test("a retry from a failed draft sends the text as last edited", async () => {
+    // Any of the five tries may have been stored with its answer lost. Its key stands for its text,
+    // so the draft tries it again only as it was; text the person changed is a new message under a
+    // key of its own, sent to the conversation Rock already made, and the failed one stays a failed
+    // row there with its own Retry, unless a copy of it shows it was posted after all.
+    test("changed text in a failed draft is sent as a new message under its own key, the failed one left as itself", async () => {
         const calls: string[] = [];
         const gate = gatedSend(calls);
         const h = await pendingWith(calls, { send: gate.send, openChannel: refusedOpen(calls) });
@@ -986,8 +990,43 @@ describe("a first message whose conversation cannot be shown yet", () => {
         gate.letThrough();
         expect(await h.dm.sendFirst("hello again")).toBe(true);
 
+        expect(starts(calls)).toEqual(["start 1"]);
         expect(sends(calls).slice(-1)).toEqual([`send ${created} hello again`]);
+        expect(sends(calls).filter(c => c === `send ${created} hello`)).toHaveLength(5);
+        expect(new Set(gate.rows).size).toBe(2);
+        expect(gate.rows[5]).not.toBe(gate.rows[0]);
+    });
+
+    test("after a first message the platform stored with its answer lost, the draft's retry repeats it exactly: one key, one text, so it posts once", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const h = await pendingWith(calls, { send: gate.send, openChannel: refusedOpen(calls) });
+        await failFiveTimes(h.backoff);
+
+        gate.letThrough();
+        expect(await h.dm.sendFirst("hello")).toBe(true);
+
+        expect(new Set(sends(calls))).toEqual(new Set([`send ${created} hello`]));
         expect(new Set(gate.rows).size).toBe(1);
+    });
+
+    test("text edited in a failed draft the person left comes back in the box, and is sent under a new key", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const h = await pendingWith(calls, { send: gate.send, openChannel: refusedOpen(calls) });
+        await failFiveTimes(h.backoff);
+
+        h.dm.edit("hello, edited");
+        h.dm.close();
+        h.dm.choose(person(1));
+        await h.dm.open();
+        expect(h.dm.draft?.body).toBe("hello, edited");
+
+        gate.letThrough();
+        expect(await h.dm.sendFirst("hello, edited")).toBe(true);
+
+        expect(sends(calls).slice(-1)).toEqual([`send ${created} hello, edited`]);
+        expect(new Set(gate.rows).size).toBe(2);
     });
 
     test("a failed draft the person edits and leaves without sending keeps the text as it is in the box", async () => {

@@ -24,7 +24,10 @@
 // same key. A reply names its root and whether it is also sent to the conversation, and keeps both
 // on its row so every try sends the same reply; one shown only in its thread never enters the
 // conversation's timeline. The send's key travels on every copy of the message, the answer, the
-// live copy and each page, so the feeds draw the row and whichever copy arrives as one message.
+// live copy and each page, so the feeds draw the row and whichever copy arrives as one message,
+// and whichever copy lands first settles the send: its row goes and the send resolves, even when
+// the answer is lost. A key stands for one text from its first try, since that try may have been
+// stored with its answer lost; changed words are a new message under a new key.
 import { reactive } from "vue";
 import { ChatError, DisplayPiece, MessageBlock, PendingMessage, TimelineMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
@@ -155,8 +158,9 @@ export type Sender = {
     pending: (channelId: string) => PendingMessage[];
 
     /**
-     * Sends a message. Resolves true when the platform confirmed it. Blank text sends nothing.
-     * A try names the row it shares with the message's other tries; a reply names its root.
+     * Sends a message. Resolves true as soon as any copy of it reaches the page, or the platform
+     * answers it. Blank text sends nothing. A try names the row it shares with the message's other
+     * tries, and sends that row's own text whatever text it is given; a reply names its root.
      */
     send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget) => Promise<boolean>;
 
@@ -172,6 +176,12 @@ export type Sender = {
      * again, in another group, does not raise it a second time.
      */
     sentKeys: ReadonlySet<string>;
+
+    /**
+     * A copy of a message reached the page: put in a timeline, or in the open thread. One sent
+     * under a key of this session settles that send.
+     */
+    landed: (message: Pick<TimelineMessage, "id" | "client_key">) => void;
 };
 
 /**
@@ -184,6 +194,13 @@ export type Sender = {
 export function createSender(dependencies: SenderDependencies): Sender {
     const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
     const sentKeys = new Set<string>();
+
+    // The id each key's message landed under. A key in here is posted, whatever an answer still
+    // on its way says: the answer may have been lost, or refused a replay of a different text.
+    const landedKeys = new Map<string, number>();
+
+    // The try in flight under each key, ended the moment a copy of its message lands.
+    const inFlight = new Map<string, () => void>();
     const waitBeforeResend = dependencies.waitBeforeResend
         ?? ((attempt: number): Promise<void> => new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt)));
 
@@ -228,17 +245,55 @@ export function createSender(dependencies: SenderDependencies): Sender {
         return result;
     }
 
-    /** Sends a row's text and settles the row by the answer. */
+    /**
+     * Lets a row go once its message is on the page, naming the id it became, since the row's
+     * going is the only sign of which message it became.
+     */
+    function settle(row: PendingMessage, messageId: number): void {
+        row.confirmedId = messageId;
+        const index = rows.indexOf(row);
+        if (index >= 0) {
+            rows.splice(index, 1);
+        }
+    }
+
+    /**
+     * Sends a row's text and settles the row at whichever comes first: the answer, or a copy of
+     * its message landing. The answer still goes on after a copy settled the row, so what only
+     * it carries, the server's notice, reaches the message.
+     */
     async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
         row.status = "sending";
         row.errorCode = null;
 
+        let endTry!: () => void;
+        const copyLanded = new Promise<boolean>(resolve => endTry = () => resolve(true));
+        inFlight.set(row.localId, endTry);
+
+        try {
+            return await Promise.race([answer(row, isLast), copyLanded]);
+        }
+        finally {
+            // a later try under the same key has its own
+            if (inFlight.get(row.localId) === endTry) {
+                inFlight.delete(row.localId);
+            }
+        }
+    }
+
+    /** Sends a row's text and settles the row by the platform's answer. */
+    async function answer(row: PendingMessage, isLast: boolean): Promise<boolean> {
         let result = await sendOnce(row);
         if (!result.ok && result.error.code === joinRequiredCode && dependencies.join) {
             result = await joinAndResend(row, dependencies.join);
         }
 
         if (!result.ok) {
+            // A copy already landed, so the message is posted: the answer was lost after the
+            // commit, or a replay was refused, and the row has already gone.
+            if (landedKeys.has(row.localId)) {
+                return true;
+            }
             // Another try is coming on its own, so the row is not offered for a retry yet.
             if (!isLast) {
                 return false;
@@ -273,15 +328,27 @@ export function createSender(dependencies: SenderDependencies): Sender {
             dependencies.timelines.upsert(row.channelId, confirmed);
         }
 
-        // Named on the row as it goes, since the row's going is the only sign of which message
-        // it became.
-        row.confirmedId = result.id;
-        const index = rows.indexOf(row);
-        if (index >= 0) {
-            rows.splice(index, 1);
+        // Where the timelines and the thread report what lands this has settled already; it is
+        // said here too, so a send with no thread open to hold its reply still settles.
+        landed(confirmed);
+        return true;
+    }
+
+    /** A copy of a message reached the page; one of this session's sends settles. */
+    function landed(message: Pick<TimelineMessage, "id" | "client_key">): void {
+        const key = message.client_key;
+        if (!key || !sentKeys.has(key)) {
+            return;
         }
 
-        return true;
+        if (!landedKeys.has(key)) {
+            landedKeys.set(key, message.id);
+        }
+        const row = rows.find(r => r.localId === key);
+        if (row) {
+            settle(row, message.id);
+        }
+        inFlight.get(key)?.();
     }
 
     return {
@@ -292,12 +359,17 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
 
-            // A later try sends the same row again, with the text it is given, since a person
-            // retrying from a draft may have changed it; a row the person discarded or sent from
-            // in the meantime is gone, and its key still keeps a repeat from posting twice.
+            // A key already on the page is posted; another try would only ask for it again.
+            if (attempt && landedKeys.has(attempt.localId)) {
+                return true;
+            }
+
+            // A later try sends the same row again with its own text: the first try may have been
+            // stored with its answer lost, and other words under its key would be refused or posted
+            // beside it. A row the person discarded in the meantime is gone, and its key still
+            // keeps a repeat from posting twice.
             const earlier = attempt ? rows.find(r => r.localId === attempt.localId) : undefined;
             if (earlier) {
-                earlier.body = body;
                 return deliver(earlier, attempt?.isLast);
             }
 
@@ -339,6 +411,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
         },
 
-        sentKeys
+        sentKeys,
+        landed
     };
 }

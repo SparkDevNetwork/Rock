@@ -942,13 +942,14 @@ describe("a thread's live counts", () => {
 });
 
 // The person's own message reaches the page as the send's answer and as its live copy, in either
-// order. The live copy carries the send's key, so it goes straight into the timeline and the feed
-// draws it in the place of the row still sending: one message, never two.
+// order. The live copy carries the send's key, so it goes straight into the timeline, takes the
+// place of the row still sending and settles the send at once, the answer merging into it later.
 describe("the person's own live copy while their send is out", () => {
-    test("goes straight into the timeline, carrying the send's key, and the answer merges into it", async () => {
+    test("settles the send before its answer, and the answer then merges into the one message", async () => {
         const h = await started();
         h.heldSends.value = [];
-        const sending = h.shell.send("on my way");
+        let isSent = false;
+        const sending = h.shell.send("on my way").then(() => isSent = true);
         await settle();
         const key = h.sent[0].args.p_client_key as string;
 
@@ -957,6 +958,8 @@ describe("the person's own live copy while their send is out", () => {
             payload: { id: 901, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "on my way", created_at: "2026-10-06T10:00:00Z", client_key: key }
         });
         await settle();
+        expect(isSent).toBe(true);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
         expect(h.shell.timelines.state(channelA).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[10, null], [901, key]]);
 
         h.heldSends.value[0].resolve();
@@ -964,6 +967,37 @@ describe("the person's own live copy while their send is out", () => {
         await settle();
         expect(h.shell.timelines.state(channelA).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[10, null], [901, key]]);
         expect(h.shell.sender.pending(channelA)).toEqual([]);
+    });
+
+    test("a reply shown only in its thread is settled by its live copy in the open thread, before its answer", async () => {
+        const h = await started();
+        const opening = h.shell.threads.openThread(channelA, 10);
+        await settle();
+        const root = { id: 10, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "m10", created_at: "2026-09-23T10:00:00Z" };
+        h.saves[h.saves.length - 1].answer.resolve(fakeResponse(200, { root, messages: [], read_cursor: null, unread_count: 0, following: true, has_more: false }));
+        await opening;
+
+        h.heldSends.value = [];
+        let isSent = false;
+        const sending = (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> })
+            .sendReply(10, "just here", false).then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 901, channel_id: channelA, parent_id: 10, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "just here", created_at: "2026-10-06T10:00:00Z", client_key: key }
+        });
+        await settle();
+        expect(isSent).toBe(true);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
+        expect(h.shell.threads.state.thread?.replies.map(r => r.id)).toEqual([901]);
+
+        h.heldSends.value[0].resolve();
+        await sending;
+        await settle();
+        expect(h.shell.threads.state.thread?.replies.map(r => r.id)).toEqual([901]);
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
     });
 });
 

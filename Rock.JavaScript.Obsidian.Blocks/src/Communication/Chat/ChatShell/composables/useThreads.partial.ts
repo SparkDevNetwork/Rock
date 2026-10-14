@@ -116,6 +116,12 @@ export type ThreadsDependencies = {
 
     /** The reader, so their own reply does not mark a thread unread. */
     personAliasGuid: string;
+
+    /**
+     * Told of every copy of a reply sent under a key as it reaches the open thread, so the sender
+     * can let that send's row go: a reply shown only in its thread never reaches a timeline.
+     */
+    onLanded?: (message: TimelineMessage) => void;
 };
 
 /** The threads a shell holds. */
@@ -423,7 +429,11 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     /** Takes a live reply of the open thread, naming its sender from what the thread holds. */
     function applyReply(created: MessageCreatedEvent): void {
         const thread = state.thread;
-        if (!thread || thread.replies.some(r => r.id === created.id)) {
+        const heldCopy = thread?.replies.find(r => r.id === created.id);
+        if (!thread || heldCopy) {
+            if (heldCopy) {
+                reportLanded([heldCopy]);
+            }
             return;
         }
 
@@ -448,7 +458,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         insertReply(message);
     }
 
-    /** Puts a reply in place by id, keeping what is held over a copy that carries less. */
+    /**
+     * Puts a reply in place by id, keeping what is held over a copy that carries less. A copy of
+     * a reply already held is still reported, since it may be the first the sender hears of.
+     */
     function insertReply(message: TimelineMessage): void {
         const replies = state.thread?.replies;
         if (!replies) {
@@ -456,10 +469,19 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
 
         const index = replies.findIndex(r => r.id >= message.id);
-        if (index >= 0 && replies[index].id === message.id) {
-            return;
+        if (index < 0 || replies[index].id !== message.id) {
+            replies.splice(index < 0 ? replies.length : index, 0, message);
         }
-        replies.splice(index < 0 ? replies.length : index, 0, message);
+        reportLanded([message]);
+    }
+
+    /** Tells the sender of each reply here sent under a key. */
+    function reportLanded(messages: TimelineMessage[]): void {
+        for (const message of messages) {
+            if (message.client_key) {
+                dependencies.onLanded?.(message);
+            }
+        }
     }
 
     return {
@@ -625,6 +647,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             // so what is held joins the page by id rather than being replaced by it.
             const live = thread.replies;
             thread.replies = [...(page.messages ?? [])].sort((a, b) => a.id - b.id);
+            reportLanded(thread.replies);
             for (const reply of live) {
                 insertReply(reply);
             }
@@ -658,6 +681,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             state.thread.olderError = null;
             const older = (page.messages ?? []).filter(m => m.id < oldest.id).sort((a, b) => a.id - b.id);
             state.thread.replies.unshift(...older);
+            reportLanded(older);
             state.thread.hasMore = page.has_more === true;
         },
 

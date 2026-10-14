@@ -18,6 +18,7 @@
 // keeps its text so it can be sent again.
 import { createSender, isComposerOpen, JoinResult, newLocalId, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -206,7 +207,10 @@ describe("a send the platform can recognise again", () => {
         expect(keys).toEqual(["3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22", "3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22"]);
     });
 
-    test("a later try of a row sends the text it is given, under the row's key, as the one row", async () => {
+    // The first try may have been stored with its answer lost, so a key stands for one text: a
+    // later try sending other words would either be refused as a different message under the same
+    // key or post them beside the first. Changed words are a new message under a new key.
+    test("a later try of a row sends the row's own text under its key, whatever text it is given", async () => {
         const { sender, sent } = await setup([
             { ok: false, error: { code: "rpc.transport", severity: "failed" } },
             { ok: true, id: 48, createdAt: "2026-10-06T10:00:00Z" }
@@ -215,8 +219,7 @@ describe("a send the platform can recognise again", () => {
         await sender.send(channel, "first words", { localId: "local-9", isLast: true });
         expect(await sender.send(channel, "edited words", { localId: "local-9", isLast: true })).toBe(true);
 
-        // the person changed the text before trying again; the try sends what they see
-        expect(sent).toEqual(["first words", "edited words"]);
+        expect(sent).toEqual(["first words", "first words"]);
         expect(sender.pending(channel)).toEqual([]);
     });
 
@@ -649,5 +652,279 @@ describe("a send's identity", () => {
         sender.discard("local-2");
 
         expect([...sender.sentKeys]).toEqual(["local-1", "local-2"]);
+    });
+});
+
+
+// Three copies of a person's message reach the page in any order: the send's answer, the live copy
+// and any page that holds it (history, catch-up, a resync). Whichever comes first settles the send:
+// its row goes and the awaited send resolves, even if the answer never comes. Every order is driven
+// by hand: each answer is a deferred the test resolves, each live copy is applied as the shell
+// applies a live event, and the timelines report what lands to the sender, as the shell wires it.
+describe("a send settles on the first copy of its message", () => {
+    const anna = "a0000002-0000-4000-8000-000000000000";
+    const transport: SendResult = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
+
+    type Harness = {
+        sender: ReturnType<typeof createSender>,
+        timelines: ReturnType<typeof createTimelines>,
+        sent: Array<{ body: string, key: string | undefined }>,
+        pages: Array<{ messages: TimelineMessage[] }>
+    };
+
+    async function harness(answers: Array<SendResult | Deferred<SendResult>>): Promise<Harness> {
+        const sent: Array<{ body: string, key: string | undefined }> = [];
+        const pages: Array<{ messages: TimelineMessage[] }> = [{ messages: [] }];
+        let next = 0;
+        let sender: ReturnType<typeof createSender> | null = null;
+        const timelines = createTimelines({
+            fetchPage: async () => ({ messages: pages.shift()?.messages ?? [], read_cursor: null, unread_count: 0, has_more: false }),
+            onLanded: message => sender?.landed(message)
+        });
+        await timelines.loadNewest(channel);
+        sender = createSender({
+            send: (_c, body, key) => {
+                sent.push({ body, key });
+                const answer = answers.shift() as SendResult | Deferred<SendResult>;
+                return "promise" in answer ? answer.promise : Promise.resolve(answer);
+            },
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => `local-${++next}`
+        });
+        return { sender, timelines, sent, pages };
+    }
+
+    /** A live message.created as the channel topic carries it, under a send's key. */
+    function live(id: number, key: string | null, extra: Record<string, unknown> = {}): Record<string, unknown> {
+        return {
+            id, channel_id: channel, parent_id: null, shown_in_channel: false, person_alias_guid: me,
+            message_type: "text", body: `live ${id}`, pieces: null, blocks: null, created_at: "2026-10-14T10:00:00Z",
+            client_key: key, ...extra
+        };
+    }
+
+    /** Lets every promise already settled run its continuations. */
+    async function settle(): Promise<void> {
+        for (let i = 0; i < 10; i++) {
+            await Promise.resolve();
+        }
+    }
+
+    /** Whether a promise has settled yet, without waiting for it. */
+    async function isSettled(promise: Promise<unknown>): Promise<boolean> {
+        let isDone = false;
+        void promise.then(() => isDone = true);
+        await settle();
+        return isDone;
+    }
+
+    const ids = (h: Harness): number[] => h.timelines.state(channel).messages.map(m => m.id);
+
+    test("the live copy first: the row goes and the send resolves at once, and the answer after it merges into the one message", async () => {
+        const answer = deferred<SendResult>();
+        const h = await harness([answer]);
+        const sending = h.sender.send(channel, "On my way");
+
+        h.timelines.applyEvent(channel, "message.created", live(41, "local-1", { body: "On my way" }));
+
+        expect(h.sender.pending(channel)).toEqual([]);
+        expect(await sending).toBe(true);
+        expect(ids(h)).toEqual([41]);
+
+        answer.resolve({ ok: true, id: 41, createdAt: "2026-10-14T10:00:00Z", notice: "Waiting for review." } as SendResult);
+        await settle();
+        expect(ids(h)).toEqual([41]);
+        expect(h.timelines.state(channel).messages[0].notice).toBe("Waiting for review.");
+    });
+
+    test("the answer first: the row goes at the answer, and the live copy after it merges by id", async () => {
+        const h = await harness([{ ok: true, id: 42, createdAt: "2026-10-14T10:00:00Z" }]);
+
+        expect(await h.sender.send(channel, "hello")).toBe(true);
+        h.timelines.applyEvent(channel, "message.created", live(42, "local-1"));
+
+        expect(ids(h)).toEqual([42]);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("an answer that never comes: the live copy alone settles the send", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        const sending = h.sender.send(channel, "hello");
+
+        h.timelines.applyEvent(channel, "message.created", live(43, "local-1"));
+
+        expect(await isSettled(sending)).toBe(true);
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("a page copy first, as a resync or a catch-up brings it: it settles the send", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        const sending = h.sender.send(channel, "hello");
+        h.pages.push({ messages: [{ id: 44, person_alias_guid: me, message_type: "text", body: "hello", created_at: "2026-10-14T10:00:00Z", client_key: "local-1" }] });
+
+        await h.timelines.loadNewest(channel);
+
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+        expect(ids(h)).toEqual([44]);
+    });
+
+    test("an answer that fails after the platform stored the message: the row fails, and a later copy settles it", async () => {
+        const h = await harness([transport]);
+
+        expect(await h.sender.send(channel, "hello")).toBe(false);
+        expect(h.sender.pending(channel)[0].status).toBe("failed");
+
+        h.timelines.applyEvent(channel, "message.created", live(45, "local-1"));
+
+        expect(h.sender.pending(channel)).toEqual([]);
+        expect(ids(h)).toEqual([45]);
+    });
+
+    test("an answer that fails after the live copy landed leaves the send settled, with no failed row", async () => {
+        const answer = deferred<SendResult>();
+        const h = await harness([answer]);
+        const sending = h.sender.send(channel, "hello");
+        h.timelines.applyEvent(channel, "message.created", live(46, "local-1"));
+
+        answer.resolve(transport);
+        await settle();
+
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("an answer refusing the key as another message's, for a key the session saw land, counts as settled", async () => {
+        const answer = deferred<SendResult>();
+        const h = await harness([answer]);
+        const sending = h.sender.send(channel, "hello");
+        h.timelines.applyEvent(channel, "message.created", live(47, "local-1"));
+
+        answer.resolve({ ok: false, error: { code: "rpc.idempotency_mismatch", severity: "failed" } });
+        await settle();
+
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("a try under a key whose message already landed sends nothing and resolves sent", async () => {
+        const h = await harness([transport]);
+        await h.sender.send(channel, "hello", { localId: "first-key", isLast: true });
+        h.timelines.applyEvent(channel, "message.created", live(48, "first-key"));
+
+        expect(await h.sender.send(channel, "hello", { localId: "first-key", isLast: true })).toBe(true);
+
+        expect(h.sent).toHaveLength(1);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("a retry goes under the same key, and a copy landing while it is out settles it", async () => {
+        const second = deferred<SendResult>();
+        const h = await harness([transport, second]);
+        await h.sender.send(channel, "again");
+
+        const retrying = h.sender.retry("local-1");
+        h.timelines.applyEvent(channel, "message.created", live(49, "local-1"));
+
+        expect(await retrying).toBe(true);
+        expect(h.sent.map(s => s.key)).toEqual(["local-1", "local-1"]);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("two sends in flight: each copy settles its own row, whatever the order", async () => {
+        const h = await harness([deferred<SendResult>(), deferred<SendResult>()]);
+        const first = h.sender.send(channel, "one");
+        const second = h.sender.send(channel, "two");
+
+        h.timelines.applyEvent(channel, "message.created", live(51, "local-2"));
+        expect(h.sender.pending(channel).map(r => r.localId)).toEqual(["local-1"]);
+        expect(await second).toBe(true);
+        expect(await isSettled(first)).toBe(false);
+
+        h.timelines.applyEvent(channel, "message.created", live(50, "local-1"));
+        expect(await first).toBe(true);
+        expect(ids(h)).toEqual([50, 51]);
+    });
+
+    test("the same text sent twice is two messages, each settled only by its own copy", async () => {
+        const h = await harness([deferred<SendResult>(), deferred<SendResult>()]);
+        void h.sender.send(channel, "amen");
+        void h.sender.send(channel, "amen");
+
+        h.timelines.applyEvent(channel, "message.created", live(52, "local-1", { body: "amen" }));
+
+        expect(h.sender.pending(channel).map(r => r.localId)).toEqual(["local-2"]);
+        expect(h.sent.map(s => s.key)).toEqual(["local-1", "local-2"]);
+    });
+
+    test("a reply also sent to the conversation is settled by its copy there", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        const sending = h.sender.send(channel, "everyone", undefined, { parentId: 40, isShownInChannel: true });
+
+        h.timelines.applyEvent(channel, "message.created", live(53, "local-1", { parent_id: 40, shown_in_channel: true }));
+
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("a reply shown only in its thread is settled by the copy the open thread reports", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        const sending = h.sender.send(channel, "just here", undefined, { parentId: 40, isShownInChannel: false });
+
+        h.sender.landed({ id: 54, client_key: "local-1" });
+
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+        expect(ids(h)).toEqual([]);
+    });
+
+    test("the person's message from another tab, under a key this session never sent, settles nothing", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        const sending = h.sender.send(channel, "from here");
+
+        h.timelines.applyEvent(channel, "message.created", live(55, "another-tab"));
+
+        expect(h.sender.pending(channel).map(r => r.localId)).toEqual(["local-1"]);
+        expect(await isSettled(sending)).toBe(false);
+        expect(ids(h)).toEqual([55]);
+    });
+
+    test("an edit and a delete right after the live copy survive the answer that follows", async () => {
+        const first = deferred<SendResult>();
+        const second = deferred<SendResult>();
+        const h = await harness([first, second]);
+        void h.sender.send(channel, "typo");
+        void h.sender.send(channel, "oops");
+
+        h.timelines.applyEvent(channel, "message.created", live(56, "local-1", { body: "typo" }));
+        h.timelines.applyEvent(channel, "message.edited", { id: 56, channel_id: channel, body: "fixed", pieces: null, edited_at: "2026-10-14T10:00:05Z" });
+        h.timelines.applyEvent(channel, "message.created", live(57, "local-2", { body: "oops" }));
+        h.timelines.applyEvent(channel, "message.deleted", { id: 57, channel_id: channel, deleted_at: "2026-10-14T10:00:06Z" });
+
+        first.resolve({ ok: true, id: 56, createdAt: "2026-10-14T10:00:00Z" });
+        second.resolve({ ok: true, id: 57, createdAt: "2026-10-14T10:00:00Z" });
+        await settle();
+
+        const [edited, deleted] = h.timelines.state(channel).messages;
+        expect([edited.body, edited.edited_at]).toEqual(["fixed", "2026-10-14T10:00:05Z"]);
+        expect([deleted.body, deleted.deleted_at]).toEqual([null, "2026-10-14T10:00:06Z"]);
+        expect(h.sender.pending(channel)).toEqual([]);
+    });
+
+    test("another person's newer message before the answer: one message each, in id order", async () => {
+        const answer = deferred<SendResult>();
+        const h = await harness([answer]);
+        const sending = h.sender.send(channel, "mine");
+
+        h.timelines.applyEvent(channel, "message.created", live(59, null, { person_alias_guid: anna }));
+        expect(h.sender.pending(channel)).toHaveLength(1);
+        answer.resolve({ ok: true, id: 58, createdAt: "2026-10-14T10:00:00Z" });
+        expect(await sending).toBe(true);
+        h.timelines.applyEvent(channel, "message.created", live(58, "local-1"));
+
+        expect(ids(h)).toEqual([58, 59]);
+        expect(h.sender.pending(channel)).toEqual([]);
     });
 });

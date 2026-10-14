@@ -180,7 +180,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * result or a deferred the test resolves by hand; a function with nothing queued answers an
  * empty success.
  */
-async function setup(historyPage?: HistoryPage): Promise<{
+async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void): Promise<{
     threads: ReturnType<typeof createThreads>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -204,7 +204,8 @@ async function setup(historyPage?: HistoryPage): Promise<{
             return "promise" in next ? next.promise : Promise.resolve(next);
         },
         timelines,
-        personAliasGuid: me
+        personAliasGuid: me,
+        onLanded
     });
 
     return { threads, timelines, calls, answers, callsTo: (name: string) => calls.filter(c => c.name === name) };
@@ -936,5 +937,35 @@ describe("following", () => {
         expect(followNotice(true)).toEqual(expect.objectContaining({ text: "Following this thread", icon: "bell" }));
         expect(followNotice(false)).toEqual(expect.objectContaining({ text: "You won't be notified about new replies", icon: "bell-off" }));
         expect(followNotice(true).code).not.toBe("");
+    });
+});
+
+// A reply the person sent carries its send's key on every copy, and a reply shown only in its
+// thread never reaches the conversation's timeline, so the open thread reports each keyed reply
+// as it lands there, from its page, live or as the send's answer, for the sender to let its row go.
+describe("a reply carrying a send's key, as it reaches the open thread", () => {
+    test("is reported from the thread's page, live, and as the send's answer; a reply with no key is not", async () => {
+        const landed: Array<[number, unknown]> = [];
+        const { threads, answers } = await setup(undefined, m => landed.push([m.id, m.client_key]));
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(42, 40, { client_key: "from-page" }), reply(41, 40)])];
+
+        await threads.openThread(channel, 40);
+        threads.applyEvent(channel, "message.created", { ...reply(43, 40, { client_key: "from-live" }), channel_id: channel });
+        threads.upsertReply(channel, reply(44, 40, { client_key: "from-answer", person_alias_guid: me }));
+
+        expect(landed).toEqual([[42, "from-page"], [43, "from-live"], [44, "from-answer"]]);
+    });
+
+    test("a copy of a reply already held is reported again, since it may be the first the sender hears of", async () => {
+        const landed: number[] = [];
+        const { threads, answers } = await setup(undefined, m => landed.push(m.id));
+        answers.chat_get_thread_history = [threadAnswer(root(40), [])];
+        await threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "message.created", { ...reply(43, 40, { client_key: "k" }), channel_id: channel });
+        threads.upsertReply(channel, reply(43, 40, { client_key: "k", person_alias_guid: me }));
+
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([43]);
+        expect(landed).toEqual([43, 43]);
     });
 });

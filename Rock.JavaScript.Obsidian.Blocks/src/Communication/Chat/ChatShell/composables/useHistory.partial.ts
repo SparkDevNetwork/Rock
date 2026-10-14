@@ -182,6 +182,12 @@ export type TimelineDependencies = {
 
     /** Spreads the waits of many clients apart; Math.random by default. */
     random?: () => number;
+
+    /**
+     * Told of every copy of a message sent under a key as it lands, from a page, live or put in
+     * place, so the sender can let that send's row go at the first of them.
+     */
+    onLanded?: (message: TimelineMessage) => void;
 };
 
 /** The timelines a shell holds. */
@@ -399,6 +405,12 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
         else {
             messages.splice(index, 0, message);
+        }
+
+        // Every way a message comes in passes here, so whichever copy of a send lands first is
+        // the one the sender hears of.
+        if (message.client_key) {
+            dependencies.onLanded?.(message);
         }
     }
 

@@ -29,8 +29,11 @@
 // error toast with the text kept for their next draft to the same people.
 //
 // A failed first message went to the platform, which may have posted it before the answer was
-// lost, so it is only ever tried again as itself, under its own row and key. A refused one never
-// left Rock, so its text is the only copy and goes back in the box for the person to send.
+// lost, so it is only ever tried again as itself, its own text under its own row and key. Text the
+// person changed on its draft is a new message under a new key, sent to the conversation Rock
+// already made; the failed one stays a failed row there with its own Retry, or goes when a copy
+// shows it was posted after all. A refused one never left Rock, so its text is the only copy and
+// goes back in the box for the person to send.
 import { reactive, toRaw } from "vue";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow } from "../types.partial";
@@ -181,7 +184,14 @@ type FirstMessage = {
 
     people: PersonRow[];
 
+    /** The text every try sends, fixed at the first: its key stands for this text alone. */
     body: string;
+
+    /**
+     * The text the person left in its draft's box when they changed it and left, which the next
+     * draft to the same people opens with; sent, it is a new message.
+     */
+    boxBody?: string;
 
     /** The row its tries share, so they carry one key and show as one message. */
     localId: string;
@@ -320,11 +330,11 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             keep(queued);
         }
 
-        // The text kept is the box's, edits never sent included, since that is what the person
-        // last saw and would have to type again otherwise.
+        // The text kept for the box is the box's, edits never sent included, since that is what
+        // the person last saw and would have to type again otherwise. The message keeps its own.
         const message = carriedBy.get(toRaw(draft));
         if (message?.phase === "failed") {
-            message.body = draft.body;
+            message.boxBody = draft.body !== message.body ? draft.body : undefined;
             keep(message);
         }
 
@@ -655,7 +665,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             const carried = refusedText === "" ? failed[failed.length - 1] : undefined;
             const queued = failed.filter(m => m !== carried);
 
-            state.draft = { people, body: carried?.body ?? refusedText, status: "draft", channelGuid: carried?.channelId ?? null };
+            state.draft = { people, body: carried ? carried.boxBody ?? carried.body : refusedText, status: "draft", channelGuid: carried?.channelId ?? null };
             if (carried) {
                 carry(state.draft, carried);
             }
@@ -682,11 +692,11 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
                 return false;
             }
 
-            // A failed first message's draft is its retry: the same row and key to the
-            // conversation Rock already made, so it posts once and Rock is not asked again.
+            // A failed first message's draft is its retry when its text is unchanged: the same row
+            // and key to the conversation Rock already made, so it posts once and Rock is not asked
+            // again.
             const carried = carriedBy.get(toRaw(draft));
-            if (carried?.phase === "failed") {
-                carried.body = body;
+            if (carried?.phase === "failed" && body === carried.body) {
                 return sendOnce(carried);
             }
 
@@ -697,6 +707,16 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
                 draft.status = "draft";
                 state.error = noKeySentence;
                 return false;
+            }
+
+            // Changed text is a new message to the conversation Rock already made. The failed one
+            // is no longer this draft's, so nothing tries it again on its own: its failed row
+            // waits in that conversation for the person's Retry or Discard.
+            if (carried?.phase === "failed") {
+                const changed: FirstMessage = { ...carried, phase: "trying", body, boxBody: undefined, localId, tries: 0, draft: null, isShown: false };
+                carried.draft = null;
+                carry(draft, changed);
+                return sendOnce(changed);
             }
 
             const message: FirstMessage = {

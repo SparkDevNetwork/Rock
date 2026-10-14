@@ -1198,3 +1198,39 @@ describe("a message's pieces and blocks, live", () => {
         expect([one.pieces, one.blocks, two.pieces, two.blocks]).toEqual([null, null, null, null]);
     });
 });
+
+// A message the person sent carries its send's key on every copy. The timelines report each such
+// copy as it lands, however it came (the send's answer, the live copy, a history page or a live
+// copy that waited for the first page), so the sender can let its row go at the first of them.
+describe("a copy carrying a send's key, as it lands", () => {
+    const keyed = (id: number, key: string | null): TimelineMessage => ({ ...message(id), client_key: key });
+
+    test("is reported whether it comes live, on a page, or put in place by the sender, and a message with no key is not", async () => {
+        const landed: Array<[number, string | null | undefined]> = [];
+        const timelines = createTimelines({
+            fetchPage: async () => ({ messages: [keyed(2, "from-page"), keyed(1, null)], read_cursor: null, unread_count: 0, has_more: false }),
+            onLanded: m => landed.push([m.id, m.client_key])
+        });
+
+        await timelines.loadNewest(channel);
+        timelines.applyEvent(channel, "message.created", { ...keyed(3, "from-live"), channel_id: channel, parent_id: null, shown_in_channel: false });
+        timelines.upsert(channel, keyed(4, "from-answer"));
+
+        expect(landed).toEqual([[2, "from-page"], [3, "from-live"], [4, "from-answer"]]);
+    });
+
+    test("a live copy that came before the first page is reported once the page is in and it lands", async () => {
+        const first = deferred<HistoryPage>();
+        const landed: number[] = [];
+        const timelines = createTimelines({ fetchPage: () => first.promise, onLanded: m => landed.push(m.id) });
+
+        const loading = timelines.loadNewest(channel);
+        timelines.applyEvent(channel, "message.created", { ...keyed(5, "early"), channel_id: channel, parent_id: null, shown_in_channel: false });
+        expect(landed).toEqual([]);
+
+        first.resolve(page([4]));
+        await loading;
+
+        expect(landed).toEqual([5]);
+    });
+});

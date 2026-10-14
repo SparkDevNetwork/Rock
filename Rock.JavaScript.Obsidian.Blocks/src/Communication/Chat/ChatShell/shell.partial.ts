@@ -472,7 +472,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             return result.data as HistoryPage;
         },
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
-        retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms })
+        retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
+        // whichever copy of the person's send lands first, from a page, live or its answer, settles it
+        onLanded: message => sender.landed(message)
     });
 
     const channels = createChannelStore({ reloadSidebar: () => void loadSidebar() });
@@ -482,7 +484,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onSaved: (channelId, result) => channels.applyMarkRead(channelId, result)
     });
 
-    const threads = createThreads({ call, timelines, personAliasGuid });
+    // a reply shown only in its thread lands nowhere else, so the open thread settles its send
+    const threads = createThreads({ call, timelines, personAliasGuid, onLanded: message => sender.landed(message) });
 
     const sender = createSender({
         send: async (channelId, body, key, reply) => {
