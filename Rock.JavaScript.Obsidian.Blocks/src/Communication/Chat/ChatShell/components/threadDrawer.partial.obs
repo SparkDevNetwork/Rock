@@ -22,7 +22,7 @@
         <div ref="bodyElement" class="chat-th-body" :class="{ 'is-community': isChannel, 'is-phone': isPhone }">
             <div v-if="hasMore" ref="topElement" class="chat-th-topmark" aria-hidden="true"></div>
 
-            <div v-if="error" class="chat-th-err" role="status" data-testid="thread-error">
+            <div v-if="error || olderError" class="chat-th-err" role="status" data-testid="thread-error">
                 <Icon name="alert" size="sm" />
                 <span>{{ errorSentence }}</span>
             </div>
@@ -302,8 +302,17 @@
             default: false
         },
 
-        /** Why the last page failed, shown over the replies that are held. */
+        /** Why the first page failed, shown over the replies that are held. */
         error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /**
+         * Why the last page of older replies failed, shown the same way. Kept apart from the first
+         * page's failure because it says nothing about whether the reader follows the thread.
+         */
+        olderError: {
             type: Object as PropType<ChatError | null>,
             default: null
         },
@@ -405,7 +414,10 @@
         return `${count} ${count === 1 ? "reply" : "replies"}`;
     });
 
-    const errorSentence = computed((): string => props.error ? messageForError(props.error) : "");
+    const errorSentence = computed((): string => {
+        const error = props.error ?? props.olderError;
+        return error ? messageForError(error) : "";
+    });
 
     /** Each sender's name this thread holds, so a mention in a reply not stored yet can show who it names. */
     const senderNames = computed((): ReadonlyMap<string, string> => {

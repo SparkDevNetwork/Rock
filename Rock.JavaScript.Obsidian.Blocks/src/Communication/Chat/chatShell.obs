@@ -148,6 +148,7 @@
                                   :hasMore="drawnThread.hasMore"
                                   :isLoading="drawnThread.isLoading"
                                   :error="drawnThread.error"
+                                  :olderError="drawnThread.olderError"
                                   :isLocked="!shell.state.isComposerOpen"
                                   :personName="personName"
                                   :personPhotoUrl="personPhotoUrl"

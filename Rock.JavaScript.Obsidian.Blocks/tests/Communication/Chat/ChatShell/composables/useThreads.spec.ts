@@ -39,7 +39,8 @@
 //                   busyRootId: number | null, rowError: { rootId: number, error: ChatError } | null },
 //           thread: { channelId: string, rootId: number, root: TimelineMessage | null,
 //                     replies: TimelineMessage[] (oldest first), following: boolean, readCursor: number | null,
-//                     hasMore: boolean, isLoading: boolean, error: ChatError | null } | null
+//                     hasMore: boolean, isLoading: boolean, error: ChatError | null,
+//                     olderError: ChatError | null } | null
 //       },
 //       openList(channelId: string, tab?: "channel" | "all"): Promise<void>,
 //       switchTab(tab: "channel" | "all"): Promise<void>,
@@ -498,6 +499,24 @@ describe("the thread page", () => {
         expect(callsTo("chat_get_thread_history")[1].args).toEqual(expect.objectContaining({ p_root_id: 40, p_before_id: 42 }));
         expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43]);
         expect(threads.state.thread?.hasMore).toBe(false);
+    });
+
+    test("a failed older page is said apart from the first page's failure, and cleared by the next that answers", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_get_thread_history = [
+            threadAnswer(root(40), [reply(43, 40), reply(42, 40)], { has_more: true }),
+            offline,
+            threadAnswer(root(40), [reply(41, 40)], { has_more: false })
+        ];
+        await threads.openThread(channel, 40);
+
+        await threads.loadOlderReplies();
+        expect(threads.state.thread?.error).toBeNull();
+        expect(threads.state.thread?.olderError).toEqual(expect.objectContaining({ code: "rpc.transport" }));
+
+        await threads.loadOlderReplies();
+        expect(threads.state.thread?.olderError).toBeNull();
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43]);
     });
 
     test("takes a live reply of the open thread, and no other thread's", async () => {

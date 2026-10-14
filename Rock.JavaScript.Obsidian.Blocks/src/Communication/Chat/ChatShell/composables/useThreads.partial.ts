@@ -92,7 +92,12 @@ export type OpenThreadState = {
     readCursor: number | null;
     hasMore: boolean;
     isLoading: boolean;
+
+    /** Why the first page failed; until it answers, whether the reader follows is not known. */
     error: ChatError | null;
+
+    /** Why the last page of older replies failed, cleared by the next that answers. */
+    olderError: ChatError | null;
 };
 
 /** What the threads hold for the screen. */
@@ -579,7 +584,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             }
 
             const thisOpen = ++threadOpen;
-            state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null };
+            state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null, olderError: null };
             newestSeen = null;
             lastSaved = null;
             pendingRootUpdate = null;
@@ -645,11 +650,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 return;
             }
             if (!result.ok) {
-                state.thread.error = result.error;
+                state.thread.olderError = result.error;
                 return;
             }
 
             const page = body<ThreadPage>(result);
+            state.thread.olderError = null;
             const older = (page.messages ?? []).filter(m => m.id < oldest.id).sort((a, b) => a.id - b.id);
             state.thread.replies.unshift(...older);
             state.thread.hasMore = page.has_more === true;

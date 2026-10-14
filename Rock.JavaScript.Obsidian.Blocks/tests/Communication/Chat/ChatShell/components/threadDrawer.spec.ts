@@ -276,6 +276,14 @@ describe("the Follow toggle", () => {
         expect(w.find("[data-testid='thread-follow']").exists()).toBe(false);
     });
 
+    test("stays offered after a page of older replies failed, with that failure said", async () => {
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true });
+        await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
+
+        expect(w.find("[data-testid='thread-error']").exists()).toBe(true);
+        expect(plain(w.get("[data-testid='thread-follow']").text())).toBe("Following");
+    });
+
     test("toasts the change in the design's words", () => {
         expect(followNotice(true).text).toBe("Following this thread");
         expect(followNotice(false).text).toBe("You won't be notified about new replies");
