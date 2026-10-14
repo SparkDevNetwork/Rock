@@ -42,7 +42,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, PeopleSearchAnswer, SendAnswer, SidebarRow } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MessageCreatedEvent, PeopleSearchAnswer, SendAnswer, SidebarRow, TimelineMessage } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -450,7 +450,29 @@ export function createChatShell(options: ShellOptions): ChatShell {
             showSettings();
         }
 
+        if (result.ok) {
+            reportPage(result.data);
+        }
+
         return result;
+    }
+
+    /**
+     * Tells the sender of every keyed message in a page, whether or not a view keeps the page: a
+     * page dropped because its thread was left, or its channel was left, still shows the message
+     * was posted. It waits a turn, so a page a view does keep has already put the message in
+     * place, and the pending row is never taken out before the message that replaces it is in.
+     */
+    function reportPage(data: unknown): void {
+        const messages = (data as { messages?: unknown } | null)?.messages;
+        if (!Array.isArray(messages)) {
+            return;
+        }
+
+        const keyed = (messages as TimelineMessage[]).filter(m => typeof m?.id === "number" && !!m.client_key);
+        if (keyed.length > 0) {
+            setTimeout(() => keyed.forEach(m => sender.landed(m)), 0);
+        }
     }
 
     /** A refusal in the shape the classifier reads, for callers that throw it on. */
@@ -712,6 +734,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // it takes the place of the row still sending rather than standing beside it.
                     threads.applyEvent(channelId, event, payload);
                     timelines.applyEvent(channelId, event, payload);
+
+                    // Any copy settles the send, after the views have taken theirs: a reply shown
+                    // only in a thread that is not open, or a message of a channel still loading,
+                    // is kept by no view, and with its answer lost nothing else would settle it.
+                    const created = payload as Partial<MessageCreatedEvent> | null;
+                    if (event === "message.created" && typeof created?.id === "number" && created.client_key) {
+                        sender.landed({ id: created.id, client_key: created.client_key });
+                    }
                 },
                 onPersonalEvent: (event, payload) => {
                     if (event === "resync") {

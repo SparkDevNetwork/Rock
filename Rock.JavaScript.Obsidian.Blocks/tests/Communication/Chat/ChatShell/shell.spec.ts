@@ -999,6 +999,54 @@ describe("the person's own live copy while their send is out", () => {
         expect(h.shell.threads.state.thread?.replies.map(r => r.id)).toEqual([901]);
         expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
     });
+
+    // No view keeps a reply shown only in a thread that is not open, so the shell itself hears
+    // every keyed copy on the channel topic; otherwise a lost answer leaves the send out for good.
+    test("a reply shown only in a thread that is not open is settled by its live copy when its answer never comes", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        let isSent = false;
+        void (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> })
+            .sendReply(10, "just here", false).then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 901, channel_id: channelA, parent_id: 10, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "just here", created_at: "2026-10-06T10:00:00Z", client_key: key }
+        });
+        await settle();
+
+        expect(isSent).toBe(true);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
+    });
+
+    // A thread page that arrives after its thread was left is dropped by the thread, yet the reply
+    // in it is posted, so the send it carries settles all the same.
+    test("a reply in a thread page dropped because the thread was left settles its send", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        const opening = h.shell.threads.openThread(channelA, 10);
+        await settle();
+        let isSent = false;
+        void (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> })
+            .sendReply(10, "just here", false).then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+        await h.shell.threads.closeThread();
+
+        const root = { id: 10, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "m10", created_at: "2026-09-23T10:00:00Z" };
+        const reply = { id: 901, parent_id: 10, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "just here", created_at: "2026-10-06T10:00:00Z", client_key: key };
+        h.saves.find(s => s.channelId === undefined && s.messageId === undefined)?.answer.resolve(fakeResponse(200, { root, messages: [reply], read_cursor: null, unread_count: 0, following: true, has_more: false }));
+        await opening;
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+
+        expect(h.shell.threads.state.thread).toBeNull();
+        expect(isSent).toBe(true);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
+    });
 });
 
 describe("a reply in a thread", () => {
