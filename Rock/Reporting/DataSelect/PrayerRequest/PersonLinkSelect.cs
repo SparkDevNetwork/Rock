@@ -138,10 +138,19 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
-            var result = new BoundField();
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
 
-            // Disable encoding of field content because the value contains markup.
-            result.HtmlEncode = false;
+            /*
+                10/14/2026 - MSE
+
+                When the value is a link, the markup (and the encoded name inside it) is built in
+                GetExpression, so the grid must not encode it again. Otherwise the value is the raw
+                name, so the grid encodes it.
+
+                Reason: Prevent stored XSS through a person's name in reports.
+            */
+            var result = new BoundField();
+            result.HtmlEncode = !showAsLink;
 
             return result;
         }
@@ -192,14 +201,24 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
 
             if ( showAsLink )
             {
+                /*
+                    10/14/2026 - MSE
+
+                    The link markup is built in SQL, so the name parts are HTML encoded there (with REPLACE)
+                    before they are placed inside the anchor. Names can be set by anyone (for example through
+                    a public signup form) and this column is rendered without encoding. Only &, < and > are
+                    encoded because the name is element content and the href is built from the Id only.
+
+                    Reason: Prevent stored XSS through a person's name in reports.
+                */
                 // Return a string in the format: <a href='/person/{personId}'>LastName, NickName</a>
                 if ( displayOrder == 0 )
                 {
-                    personLinkQuery = memberQuery.Select( gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.NickName + " " + gm.RequestedByPersonAlias.Person.LastName + "</a>" );
+                    personLinkQuery = memberQuery.Select( gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.NickName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + " " + gm.RequestedByPersonAlias.Person.LastName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + "</a>" );
                 }
                 else
                 {
-                    personLinkQuery = memberQuery.Select( gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.LastName + ", " + gm.RequestedByPersonAlias.Person.NickName + "</a>" );
+                    personLinkQuery = memberQuery.Select( gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.LastName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + ", " + gm.RequestedByPersonAlias.Person.NickName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + "</a>" );
                 }
             }
             else
