@@ -107,7 +107,7 @@ export type ThreadsDependencies = {
     call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean }) => Promise<CallResult>;
 
     /** The channel timelines, whose roots a thread's changes move. */
-    timelines: Pick<Timelines, "state">;
+    timelines: Pick<Timelines, "state" | "keepThreadRead">;
 
     /** The reader, so their own reply does not mark a thread unread. */
     personAliasGuid: string;
@@ -348,6 +348,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         newestSeen = null;
         lastSaved = null;
         pendingRootUpdate = null;
+        dependencies.timelines.keepThreadRead(null);
 
         if (isStopped || !thread || messageId === null || (saved !== null && messageId <= saved)) {
             return;
@@ -584,7 +585,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             pendingRootUpdate = null;
 
             // Opening the thread is reading it, so its mark goes from the conversation and the list
-            // at once rather than at the next save.
+            // at once rather than at the next save, and stays gone from a conversation whose
+            // history arrives after it, as one opened from the All tab does.
+            dependencies.timelines.keepThreadRead(rootId);
             const held = timelineRoot(channelId, rootId);
             if (held?.thread_unread) {
                 held.thread_unread = false;

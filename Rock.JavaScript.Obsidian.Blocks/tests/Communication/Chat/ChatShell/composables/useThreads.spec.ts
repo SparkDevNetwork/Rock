@@ -27,7 +27,8 @@
 //
 //   createThreads(dependencies: {
 //       call: (name: string, args: Record<string, unknown>) => Promise<CallResult>,  the shell's call path
-//       timelines: Pick<Timelines, "state">,   the channel timelines, whose roots thread.updated moves
+//       timelines: Pick<Timelines, "state" | "keepThreadRead">,   the channel timelines, whose roots
+//                                              thread.updated moves and an open thread keeps read
 //       personAliasGuid: string                the reader, as repliers name people
 //   }): Threads
 //
@@ -462,6 +463,26 @@ describe("the thread page", () => {
         await threads.openThread(channel, 40);
 
         expect(timelineRoot(timelines, 40).thread_unread).toBe(false);
+    });
+
+    test("keeps the root read in a conversation whose history arrives after the thread opened", async () => {
+        const { threads, timelines } = await setup({ messages: [root(40, { thread_unread: true })], read_cursor: null, unread_count: 0, has_more: false });
+
+        // opened from the All tab, its conversation chosen behind it and not yet loaded
+        await threads.openThread(otherChannel, 40);
+        await timelines.loadNewest(otherChannel);
+
+        expect(timelines.state(otherChannel).messages.find(m => m.id === 40)?.thread_unread).toBe(false);
+    });
+
+    test("lets a later history show the root unread again once the thread is closed", async () => {
+        const { threads, timelines } = await setup({ messages: [root(40, { thread_unread: true })], read_cursor: null, unread_count: 0, has_more: false });
+        await threads.openThread(otherChannel, 40);
+        await threads.closeThread();
+
+        await timelines.loadNewest(otherChannel);
+
+        expect(timelines.state(otherChannel).messages.find(m => m.id === 40)?.thread_unread).toBe(true);
     });
 
     test("reads older replies before the oldest held", async () => {

@@ -204,6 +204,9 @@ export type Timelines = {
     /** Puts one message in place by id, a person's own confirmed send for one. */
     upsert: (channelId: string, message: TimelineMessage) => void;
 
+    /** The root whose thread is open on screen, which every page shows read while it stays open; null once none is. */
+    keepThreadRead: (rootId: number | null) => void;
+
     /** The channel is no longer open: its catch-up stops and any answer on its way is dropped. */
     leave: (channelId: string) => void;
 
@@ -352,6 +355,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     // When the page that last set each message was read, so an older page cannot overwrite it.
     const pageReadAt = new Map<number, number>();
 
+    // The root whose thread the reader has open. Its read position is saved only when the thread
+    // closes, so until then any page, read before or after it opened, still says unread.
+    let openThreadRootId: number | null = null;
+
     /** Records a live change to a message, whether or not it is held yet. */
     function recordLive(id: number, fields: Partial<TimelineMessage>): void {
         const previous = liveChanges.get(id);
@@ -418,6 +425,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
                 incoming = { ...incoming, body: null, pieces: null, blocks: null, metadata: null };
+            }
+            if (incoming.id === openThreadRootId && incoming.thread_unread === true) {
+                incoming = { ...incoming, thread_unread: false };
             }
 
             upsert(channelId, incoming);
@@ -822,6 +832,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         upsert: (channelId: string, message: TimelineMessage): void => {
             upsert(channelId, message);
             recordLive(message.id, {});
+        },
+
+        keepThreadRead: (rootId: number | null): void => {
+            openThreadRootId = rootId;
         },
 
         leave,
