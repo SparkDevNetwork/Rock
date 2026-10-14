@@ -243,6 +243,18 @@ describe("a row", () => {
         expect(sub.findAllComponents(Icon).map(i => i.props("name"))).toEqual([icon]);
     });
 
+    test("names a two-person direct message as the conversation with that person, not by the name alone", () => {
+        const dm = "c0000003-0000-4000-8000-000000000000";
+        const w = draw({
+            tab: "all",
+            rows: [row(80, { channel_id: dm, reply_count: 1 }, { sender_nick_name: "Priya", sender_last_name: "Shah", body: "Slides?" })],
+            roomTitles: { ...roomTitles, [dm]: "Priya Shah" },
+            roomKinds: { [dm]: "person" }
+        });
+
+        expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toMatch(/^Priya Shah in your conversation with Priya Shah: Slides\? 1 reply, /);
+    });
+
     test("names the reader's own root You", () => {
         const w = draw({ rows: [row(40, {}, { person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Ellis" })] });
 
