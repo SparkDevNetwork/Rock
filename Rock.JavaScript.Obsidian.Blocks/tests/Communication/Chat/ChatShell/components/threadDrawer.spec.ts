@@ -255,6 +255,19 @@ describe("the Follow toggle", () => {
         expect(w.emitted("follow")).toEqual([[false]]);
     });
 
+    test("is not offered while the thread's first page is on its way, since whether the reader follows is not known yet", () => {
+        const w = draw({ root: null, replies: [], isLoading: true, isFollowing: false });
+
+        expect(w.find("[data-testid='thread-follow']").exists()).toBe(false);
+    });
+
+    test("is offered once the first page has answered", async () => {
+        const w = draw({ root: null, replies: [], isLoading: true });
+        await w.setProps({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true });
+
+        expect(plain(w.get("[data-testid='thread-follow']").text())).toBe("Following");
+    });
+
     test("toasts the change in the design's words", () => {
         expect(followNotice(true).text).toBe("Following this thread");
         expect(followNotice(false).text).toBe("You won't be notified about new replies");

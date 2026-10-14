@@ -8,7 +8,9 @@
                @close="emit('close')"
                @back="emit('back')">
         <template #actions>
-            <button type="button"
+            <!-- Whether the reader follows arrives with the first page, so until then there is nothing true to offer. -->
+            <button v-if="!isLoading"
+                    type="button"
                     class="chat-th-follow"
                     :aria-pressed="isFollowing ? 'true' : 'false'"
                     data-testid="thread-follow"
