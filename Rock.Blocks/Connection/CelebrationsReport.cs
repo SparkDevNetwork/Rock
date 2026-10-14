@@ -160,8 +160,14 @@ namespace Rock.Blocks.Connection
         /// <returns>The options that provide additional details to the block.</returns>
         private CelebrationsReportOptionsBag GetBoxOptions()
         {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            // Only list types the person can view, so a listed type always has rows the person can see.
+            // This also keeps a restricted type's name out of the filter and the locked panel title.
             var connectionTypes = ConnectionTypeCache.All()
-                .Where( ct => ct.IsActive && ct.EnabledFeatures.HasFlag( Rock.Enums.Connection.EnabledFeatureFlags.Celebration ) )
+                .Where( ct => ct.IsActive
+                    && ct.EnabledFeatures.HasFlag( Rock.Enums.Connection.EnabledFeatureFlags.Celebration )
+                    && ct.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .OrderBy( ct => ct.Name )
                 .ToList();
 
@@ -272,10 +278,50 @@ namespace Rock.Blocks.Connection
                 .ToDictionary( cr => cr.Id );
 
             var notes = base.GetListItems( queryable, rockContext );
+            var currentPerson = RequestContext.CurrentPerson;
+            var opportunityViewCache = new Dictionary<int, bool>();
 
             return notes
-                .Where( n => n.EntityId.HasValue && _connectionRequestMap.ContainsKey( n.EntityId.Value ) )
+                .Where( n => n.EntityId.HasValue
+                    && _connectionRequestMap.TryGetValue( n.EntityId.Value, out var connectionRequest )
+                    && CanViewCelebration( n, connectionRequest, currentPerson, opportunityViewCache ) )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view a celebration. This uses the same rule as
+        /// the Connections Hub: when Request Security is enabled on the type, the person needs VIEW on
+        /// the request (the assigned connector always has it); otherwise they need VIEW on the
+        /// opportunity, which inherits from the type. The person also needs VIEW on the note itself.
+        /// </summary>
+        /// <param name="note">The celebration note.</param>
+        /// <param name="connectionRequest">The connection request the note belongs to.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="opportunityViewCache">Opportunity VIEW results by opportunity Id, so each opportunity is checked once.</param>
+        /// <returns><c>true</c> if the person can view the celebration; otherwise, <c>false</c>.</returns>
+        private bool CanViewCelebration( Note note, ConnectionRequest connectionRequest, Person currentPerson, Dictionary<int, bool> opportunityViewCache )
+        {
+            var connectionOpportunity = connectionRequest.ConnectionOpportunity;
+
+            if ( currentPerson == null || connectionOpportunity == null )
+            {
+                return false;
+            }
+
+            bool canViewRequest;
+            var isRequestSecurityEnabled = connectionOpportunity.ConnectionType?.EnableRequestSecurity == true;
+
+            if ( isRequestSecurityEnabled )
+            {
+                canViewRequest = connectionRequest.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+            else if ( !opportunityViewCache.TryGetValue( connectionOpportunity.Id, out canViewRequest ) )
+            {
+                canViewRequest = connectionOpportunity.IsAuthorized( Authorization.VIEW, currentPerson );
+                opportunityViewCache[connectionOpportunity.Id] = canViewRequest;
+            }
+
+            return canViewRequest && note.IsAuthorized( Authorization.VIEW, currentPerson );
         }
 
         /// <inheritdoc/>
