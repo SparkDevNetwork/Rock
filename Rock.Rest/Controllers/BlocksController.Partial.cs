@@ -133,23 +133,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpGet]
-        [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead.")]
-        [Rock.SystemGuid.RestActionGuid( "E025B9B5-060A-4853-AC78-0D5B850771F8" )]
-        public async Task<IHttpActionResult> BlockAction( Guid blockGuid, string actionName )
-        {
-            return await v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null, _serviceProvider );
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         [Authenticate]
@@ -181,22 +164,6 @@ namespace Rock.Rest.Controllers
                     return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, parameterToken, _serviceProvider );
                 }
             }
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpGet]
-        [System.Web.Http.Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [Rock.SystemGuid.RestActionGuid( "31EA4036-31E1-4A0B-9354-44BEC3C228EB" )]
-        public async Task<IHttpActionResult> BlockAction( string pageGuid, string blockGuid, string actionName )
-        {
-            return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null, _serviceProvider );
         }
 
         /// <summary>
