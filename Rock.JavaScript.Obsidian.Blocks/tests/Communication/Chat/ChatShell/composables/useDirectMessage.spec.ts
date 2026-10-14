@@ -181,6 +181,28 @@ describe("the draft's first message", () => {
         expect(dm.draft).toBeNull();
     });
 
+    test("a browser with no cryptographic generator asks Rock for nothing and keeps the draft with a sentence", async () => {
+        const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+        Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true, writable: true });
+        try {
+            const { calls, dependencies } = setup();
+            const dm = await draftOf(dependencies);
+            calls.length = 0;
+
+            expect(await dm.sendFirst("hello")).toBe(false);
+
+            expect(calls).toEqual([]);
+            expect(dm.draft?.body).toBe("hello");
+            expect(dm.draft?.status).toBe("draft");
+            expect(dm.error).toEqual(expect.any(String));
+        }
+        finally {
+            if (original) {
+                Object.defineProperty(globalThis, "crypto", original);
+            }
+        }
+    });
+
     test("blank text asks Rock for nothing", async () => {
         const { calls, dependencies } = setup();
         const dm = await draftOf(dependencies);

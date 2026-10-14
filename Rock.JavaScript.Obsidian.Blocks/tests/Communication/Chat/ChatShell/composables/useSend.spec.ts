@@ -16,7 +16,7 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, JoinResult, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, JoinResult, newLocalId, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -435,6 +435,76 @@ describe("a send into a room the person has not joined", () => {
         expect(await sender.send(channel, "hello room")).toBe(false);
 
         expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "authz.join_required" });
+    });
+});
+
+// A send's key is published on its live copy, so a guessable key would let another member of the
+// room take the next one first. Keys come only from the browser's cryptographic generator, and a
+// browser without one sends nothing rather than a predictable key.
+describe("a send's key", () => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+
+    /** Puts a stand-in for the browser's crypto object in place for one test. */
+    function useCrypto(value: unknown): void {
+        Object.defineProperty(globalThis, "crypto", { value, configurable: true, writable: true });
+    }
+
+    afterEach(() => {
+        if (original) {
+            Object.defineProperty(globalThis, "crypto", original);
+        }
+        else {
+            delete (globalThis as { crypto?: unknown }).crypto;
+        }
+        jest.restoreAllMocks();
+    });
+
+    const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+    test("is the browser's randomUUID when it has one", () => {
+        useCrypto({ randomUUID: () => "11111111-2222-4333-8444-555555555555" });
+
+        expect(newLocalId()).toBe("11111111-2222-4333-8444-555555555555");
+    });
+
+    test("without randomUUID, is a version 4 UUID built from getRandomValues, never from Math.random", () => {
+        const random = jest.spyOn(Math, "random");
+        useCrypto({
+            getRandomValues: (bytes: Uint8Array) => {
+                bytes.forEach((_b, i) => bytes[i] = (i * 37 + 11) & 0xff);
+                return bytes;
+            }
+        });
+
+        const key = newLocalId();
+
+        expect(key).toMatch(uuidV4);
+        expect(random).not.toHaveBeenCalled();
+    });
+
+    test("with neither, there is no key", () => {
+        useCrypto(undefined);
+
+        expect(newLocalId()).toBeNull();
+    });
+
+    test("a sender with no key to give a message sends nothing and draws no row", async () => {
+        const sent: string[] = [];
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const sender = createSender({
+            send: async (_c, body) => {
+                sent.push(body);
+                return { ok: true, id: 1, createdAt: "2026-10-14T10:00:00Z" };
+            },
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => null
+        });
+
+        expect(await sender.send(channel, "hello")).toBe(false);
+
+        expect(sent).toEqual([]);
+        expect(sender.pending(channel)).toEqual([]);
     });
 });
 

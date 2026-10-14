@@ -53,6 +53,9 @@ const maxRetriedSends = 5;
 /** Shown on a draft whose message could not be sent because the platform does not hold its conversation. */
 const notReadySentence = "The conversation is not ready yet, so your message was not sent. Send it again in a moment.";
 
+/** Shown on a draft in a browser that cannot make a send key no one else could guess. */
+const noKeySentence = "This browser cannot send messages securely. Try a current browser.";
+
 /** What Rock's door answers when asked for a conversation. */
 export type DoorResult = {
     /** "ok", or the refusal's code. */
@@ -687,11 +690,20 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
                 return sendOnce(carried);
             }
 
+            // Without a key no one else could guess nothing is sent, so Rock is not asked for a
+            // conversation the message could never reach.
+            const localId = newLocalId();
+            if (!localId) {
+                draft.status = "draft";
+                state.error = noKeySentence;
+                return false;
+            }
+
             const message: FirstMessage = {
                 phase: "asking",
                 people: draft.people,
                 body,
-                localId: newLocalId(),
+                localId,
                 channelId: null,
                 tries: 0,
                 draft: null,

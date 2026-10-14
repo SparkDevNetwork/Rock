@@ -81,19 +81,29 @@ export function textAfterSend(text: string, isTextKept: boolean): string {
 
 /**
  * A fresh identifier for a pending row. It is also the send's key, which the platform stores as
- * a UUID, so a browser without randomUUID still gets one of that shape.
+ * a UUID and every copy of the message carries, live copies included, so other members of the
+ * room see it. Only the browser's cryptographic generator makes one: a key anyone could predict
+ * would let them take a person's next key first.
  *
- * @returns A version 4 UUID.
+ * @returns A version 4 UUID, or null when the browser has no cryptographic generator.
  */
-export function newLocalId(): string {
-    if (typeof globalThis.crypto?.randomUUID === "function") {
-        return globalThis.crypto.randomUUID();
+export function newLocalId(): string | null {
+    const crypto = globalThis.crypto;
+    if (typeof crypto?.randomUUID === "function") {
+        return crypto.randomUUID();
     }
 
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-        const value = Math.floor(Math.random() * 16);
-        return (c === "x" ? value : (value & 0x3) | 0x8).toString(16);
-    });
+    if (typeof crypto?.getRandomValues !== "function") {
+        return null;
+    }
+
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    // The version and variant bits of a version 4 UUID, as RFC 9562 sets them.
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 /** A reply's place: the root it answers, and whether it is also sent to the conversation. */
@@ -128,8 +138,8 @@ export type SenderDependencies = {
     /** The person sending, as the platform knows them. */
     personAliasGuid: string;
 
-    /** A fresh identifier for a pending row, a UUID, since it is also the send's key. */
-    newLocalId: () => string;
+    /** A fresh identifier for a pending row, a UUID, since it is also the send's key; null when none can be made. */
+    newLocalId: () => string | null;
 };
 
 /** How one try of a message that is tried again on its own is sent. */
@@ -326,8 +336,14 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return deliver(earlier, attempt?.isLast);
             }
 
+            // Nothing is sent without a key no one else could guess.
+            const localId = attempt?.localId ?? dependencies.newLocalId();
+            if (!localId) {
+                return false;
+            }
+
             rows.push({
-                localId: attempt?.localId ?? dependencies.newLocalId(),
+                localId,
                 channelId,
                 body,
                 status: "sending",
