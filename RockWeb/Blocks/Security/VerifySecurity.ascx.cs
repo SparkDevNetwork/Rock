@@ -499,7 +499,7 @@ namespace RockWeb.Blocks.Security
                     explicitAuth.AllowOrDeny = "A";
                     rockContext.SaveChanges();
 
-                    Authorization.RefreshAction( entity.TypeId, entity.Id, auth.Action );
+                    Authorization.RefreshAction( explicitAuth.EntityTypeId, explicitAuth.EntityId ?? 0, explicitAuth.Action );
                 }
                 else
                 {
