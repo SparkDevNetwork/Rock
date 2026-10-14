@@ -42,7 +42,6 @@ using Rock.Security;
 #if WEBFORMS
 using BadRequestErrorMessageResult = System.Web.Http.Results.BadRequestErrorMessageResult;
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
-using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using NakedBodyAttribute = System.Web.Http.NakedBodyAttribute;
@@ -90,23 +89,6 @@ namespace Rock.Rest.v2
         #endregion
 
         #region API Methods
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route( "{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
-        public async Task<IActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
-        {
-            return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
-        }
 
         /// <summary>
         /// Executes an action handler on a specific block.
@@ -162,6 +144,22 @@ namespace Rock.Rest.v2
         /// <returns>The result of the block action method.</returns>
         internal static async Task<IActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters, IServiceProvider serviceProvider )
         {
+            /*
+                10/13/2026 - MSE
+
+                Block actions only run from a POST. A GET can be started by a
+                link or redirect from another site, and the browser still sends
+                the SameSite=Lax authentication cookie with it, so a GET would
+                run the action with the signed in person's rights. The GET
+                routes were removed; this check also covers any route added later.
+
+                Reason: Block actions could be run from a cross-site GET link (CSRF).
+            */
+            if ( controller.Request.Method != HttpMethod.Post )
+            {
+                return new StatusCodeResult( HttpStatusCode.MethodNotAllowed, controller );
+            }
+
             try
             {
                 BlockCache blockCache = null;
