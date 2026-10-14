@@ -135,22 +135,6 @@ namespace Rock.Rest.Controllers
         /// <param name="pageGuid">The page unique identifier.</param>
         /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpGet]
-        [System.Web.Http.Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [Rock.SystemGuid.RestActionGuid( "31EA4036-31E1-4A0B-9354-44BEC3C228EB" )]
-        public async Task<IHttpActionResult> BlockAction( string pageGuid, string blockGuid, string actionName )
-        {
-            return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null, _serviceProvider );
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         [Authenticate]
