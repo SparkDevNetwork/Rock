@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -51,9 +52,20 @@ namespace Rock.Model
 
         Reason: Generated REST endpoints would bypass the compile-on-save contract.
     */
+    /*
+        10/14/2026 - CLAUDE
+
+        Omitting CodeGenerateRest did not prevent REST endpoints: the code generator
+        still produced a v1 controller for this entity and warned that the attribute
+        was missing. The two attributes below make "no generated endpoints" explicit.
+
+        Reason: Keep generated v1 and v2 REST endpoints off this entity.
+    */
     [RockDomain( "CMS" )]
     [Table( "ForgeContent" )]
     [DataContract]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( "38F182A7-9FE4-4D7B-B483-59F615BDE41C" )]
     public partial class ForgeContent : Model<ForgeContent>
     {

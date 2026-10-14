@@ -2569,13 +2569,6 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// Recursively gets a list of every folder that is in the given directory.
-        /// </summary>
-        /// <param name="directoryPath">The folder we want to get the children of.</param>
-        /// <param name="physicalRootFolder">The root folder where this list was started from.</param>
-        /// <param name="excludedFolder">The name of a folder that should be excluded from the list (and its children).</param>
-        /// <returns>A list of <see cref="ListItemBag"/> items of each child directory.</returns>
-        /// <summary>
         /// Normalizes a virtual path so that equivalent paths can be compared.
         /// Backslashes become forward slashes, and repeated slashes and "./"
         /// segments are removed.
