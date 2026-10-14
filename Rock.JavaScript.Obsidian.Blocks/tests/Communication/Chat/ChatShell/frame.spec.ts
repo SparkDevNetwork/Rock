@@ -663,6 +663,14 @@ describe("the panel column", () => {
         expect(rules.some(r => r.selector.includes("data-panel-open=\"true\"") && /grid-template-columns:\s*296px minmax\(0, 1fr\) 392px/.test(r.body))).toBe(true);
     });
 
+    test("draws its dividing line only while open, so the closed column is 0px wide", () => {
+        const rules = frameRules();
+        const closedOrAlways = rules.filter(r => /\.chat-frame-panel\s*$/.test(r.selector) && !r.selector.includes("data-panel-open=\"true\"") && !r.selector.includes("data-phone"));
+
+        expect(closedOrAlways.some(r => /border-left:\s*1px/.test(r.body))).toBe(false);
+        expect(rules.some(r => r.selector === ".chat-frame[data-panel-open=\"true\"] .chat-frame-panel" && /border-left:\s*1px solid var\(--chat-line\)/.test(r.body))).toBe(true);
+    });
+
     test("opens from the header's Threads button on a wide block, for the open conversation", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);

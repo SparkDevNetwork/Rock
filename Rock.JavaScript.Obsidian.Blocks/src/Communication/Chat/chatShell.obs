@@ -234,11 +234,11 @@
     min-height: 0;
     overflow: hidden;
     background: var(--chat-surface);
-    border-left: 1px solid var(--chat-line);
 }
 
-.chat-frame[data-panel-open="false"] .chat-frame-panel {
-    border-left-color: transparent;
+/* Its dividing line only while open, so the closed column is 0px wide and not a 1px sliver. */
+.chat-frame[data-panel-open="true"] .chat-frame-panel {
+    border-left: 1px solid var(--chat-line);
 }
 
 /* The content keeps its full width while the column opens around it, fading in as it slides home. */
