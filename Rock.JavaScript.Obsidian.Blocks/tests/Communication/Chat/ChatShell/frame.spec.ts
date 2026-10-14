@@ -832,6 +832,84 @@ describe("the thread drawer", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='40']").element);
     });
 
+    /** Opens the threads list on its All tab over the team, holding one thread of the direct message with Anna. */
+    async function openAllTabWithAnnasThread(w: VueWrapper): Promise<void> {
+        await openWithRoot(w);
+        if (w.find("[data-testid='header-threads']").exists()) {
+            await w.get("[data-testid='header-threads']").trigger("click");
+        }
+        else {
+            await w.get("[data-testid='header-more'] button").trigger("click");
+            await settle();
+            Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Threads")!.click();
+        }
+        await settle();
+
+        const root = storedMessage(70, { reply_count: 1 } as Partial<TimelineMessage>);
+        timelineOf(dmAnna.channel_id).messages.push(root);
+        const list = (threadsOf().state as unknown as { list: { tab: string, rows: unknown[] } }).list;
+        list.tab = "all";
+        list.rows = [{
+            channel_id: dmAnna.channel_id, root, reply_count: 1, last_reply_at: root.created_at, last_reply_id: 71,
+            participant_count: 2, following: true, has_unread: false, mention_count: 0
+        }];
+        await settle();
+    }
+
+    test("opens a thread of another conversation from the All tab over that conversation, and goes back to the All tab", async () => {
+        const w = await mountBlock(1200);
+        await openAllTabWithAnnasThread(w);
+
+        await w.get("[data-testid='thread-row-open'][data-root-id='70']").trigger("click");
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenLastCalledWith(dmAnna.channel_id);
+        expect((mockShell!.state as { activeChannelId: string }).activeChannelId).toBe(dmAnna.channel_id);
+        expect(w.get("[data-testid='header-title']").text()).toContain("Anna Kim");
+        expect(threadsOf().openThread).toHaveBeenCalledWith(dmAnna.channel_id, 70);
+        expect(threadsOf().closeThread).not.toHaveBeenCalled();
+        expect(panelOpen(w)).toBe("true");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect((threadsOf().state as unknown as { list: { tab: string } }).list.tab).toBe("all");
+        expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='70']").element);
+
+        // The conversation behind the list is now Anna's, so its own tab lists her threads.
+        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "false")!.trigger("click");
+        await settle();
+
+        expect(threadsOf().openList).toHaveBeenLastCalledWith(dmAnna.channel_id, "channel");
+    });
+
+    test("on a phone, a thread of another conversation opened from the All tab keeps the panel pane shown", async () => {
+        const w = await mountBlock(390);
+        await openAllTabWithAnnasThread(w);
+
+        await w.get("[data-testid='thread-row-open'][data-root-id='70']").trigger("click");
+        await settle();
+
+        expect((mockShell!.state as { activeChannelId: string }).activeChannelId).toBe(dmAnna.channel_id);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        expect(isPaneHidden(w, "frame-panel")).toBe(false);
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+    });
+
+    test("closes when another conversation is chosen in the sidebar", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w);
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        await openRow(w, dmAnna.channel_id);
+
+        expect(threadsOf().closeThread).toHaveBeenCalledTimes(1);
+        expect(panelOpen(w)).toBe("false");
+    });
+
     test("leaves out the drawer's reply still on its way from the conversation", async () => {
         const w = await mountBlock(1200);
         await openWithRoot(w);

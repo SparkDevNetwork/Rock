@@ -429,6 +429,9 @@
     /** Whether the open thread came from the threads list, so its back chevron and Escape return there. */
     const isThreadFromList = ref(false);
 
+    /** The conversation the open thread belongs to, which the drawer stays open over. */
+    let threadChannelId: string | null = null;
+
     // The block's own width, not the window's or a container query's, since the oldest Safari Rock
     // supports has no container queries and a narrow zone of a wide window is still narrow.
     let resizeObserver: ResizeObserver | null = null;
@@ -664,6 +667,13 @@
     }
 
     function onThreadsTab(tab: ThreadListTab): void {
+        // A thread opened from the All tab may have moved the conversation, so the list's own
+        // tab is opened for the conversation open now.
+        if (tab === "channel" && activeChannelId.value && threadList.value.channelId !== activeChannelId.value) {
+            void shell.value.threads.openList(activeChannelId.value, tab);
+            return;
+        }
+
         void shell.value.threads.switchTab(tab);
     }
 
@@ -687,11 +697,14 @@
     }
 
     /**
-     * A row of the threads list chose its thread: it opens in that conversation, which may not be
-     * the one open, in the panel column in the list's place, with a back chevron that returns to
-     * the list and the row that opened it.
+     * A row of the threads list chose its thread: its conversation opens behind the drawer, as a
+     * sidebar row would open it, and the thread opens in the panel column in the list's place,
+     * with a back chevron that returns to the list and the row that opened it.
      */
     function openThreadFromList(rootId: number, channelId: string): void {
+        if (channelId !== activeChannelId.value) {
+            void shell.value.selectChannel(channelId);
+        }
         void openThreadDrawer(channelId, rootId, true);
     }
 
@@ -821,6 +834,7 @@
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
         isThreadFromList.value = isFromList;
+        threadChannelId = channelId;
         panelKind.value = "thread";
         shownPanel.value = "thread";
         await shell.value.threads.openThread(channelId, rootId);
@@ -1039,9 +1053,10 @@
         }
     });
 
-    // A thread belongs to the conversation it was opened over, so another conversation closes it.
-    watch([activeChannelId, draft], () => {
-        if (panelKind.value === "thread") {
+    // A thread belongs to its own conversation, so another conversation or a draft closes it. A
+    // thread opened from the list switches to its conversation first, which keeps it open.
+    watch([activeChannelId, draft], ([channelId, openDraft]) => {
+        if (panelKind.value === "thread" && (openDraft || channelId !== threadChannelId)) {
             leaveThread();
             finishClosing();
         }
