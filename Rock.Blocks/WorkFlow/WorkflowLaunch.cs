@@ -398,7 +398,26 @@ namespace Rock.Blocks.WorkFlow
                 return null;
             }
 
-            return WorkflowTypeCache.Get( selectedGuid.Value );
+            var selectedWorkflowType = WorkflowTypeCache.Get( selectedGuid.Value );
+
+            /*
+                10/13/2026 - MSE
+
+                With no configured workflow types the individual chooses from the
+                WorkflowTypePicker, which only lists types they can view. The selected
+                value is posted by the client, so the server must apply the same rule.
+                Configured workflow types are chosen by an administrator and stay unchecked.
+
+                Reason: Prevent launching a restricted workflow type by changing the posted value.
+            */
+            if ( configuredWorkflowTypes.Count == 0
+                && selectedWorkflowType != null
+                && !selectedWorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return selectedWorkflowType;
         }
 
         /// <summary>
