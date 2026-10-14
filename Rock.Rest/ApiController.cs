@@ -553,7 +553,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "DataView" )]
         [EnableQuery]
-        public IQueryable<T> GetDataView( int id )
+        public virtual IQueryable<T> GetDataView( int id )
         {
             /*
              * 4-JAN-2022 DMV
@@ -584,7 +584,7 @@ namespace Rock.Rest
         [ActionName( "InDataView" )]
         [EnableQuery]
         [HttpGet]
-        public bool InDataView( int dataViewId, int entityId )
+        public virtual bool InDataView( int dataViewId, int entityId )
         {
             /*
              * 4-JAN-2022 DMV
@@ -734,7 +734,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "FollowedItems" )]
         [EnableQuery]
-        public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
+        public virtual IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
         {
             /*
              * 4-JAN-2022 DMV
