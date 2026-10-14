@@ -796,6 +796,26 @@ describe("following", () => {
         expect(otherRoot?.thread_unread).toBe(false);
     });
 
+    // The drawer's toggle does not wait for the answer, so it can be pressed twice in quick succession.
+    test("two quick changes of one thread end where the person last left it, whichever answer lands first", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)], { following: false })];
+        await threads.openThread(channel, 40);
+        const first = deferred<CallResult>();
+        const second = deferred<CallResult>();
+        answers.chat_follow_thread = [first, second];
+
+        const following = threads.follow(40, true);
+        const unfollowing = threads.follow(40, false);
+        second.resolve({ ok: true, data: { following: false, read_cursor: null } });
+        expect(await unfollowing).toBe(true);
+        first.resolve({ ok: true, data: { following: true, read_cursor: 41 } });
+
+        expect(await following).toBe(false);
+        expect(threads.state.thread?.following).toBe(false);
+        expect(threads.state.list.busyRootId).toBeNull();
+    });
+
     test("names the row it is working on while the call is out", async () => {
         const { threads, answers } = await setup();
         answers.chat_list_threads = [listAnswer([listRow(40)])];

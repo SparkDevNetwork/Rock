@@ -214,6 +214,11 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // Bumped by every thread opened or closed, so a page of a thread left is dropped.
     let threadOpen = 0;
 
+    // The newest follow change asked of each root. The drawer's toggle can be pressed again before
+    // the first answer, and the answers can arrive in either order, so only the newest is taken.
+    let followChange = 0;
+    const newestFollowChange = new Map<number, number>();
+
     // The open thread's read position: the newest reply on screen, and what is stored or on its
     // way to being stored, the same pair the channel's position keeps.
     let newestSeen: number | null = null;
@@ -508,11 +513,18 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const list = state.list;
             list.busyRootId = rootId;
             list.rowError = null;
+            const thisChange = ++followChange;
+            newestFollowChange.set(rootId, thisChange);
 
             const result = await dependencies.call("chat_follow_thread", { p_root_id: rootId, p_follow: isFollowing });
             if (isStopped) {
                 return false;
             }
+            // a newer change of the same thread was asked meanwhile: its answer is the one that stands
+            if (newestFollowChange.get(rootId) !== thisChange) {
+                return false;
+            }
+            newestFollowChange.delete(rootId);
             if (list.busyRootId === rootId) {
                 list.busyRootId = null;
             }
