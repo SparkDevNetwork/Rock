@@ -344,7 +344,7 @@
     import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
-    import { joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
+    import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
     import { SidebarRow } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
 
@@ -474,7 +474,7 @@
     const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
 
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
-    const isActiveDirectMessage = computed((): boolean => activeRow.value?.channel_type === "dm" && (activeRow.value.dm_other_count ?? 1) <= 1);
+    const isActiveDirectMessage = computed((): boolean => !!activeRow.value && isTwoPersonDirectMessage(activeRow.value));
 
     /** The other people of the open direct message or draft, by the names the sidebar shows. */
     const activePeople = computed((): string[] => {
@@ -562,7 +562,7 @@
     const roomKinds = computed((): Record<string, HeaderRoomKind> => {
         const kinds: Record<string, HeaderRoomKind> = {};
         for (const row of shell.value.channels.rows) {
-            kinds[row.channel_id] = row.channel_type !== "dm" ? "channel" : (row.dm_other_count ?? 1) <= 1 ? "person" : "group";
+            kinds[row.channel_id] = row.channel_type !== "dm" ? "channel" : isTwoPersonDirectMessage(row) ? "person" : "group";
         }
 
         return kinds;

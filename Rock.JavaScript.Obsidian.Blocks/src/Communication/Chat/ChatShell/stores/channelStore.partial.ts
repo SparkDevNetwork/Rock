@@ -151,6 +151,19 @@ export function joinNames(names: string[], unnamed: number): string {
 }
 
 /**
+ * Whether a direct message is between the person and one other. Only a group can be named, and
+ * the platform counts a room's people only when it has no name, so a named one, sent with a count
+ * of 0, is a group.
+ *
+ * @param row The sidebar row.
+ *
+ * @returns True for a two-person direct message.
+ */
+export function isTwoPersonDirectMessage(row: SidebarRow): boolean {
+    return row.channel_type === "dm" && !row.name && (row.dm_other_count ?? 1) <= 1;
+}
+
+/**
  * A room's title as the sidebar and the header draw it: its own name, or for a direct message
  * without one the people in it. The platform's count of others includes the people it names, so
  * only the rest are "more".

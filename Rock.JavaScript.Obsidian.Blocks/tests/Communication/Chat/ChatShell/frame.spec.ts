@@ -922,3 +922,44 @@ describe("the thread drawer", () => {
         expect(w.findAll("[data-testid='frame-panel'] [data-testid='pending-row']")).toHaveLength(1);
     });
 });
+
+describe("a named group direct message", () => {
+    // The platform names a direct message by its people only when it has no name, so a named group
+    // arrives with no people and a count of others of 0. Only a group can be named, so it is still
+    // a group: each run of messages is headed by its sender, in the conversation and its threads.
+
+    const hike: SidebarRow = sidebarRow({
+        channel_id: "c0000009-0000-4000-8000-000000000000",
+        channel_type: "dm",
+        name: "Hike planning",
+        dm_names: [],
+        dm_other_count: 0
+    });
+
+    async function openHike(w: VueWrapper): Promise<void> {
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(hike);
+        timelineOf(hike.channel_id).messages.push(storedMessage(50, { reply_count: 1, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await openRow(w, hike.channel_id);
+    }
+
+    test("heads each run of messages with its sender's name", async () => {
+        const w = await mountBlock(1200);
+        await openHike(w);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='sender-name']").text()).toBe("Anna Kim");
+    });
+
+    test("heads each run of replies in its thread drawer with its sender's name", async () => {
+        const w = await mountBlock(1200);
+        await openHike(w);
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        const thread = (mockShell!.threads as { state: { thread: { replies: TimelineMessage[] } } }).state.thread;
+        thread.replies.push(storedMessage(51, { parent_id: 50, person_alias_guid: "a0000003-0000-4000-8000-000000000000", sender_nick_name: "Ben", sender_last_name: "Ortiz" }));
+        await settle();
+
+        const names = w.findAll("[data-testid='frame-panel'] .chat-grp [data-testid='sender-name']").map(n => n.text());
+        expect(names).toContain("Ben Ortiz");
+    });
+});
