@@ -482,7 +482,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     /** Applies one live event to a loaded timeline. A live event never moves where catch-up resumes. */
     function apply(channelId: string, event: string, payload: unknown): void {
         if (event === "thread.updated") {
-            if (payload && typeof (payload as { root_id?: unknown }).root_id === "number") {
+            if (payload && typeof (payload as Partial<ThreadUpdatedEvent>).root_id === "number") {
                 applyThreadCounts(channelId, payload as ThreadUpdatedEvent);
             }
             return;
