@@ -256,10 +256,19 @@ namespace RockWeb.Blocks.WorkFlow
         {
             if ( !Page.IsPostBack )
             {
-                if ( PageParameter( PageParameterKey.BypassConfirm ).AsBoolean() && !PageParameter( PageParameterKey.WorkflowTypeId ).IsNullOrWhiteSpace() )
+                /*
+                    10/13/2026 - MSE
+
+                    Only bypass the confirmation when the page parameter workflow type
+                    resolves and the individual can view it. This is the same rule used
+                    to show the type as locked, so a link can not launch a workflow type
+                    the individual is not allowed to view.
+
+                    Reason: Prevent launching a restricted workflow type from a URL.
+                */
+                if ( PageParameter( PageParameterKey.BypassConfirm ).AsBoolean() && GetAuthorizedPageParameterWorkflowType() != null )
                 {
-                    LaunchWorkflows();
-                    _hasLaunched = true;
+                    _hasLaunched = LaunchWorkflows();
                 }
 
                 RenderState();
@@ -302,9 +311,14 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnLaunch_Click( object sender, EventArgs e )
         {
-            LaunchWorkflows();
-            _hasLaunched = true;
+            _hasLaunched = LaunchWorkflows();
             RenderState();
+
+            if ( !_hasLaunched )
+            {
+                // RenderState hides the notification box, so show this after it.
+                ShowError( "Please select a workflow type." );
+            }
         }
 
         /// <summary>
@@ -332,7 +346,27 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowTypeId.HasValue )
             {
-                return WorkflowTypeCache.Get( workflowTypeId.Value );
+                var parameterWorkflowType = WorkflowTypeCache.Get( workflowTypeId.Value );
+
+                if ( parameterWorkflowType == null )
+                {
+                    return null;
+                }
+
+                /*
+                    10/13/2026 - MSE
+
+                    BindWorkflowTypeControls only locks the selection to the page parameter
+                    workflow type when the individual can view it, and otherwise shows the
+                    block settings selection. Apply the same rule here so the type that is
+                    launched is always the type that was shown.
+
+                    Reason: Prevent launching a restricted workflow type from a URL.
+                */
+                if ( parameterWorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    return parameterWorkflowType;
+                }
             }
 
             var workflowTypes = GetAttributeValues( AttributeKey.WorkflowTypes )
@@ -345,24 +379,58 @@ namespace RockWeb.Blocks.WorkFlow
                 return workflowType;
             }
 
-            workflowTypeId = workflowTypes.Any() ?
-                ddlWorkflowType.SelectedValueAsInt() :
-                wtpWorkflowType.SelectedValueAsInt();
+            if ( workflowTypes.Any() )
+            {
+                // When the block restricts the available workflow types, only a configured type may be launched.
+                var selectedWorkflowTypeId = ddlWorkflowType.SelectedValueAsInt();
+                return workflowTypes.FirstOrDefault( wt => wt != null && wt.Id == selectedWorkflowTypeId );
+            }
 
-            return WorkflowTypeCache.Get( workflowTypeId ?? 0 );
+            /*
+                10/13/2026 - MSE
+
+                With no configured workflow types the individual chooses from the
+                WorkflowTypePicker, which only lists types they can view. The selected
+                value comes from a hidden field the client controls, so the server must
+                apply the same rule.
+
+                Reason: Prevent launching a restricted workflow type by changing the picker value.
+            */
+            var pickedWorkflowType = WorkflowTypeCache.Get( wtpWorkflowType.SelectedValueAsInt() ?? 0 );
+
+            if ( pickedWorkflowType == null || !pickedWorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return pickedWorkflowType;
+        }
+
+        /// <summary>
+        /// Gets the workflow type from the page parameter when it resolves and the
+        /// current person is authorized to view it.
+        /// </summary>
+        /// <returns>The workflow type, or <c>null</c> if it does not resolve or is not authorized.</returns>
+        private WorkflowTypeCache GetAuthorizedPageParameterWorkflowType()
+        {
+            var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+            var workflowType = workflowTypeId.HasValue ? WorkflowTypeCache.Get( workflowTypeId.Value ) : null;
+
+            return workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? workflowType : null;
         }
 
         /// <summary>
         /// Launches the workflows.
         /// </summary>
-        private void LaunchWorkflows()
+        /// <returns><c>true</c> if the workflows were launched; otherwise <c>false</c>.</returns>
+        private bool LaunchWorkflows()
         {
             var workflowType = GetSelectedWorkflowType();
 
             if ( workflowType == null )
             {
-                // Validator control will alert the user
-                return;
+                // The caller shows an error to the user
+                return false;
             }
 
             var workflowAttributes = PageParameters().ToDictionary(k => k.Key, v => v.Value.ToString());
@@ -370,6 +438,8 @@ namespace RockWeb.Blocks.WorkFlow
             var rockContext = new RockContext();
             var entitySetService = new EntitySetService( rockContext );
             entitySetService.LaunchWorkflows( entitySetId, workflowType.Id, CurrentPersonAliasId, workflowAttributes );
+
+            return true;
         }
 
         /// <summary>

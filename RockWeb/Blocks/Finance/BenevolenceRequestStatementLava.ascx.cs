@@ -229,6 +229,23 @@ namespace RockWeb.Blocks.Finance
             {
                 var benevolenceRequest = new BenevolenceRequestService( rockContext ).Get( benevolenceRequestId );
 
+                /*
+                    10/13/2026 - MSE
+
+                    A benevolence request inherits its VIEW security from its benevolence type,
+                    and the list and detail blocks enforce that. This block renders the request
+                    from a page parameter, so it must check VIEW too or anyone with access to the
+                    statement page could read requests in restricted types by changing the Id.
+                    Missing and denied requests show the same message so Ids cannot be probed.
+
+                    Reason: Prevent reading benevolence requests the person is not allowed to view.
+                */
+                if ( benevolenceRequest == null || !benevolenceRequest.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    lResults.Text = "<div class=\"alert alert-warning\">The requested benevolence request was not found.</div>";
+                    return;
+                }
+
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Request", benevolenceRequest );
 
