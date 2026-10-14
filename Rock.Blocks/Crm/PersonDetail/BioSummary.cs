@@ -126,7 +126,16 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return box;
             }
 
-            RequestContext.Response.SetBrowserTitle( person.FullName );
+            /*
+                10/14/2026 - MSE
+
+                The browser title is written into the page's <title> element without
+                encoding, and a person can choose their own name (for example when
+                signing up), so the name must be HTML encoded here.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            RequestContext.Response.SetBrowserTitle( person.FullName.EncodeHtml() );
 
             if ( IsNamelessPerson( person ) )
             {
