@@ -1270,9 +1270,21 @@ ORDER BY ct.[Name], cs.[Name]",
             }
 
             var title = connectionRequest.ToString();
+
+            /*
+                10/14/2026 - MSE
+
+                The title includes the requester's name and the quick return filter places
+                its input inside a single quoted JavaScript string in an inline script and
+                only escapes quotes. The title is JavaScript string encoded first (double
+                quotes become \u0022 so the filter does not escape them again), so a
+                backslash or a closing script tag in the name cannot break out of the script.
+
+                Reason: Prevent script injection through the person's name.
+            */
             string quickReturnLava = "{{ Title | AddQuickReturn:'ConnectionRequests', 60 }}";
             var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
-            quickReturnMergeFields.Add( "Title", title );
+            quickReturnMergeFields.Add( "Title", System.Web.HttpUtility.JavaScriptStringEncode( title ).Replace( "\\\"", "\\u0022" ) );
             quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 
             // Add the lava header

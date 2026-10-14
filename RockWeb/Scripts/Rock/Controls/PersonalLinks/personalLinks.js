@@ -190,12 +190,32 @@
                     if ($quickReturns.length) {
                         var quickReturnsByType = Rock.personalLinks.getQuickReturns();
                         var quickReturnHtml = '';
+
+                        /*
+                            10/14/2026 - MSE
+
+                            Quick return names come from page data such as a person's name,
+                            which anyone can set (for example through a public signup form),
+                            and are kept in local storage. They are HTML encoded here because
+                            the list is built as an HTML string.
+
+                            Reason: Prevent script injection through quick return names.
+                        */
+                        var encodeHtml = function (value) {
+                            return String(value == null ? '' : value)
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;')
+                                .replace(/'/g, '&#39;');
+                        };
+
                         if (quickReturnsByType.length > 0) {
                             for (var i = 0; i < quickReturnsByType.length; i++) {
                                 if (quickReturnsByType[ i ].items.length > 0) {
-                                    var itemsHtml = '<li><strong>' + quickReturnsByType[ i ].type + '</strong></li>';
+                                    var itemsHtml = '<li><strong>' + encodeHtml(quickReturnsByType[ i ].type) + '</strong></li>';
                                     for (var item in quickReturnsByType[ i ].items) {
-                                        itemsHtml += ' <li><a href="' + quickReturnsByType[ i ].items[ item ].url + '">' + quickReturnsByType[ i ].items[ item ].itemName + '</a></li>';
+                                        itemsHtml += ' <li><a href="' + encodeHtml(quickReturnsByType[ i ].items[ item ].url) + '">' + encodeHtml(quickReturnsByType[ i ].items[ item ].itemName) + '</a></li>';
                                     }
                                     quickReturnHtml += '<ul class="list-unstyled">' + itemsHtml + '</ul>';
                                 }

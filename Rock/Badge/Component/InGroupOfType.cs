@@ -83,6 +83,17 @@ namespace Rock.Badge.Component
                 badgeColor = "#0ab4dd";
             }
 
+            /*
+                10/14/2026 - MSE
+
+                The tooltip is rendered as HTML (data-html='true'), and the person's nick name and
+                the group names come back raw from the REST call. They can be set by the person
+                (for example through a public signup form) or by group leaders, so each value is
+                HTML escaped in the browser before it is added to the tooltip. The <br/> markup
+                added here is kept.
+
+                Reason: Prevent stored XSS through a person or group name in the badge tooltip.
+            */
             return string.Format( @"
 $.ajax({{
     type: 'GET',
@@ -95,16 +106,20 @@ $.ajax({{
                 groupIcon = 'ti ti-x';
             }}
 
+            var encodeText = function (value) {{
+                return $('<div/>').text(value == null ? '' : String(value)).html();
+            }};
+
             var badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\'></i>';
             if (data.PersonInGroup) {{
-                var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
+                var labelText = encodeText(data.NickName) + ' is in a ' + encodeText(data.GroupTypeName) + '.';
                 var groupLength = data.GroupList.length;
                 if(groupLength>5){{
                     groupLength = 5;
                 }}
 
                 for (i = 0; i < groupLength; ++i) {{
-                    labelText = labelText + ' <br/> ' +  data.GroupList[i].GroupName;
+                    labelText = labelText + ' <br/> ' +  encodeText(data.GroupList[i].GroupName);
                 }}
 
                 if(data.GroupList.length >5){{
@@ -114,7 +129,7 @@ $.ajax({{
 
             }} else {{
                 $('.rockbadge-ingroupoftype.rockbadge-id-{3}').addClass('rockbadge-disabled');
-                var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
+                var labelText = encodeText(data.NickName) + ' is not in a ' + encodeText(data.GroupTypeName) + '.';
             }}
             $('.rockbadge-ingroupoftype.rockbadge-id-{3}').css('color', '{2}').html(badgeHtml).attr('data-original-title', labelText);
         }}
