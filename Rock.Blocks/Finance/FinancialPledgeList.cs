@@ -228,10 +228,14 @@ namespace Rock.Blocks.Finance
             if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
             {
                 var currentPerson = RequestContext.CurrentPerson;
-                if ( currentPerson != null && !string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
+                if ( currentPerson == null || string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
                 {
-                    query = query.Where( a => a.PersonAlias.Person.GivingId == currentPerson.GivingId );
+                    // No signed-in person means no pledges to show.
+                    return query.Where( a => false );
                 }
+
+                var givingId = currentPerson.GivingId;
+                query = query.Where( a => a.PersonAlias.Person.GivingId == givingId );
             }
             else
             {
