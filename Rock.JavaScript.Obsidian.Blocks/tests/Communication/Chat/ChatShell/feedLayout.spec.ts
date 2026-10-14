@@ -244,6 +244,28 @@ describe("pending and failed sends", () => {
         expect(sections.map(section => section.label)).toEqual(["Yesterday", "Today"]);
         expect(sections[1].items).toHaveLength(1);
     });
+
+    // A send that is confirmed stays the row it was drawn as, so the browser patches the element in
+    // place rather than drawing a new one: a new element would cut its rise short and play it again.
+    test("a confirmed send keeps the key its pending row had, as a row and as the head of its group", () => {
+        const pendingKeys = lay([message(1, anna, at(14, 50))], { pending: [pendingRow("a")] })
+            .flatMap(section => section.items)
+            .map(item => item.kind === "group" ? [item.key, ...item.rows.map(row => row.key)] : [item.key]);
+
+        const confirmed = lay([message(1, anna, at(14, 50)), message(2, me, at(15, 0))], { confirmedKeys: new Map([[2, "a"]]) })
+            .flatMap(section => section.items);
+        const keys = confirmed.map(item => item.kind === "group" ? [item.key, ...item.rows.map(row => row.key)] : [item.key]);
+
+        expect(keys).toEqual(pendingKeys);
+        expect(keys[1]).toEqual(["p:a", "p:a"]);
+    });
+
+    test("a message the reader did not send from this page keeps its own key", () => {
+        const keys = items([message(1, anna, at(14, 50)), message(2, me, at(15, 0))], { confirmedKeys: new Map([[7, "a"]]) })
+            .map(item => item.key);
+
+        expect(keys).toEqual(["m:1", "m:2"]);
+    });
 });
 
 describe("day sections", () => {

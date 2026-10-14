@@ -284,7 +284,7 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
     }
 
     /** The feed fed by a real sender, whose send answers when the test says so. */
-    function race(): { wrapper: VueWrapper, state: TimelineState, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: () => void } {
+    function race(isChannel = false): { wrapper: VueWrapper, state: TimelineState, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: () => void } {
         const state = timeline([message(1, anna, at(14, 50))]);
         const answer = deferred<SendResult>();
         const confirmed = message(2, me, at(15, 0), { sender_nick_name: undefined, sender_last_name: undefined, body: "On my way" });
@@ -304,7 +304,7 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
             newLocalId: () => "local-1"
         });
         const Host = defineComponent({
-            setup: () => () => h(MessageFeed, { timeline: state, pending: sender.pending("c1"), personAliasGuid: me })
+            setup: () => () => h(MessageFeed, { timeline: state, pending: sender.pending("c1"), personAliasGuid: me, isChannel })
         });
         const wrapper = mount(Host);
 
@@ -371,6 +371,30 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         jest.advanceTimersByTime(1);
         await flush();
         expect(isSent(r.wrapper)).toBe(false);
+    });
+
+    // The row a send is drawn as is the element its message settles in: a new element would cut
+    // the rise short at the answer, and a class that changed with Sent would play it again after.
+    test.each([["a direct message", false], ["a channel", true]] as const)("in %s, the sending row becomes the sent message in place and rises once", async (_kind, isChannel) => {
+        const r = race(isChannel);
+        const sending = r.send();
+        await flush();
+        const drawn = r.wrapper.get("[data-testid='pending-row']").element;
+        expect(drawn.classList.contains("is-arriving")).toBe(true);
+
+        r.answer.resolve(confirmedAnswer);
+        await sending;
+        await flush();
+        expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
+        expect(isSent(r.wrapper)).toBe(true);
+        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(r.wrapper.findAll(".chat-msg")).toHaveLength(2);
+
+        jest.advanceTimersByTime(2200);
+        await flush();
+        expect(isSent(r.wrapper)).toBe(false);
+        expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
+        expect(drawn.classList.contains("is-arriving")).toBe(true);
     });
 
     /**

@@ -955,6 +955,13 @@
 
     const isCrossfading = ref(false);
 
+    /**
+     * Whether the row rises in, read once as it mounts and never again. The feed's answer changes
+     * as a send is confirmed and its Sent hold ends; a class that followed it would start the rise
+     * over on a row already on screen.
+     */
+    const isArrivalDrawn = props.isArriving;
+
     /** Whether the row is on screen, so a thread summary that mounts after it was a reply arriving live. */
     const isMounted = ref(false);
 
@@ -1155,7 +1162,7 @@
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,
         "is-mention-me": layout.value === "community" && isMentionOfReader.value,
-        "is-arriving": props.isArriving,
+        "is-arriving": isArrivalDrawn,
         "is-flashing": props.isFlashing,
         "has-thread": hasThread.value
     }));

@@ -571,6 +571,13 @@
     const justSentIds = reactive(new Set<number>());
 
     /**
+     * The pending row each send confirmed here was drawn as, by the id of the message it became,
+     * so the message is drawn in that row's element rather than a new one. Kept while the feed is
+     * open: a handful of numbers per send.
+     */
+    const confirmedKeys = reactive(new Map<number, string>());
+
+    /**
      * When each of the reader's own messages came into the timeline while its send was still
      * waiting on its answer, by id, so the Sent hold can run from the earlier of the two. An entry
      * goes once its hold has read it, and all go whenever nothing is waiting, so the map holds
@@ -608,7 +615,8 @@
         personAliasGuid: props.personAliasGuid,
         newDividerBeforeId: dividerBeforeId.value,
         layout: layout.value,
-        now: new Date()
+        now: new Date(),
+        confirmedKeys
     }));
 
     /**
@@ -720,9 +728,13 @@
         return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     }
 
-    /** Whether a message arrived while the feed was open, so it rises in rather than just being there. */
+    /**
+     * Whether a message arrived while the feed was open, so it rises in rather than just being
+     * there. A row reads this once, when it mounts. The person's own send already rose as its
+     * pending row, so its message never rises again, even drawn afresh in another group.
+     */
     function isArriving(messageId: number): boolean {
-        return newestAtLoad !== null && messageId > newestAtLoad && !justSentIds.has(messageId);
+        return newestAtLoad !== null && messageId > newestAtLoad && !confirmedKeys.has(messageId);
     }
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
@@ -836,6 +848,7 @@
         const kept = new Set(pending.map(row => row.localId));
         for (const row of previous ?? []) {
             if (!kept.has(row.localId) && row.confirmedId !== undefined) {
+                confirmedKeys.set(row.confirmedId, row.localId);
                 holdSent(row.confirmedId);
             }
         }

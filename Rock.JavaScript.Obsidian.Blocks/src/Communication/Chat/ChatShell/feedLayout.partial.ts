@@ -67,6 +67,12 @@ export type FeedLayoutOptions = {
     layout: FeedLayout;
     now: Date;
     locale?: string;
+
+    /**
+     * The pending row each of the person's sends confirmed on this page was drawn as, by the id
+     * of the message it became, so the message keeps that row's key.
+     */
+    confirmedKeys?: ReadonlyMap<number, string>;
 };
 
 /** A message or a pending send, with what grouping reads from it. */
@@ -97,11 +103,18 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
     let previous: Entry | null = null;
     let lastAt = new Date(0);
 
+    // A row tried again under a key already confirmed is drawn under that key itself.
+    const pendingIds = new Set(options.pending.map(pending => pending.localId));
+
     const entries: Entry[] = options.messages.map(message => {
         const at = new Date(message.created_at);
         // A time that does not parse keeps its place beside the message before it.
         lastAt = isNaN(at.getTime()) ? lastAt : at;
-        return { key: `m:${message.id}`, message, pending: null, sender: (message.person_alias_guid ?? "").toLowerCase(), at: lastAt };
+        // A confirmed send keeps its pending row's key, so the element drawn for the send is the
+        // one patched with its message: a new element would cut its rise short at the answer.
+        const sentFrom = options.confirmedKeys?.get(message.id);
+        const key = sentFrom !== undefined && !pendingIds.has(sentFrom) ? `p:${sentFrom}` : `m:${message.id}`;
+        return { key, message, pending: null, sender: (message.person_alias_guid ?? "").toLowerCase(), at: lastAt };
     });
 
     for (const pending of options.pending) {

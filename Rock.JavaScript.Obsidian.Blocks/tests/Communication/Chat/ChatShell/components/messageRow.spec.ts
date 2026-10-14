@@ -74,6 +74,7 @@ type RowProps = {
     position?: "single" | "first" | "middle" | "last";
     isDirectMessage?: boolean;
     isJustSent?: boolean;
+    isArriving?: boolean;
     senderNames?: ReadonlyMap<string, string>;
 };
 
@@ -117,6 +118,29 @@ describe("every message row", () => {
 
         expect(row.getAttribute("role")).toBe("article");
         expect(plain(row.getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM");
+    });
+});
+
+// A row rises in once, as it first appears. Whether it does is read when it mounts: a class that
+// came and went later would start the rise over on a row already on screen.
+describe("the arrival", () => {
+    test("a row drawn arriving keeps its rise when the feed later stops calling it arriving", async () => {
+        const wrapper = draw({ pending: pendingRow(), isOwn: true, isArriving: true });
+        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
+
+        await wrapper.setProps({ pending: null, message: ownConfirmed(), isJustSent: true, isArriving: false });
+        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
+
+        await wrapper.setProps({ isJustSent: false, isArriving: true });
+        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
+    });
+
+    test("a row drawn settled never rises later", async () => {
+        const wrapper = draw({ message: message(), isArriving: false });
+
+        await wrapper.setProps({ isArriving: true });
+
+        expect(root(wrapper).classList.contains("is-arriving")).toBe(false);
     });
 });
 
