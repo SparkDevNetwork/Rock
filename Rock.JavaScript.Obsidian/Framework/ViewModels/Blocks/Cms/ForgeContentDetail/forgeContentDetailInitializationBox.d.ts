@@ -21,9 +21,15 @@
 // </copyright>
 //
 
-/** The box that contains all the initialization information for the Forge Content block. */
+/**
+ * The box that contains all the initialization information for the
+ * Forge Content block.
+ */
 export type ForgeContentDetailInitializationBox = {
-    /** Gets or sets the compiled SystemJS module string used to render the component in view mode. */
+    /**
+     * Gets or sets the compiled SystemJS module string used to render the
+     * component in view mode.
+     */
     compiledContent?: string | null;
 
     /**
@@ -32,7 +38,10 @@ export type ForgeContentDetailInitializationBox = {
      */
     errorMessage?: string | null;
 
-    /** Gets or sets a value indicating whether the current person may edit this component through the block configuration bar. */
+    /**
+     * Gets or sets a value indicating whether the current person may edit
+     * this component through the block configuration bar.
+     */
     isEditable: boolean;
 
     /** Gets or sets the navigation urls. */

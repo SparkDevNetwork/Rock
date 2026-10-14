@@ -46,12 +46,12 @@ export type ConnectionRequestWorkflowBag = {
     /** Gets or sets the trigger that launched the workflow (Manual, Status Changed, etc.). */
     triggerType: ConnectionWorkflowTriggerType;
 
+    /** Gets or sets the name of the workflow type that was launched. */
+    workflowTypeName?: string | null;
+
     /**
      * Gets or sets the URL to open when the row is clicked: the Workflow Entry page when the current person
      * has an active entry form, otherwise the Workflow Detail page. Null when the relevant page setting is blank.
      */
     workflowUrl?: string | null;
-
-    /** Gets or sets the name of the workflow type that was launched. */
-    workflowTypeName?: string | null;
 };

@@ -1403,6 +1403,7 @@ namespace RockWeb.Blocks.Event
                             }
 
                             var sendErrorMessages = new List<string>();
+#pragma warning disable CS0618 // Type or member is obsolete
                             if ( new SignatureDocumentTemplateService( rockContext ).SendLegacyProviderDocument(
                                 signatureDocumentTemplateService.Get( Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value ),
                                 appliesTo,
@@ -1410,6 +1411,7 @@ namespace RockWeb.Blocks.Event
                                 Registration.RegistrationInstance.Name,
                                 email,
                                 out sendErrorMessages ) )
+#pragma warning restore CS0618 // Type or member is obsolete
                             {
                                 rockContext.SaveChanges();
                                 maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );

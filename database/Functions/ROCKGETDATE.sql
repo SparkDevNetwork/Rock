@@ -23,6 +23,6 @@ ALTER FUNCTION ROCKGETDATE ()
 RETURNS datetime
 AS
 BEGIN
-    DECLARE @ReturnValue datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'US Mountain Standard Time'
+    DECLARE @ReturnValue datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'Pacific Standard Time'
     RETURN @ReturnValue
 END

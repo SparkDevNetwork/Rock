@@ -2056,8 +2056,10 @@ namespace RockWeb.Blocks.Groups
                         var sendErrorMessages = new List<string>();
 
                         string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
+#pragma warning disable CS0618 // Type or member is obsolete
                         if ( new SignatureDocumentTemplateService( rockContext ).SendLegacyProviderDocument(
                             groupMember.Group.RequiredSignatureDocumentTemplate, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
+#pragma warning restore CS0618 // Type or member is obsolete
                         {
                             rockContext.SaveChanges();
                             maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
