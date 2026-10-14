@@ -138,8 +138,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 pnlContent.Attributes.Add("class","card card-profile card-profile-bio card-profile-bio-condensed");
             }
 
+            /*
+                10/14/2026 - MSE
+
+                The browser title is written into the page's <title> element without
+                encoding, and a person can choose their own name (for example when
+                signing up), so the name must be HTML encoded here.
+
+                Reason: Prevent script injection through the person's name.
+            */
             // Set the browser page title to include person's name
-            RockPage.BrowserTitle = Person.FullName;
+            RockPage.BrowserTitle = Person.FullName.EncodeHtml();
 
             ShowProtectionLevel();
             ShowBadgeList();

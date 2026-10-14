@@ -309,8 +309,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 pnlContent.Attributes.Add( "class", "card card-profile card-profile-bio" );
             }
 
+            /*
+                10/14/2026 - MSE
+
+                The browser title is written into the page's <title> element without
+                encoding, and a person can choose their own name (for example when
+                signing up), so the name must be HTML encoded here.
+
+                Reason: Prevent script injection through the person's name.
+            */
             // Set the browser page title to include person's name
-            RockPage.BrowserTitle = Person.FullName;
+            RockPage.BrowserTitle = Person.FullName.EncodeHtml();
 
             ShowProtectionLevel();
             ShowBadgeList();
@@ -451,7 +460,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 ).Value;
             var messaging = phoneNumber.IsMessagingEnabled ? @"<i class=""fa fa-comment text-muted text-sm ml-1""></i>" : string.Empty;
             var formattedOptOutDate = phoneNumber.MessagingOptedOutDateTime?.ToString( "MMMM d, yyyy" );
-            var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{phoneNumber.Person.NickName} opted out from messaging on {formattedOptOutDate}" : $"{phoneNumber.Person.NickName} opted out from messaging.";
+            /*
+                10/14/2026 - MSE
+
+                The tooltip text is placed inside title and aria-label attributes, so the
+                nick name is HTML encoded to keep a quote in the name from closing the
+                attribute.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            var nickName = phoneNumber.Person.NickName.EncodeHtml();
+            var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{nickName} opted out from messaging on {formattedOptOutDate}" : $"{nickName} opted out from messaging.";
             var optedOut = phoneNumber.IsMessagingOptedOut ? $@"<i class=""fa fa-ban text-danger text-sm ml-1"" data-toggle=""tooltip"" data-placement=""top"" title=""{optedOutTooltip}"" aria-label=""{optedOutTooltip}""></i>" : string.Empty;
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
@@ -465,8 +484,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
                     if ( pbxComponent != null )
                     {
-                        var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{phoneNumber.Number}', '{CurrentPerson.FullName}','{Person.FullName}','{formattedNumber}');";
-                        phoneMarkup = $"<a class='originate-call js-originate-call text-link stretched-link' href=\"{jsScript}\">{formattedNumber}</a>";
+                        /*
+                            10/14/2026 - MSE
+
+                            The names are placed inside JavaScript strings in a javascript: URL
+                            inside an HTML attribute, so each value is encoded for the
+                            JavaScript string and the URL, and the whole URL is HTML encoded
+                            for the attribute.
+
+                            Reason: Prevent script injection through the person's name.
+                        */
+                        var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{EncodeForJavaScriptUrl( phoneNumber.Number )}', '{EncodeForJavaScriptUrl( CurrentPerson.FullName )}','{EncodeForJavaScriptUrl( Person.FullName )}','{EncodeForJavaScriptUrl( formattedNumber )}');";
+                        phoneMarkup = $"<a class='originate-call js-originate-call text-link stretched-link' href=\"{jsScript.EncodeHtml()}\">{formattedNumber}</a>";
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
@@ -1041,6 +1070,27 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 NavigateToPage( Rock.SystemGuid.Page.NEW_COMMUNICATION.AsGuid(), queryParams );
             }
+        }
+
+        /// <summary>
+        /// Encodes a value so it can be placed inside a single quoted JavaScript
+        /// string that is part of a javascript: URL. The caller must still HTML
+        /// encode the full URL when placing it in an attribute.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
+        private static string EncodeForJavaScriptUrl( string value )
+        {
+            /*
+                10/14/2026 - MSE
+
+                A javascript: URL is percent decoded before the script runs, so a
+                percent sign is replaced with its JavaScript escape to keep a value
+                like %27 from turning into a quote that closes the string.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            return System.Web.HttpUtility.JavaScriptStringEncode( value ?? string.Empty ).Replace( "%", "\\u0025" );
         }
 
         #endregion Methods
