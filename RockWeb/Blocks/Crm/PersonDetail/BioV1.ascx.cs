@@ -302,8 +302,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 divBio.AddCssClass( "deceased" );
             }
 
+            /*
+                10/14/2026 - MSE
+
+                The browser title is written into the page's <title> element without
+                encoding, and a person can choose their own name (for example when
+                signing up), so the name must be HTML encoded here.
+
+                Reason: Prevent script injection through the person's name.
+            */
             // Set the browser page title to include person's name
-            RockPage.BrowserTitle = Person.FullName;
+            RockPage.BrowserTitle = Person.FullName.EncodeHtml();
 
             string badgeList = GetAttributeValue( AttributeKey.Badges );
             if ( !string.IsNullOrWhiteSpace( badgeList ) )
@@ -631,19 +640,28 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Get the Display Name.
             string nameText;
 
+            /*
+                10/14/2026 - MSE
+
+                Person names are plain text that anyone can set (for example through a public
+                signup form), so each name part is HTML encoded before being placed in the
+                header markup.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( isBusiness )
             {
-                nameText = Person.LastName;
+                nameText = Person.LastName.EncodeHtml();
             }
             else
             {
                 if ( GetAttributeValue( AttributeKey.DisplayMiddleName ).AsBoolean() && !String.IsNullOrWhiteSpace( Person.MiddleName ) )
                 {
-                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName.EncodeHtml(), Person.MiddleName.EncodeHtml(), Person.LastName.EncodeHtml() );
                 }
                 else
                 {
-                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word nickname'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName.EncodeHtml(), Person.LastName.EncodeHtml() );
                 }
 
                 // Prefix with Title if they have a Title with IsFormal=True
@@ -652,7 +670,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     var personTitleValue = DefinedValueCache.Get( Person.TitleValueId.Value );
                     if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
                     {
-                        nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
+                        nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value.EncodeHtml() ) + nameText;
                     }
                 }
 
@@ -661,7 +679,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
                     {
-                        nameText += string.Format( " <span class='firstname'>({0})</span>", Person.FirstName );
+                        nameText += string.Format( " <span class='firstname'>({0})</span>", Person.FirstName.EncodeHtml() );
                     }
                 }
 
@@ -671,7 +689,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     var suffix = DefinedValueCache.Get( Person.SuffixValueId.Value );
                     if ( suffix != null )
                     {
-                        nameText += " " + suffix.Value;
+                        nameText += " " + suffix.Value.EncodeHtml();
                     }
                 }
 
@@ -682,7 +700,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( previousNames.Any() )
                     {
-                        nameText += string.Format( Environment.NewLine + "<span class='previous-names'>(Previous Names: {0})</span>", previousNames.ToList().AsDelimited( ", " ) );
+                        nameText += string.Format( Environment.NewLine + "<span class='previous-names'>(Previous Names: {0})</span>", previousNames.ToList().Select( n => n.EncodeHtml() ).ToList().AsDelimited( ", " ) );
                     }
                 }
             }
@@ -796,8 +814,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( pbxComponent != null )
                     {
-                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, Person.FullName, formattedNumber );
-                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, formattedNumber );
+                        /*
+                            10/14/2026 - MSE
+
+                            The names are placed inside JavaScript strings in a javascript: URL
+                            inside an HTML attribute, so each value is encoded for the
+                            JavaScript string and the URL, and the whole URL is HTML encoded
+                            for the attribute.
+
+                            Reason: Prevent script injection through the person's name.
+                        */
+                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, EncodeForJavaScriptUrl( number.ToString() ), EncodeForJavaScriptUrl( CurrentPerson.FullName ), EncodeForJavaScriptUrl( Person.FullName ), EncodeForJavaScriptUrl( formattedNumber ) );
+                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript.EncodeHtml(), formattedNumber );
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
@@ -817,6 +845,27 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             return formattedNumber;
+        }
+
+        /// <summary>
+        /// Encodes a value so it can be placed inside a single quoted JavaScript
+        /// string that is part of a javascript: URL. The caller must still HTML
+        /// encode the full URL when placing it in an attribute.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
+        private static string EncodeForJavaScriptUrl( string value )
+        {
+            /*
+                10/14/2026 - MSE
+
+                A javascript: URL is percent decoded before the script runs, so a
+                percent sign is replaced with its JavaScript escape to keep a value
+                like %27 from turning into a quote that closes the string.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            return System.Web.HttpUtility.JavaScriptStringEncode( value ?? string.Empty ).Replace( "%", "\\u0025" );
         }
 
         #endregion
