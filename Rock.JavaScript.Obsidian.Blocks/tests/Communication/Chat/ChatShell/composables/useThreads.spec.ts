@@ -748,6 +748,22 @@ describe("following", () => {
         expect(threads.state.list.rows.map(r => r.root.id)).toEqual([30]);
     });
 
+    test("on the All tab moves the root in the row's own conversation, not the list's", async () => {
+        const { threads, timelines, answers } = await setup({ messages: [root(40, { thread_unread: true })], read_cursor: null, unread_count: 0, has_more: false });
+        // the root lives in the other conversation only, the list opened from this one
+        await timelines.loadNewest(otherChannel);
+        timelines.state(channel).messages.splice(0);
+        answers.chat_list_threads = [listAnswer([listRow(40, { channel_id: otherChannel })])];
+        answers.chat_follow_thread = [{ ok: true, data: { following: false, read_cursor: null } }];
+        await threads.openList(channel, "all");
+
+        await threads.follow(40, false);
+
+        const otherRoot = timelines.state(otherChannel).messages.find(m => m.id === 40);
+        expect(otherRoot?.thread_following).toBe(false);
+        expect(otherRoot?.thread_unread).toBe(false);
+    });
+
     test("names the row it is working on while the call is out", async () => {
         const { threads, answers } = await setup();
         answers.chat_list_threads = [listAnswer([listRow(40)])];

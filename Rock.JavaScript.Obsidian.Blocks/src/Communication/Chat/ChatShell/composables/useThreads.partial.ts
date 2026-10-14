@@ -516,7 +516,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 }
             }
 
-            const root = timelineRoot(thread?.rootId === rootId ? thread.channelId : list.channelId ?? "", rootId);
+            // On the All tab a row's conversation is not the one the list was opened from, so the
+            // root is looked up where the row says it lives.
+            const rowChannelId = list.rows.find(r => r.root.id === rootId)?.channel_id;
+            const root = timelineRoot(thread?.rootId === rootId ? thread.channelId : rowChannelId ?? list.channelId ?? "", rootId);
             if (root && root.thread_following !== null && root.thread_following !== undefined) {
                 root.thread_following = following;
                 if (!following) {
