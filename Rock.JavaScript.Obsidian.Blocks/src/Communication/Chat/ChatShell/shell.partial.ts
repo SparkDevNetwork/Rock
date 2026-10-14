@@ -25,7 +25,7 @@ import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
-import { createTimelines, Timelines } from "./composables/useHistory.partial";
+import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
@@ -748,10 +748,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     timelines.applyEvent(channelId, event, payload);
 
                     // Any copy settles the send, after the views have taken theirs: a reply shown
-                    // only in a thread that is not open, or a message of a channel still loading,
-                    // is kept by no view, and with its answer lost nothing else would settle it.
+                    // only in a thread that is not open is kept by no view, and with its answer
+                    // lost nothing else would settle it. A timeline message of a channel still
+                    // loading is held until its page is in and settles the send there; settling it
+                    // now would take the row away before the message that replaces it is drawn.
                     const created = payload as Partial<MessageCreatedEvent> | null;
-                    if (event === "message.created" && typeof created?.id === "number" && created.client_key) {
+                    if (event === "message.created" && typeof created?.id === "number" && created.client_key
+                        && (timelines.state(channelId).isLoaded || !isTimelineMessage(created))) {
                         sender.landed({ id: created.id, client_key: created.client_key });
                     }
                 },

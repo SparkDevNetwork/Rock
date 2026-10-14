@@ -1163,3 +1163,32 @@ describe("a send in a browser that cannot make a send key", () => {
     });
 });
 
+// A live copy of a channel still loading waits for its page; so does the send it settles, or its
+// row would go before the message that replaces it is on screen.
+describe("the person's own live copy while the channel's first page loads", () => {
+    test("leaves the row sending until the page is in, which then settles it", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        let isSent = false;
+        void h.shell.send("on my way").then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+
+        topicOf(h, channelTopic(tenant, channelB)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 901, channel_id: channelB, parent_id: null, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "on my way", created_at: "2026-10-06T10:00:00Z", client_key: key }
+        });
+        await settle();
+        expect(isSent).toBe(false);
+        expect(h.shell.sender.pending(channelB).map(r => r.localId)).toEqual([key]);
+
+        answerHistory(h, channelB, 20);
+        await toB;
+        await settle();
+        expect(isSent).toBe(true);
+        expect(h.shell.sender.pending(channelB)).toEqual([]);
+        expect(h.shell.timelines.state(channelB).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[20, null], [901, key]]);
+    });
+});
