@@ -29,14 +29,14 @@ export type AssetManagerDeleteFilesOptionsBag = {
     /** The ID of the asset storage provider where the files to be deleted reside. */
     assetStorageProviderId: number;
 
-    /** The list of IDs of files to be deleted */
-    files?: string[] | null;
-
     /**
      * The encrypted root folder that the file(s) must be in. This is
      * required when using the local file system.
      */
     encryptedRoot?: string | null;
+
+    /** The list of IDs of files to be deleted */
+    files?: string[] | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
