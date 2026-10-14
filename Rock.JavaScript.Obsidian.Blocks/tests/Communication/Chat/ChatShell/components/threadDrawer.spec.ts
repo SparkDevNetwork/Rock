@@ -220,9 +220,15 @@ describe("the divider", () => {
     });
 
     test("counts every reply of the thread, not only the ones loaded", () => {
-        const w = draw({ root: rootWith(120), replies: replies(3) });
+        const w = draw({ root: rootWith(50), replies: replies(3) });
 
-        expect(plain(w.get("[data-testid='thread-divider']").text())).toBe("120 replies");
+        expect(plain(w.get("[data-testid='thread-divider']").text())).toBe("50 replies");
+    });
+
+    test.each([[99, "99 replies"], [100, "99+ replies"], [120, "99+ replies"]])("counts %i replies as %s, as the thread pill does", (count, words) => {
+        const w = draw({ root: rootWith(count), replies: replies(3) });
+
+        expect(plain(w.get("[data-testid='thread-divider']").text())).toBe(words);
     });
 
     test("invites the first reply when there is none", () => {

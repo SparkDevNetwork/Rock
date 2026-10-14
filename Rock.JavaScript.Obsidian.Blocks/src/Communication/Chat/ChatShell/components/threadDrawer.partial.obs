@@ -219,7 +219,7 @@
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import { messageForError } from "../errors.partial";
-    import { FeedItem, layoutFeed } from "../feedLayout.partial";
+    import { FeedItem, layoutFeed, replyCountText } from "../feedLayout.partial";
     import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -411,7 +411,7 @@
             return "No replies yet. Start the thread below.";
         }
 
-        return `${count} ${count === 1 ? "reply" : "replies"}`;
+        return replyCountText(count);
     });
 
     const errorSentence = computed((): string => {

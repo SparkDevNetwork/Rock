@@ -653,7 +653,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageForError } from "../errors.partial";
-    import { dayLabel, timeLabel } from "../feedLayout.partial";
+    import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { messageDisplay } from "../composables/useHistory.partial";
     import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
 
@@ -992,8 +992,7 @@
         const who = isMine ? "You" : name || "Someone";
         const room = props.roomTitles[row.channel_id] ?? "";
         const roomKind = props.roomKinds[row.channel_id];
-        const replies = row.reply_count;
-        const count = replies > 99 ? "99+ replies" : `${replies} ${replies === 1 ? "reply" : "replies"}`;
+        const count = replyCountText(row.reply_count);
         const isFollowing = row.following;
         const mentions = row.mention_count > 0 ? row.mention_count : 0;
         const lastSaid = whenOf(row.last_reply_at, true);

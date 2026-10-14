@@ -282,6 +282,18 @@ export function newMessagesText(count: number): string {
 }
 
 /**
+ * How many replies a thread has, as every count in the chat reads: "99+" above 99.
+ *
+ * @param count The count.
+ *
+ * @returns "1 reply", "3 replies", "99+ replies".
+ */
+export function replyCountText(count: number): string {
+    const shown = count > 99 ? "99+" : String(count);
+    return `${shown} ${count === 1 ? "reply" : "replies"}`;
+}
+
+/**
  * The unread strip's sentence.
  *
  * @param count How many messages are unread.
