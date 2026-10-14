@@ -225,7 +225,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, getCurrentInstance, PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { dayLabel, timeLabel } from "../feedLayout.partial";
@@ -242,6 +242,12 @@
         isCommunity: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether the row it sits under was already on screen when the summary mounted; read once. */
+        isRowOnScreen: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -256,7 +262,7 @@
         conversation draws, or later, when the first reply arrives under a row already on screen.
         Only the second pops; a page load popping every thread at once would be noise.
     */
-    const isPopping = ref(getCurrentInstance()?.parent?.isMounted === true);
+    const isPopping = ref(props.isRowOnScreen);
 
     // #endregion Values
 

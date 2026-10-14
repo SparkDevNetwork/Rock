@@ -32,6 +32,7 @@
 //
 // The message row draws the summary under any root with a live reply, a tombstone included, and
 // re-emits its open as openThread(rootId).
+import { defineComponent, h } from "vue";
 import { mount, VueWrapper } from "@vue/test-utils";
 import ThreadSummary from "../../../../../src/Communication/Chat/ChatShell/components/threadSummary.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
@@ -221,6 +222,23 @@ describe("in the message row", () => {
         const row = mount(MessageRow, { props: { personAliasGuid: me, message: root(), isChannel, position: "single" } });
 
         expect(row.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
+    });
+
+    // Whether the row was on screen is the row's to say, not read from whichever component is
+    // the summary's parent.
+    test("pops only when told its row was already on screen, whatever holds it", async () => {
+        const host = defineComponent({
+            props: { isShown: { type: Boolean, default: false }, isRowOnScreen: { type: Boolean, default: false } },
+            setup: hostProps => () => hostProps.isShown ? h(ThreadSummary, { message: root(), isRowOnScreen: hostProps.isRowOnScreen }) : h("div")
+        });
+        const quiet = mount(host);
+        const popping = mount(host);
+
+        await quiet.setProps({ isShown: true });
+        await popping.setProps({ isShown: true, isRowOnScreen: true });
+
+        expect(quiet.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
+        expect(popping.get("[data-testid='thread-summary']").classes()).toContain("is-popping");
     });
 
     test("the pop ends with its animation, so a later redraw does not replay it", async () => {

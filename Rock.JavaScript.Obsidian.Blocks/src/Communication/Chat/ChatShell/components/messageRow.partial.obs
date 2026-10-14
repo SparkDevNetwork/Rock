@@ -81,7 +81,7 @@
                     <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
-                <ThreadSummary v-if="hasThread && message" :message="message" isCommunity @open="emit('openThread', $event)" />
+                <ThreadSummary v-if="hasThread && message" :message="message" isCommunity :isRowOnScreen="isMounted" @open="emit('openThread', $event)" />
             </div>
         </template>
 
@@ -109,7 +109,7 @@
             </div>
             <!-- The row reactions will share, the thread pill first at the bubble's aligned edge. -->
             <div v-if="hasThread && message" class="chat-reacts">
-                <ThreadSummary :message="message" @open="emit('openThread', $event)" />
+                <ThreadSummary :message="message" :isRowOnScreen="isMounted" @open="emit('openThread', $event)" />
             </div>
             <div v-if="isEditedUnder" class="chat-msg-edited" data-testid="message-edited">Edited</div>
             <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
@@ -804,7 +804,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import MessageBody from "./messageBody.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
@@ -939,6 +939,9 @@
     const drawnAt = new Date();
 
     const isCrossfading = ref(false);
+
+    /** Whether the row is on screen, so a thread summary that mounts after it was a reply arriving live. */
+    const isMounted = ref(false);
 
     // #endregion Values
 
@@ -1183,4 +1186,12 @@
     });
 
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        isMounted.value = true;
+    });
+
+    // #endregion Lifecycle Hooks
 </script>
