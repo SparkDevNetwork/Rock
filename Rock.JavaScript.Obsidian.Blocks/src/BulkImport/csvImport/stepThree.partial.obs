@@ -45,6 +45,7 @@
                 imported to Rock at all, it would be marked as FALSE under the 'CSV Import Success' column.
             </NotificationBox>
             <!-- TODO -->
+            <NotificationBox v-if="downloadErrorMessage" alertType="danger">{{ downloadErrorMessage }}</NotificationBox>
             <RockButton :btnType="BtnType.Primary" @click="onDownloadErrorCsvClick" type="button">Download CSV File with the Errors</RockButton>
         </div>
     </div>
@@ -57,7 +58,7 @@
     import ProgressBar from "@Obsidian/Controls/progressBar.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { CsvImportBox } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportBox";
-    import { useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { useInvokeBlockAction, useDownloadBlockAction } from "@Obsidian/Utility/block";
     import { CsvImportStartImportOptionsBag } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportStartImportOptionsBag";
     import { getTopic } from "@Obsidian/Utility/realTime";
     import { CsvImportActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/csvImportActivityProgressStatusBag";
@@ -95,13 +96,14 @@
     });
 
     const invokeBlockAction = useInvokeBlockAction();
-    const blockActionUrl = useBlockActionUrl();
+    const downloadBlockAction = useDownloadBlockAction();
 
     const completed = ref<"exception" | "success" | "error" | undefined>();
     const isFinishedWithErrors = ref<true | false | undefined>();
     const isErrorDuringProcessing = ref(false);
     const errorMessage = ref("");
     const errorCsvFolderName = ref("");
+    const downloadErrorMessage = ref("");
 
     const preparationProgress = ref(0);
     const preparationLogMessage = ref("");
@@ -196,9 +198,14 @@
         }
     }
 
-    function onDownloadErrorCsvClick(): void {
-        const url = blockActionUrl("DownloadErrorCsv?f=" + errorCsvFolderName.value);
-        window.location.href = url;
+    async function onDownloadErrorCsvClick(): Promise<void> {
+        downloadErrorMessage.value = "";
+
+        const result = await downloadBlockAction("DownloadErrorCsv", { errorCsvFolderName: errorCsvFolderName.value }, "errors.csv");
+
+        if (!result.isSuccess) {
+            downloadErrorMessage.value = result.errorMessage ?? "Unable to download the error file.";
+        }
     }
 
     // Initialize real-time connection when component mounts
