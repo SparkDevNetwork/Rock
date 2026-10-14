@@ -14,24 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-// A root's thread, under it in the conversation: one button in two looks. A direct message draws
-// the pill tucked under the bubble, with up to three faces; a channel draws the full-width row,
-// with up to four faces and the last reply's time written out. Both count "1 reply", "3 replies"
-// and "99+ replies" past 99, put the newest replier first, show unread with a dot, and say all of
-// it in their label. A deleted root keeps its thread, since the replies are still there.
+// A root's thread, under it in the conversation: one pill in every conversation, so a thread
+// reads the same wherever it is. A direct message tucks it under the bubble; a channel sets it
+// under the text at the text column's left edge. It counts "1 reply", "3 replies" and "99+
+// replies" past 99, draws up to three faces with the newest replier first, shows unread with a
+// dot, keeps the last reply's time in its tooltip, and says all of it in its label. A deleted
+// root keeps its thread, since the replies are still there.
 //
 // The component these tests are written to, threadSummary.partial.obs:
 //
 //   props: message: TimelineMessage (required; a root with reply_count, last_reply_at, repliers
-//          newest first and thread_unread), isCommunity: boolean (default false, the pill)
+//          newest first and thread_unread), isRowOnScreen: boolean (default false)
 //   emits: open(rootId: number)
 //   marks: root data-testid="thread-summary", class is-unread while unread; data-testid
-//          thread-count, thread-faces (the faces drawn with the shared avatar), thread-unread-dot,
-//          thread-last (Community's "Last reply ..."), thread-view (Community's "View thread").
+//          thread-count, thread-faces (the faces drawn with the shared avatar), thread-unread-dot.
 //          The pill's tooltip is its title, "Last reply 9:41 AM".
 //
-// The message row draws the summary under any root with a live reply, a tombstone included, and
-// re-emits its open as openThread(rootId).
+// The message row draws the summary under any root with a live reply, a tombstone included, in
+// its reactions row (.chat-reacts), and re-emits its open as openThread(rootId). In a channel
+// that row sits in the text column (.chat-cm-main), after the text.
 import { defineComponent, h } from "vue";
 import { mount, VueWrapper } from "@vue/test-utils";
 import ThreadSummary from "../../../../../src/Communication/Chat/ChatShell/components/threadSummary.partial.obs";
@@ -90,8 +91,13 @@ function root(extra: Record<string, unknown> = {}): TimelineMessage {
     } as unknown as TimelineMessage;
 }
 
-function draw(message: TimelineMessage, isCommunity = false): VueWrapper {
-    return mount(ThreadSummary, { props: { message, isCommunity } });
+function draw(message: TimelineMessage): VueWrapper {
+    return mount(ThreadSummary, { props: { message } });
+}
+
+/** A message row holding the root, in a channel or a direct message. */
+function drawRow(message: TimelineMessage, isChannel: boolean): VueWrapper {
+    return mount(MessageRow, { props: { personAliasGuid: me, message, isChannel, position: "single" } });
 }
 
 /** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
@@ -110,9 +116,8 @@ describe("the count", () => {
         [3, "3 replies"],
         [99, "99 replies"],
         [100, "99+ replies"]
-    ])("reads %i as %s, in both looks", (count, words) => {
+    ])("reads %i as %s", (count, words) => {
         expect(draw(root({ reply_count: count })).get("[data-testid='thread-count']").text()).toBe(words);
-        expect(draw(root({ reply_count: count }), true).get("[data-testid='thread-count']").text()).toBe(words);
     });
 });
 
@@ -121,12 +126,13 @@ describe("the faces", () => {
         expect(faces(draw(root({ repliers: fivePeople })))).toBe("ABC");
     });
 
-    test("the Community row draws four, newest first", () => {
-        expect(faces(draw(root({ repliers: fivePeople }), true))).toBe("ABCD");
+    // A channel once drew four faces in a full-width row; every thread is now the one pill.
+    test("a channel's thread draws the same three, newest first", () => {
+        expect(faces(drawRow(root({ repliers: fivePeople }), true))).toBe("ABC");
     });
 
     test("draw only as many as replied", () => {
-        expect(faces(draw(root({ reply_count: 1, repliers: fivePeople.slice(0, 1) }), true))).toBe("A");
+        expect(faces(draw(root({ reply_count: 1, repliers: fivePeople.slice(0, 1) })))).toBe("A");
     });
 });
 
@@ -164,31 +170,43 @@ describe("the pill, in a direct message", () => {
     });
 });
 
-describe("the thread row, in a channel", () => {
-    test("writes the last reply's day and time, and offers View thread for hover and focus", () => {
-        const row = draw(root(), true);
+describe("the pill, in a channel", () => {
+    test("is the same pill, with the same label and tooltip, and no written-out last reply", () => {
+        const pill = drawRow(root(), true).get("[data-testid='thread-summary']");
 
-        expect(row.element.tagName).toBe("BUTTON");
-        expect(plain(row.get("[data-testid='thread-last']").text())).toBe("Last reply today at 9:41 AM");
-        expect(row.get("[data-testid='thread-view']").text()).toContain("View thread");
+        expect(pill.element.tagName).toBe("BUTTON");
+        expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM. Open thread");
+        expect(plain(pill.attributes("title"))).toBe("Last reply 9:41 AM");
+        expect(pill.classes()).not.toContain("is-community");
+        expect(pill.find("[data-testid='thread-last']").exists()).toBe(false);
+        expect(pill.find("[data-testid='thread-view']").exists()).toBe(false);
+    });
+
+    test("sits under the text, in the text column", () => {
+        const row = drawRow(root(), true);
+
+        const holder = row.get(".chat-cm-main > .chat-reacts");
+        expect(holder.find("[data-testid='thread-summary']").exists()).toBe(true);
+        const children = Array.from(row.get(".chat-cm-main").element.children);
+        expect(children.indexOf(holder.element)).toBeGreaterThan(children.indexOf(row.get(".chat-cm-text").element));
     });
 
     test("unread: marked, dotted and said so in its label", () => {
-        const row = draw(root({ thread_unread: true }), true);
+        const pill = drawRow(root({ thread_unread: true }), true).get("[data-testid='thread-summary']");
 
-        expect(row.classes()).toContain("is-unread");
-        expect(row.find("[data-testid='thread-unread-dot']").exists()).toBe(true);
-        expect(plain(row.attributes("aria-label"))).toBe("3 replies, last reply today at 9:41 AM, new replies. Open thread");
+        expect(pill.classes()).toContain("is-unread");
+        expect(pill.find("[data-testid='thread-unread-dot']").exists()).toBe(true);
+        expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM, new replies. Open thread");
     });
 });
 
 describe("in the message row", () => {
     test.each([["a direct message", false], ["a channel", true]] as const)("a root with replies draws its thread in %s", (_kind, isChannel) => {
-        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root(), isChannel, position: "single" } });
+        const row = drawRow(root(), isChannel);
 
         const summary = row.findComponent(ThreadSummary);
         expect(summary.exists()).toBe(true);
-        expect(summary.props("isCommunity")).toBe(isChannel);
+        expect(plain(summary.attributes("title"))).toBe("Last reply 9:41 AM");
     });
 
     test("a root with no reply draws none", () => {

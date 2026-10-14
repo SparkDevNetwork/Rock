@@ -2,32 +2,19 @@
 <template>
     <button type="button"
             class="chat-tsum"
-            :class="{ 'is-community': isCommunity, 'is-unread': isUnread, 'is-popping': isPopping }"
+            :class="{ 'is-unread': isUnread, 'is-popping': isPopping }"
             data-testid="thread-summary"
             :aria-label="ariaLabel"
-            :title="isCommunity ? undefined : `Last reply ${lastTime}`"
+            :title="`Last reply ${lastTime}`"
             @click="emit('open', message.id)"
             @animationend.self="isPopping = false">
-
-        <!-- The pill: icon, count and the newest repliers, the unread dot at its outer top corner. -->
-        <template v-if="!isCommunity">
-            <Icon name="thread" size="sm" />
-            <b data-testid="thread-count">{{ count }}</b>
-            <span class="chat-tsum-faces" data-testid="thread-faces">
-                <Avatar v-for="(face, index) in faces" :key="index" :people="[face]" :size="18" />
-            </span>
-            <span v-if="isUnread" class="chat-tsum-dot" data-testid="thread-unread-dot"></span>
-        </template>
-
-        <!-- The row: square faces, the count led by the unread dot, then the last reply or View thread. -->
-        <template v-else>
-            <span class="chat-tsum-faces" data-testid="thread-faces">
-                <Avatar v-for="(face, index) in faces" :key="index" :people="[face]" :size="20" />
-            </span>
-            <b data-testid="thread-count"><span v-if="isUnread" class="chat-tsum-cm-dot" data-testid="thread-unread-dot"></span>{{ count }}</b>
-            <span class="chat-tsum-last" data-testid="thread-last" aria-hidden="true">Last reply {{ lastWhen }}</span>
-            <span class="chat-tsum-view" data-testid="thread-view" aria-hidden="true">View thread<Icon name="left" size="xs" class="chat-tsum-chev" /></span>
-        </template>
+        <!-- Icon, count and the newest repliers, the unread dot at the pill's outer top corner. -->
+        <Icon name="thread" size="sm" />
+        <b data-testid="thread-count">{{ count }}</b>
+        <span class="chat-tsum-faces" data-testid="thread-faces">
+            <Avatar v-for="(face, index) in faces" :key="index" :people="[face]" :size="18" />
+        </span>
+        <span v-if="isUnread" class="chat-tsum-dot" data-testid="thread-unread-dot"></span>
     </button>
 </template>
 
@@ -100,18 +87,17 @@
     display: inline-flex;
 }
 
-/* The pill's faces overlap a fixed 4px, ringed in the pill's own fill so an initial is never cut. */
+/*
+    The pill's faces overlap a fixed 4px, ringed in the pill's own fill so an initial is never cut.
+    One letter at 18px reads at 9px; the avatar's own 0.37 ratio is set inline, so this must win over it.
+*/
 .chat-tsum-faces :deep(.chat-av) {
+    font-size: 9px !important;
     box-shadow: 0 0 0 1.5px var(--chat-raised);
 }
 
 .chat-tsum-faces > :deep(.chat-pile + .chat-pile) {
     margin-left: -4px;
-}
-
-/* One letter at 18px reads at 9px; the avatar's own 0.37 ratio is set inline, so this must win over it. */
-.chat-tsum:not(.is-community) .chat-tsum-faces :deep(.chat-av) {
-    font-size: 9px !important;
 }
 
 /* At the outer top corner: the right for another person's message, the left for the reader's own. */
@@ -125,110 +111,13 @@
     border-radius: 50%;
     box-shadow: 0 0 0 2px var(--chat-surface);
 }
-
-/* Community's full-width row, quiet until hovered. */
-.chat-tsum.is-community {
-    gap: 8px;
-    max-width: calc(100% + 4px);
-    height: auto;
-    min-height: 30px;
-    margin: 4px 0 0 -4px;
-    padding: 3px 10px 3px 4px;
-    font-size: 13px;
-    background: none;
-    border: 1px solid transparent;
-    border-radius: var(--chat-r-md);
-    box-shadow: none;
-    transform: none;
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-tsum.is-community:hover {
-    background: var(--chat-raised);
-    border-color: var(--chat-line);
-    transform: none;
-}
-
-/* Rounded squares, spaced apart rather than piled. */
-.is-community .chat-tsum-faces :deep(.chat-av) {
-    font-size: 8px !important;
-    border-radius: var(--chat-r-sm);
-    box-shadow: none;
-}
-
-.is-community .chat-tsum-faces > :deep(.chat-pile + .chat-pile) {
-    margin-left: 3px;
-}
-
-.chat-tsum.is-community b {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    font-weight: 650;
-    color: var(--chat-brand-ink);
-    white-space: nowrap;
-}
-
-.chat-tsum-cm-dot {
-    flex: none;
-    width: 7px;
-    height: 7px;
-    background: var(--chat-brand-fill);
-    border-radius: 50%;
-}
-
-.chat-tsum-last,
-.chat-tsum-view {
-    min-width: 0;
-    overflow: hidden;
-    font-size: 12px;
-    color: var(--chat-muted);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.chat-tsum-view {
-    display: none;
-    gap: 2px;
-    align-items: center;
-    color: var(--chat-text-2);
-}
-
-/* The set has no right chevron, so the left one turns round. */
-.chat-tsum-view :deep(.chat-tsum-chev) {
-    width: 13px;
-    height: 13px;
-    color: inherit;
-    transform: rotate(180deg);
-}
-
-.chat-tsum.is-community:hover .chat-tsum-last,
-.chat-tsum.is-community:focus .chat-tsum-last {
-    display: none;
-}
-
-.chat-tsum.is-community:hover .chat-tsum-view,
-.chat-tsum.is-community:focus .chat-tsum-view {
-    display: inline-flex;
-}
-
-/* A touch screen has no hover, so the last reply's time stays. */
-@media (hover: none) {
-    .chat-tsum.is-community .chat-tsum-view {
-        display: none !important;
-    }
-
-    .chat-tsum.is-community .chat-tsum-last {
-        display: inline !important;
-    }
-}
 </style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
+    import { replyCountText, timeLabel } from "../feedLayout.partial";
     import { TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -236,12 +125,6 @@
         message: {
             type: Object as PropType<TimelineMessage>,
             required: true
-        },
-
-        /** A channel's full-width thread row rather than a direct message's pill. */
-        isCommunity: {
-            type: Boolean,
-            default: false
         },
 
         /** Whether the row it sits under was already on screen when the summary mounted; read once. */
@@ -272,9 +155,9 @@
 
     const count = computed((): string => replyCountText(props.message.reply_count ?? 0));
 
-    /** The pill has room for three faces, the row for four. */
+    /** The pill has room for three faces. */
     const faces = computed((): AvatarPerson[] => (props.message.repliers ?? [])
-        .slice(0, props.isCommunity ? 4 : 3)
+        .slice(0, 3)
         .map(person => ({
             name: [person.nick_name, person.last_name].filter(part => !!part).join(" "),
             photoUrl: person.avatar_url ?? null
@@ -287,22 +170,10 @@
 
     const lastTime = computed((): string => lastAt.value ? timeLabel(lastAt.value) : "");
 
-    /** The row writes the day out, "today at 9:41 AM"; a weekday or date keeps its capital. */
-    const lastWhen = computed((): string => {
-        if (!lastAt.value) {
-            return "";
-        }
-
-        const day = dayLabel(lastAt.value, new Date());
-        const spokenDay = day === "Today" || day === "Yesterday" ? day.toLowerCase() : day;
-        return `${spokenDay} at ${lastTime.value}`;
-    });
-
     /** The whole button in one sentence, since its parts are drawn for the eye only. */
     const ariaLabel = computed((): string => {
-        const when = props.isCommunity ? lastWhen.value : lastTime.value;
         const unread = isUnread.value ? ", new replies" : "";
-        return `${count.value}, last reply ${when}${unread}. Open thread`;
+        return `${count.value}, last reply ${lastTime.value}${unread}. Open thread`;
     });
 
     // #endregion Computed Values

@@ -81,7 +81,10 @@
                     <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
-                <ThreadSummary v-if="hasThread && message" :message="message" isCommunity :isRowOnScreen="isMounted" @open="emit('openThread', $event)" />
+                <!-- The same pill as a direct message's, under the text at the text column's left edge. -->
+                <div v-if="hasThread && message" class="chat-reacts">
+                    <ThreadSummary :message="message" :isRowOnScreen="isMounted" @open="emit('openThread', $event)" />
+                </div>
             </div>
         </template>
 
@@ -433,6 +436,18 @@
 .is-own .chat-reacts :deep(.chat-tsum-dot) {
     right: auto;
     left: -1px;
+}
+
+/* A channel does not mirror the reader's own messages, so its row starts at the text's left edge, 4px below it. */
+.chat-msg.is-community .chat-reacts {
+    flex-direction: row;
+    margin-top: 4px;
+    padding: 0;
+}
+
+.chat-msg.is-community .chat-reacts :deep(.chat-tsum-dot) {
+    right: -1px;
+    left: auto;
 }
 
 /* "Replied to a thread", in the quote label's recipe, over the bubble's side or the text column. */
