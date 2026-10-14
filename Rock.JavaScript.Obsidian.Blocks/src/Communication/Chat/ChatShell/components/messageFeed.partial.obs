@@ -501,7 +501,7 @@
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { useSentHold } from "../composables/useSend.partial";
-    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
+    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
     import { PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -578,9 +578,6 @@
     }>();
 
     // #region Values
-
-    /** How far from the bottom the reader may be and still count as at the newest message. */
-    const atBottomPx = 48;
 
     const feed = ref<HTMLElement | null>(null);
     let observer: IntersectionObserver | null = null;
@@ -700,7 +697,7 @@
     // #region Event Handlers
 
     function onScroll(): void {
-        isScrolledUp.value = !isNearBottom(atBottomPx);
+        isScrolledUp.value = !isNearBottom();
         if (!isScrolledUp.value) {
             newCount.value = 0;
         }
@@ -747,9 +744,9 @@
     // #region Functions
 
     /** Whether the person is at, or near, the bottom of the feed. */
-    function isNearBottom(threshold = 80): boolean {
+    function isNearBottom(): boolean {
         const element = feed.value;
-        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < threshold;
+        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
     }
 
     /** Scrolls to the newest message. */
@@ -831,8 +828,12 @@
         return messages.length > 0 ? messages[messages.length - 1].id : null;
     }
 
-    /** Notes what is new since the timeline last grew: how many others sent while the reader was scrolled up. */
-    function noteArrivals(): void {
+    /**
+     * Notes what is new since the timeline last grew: how many others sent while the reader was
+     * scrolled up. Whether they were is the caller's reading of the feed as the messages landed,
+     * since a message can land mid-scroll, before the scroll handler has run for where they now are.
+     */
+    function noteArrivals(isReaderUp: boolean): void {
         const previous = newestSeenInTimeline;
         newestSeenInTimeline = newestId();
         if (previous === null) {
@@ -844,7 +845,7 @@
         const arrived = props.timeline.messages.filter(m => m.id > previous);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
 
-        if (isScrolledUp.value) {
+        if (isReaderUp) {
             newCount.value += arrived.length - own.length;
         }
     }
@@ -855,7 +856,10 @@
 
     watch(() => props.timeline.messages.length, async (length, previous) => {
         const shouldFollow = previous === 0 || isNearBottom();
-        noteArrivals();
+        if (!shouldFollow) {
+            isScrolledUp.value = true;
+        }
+        noteArrivals(!shouldFollow);
         await nextTick();
         observeRows();
 

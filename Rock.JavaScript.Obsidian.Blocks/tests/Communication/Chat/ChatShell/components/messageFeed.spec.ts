@@ -752,6 +752,57 @@ describe("Jump to latest", () => {
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("3 new messages");
     });
 
+    // One near-bottom rule, the design's 48 px, decides both whether Jump shows and whether a new
+    // message is followed, so Jump never shows and then vanishes as the feed snaps down anyway.
+    test("a reader 60 px up stays put when another person sends, and Jump counts it", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 1440);
+        await nextTick();
+
+        state.messages.push(message(2, anna, at(14, 1)));
+        await nextTick();
+        await nextTick();
+
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(1440);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
+    });
+
+    test("a reader 40 px up follows another person's message to the bottom, and Jump stays hidden", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 1460);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+
+        state.messages.push(message(2, anna, at(14, 1)));
+        await nextTick();
+        await nextTick();
+
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2000);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // A message can land mid-scroll, before the browser has run the scroll handler for where the
+    // reader now is, so the count is decided from the feed's position at that moment.
+    test("counts a message that lands before the scroll handler has caught up with the reader", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 1500);
+        await nextTick();
+
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 1442 });
+        state.messages.push(message(2, anna, at(14, 1)));
+        await nextTick();
+        await nextTick();
+
+        expect(scroller.scrollTop).toBe(1442);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
+    });
+
     test("from the keyboard, hands focus to the newest message, since the button hides once there", async () => {
         const wrapper = mount(MessageFeed, {
             props: { pending: [], personAliasGuid: me, timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) },

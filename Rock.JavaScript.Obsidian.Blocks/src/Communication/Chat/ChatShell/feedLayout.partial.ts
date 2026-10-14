@@ -31,6 +31,13 @@ export const sentHoldMs = 2200;
 /** A first page faster than this never shows the skeleton, so a quick load does not flicker. */
 export const skeletonDelayMs = 1000;
 
+/**
+ * How far from the bottom a reader may be and still count as at the newest message, in the
+ * conversation and the thread drawer alike: such a reader follows what arrives, anyone further up
+ * stays put and is offered Jump to latest. The design's own figure.
+ */
+export const nearBottomPx = 48;
+
 /** The two presentations of one timeline. */
 export type FeedLayout = "conversational" | "community";
 

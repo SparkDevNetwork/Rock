@@ -221,7 +221,7 @@
     import PanelHost from "../ui/panelHost.partial.obs";
     import { useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
-    import { FeedItem, layoutFeed, replyCountText } from "../feedLayout.partial";
+    import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -362,9 +362,6 @@
 
     // #region Values
 
-    /** How far from the bottom the reader may be and still be following the newest reply. */
-    const atBottomPx = 48;
-
     /** The design's wait before the composer takes focus, so the panel has started to open. */
     const focusDelayMs = 60;
 
@@ -464,7 +461,7 @@
 
     function isNearBottom(): boolean {
         const element = scroller();
-        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < atBottomPx;
+        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
     }
 
     function scrollToBottom(): void {
