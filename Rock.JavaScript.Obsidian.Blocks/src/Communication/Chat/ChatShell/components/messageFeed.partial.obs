@@ -81,7 +81,14 @@
             </section>
         </div>
 
-        <button v-show="isJumpShown" type="button" class="chat-jump" :class="{ 'has-count': newCount > 0 }" data-testid="jump-latest" @click="onJump">
+        <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
+        <button type="button"
+                class="chat-jump"
+                :class="{ 'is-on': isJumpShown, 'has-count': newCount > 0 }"
+                data-testid="jump-latest"
+                :aria-hidden="isJumpShown ? undefined : 'true'"
+                :inert="!isJumpShown || undefined"
+                @click="onJump">
             <Icon name="arrow-down" size="sm" />{{ jumpText }}
         </button>
 
@@ -357,8 +364,17 @@
     border: 0;
     border-radius: var(--chat-r-full);
     box-shadow: var(--chat-shadow-pop);
-    transform: translateX(-50%);
-    animation: chat-jump-in var(--chat-t-base) var(--chat-ease-in);
+    opacity: 0;
+    visibility: hidden;
+    /* From the motion tokens, so under reduced motion the lift and the scale fall away to a fade. */
+    transform: translate(-50%, var(--chat-rise)) scale(var(--chat-pop-scale));
+    transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in), visibility var(--chat-t-base) linear;
+}
+
+.chat-jump.is-on {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
 }
 
 .chat-jump.has-count {
@@ -474,14 +490,6 @@
 @keyframes chat-strip-fade {
     from {
         opacity: 0;
-    }
-}
-
-/* From the motion tokens, so under reduced motion the lift and the scale fall away to a fade. */
-@keyframes chat-jump-in {
-    from {
-        opacity: 0;
-        transform: translate(-50%, var(--chat-rise)) scale(var(--chat-pop-scale));
     }
 }
 </style>

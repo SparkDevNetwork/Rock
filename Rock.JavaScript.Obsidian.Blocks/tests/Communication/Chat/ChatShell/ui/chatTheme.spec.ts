@@ -585,11 +585,12 @@ describe("the components' own styles", () => {
     // came rather than vanishing. Each is always drawn and switched by its on state, so the same
     // transition runs both ways; it is set out of sight only once its fade has ended.
     test.each([
-        ["the unread strip", ".chat-unread-strip", "unread-strip"],
-        ["Jump to latest", ".chat-jump", "jump-latest"]
-    ])("%s fades and moves in and out, rather than appearing and vanishing", (_name, selector, testId) => {
+        ["the unread strip", ".chat-unread-strip", "unread-strip", /chat-strip-in|chat-strip-fade/],
+        ["Jump to latest", ".chat-jump", "jump-latest", /chat-jump-in/]
+    ])("%s fades and moves in and out, rather than appearing and vanishing", (_name, selector, testId, entranceOnly) => {
         const source = readFileSync(feedPath, "utf8");
-        const element = new RegExp(`<[a-z]+[^>]*data-testid="${testId}"[^>]*>`).exec(source)?.[0] ?? "";
+        // The element's opening tag, read past a ">" inside a quoted binding.
+        const element = new RegExp(`<[a-z]+(?:[^>"]|"[^"]*")*?data-testid="${testId}"(?:[^>"]|"[^"]*")*>`).exec(source)?.[0] ?? "";
         expect(element).not.toBe("");
         expect(element).not.toContain("v-show");
         expect(element).not.toContain("v-if");
@@ -597,14 +598,15 @@ describe("the components' own styles", () => {
         const transitions = transitionsOf(feedPath, selector);
         expect(transitions).toContain(normalize("opacity var(--chat-t-base) var(--chat-ease-state)"));
         expect(transitions).toContain(normalize("transform var(--chat-t-base) var(--chat-ease-in)"));
-        expect(transitions).toContain(normalize("visibility 0s linear var(--chat-t-base)"));
+        // Visible from the first moment of the way in and to the last of the way out.
+        expect(transitions).toContain(normalize("visibility var(--chat-t-base) linear"));
         expect(declarationOf(feedPath, selector, "opacity")).toBe("0");
         expect(declarationOf(feedPath, selector, "visibility")).toBe("hidden");
 
         expect(declarationOf(feedPath, `${selector}.is-on`, "opacity")).toBe("1");
         expect(declarationOf(feedPath, `${selector}.is-on`, "visibility")).toBe("visible");
-        expect(declarationOf(feedPath, `${selector}.is-on`, "transition-delay")).toBe("0s");
-        expect(source).not.toMatch(/chat-strip-in|chat-strip-fade|chat-jump-in/);
+        // No entrance-only animation is left to play beside the transition.
+        expect(source).not.toMatch(entranceOnly);
     });
 
     test("the unread strip comes from 4px above and Jump to latest from the rise below at the pop scale", () => {
