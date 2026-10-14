@@ -128,8 +128,19 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+
+            /*
+                10/14/2026 - MSE
+
+                When the value is a link, the markup (and the encoded name inside it) is built in
+                GetExpression, so the grid must not encode it again. Otherwise the value is the raw
+                name, so the grid encodes it.
+
+                Reason: Prevent stored XSS through a person's name in reports.
+            */
             var result = new BoundField();
-            result.HtmlEncode = false;
+            result.HtmlEncode = !showAsLink;
             return result;
         }
 
@@ -173,14 +184,24 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( showAsLink )
             {
+                /*
+                    10/14/2026 - MSE
+
+                    The link markup is built in SQL, so the name parts are HTML encoded there (with REPLACE)
+                    before they are placed inside the anchor. Names can be set by anyone (for example through
+                    a public signup form) and this column is rendered without encoding. Only &, < and > are
+                    encoded because the name is element content and the href is built from the Id only.
+
+                    Reason: Prevent stored XSS through a person's name in reports.
+                */
                 // return string in format: <a href='/person/{personId}'>LastName, NickName</a>
                 if ( displayOrder == 0 )
                 {
-                    personLinkQuery = personQry.Select( p => "<a href='" + basePersonUrl + p.Id.ToString() + "'>" + p.NickName + " " + p.LastName + "</a>" );
+                    personLinkQuery = personQry.Select( p => "<a href='" + basePersonUrl + p.Id.ToString() + "'>" + p.NickName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + " " + p.LastName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + "</a>" );
                 }
                 else
                 {
-                    personLinkQuery = personQry.Select( p => "<a href='" + basePersonUrl + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
+                    personLinkQuery = personQry.Select( p => "<a href='" + basePersonUrl + p.Id.ToString() + "'>" + p.LastName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + ", " + p.NickName.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + "</a>" );
                 }
             }
             else
