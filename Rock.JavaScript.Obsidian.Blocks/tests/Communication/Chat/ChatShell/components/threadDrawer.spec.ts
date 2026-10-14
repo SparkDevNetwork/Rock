@@ -369,11 +369,12 @@ describe("focus on open", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='composer-input']").element);
     });
 
-    test("never goes to the composer on a phone, which leaves by a back chevron and has no X", async () => {
+    test("goes to the back chevron on a phone, never the composer, and the phone has no X", async () => {
         const w = draw({ isPhone: true });
         await afterOpen();
 
         expect(document.activeElement).not.toBe(w.get("[data-testid='composer-input']").element);
+        expect(document.activeElement).toBe(w.get("[data-testid='panel-back']").element);
         expect(w.get("[data-testid='panel-back']").attributes("aria-label")).toBe("Back");
         expect(w.find("[data-testid='panel-close']").exists()).toBe(false);
 

@@ -906,6 +906,32 @@ describe("the thread drawer", () => {
         expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
     });
 
+    test("on a phone, takes focus into the drawer at its back chevron when a pill opens it, never the composer", async () => {
+        const w = await mountBlock(390);
+        await openWithRoot(w);
+
+        (w.get("[data-testid='frame-main'] [data-testid='thread-summary']").element as HTMLElement).focus();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 150));
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element);
+    });
+
+    test("on a phone, takes focus into the drawer at its back chevron when a threads list row opens it", async () => {
+        const w = await mountBlock(390);
+        await openAllTabWithAnnasThread(w);
+
+        (w.get("[data-testid='thread-row-open'][data-root-id='70']").element as HTMLElement).focus();
+        await w.get("[data-testid='thread-row-open'][data-root-id='70']").trigger("click");
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 150));
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element);
+    });
+
     test("closes when another conversation is chosen in the sidebar", async () => {
         const w = await mountBlock(1200);
         await openWithRoot(w);

@@ -273,7 +273,7 @@
             default: false
         },
 
-        /** A phone leaves by the back chevron and never focuses the composer, whose keyboard would cover the thread. */
+        /** A phone leaves by the back chevron, which takes focus on open, and never focuses the composer, whose keyboard would cover the thread. */
         isPhone: {
             type: Boolean,
             default: false
@@ -555,13 +555,14 @@
         observeTop();
         void place();
 
-        // A phone never focuses the composer on its own: the keyboard would rise over the thread.
-        if (!props.isPhone) {
-            focusTimer = setTimeout(() => {
-                focusTimer = null;
-                bodyElement.value?.closest(".chat-panel")?.querySelector<HTMLElement>("[data-testid='composer-input']")?.focus({ preventScroll: true });
-            }, focusDelayMs);
-        }
+        // A phone never focuses the composer on its own, since the keyboard would rise over the
+        // thread; its back chevron takes focus instead, because the pane that opened the drawer
+        // has slid out of reach and would leave focus nowhere.
+        const firstFocus = props.isPhone ? "[data-testid='panel-back']" : "[data-testid='composer-input']";
+        focusTimer = setTimeout(() => {
+            focusTimer = null;
+            bodyElement.value?.closest(".chat-panel")?.querySelector<HTMLElement>(firstFocus)?.focus({ preventScroll: true });
+        }, focusDelayMs);
     });
 
     onBeforeUnmount(() => {
