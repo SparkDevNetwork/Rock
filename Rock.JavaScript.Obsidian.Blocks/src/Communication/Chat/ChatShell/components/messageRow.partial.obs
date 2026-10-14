@@ -191,8 +191,17 @@
     animation: chat-msg-in var(--chat-t-msg) var(--chat-ease-in) both;
 }
 
-.chat-msg.is-own.is-arriving {
+/*
+    An own message grows from the corner it is anchored to: a bubble from its bottom right, by the
+    sender's side; Community's full-width row from its bottom left, where its text starts, so the
+    text does not slide sideways as the row scales.
+*/
+.chat-msg.is-conversational.is-own.is-arriving {
     transform-origin: bottom right;
+}
+
+.chat-msg.is-community.is-own.is-arriving {
+    transform-origin: 0 100%;
 }
 
 .chat-msg.is-flashing::after {

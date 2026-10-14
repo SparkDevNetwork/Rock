@@ -530,6 +530,20 @@ describe("the components' own styles", () => {
         return sheet.rules.flatMap(rule => splitTopLevel(rule.selector, ",").map(selector => ({ selector: selector.replace(/\s+/g, " "), rule })));
     }
 
+    // An own message grows from the corner it is anchored to: a bubble from its bottom right, by
+    // the sender's side; Community's full-width row from its bottom left, where its text starts. A
+    // row-wide origin on the right would slide the text sideways as it scales.
+    test("an own message rises from its own corner in each look", () => {
+        const origins = selectorsOf(readSheet(rowPath))
+            .filter(({ selector, rule }) => rule.media === "" && selector.includes(".is-arriving") && rule.declarations.has("transform-origin"))
+            .map(({ selector, rule }) => ({ selector, origin: normalize(rule.declarations.get("transform-origin") ?? "") }));
+
+        expect(origins.filter(o => !o.selector.includes(".is-conversational") && !o.selector.includes(".is-community"))).toEqual([]);
+        expect(origins.filter(o => o.selector.includes(".is-conversational")).map(o => o.origin)).toEqual(["bottomright"]);
+        expect(origins.filter(o => o.selector.includes(".is-community")).map(o => o.origin)).toEqual(["0100%"]);
+        expect(origins.every(o => o.selector.includes(".is-own"))).toBe(true);
+    });
+
     // A send shows at reduced strength while it is on its way and eases to full as it settles,
     // rather than snapping, in the bubble and in Community's text alike.
     test.each([".chat-bubble", ".chat-cm-text"])("%s eases its strength as a send settles", selector => {
