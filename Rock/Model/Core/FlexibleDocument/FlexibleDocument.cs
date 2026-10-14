@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -60,9 +61,20 @@ namespace Rock.Model
 
         Reason: The REST surface decision belongs to the integration layer, not the plumbing.
     */
+    /*
+        10/14/2026 - CLAUDE
+
+        Omitting CodeGenerateRest did not prevent REST endpoints: the code generator
+        still produced a v1 controller for this entity and warned that the attribute
+        was missing. The two attributes below make "no generated endpoints" explicit.
+
+        Reason: Keep generated v1 and v2 REST endpoints off this entity.
+    */
     [RockDomain( "Core" )]
     [Table( "FlexibleDocument" )]
     [DataContract]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( "962D0C52-FA32-4863-977F-D6A4B2DF0C09" )]
     public partial class FlexibleDocument : Model<FlexibleDocument>, ICategorized
     {

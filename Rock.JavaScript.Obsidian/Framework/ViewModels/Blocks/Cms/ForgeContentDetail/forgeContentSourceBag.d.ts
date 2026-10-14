@@ -21,8 +21,14 @@
 // </copyright>
 //
 
-/** The response returned by the GetEditContent block action, carrying the authored source to the editor. */
+/**
+ * The response returned by the GetEditContent block action, carrying the
+ * authored source to the editor opened from the block's configuration bar.
+ */
 export type ForgeContentSourceBag = {
-    /** Gets or sets the clean Vue source the author wrote, or null when the block has no component yet. */
+    /**
+     * Gets or sets the clean Vue source the author wrote, or null when
+     * the block has no component yet.
+     */
     source?: string | null;
 };

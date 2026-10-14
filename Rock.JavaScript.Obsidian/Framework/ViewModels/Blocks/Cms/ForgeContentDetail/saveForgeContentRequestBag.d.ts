@@ -21,7 +21,10 @@
 // </copyright>
 //
 
-/** The request sent to the SaveContent block action when an authorized editor saves an authored forge content. */
+/**
+ * The request sent to the SaveContent block action when an authorized
+ * editor saves an authored forge content.
+ */
 export type SaveForgeContentRequestBag = {
     /** Gets or sets the clean Vue source the author wrote. */
     source?: string | null;

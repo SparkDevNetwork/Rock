@@ -1803,7 +1803,7 @@ GO
         /// <summary>
         /// The ignore files
         /// </summary>
-        static readonly string[] IgnoreFiles = new string[] { "\\DoubleMetaphone.cs", "\\Rock.Version\\AssemblySharedInfo.cs" };
+        static readonly string[] IgnoreFiles = new string[] { "\\DoubleMetaphone.cs", "\\Rock.Version\\AssemblySharedInfo.cs", "\\Rock\\Data\\LinqKit\\LinqKit.cs" };
 
         /// <summary>
         /// The ignore folders
