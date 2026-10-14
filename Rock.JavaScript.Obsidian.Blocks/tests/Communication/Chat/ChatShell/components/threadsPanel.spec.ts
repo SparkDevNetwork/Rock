@@ -28,7 +28,9 @@
 //          error: ChatError } | null, busyRootId: number | null, channelId: string (the open
 //          conversation), kind: "channel" | "person" | "group" (the open conversation's),
 //          roomTitles: Record<string, string> (each conversation's title by channel id, as the
-//          header shows it), isPhone: boolean, personAliasGuid: string
+//          header shows it), roomKinds: Record<string, "channel" | "person" | "group">,
+//          publicRooms: Record<string, boolean> (whether each channel is public, which draws its
+//          hash rather than its lock, as the sidebar does), isPhone: boolean, personAliasGuid: string
 //   emits: open(rootId: number, channelId: string), tab(tab: "channel" | "all"), refresh,
 //          follow(rootId: number, isFollowing: boolean), loadMore, close
 //   marks: thread-row (each row, class is-unread and is-off), thread-row-open (the row's button,
@@ -44,6 +46,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadsPanel from "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
+import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -226,6 +229,18 @@ describe("a row", () => {
 
         expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toBe(
             "Ben Okafor in Worship Team: Bring snacks. 2 replies, last reply 9:41 AM, 2 mentions of you, not following. Open thread");
+    });
+
+    test.each([[true, "hash"], [false, "lock"]])("on the All tab marks a channel that is public %s with its %s, as the sidebar does", (isPublic, icon) => {
+        const w = draw({
+            tab: "all",
+            rows: [row(70, { channel_id: worship })],
+            roomKinds: { [worship]: "channel" },
+            publicRooms: { [worship]: isPublic }
+        });
+
+        const sub = w.get("[data-testid='thread-row'] .chat-ls-sub");
+        expect(sub.findAllComponents(Icon).map(i => i.props("name"))).toEqual([icon]);
     });
 
     test("names the reader's own root You", () => {

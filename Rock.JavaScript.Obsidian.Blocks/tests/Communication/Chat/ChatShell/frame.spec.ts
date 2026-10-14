@@ -893,6 +893,23 @@ describe("the thread drawer", () => {
         expect(threadsOf().openList).toHaveBeenLastCalledWith(dmAnna.channel_id, "channel");
     });
 
+    test("marks a private channel's row on the All tab with its lock, as the sidebar does", async () => {
+        const w = await mountBlock(1200);
+        await openAllTabWithAnnasThread(w);
+        const root = timelineOf(team.channel_id).messages[0];
+        (threadsOf().state as unknown as { list: { rows: unknown[] } }).list.rows = [{
+            channel_id: team.channel_id, root, reply_count: 2, last_reply_at: root.created_at, last_reply_id: 42,
+            participant_count: 2, following: true, has_unread: false, mention_count: 0
+        }];
+        await settle();
+
+        const sub = w.get("[data-testid='thread-row'] .chat-ls-sub");
+        expect(team.is_public).toBe(false);
+        // The same shape as the sidebar row's icon; only its size differs.
+        const sidebarIcon = w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}'] .chat-cs-slot svg`);
+        expect(sub.get("svg").element.innerHTML).toBe(sidebarIcon.element.innerHTML);
+    });
+
     test("on a phone, a thread of another conversation opened from the All tab keeps the panel pane shown", async () => {
         const w = await mountBlock(390);
         await openAllTabWithAnnasThread(w);

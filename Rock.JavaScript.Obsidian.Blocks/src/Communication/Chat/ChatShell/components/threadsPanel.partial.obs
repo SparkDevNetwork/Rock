@@ -763,6 +763,12 @@
             default: () => ({})
         },
 
+        /** Whether each channel is open to anyone who may join, which draws a hash rather than a lock, as the sidebar does. */
+        publicRooms: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
+        },
+
         /** Whether the chat is in its one-pane phone layout. */
         isPhone: {
             type: Boolean,
@@ -1015,7 +1021,7 @@
             who,
             author: { name: name || who, photoUrl: root.sender_avatar_url ?? null },
             room,
-            roomIcon: roomKind === "channel" ? "hash" : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
+            roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
             text: display.text,
             pieces: isShown ? root.pieces ?? null : null,
             blocks: isShown ? root.blocks ?? null : null,

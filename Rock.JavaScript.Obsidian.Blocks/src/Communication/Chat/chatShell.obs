@@ -124,6 +124,7 @@
                                   :kind="activeKind ?? 'channel'"
                                   :roomTitles="roomTitles"
                                   :roomKinds="roomKinds"
+                                  :publicRooms="publicRooms"
                                   :isPhone="isPhone"
                                   :personAliasGuid="personAliasGuid"
                                   @open="openThreadFromList"
@@ -574,6 +575,16 @@
         }
 
         return kinds;
+    });
+
+    /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
+    const publicRooms = computed((): Record<string, boolean> => {
+        const isPublic: Record<string, boolean> = {};
+        for (const row of shell.value.channels.rows) {
+            isPublic[row.channel_id] = row.is_public;
+        }
+
+        return isPublic;
     });
 
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
