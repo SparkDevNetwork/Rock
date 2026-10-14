@@ -135,7 +135,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RadioButton from "@Obsidian/Controls/radioButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useDownloadBlockAction } from "@Obsidian/Utility/block";
     import { BulkImportToolBox } from "@Obsidian/ViewModels/Blocks/BulkImport/bulkImportToolBox";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -167,7 +167,7 @@
     const notificationMessageType = ref<string>("info");
     const notificationMessage = ref<string>("");
     const panelTitle = ref<string>("Bulk Import Tool");
-    const blockActionUrl = useBlockActionUrl();
+    const downloadBlockAction = useDownloadBlockAction();
     const slingshotFullPath = ref<string>("");
     const showForeignSystemDetails = ref<boolean>(false);
 
@@ -458,9 +458,15 @@ order by Gt.Id, Gt.Name, g.Name
     /**
      * Download the log file
      */
-    function onDownloadLogClick(): void {
-        const url = blockActionUrl("DownloadLog");
-        window.location.href = url;
+    async function onDownloadLogClick(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await downloadBlockAction("DownloadLog", undefined, "slingshot-errors.log");
+
+        if (!result.isSuccess) {
+            // Use fixed text because the error message is shown as HTML.
+            errorMessage.value = "Unable to download the log file.";
+        }
     }
 
     function toggleAdditionalNotes(): void {
