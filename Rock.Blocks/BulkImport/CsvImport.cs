@@ -572,13 +572,14 @@ namespace Rock.Blocks.BulkImport
         /// Handles the Click event of the Download Log Button fetching the ERROR_CSV_FILENAME
         /// inside the given partial Slingshot folder name.
         /// </summary>
+        /// <param name="errorCsvFolderName">The partial Slingshot folder name returned when the import was started.</param>
         [BlockAction]
-        public BlockActionResult DownloadErrorCsv()
+        public BlockActionResult DownloadErrorCsv( string errorCsvFolderName )
         {
-            string folderName = RequestContext.GetPageParameter( "f" );
+            string folderName = errorCsvFolderName ?? string.Empty;
             string filePath = GetCsvFilePath( folderName ) + ERROR_CSV_FILENAME;
 
-            if ( !File.Exists( filePath ) )
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( filePath, GetSlingshotPhysicalRootFolder() ) || !File.Exists( filePath ) )
             {
                 return ActionNotFound();
             }
