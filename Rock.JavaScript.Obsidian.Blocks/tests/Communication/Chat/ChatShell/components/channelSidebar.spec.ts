@@ -25,6 +25,13 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { isTwoPersonDirectMessage } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
+
+// The two-person rule is the store's, so a test can stand in for it and see the sidebar follow.
+jest.mock("../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial", () => {
+    const actual = jest.requireActual("../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial");
+    return { ...actual, isTwoPersonDirectMessage: jest.fn(actual.isTwoPersonDirectMessage) };
+});
 
 // #region Fixtures
 
@@ -352,6 +359,21 @@ describe("a row's look, by the room's kind", () => {
 
         expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Marcus: Are we doing the extended bridge again?");
         expect(rowOf(w, dmGroup.channel_id).find("[data-testid='row-time']").exists()).toBe(true);
+    });
+
+    test("tells a two-person direct message from a group by the store's one rule", () => {
+        const rule = jest.mocked(isTwoPersonDirectMessage);
+        const actual = rule.getMockImplementation();
+        rule.mockReturnValue(true);
+        try {
+            const w = mountSidebar({ rows: [dmGroup] });
+
+            expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Are we doing the extended bridge again?");
+        }
+        finally {
+            rule.mockReset();
+            rule.mockImplementation(actual);
+        }
     });
 
     test("Conversational reads 'No messages yet' for an empty room", () => {

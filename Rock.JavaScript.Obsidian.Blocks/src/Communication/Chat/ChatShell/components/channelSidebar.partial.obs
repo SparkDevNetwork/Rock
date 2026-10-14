@@ -496,7 +496,7 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
-    import { roomTitle } from "../stores/channelStore.partial";
+    import { isTwoPersonDirectMessage, roomTitle } from "../stores/channelStore.partial";
     import { SidebarRow } from "../types.partial";
 
     // #region Types
@@ -609,16 +609,13 @@
         return roomTitle(row);
     }
 
-    /**
-     * Only a group can be given a name, so a named direct message is a group even though the
-     * platform, which names a room by its people only when it has no name, sends no people for it.
-     */
+    /** A channel, a direct message with one other person, or a group, by the store's one rule. */
     function kindOf(row: SidebarRow): RoomKind {
         if (row.channel_type !== "dm") {
             return "channel";
         }
 
-        return !row.name && (row.dm_other_count ?? 1) <= 1 ? "person" : "group";
+        return isTwoPersonDirectMessage(row) ? "person" : "group";
     }
 
     /**
