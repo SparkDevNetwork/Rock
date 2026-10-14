@@ -270,6 +270,59 @@ describe("the timeline", () => {
     });
 });
 
+// A person's own message is one thing on the page from the moment it is sent: the row still sending
+// and every copy of the message share the send's key, and the feed keys its rows by it. A message
+// newer than the feed's first page rises in as it is drawn, unless this session sent it, since its
+// pending row already rose; a copy drawn afresh in another group does not rise a second time.
+describe("the person's own message is one row from send to stored", () => {
+    test("a copy that arrives while the row is still out takes the row's place, in the same element", async () => {
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = draw({ timeline: state, pending: [pendingRow("k1")] });
+        await nextTick();
+        const drawn = wrapper.get("[data-testid='pending-row']").element;
+
+        state.messages.push(message(2, me, at(15, 0), { client_key: "k1", body: "pending k1" }));
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
+        expect(wrapper.findAll(".chat-msg")).toHaveLength(2);
+        expect(wrapper.get("[data-message-id='2']").element).toBe(drawn);
+    });
+
+    // Anna's message takes the next id while the send is out, so the row moves out of the
+    // person's group to below hers, and the stored copy then moves back above it: each time into
+    // another group, which is a new element, and neither rises a second time.
+    test("moved between groups by another person's newer message, the person's own send rises only once", async () => {
+        const state = timeline([message(1, me, at(14, 58))]);
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me, sentKeys: new Set(["k1"]) } });
+        await nextTick();
+        expect(wrapper.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
+
+        state.messages.push(message(3, anna, at(15, 0)));
+        await nextTick();
+        expect(wrapper.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
+        expect(wrapper.get("[data-message-id='3']").classes()).toContain("is-arriving");
+
+        state.messages.splice(1, 0, message(2, me, at(15, 0), { client_key: "k1", body: "pending k1" }));
+        await wrapper.setProps({ pending: [] });
+        await nextTick();
+
+        expect(wrapper.findAll(".chat-msg")).toHaveLength(3);
+        expect(wrapper.get("[data-message-id='2']").classes()).not.toContain("is-arriving");
+    });
+
+    test("the person's message sent from another tab is news here, and rises in", async () => {
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me, sentKeys: new Set(["k1"]) } });
+        await nextTick();
+
+        state.messages.push(message(2, me, at(15, 0), { client_key: "from-another-tab" }));
+        await nextTick();
+
+        expect(wrapper.get("[data-message-id='2']").classes()).toContain("is-arriving");
+    });
+});
+
 // The send's answer and the message's live copy race each other to the page. The person's own
 // message shows Sent for 2.2 seconds from whichever comes first, and the second neither restarts
 // nor cancels it. Both orders are driven by hand: the answer is a deferred the test resolves, the

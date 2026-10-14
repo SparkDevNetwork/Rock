@@ -114,6 +114,12 @@ export type TimelineMessage = {
 
     /** The server's sentence about the person's own send, shown under it. */
     notice?: string | null;
+
+    /**
+     * The key the message was sent under, the sender's retry key; null for a message sent without
+     * one. Every copy of a message carries it, so the sender's row and each copy are one message.
+     */
+    client_key?: string | null;
 };
 
 /** One person who replied in a thread, under their primary alias. */
@@ -222,6 +228,9 @@ export type MessageCreatedEvent = {
     pieces?: DisplayPiece[] | null;
     blocks?: MessageBlock[] | null;
     created_at: string;
+
+    /** The key the message was sent under; null for a message sent without one. */
+    client_key?: string | null;
 };
 
 /** An edit on a channel topic. */
@@ -306,8 +315,8 @@ export type PendingMessage = {
     isShownInChannel?: boolean;
 
     /**
-     * The stored message's id once the platform confirmed the send, set as the row goes, so the
-     * feed knows which message to show as just sent.
+     * The stored message's id once a copy of it reached the page, set as the row goes, so the
+     * feed knows the send went rather than was discarded.
      */
     confirmedId?: number;
 };

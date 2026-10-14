@@ -52,7 +52,7 @@
                                 :organizationName="organizationName"
                                 :isChannel="isChannel"
                                 :isPhone="isPhone"
-                                :isArriving="isArriving(item.message.id)"
+                                :isArriving="isRowArriving(item.key, item.message)"
                                 :data-message-id="item.message.id" />
 
                     <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
@@ -70,7 +70,7 @@
                                     :isPhone="isPhone"
                                     :isDirectMessage="isDirectMessage"
                                     :isJustSent="!!row.message && justSentIds.has(row.message.id)"
-                                    :isArriving="!!row.pending || (!!row.message && isArriving(row.message.id))"
+                                    :isArriving="isRowArriving(row.key, row.message)"
                                     :senderNames="senderNames"
                                     :data-message-id="row.message?.id"
                                     @retry="emit('retry', $event)"
@@ -472,7 +472,7 @@
     import { tokenDuration } from "../ui/brand.partial";
     import { TimelineState } from "../composables/useHistory.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, newDividerBeforeId, newMessagesText, sentHoldMs, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
-    import { PendingMessage } from "../types.partial";
+    import { PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
         timeline: {
@@ -522,6 +522,12 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /** Every key this session sent under; a message carrying one already rose as its pending row. */
+        sentKeys: {
+            type: Object as PropType<ReadonlySet<string>>,
+            default: () => new Set<string>()
         }
     });
 
@@ -571,19 +577,19 @@
     const justSentIds = reactive(new Set<number>());
 
     /**
-     * The pending row each send confirmed here was drawn as, by the id of the message it became,
-     * so the message is drawn in that row's element rather than a new one. Kept while the feed is
-     * open: a handful of numbers per send.
-     */
-    const confirmedKeys = reactive(new Map<number, string>());
-
-    /**
      * When each of the reader's own messages came into the timeline while its send was still
      * waiting on its answer, by id, so the Sent hold can run from the earlier of the two. An entry
      * goes once its hold has read it, and all go whenever nothing is waiting, so the map holds
      * only the sends in flight.
      */
     const ownArrivedAt = new Map<number, number>();
+
+    /**
+     * The keys whose row has risen in this feed. A row moved into another group is a new element,
+     * as when someone else's message takes the next id while the person's send is out, and a key
+     * here never rises again. Kept while the feed is open: one short string per message drawn new.
+     */
+    const risenKeys = new Set<string>();
 
     /** The newest message when the feed first had any; anything newer arrived while it was open. */
     let newestAtLoad: number | null = null;
@@ -615,8 +621,7 @@
         personAliasGuid: props.personAliasGuid,
         newDividerBeforeId: dividerBeforeId.value,
         layout: layout.value,
-        now: new Date(),
-        confirmedKeys
+        now: new Date()
     }));
 
     /**
@@ -730,11 +735,31 @@
 
     /**
      * Whether a message arrived while the feed was open, so it rises in rather than just being
-     * there. A row reads this once, when it mounts. The person's own send already rose as its
-     * pending row, so its message never rises again, even drawn afresh in another group.
+     * there. A row reads this once, when it mounts. A send of this session already rose as its
+     * pending row, so its message never rises again, even drawn afresh in another group because
+     * someone else's message took the next id first; the person's message from another tab is
+     * news here and rises like anyone's.
      */
-    function isArriving(messageId: number): boolean {
-        return newestAtLoad !== null && messageId > newestAtLoad && !confirmedKeys.has(messageId);
+    function isArriving(message: TimelineMessage): boolean {
+        const isSentHere = !!message.client_key && props.sentKeys.has(message.client_key);
+        return newestAtLoad !== null && message.id > newestAtLoad && !isSentHere;
+    }
+
+    /**
+     * Whether a row rises as it is drawn: a send still pending always, a message by the rule
+     * above, and either only the first time its key is drawn. A row reads this once, as it
+     * mounts, so the later renders that answer false leave a row already drawn as it is.
+     */
+    function isRowArriving(key: string, message: TimelineMessage | null): boolean {
+        if (risenKeys.has(key)) {
+            return false;
+        }
+
+        const isNew = message ? isArriving(message) : true;
+        if (isNew) {
+            risenKeys.add(key);
+        }
+        return isNew;
     }
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
@@ -848,7 +873,6 @@
         const kept = new Set(pending.map(row => row.localId));
         for (const row of previous ?? []) {
             if (!kept.has(row.localId) && row.confirmedId !== undefined) {
-                confirmedKeys.set(row.confirmedId, row.localId);
                 holdSent(row.confirmedId);
             }
         }

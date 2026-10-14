@@ -67,12 +67,6 @@ export type FeedLayoutOptions = {
     layout: FeedLayout;
     now: Date;
     locale?: string;
-
-    /**
-     * The pending row each of the person's sends confirmed on this page was drawn as, by the id
-     * of the message it became, so the message keeps that row's key.
-     */
-    confirmedKeys?: ReadonlyMap<number, string>;
 };
 
 /** A message or a pending send, with what grouping reads from it. */
@@ -91,6 +85,12 @@ const dayMs = 24 * 60 * 60 * 1000;
  * The person's pending and failed sends go after the newest stored message, today, as their own
  * rows, so a send settles in place.
  *
+ * A row is keyed by the send's key wherever the message has one, else by its id, and a pending
+ * row by its own key, which is that send's key. The answer, the live copy and every page of a
+ * message the person sent therefore draw the element its pending row was, in whatever order they
+ * arrive; a new element would cut its rise short and play it again. A pending row whose message is
+ * already here is not drawn, since the message stands for it.
+ *
  * @param options The messages, the pending sends, the reader and where the divider sits.
  *
  * @returns The sections, oldest first.
@@ -103,22 +103,22 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
     let previous: Entry | null = null;
     let lastAt = new Date(0);
 
-    // A row tried again under a key already confirmed is drawn under that key itself.
-    const pendingIds = new Set(options.pending.map(pending => pending.localId));
+    const sentKeys = new Set<string>();
 
     const entries: Entry[] = options.messages.map(message => {
         const at = new Date(message.created_at);
         // A time that does not parse keeps its place beside the message before it.
         lastAt = isNaN(at.getTime()) ? lastAt : at;
-        // A confirmed send keeps its pending row's key, so the element drawn for the send is the
-        // one patched with its message: a new element would cut its rise short at the answer.
-        const sentFrom = options.confirmedKeys?.get(message.id);
-        const key = sentFrom !== undefined && !pendingIds.has(sentFrom) ? `p:${sentFrom}` : `m:${message.id}`;
-        return { key, message, pending: null, sender: (message.person_alias_guid ?? "").toLowerCase(), at: lastAt };
+        if (message.client_key) {
+            sentKeys.add(message.client_key);
+        }
+        return { key: rowKey(message), message, pending: null, sender: (message.person_alias_guid ?? "").toLowerCase(), at: lastAt };
     });
 
     for (const pending of options.pending) {
-        entries.push({ key: `p:${pending.localId}`, message: null, pending, sender: me, at: options.now });
+        if (!sentKeys.has(pending.localId)) {
+            entries.push({ key: `k:${pending.localId}`, message: null, pending, sender: me, at: options.now });
+        }
     }
 
     for (const entry of entries) {
@@ -328,6 +328,18 @@ export function unreadStripText(count: number, since: Date, locale?: string): st
  */
 export function jumpLabel(newCount: number): string {
     return newCount > 0 ? newMessagesText(newCount) : "Jump to latest";
+}
+
+/**
+ * The key a message's row is drawn under: its send's key when it has one, which its pending row
+ * was drawn under too, else its id. A send key is a UUID and an id a number, so the two never meet.
+ *
+ * @param message The message.
+ *
+ * @returns The row's key.
+ */
+function rowKey(message: TimelineMessage): string {
+    return `k:${message.client_key ?? message.id}`;
 }
 
 /** Whether a message is laid out in blocks, which draws it as a card of its own. */

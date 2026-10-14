@@ -23,12 +23,10 @@
 // until they join, which is Rock's door, so the sender joins through it and sends again under the
 // same key. A reply names its root and whether it is also sent to the conversation, and keeps both
 // on its row so every try sends the same reply; one shown only in its thread never enters the
-// conversation's timeline. While a send waits on its answer, the person's own live copies in that
-// channel are held back, since nothing yet ties a copy to the row still sending and both would
-// show: the answer merges a copy of its own message into the message it confirms and lets the rest
-// in.
+// conversation's timeline. The send's key travels on every copy of the message, the answer, the
+// live copy and each page, so the feeds draw the row and whichever copy arrives as one message.
 import { reactive } from "vue";
-import { ChatError, DisplayPiece, MessageBlock, MessageCreatedEvent, PendingMessage, TimelineMessage } from "../types.partial";
+import { ChatError, DisplayPiece, MessageBlock, PendingMessage, TimelineMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 
 /** What Rock's Join door answers. */
@@ -117,8 +115,8 @@ export type SenderDependencies = {
     /** Sends a text message to a channel, with the key that makes a retry safe, as a reply when one is named. */
     send: (channelId: string, body: string, key?: string, reply?: ReplyTarget) => Promise<SendResult>;
 
-    /** The timelines a confirmed message is put into, and a held live copy let into. */
-    timelines: Pick<Timelines, "upsert" | "applyEvent">;
+    /** The timelines a confirmed message is put into. */
+    timelines: Pick<Timelines, "upsert">;
 
     /** A confirmed reply, for the open thread to put in place without waiting for its live copy. */
     onReplyConfirmed?: (channelId: string, message: TimelineMessage) => void;
@@ -169,20 +167,11 @@ export type Sender = {
     discard: (localId: string) => void;
 
     /**
-     * Holds back a live event that is the person's own new message while a send of theirs in
-     * that channel waits on its answer. True when held; the caller applies any other event.
+     * Every key this session has sent under, kept for the session: a few dozen bytes a message.
+     * A message carrying one of them already rose in as its pending row, so a feed that draws it
+     * again, in another group, does not raise it a second time.
      */
-    holdLive: (channelId: string, event: string, payload: unknown) => boolean;
-
-    /** Lets every held live copy in, since no answer will come to place it. */
-    stop: () => void;
-};
-
-/** A live copy of the person's own message, held until a send in its channel is answered. */
-type HeldCopy = {
-    channelId: string;
-    id: number;
-    payload: unknown;
+    sentKeys: ReadonlySet<string>;
 };
 
 /**
@@ -194,8 +183,7 @@ type HeldCopy = {
  */
 export function createSender(dependencies: SenderDependencies): Sender {
     const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
-    const held: HeldCopy[] = [];
-    const me = dependencies.personAliasGuid.toLowerCase();
+    const sentKeys = new Set<string>();
     const waitBeforeResend = dependencies.waitBeforeResend
         ?? ((attempt: number): Promise<void> => new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt)));
 
@@ -240,25 +228,6 @@ export function createSender(dependencies: SenderDependencies): Sender {
         return result;
     }
 
-    /** Whether a send in the channel still waits on its answer. */
-    function isInFlight(channelId: string): boolean {
-        return rows.some(row => row.channelId === channelId && row.status === "sending");
-    }
-
-    /**
-     * Lets held copies of a channel into its timeline once nothing there is still waiting, the
-     * answered message's own copy at once in any case, since its row is gone and the copy merges
-     * into the message by its id. A copy of another message while another send is out could
-     * still be that send's, so it waits for its answer.
-     */
-    function release(channelId: string, answeredId?: number): void {
-        const isWaiting = isInFlight(channelId);
-        for (const copy of held.filter(c => c.channelId === channelId && (!isWaiting || c.id === answeredId))) {
-            held.splice(held.indexOf(copy), 1);
-            dependencies.timelines.applyEvent(channelId, "message.created", copy.payload);
-        }
-    }
-
     /** Sends a row's text and settles the row by the answer. */
     async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
         row.status = "sending";
@@ -276,7 +245,6 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
             row.status = "failed";
             row.errorCode = result.error.code;
-            release(row.channelId);
             return false;
         }
 
@@ -294,7 +262,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
             pieces: result.pieces ?? null,
             blocks: result.blocks ?? null,
             created_at: result.createdAt,
-            notice: result.notice ?? null
+            notice: result.notice ?? null,
+            client_key: row.localId
         };
         if (isReply) {
             dependencies.onReplyConfirmed?.(row.channelId, confirmed);
@@ -311,10 +280,6 @@ export function createSender(dependencies: SenderDependencies): Sender {
         if (index >= 0) {
             rows.splice(index, 1);
         }
-
-        // The message is in and its row gone, so its own live copy now merges into it by id, as
-        // a copy that came after the answer would.
-        release(row.channelId, result.id);
 
         return true;
     }
@@ -341,6 +306,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             if (!localId) {
                 return false;
             }
+            sentKeys.add(localId);
 
             rows.push({
                 localId,
@@ -373,27 +339,6 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
         },
 
-        holdLive: (channelId: string, event: string, payload: unknown): boolean => {
-            if (event !== "message.created" || !payload || typeof payload !== "object") {
-                return false;
-            }
-
-            // The client knows the person by the alias it signed in with, which is the one their
-            // own sends carry.
-            const copy = payload as Partial<Record<keyof MessageCreatedEvent, unknown>>;
-            const isOwn = typeof copy.person_alias_guid === "string" && copy.person_alias_guid.toLowerCase() === me;
-            if (typeof copy.id !== "number" || !isOwn || !isInFlight(channelId)) {
-                return false;
-            }
-
-            held.push({ channelId, id: copy.id, payload });
-            return true;
-        },
-
-        stop: (): void => {
-            for (const copy of held.splice(0)) {
-                dependencies.timelines.applyEvent(copy.channelId, "message.created", copy.payload);
-            }
-        }
+        sentKeys
     };
 }

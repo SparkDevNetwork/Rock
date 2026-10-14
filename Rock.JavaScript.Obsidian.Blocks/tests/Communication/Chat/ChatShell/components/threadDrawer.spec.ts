@@ -212,6 +212,43 @@ describe("the body", () => {
     });
 });
 
+// A reply the person sends is one row from the moment it is sent, as in the conversation: the row
+// still sending and every copy of the reply share the send's key, and a reply this session sent
+// never rises a second time when it is drawn afresh.
+describe("the person's own reply", () => {
+    const sending = { localId: "k1", channelId: "c1", body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
+    const mine = (id: number, key: string): TimelineMessage => message(id, { parent_id: 40, person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Lee", client_key: key });
+
+    test("a copy that arrives while its row is still out takes the row's place, in the same element", async () => {
+        const w = draw({ replies: replies(1), pending: [sending] });
+        await nextTick();
+        const drawn = w.get("[data-testid='pending-row']").element;
+
+        await w.setProps({ replies: [...replies(1), mine(50, "k1")] });
+
+        expect(w.find("[data-testid='pending-row']").exists()).toBe(false);
+        expect(w.get("[data-reply-id='50']").element).toBe(drawn);
+    });
+
+    test("moved between groups by another person's newer reply, it rises only once; another tab's reply rises", async () => {
+        const recent = { created_at: new Date().toISOString() };
+        const earlier = { ...mine(45, "k0"), ...recent };
+        const w = draw({ isChannel: false, replies: [earlier], pending: [sending], sentKeys: new Set(["k0", "k1"]) });
+        await afterOpen();
+        expect(w.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
+
+        const ben51 = message(51, { parent_id: 40, ...recent });
+        await w.setProps({ replies: [earlier, ben51] });
+        expect(w.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
+
+        await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, { ...mine(52, "another-tab"), ...recent }], pending: [] });
+
+        expect(w.get("[data-reply-id='50']").classes()).not.toContain("is-arriving");
+        expect(w.get("[data-reply-id='51']").classes()).toContain("is-arriving");
+        expect(w.get("[data-reply-id='52']").classes()).toContain("is-arriving");
+    });
+});
+
 describe("the divider", () => {
     test.each([[3, "3 replies"], [1, "1 reply"]])("counts %i replies as %s", (count, words) => {
         const w = draw({ root: rootWith(count), replies: replies(count) });

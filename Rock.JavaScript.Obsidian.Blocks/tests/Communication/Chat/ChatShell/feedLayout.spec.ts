@@ -245,26 +245,41 @@ describe("pending and failed sends", () => {
         expect(sections[1].items).toHaveLength(1);
     });
 
-    // A send that is confirmed stays the row it was drawn as, so the browser patches the element in
+    // A message is keyed by its send's key whenever it carries one, and the pending row of that send
+    // by the same key, so whichever copy reaches the page the browser patches the one element in
     // place rather than drawing a new one: a new element would cut its rise short and play it again.
-    test("a confirmed send keeps the key its pending row had, as a row and as the head of its group", () => {
+    test("a sent message has the key its pending row had, as a row and as the head of its group", () => {
         const pendingKeys = lay([message(1, anna, at(14, 50))], { pending: [pendingRow("a")] })
             .flatMap(section => section.items)
             .map(item => item.kind === "group" ? [item.key, ...item.rows.map(row => row.key)] : [item.key]);
 
-        const confirmed = lay([message(1, anna, at(14, 50)), message(2, me, at(15, 0))], { confirmedKeys: new Map([[2, "a"]]) })
+        const confirmed = lay([message(1, anna, at(14, 50)), message(2, me, at(15, 0), { client_key: "a" })])
             .flatMap(section => section.items);
         const keys = confirmed.map(item => item.kind === "group" ? [item.key, ...item.rows.map(row => row.key)] : [item.key]);
 
         expect(keys).toEqual(pendingKeys);
-        expect(keys[1]).toEqual(["p:a", "p:a"]);
+        expect(keys[1]).toEqual(["k:a", "k:a"]);
     });
 
-    test("a message the reader did not send from this page keeps its own key", () => {
-        const keys = items([message(1, anna, at(14, 50)), message(2, me, at(15, 0))], { confirmedKeys: new Map([[7, "a"]]) })
+    test("a message with no send key, a system line or one sent before keys existed, is keyed by its id", () => {
+        const keys = items([message(1, anna, at(14, 50)), message(2, me, at(15, 0), { client_key: null })])
             .map(item => item.key);
 
-        expect(keys).toEqual(["m:1", "m:2"]);
+        expect(keys).toEqual(["k:1", "k:2"]);
+    });
+
+    // The live copy, a page or the answer can each bring the message while its row is still out;
+    // the message stands for the send from then on, so the row is never drawn beside it.
+    test("a pending row whose key is already among the messages is not drawn", () => {
+        const rows = lay([message(1, anna, at(14, 50)), message(2, me, at(15, 0), { client_key: "a" })], { pending: [pendingRow("a"), pendingRow("b")] })
+            .flatMap(section => section.items)
+            .flatMap(item => item.kind === "group" ? item.rows : []);
+
+        expect(rows.map(row => [row.key, row.message?.id ?? null, row.pending?.localId ?? null])).toEqual([
+            ["k:1", 1, null],
+            ["k:a", 2, null],
+            ["k:b", null, "b"]
+        ]);
     });
 });
 

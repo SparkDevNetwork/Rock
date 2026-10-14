@@ -410,7 +410,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
     async function end(): Promise<void> {
         isStopped = true;
         cancelRecheck();
-        sender.stop();
         timelines.stop();
         threads.stop();
         session.stop();
@@ -706,12 +705,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // A thread's counts move its root wherever it is held, and a reply reaches the
                     // open thread. The threads go first: they set the root's marks, which the
                     // timeline then records with the counts so a page read earlier cannot undo them.
-                    // The person's own new message waits while their send is out, so it never
-                    // stands beside the row still sending; the sender lets it in at the answer.
+                    // The person's own new message goes straight in: it carries its send's key, so
+                    // it takes the place of the row still sending rather than standing beside it.
                     threads.applyEvent(channelId, event, payload);
-                    if (!sender.holdLive(channelId, event, payload)) {
-                        timelines.applyEvent(channelId, event, payload);
-                    }
+                    timelines.applyEvent(channelId, event, payload);
                 },
                 onPersonalEvent: (event, payload) => {
                     if (event === "resync") {
@@ -869,7 +866,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
             push?.stop();
             state.isPushOffered = false;
             cancelRecheck();
-            sender.stop();
             timelines.stop();
             directMessages.stop();
 

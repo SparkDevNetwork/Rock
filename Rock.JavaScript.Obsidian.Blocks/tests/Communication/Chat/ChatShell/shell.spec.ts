@@ -941,27 +941,28 @@ describe("a thread's live counts", () => {
     });
 });
 
-// The person's own message reaches the page as the send's answer and as its live copy. While the
-// send is out, the copy waits, so the row still sending is never shown beside a second message.
+// The person's own message reaches the page as the send's answer and as its live copy, in either
+// order. The live copy carries the send's key, so it goes straight into the timeline and the feed
+// draws it in the place of the row still sending: one message, never two.
 describe("the person's own live copy while their send is out", () => {
-    test("is held off the timeline until the answer, then merged into the one message", async () => {
+    test("goes straight into the timeline, carrying the send's key, and the answer merges into it", async () => {
         const h = await started();
         h.heldSends.value = [];
         const sending = h.shell.send("on my way");
         await settle();
+        const key = h.sent[0].args.p_client_key as string;
 
         topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
             event: "message.created",
-            payload: { id: 901, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "on my way", created_at: "2026-10-06T10:00:00Z" }
+            payload: { id: 901, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "on my way", created_at: "2026-10-06T10:00:00Z", client_key: key }
         });
         await settle();
-        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
-        expect(h.shell.sender.pending(channelA)).toHaveLength(1);
+        expect(h.shell.timelines.state(channelA).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[10, null], [901, key]]);
 
         h.heldSends.value[0].resolve();
         await sending;
         await settle();
-        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10, 901]);
+        expect(h.shell.timelines.state(channelA).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[10, null], [901, key]]);
         expect(h.shell.sender.pending(channelA)).toEqual([]);
     });
 });

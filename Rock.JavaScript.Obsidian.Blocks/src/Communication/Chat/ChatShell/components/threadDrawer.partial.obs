@@ -60,7 +60,7 @@
                                 :position="row.position"
                                 :isPhone="isPhone"
                                 :isDirectMessage="isDirectMessage"
-                                :isArriving="!!row.pending || (!!row.message && isArriving(row.message.id))"
+                                :isArriving="isRowArriving(row.key, row.message)"
                                 :senderNames="senderNames"
                                 :isInThread="true"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
@@ -338,6 +338,12 @@
         organizationName: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** Every key this session sent under; a reply carrying one already rose as its pending row. */
+        sentKeys: {
+            type: Object as PropType<ReadonlySet<string>>,
+            default: () => new Set<string>()
         }
     });
 
@@ -369,6 +375,9 @@
 
     /** The newest reply when the thread was placed; anything newer arrived while it was open and rises in. */
     let newestAtOpen: number | null = null;
+
+    /** The keys whose row has risen here, so a reply moved into another group does not rise again. */
+    const risenKeys = new Set<string>();
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
@@ -460,8 +469,30 @@
         }
     }
 
-    function isArriving(messageId: number): boolean {
-        return newestAtOpen !== null && messageId > newestAtOpen;
+    /**
+     * Whether a reply arrived while the thread was open, so it rises in; read once, as its row
+     * mounts. A reply this session sent rose as its pending row, so drawn afresh it does not rise
+     * again, as in the conversation.
+     */
+    function isArriving(message: TimelineMessage): boolean {
+        const isSentHere = !!message.client_key && props.sentKeys.has(message.client_key);
+        return newestAtOpen !== null && message.id > newestAtOpen && !isSentHere;
+    }
+
+    /**
+     * Whether a row rises as it is drawn: a reply still pending always, a stored one by the rule
+     * above, and either only the first time its key is drawn, as in the conversation.
+     */
+    function isRowArriving(key: string, message: TimelineMessage | null): boolean {
+        if (risenKeys.has(key)) {
+            return false;
+        }
+
+        const isNew = message ? isArriving(message) : true;
+        if (isNew) {
+            risenKeys.add(key);
+        }
+        return isNew;
     }
 
     function newestReplyId(): number | null {
