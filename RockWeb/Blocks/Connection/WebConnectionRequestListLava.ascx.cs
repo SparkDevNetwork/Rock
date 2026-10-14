@@ -286,7 +286,8 @@ namespace RockWeb.Blocks.Connection
                 return true;
             }
 
-            if ( CurrentPerson == null || connectionOpportunity.ConnectionType == null || !connectionOpportunity.ConnectionType.EnableRequestSecurity )
+            var isRequestSecurityEnabled = connectionOpportunity.ConnectionType?.EnableRequestSecurity == true;
+            if ( CurrentPerson == null || !isRequestSecurityEnabled )
             {
                 return false;
             }
