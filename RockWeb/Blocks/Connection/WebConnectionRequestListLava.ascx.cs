@@ -269,10 +269,51 @@ namespace RockWeb.Blocks.Connection
         #endregion Page Control Events
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the current person can view the connection opportunity.
+        /// A person can view it if they have VIEW access to the opportunity, or if
+        /// request security is enabled and they are the connector on at least one
+        /// request in the opportunity.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="connectionOpportunity">The connection opportunity.</param>
+        /// <returns><c>true</c> if the current person can view the connection opportunity; otherwise, <c>false</c>.</returns>
+        private bool CanViewOpportunity( RockContext rockContext, ConnectionOpportunity connectionOpportunity )
+        {
+            if ( connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return true;
+            }
+
+            if ( CurrentPerson == null || connectionOpportunity.ConnectionType == null || !connectionOpportunity.ConnectionType.EnableRequestSecurity )
+            {
+                return false;
+            }
+
+            var currentPersonId = CurrentPerson.Id;
+            var opportunityId = connectionOpportunity.Id;
+
+            return new ConnectionRequestService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Any( r => r.ConnectionOpportunityId == opportunityId
+                    && r.ConnectorPersonAlias.PersonId == currentPersonId );
+        }
+
         private Tuple<string, string> GetConnectionOpportunityTitles()
         {
-            var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).GetNoTracking( _connectionOpportunityGuid );
-            return new Tuple<string, string>( connectionOpportunity?.Name, connectionOpportunity?.ConnectionType?.Name );
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( _connectionOpportunityGuid );
+
+                if ( connectionOpportunity == null || !CanViewOpportunity( rockContext, connectionOpportunity ) )
+                {
+                    return new Tuple<string, string>( null, null );
+                }
+
+                return new Tuple<string, string>( connectionOpportunity.Name, connectionOpportunity.ConnectionType?.Name );
+            }
         }
         private IEnumerable<ConnectionState> GetConnectionStates()
         {
@@ -344,6 +385,16 @@ namespace RockWeb.Blocks.Connection
                     return;
                 }
 
+                if ( !CanViewOpportunity( rockContext, connectionOpportunity ) )
+                {
+                    lContent.Text = string.Format( "<div class='alert alert-warning'>{0}</div>", EditModeMessage.NotAuthorizedToView( ConnectionOpportunity.FriendlyTypeName ) );
+                    lbOptions.Visible = false;
+                    lbLoadMore.Visible = false;
+                    lbLoadPrevious.Visible = false;
+                    ViewState[ViewStateKeys.GetRequestsViewModel] = null;
+                    return;
+                }
+
                 bool hasMore;
                 List<ConnectionRequest> requests;
 
@@ -402,7 +453,7 @@ namespace RockWeb.Blocks.Connection
                         requests = qry
                             .OrderByDescending( r => r.CreatedDateKey ).ThenByDescending( r => r.Id )
                             .ToList()
-                            .Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            .Where( r => CurrentPerson != null && r.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             .Skip( ( pageNumber * MaxRequestsToShow ) )
                             .Take( MaxRequestsToShow + 1 )
                             .ToList();
