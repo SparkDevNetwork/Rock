@@ -10,7 +10,7 @@
             <button type="button" class="chat-ghost-button" data-testid="mark-read" @click="onMarkRead">Mark as read</button>
         </div>
 
-        <div ref="feed" class="chat-feed" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'" @scroll="onScroll">
+        <div ref="feed" class="chat-feed" :class="{ 'is-entering': isEnteringDrawn }" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'" @scroll="onScroll">
             <!-- Rows of the look the conversation will draw, so nothing jumps when the page lands. -->
             <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
                 <template v-if="layout === 'community'">
@@ -129,6 +129,11 @@
 .chat-feed::before {
     flex: 1 1 auto;
     content: "";
+}
+
+/* A conversation opened in place of another rises into view; the first one drawn is simply there. */
+.chat-feed.is-entering {
+    animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
 }
 
 .chat-feed-older {
@@ -436,10 +441,26 @@
     width: 46%;
 }
 
-/* Asked for less motion, the strip fades in where it stands. */
+/* Asked for less motion, the strip fades in where it stands, and a switch is not animated. */
 @media (prefers-reduced-motion: reduce) {
     .chat-unread-strip {
         animation-name: chat-strip-fade;
+    }
+
+    .chat-feed.is-entering {
+        animation: none;
+    }
+}
+
+@keyframes chat-feed-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
     }
 }
 
@@ -524,6 +545,12 @@
             default: false
         },
 
+        /** Whether this conversation was opened in place of another, so its feed rises into view. Read once. */
+        isEntering: {
+            type: Boolean,
+            default: false
+        },
+
         /** Every key this session sent under; a message carrying one already rose as its pending row. */
         sentKeys: {
             type: Object as PropType<ReadonlySet<string>>,
@@ -591,6 +618,9 @@
     let newestSeenInTimeline: number | null = null;
 
     const announcement = ref("");
+
+    /** Whether the feed plays the switch's entrance, read as it mounts so no later change replays it. */
+    const isEnteringDrawn = props.isEntering;
 
     // #endregion Values
 

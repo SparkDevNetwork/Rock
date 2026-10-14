@@ -72,6 +72,7 @@
                              :isChannel="activeKind === 'channel'"
                              :isDirectMessage="isActiveDirectMessage"
                              :isPhone="isPhone"
+                             :isEntering="isFeedEntering"
                              @seen="shell.seen"
                              @markRead="shell.markRead"
                              @firstShown="shell.firstMessageShown"
@@ -444,6 +445,12 @@
     const pushCookieName = "rock_chat_push";
 
     let firebaseAppInstance: unknown = null;
+
+    /**
+     * Whether the open conversation replaced another, so its feed rises into view. The first one
+     * the page draws, or one a New message draft becomes, is simply there.
+     */
+    const isFeedEntering = ref(false);
 
     // #endregion Values
 
@@ -1026,6 +1033,11 @@
     // #endregion Functions
 
     // #region Watchers
+
+    // Before the new feed mounts, which reads it once.
+    watch(activeChannelId, (now, before) => {
+        isFeedEntering.value = !!now && !!before && now !== before;
+    });
 
     // From the first sidebar the page loads, a count of none included, so a badge a mention push
     // left behind is cleared once the person has read it.
