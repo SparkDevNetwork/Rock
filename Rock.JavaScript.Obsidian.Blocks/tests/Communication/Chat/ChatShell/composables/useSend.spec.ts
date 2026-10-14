@@ -554,3 +554,144 @@ describe("a reply in a thread", () => {
         expect(sent[0].reply ?? null).toBeNull();
     });
 });
+
+// The person's own message reaches the page twice: once as the send's answer and once as its live
+// copy, in either order. While a send of theirs waits on its answer in a channel, their own live
+// copies there are held by the sender, so the in-flight row is the only one on screen; the answer
+// then merges a copy of the same message into the message it confirmed, and lets any other copy
+// in. Every order is driven by hand: the answer is a deferred the test resolves, and the live copy
+// is handed to the sender as the shell hands it each live event.
+describe("the person's own live copy while a send waits on its answer", () => {
+    const anna = "a0000002-0000-4000-8000-000000000000";
+    const otherChannel = "c0000002-0000-4000-8000-000000000000";
+
+    /** A live message.created payload, as the channel topic carries it. */
+    function liveCopy(id: number, sender = me, extra: Record<string, unknown> = {}): Record<string, unknown> {
+        return {
+            id,
+            channel_id: channel,
+            parent_id: null,
+            shown_in_channel: false,
+            person_alias_guid: sender,
+            message_type: "text",
+            body: `live ${id}`,
+            pieces: null,
+            blocks: null,
+            created_at: "2026-10-14T10:00:00Z",
+            ...extra
+        };
+    }
+
+    /** Hands a live event to the sender first and to the timeline only when the sender does not hold it, as the shell does. */
+    function deliverLive(sender: ReturnType<typeof createSender>, timelines: ReturnType<typeof createTimelines>, channelId: string, payload: unknown): boolean {
+        const isHeld = sender.holdLive(channelId, "message.created", payload);
+        if (!isHeld) {
+            timelines.applyEvent(channelId, "message.created", payload);
+        }
+        return isHeld;
+    }
+
+    const ids = (timelines: ReturnType<typeof createTimelines>): number[] => timelines.state(channel).messages.map(m => m.id);
+
+    test("the live copy first: it is held while the answer is out, then merged into the confirmed message, one message in all", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+        const sending = sender.send(channel, "On my way");
+
+        expect(deliverLive(sender, timelines, channel, liveCopy(41, me.toUpperCase(), { body: "On my way", pieces: [{ type: "text", text: "On my way" }] }))).toBe(true);
+        expect(ids(timelines)).toEqual([]);
+        expect(sender.pending(channel)).toHaveLength(1);
+
+        answer.resolve({ ok: true, id: 41, createdAt: "2026-10-14T10:00:00Z" });
+        await sending;
+
+        expect(sender.pending(channel)).toEqual([]);
+        expect(ids(timelines)).toEqual([41]);
+        // the copy's own fields reach the one message, as a copy that came after the answer would
+        expect(timelines.state(channel).messages[0].pieces).toEqual([{ type: "text", text: "On my way" }]);
+    });
+
+    test("the answer first: nothing is in flight, so the live copy goes straight to the timeline and merges by id", async () => {
+        const { sender, timelines } = await setup([{ ok: true, id: 42, createdAt: "2026-10-14T10:00:00Z" }]);
+        await sender.send(channel, "hello");
+
+        expect(deliverLive(sender, timelines, channel, liveCopy(42))).toBe(false);
+        expect(ids(timelines)).toEqual([42]);
+    });
+
+    test("a copy of another of the person's messages is held, and let in the moment the answer arrives", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+        const sending = sender.send(channel, "from here");
+
+        expect(deliverLive(sender, timelines, channel, liveCopy(50))).toBe(true);
+        expect(ids(timelines)).toEqual([]);
+
+        answer.resolve({ ok: true, id: 51, createdAt: "2026-10-14T10:00:01Z" });
+        await sending;
+
+        expect(ids(timelines)).toEqual([50, 51]);
+    });
+
+    test("a send that fails lets every held copy in", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+        const sending = sender.send(channel, "lost");
+
+        deliverLive(sender, timelines, channel, liveCopy(60));
+        answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
+        await sending;
+
+        expect(ids(timelines)).toEqual([60]);
+        expect(sender.pending(channel)[0].status).toBe("failed");
+    });
+
+    test("stopping lets every held copy in, so nothing is left waiting on an answer that never comes", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+        void sender.send(channel, "never answered");
+
+        deliverLive(sender, timelines, channel, liveCopy(70));
+        sender.stop();
+
+        expect(ids(timelines)).toEqual([70]);
+    });
+
+    test("another person's message, a copy in another channel, and any event but a new message are never held", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+        void sender.send(channel, "waiting");
+
+        expect(sender.holdLive(channel, "message.created", liveCopy(80, anna))).toBe(false);
+        expect(sender.holdLive(otherChannel, "message.created", liveCopy(81))).toBe(false);
+        expect(sender.holdLive(channel, "message.edited", liveCopy(82))).toBe(false);
+        expect(sender.holdLive(channel, "message.created", null)).toBe(false);
+    });
+
+    test("with nothing in flight the person's own copy is not held", async () => {
+        const { sender } = await setup([]);
+
+        expect(sender.holdLive(channel, "message.created", liveCopy(90))).toBe(false);
+    });
+
+    test("with two sends in flight, the first answer merges its own copy and keeps the second's held until the second answers", async () => {
+        const first = deferred<SendResult>();
+        const second = deferred<SendResult>();
+        const { sender, timelines } = await setup([first, second]);
+        const sendingFirst = sender.send(channel, "one");
+        const sendingSecond = sender.send(channel, "two");
+
+        deliverLive(sender, timelines, channel, liveCopy(101));
+        deliverLive(sender, timelines, channel, liveCopy(102));
+
+        // the second's copy would stand beside its own row still sending
+        second.resolve({ ok: true, id: 102, createdAt: "2026-10-14T10:00:02Z" });
+        await sendingSecond;
+        expect(ids(timelines)).toEqual([102]);
+
+        first.resolve({ ok: true, id: 101, createdAt: "2026-10-14T10:00:01Z" });
+        await sendingFirst;
+        expect(ids(timelines)).toEqual([101, 102]);
+        expect(sender.pending(channel)).toEqual([]);
+    });
+});

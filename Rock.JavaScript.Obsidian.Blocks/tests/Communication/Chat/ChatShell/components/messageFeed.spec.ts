@@ -299,7 +299,7 @@ describe("the Sent hold, whichever of the answer and the live copy comes first",
         };
         const sender = createSender({
             send: () => answer.promise,
-            timelines: { upsert: (_channelId, m) => put(m) },
+            timelines: { upsert: (_channelId, m) => put(m), applyEvent: () => undefined },
             personAliasGuid: me,
             newLocalId: () => "local-1"
         });

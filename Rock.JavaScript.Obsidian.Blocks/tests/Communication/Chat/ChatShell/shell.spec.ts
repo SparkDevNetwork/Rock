@@ -85,7 +85,8 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     pageDocument: { visibilityState: string },
     sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }>,
     tokenPerson: { value: string | null },
-    reloads: { count: number }
+    reloads: { count: number },
+    heldSends: { value: Deferred<void>[] | null }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -100,6 +101,8 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     // The person the platform token names; null hands out a token that is not a JWT.
     const tokenPerson: { value: string | null } = { value: null };
     const reloads = { count: 0 };
+    // Set to a list, each send waits for the test to answer it, in the order they were sent.
+    const heldSends: { value: Deferred<void>[] | null } = { value: null };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -168,10 +171,16 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
             }
             if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
                 sent.push({ channelId: body.p_channel_id, body: body.p_body, args: body });
+                const id = 900 + sent.length;
+                if (heldSends.value) {
+                    const answer = deferred<void>();
+                    heldSends.value.push(answer);
+                    await answer.promise;
+                }
                 // chat_send_message's answer: a body naming Ada carries her mention piece, as the
                 // platform builds it; a person's send never carries blocks
                 return fakeResponse(200, {
-                    id: 900 + sent.length,
+                    id,
                     created_at: "2026-10-06T10:00:00Z",
                     notice: null,
                     pieces: body.p_body === mentionBody ? mentionPieces : null,
@@ -199,7 +208,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -929,6 +938,31 @@ describe("a thread's live counts", () => {
         const rootHeld = h.shell.timelines.state(channelA).messages.find(m => m.id === 10);
         expect(rootHeld?.reply_count).toBe(1);
         expect(rootHeld?.repliers).toEqual([ben]);
+    });
+});
+
+// The person's own message reaches the page as the send's answer and as its live copy. While the
+// send is out, the copy waits, so the row still sending is never shown beside a second message.
+describe("the person's own live copy while their send is out", () => {
+    test("is held off the timeline until the answer, then merged into the one message", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        const sending = h.shell.send("on my way");
+        await settle();
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 901, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "on my way", created_at: "2026-10-06T10:00:00Z" }
+        });
+        await settle();
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
+        expect(h.shell.sender.pending(channelA)).toHaveLength(1);
+
+        h.heldSends.value[0].resolve();
+        await sending;
+        await settle();
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10, 901]);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
     });
 });
 
