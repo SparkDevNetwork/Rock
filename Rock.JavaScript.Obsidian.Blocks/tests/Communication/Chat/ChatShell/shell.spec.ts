@@ -22,6 +22,7 @@ import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMess
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
+import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -1127,3 +1128,38 @@ describe("a reply in a thread", () => {
         expect(h.sent[0].args.p_shown_in_channel ?? false).toBe(false);
     });
 });
+
+// Without the browser's cryptographic generator a send makes no key and so no row: nothing in the
+// feed would say what became of the text, so the shell says it, in the direct message's words.
+describe("a send in a browser that cannot make a send key", () => {
+    type ReplyingShell = { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> };
+
+    async function withoutCrypto(run: () => Promise<void>): Promise<void> {
+        const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+        Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true, writable: true });
+        try {
+            await run();
+        }
+        finally {
+            if (original) {
+                Object.defineProperty(globalThis, "crypto", original);
+            }
+        }
+    }
+
+    test("sends nothing and says it cannot send securely, for a message and a reply", async () => {
+        const h = await started();
+
+        await withoutCrypto(async () => {
+            await h.shell.send("plain");
+            await (h.shell as unknown as ReplyingShell).sendReply(10, "a reply", false);
+        });
+        await settle();
+
+        expect(h.sent).toEqual([]);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
+        expect(noKeySentence).toEqual(expect.any(String));
+        expect(h.shell.state.errors).toEqual([expect.objectContaining({ text: noKeySentence })]);
+    });
+});
+

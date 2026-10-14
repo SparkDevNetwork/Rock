@@ -44,6 +44,24 @@ describe("the composer", () => {
         expect(sent).toEqual([["hello"]]);
         expect(box).toBe("");
     });
+
+    // With no cryptographic generator the send makes no row, so a failed row cannot keep the
+    // text; only the box can.
+    test("keeps the text in its box in a browser that cannot make a send key", async () => {
+        const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+        Object.defineProperty(globalThis, "crypto", { value: undefined, configurable: true, writable: true });
+        try {
+            const { box, sent } = await sendFrom(false);
+
+            expect(sent).toEqual([["hello"]]);
+            expect(box).toBe("hello");
+        }
+        finally {
+            if (original) {
+                Object.defineProperty(globalThis, "crypto", original);
+            }
+        }
+    });
 });
 
 describe("the composer's box", () => {

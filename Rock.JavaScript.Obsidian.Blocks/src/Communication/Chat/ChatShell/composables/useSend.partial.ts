@@ -80,6 +80,20 @@ export function textAfterSend(text: string, isTextKept: boolean): string {
     return isTextKept ? text : "";
 }
 
+/** Shown when a browser cannot make a send key no one else could guess, so nothing was sent. */
+export const noKeySentence = "This browser cannot send messages securely. Try a current browser.";
+
+/**
+ * Whether this browser can make a send key. Without one a send makes no row, so the text has
+ * nowhere to wait but the composer's box.
+ *
+ * @returns True when the browser has a cryptographic generator.
+ */
+export function canMakeSendKey(): boolean {
+    const crypto = globalThis.crypto;
+    return typeof crypto?.randomUUID === "function" || typeof crypto?.getRandomValues === "function";
+}
+
 /**
  * A fresh identifier for a pending row. It is also the send's key, which the platform stores as
  * a UUID and every copy of the message carries, live copies included, so other members of the

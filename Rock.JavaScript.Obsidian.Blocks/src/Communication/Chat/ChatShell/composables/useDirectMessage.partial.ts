@@ -38,7 +38,7 @@ import { reactive, toRaw } from "vue";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow } from "../types.partial";
 import { defaultRetryDelay } from "./useHistory.partial";
-import { newLocalId, SendTry } from "./useSend.partial";
+import { newLocalId, noKeySentence, SendTry } from "./useSend.partial";
 
 export type { PersonRow };
 
@@ -55,9 +55,6 @@ const maxRetriedSends = 5;
 
 /** Shown on a draft whose message could not be sent because the platform does not hold its conversation. */
 const notReadySentence = "The conversation is not ready yet, so your message was not sent. Send it again in a moment.";
-
-/** Shown on a draft in a browser that cannot make a send key no one else could guess. */
-const noKeySentence = "This browser cannot send messages securely. Try a current browser.";
 
 /** What Rock's door answers when asked for a conversation. */
 export type DoorResult = {

@@ -29,7 +29,7 @@ import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
-import { createSender, isComposerOpen, JoinResult, newLocalId, Sender } from "./composables/useSend.partial";
+import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import {
@@ -539,6 +539,18 @@ export function createChatShell(options: ShellOptions): ChatShell {
         newLocalId
     });
 
+    /**
+     * Whether a send can be keyed, saying why not when it cannot. The sender makes no row without
+     * a key, so no failed row in the feed would explain it; the composer keeps the text.
+     */
+    function isSendKeyed(): boolean {
+        if (canMakeSendKey()) {
+            return true;
+        }
+        report({ code: "send.no_key", severity: "failed", text: noKeySentence });
+        return false;
+    }
+
     /** Counts a send toward offering notifications, which waits for the person's first send. */
     function notePushSend(): void {
         push?.noteSend();
@@ -850,7 +862,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             if (directMessages.draft) {
                 await directMessages.sendFirst(body);
             }
-            else if (state.activeChannelId) {
+            else if (state.activeChannelId && isSendKeyed()) {
                 await sender.send(state.activeChannelId, body);
                 notePushSend();
             }
@@ -860,7 +872,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             // A thread opened from the All tab can belong to a conversation other than the open one.
             const thread = threads.state.thread;
             const channelId = thread?.rootId === rootId ? thread.channelId : state.activeChannelId;
-            if (channelId) {
+            if (channelId && isSendKeyed()) {
                 await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel });
                 notePushSend();
             }
