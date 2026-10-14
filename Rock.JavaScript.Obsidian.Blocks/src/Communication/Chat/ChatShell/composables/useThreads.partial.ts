@@ -158,7 +158,7 @@ export type Threads = {
     /** A live event on a channel topic. */
     applyEvent: (channelId: string, event: string, payload: unknown) => void;
 
-    /** The person's own reply was confirmed: it goes into the open thread at once. */
+    /** The person's own reply was confirmed: it goes into the open thread at once, and the thread is followed. */
     upsertReply: (channelId: string, message: TimelineMessage) => void;
 
     /** Stops for good: nothing more is fetched and no answer reaches the screen. */
@@ -724,7 +724,30 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         },
 
         upsertReply: (channelId: string, message: TimelineMessage): void => {
-            if (!isStopped && state.thread?.channelId === channelId && state.thread.rootId === message.parent_id) {
+            const rootId = message.parent_id;
+            if (isStopped || rootId === null || rootId === undefined) {
+                return;
+            }
+
+            // The platform makes whoever replies follow the thread, so every copy of it says so
+            // now rather than at the next fetch.
+            const thread = state.thread?.channelId === channelId && state.thread.rootId === rootId ? state.thread : null;
+            if (thread) {
+                thread.following = true;
+                if (thread.root) {
+                    thread.root.thread_following = true;
+                }
+            }
+            for (const row of state.list.rows.filter(r => r.channel_id === channelId && r.root.id === rootId)) {
+                row.following = true;
+                row.root.thread_following = true;
+            }
+            const held = timelineRoot(channelId, rootId);
+            if (held) {
+                held.thread_following = true;
+            }
+
+            if (thread) {
                 insertReply(message);
             }
         },

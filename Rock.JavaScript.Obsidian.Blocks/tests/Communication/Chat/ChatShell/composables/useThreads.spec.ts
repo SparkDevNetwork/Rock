@@ -894,6 +894,33 @@ describe("following", () => {
         expect(threads.state.thread?.following).toBe(true);
     });
 
+    // The platform makes whoever replies follow the thread, so a confirmed reply of the person's
+    // own follows it here too, with no call of its own.
+    test("a confirmed reply of the person's own follows the thread in the drawer, its root, the conversation's root and the list", async () => {
+        const { threads, timelines, answers, callsTo } = await setup({ messages: [root(40, { thread_following: false })], read_cursor: null, unread_count: 0, has_more: false });
+        answers.chat_list_threads = [listAnswer([listRow(40, { following: false, root: root(40, { thread_following: false }) })])];
+        answers.chat_get_thread_history = [threadAnswer(root(40, { thread_following: false }), [reply(41, 40)], { following: false })];
+        await threads.openList(channel, "all");
+        await threads.openThread(channel, 40);
+        expect(threads.state.thread?.following).toBe(false);
+
+        threads.upsertReply(channel, reply(45, 40, { person_alias_guid: me }));
+
+        expect(threads.state.thread?.following).toBe(true);
+        expect(threads.state.thread?.root?.thread_following).toBe(true);
+        expect(timelineRoot(timelines, 40).thread_following).toBe(true);
+        expect(threads.state.list.rows.map(r => [r.root.id, r.following, r.root.thread_following])).toEqual([[40, true, true]]);
+        expect(callsTo("chat_follow_thread")).toHaveLength(0);
+    });
+
+    test("a confirmed reply follows the conversation's root even with no thread open", async () => {
+        const { threads, timelines } = await setup({ messages: [root(40, { thread_following: false })], read_cursor: null, unread_count: 0, has_more: false });
+
+        threads.upsertReply(channel, reply(45, 40, { person_alias_guid: me }));
+
+        expect(timelineRoot(timelines, 40).thread_following).toBe(true);
+    });
+
     test("a list that fails to refresh keeps its rows and says so", async () => {
         const { threads, answers } = await setup();
         answers.chat_list_threads = [listAnswer([listRow(40)]), offline];
