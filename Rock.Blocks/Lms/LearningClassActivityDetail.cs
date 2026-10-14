@@ -556,6 +556,22 @@ namespace Rock.Blocks.Lms
             };
         }
 
+        /// <summary>
+        /// Gets the ReturnUrl page parameter if it's safe to redirect to.
+        /// </summary>
+        /// <returns>The ReturnUrl page parameter, or an empty string if it's missing or not safe to redirect to.</returns>
+        private string GetSafeReturnUrl()
+        {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            if ( !this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
+            {
+                return string.Empty;
+            }
+
+            return returnUrl;
+        }
+
         #endregion
 
         #region Block Actions
@@ -670,7 +686,7 @@ namespace Rock.Blocks.Lms
                 } ) );
             }
 
-            var returnPageUrl = PageParameter( PageParameterKey.ReturnUrl ) ?? string.Empty;
+            var returnPageUrl = GetSafeReturnUrl() ?? string.Empty;
             if ( returnPageUrl.Length > 0 )
             {
                 return ActionOk( returnPageUrl );
@@ -724,6 +740,19 @@ namespace Rock.Blocks.Lms
             if ( key.IsNullOrWhiteSpace() )
             {
                 return ActionNotFound();
+            }
+
+            // Make sure the activity exists and the person can edit it.
+            var entity = new LearningClassActivityService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionNotFound();
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to copy {LearningClassActivity.FriendlyTypeName}." );
             }
 
             var copiedEntity = new LearningClassActivityService( new RockContext() ).Copy( key );

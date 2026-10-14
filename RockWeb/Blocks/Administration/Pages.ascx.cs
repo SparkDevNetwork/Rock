@@ -313,8 +313,16 @@ namespace RockWeb.Blocks.Administration
             mdConfirmCopy.Hide();
             var pageService = new PageService( new RockContext() );
 
+            // Only allow copying a page that is listed in this block's grid.
+            var pageToCopy = pageService.Get( hfPageIdToCopy.Value.AsInteger() );
+            if ( !canConfigure || pageToCopy == null || !IsChildOfEditPage( pageToCopy ) )
+            {
+                BindGrid();
+                return;
+            }
+
             // todo, prompt if childpages should be copied
-            pageService.CopyPage( hfPageIdToCopy.Value.AsInteger(), true, CurrentPersonAliasId );
+            pageService.CopyPage( pageToCopy.Id, true, CurrentPersonAliasId );
 
             PageUpdated = true;
 
@@ -353,7 +361,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            if ( Page.IsValid && canConfigure )
             {
                 Rock.Model.Page page;
 
@@ -399,6 +407,15 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page = pageService.Get( pageId );
+
+                    // Only allow editing a page that is listed in this block's grid.
+                    if ( page == null || !IsChildOfEditPage( page ) )
+                    {
+                        rGrid.Visible = true;
+                        pnlDetails.Visible = false;
+                        BindGrid();
+                        return;
+                    }
                 }
 
                 page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
@@ -408,7 +425,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     rockContext.SaveChanges();
                     
-                    if ( _page != null )
+                    if ( _page != null && pageId == 0 )
                     {
                         Rock.Security.Authorization.CopyAuthorization( _page, page, rockContext );
                     }
@@ -442,6 +459,19 @@ namespace RockWeb.Blocks.Administration
 
             rGrid.DataSource = new PageService( new RockContext() ).GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
+        }
+
+        /// <summary>
+        /// Determines whether the specified page is a direct child of the page being
+        /// configured, which is the set of pages this block lists in its grid.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns><c>true</c> if the page is a child of the page being configured; otherwise, <c>false</c>.</returns>
+        private bool IsChildOfEditPage( Rock.Model.Page page )
+        {
+            int? parentPageId = _page != null ? _page.Id : ( int? ) null;
+
+            return page.ParentPageId == parentPageId;
         }
 
         /// <summary>

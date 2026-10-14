@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Event
 
             RegistrantFields = ViewState[ViewStateKeyBase.RegistrantFields] as RegistrantFormField[];
 
-            SetUserPreferencePrefix( RegistrationTemplateId.Value );
+            SetUserPreferencePrefix( RegistrationTemplateId );
 
             // Don't set the dynamic control values if this is a postback from a grid 'ClearFilter'.
             bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
@@ -835,6 +835,7 @@ namespace RockWeb.Blocks.Event
 
             if ( registrationInstance == null )
             {
+                pnlDetails.Visible = false;
                 return;
             }
 
@@ -875,7 +876,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
         private void BindWaitListGrid( bool isExporting = false )
         {
-            var instanceId = this.RegistrationInstanceId;
+            // Bind only from the instance that passed the VIEW check in the base block.
+            var instanceId = this.RegistrationInstance?.Id;
 
             if ( instanceId.HasValue )
             {
@@ -1360,6 +1362,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues"></param>
         private void AddDynamicControls( bool setValues )
         {
+            // There are no fields when the base block dropped the instance.
+            if ( this.RegistrantFields == null )
+            {
+                return;
+            }
+
             // Filter out the group member Attributes from Regisrant field
             AddRegistrationTemplateFieldsToGrid( this.RegistrantFields.Where( a => a.FieldSource != RegistrationFieldSource.GroupMemberAttribute ).ToArray(), phWaitListFormFieldFilters, gWaitList, fWaitList, setValues, false );
         }

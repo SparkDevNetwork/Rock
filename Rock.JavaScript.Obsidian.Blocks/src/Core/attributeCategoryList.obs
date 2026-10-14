@@ -18,7 +18,7 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <ReorderColumn v-if="isEntityTypeFiltered" @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="isEntityTypeFiltered && config.isDeleteEnabled" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Category"

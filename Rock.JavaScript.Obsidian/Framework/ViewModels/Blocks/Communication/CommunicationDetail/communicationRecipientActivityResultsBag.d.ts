@@ -21,10 +21,10 @@
 // </copyright>
 //
 
-import { CommunicationRecipientActivityBag } from "@Obsidian/ViewModels/Rest/Controls/communicationRecipientActivityBag";
+import { CommunicationRecipientActivityBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationRecipientActivityBag";
 
 /** A bag that contains activity information for a communication recipient. */
-export type CommunicationRecipientGetActivityResultsBag = {
+export type CommunicationRecipientActivityResultsBag = {
     /** Gets or sets the list of activities for this recipient. */
     activities?: CommunicationRecipientActivityBag[] | null;
 

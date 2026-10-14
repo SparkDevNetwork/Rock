@@ -1049,8 +1049,11 @@ namespace RockWeb.Blocks.Mobile
                 additionalSettings.EntraAuthenticationComponent = compEntraAuthComponent.SelectedValueAsGuid().Value;
             }
 
-            // Save the image.
-            site.ThumbnailBinaryFileId = imgEditPreviewThumbnail.BinaryFileId;
+            // Save the image. Only accept the site's current file or a new upload, otherwise keep the current file.
+            if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( imgEditPreviewThumbnail.BinaryFileId, site.ThumbnailBinaryFileId, CurrentPerson ) )
+            {
+                site.ThumbnailBinaryFileId = imgEditPreviewThumbnail.BinaryFileId;
+            }
 
             // Ensure the images are persisted.
             if ( site.SiteLogoBinaryFileId.HasValue )
@@ -1173,9 +1176,16 @@ namespace RockWeb.Blocks.Mobile
                 var site = siteService.Get( PageParameter( PageParameterKey.SiteId ).AsInteger() );
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
 
-                site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
+                // Only accept the site's current files or new uploads, otherwise keep the current files.
+                if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( imgEditHeaderImage.BinaryFileId, site.FavIconBinaryFileId, CurrentPerson ) )
+                {
+                    site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
+                }
 
-                additionalSettings.DarkFavIconBinaryFileId = imgEditHeaderDarkImage.BinaryFileId;
+                if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( imgEditHeaderDarkImage.BinaryFileId, additionalSettings.DarkFavIconBinaryFileId, CurrentPerson ) )
+                {
+                    additionalSettings.DarkFavIconBinaryFileId = imgEditHeaderDarkImage.BinaryFileId;
+                }
                 additionalSettings.BarBackgroundColor = cpBarBackgroundColor.Value;
                 additionalSettings.IOSEnableBarTransparency = cbNavbarTransclucent.Checked;
                 additionalSettings.IOSBarBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;

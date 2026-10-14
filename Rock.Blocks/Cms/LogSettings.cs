@@ -262,6 +262,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete()
         {
+            if ( !TryGetEntityForEditAction( out _, out var actionError ) )
+            {
+                return actionError;
+            }
+
             RockLogger.RecycleSerilog();
             ( RockLogger.LogReader as RockSerilogReader )?.Delete();
             return ActionOk( this.GetCurrentPageUrl() );

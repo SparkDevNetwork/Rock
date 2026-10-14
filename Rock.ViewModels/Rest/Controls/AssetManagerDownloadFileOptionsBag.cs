@@ -34,6 +34,12 @@ namespace Rock.ViewModels.Rest.Controls
         public string File { get; set; }
 
         /// <summary>
+        /// The encrypted root folder that the file(s) must be in. This is
+        /// required when using the local file system.
+        /// </summary>
+        public string EncryptedRoot { get; set; }
+
+        /// <summary>
         /// Gets or sets the security grant token.
         /// </summary>
         public string SecurityGrantToken { get; set; }

@@ -357,6 +357,15 @@ namespace RockWeb.Blocks.Core
 
             int binaryFileId = int.Parse( hfBinaryFileId.Value );
 
+            // Re-check the same block EDIT permission that ShowBinaryFileDetail uses, and only
+            // allow saving the file from the page parameter (or a new file).
+            if ( !IsUserAuthorized( Authorization.EDIT )
+                || ( binaryFileId != 0 && binaryFileId != PageParameter( "BinaryFileId" ).AsInteger() ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( BinaryFile.FriendlyTypeName );
+                return;
+            }
+
             if ( binaryFileId == 0 )
             {
                 binaryFile = new BinaryFile();
@@ -366,6 +375,13 @@ namespace RockWeb.Blocks.Core
             {
                 binaryFile = binaryFileService.Get( binaryFileId );
                 prevBinaryFileTypeId = binaryFile != null ? binaryFile.BinaryFileTypeId : ( int? ) null;
+            }
+
+            // Only accept the file's current contents or a new upload, otherwise keep the current contents.
+            int? currentBinaryFileId = binaryFileId != 0 ? binaryFile?.Id : ( int? ) null;
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( fsFile.BinaryFileId, currentBinaryFileId, CurrentPerson ) )
+            {
+                fsFile.BinaryFileId = currentBinaryFileId;
             }
 
             // if a new file was uploaded, copy the uploaded file to this binaryFile (uploaded files are always new temporary binaryFiles)
@@ -465,6 +481,15 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
             BinaryFile binaryFile = null;
+
+            // Only accept a new upload by the current person, otherwise go back to the current file.
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( fsFile.BinaryFileId, null, CurrentPerson ) )
+            {
+                var currentBinaryFileId = PageParameter( "BinaryFileId" ).AsInteger();
+                fsFile.BinaryFileId = currentBinaryFileId != 0 ? currentBinaryFileId : ( int? ) null;
+                return;
+            }
+
             if ( fsFile.BinaryFileId.HasValue )
             {
                 binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );
@@ -514,6 +539,14 @@ namespace RockWeb.Blocks.Core
                 using ( var rockContext = new RockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
+
+                    // Only run the workflow on the current file or a new upload by the current person.
+                    var currentBinaryFileId = PageParameter( "BinaryFileId" ).AsIntegerOrNull();
+                    if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( fsFile.BinaryFileId, currentBinaryFileId, CurrentPerson ) )
+                    {
+                        return;
+                    }
+
                     var binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );
                     if ( binaryFile != null )
                     {

@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Store
         protected void btnContinue_Click( object sender, EventArgs e )
         {
             var returnUrl = PageParameter( "ReturnUrl" );
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            if ( RockPage.Site.IsSafeRedirectUrl( returnUrl, Request.UrlProxySafe() ) )
             {
                 Response.Redirect( returnUrl );
             }

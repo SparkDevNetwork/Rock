@@ -16,6 +16,7 @@
 //
 using System;
 using System.IO;
+using System.Linq;
 
 using Rock.Data;
 
@@ -61,6 +62,99 @@ namespace Rock.Model
                 rockContext.SaveChanges();
                 return binaryFile;
             }
+        }
+
+        /// <summary>
+        /// Determines whether a binary file sent by a client may be attached to
+        /// an entity by the person. This is allowed when no file is specified,
+        /// when the file is the one already attached, or when the file is a
+        /// temporary file that was not uploaded by somebody else. Uploads are
+        /// always temporary until they are attached, so this prevents a client
+        /// from attaching an existing file that belongs to something else.
+        /// </summary>
+        /// <param name="binaryFileId">The identifier of the binary file sent by the client.</param>
+        /// <param name="currentBinaryFileId">The identifier of the binary file currently attached to the entity.</param>
+        /// <param name="person">The person that is attaching the file, usually the current person.</param>
+        /// <returns><c>true</c> if the binary file may be attached; otherwise <c>false</c>.</returns>
+        public bool IsUploadedBinaryFileAllowedForPerson( int? binaryFileId, int? currentBinaryFileId, Person person )
+        {
+            if ( !binaryFileId.HasValue || binaryFileId == currentBinaryFileId )
+            {
+                return true;
+            }
+
+            var id = binaryFileId.Value;
+            var binaryFile = Queryable()
+                .Where( f => f.Id == id )
+                .Select( f => new
+                {
+                    f.IsTemporary,
+                    f.CreatedByPersonAliasId
+                } )
+                .FirstOrDefault();
+
+            return binaryFile != null
+                && binaryFile.IsTemporary
+                && IsCreatedByPersonOrUnknown( binaryFile.CreatedByPersonAliasId, person );
+        }
+
+        /// <summary>
+        /// Determines whether a binary file sent by a client may be attached to
+        /// an entity by the person. This is allowed when no file is specified,
+        /// when the file is the one already attached, or when the file is a
+        /// temporary file that was not uploaded by somebody else. Uploads are
+        /// always temporary until they are attached, so this prevents a client
+        /// from attaching an existing file that belongs to something else.
+        /// </summary>
+        /// <param name="binaryFileGuid">The unique identifier of the binary file sent by the client.</param>
+        /// <param name="currentBinaryFileGuid">The unique identifier of the binary file currently attached to the entity.</param>
+        /// <param name="person">The person that is attaching the file, usually the current person.</param>
+        /// <returns><c>true</c> if the binary file may be attached; otherwise <c>false</c>.</returns>
+        public bool IsUploadedBinaryFileAllowedForPerson( Guid? binaryFileGuid, Guid? currentBinaryFileGuid, Person person )
+        {
+            if ( !binaryFileGuid.HasValue || binaryFileGuid == currentBinaryFileGuid )
+            {
+                return true;
+            }
+
+            var guid = binaryFileGuid.Value;
+            var binaryFile = Queryable()
+                .Where( f => f.Guid == guid )
+                .Select( f => new
+                {
+                    f.IsTemporary,
+                    f.CreatedByPersonAliasId
+                } )
+                .FirstOrDefault();
+
+            return binaryFile != null
+                && binaryFile.IsTemporary
+                && IsCreatedByPersonOrUnknown( binaryFile.CreatedByPersonAliasId, person );
+        }
+
+        /// <summary>
+        /// Determines whether the file was created by the person, or it is not
+        /// known who created it. Files uploaded anonymously, or before the file
+        /// uploader recorded who uploaded them, do not have a creator.
+        /// </summary>
+        /// <param name="createdByPersonAliasId">The person alias identifier that created the file.</param>
+        /// <param name="person">The person to check.</param>
+        /// <returns><c>true</c> if the file was created by the person or the creator is unknown; otherwise <c>false</c>.</returns>
+        private bool IsCreatedByPersonOrUnknown( int? createdByPersonAliasId, Person person )
+        {
+            if ( !createdByPersonAliasId.HasValue )
+            {
+                return true;
+            }
+
+            if ( person == null )
+            {
+                return false;
+            }
+
+            var createdByPersonId = new PersonAliasService( ( RockContext ) Context ).GetPersonId( createdByPersonAliasId.Value );
+
+            return createdByPersonId.HasValue && createdByPersonId.Value == person.Id;
         }
     }
 }

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 
 using Rock.Attribute;
@@ -123,6 +124,7 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             VerifyPathFromRoot( asset.Key, rootFolder );
+            VerifyPathIsNotProtected( asset.Key, AssetType.Folder );
 
             string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
@@ -152,6 +154,20 @@ namespace Rock.Storage.AssetStorage
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
                 VerifyPathFromRoot( asset.Key, rootFolder );
+                VerifyPathIsNotProtected( asset.Key, asset.Type );
+
+                /*
+                    10/8/2026 - MSE
+
+                    The root folder and the main folders of the website can't
+                    be deleted.
+
+                    Reason: Prevent the removal of required folders.
+                */
+                if ( asset.Type == AssetType.Folder && IsRequiredFolder( asset.Key, rootFolder ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+                }
 
                 string physicalPath = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
@@ -206,6 +222,7 @@ namespace Rock.Storage.AssetStorage
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
                 VerifyPathFromRoot( asset.Key, rootFolder );
+                VerifyPathIsNotProtected( asset.Key, AssetType.File );
 
                 string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
                 FileInfo fileInfo = new FileInfo( physicalFile );
@@ -382,11 +399,17 @@ namespace Rock.Storage.AssetStorage
             {
                 asset.Key = FixKey( asset, rootFolder );
                 VerifyPathFromRoot( asset.Key, rootFolder );
+                VerifyPathIsNotProtected( asset.Key, AssetType.File );
 
                 string filePath = GetPathFromKey( asset.Key );
                 string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( filePath );
                 string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
                 string newPhysicalFile = Path.Combine( physicalFolder, newName );
+
+                if ( IsProtectedPhysicalPath( newPhysicalFile, AssetType.File ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+                }
 
                 File.Move( physicalFile, newPhysicalFile );
                 DeleteImageThumbnail( assetStorageProvider, asset );
@@ -412,6 +435,7 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
             VerifyPathFromRoot( asset.Key, rootFolder );
+            VerifyPathIsNotProtected( asset.Key, AssetType.File );
 
             if ( !IsFileTypeAllowedByBlackAndWhiteLists( asset.Key ) )
             {
@@ -509,6 +533,196 @@ namespace Rock.Storage.AssetStorage
             {
                 // If the untrusted folder is outside our trusted root folder, something's fishy.
                 throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+            }
+        }
+
+        /// <summary>
+        /// The folders of the website whose contents can't be accessed.
+        /// </summary>
+        private static readonly string[] ProtectedFolders = new[]
+        {
+            "Bin",
+            "App_Data",
+            "App_Code",
+            "App_Browsers"
+        };
+
+        /// <summary>
+        /// The file types that can't be accessed.
+        /// </summary>
+        private static readonly string[] ProtectedFileTypes = new[]
+        {
+            "asax",
+            "ascx",
+            "ashx",
+            "asmx",
+            "aspx",
+            "browser",
+            "config",
+            "cs",
+            "cshtml",
+            "dll",
+            "exe",
+            "ldf",
+            "master",
+            "mdf",
+            "pdb",
+            "resx",
+            "svc",
+            "vb",
+            "vbhtml"
+        };
+
+        /// <summary>
+        /// The main folders of the website that can't be deleted.
+        /// </summary>
+        private static readonly string[] RequiredFolders = new[]
+        {
+            "Bin",
+            "App_Data",
+            "App_Code",
+            "App_Browsers",
+            "Assets",
+            "Blocks",
+            "Content",
+            "Plugins",
+            "Scripts",
+            "SqlServerTypes",
+            "Styles",
+            "Themes",
+            "Webhooks"
+        };
+
+        /// <summary>
+        /// Verifies that the asset path is not a protected file or inside a
+        /// protected folder.
+        /// </summary>
+        /// <param name="assetPath">The asset path (i.e., <see cref="Asset.Key"/>).</param>
+        /// <param name="assetType">The type of the asset.</param>
+        private void VerifyPathIsNotProtected( string assetPath, AssetType assetType )
+        {
+            string physicalPath;
+
+            try
+            {
+                physicalPath = FileSystemComponentHttpContext.Server.MapPath( assetPath );
+            }
+            catch
+            {
+                throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            if ( IsProtectedPhysicalPath( physicalPath, assetType ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the physical path is a protected file or inside
+        /// a protected folder.
+        /// </summary>
+        /// <param name="physicalPath">The physical path.</param>
+        /// <param name="assetType">The type of the asset.</param>
+        /// <returns><c>true</c> if the path is protected or can't be resolved; otherwise <c>false</c>.</returns>
+        private bool IsProtectedPhysicalPath( string physicalPath, AssetType assetType )
+        {
+            var relativePath = GetWebRootRelativePath( physicalPath );
+
+            if ( relativePath == null )
+            {
+                return true;
+            }
+
+            if ( relativePath == string.Empty )
+            {
+                return false;
+            }
+
+            // Short (8.3) names could be used in place of a protected name.
+            if ( Regex.IsMatch( relativePath, @"(^|\\)[^\\]{1,6}~\d+(\.[^\\.]{1,3})?(\\|$)" ) )
+            {
+                return true;
+            }
+
+            var firstSegment = relativePath.Split( '\\' )[0];
+
+            if ( ProtectedFolders.Contains( firstSegment, StringComparer.OrdinalIgnoreCase ) )
+            {
+                return true;
+            }
+
+            if ( assetType == AssetType.File )
+            {
+                var fileExtension = Path.GetExtension( relativePath ).TrimStart( '.' );
+
+                if ( ProtectedFileTypes.Contains( fileExtension, StringComparer.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the folder is the root folder, the website root
+        /// or one of the main folders of the website.
+        /// </summary>
+        /// <param name="assetPath">The asset path (i.e., <see cref="Asset.Key"/>).</param>
+        /// <param name="rootFolder">The root folder path (from the "RootFolder" attribute value).</param>
+        /// <returns><c>true</c> if the folder is required or can't be resolved; otherwise <c>false</c>.</returns>
+        private bool IsRequiredFolder( string assetPath, string rootFolder )
+        {
+            try
+            {
+                var physicalPath = Path.GetFullPath( FileSystemComponentHttpContext.Server.MapPath( assetPath ) ).TrimEnd( '\\', '/' );
+                var physicalRootFolder = Path.GetFullPath( FileSystemComponentHttpContext.Server.MapPath( rootFolder ) ).TrimEnd( '\\', '/' );
+
+                if ( physicalPath.Equals( physicalRootFolder, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+
+                var relativePath = GetWebRootRelativePath( physicalPath );
+
+                return relativePath == null
+                    || relativePath == string.Empty
+                    || RequiredFolders.Contains( relativePath, StringComparer.OrdinalIgnoreCase );
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the fully resolved path relative to the website root.
+        /// </summary>
+        /// <param name="physicalPath">The physical path.</param>
+        /// <returns>The relative path, an empty string for the website root, or <c>null</c> if it is outside the website root or can't be resolved.</returns>
+        private string GetWebRootRelativePath( string physicalPath )
+        {
+            try
+            {
+                var physicalWebRoot = Path.GetFullPath( FileSystemComponentHttpContext.Server.MapPath( "~/" ) ).TrimEnd( '\\', '/' );
+                var fullPath = Path.GetFullPath( physicalPath ).TrimEnd( '\\', '/' );
+
+                if ( fullPath.Equals( physicalWebRoot, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return string.Empty;
+                }
+
+                if ( !fullPath.StartsWith( physicalWebRoot + "\\", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return null;
+                }
+
+                return fullPath.Substring( physicalWebRoot.Length + 1 );
+            }
+            catch
+            {
+                return null;
             }
         }
 

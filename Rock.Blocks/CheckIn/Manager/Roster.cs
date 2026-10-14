@@ -248,6 +248,35 @@ namespace Rock.Blocks.CheckIn.Manager
             return DataViewCache.GetMany( guids, RockContext ).ToList();
         }
 
+        /// <summary>
+        /// Gets the attendance records identified by <paramref name="idKeys"/>
+        /// that are within the current roster scope (location, schedule, date
+        /// and check-in area). The keys come from the browser, so this keeps
+        /// actions from changing attendance records the roster does not show.
+        /// </summary>
+        /// <param name="manager">The check-in manager for this request.</param>
+        /// <param name="idKeys">The attendance identifier keys.</param>
+        /// <returns>The attendance records that are in the roster scope.</returns>
+        private List<Attendance> GetRosterAttendances( CheckInManager manager, List<string> idKeys )
+        {
+            var showAllAreas = GetAttributeValue( AttributeKey.ShowAllConfigurations ).AsBoolean();
+            var checkInAreaGuid = GetAttributeValue( AttributeKey.CheckInConfigurationGuid ).AsGuidOrNull();
+            var attendanceIds = ( idKeys ?? new List<string>() )
+                .Select( a => IdHasher.Instance.GetId( a ) )
+                .Where( a => a.HasValue )
+                .Select( a => a.Value )
+                .ToList();
+
+            if ( !attendanceIds.Any() )
+            {
+                return new List<Attendance>();
+            }
+
+            return manager.GetAttendanceQueryable( showAllAreas, checkInAreaGuid )
+                .Where( a => attendanceIds.Contains( a.Id ) )
+                .ToList();
+        }
+
         #endregion
 
         #region Block Actions
@@ -352,14 +381,7 @@ namespace Rock.Blocks.CheckIn.Manager
             var badgeAttributeIds = GetBadgeAttributeIds();
             var alertIconDataViews = GetAlertIconDataViews();
             var manager = new CheckInManager( RockContext, RequestContext );
-            var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
-                .Where( a => a.HasValue )
-                .Select( a => a.Value )
-                .ToList();
-
-            var attendances = manager.GetBaseAttendanceQueryable()
-                .Where( a => attendanceIds.Contains( a.Id ) )
-                .ToList();
+            var attendances = GetRosterAttendances( manager, idKeys );
 
             manager.MarkAsPresent( attendances );
 
@@ -376,14 +398,7 @@ namespace Rock.Blocks.CheckIn.Manager
             var badgeAttributeIds = GetBadgeAttributeIds();
             var alertIconDataViews = GetAlertIconDataViews();
             var manager = new CheckInManager( RockContext, RequestContext );
-            var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
-                .Where( a => a.HasValue )
-                .Select( a => a.Value )
-                .ToList();
-
-            var attendances = manager.GetBaseAttendanceQueryable()
-                .Where( a => attendanceIds.Contains( a.Id ) )
-                .ToList();
+            var attendances = GetRosterAttendances( manager, idKeys );
 
             manager.MarkAsNotPresent( attendances );
 
@@ -400,14 +415,7 @@ namespace Rock.Blocks.CheckIn.Manager
             var badgeAttributeIds = GetBadgeAttributeIds();
             var alertIconDataViews = GetAlertIconDataViews();
             var manager = new CheckInManager( RockContext, RequestContext );
-            var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
-                .Where( a => a.HasValue )
-                .Select( a => a.Value )
-                .ToList();
-
-            var attendances = manager.GetBaseAttendanceQueryable()
-                .Where( a => attendanceIds.Contains( a.Id ) )
-                .ToList();
+            var attendances = GetRosterAttendances( manager, idKeys );
 
             manager.MarkAsCheckedOut( attendances );
 
@@ -421,15 +429,14 @@ namespace Rock.Blocks.CheckIn.Manager
         [BlockAction]
         public BlockActionResult DeleteAttendances( List<string> idKeys )
         {
-            var manager = new CheckInManager( RockContext, RequestContext );
-            var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
-                .Where( a => a.HasValue )
-                .Select( a => a.Value )
-                .ToList();
+            // The delete button is only shown to people with this permission.
+            if ( !BlockCache.IsAuthorized( Authorization.DELETE_ATTENDANCE, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to delete attendance records." );
+            }
 
-            var attendances = manager.GetBaseAttendanceQueryable()
-                .Where( a => attendanceIds.Contains( a.Id ) )
-                .ToList();
+            var manager = new CheckInManager( RockContext, RequestContext );
+            var attendances = GetRosterAttendances( manager, idKeys );
 
             manager.DeleteAttendances( attendances );
 

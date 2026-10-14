@@ -55,6 +55,8 @@ namespace RockWeb.Blocks.Cms
         "CC Email(s)",
         Description = "CC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 1,
         Key = AttributeKey.CCEmail )]
 
@@ -62,6 +64,8 @@ namespace RockWeb.Blocks.Cms
         "BCC Email(s)",
         Description = "BCC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 2,
         Key = AttributeKey.BCCEmail )]
 
@@ -69,6 +73,8 @@ namespace RockWeb.Blocks.Cms
         "Subject",
         Description = "The subject line for the email. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 3,
         Key = AttributeKey.Subject )]
 
@@ -76,6 +82,8 @@ namespace RockWeb.Blocks.Cms
         "From Email",
         Description = "The email address to use for the from. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 4,
         Key = AttributeKey.FromEmail )]
 
@@ -83,6 +91,8 @@ namespace RockWeb.Blocks.Cms
         "From Name",
         Description = "The name to use for the from address. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 5,
         Key = AttributeKey.FromName )]
 
@@ -457,7 +467,9 @@ namespace RockWeb.Blocks.Cms
                         var binaryFile = new BinaryFile();
                         binaryFileService.Add( binaryFile );
                         binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                        binaryFile.IsTemporary = false;
+                        // The file is only needed while the email is sent, so leave
+                        // it temporary and let the cleanup job remove it later.
+                        binaryFile.IsTemporary = true;
                         binaryFile.MimeType = uploadedFile.ContentType;
                         binaryFile.FileSize = uploadedFile.ContentLength;
                         binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
@@ -481,8 +493,14 @@ namespace RockWeb.Blocks.Cms
 
                 foreach ( var emailAddress in recipientEmails )
                 {
-                    string email = emailAddress.ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
-                    
+                    string email = emailAddress.ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) ).Trim();
+
+                    // Only send to a single valid email address.
+                    if ( email.IsNullOrWhiteSpace() || email.IsLavaTemplate() || !EmailAddressFieldValidator.IsValid( email ) )
+                    {
+                        continue;
+                    }
+
                     RockEmailMessageRecipient recipient;
                     if ( saveCommunicationHistory )
                     {
@@ -511,8 +529,17 @@ namespace RockWeb.Blocks.Cms
 
                 message.CCEmails = GetAttributeValue( AttributeKey.CCEmail ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) ).Split( ',' ).ToList();
                 message.BCCEmails = GetAttributeValue( AttributeKey.BCCEmail ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) ).Split( ',' ).ToList();
-                message.FromEmail = GetAttributeValue( AttributeKey.FromEmail ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
-                message.FromName = GetAttributeValue( AttributeKey.FromName ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
+                /*
+                    10/7/2026 - MSE
+
+                    From Email and From Name are passed as templates, the same as
+                    Subject and Message Body. The transport resolves them once
+                    with the recipient merge fields.
+
+                    Reason: Keep all email templates resolved in one place.
+                */
+                message.FromEmail = GetAttributeValue( AttributeKey.FromEmail );
+                message.FromName = GetAttributeValue( AttributeKey.FromName );
                 message.Subject = GetAttributeValue( AttributeKey.Subject );
                 message.Message = GetAttributeValue( AttributeKey.MessageBody );
                 message.AppRoot = ResolveRockUrl( "~/" );

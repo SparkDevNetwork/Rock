@@ -181,16 +181,7 @@ namespace RockWeb.Blocks.Steps
                 return;
             }
 
-            var workflows = stepType.StepWorkflowTriggers
-                .Union( stepType.StepProgram.StepWorkflowTriggers )
-                .Where( x => x.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.Manual
-                        && x.WorkflowType != null
-                        && ( x.WorkflowType.IsActive ?? false )
-                        && ( !x.StepTypeId.HasValue || x.StepTypeId.Value == stepType.Id ) )
-                .OrderBy( w => w.WorkflowType.Name )
-                .ToList();
-
-            var authorizedWorkflows = workflows.Where( x => x.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+            var authorizedWorkflows = GetAuthorizedWorkflowTriggers( stepType );
 
             bool hasWorkflows = authorizedWorkflows.Any();
 
@@ -205,6 +196,25 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Gets the manual workflow triggers for the step type that the current person is
+        /// authorized to launch. These are the workflows <see cref="BindWorkflows"/> lists.
+        /// </summary>
+        /// <param name="stepType">The step type.</param>
+        /// <returns>The authorized manual workflow triggers.</returns>
+        private List<StepWorkflowTrigger> GetAuthorizedWorkflowTriggers( StepType stepType )
+        {
+            return stepType.StepWorkflowTriggers
+                .Union( stepType.StepProgram.StepWorkflowTriggers )
+                .Where( x => x.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.Manual
+                        && x.WorkflowType != null
+                        && ( x.WorkflowType.IsActive ?? false )
+                        && ( !x.StepTypeId.HasValue || x.StepTypeId.Value == stepType.Id ) )
+                .OrderBy( w => w.WorkflowType.Name )
+                .Where( x => x.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .ToList();
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rptRequestWorkflows control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -214,7 +224,18 @@ namespace RockWeb.Blocks.Steps
             if ( e.CommandName == "LaunchWorkflow" )
             {
                 var triggerId = e.CommandArgument.ToString().AsInteger();
-                var targetId = hfStepId.ValueAsInt();
+
+                // Use the step from the page parameter rather than the client controlled hidden field.
+                var step = GetStep();
+                var targetId = step != null ? step.Id : 0;
+
+                // The trigger must be one of the workflows listed for this step type.
+                var stepType = GetStepType();
+                if ( stepType == null || !GetAuthorizedWorkflowTriggers( stepType ).Any( t => t.Id == triggerId ) )
+                {
+                    mdWorkflowResult.Show( "Workflow Processing Failed:<ul><li>The workflow parameters are invalid.</li></ul>", ModalAlertType.Information );
+                    return;
+                }
 
                 this.LaunchWorkflow( triggerId, targetId );
             }

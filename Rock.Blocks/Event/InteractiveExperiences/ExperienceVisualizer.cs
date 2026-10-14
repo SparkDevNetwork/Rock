@@ -243,7 +243,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             var experienceToken = Encryption.DecryptString( token ).FromJsonOrNull<ExperienceToken>();
             var occurrenceIdKey = experienceToken?.OccurrenceId;
 
-            if ( occurrenceIdKey.IsNullOrWhiteSpace() )
+            // Only accept tokens issued to a visualizer.
+            if ( occurrenceIdKey.IsNullOrWhiteSpace() || !experienceToken.IsVisualizer )
             {
                 return ActionNotFound( "Invalid experience token." );
             }
@@ -253,6 +254,28 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 var occurrenceIntegerId = IdHasher.Instance.GetId( occurrenceIdKey );
 
                 if ( !occurrenceIntegerId.HasValue )
+                {
+                    return ActionNotFound( "Experience occurrence was not found." );
+                }
+
+                // Make sure the occurrence matches the experience and campus
+                // configured on this block.
+                var experienceGuid = GetBlockInteractiveExperienceGuid();
+                var campusGuid = GetBlockCampusGuid();
+                var occurrence = new InteractiveExperienceOccurrenceService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( o => o.Id == occurrenceIntegerId.Value )
+                    .Select( o => new
+                    {
+                        ExperienceGuid = o.InteractiveExperienceSchedule.InteractiveExperience.Guid,
+                        CampusGuid = o.CampusId.HasValue ? ( Guid? ) o.Campus.Guid : null
+                    } )
+                    .FirstOrDefault();
+
+                if ( occurrence == null
+                    || ( experienceGuid.HasValue && occurrence.ExperienceGuid != experienceGuid.Value )
+                    || occurrence.CampusGuid != campusGuid )
                 {
                     return ActionNotFound( "Experience occurrence was not found." );
                 }

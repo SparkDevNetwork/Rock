@@ -659,7 +659,25 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"No {LearningClassActivityCompletion.FriendlyTypeName} was found." );
             }
 
+            // Make sure the activity belongs to this class and is currently
+            // available to the student, the same way the workspace shows it.
+            var learningClassActivityIdKey = completion.LearningClassActivity?.IdKey;
+            var isActivityAvailable = completion.LearningClassActivity?.LearningClassId == classId
+                && GetStudentActivities( currentPerson, classId )
+                    .Any( a => a.LearningClassActivityIdKey == learningClassActivityIdKey && a.IsAvailable );
+
+            if ( !isActivityAvailable )
+            {
+                return ActionBadRequest( $"No {LearningClassActivityCompletion.FriendlyTypeName} was found." );
+            }
+
             var binaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( RockContext );
+
+            // Make sure a new file is one the student is allowed to attach.
+            if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( binaryFileId, completion.BinaryFileId, currentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
+            }
 
             completion.BinaryFileId = binaryFileId;
             completion.StudentComment = activityCompletionBag.StudentComment;

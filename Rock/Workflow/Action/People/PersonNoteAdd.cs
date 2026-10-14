@@ -59,6 +59,8 @@ namespace Rock.Workflow.Action
         Description = "The title/caption of the note. If none is provided then the author's name will be displayed. <span class='tip tip-lava'></span>",
         Key = AttributeKey.Caption,
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 2 )]
 
     [MemoField( "Text",

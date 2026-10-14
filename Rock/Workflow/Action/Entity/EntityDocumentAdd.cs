@@ -73,6 +73,8 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.DocumentName,
         Description = "The name to the use for the document. <span class='tip tip-lava'></span>.",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 4 )]
 
     [MemoField(

@@ -849,6 +849,13 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             var isSavedAccount = bag.SavedAccountId.IsNotNullOrWhiteSpace();
             var paymentInfo = isSavedAccount ? GetSavedAccountReferenceInfo( bag.SavedAccountId ) : new ReferencePaymentInfo();
+
+            if ( paymentInfo == null )
+            {
+                errorMessage = "The selected payment method was not found.";
+                return null;
+            }
+
             paymentInfo.Email = bag.Email;
 
             var commonTransactionAccountDetails = new List<FinancialTransactionDetail>();
@@ -901,6 +908,26 @@ namespace Rock.Blocks.Types.Mobile.Finance
             {
                 errorMessage = "The financial gateway is not configured correctly.";
                 return null;
+            }
+
+            // Validate the saved account before creating any person records.
+            if ( bag.SavedAccountId.IsNotNullOrWhiteSpace() && GetCurrentPersonSavedAccount( bag.SavedAccountId ) == null )
+            {
+                errorMessage = "The selected payment method was not found.";
+                return null;
+            }
+
+            // The frequency is only used when scheduled gifts are allowed, and
+            // then it must be a valid transaction frequency.
+            if ( AllowScheduled )
+            {
+                var frequency = DefinedValueCache.Get( bag.FrequencyValueId, false );
+
+                if ( frequency == null || frequency.DefinedTypeId != DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() )?.Id )
+                {
+                    errorMessage = "A valid frequency is required.";
+                    return null;
+                }
             }
 
             Person person = GetPerson( bag, true );
@@ -1274,13 +1301,34 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="savedAccountId">The saved account unique identifier.</param>
         private ReferencePaymentInfo GetSavedAccountReferenceInfo( string savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
-            if ( savedAccount != null )
+            return GetCurrentPersonSavedAccount( savedAccountId )?.GetReferencePayment();
+        }
+
+        /// <summary>
+        /// Gets the saved account if it belongs to the current person and
+        /// the gateway used by this block.
+        /// </summary>
+        /// <param name="savedAccountId">The saved account identifier.</param>
+        /// <returns>The saved account or <c>null</c> if not found or not authorized.</returns>
+        private FinancialPersonSavedAccount GetCurrentPersonSavedAccount( string savedAccountId )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( currentPerson == null || savedAccountId.IsNullOrWhiteSpace() || MyWellGateway == null )
             {
-                return savedAccount.GetReferencePayment();
+                return null;
             }
 
-            return null;
+            var savedAccount = new FinancialPersonSavedAccountService( RockContext ).Get( savedAccountId, !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( savedAccount == null
+                || savedAccount.PersonAlias?.PersonId != currentPerson.Id
+                || savedAccount.FinancialGatewayId != MyWellGateway.Id )
+            {
+                return null;
+            }
+
+            return savedAccount;
         }
 
         /// <summary>
@@ -1354,6 +1402,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
             if ( scheduledTransaction == null )
             {
                 errorMessage = "Could not find the scheduled transaction.";
+                return false;
+            }
+
+            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            {
+                errorMessage = "You are not authorized to delete this scheduled transaction.";
                 return false;
             }
 
@@ -1569,16 +1623,13 @@ namespace Rock.Blocks.Types.Mobile.Finance
             }
             else if ( useSavedAccount )
             {
-                var savedAccount = new FinancialPersonSavedAccountService( RockContext ).Get( options.SavedAccountId, !this.PageCache.Layout.Site.DisablePredictableIds );
-                if ( savedAccount != null )
+                var savedAccount = GetCurrentPersonSavedAccount( options.SavedAccountId );
+                if ( savedAccount == null )
                 {
-                    referencePaymentInfo = savedAccount.GetReferencePayment();
+                    return ActionBadRequest( "The selected payment method was not found." );
                 }
-                else
-                {
-                    // shouldn't happen
-                    throw new Exception( "Unable to determine Saved Account" );
-                }
+
+                referencePaymentInfo = savedAccount.GetReferencePayment();
             }
             else
             {

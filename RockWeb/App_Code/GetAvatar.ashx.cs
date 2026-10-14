@@ -398,10 +398,31 @@ namespace RockWeb
                 }
             }
 
+            /*
+                9/29/2026 - MSE
+
+                PersonId and PersonAliasId are only honored when Disable Predictable IDs is off,
+                matching how PhotoId is handled above. Callers should use PersonIdKey /
+                PersonAliasIdKey (or the Guid forms), which are accepted regardless of the setting.
+
+                Reason: Consistent handling of the Disable Predictable IDs setting.
+            */
+
             // Person Id
-            if ( request.QueryString["PersonId"] != null )
+            if ( !disablePredictableIds && request.QueryString["PersonId"] != null )
             {
                 settings.PersonId = request.QueryString["PersonId"].AsIntegerOrNull();
+
+                if ( settings.PersonId.HasValue )
+                {
+                    person = new PersonService( new RockContext() ).Get( settings.PersonId.Value );
+                }
+            }
+
+            // Person Id Key
+            if ( request.QueryString["PersonIdKey"] != null )
+            {
+                settings.PersonId = IdHasher.Instance.GetId( request.QueryString["PersonIdKey"] );
 
                 if ( settings.PersonId.HasValue )
                 {
@@ -422,9 +443,21 @@ namespace RockWeb
             }
 
             // Person Alias Id
-            if ( request.QueryString["PersonAliasId"] != null )
+            if ( !disablePredictableIds && request.QueryString["PersonAliasId"] != null )
             {
                 var personAliasId = request.QueryString["PersonAliasId"].AsIntegerOrNull();
+
+                if ( personAliasId.HasValue )
+                {
+                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasId.Value );
+                    settings.PersonId = person?.Id;
+                }
+            }
+
+            // Person Alias Id Key
+            if ( request.QueryString["PersonAliasIdKey"] != null )
+            {
+                var personAliasId = IdHasher.Instance.GetId( request.QueryString["PersonAliasIdKey"] );
 
                 if ( personAliasId.HasValue )
                 {

@@ -138,16 +138,14 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult GetTouchpointByIdKey( string idKey )
         {
-            ContactTouchpointService contactTouchpointService = new ContactTouchpointService( RockContext );
+            var touchpoint = OutreachContactHelper.GetOwnedTouchpoint( RockContext, idKey, RequestContext.CurrentPerson, false );
 
-            var touchpoint = contactTouchpointService
-                .Queryable()
-                .Where( tp => tp.CompletedDateTime == null )
-                .AsEnumerable()
-                .FirstOrDefault( tp => tp.IdKey == idKey );
+            if ( touchpoint == null || touchpoint.CompletedDateTime.HasValue )
+            {
+                return ActionNotFound( "Touchpoint not found." );
+            }
 
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( touchpoint.ContactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, touchpoint.ContactId, RequestContext.CurrentPerson );
 
             var touchpointBag = new ContactTouchpointBag
             {
@@ -227,8 +225,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 return ActionBadRequest( "Bag is required" );
             }
 
-            ContactTouchpointService contactTouchpointService = new ContactTouchpointService( RockContext );
-            var touchpoint = contactTouchpointService.Get( bag.IdKey );
+            var touchpoint = OutreachContactHelper.GetOwnedTouchpoint( RockContext, bag.IdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( touchpoint == null )
             {
@@ -251,8 +248,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult UpdateContactConnectionDetail( UpdateContactConnectionBag updateContactConnectionBag )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( updateContactConnectionBag.ContactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, updateContactConnectionBag.ContactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionNotFound( "Contact not found." );
@@ -278,8 +274,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult UpdateScheduledDate( string idKey, DateTime scheduleDate )
         {
-            ContactTouchpointService contactTouchpointService = new ContactTouchpointService( RockContext );
-            var touchpoint = contactTouchpointService.Get( idKey );
+            var touchpoint = OutreachContactHelper.GetOwnedTouchpoint( RockContext, idKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
             if ( touchpoint == null )
             {
                 return ActionNotFound( "Touchpoint not found." );
@@ -299,8 +294,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult UpdateContactPrayerDetail( UpdateContactPrayerBag updateContactPrayerBag )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( updateContactPrayerBag.ContactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, updateContactPrayerBag.ContactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionNotFound( "Contact not found." );
@@ -325,8 +319,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult GetContactTouchpointHistory( int contactId )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
@@ -361,13 +354,16 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult PulseTouchpointContactUpdate( PulseContactUpdateBag bag )
         {
-            ContactTouchpointService contactTouchpointService = new ContactTouchpointService( RockContext );
             ContactService contactService = new ContactService( RockContext );
             var contactRelationshipChangesService = new ContactRelationshipChangeService( RockContext );
 
-            var touchpoint = contactTouchpointService.Get( bag.IdKey );
-            var contact = contactService.Get( touchpoint.ContactId );
+            var touchpoint = OutreachContactHelper.GetOwnedTouchpoint( RockContext, bag.IdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( touchpoint == null )
+            {
+                return ActionNotFound( "Touchpoint not found." );
+            }
 
+            var contact = contactService.Get( touchpoint.ContactId );
 
             // If the relationship strength change.
             if ( contact.RelationshipStrength != bag.RelationshipStrength.ToNative()
@@ -415,8 +411,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult AddReminderTouchpoint( int contactId, DateTimeOffset reminderDate, string reminderNote )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );

@@ -20,11 +20,13 @@
 <script setup lang="ts">
     import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { Guid } from "@Obsidian/Types";
     import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
+    import { GroupRolePickerGetGroupTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupTypesOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleResultsBag";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -63,6 +65,7 @@
 
     const standardProps = useStandardAsyncPickerProps(props);
     const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
 
     const internalTypeValue = ref<ListItemBag | null>(null);
     const loadedTypeItems = ref<ListItemBag[] | null>(null);
@@ -115,7 +118,11 @@
      * Loads the group type items from the server.
      */
     async function loadTypeOptions(): Promise<ListItemBag[]> {
-        const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupTypes");
+        const options: GroupRolePickerGetGroupTypesOptionsBag = {
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupTypes", null, options);
 
         if (result.isSuccess && result.data) {
             loadedTypeItems.value = result.data ?? null;
@@ -141,7 +148,8 @@
 
         const options: GroupRolePickerGetGroupRolesOptionsBag = {
             groupTypeGuid,
-            excludeGroupRoles: props.excludeGroupRoles
+            excludeGroupRoles: props.excludeGroupRoles,
+            securityGrantToken: securityGrantToken.value
         };
 
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupRoles", null, options);
@@ -173,7 +181,8 @@
 
         const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
             groupRoleGuid,
-            excludeGroupRoles: props.excludeGroupRoles
+            excludeGroupRoles: props.excludeGroupRoles,
+            securityGrantToken: securityGrantToken.value
         };
 
         const result = await http.post<GroupRolePickerGetAllForGroupRoleResultsBag>("/api/v2/Controls/GroupRolePickerGetAllForGroupRole", null, options);

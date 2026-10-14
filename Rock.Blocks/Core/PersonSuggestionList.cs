@@ -181,6 +181,8 @@ namespace Rock.Blocks.Core
                 var selectedPersonAliasIds = followingSuggestedService
                     .Queryable()
                     .Where( f => selectedItems.Contains( f.Guid ) )
+                    .Where( f => f.PersonAliasId == currentPersonAliasId.Value
+                        && f.EntityTypeId == personAliasEntityType.Id )
                     .Select( f => f.EntityId )
                     .AsEnumerable()
                     .Distinct();
@@ -225,13 +227,17 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Ignore( List<Guid> selectedItems )
         {
-            // If any items were selected
-            if ( selectedItems.Any() )
+            var currentPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+
+            // If we have a valid current person and items were selected
+            if ( currentPersonAliasId.HasValue && selectedItems.Any() )
             {
-                // Update the status of each suggestion to be ignored
+                // Update the status of each suggestion to be ignored, but only
+                // for suggestions that belong to the current person.
                 var followingSuggestedService = new FollowingSuggestedService( RockContext );
                 foreach ( var suggestion in followingSuggestedService.Queryable()
-                    .Where( f => selectedItems.Contains( f.Guid ) ) )
+                    .Where( f => selectedItems.Contains( f.Guid ) )
+                    .Where( f => f.PersonAliasId == currentPersonAliasId.Value ) )
                 {
                     suggestion.Status = FollowingSuggestedStatus.Ignored;
                 }

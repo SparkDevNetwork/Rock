@@ -472,6 +472,14 @@ namespace RockWeb.Blocks.Prayer
         {
             int prayerRequestId = hfIdValue.ValueAsInt();
 
+            // Only allow flagging a prayer request that is part of this prayer session.
+            var prayerRequestIds = this.PrayerRequestIds;
+            if ( prayerRequestIds == null || !prayerRequestIds.Contains( prayerRequestId ) )
+            {
+                mdFlag.Hide();
+                return;
+            }
+
             var rockContext = new RockContext();
             var service = new PrayerRequestService( rockContext );
 

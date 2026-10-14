@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Event
             {
                 var registrationInstance = GetSharedRegistrationInstance( registrationInstanceId.Value );
 
-                if ( registrationInstance != null )
+                if ( registrationInstance != null && registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     var breadCrumbReference = new PageReference( pageReference );
                     breadCrumbReference.Parameters.AddOrReplace( PageParameterKey.RegistrationInstanceId, registrationInstanceId.ToString() );
@@ -225,6 +225,14 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstance = new RegistrationInstanceService( rockContext ).Get( hfRegistrationInstanceId.Value.AsInteger() );
+
+                // The instance id comes from a hidden field, so re-check edit rights before showing the edit form.
+                if ( registrationInstance == null || !CanEditRegistrationInstance( registrationInstance ) )
+                {
+                    nbEditModeMessage.Heading = "Information";
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                    return;
+                }
 
                 ShowEditDetails( registrationInstance, rockContext );
             }
@@ -346,6 +354,14 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstanceId.HasValue )
                 {
                     registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+
+                    // The instance id comes from a hidden field, so re-check edit rights on the existing instance.
+                    if ( registrationInstance != null && !CanEditRegistrationInstance( registrationInstance ) )
+                    {
+                        nbEditModeMessage.Heading = "Information";
+                        nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                        return;
+                    }
                 }
 
                 if ( registrationInstance == null )
@@ -354,6 +370,15 @@ namespace RockWeb.Blocks.Event
                     if ( existingRegistrationTemplateId.HasValue )
                     {
                         registrationInstance.RegistrationTemplateId = existingRegistrationTemplateId.Value;
+                        registrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext ).Get( existingRegistrationTemplateId.Value );
+                    }
+
+                    // Instance security comes from the template, so check edit rights on the new instance.
+                    if ( !CanEditRegistrationInstance( registrationInstance ) )
+                    {
+                        nbEditModeMessage.Heading = "Information";
+                        nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                        return;
                     }
 
                     registrationInstanceService.Add( registrationInstance );
@@ -460,8 +485,15 @@ namespace RockWeb.Blocks.Event
 
         protected void btnCopy_Click( object sender, EventArgs e )
         {
+            // The instance id comes from a hidden field, so it must match the instance on the page.
+            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( !registrationInstanceId.HasValue || registrationInstanceId != PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull() )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
-            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( hfRegistrationInstanceId.Value.AsInteger() );
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
             if ( registrationInstance != null )
             {
                 // Clone the Registration Instance without the old Id.
@@ -477,8 +509,6 @@ namespace RockWeb.Blocks.Event
                 newRegistrationInstance.ReminderSent = false;
                 newRegistrationInstance.SendReminderDateTime = null;
 
-                hfRegistrationInstanceId.Value = newRegistrationInstance.Id.ToString();
-                hfRegistrationTemplateId.Value = newRegistrationInstance.RegistrationTemplateId.ToString();
                 newRegistrationInstance.Name = registrationInstance.Name + " - Copy";
                 newRegistrationInstance.IsActive = true;
 
@@ -486,6 +516,17 @@ namespace RockWeb.Blocks.Event
                 {
                     newRegistrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext ).Get( newRegistrationInstance.RegistrationTemplateId );
                 }
+
+                // Copying creates a new instance, so require the same edit rights as adding one.
+                if ( !CanEditRegistrationInstance( newRegistrationInstance ) )
+                {
+                    nbEditModeMessage.Heading = "Information";
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                    return;
+                }
+
+                hfRegistrationInstanceId.Value = newRegistrationInstance.Id.ToString();
+                hfRegistrationTemplateId.Value = newRegistrationInstance.RegistrationTemplateId.ToString();
 
                 registrationInstance.LoadAttributes();
                 newRegistrationInstance.CopyAttributesFrom( registrationInstance );
@@ -507,6 +548,19 @@ namespace RockWeb.Blocks.Event
         private RegistrationInstance GetRegistrationInstance( int registrationInstanceId, RockContext rockContext = null )
         {
             return base.GetRegistrationInstance( registrationInstanceId, rockContext );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the registration instance. This is
+        /// the same check used by <see cref="ShowDetail()"/> to decide whether to show the edit button.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <returns><c>true</c> if the current person can edit the registration instance; otherwise, <c>false</c>.</returns>
+        private bool CanEditRegistrationInstance( RegistrationInstance registrationInstance )
+        {
+            return UserCanEdit
+                || registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
         }
 
         /// <summary>
@@ -545,6 +599,24 @@ namespace RockWeb.Blocks.Event
                     nbEntityNotFound.Text = "The specified Registration Instance could not be found.";
                     nbEntityNotFound.Visible = true;
                     pnlMainContent.Visible = false;
+                    return;
+                }
+
+                /*
+                    10/12/2026 - MSE
+
+                    The instance is loaded from the page parameter and was shown
+                    read only to anyone without Edit, so a person could read an
+                    instance in a template or category they can not view. VIEW
+                    falls back to the template and its category.
+
+                    Reason: Enforce registration template security on this block.
+                */
+                if ( registrationInstance != null && !registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    nbEntityNotFound.Text = EditModeMessage.NotAuthorizedToView( Rock.Model.RegistrationInstance.FriendlyTypeName );
+                    nbEntityNotFound.Visible = true;
+                    pnlMainContent.Visible = false; 
                     return;
                 }
 
@@ -619,6 +691,7 @@ namespace RockWeb.Blocks.Event
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
+                    btnCopy.Visible = false;
 
                     ShowReadonlyDetails( registrationInstance, false );
                 }

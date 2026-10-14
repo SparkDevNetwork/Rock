@@ -86,6 +86,18 @@ namespace RockWeb.Blocks.Core
                 gDefinedValues.Actions.ShowAdd = canAddEditDelete;
                 gDefinedValues.IsDeleteEnabled = canAddEditDelete;
 
+                // Only allow editing and reordering values when the user can edit.
+                if ( !canAddEditDelete )
+                {
+                    gDefinedValues.RowSelected -= gDefinedValues_Edit;
+
+                    var reorderField = gDefinedValues.ColumnsOfType<ReorderField>().FirstOrDefault();
+                    if ( reorderField != null )
+                    {
+                        reorderField.Visible = false;
+                    }
+                }
+
                 AddAttributeColumns();
 
                 if ( _definedType.EnableSecurityOnValues )
@@ -196,6 +208,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Add( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             gDefinedValues_ShowEdit( 0 );
         }
 
@@ -206,6 +223,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Edit( object sender, RowEventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             gDefinedValues_ShowEdit( e.RowKeyId );
         }
 
@@ -216,12 +238,18 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Delete( object sender, RowEventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                mdGridWarningValues.Show( EditModeMessage.NotAuthorizedToEdit( DefinedValue.FriendlyTypeName ), ModalAlertType.Warning );
+                return;
+            }
+
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
 
             DefinedValue value = definedValueService.Get( e.RowKeyId );
 
-            if ( value != null )
+            if ( value != null && _definedType != null && value.DefinedTypeId == _definedType.Id )
             {
                 string errorMessage;
                 if ( !definedValueService.CanDelete( value, out errorMessage ) )
@@ -250,9 +278,24 @@ namespace RockWeb.Blocks.Core
 
             int definedValueId = hfDefinedValueId.ValueAsInt();
 
+            // Use the server determined defined type rather than the posted
+            // hidden field values so only values of this type can be saved.
+            if ( _definedType == null )
+            {
+                return;
+            }
+
+            // Adding and editing values requires the same block EDIT permission that shows the add button.
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                hfDefinedValueId.Value = string.Empty;
+                modalValue.Hide();
+                return;
+            }
+
             if ( definedValueId.Equals( 0 ) )
             {
-                int definedTypeId = hfDefinedTypeId.ValueAsInt();
+                int definedTypeId = _definedType.Id;
                 definedValue = new DefinedValue { Id = 0 };
                 definedValue.DefinedTypeId = definedTypeId;
                 definedValue.IsSystem = false;
@@ -267,6 +310,13 @@ namespace RockWeb.Blocks.Core
             else
             {
                 definedValue = definedValueService.Get( definedValueId );
+
+                if ( definedValue == null || definedValue.DefinedTypeId != _definedType.Id )
+                {
+                    hfDefinedValueId.Value = string.Empty;
+                    modalValue.Hide();
+                    return;
+                }
             }
 
             definedValue.Value = tbValueName.Text;
@@ -337,7 +387,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
-            int definedTypeId = hfDefinedTypeId.ValueAsInt();
+            if ( _definedType == null || !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
+            // Use the server determined defined type rather than the posted hidden field.
+            int definedTypeId = _definedType.Id;
 
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
@@ -427,7 +483,7 @@ namespace RockWeb.Blocks.Core
 
         private void ShowDefinedValueEdit( int valueId )
         {
-            var definedType = DefinedTypeCache.Get( hfDefinedTypeId.ValueAsInt() );
+            var definedType = _definedType != null ? DefinedTypeCache.Get( _definedType.Id ) : null;
             DefinedValue definedValue;
 
             modalValue.SubTitle = String.Format( "Id: {0}", valueId );
@@ -443,7 +499,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 definedValue = new DefinedValue { Id = 0 };
-                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
+                definedValue.DefinedTypeId = definedType != null ? definedType.Id : 0;
                 if ( definedType != null )
                 {
                     lActionTitleDefinedValue.Text = ActionTitle.Add( "defined value for " + definedType.Name );

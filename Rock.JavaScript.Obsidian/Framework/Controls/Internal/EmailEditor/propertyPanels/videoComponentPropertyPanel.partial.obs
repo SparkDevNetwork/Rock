@@ -42,7 +42,7 @@
                                    :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
                                    help="Manually select a video preview image to display in your block."
                                    label="Poster Image"
-                                   :uploadAsTemporary="true"
+                                   :uploadAsTemporary="false"
                                    @imageRemoved="onImageRemoved" />
                 </div>
 

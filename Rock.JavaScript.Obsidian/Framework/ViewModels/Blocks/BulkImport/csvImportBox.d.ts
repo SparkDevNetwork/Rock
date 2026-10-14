@@ -46,6 +46,9 @@ export type CsvImportBox = {
     /** Gets or sets the Encrypted Root Folder. */
     rootFolder?: string | null;
 
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
+
     /** Gets or sets the list of previous sources for the import. */
     sources?: ListItemBag[] | null;
 

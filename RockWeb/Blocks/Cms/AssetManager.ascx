@@ -75,7 +75,7 @@
 
                     <div class="actions assetmanager-actions">
                         <div class="pull-left">
-                            <Rock:FileUploader ID="fupUpload" runat="server" CausesValidation="false" ToolTip="Upload a file to the selected location" IsBinaryFile="false" DisplayMode="DefaultButton" Enabled="false"/>
+                            <Rock:FileUploader ID="fupUpload" runat="server" CausesValidation="false" ToolTip="Upload a file to the selected location" IsBinaryFile="false" IsAssetStorageProviderUpload="true" DisplayMode="DefaultButton" Enabled="false"/>
                         </div>
 
                         <div class="btn-group mr-1">

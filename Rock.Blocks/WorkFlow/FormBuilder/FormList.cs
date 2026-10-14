@@ -264,20 +264,23 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             workflowType.Description = description;
             workflowType.Slug = slug;
 
-            if ( categoryGuid.HasValue )
-            {
-                var category = categoryService.Get( categoryGuid.Value );
-                if ( category != null )
-                {
-                    // Shouldn't happen, since the "Add" button is guarded by the UI if not authorized.
-                    if ( !category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        return ActionForbidden( "You are not authorized to add a form to this category." );
-                    }
+            // The UI requires a category and only offers the Add Form button for a
+            // Workflow Type category the person can edit. Enforce the same rule here so
+            // a missing or unknown category cannot skip the authorization check.
+            var category = categoryGuid.HasValue ? categoryService.Get( categoryGuid.Value ) : null;
 
-                    workflowType.CategoryId = category.Id;
-                }
+            if ( !IsWorkflowTypeCategory( category ) )
+            {
+                return ActionBadRequest( "Invalid category." );
             }
+
+            // Shouldn't happen, since the "Add" button is guarded by the UI if not authorized.
+            if ( !category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to add a form to this category." );
+            }
+
+            workflowType.CategoryId = category.Id;
 
             if ( templateGuid.HasValue )
             {
@@ -484,6 +487,13 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             if ( bag.CategoryGuid.HasValue )
             {
                 category = categoryService.Get( bag.CategoryGuid.Value );
+
+                // The category tree only lists Workflow Type categories, so an existing
+                // category of any other entity type cannot be edited through this block.
+                if ( category != null && !IsWorkflowTypeCategory( category ) )
+                {
+                    return ActionBadRequest( "Invalid category." );
+                }
             }
 
             // Adding a new category.
@@ -521,7 +531,10 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 if ( bag.ParentCategoryGuid.HasValue )
                 {
                     var parentCategory = categoryService.Get( bag.ParentCategoryGuid.Value );
-                    if ( parentCategory == null )
+
+                    // The parent is the category selected in the tree, which only lists
+                    // Workflow Type categories.
+                    if ( !IsWorkflowTypeCategory( parentCategory ) )
                     {
                         return ActionBadRequest( "Invalid parent category." );
                     }
@@ -567,7 +580,9 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var categoryService = new CategoryService( RockContext );
             var category = categoryService.Get( categoryGuid );
 
-            if ( category == null )
+            // The category tree only lists Workflow Type categories, so do not allow a
+            // category of any other entity type to be deleted through this block.
+            if ( !IsWorkflowTypeCategory( category ) )
             {
                 return ActionBadRequest( "Invalid category." );
             }
@@ -909,6 +924,23 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         #endregion Block Actions
 
         #region Helper Methods
+
+        /// <summary>
+        /// Determines whether the category is a Workflow Type category. The block's category
+        /// tree and pickers only offer Workflow Type categories, so the category actions must
+        /// not accept categories that belong to any other entity type.
+        /// </summary>
+        /// <param name="category">The category to check.</param>
+        /// <returns><c>true</c> if the category exists and is a Workflow Type category; otherwise, <c>false</c>.</returns>
+        private bool IsWorkflowTypeCategory( Category category )
+        {
+            if ( category == null )
+            {
+                return false;
+            }
+
+            return category.EntityTypeId == EntityTypeCache.GetId<WorkflowType>();
+        }
 
         /// <summary>
         /// Gets the full URL including the site domain.

@@ -437,7 +437,16 @@ namespace Rock.Blocks.Engagement.SignUp
                     return ActionBadRequest( occurrenceData.ErrorMessage ?? "Unable to take attendance for this occurrence." );
                 }
 
-                SaveAttendanceRecords( rockContext, occurrenceData, bag.Attendees );
+                // Only accept attendees that are members of this occurrence.
+                var allowedPersonAliasIds = new HashSet<int>( occurrenceData.GroupMembers
+                    .SelectMany( gm => gm.Person.Aliases )
+                    .Select( pa => pa.Id ) );
+
+                var attendees = ( bag?.Attendees ?? new List<SignUpAttendeeBag>() )
+                    .Where( a => a != null && allowedPersonAliasIds.Contains( a.PersonAliasId ) )
+                    .ToList();
+
+                SaveAttendanceRecords( rockContext, occurrenceData, attendees );
             }
 
             return ActionOk();

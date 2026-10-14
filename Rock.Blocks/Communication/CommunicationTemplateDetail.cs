@@ -337,7 +337,14 @@ namespace Rock.Blocks.Communication
 
                 if ( newImageFileGuid.HasValue )
                 {
-                    communicationTemplate.ImageFile = binaryFileService.Get( newImageFileGuid.Value );
+                    var newImageFile = binaryFileService.Get( newImageFileGuid.Value );
+
+                    if ( newImageFile != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( newImageFile.Id, null, currentPerson ) )
+                    {
+                        return ActionBadRequest( "The template preview image is not valid." );
+                    }
+
+                    communicationTemplate.ImageFile = newImageFile;
                     communicationTemplate.ImageFileId = communicationTemplate.ImageFile?.Id;
                 }
                 else
@@ -360,7 +367,14 @@ namespace Rock.Blocks.Communication
             {
                 if ( newLogoBinaryFileGuid.HasValue )
                 {
-                    communicationTemplate.LogoBinaryFile = binaryFileService.Get( newLogoBinaryFileGuid.Value );
+                    var newLogoBinaryFile = binaryFileService.Get( newLogoBinaryFileGuid.Value );
+
+                    if ( newLogoBinaryFile != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( newLogoBinaryFile.Id, null, currentPerson ) )
+                    {
+                        return ActionBadRequest( "The template logo is not valid." );
+                    }
+
+                    communicationTemplate.LogoBinaryFile = newLogoBinaryFile;
                     communicationTemplate.LogoBinaryFileId = communicationTemplate.LogoBinaryFile?.Id;
                 }
                 else
@@ -407,8 +421,18 @@ namespace Rock.Blocks.Communication
                 communicationTemplate.Message = bag.Message;
 
                 var binaryFileGuids = bag.Attachments?.Select( a => a.Value ).AsGuidList();
-                var binaryFileIds = binaryFileService.Queryable()
+                var binaryFiles = binaryFileService.Queryable()
                     .Where( b => binaryFileGuids.Contains( b.Guid ) )
+                    .ToList();
+
+                // Make sure any newly added attachments are files the person
+                // is allowed to use.
+                if ( binaryFiles.Any( b => communicationTemplate.Attachments.All( x => x.BinaryFileId != b.Id ) && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( b.Id, null, currentPerson ) ) )
+                {
+                    return ActionBadRequest( "One or more attachments are not valid." );
+                }
+
+                var binaryFileIds = binaryFiles
                     .Select( b => b.Id )
                     .ToList();
 
@@ -580,6 +604,12 @@ namespace Rock.Blocks.Communication
 
         #region Methods
 
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
         /// <summary>
         /// Gets the security grant token that will be used by UI controls on
         /// this block to ensure they have the proper permissions.
@@ -589,12 +619,62 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone. Anyone who
+            // can view the block may browse and select existing files within
+            // the block's root folder. Only block editors may upload, rename,
+            // move or delete files and folders.
+            if ( IsAssetManagerViewAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            }
+
+            if ( IsAssetManagerEditAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the default folder and to providers.
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( "~/Content" ) );
+                securityGrant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
+            }
+
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
+            // Allow the group picker used by the RSVP email component.
+            securityGrant.AddRule( new GroupPickerSecurityGrantRule() );
+
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the current person may browse and select
+        /// existing files with the asset manager. Requires VIEW, EDIT or
+        /// ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerViewAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || IsAssetManagerEditAuthorized() );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may upload, rename, move
+        /// and delete files and folders with the asset manager. Requires EDIT
+        /// or ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerEditAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
         }
 
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )

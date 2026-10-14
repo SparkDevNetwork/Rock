@@ -1,0 +1,430 @@
+name: Ship to Public
+
+# The "Ship it" button. Adding the `ship` label to a PR in the private mirror:
+#   1. Checks no reviewer has outstanding "Request changes" on the PR. Adding the
+#      label is the approval, so authors can ship their own PRs (GitHub doesn't
+#      let anyone approve their own PR).
+#   2. Brings the PR up to date with the LIVE public target branch (not the
+#      mirror's copy):
+#        - already includes it: nothing to do
+#        - has merge commits (for example a conflict resolution): merges the
+#          target in. Never rebases these, because a rebase would drop the
+#          resolution.
+#        - otherwise: rebases onto it
+#   3. Checks commit messages use the release-note format (+ or -). Merge
+#      commits are skipped.
+#   4. Merges the change up every branch it must reach, following the
+#      MERGE_CHAIN variable. Every step is a real merge commit, never a squash.
+#   5. Pushes the target branch and every merged-up branch in ONE atomic push:
+#      either all of them update or none do. Git rejects the push if public
+#      moved, so nothing on public can ever be overwritten.
+#   6. Comments with the public commit links and closes the PR.
+#   7. Labels the PR `awaiting-build` and records the commit it shipped as.
+#      private-build-results.yml waits for the first AppVeyor build of develop
+#      that includes that commit, then deletes the branch if it passes or
+#      comments with an analysis if it fails. With `ship-only`, that build comes
+#      after someone merges the change up to develop by hand.
+# On any failure, including a merge-up conflict, nothing is pushed. It comments
+# the reason and removes the label.
+#
+# The `ship-only` label does steps 1 to 3 and 5 for the target branch only, with
+# no merge-up. It's the escape hatch when a merge-up conflicts: ship with
+# `ship-only`, then do that merge-up by hand.
+#
+# The `squash` label (add it BEFORE `ship` or `ship-only`) squashes the PR's
+# commits into one after step 2. The PR title becomes the commit message, so it
+# must be a release note, and it's the whole message. The first commit's author
+# keeps authorship, and any other person who committed gets Co-authored-by
+# credit. Merge-ups are still real merge commits.
+#
+# AI attribution trailers ("Co-Authored-By: Claude ...") are removed from every
+# shipped commit, squashed or not.
+#
+# Shipping does NOT wait on a build, so it takes about a minute. This matches
+# how Rock already works: code lands on develop, then AppVeyor builds it.
+#
+# This file also exists in the public repo (the mirror copies develop), but the
+# repository checks below keep it from ever running there.
+#
+# Required in the private repo:
+#   vars.SHIP_APP_ID              App ID of the "Rock Ship Bot" GitHub App
+#   secrets.SHIP_APP_PRIVATE_KEY  Private key of that App
+# The App is installed on SparkDevNetwork/Rock with Contents and Workflows write,
+# and is allowed to bypass any rules on the public shippable branches.
+#
+# Merge paths (required for `ship`):
+#   vars.MERGE_CHAIN  JSON map of each branch to the branches it merges into,
+#                     for example {"release-20.0": ["hotfix-20.1"], "hotfix-20.1": ["develop"]}.
+#                     A branch with two parents (like hotfix-18.7, fed by both
+#                     hotfix-17.11 and hotfix-18.6) gets one merge from each.
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  # Write is only used to delete the PR's branch from the mirror.
+  contents: write
+  pull-requests: write
+  issues: write
+
+# One queue PER PR. A second `ship` on the same PR waits until the first run
+# has completely finished, so the gate job below sees the PR's real state.
+#
+# Deliberately NOT one queue for all PRs: GitHub keeps only one waiting run per
+# queue and silently cancels the older one, which would drop another PR's ship.
+# Two different PRs shipping at the same moment run side by side instead. The
+# atomic push protects public: whichever pushes second is rejected and told to
+# retry.
+#
+# Other labels (sentinel, squash, ...) get a unique group, so they never wait
+# behind or cancel a ship.
+concurrency:
+  group: ${{ (github.event.label.name == 'ship' || github.event.label.name == 'ship-only') && format('ship-pr-{0}', github.event.pull_request.number) || format('ship-noop-{0}', github.run_id) }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    # Cheap filter on the event first. The event's PR state can be stale, so
+    # the step below checks the live state too.
+    if: >-
+      github.repository == 'SparkStealth/Rock-Mirror'
+      && github.event.pull_request.state == 'open'
+      && (github.event.label.name == 'ship' || github.event.label.name == 'ship-only')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      open: ${{ steps.state.outputs.open }}
+    steps:
+      - name: Check the PR is still open
+        id: state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # An earlier run for this PR may have shipped and closed it while this
+          # run waited its turn. Stop quietly in that case.
+          state=$(gh pr view "$PR" -R "$GITHUB_REPOSITORY" --json state -q .state)
+          echo "PR #$PR is $state"
+          if [ "$state" = "OPEN" ]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  ship:
+    needs: gate
+    if: needs.gate.outputs.open == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      BASE: ${{ github.event.pull_request.base.ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      ACTOR: ${{ github.actor }}
+      LABEL: ${{ github.event.label.name }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      SQUASH: ${{ contains(github.event.pull_request.labels.*.name, 'squash') }}
+    steps:
+      - name: Check the target branch
+        run: |
+          case "$BASE" in
+            develop|release-*|hotfix-*) ;;
+            *)
+              echo "SHIP_FAIL=Only PRs targeting develop, release-* or hotfix-* can ship. This one targets \`$BASE\`." >> "$GITHUB_ENV"
+              exit 1 ;;
+          esac
+
+      - name: Check nobody has requested changes
+        run: |
+          # Adding the label is the approval, so no approving review is needed.
+          # Only blocks if a reviewer's latest review is still "Request changes".
+          blockers=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews?per_page=100" -q '
+            [.[] | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")]
+            | group_by(.user.login) | map(select(last.state == "CHANGES_REQUESTED") | last.user.login)
+            | join(", ")')
+
+          if [ -n "$blockers" ]; then
+            echo "SHIP_FAIL=Changes were requested by $blockers. Address them and get the review dismissed or re-approved, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Create ship token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SHIP_APP_ID }}
+          private-key: ${{ secrets.SHIP_APP_PRIVATE_KEY }}
+          owner: SparkDevNetwork
+          repositories: Rock
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Bring the PR up to date with the live public branch
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          git config user.name "$ACTOR"
+          git config user.email "$ACTOR@users.noreply.github.com"
+
+          # Fetch by URL instead of adding a remote, so the token is never
+          # written to .git/config.
+          git fetch "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" \
+            "+refs/heads/$BASE:refs/remotes/public/$BASE"
+
+          conflict_help="Merge \`$BASE\` into your branch locally, resolve the conflicts, push to this branch, then add the \`$LABEL\` label again. Ship it keeps your resolution."
+
+          if git merge-base --is-ancestor "public/$BASE" HEAD; then
+            echo "The branch already includes public $BASE. Shipping it as it is."
+
+          elif [ "$(git rev-list --count --merges "public/$BASE..HEAD")" -gt 0 ]; then
+            # The branch has merge commits, which may hold conflict resolutions.
+            # A rebase would drop them and hit the same conflicts again, so merge
+            # the latest public branch in instead.
+            echo "The branch has merge commits. Merging public $BASE in instead of rebasing."
+            if ! git merge --no-ff -m "Merge branch '$BASE' into $HEAD_REF" "public/$BASE"; then
+              files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
+              git merge --abort
+              {
+                echo "SHIP_FAIL<<EOF"
+                echo "Merging the latest public \`$BASE\` into this branch hit conflicts in:"
+                echo "$files"
+                echo ""
+                echo "$conflict_help"
+                echo "EOF"
+              } >> "$GITHUB_ENV"
+              exit 1
+            fi
+
+          elif ! git rebase "public/$BASE"; then
+            files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
+            git rebase --abort
+            {
+              echo "SHIP_FAIL<<EOF"
+              echo "Rebasing onto public \`$BASE\` hit conflicts in:"
+              echo "$files"
+              echo ""
+              echo "$conflict_help"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # Every commit was already on public (for example, it was shipped
+          # before). Stop rather than run a merge-up with nothing of this PR's in it.
+          if [ "$(git rev-list --count "public/$BASE..HEAD")" -eq 0 ]; then
+            echo "SHIP_FAIL=Nothing to ship: every commit in this PR is already on public \`$BASE\`." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # Remove AI attribution trailers (for example "Co-Authored-By: Claude ...")
+          # from every commit, so they never land in Rock's public history. The
+          # rest of each message, and its author, stay as they are.
+          if git log --format=%B "public/$BASE..HEAD" | grep -qiE '^co-authored-by: *claude'; then
+            FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f \
+              --msg-filter 'grep -viE "^co-authored-by: *claude" | git stripspace' \
+              "public/$BASE..HEAD"
+          fi
+
+      - name: Squash into one commit
+        # Only when the PR also has the `squash` label.
+        if: env.SQUASH == 'true'
+        run: |
+          count=$(git rev-list --count --no-merges "public/$BASE..HEAD")
+          if [ "$count" -eq 0 ]; then
+            echo "SHIP_FAIL=This PR has no changes that aren't already on public \`$BASE\`." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # The PR title becomes the commit message, so it must be a release note.
+          if ! printf '%s' "$PR_TITLE" | grep -qE '^[+-] '; then
+            echo "SHIP_FAIL=With \`squash\`, the PR title becomes the commit message, so it must use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Edit the title, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # The author of the PR's first commit keeps authorship. Any other person
+          # who committed to the PR gets a Co-authored-by credit, so nobody loses
+          # credit. The message is otherwise the PR title only.
+          author=$(git log --reverse --no-merges --format='%an <%ae>' "public/$BASE..HEAD" | head -1)
+          coauthors=$(git log --no-merges --format='%an <%ae>' "public/$BASE..HEAD" | sort -u | grep -vxF "$author" || true)
+
+          {
+            printf '%s\n' "$PR_TITLE"
+            if [ -n "$coauthors" ]; then
+              echo
+              echo "$coauthors" | sed 's/^/Co-authored-by: /'
+            fi
+          } > squash-message.txt
+
+          git reset --soft "public/$BASE"
+          git commit -q --author="$author" -F squash-message.txt
+          echo "Squashed $count commits into: $(git log -1 --format='%h %s')"
+
+      - name: Check commit messages
+        run: |
+          # Merge commits ("Merge branch ...") aren't release notes, so they're skipped.
+          bad=$(git log --no-merges "public/$BASE..HEAD" --format='%s' | grep -vE '^[+-] ' || true)
+          if [ -n "$bad" ]; then
+            {
+              echo "SHIP_FAIL<<EOF"
+              echo "These commit messages don't use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Reword them, then add the \`$LABEL\` label again:"
+              echo "$bad" | sed 's/^/- /'
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # The rebased PR becomes the new tip of the target branch. Named after
+          # the real branch so merge commits read "Merge branch '<branch>' into ...".
+          git branch -f "$BASE" HEAD
+          echo "PUSH_BRANCHES=$BASE" >> "$GITHUB_ENV"
+
+      - name: Work out the merge-up order
+        if: env.LABEL == 'ship'
+        env:
+          MERGE_CHAIN: ${{ vars.MERGE_CHAIN }}
+        run: |
+          if [ -z "$MERGE_CHAIN" ]; then
+            echo "SHIP_FAIL=The \`MERGE_CHAIN\` variable isn't set on this repo, so the merge-up path is unknown. Use \`ship-only\` for now." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # Prints one "<from> <into>" line per merge, in the order to run them.
+          # A branch is only merged onward after every branch feeding it is done.
+          python3 - > merge-plan.txt <<'PY'
+          import json, os, sys
+          base = os.environ["BASE"]
+          chain = json.loads(os.environ["MERGE_CHAIN"])
+
+          # Every branch this change must reach.
+          reach, todo = {base}, [base]
+          while todo:
+              for nxt in chain.get(todo.pop(), []):
+                  if nxt not in reach:
+                      reach.add(nxt)
+                      todo.append(nxt)
+
+          parents = {n: [p for p in reach if n in chain.get(p, [])] for n in reach}
+          done, order = [base], []
+          while len(done) < len(reach):
+              ready = sorted(n for n in reach if n not in done and all(p in done for p in parents[n]))
+              if not ready:
+                  sys.exit("MERGE_CHAIN contains a loop.")
+              for n in ready:
+                  order.append(n)
+                  done.append(n)
+
+          for n in order:
+              for p in sorted(parents[n], key=done.index):
+                  print(p, n)
+          PY
+
+          echo "Merge plan:"
+          cat merge-plan.txt
+
+      - name: Merge up
+        if: env.LABEL == 'ship'
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          targets=$(awk '{print $2}' merge-plan.txt | awk '!seen[$0]++')
+          if [ -z "$targets" ]; then
+            echo "Nothing to merge up from $BASE."
+            exit 0
+          fi
+
+          # Start every target branch from the live public version.
+          refspecs=""
+          for t in $targets; do refspecs="$refspecs +refs/heads/$t:refs/remotes/public/$t"; done
+          git fetch "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" $refspecs
+          for t in $targets; do git branch -f "$t" "public/$t"; done
+
+          # Real merge commits (--no-ff), never a squash.
+          while read -r from into; do
+            git switch -q "$into"
+            if ! git merge --no-ff --no-edit "$from"; then
+              files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
+              git merge --abort
+              {
+                echo "SHIP_FAIL<<EOF"
+                echo "Merging \`$from\` into \`$into\` hit conflicts. Nothing was pushed to any branch."
+                echo "$files"
+                echo ""
+                echo "To ship now: add the \`ship-only\` label to ship to \`$BASE\` without merging up, then do the merge-up by hand in SmartGit."
+                echo "EOF"
+              } >> "$GITHUB_ENV"
+              exit 1
+            fi
+          done < merge-plan.txt
+
+          # Unquoted on purpose: collapses the newline-separated targets onto one line.
+          echo "PUSH_BRANCHES=$(echo $BASE $targets)" >> "$GITHUB_ENV"
+
+      - name: Push to public
+        id: push
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          refspecs=""
+          for b in $PUSH_BRANCHES; do refspecs="$refspecs refs/heads/$b:refs/heads/$b"; done
+
+          # --atomic: every branch updates, or none do.
+          if ! git push --atomic "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" $refspecs; then
+            echo "SHIP_FAIL=One of the public branches changed during the ship, so nothing was pushed. Add the \`$LABEL\` label again to retry." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          {
+            echo "SHIPPED<<EOF"
+            for b in $PUSH_BRANCHES; do
+              echo "- \`$b\`: https://github.com/SparkDevNetwork/Rock/commit/$(git rev-parse "$b")"
+            done
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+          # Record the PR's commit as it landed on its target branch. The
+          # build-results workflow matches this PR to the first AppVeyor build of
+          # develop that includes it, however it gets there: this ship's merge-up
+          # (`ship`), or a later manual merge-up (`ship-only`).
+          echo "SHIPPED_SHA=$(git rev-parse "$BASE")" >> "$GITHUB_ENV"
+          if echo " $PUSH_BRANCHES " | grep -q " develop "; then
+            echo "REACHED_DEVELOP=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Close the PR
+        run: |
+          if [ "$REACHED_DEVELOP" = "true" ]; then
+            next="AppVeyor will build \`develop\`. When it passes, this PR's branch is deleted. If it fails, you'll get a comment here with an analysis, and the branch is kept."
+          else
+            next="This ship didn't reach \`develop\`, which is the only branch AppVeyor builds. Once this change is merged up to \`develop\` and AppVeyor builds it, this PR gets checked: a pass deletes the branch, a failure comments here with an analysis. The branch is kept until then."
+          fi
+
+          # The marker is how the build-results workflow finds this PR's commit.
+          # Don't remove it.
+          gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
+            -c "Shipped to public by \`$ACTOR\` ($LABEL):
+          $SHIPPED
+
+          $next
+
+          <!-- shipped-sha: $SHIPPED_SHA -->"
+
+      - name: Mark the PR as waiting for AppVeyor
+        run: gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null
+
+      - name: Report failure
+        if: failure()
+        run: |
+          reason="${SHIP_FAIL:-Something unexpected failed. See the workflow log.}"
+          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
+            -b "**Ship failed.** $reason
+
+          [Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/$LABEL" || true

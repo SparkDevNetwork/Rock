@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -115,11 +116,20 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="reminderId">The reminder identifier.</param>
         private void LoadExistingReminder( int reminderId )
         {
-            hfReminderId.Value = reminderId.ToString();
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.Get( reminderId );
+
+                // Only the reminder's owner may view or edit it.
+                if ( !IsReminderOwnedByCurrentPerson( reminder ) )
+                {
+                    nbNotFound.Visible = true;
+                    pnlView.Visible = false;
+                    return;
+                }
+
+                hfReminderId.Value = reminderId.ToString();
 
                 IEntity entity = new EntityTypeService( rockContext ).GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
                 lEntity.Text = entity.ToString();
@@ -172,6 +182,13 @@ namespace RockWeb.Blocks.Reminders
 
             using ( var rockContext = new RockContext() )
             {
+                // The reminder type must be one of the types that were offered.
+                var entityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsInteger();
+                if ( !IsReminderTypeAllowed( reminder.ReminderTypeId, entityTypeId, rockContext ) )
+                {
+                    return;
+                }
+
                 var person = new PersonService( rockContext ).Get( ppPerson.SelectedValue.Value );
                 reminder.PersonAliasId = person.PrimaryAliasId.Value;
 
@@ -192,9 +209,21 @@ namespace RockWeb.Blocks.Reminders
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.Get( reminderId );
 
+                if ( !IsReminderOwnedByCurrentPerson( reminder ) )
+                {
+                    return;
+                }
+
                 IEntity entity = new EntityTypeService( rockContext ).GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
 
-                reminder.ReminderTypeId = ddlReminderType.SelectedValue.AsInteger();
+                // The reminder type must be one of the types that were offered.
+                var reminderTypeId = ddlReminderType.SelectedValue.AsInteger();
+                if ( !IsReminderTypeAllowed( reminderTypeId, reminder.ReminderType.EntityTypeId, rockContext ) )
+                {
+                    return;
+                }
+
+                reminder.ReminderTypeId = reminderTypeId;
                 reminder.ReminderDate = dpReminderDate.SelectedDate.Value;
                 reminder.Note = tbNote.Text;
                 reminder.RenewPeriodDays = numbRepeatDays.IntegerValue;
@@ -214,6 +243,49 @@ namespace RockWeb.Blocks.Reminders
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Determines whether the reminder exists and belongs to the current person.
+        /// </summary>
+        /// <param name="reminder">The reminder.</param>
+        /// <returns><c>true</c> if the reminder belongs to the current person; otherwise <c>false</c>.</returns>
+        private bool IsReminderOwnedByCurrentPerson( Reminder reminder )
+        {
+            /*
+                10/12/2026 - MSE
+
+                Reminder identifiers are sequential, so the ReminderId page
+                parameter (and the hidden reminder Id on save) could be changed
+                to read or rewrite another person's reminder. Reminders are
+                private to their owner everywhere else in Rock, so the block
+                now only loads and saves reminders owned by the current person.
+                Missing and not owned reminders get the same answer so Ids can
+                not be probed.
+
+                Reason: Prevent viewing and editing other people's reminders.
+            */
+            if ( reminder == null || !CurrentPersonId.HasValue )
+            {
+                return false;
+            }
+
+            return reminder.PersonAlias?.PersonId == CurrentPersonId.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the reminder type is one of the types offered
+        /// in the reminder type list for the entity type.
+        /// </summary>
+        /// <param name="reminderTypeId">The reminder type identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the reminder type is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsReminderTypeAllowed( int reminderTypeId, int entityTypeId, RockContext rockContext )
+        {
+            return new ReminderTypeService( rockContext )
+                .GetReminderTypesForEntityType( entityTypeId, CurrentPerson )
+                .Any( t => t.Id == reminderTypeId );
         }
 
         #endregion Methods
@@ -238,6 +310,13 @@ namespace RockWeb.Blocks.Reminders
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var reminderId = hfReminderId.Value.AsInteger();
+
+            // The reminder being edited must be the one specified by the page parameter.
+            if ( reminderId != PageParameter( PageParameterKey.ReminderId ).AsInteger() )
+            {
+                return;
+            }
+
             if ( reminderId == 0 )
             {
                 CreateNewReminder();

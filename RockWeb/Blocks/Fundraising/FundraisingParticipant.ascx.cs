@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -301,12 +302,19 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEditProfile_Click( object sender, EventArgs e )
         {
-            pnlMain.Visible = false;
-            pnlEditPreferences.Visible = true;
-
             var rockContext = new RockContext();
 
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+            // Only the participant themselves can edit their profile.
+            if ( !IsCurrentPersonGroupMember( groupMember ) )
+            {
+                return;
+            }
+
+            pnlMain.Visible = false;
+            pnlEditPreferences.Visible = true;
+
             if ( groupMember != null )
             {
                 var person = groupMember.Person;
@@ -386,14 +394,42 @@ namespace RockWeb.Blocks.Fundraising
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+            // Only the participant themselves can edit their profile.
+            if ( !IsCurrentPersonGroupMember( groupMember ) )
+            {
+                return;
+            }
+
             var personService = new PersonService( rockContext );
             var person = personService.Get( groupMember.PersonId );
 
+            // Read the GroupMember Attributes and validate the introduction before anything is changed.
+            groupMember.LoadAttributes();
+            var originalIntroduction = groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" );
+            Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
+
+            string introductionErrorMessage;
+            if ( !IsIntroductionValid( groupMember, originalIntroduction, out introductionErrorMessage ) )
+            {
+                nbEditPreferencesError.Text = introductionErrorMessage;
+                nbEditPreferencesError.Visible = true;
+                return;
+            }
+
             int? orphanedPhotoId = null;
-            if ( person.PhotoId != imgProfilePhoto.BinaryFileId )
+            var photoId = imgProfilePhoto.BinaryFileId;
+
+            // Only accept the person's current photo or a new upload, otherwise keep the current photo.
+            if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, person.PhotoId, CurrentPerson ) )
+            {
+                photoId = person.PhotoId;
+            }
+
+            if ( person.PhotoId != photoId )
             {
                 orphanedPhotoId = person.PhotoId;
-                person.PhotoId = imgProfilePhoto.BinaryFileId;
+                person.PhotoId = photoId;
 
                 // add or update the Photo Verify group to have this person as Pending since the photo was changed or deleted
                 using ( var photoRequestRockContext = new RockContext() )
@@ -416,10 +452,6 @@ namespace RockWeb.Blocks.Fundraising
                     photoRequestRockContext.SaveChanges();
                 }
             }
-
-            // Save the GroupMember Attributes
-            groupMember.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
             // Save selected Person Attributes (The ones picked in Block Settings)
             var personAttributes = this.GetAttributeValue( AttributeKey.PersonAttributes ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
@@ -459,7 +491,9 @@ namespace RockWeb.Blocks.Fundraising
                 // if they used the ImageEditor, and cropped it, the uncropped file is still in BinaryFile. So clean it up
                 if ( imgProfilePhoto.CropBinaryFileId.HasValue )
                 {
-                    if ( imgProfilePhoto.CropBinaryFileId != person.PhotoId )
+                    // Only clean up the uncropped file if it is the person's own upload.
+                    if ( imgProfilePhoto.CropBinaryFileId != person.PhotoId
+                        && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgProfilePhoto.CropBinaryFileId, null, CurrentPerson ) )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                         var binaryFile = binaryFileService.Get( imgProfilePhoto.CropBinaryFileId.Value );
@@ -494,6 +528,70 @@ namespace RockWeb.Blocks.Fundraising
         #region Methods
 
         /// <summary>
+        /// Validates a changed personal opportunity introduction against the
+        /// attribute's own field type rules (e.g. a plain text Memo rejects HTML).
+        /// </summary>
+        /// <param name="groupMember">The group member with the posted attribute values.</param>
+        /// <param name="originalIntroduction">The introduction value before the posted values were applied.</param>
+        /// <param name="errorMessage">The error message if the introduction is not valid.</param>
+        /// <returns><c>true</c> if the introduction is unchanged or valid; otherwise <c>false</c>.</returns>
+        private static bool IsIntroductionValid( GroupMember groupMember, string originalIntroduction, out string errorMessage )
+        {
+            errorMessage = null;
+
+            AttributeCache introductionAttribute = null;
+            groupMember.Attributes?.TryGetValue( "PersonalOpportunityIntroduction", out introductionAttribute );
+            var newIntroduction = groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" );
+
+            if ( introductionAttribute == null || newIntroduction == originalIntroduction )
+            {
+                return true;
+            }
+
+            var rules = introductionAttribute.FieldType.Field.GetValidationRules( introductionAttribute.ConfigurationValues );
+
+            try
+            {
+                StringValueValidator.Validate( newIntroduction, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+            }
+            catch ( PropertyValidationException ex )
+            {
+                errorMessage = $"{introductionAttribute.Name} {ex.Reason}.";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the group member is the current person. This matches
+        /// the check used to show the Edit Profile button.
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <returns><c>true</c> if the group member is the current person; otherwise <c>false</c>.</returns>
+        private bool IsCurrentPersonGroupMember( GroupMember groupMember )
+        {
+            return groupMember != null && this.CurrentPersonId.HasValue && groupMember.PersonId == this.CurrentPersonId.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the group type is Fundraising Opportunity or inherits from it.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns><c>true</c> if the group type is a fundraising opportunity type; otherwise, <c>false</c>.</returns>
+        private static bool IsFundraisingOpportunityGroupType( int groupTypeId )
+        {
+            var fundraisingGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() );
+            if ( !fundraisingGroupTypeId.HasValue )
+            {
+                return false;
+            }
+
+            var groupType = GroupTypeCache.Get( groupTypeId );
+            return groupType != null && ( groupType.Id == fundraisingGroupTypeId.Value || groupType.InheritedGroupTypeId == fundraisingGroupTypeId.Value );
+        }
+
+        /// <summary>
         /// Shows the view.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
@@ -508,7 +606,7 @@ namespace RockWeb.Blocks.Fundraising
             var rockContext = new RockContext();
 
             var group = new GroupService( rockContext ).Get( groupId );
-            if ( group == null )
+            if ( group == null || !IsFundraisingOpportunityGroupType( group.GroupTypeId ) )
             {
                 pnlView.Visible = false;
                 return;
@@ -534,6 +632,9 @@ namespace RockWeb.Blocks.Fundraising
             mergeFields.Add( "Group", group );
 
             groupMember.LoadAttributes( rockContext );
+
+            // The introduction is plain text, so encode it before any Lava template prints it.
+            groupMember.SetAttributeValue( "PersonalOpportunityIntroduction", groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).EncodeHtml() );
             mergeFields.Add( "GroupMember", groupMember );
 
             // Left Top Sidebar

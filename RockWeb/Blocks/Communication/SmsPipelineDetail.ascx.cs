@@ -363,6 +363,26 @@ namespace RockWeb.Blocks.Communication
             return PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
         }
 
+        /// <summary>
+        /// Gets the action currently being edited. The identifier comes from a
+        /// hidden field, so the action is only returned if it belongs to the
+        /// pipeline being viewed.
+        /// </summary>
+        /// <param name="smsActionService">The SMS action service.</param>
+        /// <returns>The <see cref="SmsAction"/> or <c>null</c> if not found.</returns>
+        private SmsAction GetEditAction( SmsActionService smsActionService )
+        {
+            var smsPipelineId = GetSmsPipelineId();
+            var action = smsActionService.Get( hfEditActionId.Value.AsInteger() );
+
+            if ( action == null || !smsPipelineId.HasValue || action.SmsPipelineId != smsPipelineId.Value )
+            {
+                return null;
+            }
+
+            return action;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -406,7 +426,12 @@ namespace RockWeb.Blocks.Communication
         protected void btnSaveActionSettings_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var action = new SmsActionService( rockContext ).Get( hfEditActionId.Value.AsInteger() );
+            var action = GetEditAction( new SmsActionService( rockContext ) );
+
+            if ( action == null )
+            {
+                return;
+            }
 
             action.Name = tbName.Text;
             action.IsActive = cbActive.Checked;
@@ -554,7 +579,12 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var smsActionService = new SmsActionService( rockContext );
-            var action = smsActionService.Get( hfEditActionId.Value.AsInteger() );
+            var action = GetEditAction( smsActionService );
+
+            if ( action == null )
+            {
+                return;
+            }
 
             smsActionService.Delete( action );
             rockContext.SaveChanges();

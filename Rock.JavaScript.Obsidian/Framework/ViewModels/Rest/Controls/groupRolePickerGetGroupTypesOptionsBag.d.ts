@@ -21,11 +21,14 @@
 // </copyright>
 //
 
-/** A bag that contains information needed to get activity for a communication recipient. */
-export type CommunicationRecipientGetActivityOptionsBag = {
-    /** Gets or sets the communication recipient's hashed identifier key. */
-    communicationRecipientIdKey?: string | null;
-
-    /** Gets or sets the security grant token to use when performing authorization checks. */
+/**
+ * The options that can be passed to the GetGroupTypes API action of
+ * the GroupRolePicker control.
+ */
+export type GroupRolePickerGetGroupTypesOptionsBag = {
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
     securityGrantToken?: string | null;
 };

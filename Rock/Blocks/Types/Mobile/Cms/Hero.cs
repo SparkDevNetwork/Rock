@@ -43,12 +43,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [TextField( "Title",
         Description = "The main title to display over the image. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Key = AttributeKeys.Title,
         Order = 0 )]
 
     [TextField( "Subtitle",
         Description = "The subtitle to display over the image. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Key = AttributeKeys.Subtitle,
         Order = 1 )]
 

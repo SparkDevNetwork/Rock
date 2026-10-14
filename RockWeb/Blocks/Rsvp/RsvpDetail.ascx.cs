@@ -23,8 +23,10 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -129,6 +131,8 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            nbNotAuthorized.Visible = false;
+
             int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             if ( !Page.IsPostBack )
             {
@@ -139,7 +143,14 @@ namespace RockWeb.Blocks.RSVP
                 else
                 {
                     var rockContext = new RockContext();
-                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    var group = GetViewableGroup( rockContext );
+                    if ( group == null )
+                    {
+                        ShowNotAuthorized( EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName ) );
+                        base.OnLoad( e );
+                        return;
+                    }
+
                     lHeading.Text = "RSVP Detail " + group.Name;
 
                     int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
@@ -148,8 +159,20 @@ namespace RockWeb.Blocks.RSVP
                         occurrenceId = 0;
                     }
 
-                    // Display Occurrence
-                    ShowDetails( rockContext, occurrenceId.Value, group );
+                    if ( occurrenceId == 0 && !CanEditRsvp( group ) )
+                    {
+                        // A new occurrence opens in the edit form.
+                        ShowNotAuthorized( EditModeMessage.NotAuthorizedToEdit( Group.FriendlyTypeName ) );
+                    }
+                    else if ( !IsOccurrenceInGroup( rockContext, group ) )
+                    {
+                        ShowNotAuthorized( "The AttendanceOccurrence does not exist." );
+                    }
+                    else
+                    {
+                        // Display Occurrence
+                        ShowDetails( rockContext, occurrenceId.Value, group );
+                    }
                 }
             }
 
@@ -189,6 +212,11 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
+            if ( !IsAuthorizedForPage( true ) )
+            {
+                return;
+            }
+
             int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             if ( groupId != null )
             {
@@ -218,6 +246,11 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         private void gAttendees_GridRebind( object sender, GridRebindEventArgs e )
         {
+            if ( !IsAuthorizedForPage( false ) )
+            {
+                return;
+            }
+
             BindAttendeeGridAndChart();
         }
 
@@ -247,6 +280,15 @@ namespace RockWeb.Blocks.RSVP
                     RockCheckBox rcbDecline = e.Row.FindControl( "rcbDecline" ) as RockCheckBox;
                     rcbAccept.InputAttributes.Add( "data-paired-checkbox", rcbDecline.ClientID );
                     rcbDecline.InputAttributes.Add( "data-paired-checkbox", rcbAccept.ClientID );
+
+                    // People who can only view the group see the responses read-only.
+                    if ( !CanEditPageGroup() )
+                    {
+                        rcbAccept.Enabled = false;
+                        rcbDecline.Enabled = false;
+                        rddlDeclineReason.Enabled = false;
+                        ( e.Row.FindControl( "tbDeclineNote" ) as RockTextBox ).Enabled = false;
+                    }
 
                     if ( rsvpData.DeclineReason.HasValue )
                     {
@@ -280,6 +322,11 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         protected void lbCancelOccurrence_Click( object sender, EventArgs e )
         {
+            if ( !IsAuthorizedForPage( false ) )
+            {
+                return;
+            }
+
             pnlDetails.Visible = true;
             pnlEdit.Visible = false;
         }
@@ -289,6 +336,11 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         protected void lbEditOccurrence_Click( object sender, EventArgs e )
         {
+            if ( !IsAuthorizedForPage( true ) )
+            {
+                return;
+            }
+
             pnlDetails.Visible = false;
             pnlEdit.Visible = true;
         }
@@ -298,6 +350,11 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         protected void lbSaveOccurrence_Click( object sender, EventArgs e )
         {
+            if ( !IsAuthorizedForPage( true ) )
+            {
+                return;
+            }
+
             int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
             if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
             {
@@ -348,6 +405,11 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
+            if ( !IsAuthorizedForPage( false ) )
+            {
+                return;
+            }
+
             rFilter.SetFilterPreference( UserPreferenceKey.Status, cblStatus.SelectedValues.AsDelimited( ";" ) );
             BindAttendeeGridAndChart();
         }
@@ -404,7 +466,7 @@ namespace RockWeb.Blocks.RSVP
             {
                 var occurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = occurrenceService.Get( occurrenceId.Value );
-                if ( occurrence.ShowDeclineReasons )
+                if ( occurrence != null && occurrence.ShowDeclineReasons )
                 {
                     if ( string.IsNullOrWhiteSpace( occurrence.DeclineReasonValueIds ) )
                     {
@@ -465,6 +527,151 @@ namespace RockWeb.Blocks.RSVP
             }
 
             _allDeclineReasons = values;
+        }
+
+        /// <summary>
+        /// Stores whether the current person can edit the RSVP details of the page's group, once it has been checked.
+        /// </summary>
+        private bool? _canEditPageGroup;
+
+        /// <summary>
+        /// Gets the group from the page parameter, if the current person is allowed to view it.
+        /// </summary>
+        /// <param name="rockContext">The DbContext.</param>
+        /// <returns>The group, or <c>null</c> if it does not exist or the current person can not view it.</returns>
+        private Group GetViewableGroup( RockContext rockContext )
+        {
+            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( !groupId.HasValue )
+            {
+                return null;
+            }
+
+            var group = new GroupService( rockContext ).Get( groupId.Value );
+            if ( group == null || !group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return group;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the RSVP details of the group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can edit the RSVP details; otherwise, <c>false</c>.</returns>
+        private bool CanEditRsvp( Group group )
+        {
+            /*
+                10/9/2026 - MSE
+
+                Changing RSVPs can add people to the group, so it needs the same
+                rights as managing the group's attendance: EDIT, MANAGE_MEMBERS or
+                TAKE_ATTENDANCE on the group. People who can only view the group
+                see the RSVP details read-only.
+
+                Reason: Limit RSVP changes to people who can manage the group.
+            */
+            return group.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson )
+                || group.IsAuthorized( Authorization.TAKE_ATTENDANCE, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the RSVP details of the page's group.
+        /// </summary>
+        /// <returns><c>true</c> if the current person can edit the RSVP details; otherwise, <c>false</c>.</returns>
+        private bool CanEditPageGroup()
+        {
+            if ( !_canEditPageGroup.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var group = GetViewableGroup( rockContext );
+                    _canEditPageGroup = group != null && CanEditRsvp( group );
+                }
+            }
+
+            return _canEditPageGroup.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the occurrences used by this page belong to the group.
+        /// </summary>
+        /// <param name="rockContext">The DbContext.</param>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if each occurrence used by this page belongs to the group; otherwise, <c>false</c>.</returns>
+        private bool IsOccurrenceInGroup( RockContext rockContext, Group group )
+        {
+            // The occurrence comes from the page parameter, or from the hidden field
+            // once a new occurrence is saved, so both are checked.
+            var occurrenceIds = new List<int?>
+            {
+                PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull(),
+                hfNewOccurrenceId.Value.AsIntegerOrNull()
+            };
+
+            var occurrenceService = new AttendanceOccurrenceService( rockContext );
+
+            foreach ( var occurrenceId in occurrenceIds.Where( id => id.HasValue && id.Value != 0 ) )
+            {
+                var isInGroup = occurrenceService.Queryable()
+                    .Any( o => o.Id == occurrenceId.Value && o.GroupId == group.Id );
+
+                if ( !isInGroup )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can use this page for its group and occurrence,
+        /// and shows a message when they can not.
+        /// </summary>
+        /// <param name="requireEdit"><c>true</c> if the action changes RSVP details.</param>
+        /// <returns><c>true</c> if the current person can continue; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedForPage( bool requireEdit )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var group = GetViewableGroup( rockContext );
+                if ( group == null )
+                {
+                    ShowNotAuthorized( EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName ) );
+                    return false;
+                }
+
+                if ( requireEdit && !CanEditRsvp( group ) )
+                {
+                    ShowNotAuthorized( EditModeMessage.NotAuthorizedToEdit( Group.FriendlyTypeName ) );
+                    return false;
+                }
+
+                if ( !IsOccurrenceInGroup( rockContext, group ) )
+                {
+                    ShowNotAuthorized( "The AttendanceOccurrence does not exist." );
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Shows the specified message in place of the RSVP details.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void ShowNotAuthorized( string message )
+        {
+            nbNotAuthorized.Text = message;
+            nbNotAuthorized.Visible = true;
+            pnlDetails.Visible = false;
+            pnlEdit.Visible = false;
+            pnlAttendees.Visible = false;
         }
 
         /// <summary>
@@ -581,6 +788,7 @@ namespace RockWeb.Blocks.RSVP
             pnlEdit.Visible = false;
             pnlDetails.Visible = true;
             pnlAttendees.Visible = true;
+            lbEditOccurrence.Visible = CanEditPageGroup();
 
             BindFilter();
 
@@ -707,7 +915,7 @@ namespace RockWeb.Blocks.RSVP
                 gAttendees.DataSource = attendees;
                 gAttendees.DataBind();
 
-                if ( attendees.Count() < 1 )
+                if ( attendees.Count() < 1 || !CanEditPageGroup() )
                 {
                     lbSave.Visible = false;
                 }
@@ -870,7 +1078,6 @@ var dnutChart = new Chart(dnutCtx, {{
             {
                 var occurrenceService = new AttendanceOccurrenceService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
-                var personAliasService = new PersonAliasService( rockContext );
 
                 AttendanceOccurrence occurrence = null;
 
@@ -896,18 +1103,8 @@ var dnutChart = new Chart(dnutCtx, {{
                         .Where( a => a.PersonAlias.PersonId == attendee.PersonId )
                         .FirstOrDefault();
 
-                    if ( attendance == null )
-                    {
-                        int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonId );
-                        if ( personAliasId.HasValue )
-                        {
-                            attendance = new Attendance();
-                            attendance.PersonAliasId = personAliasId;
-                            attendance.StartDateTime = occurrence.Schedule != null && occurrence.Schedule.HasSchedule() ? occurrence.OccurrenceDate.Date.Add( occurrence.Schedule.StartTimeOfDay ) : occurrence.OccurrenceDate;
-                            occurrence.Attendees.Add( attendance );
-                        }
-                    }
-
+                    // The grid only lists people who were already invited to this occurrence,
+                    // so only their responses are saved.
                     if ( attendance != null )
                     {
                         if ( attendee.Accept )

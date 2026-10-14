@@ -368,6 +368,23 @@ namespace RockWeb.Blocks.Crm
             return documentypesForContextEntityType.Where( d => !accessDeniedForDocumentTypeList.Contains( d.Id ) );
         }
 
+        /// <summary>
+        /// Determines whether the document belongs to the current context entity.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <returns><c>true</c> if the document belongs to the context entity; otherwise <c>false</c>.</returns>
+        private bool IsDocumentForContextEntity( Document document )
+        {
+            var contextEntity = this.ContextEntity();
+
+            if ( document == null || contextEntity == null )
+            {
+                return false;
+            }
+
+            return document.EntityId == contextEntity.Id && document.DocumentType.EntityTypeId == contextEntity.TypeId;
+        }
+
         #endregion Private Methods
 
         #region Grid Events
@@ -523,6 +540,15 @@ namespace RockWeb.Blocks.Crm
             var documentService = new DocumentService( rockContext );
             var document = documentService.Get( documentId );
 
+            // The document identifier comes from a hidden field, so make sure
+            // it belongs to the context entity and the person can view it.
+            if ( !IsDocumentForContextEntity( document )
+                || !document.DocumentType.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
+                || !document.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
+            {
+                return;
+            }
+
             byte[] bytes = document.BinaryFile.ContentStream.ReadBytesToEnd();
 
             Response.ContentType = "application/octet-stream";
@@ -553,6 +579,15 @@ namespace RockWeb.Blocks.Crm
                 if ( hfDocumentId.Value.IsNotNullOrWhiteSpace() )
                 {
                     document = documentService.Get( hfDocumentId.ValueAsInt() );
+
+                    // The document identifier comes from a hidden field, so make sure
+                    // it belongs to the context entity and the person can edit it.
+                    if ( !IsDocumentForContextEntity( document )
+                        || !document.DocumentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
+                        || !document.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        return;
+                    }
                 }
                 else
                 {

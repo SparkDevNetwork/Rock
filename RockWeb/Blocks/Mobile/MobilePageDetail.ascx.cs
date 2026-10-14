@@ -222,6 +222,11 @@ namespace RockWeb.Blocks.Mobile
                 var order = segments[3].AsInteger();
                 int pageId = hfPageId.Value.AsInteger();
 
+                if ( !CanEditPage( pageId ) )
+                {
+                    return;
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     var blockService = new BlockService( rockContext );
@@ -271,10 +276,23 @@ namespace RockWeb.Blocks.Mobile
                 int blockId = segments[2].AsInteger();
                 int newIndex = segments[3].AsInteger();
 
+                if ( !CanEditPage( pageId ) )
+                {
+                    return;
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     var blockService = new BlockService( rockContext );
                     var block = blockService.Get( blockId );
+
+                    //
+                    // Ensure the block being moved belongs to this page.
+                    //
+                    if ( block == null || block.PageId != pageId )
+                    {
+                        return;
+                    }
 
                     //
                     // Get all blocks for this page and the destination zone except the current block.
@@ -303,6 +321,20 @@ namespace RockWeb.Blocks.Mobile
 
                 BindZones();
             }
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the specified page. This
+        /// mirrors the check in <see cref="ShowDetail(int)"/> that controls whether
+        /// the block editing panel is shown.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns><c>true</c> if the page exists and can be edited; otherwise, <c>false</c>.</returns>
+        private bool CanEditPage( int pageId )
+        {
+            var page = PageCache.Get( pageId );
+
+            return page != null && page.IsAuthorized( Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
@@ -1185,7 +1217,9 @@ namespace RockWeb.Blocks.Mobile
             page.DisplayInNavWhen = ddlMenuDisplayWhen.SelectedValue.ConvertToEnumOrNull<Rock.Model.DisplayInNavWhen>() ?? DisplayInNavWhen.Never;
             page.SetAdditionalSettings<AdditionalPageSettings>( additionalSettings );
             int? oldIconId = null;
-            if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
+            // Only accept the page's current icon or a new upload, otherwise keep the current icon.
+            if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId
+                && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgPageIcon.BinaryFileId, page.IconBinaryFileId, CurrentPerson ) )
             {
                 oldIconId = page.IconBinaryFileId;
                 page.IconBinaryFileId = imgPageIcon.BinaryFileId;
@@ -1361,6 +1395,16 @@ namespace RockWeb.Blocks.Mobile
                 var blockService = new BlockService( rockContext );
 
                 var block = blockService.Get( e.CommandArgument.ToString().AsInteger() );
+                int pageId = hfPageId.Value.AsInteger();
+
+                //
+                // Ensure the block belongs to this page and the page can be edited.
+                //
+                if ( block == null || block.PageId != pageId || !CanEditPage( pageId ) )
+                {
+                    return;
+                }
+
                 blockService.Delete( block );
                 rockContext.SaveChanges();
 

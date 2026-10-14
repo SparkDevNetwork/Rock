@@ -42,6 +42,8 @@
             </div>
 
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                 <asp:Panel ID="pnlDetails" runat="server">
                     <div class="row">
                         <div class="col-md-8 col-sm-6">

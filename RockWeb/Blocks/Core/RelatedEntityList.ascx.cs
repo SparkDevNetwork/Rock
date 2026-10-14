@@ -490,6 +490,22 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Determines whether the specified related entity is one of the relationships
+        /// this block displays for the current source entity.
+        /// </summary>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
+        /// <returns><c>true</c> if the relationship is one of the existing relationships; otherwise <c>false</c>.</returns>
+        private bool IsExistingRelationship( int relatedEntityId )
+        {
+            if ( !sourceEntityId.HasValue || sourceEntityTypeId == 0 || targetEntityTypeId == 0 )
+            {
+                return false;
+            }
+
+            return GetExistingRelationships().Any( r => r.Id == relatedEntityId );
+        }
+
+        /// <summary>
         /// Gets all person aliases for person by person alias.
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
@@ -654,7 +670,7 @@ namespace RockWeb.Blocks.Core
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             var relatedEntity = relatedEntityService.Get( relationshipGuid );
-            if ( relatedEntity != null )
+            if ( relatedEntity != null && IsExistingRelationship( relatedEntity.Id ) )
             {
                 // Persist the relationship id for use in partial postbacks
                 this.CurrentRelationshipId = relatedEntity.Id;
@@ -684,7 +700,7 @@ namespace RockWeb.Blocks.Core
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             var relatedEntity = relatedEntityService.Get( this.CurrentRelationshipId );
-            if ( relatedEntity != null )
+            if ( relatedEntity != null && IsExistingRelationship( relatedEntity.Id ) )
             {
                 relatedEntityService.Delete( relatedEntity );
             }

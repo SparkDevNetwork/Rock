@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -64,7 +66,7 @@ namespace Rock.Rest.Controllers
             // Store current value, as SetPassword() will always set this to false.
             bool? passwordChangeRequired = value.IsPasswordChangeRequired;
 
-            SetPasswordFromRest( value );
+            SetCredentialsFromRest( value );
 
             if ( passwordChangeRequired != null )
             {
@@ -86,7 +88,7 @@ namespace Rock.Rest.Controllers
             // Store current value, as SetPassword() will always set this to false.
             bool? passwordChangeRequired = value.IsPasswordChangeRequired;
 
-            SetPasswordFromRest( value );
+            SetCredentialsFromRest( value );
 
             if ( passwordChangeRequired != null )
             {
@@ -97,41 +99,40 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Sets the password from rest.
+        /// Applies the plain text password and API key from the request body to the user login when the caller supplied them.
         /// </summary>
-        /// <param name="value">The value.</param>
-        private void SetPasswordFromRest( UserLogin value )
+        /// <param name="value">The user login deserialized from the request body.</param>
+        private void SetCredentialsFromRest( UserLogin value )
         {
-            UserLoginWithPlainTextPassword userLoginWithPlainTextPassword = null;
-            string json = string.Empty;
+            /*
+                10/13/26 - JMH
+
+                Neither credential is part of the REST contract, so the model binder never reads them
+                and responses never return them. Read them from the raw body so callers can still set them.
+
+                Reason: Keep credentials write-only over REST.
+            */
+            JObject body = null;
 
             this.ActionContext.Request.Content.ReadAsStreamAsync().ContinueWith( a =>
             {
-                // to allow PUT and POST to work with either UserLogin or UserLoginWithPlainTextPassword, read the the stream into a UserLoginWithPlainTextPassword record to see if that's what we got
                 a.Result.Position = 0;
                 StreamReader sr = new StreamReader( a.Result );
 
-                json = sr.ReadToEnd();
-                userLoginWithPlainTextPassword = JsonConvert.DeserializeObject( json, typeof( UserLoginWithPlainTextPassword ) ) as UserLoginWithPlainTextPassword;
+                body = JsonConvert.DeserializeObject<JObject>( sr.ReadToEnd() );
             } ).Wait();
 
-            if ( userLoginWithPlainTextPassword != null )
+            var plainTextPassword = body?.ToObject<UserLoginWithPlainTextPassword>()?.PlainTextPassword;
+            if ( !string.IsNullOrWhiteSpace( plainTextPassword ) )
             {
-                // if a UserLoginWithPlainTextPassword was posted, and PlainTextPassword was specified, encrypt it and set UserLogin.Password
-                if ( !string.IsNullOrWhiteSpace( userLoginWithPlainTextPassword.PlainTextPassword ) )
-                {
-                    ( this.Service as UserLoginService ).SetPassword( value, userLoginWithPlainTextPassword.PlainTextPassword );
-                    value.IsLockedOut = false; // unlock the user account if they reset their password.
-                }
+                ( this.Service as UserLoginService ).SetPassword( value, plainTextPassword );
+                value.IsLockedOut = false; // unlock the user account if they reset their password.
             }
-            else
+
+            var apiKey = body?.GetValue( nameof( UserLogin.ApiKey ), StringComparison.OrdinalIgnoreCase )?.ToString();
+            if ( !string.IsNullOrWhiteSpace( apiKey ) )
             {
-                // since REST doesn't serialize Password, get the existing Password from the database so that it doesn't get NULLed out
-                var existingUserLoginRecord = this.Get( value.Id );
-                if ( existingUserLoginRecord != null )
-                {
-                    value.Password = existingUserLoginRecord.Password;
-                }
+                value.ApiKey = apiKey;
             }
         }
     }

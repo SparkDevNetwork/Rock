@@ -209,6 +209,8 @@ namespace Rock.Workflow.Action
     [TextField( "Batch Prefix",
         Description = "The batch prefix name to use when creating a new batch. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Workflow Payment Entry",
         Key = AttributeKey.BatchPrefix,
         Category = "Payment / Transaction",

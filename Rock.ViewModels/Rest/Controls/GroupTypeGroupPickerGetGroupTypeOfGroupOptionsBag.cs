@@ -29,5 +29,12 @@ namespace Rock.ViewModels.Rest.Controls
         /// GUID of the group we want to find the group type of
         /// </summary>
         public Guid GroupGuid { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

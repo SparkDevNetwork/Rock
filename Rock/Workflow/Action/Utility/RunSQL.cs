@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
         EditorHeight = 400,
         IsRequired = true,
         Order = 0 )]
-    [KeyValueListField( "Parameters", "The parameters to supply to the SQL query. <span class='tip tip-lava'></span>", false, "", "Parameter", "", order: 1 )]
+    [KeyValueListField( "Parameters", "The parameters to supply to the SQL query. <span class='tip tip-lava'></span>", false, "", "Parameter", "", order: 1, AllowLava = true )]
     [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the scalar result of SQL query.", false, "", "", 2 )]
     [BooleanField( "Continue On Error", "Should processing continue even if SQL Error occurs?", false, "", 3 )]
     [Rock.SystemGuid.EntityTypeGuid( "A41216D6-6FB0-4019-B222-2C29B4519CF4")]

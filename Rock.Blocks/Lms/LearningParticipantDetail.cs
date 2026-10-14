@@ -551,6 +551,11 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningParticipant.FriendlyTypeName} was not found." );
             }
 
+            if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningParticipant.FriendlyTypeName ) );
+            }
+
             var now = RockDateTime.Now;
             var participantService = new LearningParticipantService( RockContext );
 
@@ -562,13 +567,9 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .OrderByDescending( g => g.ThresholdPercentage );
 
-            var learningClassService = new LearningClassService( RockContext );
-            var learningClassId = learningClassService.GetSelect(
-                PageParameter( PageParameterKey.LearningClassId ),
-                c => c.Id,
-                !PageCache.Layout.Site.DisablePredictableIds );
-            var personId = participantService.GetSelect( PageParameter( PageParameterKey.LearningParticipantId ), p => p.PersonId );
-            var learningPlan = participantService.GetStudentLearningPlan( learningClassId, personId );
+            // Use the class and person of the participant that was loaded (and
+            // authorized) so the grades are gated by the correct class.
+            var learningPlan = participantService.GetStudentLearningPlan( entity.LearningClassId, entity.PersonId );
 
             var components = LearningActivityContainer.Instance.Components;
 

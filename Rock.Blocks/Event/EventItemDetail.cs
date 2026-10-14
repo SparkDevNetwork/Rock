@@ -403,6 +403,17 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
+            // Make sure a new photo is one the current person is allowed to use.
+            if ( box.IsValidProperty( nameof( box.Entity.Photo ) ) )
+            {
+                var photoId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
+
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, entity.PhotoId, RequestContext.CurrentPerson ) )
+                {
+                    return false;
+                }
+            }
+
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
 
@@ -414,9 +425,6 @@ namespace Rock.Blocks.Event
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
-
-            box.IfValidProperty( nameof( box.Entity.Photo ),
-                () => entity.PhotoId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.Summary ),
                 () => entity.Summary = box.Entity.Summary );
@@ -803,6 +811,12 @@ namespace Rock.Blocks.Event
 
             foreach ( var eventCalendar in eventCalendarService.GetByGuids( addCalendarsGuids ) )
             {
+                // Make sure user is authorized to add the calendar, the same check used to build the list of available calendars.
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) && !eventCalendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                {
+                    continue;
+                }
+
                 entity.EventCalendarItems.Add( new EventCalendarItem
                 {
                     EventCalendarId = eventCalendar.Id,
@@ -848,16 +862,13 @@ namespace Rock.Blocks.Event
         /// <param name="entity">The entity.</param>
         private void SavePhoto( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, RockContext rockContext, EventItem entity )
         {
-            if ( box.Entity.Photo != null )
+            var binaryFileId = box.Entity.Photo?.GetEntityId<BinaryFile>( rockContext );
+            if ( entity.PhotoId != binaryFileId )
             {
-                var binaryFileId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
-                if ( entity.PhotoId != binaryFileId )
-                {
-                    MarkOldImageAsTemporary( entity.PhotoId, binaryFileId, rockContext );
-                    entity.PhotoId = binaryFileId;
-                    // Ensure that the Image is not set as IsTemporary=True
-                    EnsureCurrentImageIsNotMarkedAsTemporary( entity.PhotoId, rockContext );
-                }
+                MarkOldImageAsTemporary( entity.PhotoId, binaryFileId, rockContext );
+                entity.PhotoId = binaryFileId;
+                // Ensure that the Image is not set as IsTemporary=True
+                EnsureCurrentImageIsNotMarkedAsTemporary( entity.PhotoId, rockContext );
             }
         }
 
@@ -952,6 +963,13 @@ namespace Rock.Blocks.Event
                 if ( !ValidateEventItem( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
+                }
+
+                // Make sure the occurrence attributes are either new or already
+                // belong to this event item.
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.EventOccurenceAttributes?.ConvertAll( e => e.Attribute ), new EventItemOccurrence().TypeId, "EventItemId", entity.Id == 0 ? null : entity.Id.ToString(), rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
                 }
 
                 rockContext.WrapTransaction( () =>

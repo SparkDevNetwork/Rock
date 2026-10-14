@@ -731,8 +731,12 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            // save the attendance ids for later use.
-            hfSelectedAttendanceIds.Value = hfAttendanceIds.Value;
+            // save the attendance ids for later use. The ids come from a hidden field, so
+            // only keep the ones that belong to the selected person.
+            using ( var rockContext = new RockContext() )
+            {
+                hfSelectedAttendanceIds.Value = GetPersonAttendanceIds( hfAttendanceIds.Value.SplitDelimitedValues().AsIntegerList(), personId, rockContext ).AsDelimited( "," );
+            }
 
             // hide the reprint person select results, then show the selected labels to pick from
             pnlReprintLabels.Visible = false;
@@ -822,7 +826,13 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
         {
             var fileGuids = hfLabelFileGuids.Value.SplitDelimitedValues().AsGuidList();
             var personId = hfSelectedPersonId.ValueAsInt();
-            var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            List<int> selectedAttendanceIds;
+
+            // The ids come from hidden fields, so only keep the attendance records that belong to the selected person.
+            using ( var rockContext = new RockContext() )
+            {
+                selectedAttendanceIds = GetPersonAttendanceIds( hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList(), personId, rockContext );
+            }
 
             List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request, ( ReprintLabelOptions ) null );
 
@@ -833,6 +843,36 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
             hfSelectedPersonId.Value = string.Empty;
 
             lReprintResultsHtml.Text = messages.JoinStrings( "<br>" );
+        }
+
+        /// <summary>
+        /// Filters the attendance identifiers to only those that belong to the specified person
+        /// and match the check-in attendance records <see cref="FindPossibleMatchingCheckedInPeople"/>
+        /// searches (the currently checked-in test is left out since it depends on the time).
+        /// </summary>
+        /// <param name="attendanceIds">The attendance identifiers.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The attendance identifiers that belong to the person.</returns>
+        private List<int> GetPersonAttendanceIds( List<int> attendanceIds, int personId, RockContext rockContext )
+        {
+            if ( attendanceIds == null || !attendanceIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            var dayStart = RockDateTime.Today.AddDays( -1 );
+
+            return new AttendanceService( rockContext ).Queryable()
+                .Where( a => attendanceIds.Contains( a.Id ) && a.PersonAlias.PersonId == personId )
+                .Where( a =>
+                    a.StartDateTime > dayStart &&
+                    a.Occurrence.LocationId.HasValue &&
+                    a.DidAttend.HasValue &&
+                    a.DidAttend.Value &&
+                    a.Occurrence.ScheduleId.HasValue )
+                .Select( a => a.Id )
+                .ToList();
         }
 
         /// <summary>

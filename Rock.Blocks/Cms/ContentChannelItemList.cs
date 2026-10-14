@@ -508,6 +508,35 @@ namespace Rock.Blocks.Cms
             return SelectedContentChannel;
         }
 
+        /// <summary>
+        /// Determines whether the content channel item can be used by the
+        /// content library actions. The content library must be enabled for
+        /// the channel and the item must be one of the items shown in the list.
+        /// </summary>
+        /// <param name="contentChannelItemId">The content channel item identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">The error message if the item cannot be used.</param>
+        /// <returns><c>true</c> if the item can be used; otherwise <c>false</c>.</returns>
+        private bool IsContentLibraryItemAllowed( int contentChannelItemId, RockContext rockContext, out string errorMessage )
+        {
+            if ( GetContentChannel()?.ContentLibraryConfiguration?.IsEnabled != true )
+            {
+                errorMessage = "The content library is not enabled for this content channel.";
+                return false;
+            }
+
+            var qry = GetListQueryable( rockContext ).Where( i => i.Id == contentChannelItemId );
+
+            if ( !GetListItems( qry, rockContext ).Any() )
+            {
+                errorMessage = $"{ContentChannelItem.FriendlyTypeName} not found.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -753,6 +782,11 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !GetIsAddDeleteEnabled() )
+            {
+                return ActionBadRequest( "Not authorized to reorder items." );
+            }
+
             // Get the queryable and make sure it is ordered correctly.
             var qry = GetListQueryable( RockContext );
             qry = GetOrderedListQueryable( qry, RockContext );
@@ -781,6 +815,12 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
             try
             {
                 var contentChannelItemId = key.AsInteger();
+
+                if ( !IsContentLibraryItemAllowed( contentChannelItemId, RockContext, out var errorMessage ) )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
                 var contentChannelItemService = new ContentChannelItemService( RockContext );
                 contentChannelItemService.UploadToContentLibrary(
                     new ContentLibraryItemUploadOptions
@@ -809,6 +849,12 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
             try
             {
                 var contentChannelItemId = key.AsInteger();
+
+                if ( !IsContentLibraryItemAllowed( contentChannelItemId, RockContext, out var errorMessage ) )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
                 var contentChannelItemService = new ContentChannelItemService( RockContext );
                 contentChannelItemService.UploadToContentLibrary(
                     new ContentLibraryItemUploadOptions
@@ -836,6 +882,12 @@ WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
         public BlockActionResult ReDownloadContentLibraryItem( string key )
         {
             var contentChannelItemId = key.AsInteger();
+
+            if ( !IsContentLibraryItemAllowed( contentChannelItemId, RockContext, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
             var contentChannelItemService = new ContentChannelItemService( RockContext );
 
             var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();

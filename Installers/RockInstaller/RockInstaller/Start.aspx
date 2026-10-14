@@ -58,7 +58,7 @@
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
 
-        string version = "2_9_2";
+        string version = "2_9_5";
         bool isDebug = false;
 
         // Make sure the latest security protocols for .net 4.5.2 are turned on for the client in case they are required by the server or network.

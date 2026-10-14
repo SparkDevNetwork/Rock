@@ -370,6 +370,16 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            // Mirror the init check that decides whether ordering is offered
+            // in the UI, so the action cannot be used when reordering is hidden.
+            var isAuthorizedToConfigure = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            var isOrderingSupported = GetAttributeValue( AttributeKey.SupportOrdering ).AsBoolean( true ) && isAuthorizedToConfigure;
+
+            if ( !isOrderingSupported )
+            {
+                return ActionForbidden( "Not authorized to reorder components." );
+            }
+
             var container = GetContainer();
             if ( container == null )
             {

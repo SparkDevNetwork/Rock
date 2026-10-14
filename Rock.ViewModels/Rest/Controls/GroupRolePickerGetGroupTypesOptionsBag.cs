@@ -14,36 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System;
-
-using Rock.Enums.Communication;
-
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// A bag that contains information about a specific activity for a communication recipient.
+    /// The options that can be passed to the GetGroupTypes API action of
+    /// the GroupRolePicker control.
     /// </summary>
-    public class CommunicationRecipientActivityBag
+    public class GroupRolePickerGetGroupTypesOptionsBag
     {
         /// <summary>
-        /// The activity that took place.
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
         /// </summary>
-        public CommunicationRecipientActivity Activity { get; set; }
-
-        /// <summary>
-        /// The activity datetime.
-        /// </summary>
-        public DateTime ActivityDateTime { get; set; }
-
-        /// <summary>
-        /// A description of the activity.
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// A tooltip containing more information about the activity.
-        /// </summary>
-        public string Tooltip { get; set; }
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

@@ -59,6 +59,10 @@ internal partial class CommunicationSkill
             helper.AddError( "The communication is not in a transient state and cannot be sent." );
             helper.AddInstructions( "Ensure the communication is in a transient state before sending." );
         }
+        else if ( communication != null && !IsAuthorizedToEditDraft( communication, currentPerson ) )
+        {
+            helper.AddError( "You are not authorized to send this communication." );
+        }
 
         if ( helper.HasErrors )
         {

@@ -210,6 +210,11 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to reorder {StepProgram.FriendlyTypeName}." );
+            }
+
             var stepProgramService = new StepProgramService( RockContext );
 
             // Get the queryable and make sure it is ordered correctly.

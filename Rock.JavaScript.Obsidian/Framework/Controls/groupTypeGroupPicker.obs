@@ -26,6 +26,7 @@
 <script setup lang="ts">
     import { standardAsyncPickerProps, updateRefValue, useStandardAsyncPickerProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
@@ -75,6 +76,7 @@
     const standardProps = useStandardAsyncPickerProps(props);
     const fieldProps = useStandardRockFormFieldProps(props);
     const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
 
     const internalTypeValue = ref<ListItemBag | null>(props.groupType);
 
@@ -108,7 +110,8 @@
         }
 
         const options: GroupTypeGroupPickerGetGroupsOptionsBag = {
-            groupTypeGuid
+            groupTypeGuid,
+            securityGrantToken: securityGrantToken.value
         };
 
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupTypeGroupPickerGetGroups", null, options);
@@ -132,7 +135,8 @@
         const groupGuid = toGuidOrNull(props.modelValue?.value);
 
         const options: GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag = {
-            groupGuid: groupGuid ?? emptyGuid
+            groupGuid: groupGuid ?? emptyGuid,
+            securityGrantToken: securityGrantToken.value
         };
 
         const result = await http.post<ListItemBag>("/api/v2/Controls/GroupTypeGroupPickerGetGroupTypeOfGroup", null, options);

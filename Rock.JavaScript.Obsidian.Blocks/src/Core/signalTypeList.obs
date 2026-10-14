@@ -10,7 +10,7 @@
           :showLaunchWorkflow="false"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
 
         <Column name="signalColor"
                 title="Color"

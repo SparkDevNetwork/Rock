@@ -174,6 +174,17 @@ namespace RockWeb.Blocks.CheckIn.Config
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFile = binaryFileService.Get( binaryFileId.Value );
+
+                    // The file id comes from a hidden field, so only accept the page parameter's file
+                    // or a check-in label file (the files the Open list offers).
+                    var labelTypeGuid = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
+                    if ( binaryFile != null
+                        && binaryFile.Id != PageParameter( "BinaryFileId" ).AsIntegerOrNull()
+                        && ( binaryFile.BinaryFileType == null || binaryFile.BinaryFileType.Guid != labelTypeGuid ) )
+                    {
+                        binaryFile = null;
+                    }
+
                     if ( binaryFile != null )
                     {
                         using ( var stream = new MemoryStream() )

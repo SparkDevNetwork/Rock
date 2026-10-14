@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.Http;
 using Rock.Data;
 using Rock.Net;
+using Rock.Rest.Filters;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -176,7 +177,7 @@ namespace Rock.Rest.Controllers
         /// <param name="toNumber">To number.</param>
         /// <param name="message">The message.</param>
         /// <returns></returns>
-        //[Authenticate, Secured]
+        [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Utility/TextToWorkflow/{fromNumber}/{toNumber}/{message}" )]
         [Rock.SystemGuid.RestActionGuid( "A42C1F49-D3E2-4411-ABEF-F6B2B1D18480" )]

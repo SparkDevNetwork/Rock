@@ -165,32 +165,41 @@ namespace Rock.Blocks.Security.Oidc
             var entityService = new AuthClaimService( RockContext );
             error = null;
 
+            // The scope from the page is required for both new and existing
+            // claims since the list only shows claims of this scope.
+            var authScopeKey = RequestContext.GetPageParameter( PageParameterKey.ScopeId );
+            if ( authScopeKey.IsNullOrWhiteSpace() )
+            {
+                entity = null;
+                error = ActionBadRequest( "The auth scope id is required." );
+                return false;
+            }
+
+            var authScope = new AuthScopeService( RockContext ).Get( authScopeKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( authScope == null )
+            {
+                entity = null;
+                error = ActionBadRequest( $"{AuthScope.FriendlyTypeName} not found." );
+                return false;
+            }
+
             // Determine if we are editing an existing entity or creating a new one.
             if ( idKey.IsNotNullOrWhiteSpace() )
             {
                 // If editing an existing entity then load it and make sure it
-                // was found and can still be edited.
+                // was found and can still be edited. The claim must belong to
+                // the scope on the page, matching the list, so a tampered key
+                // can not reach a claim of a different scope.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( entity != null && entity.ScopeId != authScope.Id )
+                {
+                    entity = null;
+                }
             }
             else
             {
                 // Create a new entity.
-                var authScopeKey = RequestContext.GetPageParameter( PageParameterKey.ScopeId );
-                if ( authScopeKey.IsNullOrWhiteSpace() )
-                {
-                    entity = null;
-                    error = ActionBadRequest( "The auth scope id is required to create a claim." );
-                    return false;
-                }
-
-                var authScope = new AuthScopeService( RockContext ).Get( authScopeKey, !PageCache.Layout.Site.DisablePredictableIds );
-                if ( authScope == null )
-                {
-                    entity = null;
-                    error = ActionBadRequest( $"{AuthScope.FriendlyTypeName} not found." );
-                    return false;
-                }
-
                 entity = new AuthClaim();
                 entity.ScopeId = authScope.Id;
                 entityService.Add( entity );

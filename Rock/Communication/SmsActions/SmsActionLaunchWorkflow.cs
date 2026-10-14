@@ -60,6 +60,8 @@ namespace Rock.Communication.SmsActions
         Category = AttributeCategories.Workflow,
         Description = "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 4 )]
 
     [KeyValueListField( "Workflow Attributes",
@@ -69,6 +71,7 @@ namespace Rock.Communication.SmsActions
         IsRequired = false,
         DefaultValue = "",
         AllowHtml = true,
+        AllowLava = true,
         KeyPrompt = "Attribute Key",
         ValuePrompt = "Merge Template",
         Order = 5 )]

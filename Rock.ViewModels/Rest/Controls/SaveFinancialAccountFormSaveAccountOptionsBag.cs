@@ -70,6 +70,13 @@ namespace Rock.ViewModels.Rest.Controls
         /// The gateway token.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token that allows the account
+        /// to be saved.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 
 }

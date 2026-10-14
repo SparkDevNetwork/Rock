@@ -216,6 +216,14 @@ namespace Rock.Blocks.Engagement
         protected override IQueryable<AchieverAttemptItem> GetListQueryable( RockContext rockContext )
         {
             var achievementType = GetAchievementTypeCache();
+
+            // Only return attempts when the individual passes the same check
+            // used to determine if the block (and grid) can be viewed.
+            if ( achievementType?.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) != true )
+            {
+                return new List<AchieverAttemptItem>().AsQueryable();
+            }
+
             var achievementTypes = AchievementTypeCache.All();
 
             if ( achievementType != null )

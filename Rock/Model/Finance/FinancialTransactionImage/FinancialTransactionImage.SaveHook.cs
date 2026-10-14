@@ -43,7 +43,7 @@ namespace Rock.Model
                     case EntityContextState.Added:
                         {
                             // If there is a binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=False
-                            if ( binaryFile.IsTemporary )
+                            if ( binaryFile != null && binaryFile.IsTemporary )
                             {
                                 binaryFile.IsTemporary = false;
                             }
@@ -54,7 +54,7 @@ namespace Rock.Model
                     case EntityContextState.Modified:
                         {
                             // If there is a binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=False
-                            if ( binaryFile.IsTemporary )
+                            if ( binaryFile != null && binaryFile.IsTemporary )
                             {
                                 binaryFile.IsTemporary = false;
                             }
@@ -90,7 +90,7 @@ namespace Rock.Model
 
                 // If deleting, and there is a binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=true 
                 // so that it'll get cleaned up
-                if ( !binaryFile.IsTemporary )
+                if ( binaryFile != null && !binaryFile.IsTemporary )
                 {
                     binaryFile.IsTemporary = true;
                 }

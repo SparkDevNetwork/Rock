@@ -43,6 +43,11 @@ namespace Rock.Security.Authentication
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.AUTHENTICATION_PASSWORDLESS )]
     internal class PasswordlessAuthentication : AuthenticationComponent, IOneTimePasscodeAuthentication
     {
+        /// <summary>
+        /// The purpose used when encrypting the passwordless authentication state.
+        /// </summary>
+        private const string AuthenticationStateEncryptionPurpose = "Rock.Security.PasswordlessAuthenticationState";
+
         /// <inheritdoc/>
         public override bool RequiresRemoteAuthentication
         {
@@ -108,7 +113,7 @@ namespace Rock.Security.Authentication
         /// <returns>The decrypted state.</returns>
         internal static PasswordlessAuthenticationState GetDecryptedAuthenticationState( string state )
         {
-            return Encryption.DecryptString( state )?.FromJsonOrNull<PasswordlessAuthenticationState>();
+            return Encryption.DecryptStringForPurpose( state, AuthenticationStateEncryptionPurpose )?.FromJsonOrNull<PasswordlessAuthenticationState>();
         }
 
         /// <summary>
@@ -118,7 +123,15 @@ namespace Rock.Security.Authentication
         /// <returns>The encrypted authentication state.</returns>
         internal static string GetEncryptedAuthenticationState( PasswordlessAuthenticationState state )
         {
-            return Encryption.EncryptString( state?.ToJson() );
+            /*
+                10/7/2026 - MSE
+
+                The state holds one-time passcodes, so it is encrypted with a
+                key that is only used for this state.
+
+                Reason: Keep the passwordless state private.
+            */
+            return Encryption.EncryptStringForPurpose( state?.ToJson(), AuthenticationStateEncryptionPurpose );
         }
 
         /// <summary>
@@ -686,7 +699,7 @@ namespace Rock.Security.Authentication
         /// Determines whether passwordless authentication is allowed for <paramref name="person"/>.
         /// </summary>
         /// <param name="person">The person to check.</param>
-        private static bool IsPasswordlessAuthenticationAllowedForProtectionProfile( Person person )
+        internal static bool IsPasswordlessAuthenticationAllowedForProtectionProfile( Person person )
         {
             var securitySettings = new SecuritySettingsService().SecuritySettings;
 

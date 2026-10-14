@@ -552,6 +552,18 @@ namespace Rock.Blocks.Communication.Chat
                 return ActionUnauthorized( "You must be logged in to update your birth date." );
             }
 
+            // Age verification only asks for a birth date when the person does
+            // not already have one, so don't allow an existing one to be replaced.
+            if ( currentPerson.Age != null )
+            {
+                return ActionBadRequest( "Your birth date has already been provided." );
+            }
+
+            if ( birthDate == null )
+            {
+                return ActionBadRequest( "A birth date is required." );
+            }
+
             var birthDateTime = new DateTime( birthDate.Year, birthDate.Month, birthDate.Day );
             currentPerson.SetBirthDate( birthDateTime );
             RockContext.SaveChanges();

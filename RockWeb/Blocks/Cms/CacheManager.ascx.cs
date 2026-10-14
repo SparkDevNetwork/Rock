@@ -431,10 +431,19 @@ namespace RockWeb.Blocks.Cms
         /// <param name="cacheTagId">The Id of the tag.</param>
         private void UpdateExistingTag( int cacheTagId )
         {
+            int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+
             using ( var rockContext = new RockContext() )
             {
                 var definedValueService = new DefinedValueService( rockContext );
                 var cacheTagDefinedValue = definedValueService.Get( cacheTagId );
+
+                // Only allow updating values that are cache tags.
+                if ( cacheTagDefinedValue == null || cacheTagDefinedValue.DefinedTypeId != cachedTagDefinedTypeId )
+                {
+                    return;
+                }
+
                 cacheTagDefinedValue.Description = tbTagDescription.Text.Trim();
                 rockContext.SaveChanges();
             }

@@ -199,6 +199,14 @@ namespace RockWeb.Blocks.WorkFlow
             using ( var rockContext = new RockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
+
+                // Only process a new upload by the current person.
+                if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( fuImport.BinaryFileId, null, CurrentPerson ) )
+                {
+                    fuImport.BinaryFileId = null;
+                    return;
+                }
+
                 var binaryFile = binaryFileService.Get( fuImport.BinaryFileId ?? 0 );
                 var categoryService = new CategoryService( rockContext );
 

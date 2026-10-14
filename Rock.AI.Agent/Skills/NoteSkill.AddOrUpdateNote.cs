@@ -18,7 +18,9 @@ using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 
@@ -56,6 +58,24 @@ internal sealed partial class NoteSkill
         if ( noteIdKey.IsNotNullOrWhiteSpace() )
         {
             noteEntity = helper.GetRequiredEntity<Note>( noteIdKey );
+
+            // Note.IsAuthorized() only grants EDIT on an existing note to the
+            // person that created it or somebody with ADMINISTRATE.
+            if ( noteEntity != null && !noteEntity.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this note." );
+            }
+
+            // The note blocks only allow the creator to change the private
+            // flag. Otherwise somebody could lock the creator out of their
+            // own note.
+            var isPrivateNoteChanging = isPrivateNote.HasValue && isPrivateNote.Value != noteEntity?.IsPrivateNote;
+            var isCreator = noteEntity?.CreatedByPersonAlias?.PersonId == currentPerson.Id;
+
+            if ( noteEntity != null && isPrivateNoteChanging && !isCreator )
+            {
+                helper.AddError( "Only the person that created this note can change if it is private." );
+            }
         }
         else
         {
@@ -67,6 +87,16 @@ internal sealed partial class NoteSkill
             if ( noteType != null )
             {
                 noteEntity.NoteTypeId = noteType.Id;
+
+                if ( !noteType.UserSelectable )
+                {
+                    helper.AddError( "Notes of this type cannot be added manually." );
+                }
+
+                if ( !noteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    helper.AddError( "You are not authorized to add notes of this type." );
+                }
             }
 
             noteEntity.CreatedByPersonAliasId = currentPerson.PrimaryAliasId;
@@ -75,6 +105,10 @@ internal sealed partial class NoteSkill
             if ( !noteEntity.EntityId.HasValue )
             {
                 helper.AddError( $"{nameof( entityIdKey )} is required when adding a new note." );
+            }
+            else if ( noteType != null )
+            {
+                ValidateNoteTargetEntity( helper, rockContext, noteType.EntityTypeId, noteEntity.EntityId.Value, currentPerson );
             }
         }
 
@@ -100,6 +134,37 @@ internal sealed partial class NoteSkill
             {
                 noteEntity.IdKey,
             } );
+    }
+
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Validates that the entity a new note will be attached to exists and
+    /// that the person can view it. The note blocks get this check for free
+    /// because they only add notes to the page's context entity, which is
+    /// only available when the person has VIEW access to it.
+    /// </summary>
+    /// <param name="helper">The helper that will receive any errors.</param>
+    /// <param name="rockContext">The context to use when loading the entity.</param>
+    /// <param name="entityTypeId">The entity type identifier from the note type.</param>
+    /// <param name="entityId">The identifier of the entity the note will be attached to.</param>
+    /// <param name="currentPerson">The person that is adding the note.</param>
+    private static void ValidateNoteTargetEntity( AgentToolHelper helper, RockContext rockContext, int entityTypeId, int entityId, Model.Person currentPerson )
+    {
+        var entity = new EntityTypeService( rockContext ).GetEntity( entityTypeId, entityId );
+
+        if ( entity == null )
+        {
+            helper.AddError( "The entity to add the note to was not found. Make sure the entityIdKey matches the entity type of the note type." );
+            return;
+        }
+
+        if ( entity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, currentPerson ) )
+        {
+            helper.AddError( "You are not authorized to add notes to this entity." );
+        }
     }
 
     #endregion

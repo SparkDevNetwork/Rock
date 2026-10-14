@@ -347,6 +347,10 @@ namespace Rock.Rest
 
             Service.SetValues( value, targetModel );
 
+            // The check above authorized the record as it is stored. Authorize it again with the
+            // posted values applied, since they may change who is allowed to edit it.
+            CheckCanEditAfterUpdate( targetModel );
+
             if ( targetModel.IsValid )
             {
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
@@ -436,7 +440,7 @@ namespace Rock.Rest
                                 try
                                 {
                                     var int32 = Convert.ToInt32( currentValue );
-                                
+
                                     if ( !propertyType.IsEnum )
                                     {
                                         property.SetValue( targetModel, int32 );
@@ -488,6 +492,10 @@ namespace Rock.Rest
                     throw new HttpResponseException( response );
                 }
             }
+
+            // The check above authorized the record as it is stored. Authorize it again with the
+            // patched values applied, since they may change who is allowed to edit it.
+            CheckCanEditAfterUpdate( targetModel );
 
             // Verify model is valid before saving
             if ( targetModel.IsValid )
@@ -954,11 +962,85 @@ namespace Rock.Rest
                     // parent authorities, those properties can be lazy-loaded and checked for authorization
                     SetProxyCreation( true );
                     ISecured reloadedModel = ( ISecured ) Service.Get( securedModel.Id );
-                    if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                    if ( reloadedModel != null )
                     {
+                        if ( !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                        {
+                            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                        }
+                    }
+                    else if ( !IsAuthorizedForNewModel( securedModel, person ) )
+                    {
+                        // The model has no matching record in the database (e.g. an insert where the
+                        // Id is 0), so the reload above returns null. Authorize the posted values so
+                        // that inserts are held to the same EDIT standard as updates.
                         throw new HttpResponseException( HttpStatusCode.Unauthorized );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the person is authorized to EDIT a model that does not yet exist in
+        /// the database (such as an insert via POST). The posted model is not a dynamic proxy, so its
+        /// parent-authority navigation properties cannot be lazy-loaded and evaluated directly. A
+        /// proxy copy is created in a separate context and populated from the posted values so that
+        /// any parent authorities resolve from the posted foreign keys and the authorization check
+        /// evaluates correctly. That context is never saved, so the model being inserted by the
+        /// caller is left completely unaffected.
+        /// </summary>
+        /// <param name="securedModel">The posted model to authorize.</param>
+        /// <param name="person">The person to check authorization for.</param>
+        /// <returns><c>true</c> if the person is authorized to EDIT the model; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedForNewModel( ISecured securedModel, Person person )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+                var proxyModel = rockContext.Set<T>().Create();
+
+                service.Add( proxyModel );
+                service.SetValues( ( T ) securedModel, proxyModel );
+
+                if ( proxyModel is ISecured securedProxy )
+                {
+                    return securedProxy.IsAuthorized( Rock.Security.Authorization.EDIT, person );
+                }
+            }
+
+            // Not an ISecured model, so there is nothing to authorize.
+            return true;
+        }
+
+        /// <summary>
+        /// Checks that the current person can still EDIT the entity after the caller's values have been applied.
+        /// </summary>
+        /// <param name="entity">The tracked entity with the caller's values applied.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected virtual void CheckCanEditAfterUpdate( T entity )
+        {
+            if ( !( entity is ISecured ) )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = true;
+
+                // Use a fresh copy so the parent authority and any related records load from the new
+                // foreign keys, not the ones already loaded on the tracked model. This context is never saved.
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+                var updatedModel = service.Get( entity.Id );
+                if ( updatedModel == null )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+
+                service.SetValues( entity, updatedModel );
+
+                // Must run while this context is open so related records can lazy-load.
+                CheckCanEdit( ( ISecured ) updatedModel );
             }
         }
 

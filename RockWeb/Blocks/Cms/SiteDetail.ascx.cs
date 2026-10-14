@@ -474,18 +474,33 @@ namespace RockWeb.Blocks.Cms
                     site.SaveAttributeValues();
                 } );
 
+                var uploadBinaryFileService = new BinaryFileService( rockContext );
+
+                // Only accept the site's current files or new uploads, otherwise keep the current files.
+                var iconId = imgSiteIcon.BinaryFileId;
+                if ( !uploadBinaryFileService.IsUploadedBinaryFileAllowedForPerson( iconId, site.FavIconBinaryFileId, CurrentPerson ) )
+                {
+                    iconId = site.FavIconBinaryFileId;
+                }
+
+                var logoId = imgSiteLogo.BinaryFileId;
+                if ( !uploadBinaryFileService.IsUploadedBinaryFileAllowedForPerson( logoId, site.SiteLogoBinaryFileId, CurrentPerson ) )
+                {
+                    logoId = site.SiteLogoBinaryFileId;
+                }
+
                 int? existingIconId = null;
-                if ( site.FavIconBinaryFileId != imgSiteIcon.BinaryFileId )
+                if ( site.FavIconBinaryFileId != iconId )
                 {
                     existingIconId = site.FavIconBinaryFileId;
-                    site.FavIconBinaryFileId = imgSiteIcon.BinaryFileId;
+                    site.FavIconBinaryFileId = iconId;
                 }
 
                 int? existingLogoId = null;
-                if ( site.SiteLogoBinaryFileId != imgSiteLogo.BinaryFileId )
+                if ( site.SiteLogoBinaryFileId != logoId )
                 {
                     existingLogoId = site.SiteLogoBinaryFileId;
-                    site.SiteLogoBinaryFileId = imgSiteLogo.BinaryFileId;
+                    site.SiteLogoBinaryFileId = logoId;
                 }
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();

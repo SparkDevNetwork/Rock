@@ -97,6 +97,13 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
+            // Only process a new upload by the current person.
+            if ( fupFontAwesomeProPackage.BinaryFileId.HasValue
+                && !new BinaryFileService( new Rock.Data.RockContext() ).IsUploadedBinaryFileAllowedForPerson( fupFontAwesomeProPackage.BinaryFileId, null, CurrentPerson ) )
+            {
+                fupFontAwesomeProPackage.BinaryFileId = null;
+            }
+
             if ( fupFontAwesomeProPackage.BinaryFileId.HasValue )
             {
                 if ( FontAwesomeHelper.ExtractFontAwesomePackage( fupFontAwesomeProPackage.BinaryFileId.Value ) )

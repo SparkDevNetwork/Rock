@@ -86,6 +86,8 @@ You can view an online version of this email here:
         Description = "Used in the List-Unsubscribe email header. <span class='tip tip-lava'></span>",
         DefaultValue = "{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Key = AttributeKey.UnsubscribeURL,
         Order = 8 )]
 

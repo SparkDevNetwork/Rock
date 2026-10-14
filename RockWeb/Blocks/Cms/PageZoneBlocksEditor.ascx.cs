@@ -93,11 +93,12 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                // Get the settings from the current page state.
-                pageId = hfPageId.Value;
+                // Get the settings from the current page state. The page id hidden field is
+                // client controlled, so use the page from the query string, as on the first load.
+                pageId = PageParameter( PageParameterKey.Page );
                 if ( pageId == null )
                 {
-                    pageId = Rock.Utility.IdHasher.Instance.GetId( hfPageId.Value ).ToString();
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.Page ) ).ToString();
                 }
                 zoneName = ddlZones.SelectedValue;
             }
@@ -130,6 +131,18 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
+        /// <summary>
+        /// Determines whether the block belongs to the page, its layout or its site, which is
+        /// the set of blocks <see cref="ShowDetailForZone(string)"/> lists.
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="page">The page.</param>
+        /// <returns><c>true</c> if the block is on the page; otherwise, <c>false</c>.</returns>
+        private bool IsBlockOnPage( int blockId, PageCache page )
+        {
+            return page.Blocks.Any( b => b.Id == blockId );
+        }
+
         private void SortPanelWidgets( string eventParam, string[] values )
         {
             string panelWidgetClientId = values[0];
@@ -158,8 +171,8 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
-                var page = PageCache.Get(hfPageId.Value, true);
-                if ( block != null && page != null )
+                var page = PageCache.Get( hfPageId.Value, true );
+                if ( block != null && page != null && IsBlockOnPage( block.Id, page ) )
                 {
                     List<Block> zoneBlocks = null;
                     switch ( block.BlockLocation )
@@ -833,7 +846,8 @@ namespace RockWeb.Blocks.Cms
 
             var page = PageCache.Get( hfPageId.Value, true );
 
-            if ( block != null )
+            // The block id comes from a hidden field, so the block must be one this editor lists for the page.
+            if ( block != null && page != null && IsBlockOnPage( block.Id, page ) )
             {
                 block.Zone = ddlMoveToZoneList.SelectedValue;
                 if ( cblBlockMovePageLayoutOrSite.SelectedValue == "Page" )

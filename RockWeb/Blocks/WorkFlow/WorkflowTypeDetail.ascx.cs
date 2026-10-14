@@ -106,6 +106,16 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         private List<Guid> ExpandedActivityAttributes { get; set; }
         private List<Guid> ExpandedActions { get; set; }
 
+        /// <summary>
+        /// The identifier of the workflow type that the new workflow type being
+        /// edited was copied from, or <c>null</c> if it was not copied.
+        /// </summary>
+        private int? CopiedFromWorkflowTypeId
+        {
+            get { return ViewState["CopiedFromWorkflowTypeId"] as int?; }
+            set { ViewState["CopiedFromWorkflowTypeId"] = value; }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -295,6 +305,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             var rockContext = new RockContext();
             var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
 
+            // The workflow type id comes from a hidden field, so re-check edit rights before showing the edit form.
+            if ( workflowType == null || !CanEditWorkflowType( workflowType ) )
+            {
+                nbEditModeMessage.Heading = "Information";
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowType.FriendlyTypeName );
+                return;
+            }
+
             LoadStateDetails( workflowType, rockContext );
             ShowEditDetails( workflowType, rockContext );
         }
@@ -339,6 +357,15 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             var rockContext = new RockContext();
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var workflowType = workflowTypeService.Get( hfWorkflowTypeId.Value.AsInteger() );
+
+            // The workflow type id comes from a hidden field, so re-check the
+            // same rights ShowDetail() checks before showing the copy button.
+            if ( workflowType == null || !CanCopyWorkflowType( workflowType ) )
+            {
+                return;
+            }
+
+            CopiedFromWorkflowTypeId = workflowType.Id;
 
             if ( workflowType != null )
             {
@@ -615,6 +642,32 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( workflowTypeId.HasValue )
             {
                 workflowType = service.Get( workflowTypeId.Value );
+            }
+
+            // The workflow type id comes from a hidden field, so re-check edit rights on the existing
+            // workflow type, copy rights on the workflow type a new one was copied from, or the same
+            // rights ShowDetail() checks when adding a new one.
+            bool canEdit;
+
+            if ( workflowType != null )
+            {
+                canEdit = CanEditWorkflowType( workflowType );
+            }
+            else if ( CopiedFromWorkflowTypeId.HasValue )
+            {
+                var copiedFromWorkflowType = service.Get( CopiedFromWorkflowTypeId.Value );
+                canEdit = copiedFromWorkflowType != null && CanCopyWorkflowType( copiedFromWorkflowType );
+            }
+            else
+            {
+                canEdit = CanEditWorkflowType( new WorkflowType { CategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull() } );
+            }
+
+            if ( !canEdit )
+            {
+                nbEditModeMessage.Heading = "Information";
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowType.FriendlyTypeName );
+                return;
             }
 
             if ( workflowType == null )
@@ -1357,6 +1410,31 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         #endregion
 
         #region Show Details
+
+        /// <summary>
+        /// Determines whether the current person can edit the workflow type. This mirrors
+        /// the check in <see cref="ShowDetail()"/> that decides whether the edit button is shown.
+        /// </summary>
+        /// <param name="workflowType">The workflow type.</param>
+        /// <returns><c>true</c> if the current person can edit the workflow type; otherwise, <c>false</c>.</returns>
+        private bool CanEditWorkflowType( WorkflowType workflowType )
+        {
+            return !workflowType.IsSystem && CanCopyWorkflowType( workflowType );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can copy the workflow type. This mirrors
+        /// the check in <see cref="ShowDetail()"/> that decides whether the copy button is shown,
+        /// which also allows system workflow types to be copied.
+        /// </summary>
+        /// <param name="workflowType">The workflow type.</param>
+        /// <returns><c>true</c> if the current person can copy the workflow type; otherwise, <c>false</c>.</returns>
+        private bool CanCopyWorkflowType( WorkflowType workflowType )
+        {
+            return IsUserAuthorized( Authorization.EDIT )
+                || workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || workflowType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+        }
 
         /// <summary>
         /// Shows the detail.

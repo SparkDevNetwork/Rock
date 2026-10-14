@@ -191,11 +191,30 @@ namespace RockWeb.Blocks.Event
             // get event item
             int eventItemOccurrenceId = hfSelectedEventId.Value.AsInteger();
 
+            // The occurrence id comes from a hidden field, so make sure it belongs to the event item
+            // this block is showing, which is where the selectable occurrences come from.
+            int eventItemId = PageParameter( "EventItemId" ).AsInteger();
+
             // find registration
             var eventGroup = new EventItemOccurrenceGroupMapService( _rockContext ).Queryable()
-                                .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId )
+                                .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId
+                                    && m.EventItemOccurrence.EventItemId == eventItemId )
                                 .Select( m => m.EventItemOccurrence )
                                 .FirstOrDefault();
+
+            // Re-apply the campus and date window filter that LoadContent uses to list the occurrences.
+            if ( eventGroup != null )
+            {
+                int campusId = cpCampus.SelectedCampusId ?? person.GetFamilies().FirstOrDefault()?.CampusId ?? 1;
+                var fromDate = RockDateTime.Now;
+                var toDate = fromDate.AddDays( _daysInRange );
+
+                if ( ( eventGroup.CampusId.HasValue && eventGroup.CampusId != campusId )
+                    || !eventGroup.GetStartTimes( fromDate, toDate ).Any() )
+                {
+                    eventGroup = null;
+                }
+            }
 
             var registrationLinkage = eventGroup?.Linkages?.FirstOrDefault();
 

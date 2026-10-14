@@ -930,6 +930,7 @@ namespace Rock.Blocks.Administration
                 return actionError;
             }
 
+            var originalParentPageId = entity.ParentPageId;
             var editorRoutes = box.Bag.PageRoute.SplitDelimitedValues().Distinct();
 
             // Ensure everything is valid before saving.
@@ -945,6 +946,18 @@ namespace Rock.Blocks.Administration
             }
 
             var parentPageId = entity.ParentPageId;
+
+            // Make sure the person can edit the parent page when adding a new
+            // page or moving the page to a different parent.
+            if ( parentPageId.HasValue && ( entity.Id == 0 || parentPageId != originalParentPageId ) )
+            {
+                var parentPageCache = PageCache.Get( parentPageId.Value );
+
+                if ( parentPageCache == null || !parentPageCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Not authorized to edit the parent page." );
+                }
+            }
 
             if ( parentPageId.HasValue && parentPageId != 0 && entity.Id == 0 )
             {
@@ -1112,6 +1125,11 @@ namespace Rock.Blocks.Administration
             var pageService = new PageService( RockContext );
             var qryParams = new Dictionary<string, string>();
             var page = PageCache.GetByIdKey( bag.Key );
+
+            if ( page != null && !page.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {Page.FriendlyTypeName}." );
+            }
 
             if ( page != null )
             {

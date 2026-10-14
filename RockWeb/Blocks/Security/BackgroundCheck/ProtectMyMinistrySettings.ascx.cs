@@ -279,6 +279,14 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     if ( !definedValueId.Equals( 0 ) )
                     {
                         definedValue = service.Get( definedValueId );
+
+                        // The value identifier comes from a hidden field, so make sure
+                        // it is a background check type value.
+                        if ( definedValue != null && definedValue.DefinedTypeId != definedType.Id )
+                        {
+                            HideDialog();
+                            return;
+                        }
                     }
 
                     if ( definedValue == null )

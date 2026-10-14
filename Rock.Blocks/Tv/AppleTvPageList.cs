@@ -191,6 +191,11 @@ namespace Rock.Blocks.Tv
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !GetIsAddDeleteEnabled() )
+            {
+                return ActionBadRequest( "Not authorized to reorder items." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
@@ -232,6 +237,21 @@ namespace Rock.Blocks.Tv
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {Page.FriendlyTypeName}." );
+                }
+
+                // Only allow deleting pages that are shown in the list.
+                if ( !GetListQueryable( rockContext ).Any( p => p.Id == entity.Id ) )
+                {
+                    return ActionBadRequest( $"{Page.FriendlyTypeName} not found." );
+                }
+
+                // The site's default page cannot be deleted, the grid does not offer it.
+                var siteId = GetSiteId();
+                var defaultPageId = siteId.HasValue ? SiteCache.Get( siteId.Value )?.DefaultPageId : null;
+
+                if ( defaultPageId.HasValue && defaultPageId.Value == entity.Id )
+                {
+                    return ActionBadRequest( $"The default {Page.FriendlyTypeName} of the application cannot be deleted." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

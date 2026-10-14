@@ -331,6 +331,61 @@ namespace RockWeb.Blocks.Event
         #region Methods
 
         /// <summary>
+        /// Gets the registration instance and template placement from the page parameters, the
+        /// same way <see cref="ShowDetails"/> does, and makes sure the placement belongs to the
+        /// registration template. Used instead of the client controlled hidden fields.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationInstance">The registration instance, or <c>null</c> when in registration template mode.</param>
+        /// <param name="registrationTemplatePlacement">The registration template placement.</param>
+        /// <returns><c>true</c> if a valid placement was found; otherwise, <c>false</c>.</returns>
+        private bool TryGetPlacementContext( RockContext rockContext, out RegistrationInstance registrationInstance, out RegistrationTemplatePlacement registrationTemplatePlacement )
+        {
+            registrationInstance = null;
+            registrationTemplatePlacement = null;
+
+            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+
+            int? registrationTemplateId;
+            Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            if ( registrationTemplateGuid.HasValue )
+            {
+                registrationTemplateId = new RegistrationTemplateService( rockContext ).GetId( registrationTemplateGuid.Value );
+            }
+            else
+            {
+                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            }
+
+            int? registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull();
+            if ( registrantId.HasValue )
+            {
+                registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( registrantId.Value, s => s.Registration.RegistrationInstanceId );
+            }
+
+            if ( registrationInstanceId.HasValue )
+            {
+                registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
+                if ( registrationInstance == null )
+                {
+                    return false;
+                }
+
+                registrationTemplateId = registrationInstance.RegistrationTemplateId;
+            }
+
+            int? registrationTemplatePlacementId = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsIntegerOrNull();
+            if ( !registrationTemplateId.HasValue || !registrationTemplatePlacementId.HasValue )
+            {
+                return false;
+            }
+
+            registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( registrationTemplatePlacementId.Value );
+
+            return registrationTemplatePlacement != null && registrationTemplatePlacement.RegistrationTemplateId == registrationTemplateId.Value;
+        }
+
+        /// <summary>
         /// Shows the details.
         /// </summary>
         protected void ShowDetails()
@@ -1190,10 +1245,21 @@ namespace RockWeb.Blocks.Event
         protected void mdAddPlacementGroup_SaveClick( object sender, EventArgs e )
         {
             List<Group> placementGroups;
-            var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
             var rockContext = new RockContext();
             nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
             nbAddExistingPlacementGroupWarning.Visible = false;
+
+            // The instance and placement ids are in hidden fields, so re-derive them from the
+            // page parameters the same way ShowDetails does.
+            RegistrationInstance registrationInstance;
+            RegistrationTemplatePlacement registrationTemplatePlacement;
+            if ( !TryGetPlacementContext( rockContext, out registrationInstance, out registrationTemplatePlacement ) )
+            {
+                mdAddPlacementGroup.Hide();
+                return;
+            }
+
+            var groupTypeId = registrationTemplatePlacement.GroupTypeId;
 
             if ( bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddExistingGroup.ConvertToInt().ToString() )
             {
@@ -1271,22 +1337,18 @@ namespace RockWeb.Blocks.Event
 
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
-            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
-            var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
 
             foreach ( var placementGroup in placementGroups )
             {
-                if ( registrationInstanceId.HasValue )
+                if ( registrationInstance != null )
                 {
-                    var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
-                    registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstanceId.Value, registrationTemplatePlacementId.Value );
+                    registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance.Id, registrationTemplatePlacement.Id );
 
                     // in RegistrationInstanceMode
-                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value );
+                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacement.Id );
                 }
-                else if ( registrationTemplatePlacementId.HasValue )
+                else
                 {
-                    var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
                     registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
                 }
             }

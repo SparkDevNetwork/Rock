@@ -554,6 +554,15 @@ namespace Rock.Blocks.Reporting
                     var campusId = CampusCache.GetId( campusGuid.Value );
                     var scheduleId = new ScheduleService( rockContext ).GetId( scheduleGuid.Value );
 
+                    // Only allow schedules from the configured schedule categories.
+                    if ( scheduleId.HasValue && !IsScheduleAllowed( scheduleGuid.Value, rockContext ) )
+                    {
+                        return ActionBadRequest( "Invalid service time." );
+                    }
+
+                    // Only allow values to be saved for the configured metrics.
+                    var allowedMetricGuids = this.MetricCategories.Select( a => a.MetricGuid ).ToList();
+
                     if ( campusId.HasValue && scheduleId.HasValue )
                     {
                         var metricService = new MetricService( rockContext );
@@ -579,7 +588,7 @@ namespace Rock.Blocks.Reporting
 
                             var metric = new MetricService( rockContext ).Get( item.Id );
 
-                            if ( metric != null )
+                            if ( metric != null && allowedMetricGuids.Contains( metric.Guid ) )
                             {
                                 var campusPartitionId = metric.MetricPartitions
                                     .Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == campusEntityTypeId )
@@ -727,6 +736,32 @@ namespace Rock.Blocks.Reporting
             }
 
             return box;
+        }
+
+        /// <summary>
+        /// Determines whether the schedule belongs to one of the schedule
+        /// categories configured in the block settings.
+        /// </summary>
+        /// <param name="scheduleGuid">The schedule unique identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the schedule is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsScheduleAllowed( Guid scheduleGuid, RockContext rockContext )
+        {
+            var scheduleCategoryIds = GetAttributeValue( AttributeKey.ScheduleCategory )
+                .SplitDelimitedValues()
+                .AsGuidList()
+                .Select( g => CategoryCache.Get( g )?.Id )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var scheduleCategoryId = new ScheduleService( rockContext )
+                .Queryable()
+                .Where( s => s.Guid == scheduleGuid )
+                .Select( s => s.CategoryId )
+                .FirstOrDefault();
+
+            return scheduleCategoryId.HasValue && scheduleCategoryIds.Contains( scheduleCategoryId.Value );
         }
 
         /// <summary>

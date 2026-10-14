@@ -304,8 +304,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             int? groupMemberId = hfRoleId.Value.AsIntegerOrNull();
                             if ( groupMemberId.HasValue )
                             {
+                                // The group member identifier comes from a hidden field, so make sure
+                                // it is one of the relationships listed for this person's group.
                                 groupMember = memberService.Queryable( true )
-                                .Where( m => m.Id == groupMemberId.Value )
+                                .Where( m => m.Id == groupMemberId.Value
+                                    && m.GroupId == group.Id
+                                    && m.PersonId != Person.Id )
                                 .FirstOrDefault();
                             }
 
