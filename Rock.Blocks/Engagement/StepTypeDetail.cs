@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,14 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Data.Entity.SqlServer;
+using System.Linq;
+using System.Text;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -22,8 +30,6 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
-using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -32,13 +38,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
-using System.Linq;
-using System.Text;
+using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
+using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 
 namespace Rock.Blocks.Engagement
 {
@@ -726,7 +727,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${StepType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {StepType.FriendlyTypeName}." );
                 return false;
             }
 
@@ -1294,6 +1295,13 @@ namespace Rock.Blocks.Engagement
 
             var isNew = entity.Id == 0;
 
+            // Make sure the step attributes are either new or already
+            // belong to this step type.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.StepAttributes?.ConvertAll( e => e.Attribute ), new Step().TypeId, "StepTypeId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             // Workflow Triggers: Remove deleted triggers.
             var uiWorkflows = box.Bag.Workflows.Select( l => l.Guid );
             var deletedTriggers = entity.StepWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList();
@@ -1550,7 +1558,15 @@ namespace Rock.Blocks.Engagement
 
             var targetStepProgram = StepProgramCache.Get( transferBag.TargetStepProgramGuid.Value );
 
-            if ( targetStepProgram == null )
+            // Only allow the same programs that GetStepPrograms() offers.
+            var targetStepProgramEntity = targetStepProgram != null
+                ? new StepProgramService( RockContext ).Get( targetStepProgram.Id )
+                : null;
+
+            if ( targetStepProgramEntity == null
+                || !targetStepProgramEntity.IsActive
+                || targetStepProgramEntity.Id == stepType.StepProgramId
+                || !targetStepProgramEntity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "Target Step Program not found." );
             }

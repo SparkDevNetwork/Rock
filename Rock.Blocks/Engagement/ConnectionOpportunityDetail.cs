@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,8 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Model;
 using Rock.Enums.Connection;
+using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail;
@@ -906,8 +906,16 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Photo ),
-                () => entity.PhotoId = box.Bag.Photo.GetEntityId<BinaryFile>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Photo ), () =>
+            {
+                var photoId = box.Bag.Photo.GetEntityId<BinaryFile>( RockContext );
+
+                // Only accept the current photo or a new upload by the current person, otherwise keep the current photo.
+                if ( new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, entity.PhotoId, RequestContext.CurrentPerson ) )
+                {
+                    entity.PhotoId = photoId;
+                }
+            } );
 
             box.IfValidProperty( nameof( box.Bag.PublicName ),
                 () => entity.PublicName = box.Bag.PublicName );
@@ -997,6 +1005,21 @@ namespace Rock.Blocks.Engagement
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                // The posted key must be the opportunity from the page parameter
+                // so the authorization check below applies to the same entity
+                // that was evaluated when the block was initialized.
+                var initialEntity = GetInitialEntity();
+                var isInitialEntity = entity != null
+                    && initialEntity != null
+                    && initialEntity.Id == entity.Id;
+
+                if ( !isInitialEntity )
+                {
+                    entity = null;
+                    error = ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
+                    return false;
+                }
             }
             else
             {
@@ -1099,6 +1122,17 @@ namespace Rock.Blocks.Engagement
             }
 
             var isNew = entity.Id == 0;
+
+            // A new photo is uploaded as a temporary file, so keep it now that it is in use.
+            if ( entity.PhotoId.HasValue && entity.PhotoId != originalPhotoId )
+            {
+                var newPhoto = new BinaryFileService( RockContext ).Get( entity.PhotoId.Value );
+
+                if ( newPhoto != null )
+                {
+                    newPhoto.IsTemporary = false;
+                }
+            }
 
             RockContext.WrapTransaction( () =>
             {

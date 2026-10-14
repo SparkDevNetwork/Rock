@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Rock.AI.Agent.Utilities;
 

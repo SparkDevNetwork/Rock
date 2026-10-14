@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -87,6 +87,12 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// The role that this agent uses when determining which AI model to use.
         /// </summary>
         public ModelServiceRole Role { get; set; }
+
+        /// <summary>
+        /// How much reasoning effort the language model should spend when
+        /// this agent responds to a chat message.
+        /// </summary>
+        public ReasoningEffort ReasoningEffort { get; set; }
 
         /// <summary>
         /// The Lava template that will be used to generate the current person

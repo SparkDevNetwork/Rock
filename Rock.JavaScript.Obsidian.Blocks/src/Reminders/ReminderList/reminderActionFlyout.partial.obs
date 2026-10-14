@@ -171,10 +171,10 @@
      * button gets a free pass: clicking the same button that opened the flyout
      * should close it via the card's normal handler, not this listener.
      *
-     * The bootstrap-datepicker popup is also exempt. It attaches its calendar
-     * to document.body, so a date click registers as outside the flyout. mouseup
-     * fires before the picker's click handler can apply the value, so dismissing
-     * here would tear the flyout down before the new date is committed.
+     * Overlays that attach to document.body are also exempt (datepicker
+     * calendar, PersonPicker search dialog). A click inside them registers as
+     * outside the flyout, and mouseup fires before the overlay's click handler
+     * can apply the value — dismissing here would unmount the flyout first.
      */
     function onDocumentMouseUp(e: MouseEvent): void {
         if (!props.visible) {
@@ -187,7 +187,7 @@
         if (props.anchorEl?.contains(target)) {
             return;
         }
-        if (target instanceof Element && target.closest(".datepicker")) {
+        if (target instanceof Element && target.closest(".datepicker, .person-picker-popup")) {
             return;
         }
         close();

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -398,7 +398,7 @@ namespace Rock.Blocks.Finance
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${FinancialPledge.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {FinancialPledge.FriendlyTypeName}." );
                 return false;
             }
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -190,7 +190,10 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( $"{SignatureDocumentTemplate.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                // The list only shows templates the person can view, so do
+                // not allow any other template to be deleted.
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {SignatureDocumentTemplate.FriendlyTypeName}." );
                 }

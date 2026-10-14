@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,18 @@ internal class LavaEndpointSaveResult
     /// The URL a client uses to call the endpoint.
     /// </summary>
     public string Url { get; set; }
+
+    /// <summary>
+    /// The IdKey of the saved endpoint, for the Core Administration skill's
+    /// authorization tools when the endpoint answers for itself.
+    /// </summary>
+    public string EndpointIdKey { get; set; }
+
+    /// <summary>
+    /// The IdKey of the Lava Endpoint entity type, paired with endpointIdKey
+    /// and the Execute action in those tools.
+    /// </summary>
+    public string EntityTypeIdKey { get; set; }
 
     /// <summary>
     /// The result of test-executing the saved template, or the reason the

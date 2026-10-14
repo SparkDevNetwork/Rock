@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -197,11 +197,22 @@ namespace RockWeb.Blocks.Core
                 definedType = new DefinedType();
                 definedType.IsSystem = false;
                 definedType.Order = 0;
-                typeService.Add( definedType );
             }
             else
             {
                 definedType = typeService.Get( definedTypeId );
+            }
+
+            if ( !CanEditDefinedType( definedType ) )
+            {
+                ShowDetail( definedTypeId );
+                mdDeleteWarning.Show( "Sorry, You are not authorized to edit this Defined Type.", ModalAlertType.Information );
+                return;
+            }
+
+            if ( definedType.Id == 0 )
+            {
+                typeService.Add( definedType );
             }
 
             definedType.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
@@ -366,6 +377,12 @@ namespace RockWeb.Blocks.Core
         {
             DefinedTypeService definedTypeService = new DefinedTypeService( RockApp.Current.CreateRockContext() );
             DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
+
+            if ( !CanEditDefinedType( definedType ) )
+            {
+                return;
+            }
+
             ShowEditDetails( definedType );
         }
 
@@ -416,7 +433,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                if ( !IsUserAuthorized( Authorization.EDIT ) )
+                if ( !IsUserAuthorized( Authorization.EDIT ) || !definedType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     readOnly = true;
                     nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
@@ -464,6 +481,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Add( object sender, EventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             gDefinedTypeAttributes_ShowEdit( Guid.Empty );
         }
 
@@ -474,6 +496,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Edit( object sender, RowEventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gDefinedTypeAttributes_ShowEdit( attributeGuid );
         }
@@ -484,10 +511,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gDefinedTypeAttributes_ShowEdit( Guid attributeGuid )
         {
-            pnlDetails.Visible = false;
-            vsDetails.Enabled = false;
-            pnlDefinedTypeAttributes.Visible = true;
-
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
@@ -499,8 +522,18 @@ namespace RockWeb.Blocks.Core
             {
                 AttributeService attributeService = new AttributeService( RockApp.Current.CreateRockContext() );
                 attribute = attributeService.Get( attributeGuid );
+
+                if ( attribute == null || !IsDefinedTypeAttribute( attribute, hfDefinedTypeId.ValueAsInt() ) )
+                {
+                    return;
+                }
+
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
+
+            pnlDetails.Visible = false;
+            vsDetails.Enabled = false;
+            pnlDefinedTypeAttributes.Visible = true;
 
             edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
@@ -524,6 +557,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         void gDefinedTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             string qualifierValue = hfDefinedTypeId.Value;
 
             var rockContext = RockApp.Current.CreateRockContext();
@@ -578,12 +616,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Delete( object sender, RowEventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
             var rockContext = RockApp.Current.CreateRockContext();
             AttributeService attributeService = new AttributeService( rockContext );
             Attribute attribute = attributeService.Get( attributeGuid );
 
-            if ( attribute != null )
+            if ( attribute != null && IsDefinedTypeAttribute( attribute, hfDefinedTypeId.ValueAsInt() ) )
             {
                 string errorMessage;
                 if ( !attributeService.CanDelete( attribute, out errorMessage ) )
@@ -616,6 +659,23 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
+            // Make sure an existing attribute can only be updated if it
+            // already belongs to this defined type.
+            if ( edtDefinedTypeAttributes.AttributeId.HasValue )
+            {
+                var existingAttribute = new AttributeService( RockApp.Current.CreateRockContext() ).Get( edtDefinedTypeAttributes.AttributeId.Value );
+
+                if ( existingAttribute == null || !IsDefinedTypeAttribute( existingAttribute, hfDefinedTypeId.ValueAsInt() ) )
+                {
+                    return;
+                }
+            }
+
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits(
                 edtDefinedTypeAttributes, EntityTypeCache.Get( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
 
@@ -664,8 +724,75 @@ namespace RockWeb.Blocks.Core
             gDefinedTypeAttributes.DataSource = attributes;
             gDefinedTypeAttributes.DataBind();
 
-            pnlAttributeTypes.Visible = !_isStandAlone || attributes.Count > 0;
+            // Only show the attribute actions to people that can edit the defined type.
+            var canEditAttributes = !_isStandAlone && CanEditDefinedTypeAttributes();
 
+            if ( !_isStandAlone && !canEditAttributes )
+            {
+                gDefinedTypeAttributes.Columns[0].Visible = false;
+                gDefinedTypeAttributes.Columns[2].Visible = false;
+                gDefinedTypeAttributes.Columns[3].Visible = false;
+                gDefinedTypeAttributes.Actions.ShowAdd = false;
+            }
+
+            pnlAttributeTypes.Visible = canEditAttributes || attributes.Count > 0;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the attributes of
+        /// the defined type.
+        /// </summary>
+        /// <returns><c>true</c> if the current person can edit the attributes; otherwise <c>false</c>.</returns>
+        private bool CanEditDefinedTypeAttributes()
+        {
+            if ( IsBlockConfiguredForDefinedType() )
+            {
+                return false;
+            }
+
+            var definedType = new DefinedTypeService( RockApp.Current.CreateRockContext() ).Get( hfDefinedTypeId.ValueAsInt() );
+
+            return definedType != null && definedType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the details of
+        /// the defined type.
+        /// </summary>
+        /// <param name="definedType">The defined type, which may be new.</param>
+        /// <returns><c>true</c> if the current person can edit the defined type; otherwise <c>false</c>.</returns>
+        private bool CanEditDefinedType( DefinedType definedType )
+        {
+            return definedType != null
+                && !IsBlockConfiguredForDefinedType()
+                && !definedType.IsSystem
+                && IsUserAuthorized( Authorization.EDIT )
+                && definedType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the block is configured for a single defined type.
+        /// This reads the block setting because <see cref="_isStandAlone"/>
+        /// is only set on the initial page load.
+        /// </summary>
+        /// <returns><c>true</c> if the block is configured for a single defined type; otherwise <c>false</c>.</returns>
+        private bool IsBlockConfiguredForDefinedType()
+        {
+            return GetAttributeValue( AttributeKey.DefinedType ).AsGuidOrNull().HasValue;
+        }
+
+        /// <summary>
+        /// Determines whether the attribute is a defined value attribute that
+        /// belongs to the specified defined type.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <param name="definedTypeId">The defined type identifier.</param>
+        /// <returns><c>true</c> if the attribute belongs to the defined type; otherwise <c>false</c>.</returns>
+        private static bool IsDefinedTypeAttribute( Attribute attribute, int definedTypeId )
+        {
+            return attribute.EntityTypeId == EntityTypeCache.GetId<DefinedValue>()
+                && string.Equals( attribute.EntityTypeQualifierColumn, "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
+                && attribute.EntityTypeQualifierValue == definedTypeId.ToString();
         }
 
         #endregion       

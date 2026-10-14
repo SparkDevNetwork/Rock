@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -268,7 +268,7 @@ namespace Rock.Lava
             }
             else
             {
-                rockToolResult = CreateAgentToolTemplateError( $"The wrong object type was passed to the ${filterName} filter." );
+                rockToolResult = CreateAgentToolTemplateError( $"The wrong object type was passed to the {filterName} filter." );
                 return false;
             }
         }

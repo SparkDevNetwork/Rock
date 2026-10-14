@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,11 +21,12 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Configuration;
-using Rock.Mobile;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionRequest.Options;
 using Rock.Security;
+
 using ConnectionRequestViewModelSortProperty = Rock.Common.Mobile.Enums.ConnectionRequestViewModelSortProperty;
 namespace Rock.Blocks.Types.Mobile.Connection
 {

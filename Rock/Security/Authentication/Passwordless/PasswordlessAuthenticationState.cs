@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Attribute;
 
 namespace Rock.Security.Authentication.Passwordless
@@ -64,5 +65,22 @@ namespace Rock.Security.Authentication.Passwordless
         /// The one-time passcode lifetime.
         /// </summary>
         public TimeSpan CodeLifetime { get; set; }
+
+        /// <summary>
+        /// The identifier of the existing person that a confirmation code
+        /// was emailed to when linking this session to that person.
+        /// </summary>
+        public int? ConfirmationPersonId { get; set; }
+
+        /// <summary>
+        /// The one-time passcode that was emailed to the existing person.
+        /// </summary>
+        public string ConfirmationCode { get; set; }
+
+        /// <summary>
+        /// The issue date of the confirmation code that was emailed to the
+        /// existing person.
+        /// </summary>
+        public DateTime? ConfirmationCodeIssueDate { get; set; }
     }
 }

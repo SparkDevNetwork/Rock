@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.Model;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;

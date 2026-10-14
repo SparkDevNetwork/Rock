@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,12 @@ namespace Rock.ViewModels.Blocks.Finance.UtilityPaymentEntry
         /// a one-time gift.
         /// </summary>
         public Guid? ScheduledTransactionGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token that allows the payment
+        /// method to be saved for future use.
+        /// </summary>
+        public string SaveAccountSecurityGrantToken { get; set; }
 
         /// <summary>
         /// Gets or sets the messages shown to the giver when processing failed.

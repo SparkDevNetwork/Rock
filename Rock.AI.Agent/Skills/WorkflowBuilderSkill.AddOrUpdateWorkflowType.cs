@@ -23,6 +23,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.WorkflowBuilderSkill;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -103,6 +104,15 @@ internal sealed partial class WorkflowBuilderSkill
                 return helper.ErrorResult
                     .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
             }
+
+            // Checked before the category can change, since the workflow type's
+            // security falls back to whatever category it is in.
+            var editError = GetWorkflowTypeEditError( workflowType );
+
+            if ( editError != null )
+            {
+                return Error( editError );
+            }
         }
         else
         {
@@ -162,7 +172,21 @@ internal sealed partial class WorkflowBuilderSkill
                     .WithInstructions( $"Call the {nameof( CoreAdministrationSkill.ListCategories )} function with the WorkflowType entity type to determine the available categories." );
             }
 
+            // Rock's own block does not check the destination category, which lets
+            // anyone who can edit a workflow type move it somewhere they cannot
+            // manage. The same gate covers the category a new workflow type starts in.
+            if ( workflowType.CategoryId != category.Id
+                && !category.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                return Error( $"You do not have permission to edit the category '{category.Name}'." )
+                    .WithInstructions( $"Call the {nameof( CoreAdministrationSkill.ListCategories )} function with the WorkflowType entity type to find a category you can edit." );
+            }
+
             workflowType.CategoryId = category.Id;
+
+            // The navigation property is what security reads, so a new workflow
+            // type needs it set to fall back to its category's permissions.
+            workflowType.Category = category;
         }
 
         helper.UpdateProperty( workflowType, wt => wt.Name, name );
@@ -180,6 +204,19 @@ internal sealed partial class WorkflowBuilderSkill
         helper.UpdateProperty( workflowType, wt => wt.LogRetentionPeriod, logRetentionPeriod );
         helper.UpdateProperty( workflowType, wt => wt.CompletedWorkflowRetentionPeriod, completedWorkflowRetentionPeriod );
         helper.UpdateProperty( workflowType, wt => wt.MaxWorkflowAgeDays, maxWorkflowAgeDays );
+
+        // A new workflow type has no security of its own yet, so this resolves
+        // through the category set above. Run after the name is set so the error
+        // can name it. Nothing has been saved, so returning here discards it.
+        if ( isNew )
+        {
+            var editError = GetWorkflowTypeEditError( workflowType );
+
+            if ( editError != null )
+            {
+                return Error( editError );
+            }
+        }
 
         if ( helper.HasErrors )
         {

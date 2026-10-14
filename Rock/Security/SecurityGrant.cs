@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,12 @@ namespace Rock.Security
     public class SecurityGrant
     {
         #region Fields
+
+        /// <summary>
+        /// The purpose used to derive the encryption key for security grant
+        /// tokens. Changing this invalidates all existing tokens.
+        /// </summary>
+        private const string TokenEncryptionPurpose = "Rock.Security.SecurityGrant";
 
         /// <summary>
         /// The rules that make up this security grant.
@@ -105,7 +111,7 @@ namespace Rock.Security
             {
                 var segments = token.Split( ';' );
 
-                var json = Encryption.DecryptString( segments.Length >= 3 ? segments[2] : segments[0] );
+                var json = Encryption.DecryptStringForPurpose( segments.Length >= 3 ? segments[2] : segments[0], TokenEncryptionPurpose );
 
                 return JsonConvert.DeserializeObject<SecurityGrant>( json );
             }
@@ -139,9 +145,13 @@ namespace Rock.Security
         {
             var json = JsonConvert.SerializeObject( this );
 
+            // Tokens use their own encryption key so that text encrypted for
+            // any other reason can never be used as a security grant token.
+            var encryptedJson = Encryption.EncryptStringForPurpose( json, TokenEncryptionPurpose );
+
             return rawToken
-                ? Encryption.EncryptString( json )
-                : $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{Encryption.EncryptString( json )}";
+                ? encryptedJson
+                : $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{encryptedJson}";
         }
 
         /// <summary>
@@ -185,9 +195,10 @@ namespace Rock.Security
         {
             var grantTokenEarliestDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SECURITY_GRANT_TOKEN_EARLIEST_DATE ).AsDateTime();
 
-            if ( grantTokenEarliestDate.HasValue && ExpiresDateTime < grantTokenEarliestDate.Value )
+            // Any grant created before the earliest date has been revoked.
+            if ( grantTokenEarliestDate.HasValue && CreatedDateTime < grantTokenEarliestDate.Value )
             {
-                return false;
+                return true;
             }
 
             return RockDateTime.Now >= ExpiresDateTime;

@@ -30,4 +30,10 @@ import { Guid } from "@Obsidian/Types";
 export type GroupMemberPickerGetGroupMembersOptionsBag = {
     /** GUID of the group the member is part of. */
     groupGuid?: Guid | null;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

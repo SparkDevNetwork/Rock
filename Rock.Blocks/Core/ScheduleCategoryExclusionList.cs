@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -187,15 +187,17 @@ namespace Rock.Blocks.Core
         {
             var entityService = new ScheduleCategoryExclusionService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var categoryId = GetCategoryId();
 
-            if ( entity == null )
+            // Only allow exclusions of the category being displayed to be deleted.
+            if ( entity == null || !categoryId.HasValue || entity.CategoryId != categoryId.Value )
             {
                 return ActionBadRequest( $"{ScheduleCategoryExclusion.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !GetCanAdministrateAuthorization() )
             {
-                return ActionBadRequest( $"Not authorized to delete ${ScheduleCategoryExclusion.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {ScheduleCategoryExclusion.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -221,25 +223,30 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Save( ScheduleCategoryExclusionBag bag )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !GetCanAdministrateAuthorization() )
             {
-                return ActionBadRequest( $"Not authorized to edit ${ScheduleCategoryExclusion.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {ScheduleCategoryExclusion.FriendlyTypeName}." );
             }
 
             var entityService = new ScheduleCategoryExclusionService( RockContext );
             var entity = entityService.Get( bag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                entity = new ScheduleCategoryExclusion();
-                entityService.Add( entity );
-            }
-
             var categoryId = GetCategoryId();
 
             if ( !categoryId.HasValue )
             {
                 return ActionBadRequest( "Ensure a category is configured for the block." );
+            }
+
+            // Only allow exclusions of the category being displayed to be edited.
+            if ( entity != null && entity.CategoryId != categoryId.Value )
+            {
+                return ActionBadRequest( $"{ScheduleCategoryExclusion.FriendlyTypeName} not found." );
+            }
+
+            if ( entity == null )
+            {
+                entity = new ScheduleCategoryExclusion();
+                entityService.Add( entity );
             }
 
             entity.CategoryId = categoryId.Value;

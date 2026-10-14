@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,20 +15,21 @@
 // </copyright>
 //
 
-using System.IO.Compression;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
 using System.Net;
+using System.Net.Http;
 using System.Web;
+
 using Rock.Common.Tv;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tv.Classes;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
 
 namespace Rock.Tv
 {

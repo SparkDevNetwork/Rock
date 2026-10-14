@@ -1,4 +1,4 @@
-﻿using Quartz.Simpl;
+using Quartz.Simpl;
 
 namespace Quartz.Spi
 {

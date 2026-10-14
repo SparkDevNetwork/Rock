@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -182,6 +182,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="scannedCheckMicr">The scanned check micr track data</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/AlreadyScanned" )]
         [Rock.SystemGuid.RestActionGuid( "001C7C76-F70D-4A5A-8462-C9CE35FECF46" )]

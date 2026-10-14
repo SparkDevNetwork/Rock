@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -182,6 +182,22 @@ namespace Rock.Blocks.Core
             var tagId = PageParameter( PageParameterKey.TagId );
             var tag = new TagService( RockContext ).Get( tagId );
 
+            if ( tag == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.Tag.FriendlyTypeName} not found." );
+            }
+
+            if ( !tag.IsAuthorized( Rock.Security.Authorization.TAG, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to add {TaggedItem.FriendlyTypeName}." );
+            }
+
+            // Only person tags allow adding people, as the add button is only enabled for them.
+            if ( EntityTypeCache.Get( tag.EntityTypeId ?? 0 )?.Name != "Rock.Model.Person" )
+            {
+                return ActionBadRequest( $"Not authorized to add {TaggedItem.FriendlyTypeName}." );
+            }
+
             var personAliasGuid = personAlias.Value.AsGuid();
             var personAliasService = new PersonAliasService( RockContext );
             var personGuid = personAliasService.GetPerson( personAliasGuid ).Guid;
@@ -256,6 +272,12 @@ namespace Rock.Blocks.Core
         {
             var tagId = PageParameter( PageParameterKey.TagId );
             var tag = new TagService( RockContext ).Get( tagId );
+
+            // Only list the items of a tag the person is allowed to view, as initialization requires.
+            if ( tag == null || !tag.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return Enumerable.Empty<TaggedItemListBag>().AsQueryable();
+            }
 
             var tagEntityType = EntityTypeCache.Get( tag?.EntityTypeId ?? 0 );
             var service = new TaggedItemService( rockContext );

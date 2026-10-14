@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -296,6 +296,11 @@ namespace Rock.Blocks.Event
             {
                 var registrationContext = GetContext( RockContext, args, out var errorMessage );
 
+                if ( registrationContext == null )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
                 if ( !registrationContext.RegistrationSettings.AreDuplicateRegistrantsPrevented )
                 {
                     // Prevent this endpoint from being used if the registration template isn't configured to prevent duplicate registrants.
@@ -362,6 +367,13 @@ namespace Rock.Blocks.Event
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
                 RegistrationTemplateDiscountWithUsage discount = null;
                 var registration = registrationGuid != null ? new RegistrationService( rockContext ).Get( registrationGuid.ToString() ) : null;
+
+                // Ignore a registration that is not for this instance or does
+                // not belong to the current person.
+                if ( registration != null && ( registration.RegistrationInstanceId != registrationInstanceId || !IsRegistrationOwnedByPerson( registration, GetCurrentPerson() ) ) )
+                {
+                    registration = null;
+                }
 
                 if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
@@ -510,14 +522,14 @@ namespace Rock.Blocks.Event
 
                 if ( ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) ) == null )
                 {
-                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId, allowParameterGroupId: false );
+                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId );
                     if ( groupId.HasValue )
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
                     }
                 }
 
-                var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
+                var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -570,7 +582,7 @@ namespace Rock.Blocks.Event
                 } );
             }
 
-            var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
+            var session = UpsertSession( RockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -721,6 +733,11 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( fullPaymentRequiredMessage );
                 }
 
+                if ( !ValidatePaymentMethodProvided( args, out var paymentMethodErrorMessage ) )
+                {
+                    return ActionBadRequest( paymentMethodErrorMessage );
+                }
+
                 var result = SubmitRegistration( rockContext, context, args, out errorMessage );
 
                 if ( result == SubmitRegistrationResult.CapacityFullFailure )
@@ -747,7 +764,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                var successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
+                var successViewModel = GetSuccessViewModel( context.Registration.Id, context.RegistrationSettings.FinancialGatewayId, context.TransactionCode, context.GatewayPersonIdentifier );
 
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
@@ -836,7 +853,7 @@ namespace Rock.Blocks.Event
 
                 // Process the GroupMember so we have data for the Lava merge.
                 GroupMember groupMember = null;
-                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId, allowParameterGroupId: false );
+                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
                 if ( groupId.HasValue )
                 {
@@ -952,15 +969,42 @@ namespace Rock.Blocks.Event
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var currentPerson = GetCurrentPerson();
+
+                // Only use an existing registration if it belongs to the current person.
+                Registration registration = null;
+                if ( args?.RegistrationGuid.HasValue == true )
+                {
+                    registration = new RegistrationService( rockContext ).Get( args.RegistrationGuid.Value );
+
+                    if ( registration != null && !IsRegistrationOwnedByPerson( registration, currentPerson ) )
+                    {
+                        registration = null;
+                    }
+                }
+
                 // A null person is okay here as default values can still be returned.
                 Person person = null;
                 if ( registrantInfo != null && registrantInfo.PersonGuid.HasValue )
                 {
                     person = new PersonService( rockContext ).Get( registrantInfo.PersonGuid.Value );
+
+                    // Only return values for the current person, their family
+                    // members or registrants of their own registration.
+                    if ( person != null && !IsPersonAvailableForDefaultValues( rockContext, person, currentPerson, registration ) )
+                    {
+                        person = null;
+                    }
                 }
 
                 // If we already have a saved registrant get it, otherwise a null registrant will get any default values.
                 var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantGuid );
+
+                // Only use a saved registrant from the current person's registration.
+                if ( registrant != null && ( registration == null || registrant.RegistrationId != registration.Id ) )
+                {
+                    registrant = null;
+                }
 
                 // Load the group member for the registrant if there are any group member attribute form fields.
                 // If the group member is not found, the default field values will be used.
@@ -974,7 +1018,7 @@ namespace Rock.Blocks.Event
                     // try getting the group member for the registrant person.
                     if ( groupMember == null && person != null )
                     {
-                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ), allowParameterGroupId: false );
+                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ) );
 
                         if ( groupId.HasValue )
                         {
@@ -1459,6 +1503,59 @@ namespace Rock.Blocks.Event
             return true;
         }
 
+        /// <summary>
+        /// Validates that a payment method was provided when the submitted registration
+        /// requires a payment to be processed. A payment method is either a gateway token
+        /// for a newly entered payment method or a saved account owned by the current person.
+        /// </summary>
+        /// <remarks>
+        /// This must run after <see cref="GetContext(RockContext, RegistrationEntryArgsBag, out string)"/>,
+        /// which raises <see cref="RegistrationEntryArgsBag.AmountToPayNow"/> to the minimum initial
+        /// payment for a new registration, and before anything is persisted so that a failure does
+        /// not leave behind an unpaid registration.
+        /// </remarks>
+        /// <param name="args">The submitted registration arguments.</param>
+        /// <param name="errorMessage">When validation fails, contains the message to show the registrant; otherwise <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if no payment is needed or a payment method was provided; otherwise, <see langword="false"/>.</returns>
+        private bool ValidatePaymentMethodProvided( RegistrationEntryArgsBag args, out string errorMessage )
+        {
+            /*
+                9/18/26 - MSE
+
+                A client that lost its CalculateCost response used to submit a paid
+                registration with an AmountToPayNow of 0 and no gateway token. GetContext
+                then raised the amount back up to the full amount due and the gateway was
+                charged with an empty token, which surfaced as an opaque gateway
+                authentication error and left the registrant stuck until they reloaded.
+                Reject the submission before any gateway or database work instead.
+
+                Reason: Never call a gateway with no payment method.
+                https://github.com/SparkDevNetwork/Rock/issues/7048
+            */
+            errorMessage = null;
+
+            var isPaymentNeededNow = args.AmountToPayNow > 0m;
+            var isPaymentPlanRequested = args.PaymentPlan != null;
+
+            if ( !isPaymentNeededNow && !isPaymentPlanRequested )
+            {
+                return true;
+            }
+
+            // Mirror GetPaymentInfo: a saved account is only usable by the person who owns it.
+            var hasSavedAccount = args.SavedAccountGuid.HasValue && RequestContext.CurrentPerson != null;
+            var hasGatewayToken = args.GatewayToken.IsNotNullOrWhiteSpace();
+
+            if ( hasSavedAccount || hasGatewayToken )
+            {
+                return true;
+            }
+
+            errorMessage = "A payment is required to complete this registration, but no payment method was provided. Please refresh the page and try again.";
+
+            return false;
+        }
+
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
@@ -1503,12 +1600,14 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Updates or Inserts the session.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="context">The context.</param>
         /// <param name="args">The arguments.</param>
         /// <param name="sessionStatus">The status to set the session to.</param>
         /// <param name="errorMessage">On exit will contain any error message.</param>
         /// <returns>The <see cref="RegistrationSession"/> or <c>null</c> if an error occurred.</returns>
         private RegistrationSession UpsertSession(
+            RockContext rockContext,
             RegistrationContext context,
             RegistrationEntryArgsBag args,
             SessionStatus sessionStatus,
@@ -1527,7 +1626,7 @@ namespace Rock.Blocks.Event
                 RegistrationGuid = context.Registration?.Guid,
                 RegistrationSessionGuid = args.RegistrationSessionGuid,
                 Slug = PageParameter( PageParameterKey.Slug ),
-                GroupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) )
+                GroupId = GetRegistrationGroupId( rockContext, context.RegistrationSettings.RegistrationInstanceId )
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -1641,7 +1740,16 @@ namespace Rock.Blocks.Event
                     var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
                     var firstRegistrantEmail = resolveRegistrarPersonResult.FirstRegistrantEmailFieldValue;
 
-                    if ( registrarPerson != null
+                    // The registrar was matched from the registrant details and the email
+                    // comes from the client, so only update it when the registrar is the
+                    // current person or in their family.
+                    var currentPersonId = currentPerson?.Id;
+                    var isCurrentPersonOrFamilyMember = registrarPerson != null
+                        && currentPersonId.HasValue
+                        && ( registrarPerson.Id == currentPersonId.Value
+                            || registrarPerson.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
+
+                    if ( isCurrentPersonOrFamilyMember
                          && forceEmailUpdate
                          && firstRegistrantEmail.IsNotNullOrWhiteSpace()
                          && !firstRegistrantEmail.Equals( registrarPerson.Email, StringComparison.CurrentCultureIgnoreCase ) )
@@ -1786,7 +1894,16 @@ namespace Rock.Blocks.Event
                     {
                         var person = new PersonAliasService( rockContext ).GetPerson( context.Registration.PersonAliasId.Value );
 
-                        if ( person != null )
+                        // The registrar may have been matched from the registrant details
+                        // and the email comes from the client, so only update it when the
+                        // registrar is the current person or in their family.
+                        var currentPersonId = currentPerson?.Id;
+                        var isCurrentPersonOrFamilyMember = person != null
+                            && currentPersonId.HasValue
+                            && ( person.Id == currentPersonId.Value
+                                || person.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
+
+                        if ( isCurrentPersonOrFamilyMember )
                         {
                             person.Email = context.Registration.ConfirmationEmail;
                             rockContext.SaveChanges();
@@ -2431,7 +2548,7 @@ namespace Rock.Blocks.Event
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
-        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId, bool allowParameterGroupId = true )
+        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId )
         {
             var groupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) );
             var registrationSlug = PageParameter( PageParameterKey.Slug );
@@ -2444,6 +2561,7 @@ namespace Rock.Blocks.Event
                     .Queryable().AsNoTracking()
                     .Where( l =>
                         l.UrlSlug == registrationSlug &&
+                        ( !registrationInstanceId.HasValue || l.RegistrationInstanceId == registrationInstanceId.Value ) &&
                         l.RegistrationInstance != null &&
                         l.RegistrationInstance.IsActive &&
                         l.RegistrationInstance.RegistrationTemplate != null &&
@@ -2467,12 +2585,20 @@ namespace Rock.Blocks.Event
                 return linkageGroupId;
             }
 
-            if ( allowParameterGroupId && groupId.HasValue )
+            // If there is no slug or event occurrence id then only trust the groupId
+            // in the query string if it is linked to this registration instance.
+            if ( groupId.HasValue && registrationInstanceId.HasValue )
             {
-                return groupId.Value;
+                var linkedGroupId = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable()
+                    .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value
+                        && l.GroupId == groupId.Value )
+                    .Select( l => l.GroupId )
+                    .FirstOrDefault();
+
+                return linkedGroupId;
             }
 
-            // If there is no slug or event occurrence id then don't use/trust the groupId in the query string
             return null;
         }
 
@@ -2495,6 +2621,7 @@ namespace Rock.Blocks.Event
                     .Include( m => m.Campus )
                     .Where( l =>
                         l.UrlSlug == registrationSlug &&
+                        ( !registrationInstanceId.HasValue || l.RegistrationInstanceId == registrationInstanceId.Value ) &&
                         l.RegistrationInstance != null &&
                         l.RegistrationInstance.IsActive &&
                         l.RegistrationInstance.RegistrationTemplate != null &&
@@ -3193,7 +3320,15 @@ namespace Rock.Blocks.Event
             {
                 // If the resolved person matches a single family member of the registar or logged in person,
                 // then update the person's email if the new email is not blank and the field is unlocked for editing.
-                var isSingleFamilyMemberMatch = resolveRegistrantPersonResult.IsSingleRegistrarFamilyMemberMatch
+                // The registrar may have been matched from the registrant details and the email comes from
+                // the client, so a registrar family member match only counts when the current person is in
+                // the registrar's family.
+                var loggedInPersonId = GetCurrentPerson()?.Id;
+                var isCurrentPersonInRegistrarFamily = loggedInPersonId.HasValue
+                    && registrar != null
+                    && registrar.GetFamilyMembers( true, rockContext ).Any( m => m.PersonId == loggedInPersonId.Value );
+
+                var isSingleFamilyMemberMatch = ( resolveRegistrantPersonResult.IsSingleRegistrarFamilyMemberMatch && isCurrentPersonInRegistrarFamily )
                     || resolveRegistrantPersonResult.IsSingleCurrentUserFamilyMemberMatch;
 
                 if ( isSingleFamilyMemberMatch
@@ -3339,7 +3474,9 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.Email:
                             // Only update the person's email if they are in the same family as the logged in person (not the registrar)
                             var currentPersonId = GetCurrentPerson()?.Id;
-                            var isFamilyMember = currentPersonId.HasValue && person.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == currentPersonId ) ).Any();
+                            var isFamilyMember = currentPersonId.HasValue
+                                && ( person.Id == currentPersonId.Value
+                                    || person.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
                             if ( isFamilyMember && IsFieldUnlockedForEditing( field, person.Email ) )
                             {
                                 var email = fieldValue.ToString().Trim();
@@ -3974,9 +4111,12 @@ namespace Rock.Blocks.Event
             {
                 var group = new GroupService( rockContext ).Get( groupId.Value );
 
-                groupMember = BuildGroupMember( person, group, context.RegistrationSettings );
-                groupMember.LoadAttributes( rockContext );
-                UpdateGroupMemberAttributes( groupMember, registrantInfo, context.RegistrationSettings );
+                if ( group != null )
+                {
+                    groupMember = BuildGroupMember( person, group, context.RegistrationSettings );
+                    groupMember.LoadAttributes( rockContext );
+                    UpdateGroupMemberAttributes( groupMember, registrantInfo, context.RegistrationSettings );
+                }
             }
 
             // Prepare the merge fields.
@@ -4155,6 +4295,16 @@ namespace Rock.Blocks.Event
                 // Get a new context with the args
                 context = GetContext( rockContext, args, out errorMessage );
 
+                // The restored session may name a registration the current
+                // person does not own, in which case there is no context.
+                if ( context is null )
+                {
+                    return new RegistrationEntryInitializationBox
+                    {
+                        RegistrationInstanceNotFoundMessage = errorMessage
+                    };
+                }
+
                 var financialGatewayService = new FinancialGatewayService( rockContext );
                 var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
                 var gateway = paymentFinancialGateway?.GetGatewayComponent();
@@ -4197,7 +4347,7 @@ namespace Rock.Blocks.Event
                         }
                     }
 
-                    successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
+                    successViewModel = GetSuccessViewModel( context.Registration.Id, context.RegistrationSettings.FinancialGatewayId, context.TransactionCode, context.GatewayPersonIdentifier );
                 }
             }
 
@@ -5433,10 +5583,11 @@ namespace Rock.Blocks.Event
         /// Gets the success view model.
         /// </summary>
         /// <param name="registrationId">The registration identifier.</param>
+        /// <param name="financialGatewayId">The financial gateway identifier that processed the transaction.</param>
         /// <param name="transactionCode">The transaction code.</param>
         /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
-        private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
+        private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, int? financialGatewayId, string transactionCode, string gatewayPersonIdentifier )
         {
             // Create a view model with default values in case anything goes wrong
             var viewModel = new RegistrationEntrySuccessBag
@@ -5449,6 +5600,28 @@ namespace Rock.Blocks.Event
                 RegisteredCount = 0,
                 WaitListedCount = 0,
             };
+
+            // Allow the payment method used for this transaction to be saved
+            // for future use.
+            if ( financialGatewayId.HasValue && transactionCode.IsNotNullOrWhiteSpace() && gatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+            {
+                Guid? financialGatewayGuid;
+
+                using ( var gatewayRockContext = new RockContext() )
+                {
+                    financialGatewayGuid = new FinancialGatewayService( gatewayRockContext ).GetGuid( financialGatewayId.Value );
+                }
+
+                if ( financialGatewayGuid.HasValue )
+                {
+                    var grant = new SecurityGrant()
+                        .AddRule( new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule( financialGatewayGuid.Value, transactionCode, gatewayPersonIdentifier ) );
+
+                    grant.SetLifetime( TimeSpan.FromMinutes( 60 ) );
+
+                    viewModel.SaveAccountSecurityGrantToken = grant.ToToken();
+                }
+            }
 
             try
             {
@@ -5805,7 +5978,7 @@ namespace Rock.Blocks.Event
                 ActivePaymentPlan = activePaymentPlan?.AsRegistrationPaymentPlanBag(),
                 PreviouslyPaid = alreadyPaid,
                 Slug = PageParameter( PageParameterKey.Slug ),
-                GroupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) )
+                GroupId = GetRegistrationGroupId( rockContext, registrationContext.RegistrationSettings.RegistrationInstanceId )
             };
 
             // Add attributes about the registration itself
@@ -5884,6 +6057,56 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the registration belongs to the person. The person
+        /// must be either the registrar or the person that created the registration.
+        /// </summary>
+        /// <param name="registration">The registration to check.</param>
+        /// <param name="person">The person to check, usually the current person.</param>
+        /// <returns><c>true</c> if the registration belongs to the person; otherwise <c>false</c>.</returns>
+        private static bool IsRegistrationOwnedByPerson( Registration registration, Person person )
+        {
+            if ( registration == null || person == null )
+            {
+                return false;
+            }
+
+            return registration.PersonAlias?.PersonId == person.Id
+                || registration.CreatedByPersonAlias?.PersonId == person.Id;
+        }
+
+        /// <summary>
+        /// Determines whether the person's current values may be returned to
+        /// the current person when getting default field values. The person
+        /// must be the current person, a member of their family or a registrant
+        /// of the current person's registration.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context.</param>
+        /// <param name="person">The person whose values would be returned.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="registration">The existing registration that belongs to the current person, may be <c>null</c>.</param>
+        /// <returns><c>true</c> if the person's values may be returned; otherwise <c>false</c>.</returns>
+        private static bool IsPersonAvailableForDefaultValues( RockContext rockContext, Person person, Person currentPerson, Registration registration )
+        {
+            if ( registration != null && registration.Registrants.Any( r => r.PersonAlias?.PersonId == person.Id ) )
+            {
+                return true;
+            }
+
+            if ( currentPerson == null )
+            {
+                return false;
+            }
+
+            if ( currentPerson.Id == person.Id )
+            {
+                return true;
+            }
+
+            return currentPerson.GetFamilyMembers( true, rockContext )
+                .Any( gm => gm.PersonId == person.Id );
+        }
+
+        /// <summary>
         /// Gets the context.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -5920,6 +6143,35 @@ namespace Rock.Blocks.Event
             if ( context == null )
             {
                 return null;
+            }
+
+            // Make sure an existing registration belongs to the current person,
+            // the same way it is verified when the registration is first loaded.
+            if ( context.Registration != null && !IsRegistrationOwnedByPerson( context.Registration, currentPerson ) )
+            {
+                errorMessage = "Your existing registration was not found";
+                return null;
+            }
+
+            // The wait list flag comes from the client and registrants on the wait
+            // list are not charged. When the template has no wait list nobody new can
+            // be put on it, so clear the flag before any costs or spots are calculated.
+            // Registrants already saved on the wait list keep it, in case the wait list
+            // was turned off after they were added to it.
+            if ( !context.RegistrationSettings.IsWaitListEnabled )
+            {
+                var waitListedRegistrantGuids = context.Registration?.Registrants
+                    .Where( r => r.OnWaitList )
+                    .Select( r => r.Guid )
+                    .ToList() ?? new List<Guid>();
+
+                foreach ( var registrant in args.Registrants )
+                {
+                    if ( !waitListedRegistrantGuids.Contains( registrant.Guid ) )
+                    {
+                        registrant.IsOnWaitList = false;
+                    }
+                }
             }
 
             // Validate the amount to pay today
@@ -6220,6 +6472,13 @@ namespace Rock.Blocks.Event
 
             if ( group is null )
             {
+                return;
+            }
+
+            // Never allow a registration to add people to a security role.
+            if ( group.IsSecurityRole || group.GroupTypeId == GroupTypeCache.GetSecurityRoleGroupType()?.Id )
+            {
+                ExceptionLogService.LogException( new Exception( $"Registrants of Registration {registration.Id} (Registration Instance {registration.RegistrationInstanceId}) were not added to Group {group.Id} because it is a security role." ) );
                 return;
             }
 
@@ -7231,9 +7490,12 @@ namespace Rock.Blocks.Event
                     else if ( context.RegistrantBag.PersonGuid.HasValue )
                     {
                         // Use the PersonGuid on the RegistrantBag to find a person match.
+                        // The PersonGuid comes from the client so it is only honored for
+                        // people the current person is allowed to register. Anyone else
+                        // falls through to the normal person matching.
                         var person = new PersonService( context.RockContext ).Get( context.RegistrantBag.PersonGuid.Value );
 
-                        if ( person != null )
+                        if ( person != null && IsPersonAvailableForDefaultValues( context.RockContext, person, context.CurrentPerson, context.ExistingRegistrationRegistrant.Registration ) )
                         {
                             return ResolveRegistrantPersonResult.Match( person );
                         }
@@ -7393,8 +7655,15 @@ namespace Rock.Blocks.Event
                       */
                     if ( context.RegistrarOption == RegistrarOption.UseFirstRegistrant
                         && context.IsFirstRegistrant
-                        && context.RegistrarPerson != null )
+                        && context.RegistrarPerson != null
+                        && context.IsRegistrantFormNameMatch( context.RegistrarPerson ) )
                     {
+                        // Only reuse the Registrar Person as the first registrant when the registrant form
+                        // still identifies the same person as the Registrar. When the fallback registrar form
+                        // displayed (first registrant had no email) and the user typed a different registrar
+                        // (for example, a parent registering a child), the two are different people and we
+                        // must fall through so a new Person is created for the actual first registrant
+                        // instead of silently swapping in the Registrar and tripping the duplicate check.
                         return ResolveRegistrantPersonResult.Match( context.RegistrarPerson );
                     }
 

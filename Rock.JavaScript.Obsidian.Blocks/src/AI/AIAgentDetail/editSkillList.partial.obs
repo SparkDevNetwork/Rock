@@ -1,29 +1,35 @@
 <template>
-    <h4>Skills</h4>
+    <ContentSection title="Skills"
+                    icon="ti ti-tools"
+                    disableCollapse>
 
-    <Grid :data="skillGridData"
-          keyField="skillGuid"
-          itemTerm="Skill"
-          light
-          @addItem="onAddSkill">
-        <TextColumn name="name"
-                    field="name"
-                    width="30%" />
+        <Grid :data="skillGridData"
+              keyField="skillGuid"
+              itemTerm="Skill"
+              light
+              @addItem="onAddSkill">
+            <TextColumn name="name"
+                        title="Name"
+                        field="name"
+                        width="30%" />
 
-        <TextColumn name="description"
-                    field="description"
-                    width="70%">
-            <template #format="{ row }">
-                <div class="text-truncate">
-                    {{ row.description }}
-                </div>
-            </template>
-        </TextColumn>
+            <TextColumn name="description"
+                        title="Description"
+                        field="description"
+                        width="70%">
+                <template #format="{ row }">
+                    <div class="text-truncate">
+                        {{ row.description }}
+                    </div>
+                </template>
+            </TextColumn>
 
-        <EditColumn :rowDisabled="r => !!r.isSystem" @click="onEditSkill" />
+            <EditColumn :rowDisabled="r => !!r.isSystem" @click="onEditSkill" />
 
-        <DeleteColumn disableConfirmation @click="onRemoveSkill" />
-    </Grid>
+            <DeleteColumn disableConfirmation @click="onRemoveSkill" />
+        </Grid>
+
+    </ContentSection>
 
     <Modal v-model="isSkillModalOpen"
            title="Skill Details"
@@ -43,11 +49,12 @@
 
         <TransitionVerticalCollapse>
             <div v-if="editSkill && !isSkillLoading">
+
                 <CheckBoxList v-model="editEnabledTools"
                               label="Enabled Tools"
                               :items="editAvailableTools"
-                              horizontal
-                              :repeatColumns="3" />
+                              :itemsHelpText="editToolDescriptions"
+                              :repeatColumns="2" />
 
 
                 <DynamicComponent v-if="editSkillComponentDefinition"
@@ -60,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
@@ -118,6 +126,7 @@
     const editSkillBag = shallowRef<AgentSkillBag | null>(null);
     const editSkill = ref("");
     const editAvailableTools = ref<ListItemBag[]>([]);
+    const editToolDescriptions = ref<Record<string, string>>({});
     const editEnabledTools = ref<string[]>([]);
 
     const editSkillComponentDefinition = ref<DynamicComponentDefinitionBag | null>(null);
@@ -174,6 +183,7 @@
         editSkillBag.value = null;
         editEnabledTools.value = [];
         editAvailableTools.value = [];
+        editToolDescriptions.value = {};
         editSkillComponentDefinition.value = null;
         editSkillComponentData.value = {};
         isSkillModalOpen.value = true;
@@ -195,6 +205,7 @@
         editSkill.value = skill.skillGuid;
         editSkillBag.value = skill;
         editAvailableTools.value = [];
+        editToolDescriptions.value = {};
 
         const result = await invokeBlockAction<EditSkillResponseBag>("EditSkill", {
             agentSkillGuid: skill.guid
@@ -203,6 +214,7 @@
         if (result.isSuccess && result.data) {
             editEnabledTools.value = result.data.skill?.enabledTools ?? [];
             editAvailableTools.value = result.data.availableTools ?? [];
+            editToolDescriptions.value = result.data.toolDescriptions ?? {};
             editSkillComponentDefinition.value = result.data.componentDefinition ?? null;
             editSkillComponentData.value = result.data.skill?.configurationValues ?? {};
 
@@ -230,6 +242,7 @@
         editSkill.value = value;
         editEnabledTools.value = [];
         editAvailableTools.value = [];
+        editToolDescriptions.value = {};
         editSkillComponentDefinition.value = null;
         editSkillComponentData.value = {};
 
@@ -240,6 +253,7 @@
 
             if (response.isSuccess && response.data) {
                 editAvailableTools.value = response.data.availableTools ?? [];
+                editToolDescriptions.value = response.data.toolDescriptions ?? {};
                 editEnabledTools.value = editAvailableTools.value.map(f => f.value!);
                 editSkillComponentDefinition.value = response.data.componentDefinition ?? null;
                 editSkillComponentData.value = response.data.configurationValues ?? {};

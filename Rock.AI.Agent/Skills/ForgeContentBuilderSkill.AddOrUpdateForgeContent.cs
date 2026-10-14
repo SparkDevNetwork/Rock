@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ internal sealed partial class ForgeContentBuilderSkill
     [AgentUsage( "Never save a component whose data is hardcoded, mocked, or invented while presenting it as real. If a required endpoint operation actually fails, use its error to correct and retry it and try a supported alternative. Report an incomplete result only when a concrete unresolved failure prevents a functional component." )]
     [AgentUsage( "Before saving, retrieve the focused Reference article for every imported Rock control or Grid feature and verify its model shape, required props, events, slots, and composition rules. A successful compile does not validate control props or option shapes." )]
     [AgentUsage( "Before saving a submitting component, trace each control's documented v-model shape through the exact payload field and endpoint input. A DropDownList emits its selected option value string, while many entity pickers emit a ListItemBag. Test endpoints with the exact payload the saved component sends, not alternate display-name parameters." )]
+    [AgentUsage( "Include a top-level <placeholder> block of static HTML in the source. Rock shows it as the block's initial HTML until the component mounts. Start its opening and closing tags at the beginning of their own lines, beside <template> and <script>. Follow the coding guide's loading presentation guidance to design it." )]
     [AgentToolGuid( "3E97A0C5-48D2-4F16-85B9-C1D7E63A2F40" )]
     public AgentToolResult AddOrUpdateForgeContent(
         [Description( "The IdKey or guid of the Forge Content block placement, as returned by AddOrUpdateBlock or GetPage." )]

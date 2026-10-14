@@ -8,7 +8,7 @@ If you are new, start with [check-in-overview.md](check-in-overview.md). Sub-top
 
 | Doc | Summary |
 |---|---|
-| [Check-in Domain Overview](check-in-overview.md) | Session phases, the v2 provider/filter pattern, and the integration with the shared Attendance entity. |
+| [Check-in Domain Overview](check-in-overview.md) | Session phases, the v2 provider/filter pattern, the integration with the shared Attendance entity, and supported device sizes (Check-in Manager is tablet-only, 1024px+). |
 | [Kiosk Configuration](kiosk-configuration.md) | `KioskDevice` / `CheckinType` / `LocalDeviceConfiguration` three-layer model, default Person settings, address display. |
 | [Label Designer and Printing](label-designer-and-printing.md) | Visual label designer, field-data-source pattern, formatters, cloud-print serialization for shared printers. |
 | [Mobile Check-in](mobile-check-in.md) | Same v2 engine on mobile, cloud-print label routing, `SourceTypeValueId` for entry-channel distinction. |

@@ -22,7 +22,7 @@
                                 <PersonPicker v-model:isSearchModeOpen="isAddingPerson"
                                               @update:modelValue="onPersonSelected" isInputHidden />
 
-                                <PillList v-model="updatePersons" label="Individuals" :rules="[validateIndividualsSelected]" canAdd canRemove @add="isAddingPerson = true" @remove="onRemovePerson">
+                                <PillList v-model="updatePersons" label="Individuals" :rules="[validateIndividualsSelected]" canAdd canExpand canRemove @add="isAddingPerson = true" @remove="onRemovePerson">
                                     <template #item="{ item, canRemove, disabled, remove }">
                                         <Pill :canRemove="canRemove" :disabled="disabled" @remove="remove">
                                             <img :src="item?.photoUrl ?? undefined" class="bulk-person-image" />

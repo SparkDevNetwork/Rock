@@ -1,4 +1,4 @@
-﻿// Copyright by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -585,7 +585,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${StreakType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {StreakType.FriendlyTypeName}." );
                 return false;
             }
 

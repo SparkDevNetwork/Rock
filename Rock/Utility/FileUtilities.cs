@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,129 @@ namespace Rock.Utility
     /// </summary>
     public static class FileUtilities
     {
+        /// <summary>
+        /// Gets the image mime type of the content by reading its first bytes.
+        /// Use this instead of trusting a mime type sent by a client or remote
+        /// server. The stream is returned to its original position.
+        /// </summary>
+        /// <param name="stream">The content stream. It must be able to seek.</param>
+        /// <returns>The image mime type, such as "image/jpeg", or <c>null</c> if the stream can't seek or the content is not a supported image.</returns>
+        public static string GetImageMimeType( Stream stream )
+        {
+            // Reading a stream that can't seek would lose the bytes we read,
+            // and the caller would then save a file missing its start.
+            if ( stream == null || !stream.CanSeek )
+            {
+                return null;
+            }
+
+            var startPosition = stream.Position;
+
+            // This is more than any supported image format needs to be detected.
+            var header = new byte[1024];
+            var length = 0;
+            int read;
+
+            while ( length < header.Length && ( read = stream.Read( header, length, header.Length - length ) ) > 0 )
+            {
+                length += read;
+            }
+
+            stream.Position = startPosition;
+
+            if ( length == 0 )
+            {
+                return null;
+            }
+
+            if ( length < header.Length )
+            {
+                Array.Resize( ref header, length );
+            }
+
+            return SixLabors.ImageSharp.Image.DetectFormat( header )?.DefaultMimeType;
+        }
+
+        /// <summary>
+        /// Determines whether the path is the folder itself or something inside
+        /// of it once both have been fully resolved. This should be used before
+        /// accessing any path that was built from untrusted input, such as a
+        /// file or folder name that was posted back by the browser.
+        /// </summary>
+        /// <param name="path">The path to be checked.</param>
+        /// <param name="folder">The folder that <paramref name="path"/> must be within.</param>
+        /// <returns><c>true</c> if <paramref name="path"/> is <paramref name="folder"/> or is within it; otherwise <c>false</c>.</returns>
+        public static bool IsPathWithinFolder( string path, string folder )
+        {
+            if ( path.IsNullOrWhiteSpace() || folder.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            try
+            {
+                var separators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+                var fullFolder = Path.GetFullPath( folder ).TrimEnd( separators );
+                var fullPath = Path.GetFullPath( path ).TrimEnd( separators );
+
+                return fullPath.Equals( fullFolder, StringComparison.OrdinalIgnoreCase )
+                    || fullPath.StartsWith( fullFolder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase );
+            }
+            catch
+            {
+                // Invalid paths (bad characters, unsupported formats, too long)
+                // are never considered to be within the folder.
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the file name's extension is allowed by the
+        /// ContentFiletypeBlacklist and ContentFiletypeWhitelist global
+        /// attributes. These are the same lists used when content files are
+        /// uploaded.
+        /// </summary>
+        /// <param name="fileName">The name of the file, which may include a path.</param>
+        /// <returns><c>true</c> if the file type is allowed; otherwise <c>false</c>.</returns>
+        public static bool IsFileTypeAllowed( string fileName )
+        {
+            if ( fileName.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // Windows removes trailing dots and spaces from file names, so
+            // they could be used to hide the real extension.
+            if ( fileName.EndsWith( "." ) || fileName != fileName.TrimEnd() )
+            {
+                return false;
+            }
+
+            var fileExtension = Path.GetExtension( fileName ).ToLower().TrimStart( '.' ).Trim();
+            var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Get();
+
+            var blackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty )
+                .Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( a => a.ToLower().TrimStart( '.', ' ' ).Trim() );
+
+            if ( blackList.Contains( fileExtension ) )
+            {
+                return false;
+            }
+
+            var whiteList = ( globalAttributesCache.GetValue( "ContentFiletypeWhitelist" ) ?? string.Empty )
+                .Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( a => a.ToLower().TrimStart( '.', ' ' ).Trim() )
+                .ToList();
+
+            if ( whiteList.Any() && !whiteList.Contains( fileExtension ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Gets the file bytes.
         /// </summary>

@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+
 using Rock.SystemGuid;
 
 namespace Rock.Plugin.HotFixes

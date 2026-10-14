@@ -123,6 +123,23 @@ export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" 
 export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
 
 /**
+ * Runtime CSS class applied to section components nested deeply enough to risk being dropped by some mail clients.
+ */
+export const NestedSectionCssClass = `${RockRuntimeClassCssClassPrefix}-nested-section` as const;
+
+/*
+    09/10/26 - JMH
+
+    Sections nested inside other sections stack seven tables per level. iOS Apple Mail
+    drops content at a table depth somewhere between 14 (renders) and 28 (dropped), and
+    the exact threshold has not been bisected. Flagging from the second level means a
+    two-deep template (about 21 tables) is warned about rather than silently at risk.
+
+    Reason: Threshold is unproven; warn early and tune here after a depth bisect.
+*/
+export const NestedSectionWarningMinimumAncestorCount = 1 as const;
+
+/**
  * Decodes browser-encoded entities inside every Lava block (`{% %}`, `{{ }}`,
  * and `{[ ]}` shortcodes).
  *
@@ -3837,6 +3854,33 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
     };
 
     return helper;
+}
+
+/**
+ * Finds the section components nested inside other sections deeply enough to be flagged.
+ *
+ * @param root The document or element to search.
+ * @param minimumAncestorCount The number of section ancestors a section must have to be included.
+ * @returns The offending section component elements, in document order.
+ */
+export function findNestedSectionElements(root: ParentNode, minimumAncestorCount: number = NestedSectionWarningMinimumAncestorCount): HTMLElement[] {
+    return Enumerable
+        .from(root.querySelectorAll(".component-section"))
+        .ofType<HTMLElement>((el): el is HTMLElement => isHTMLElement(el))
+        .where(section => countSectionAncestors(section) >= minimumAncestorCount)
+        .toArray();
+}
+
+function countSectionAncestors(section: Element): number {
+    let count = 0;
+    let ancestor = section.parentElement?.closest(".component-section");
+
+    while (ancestor) {
+        count++;
+        ancestor = ancestor.parentElement?.closest(".component-section");
+    }
+
+    return count;
 }
 
 type SectionComponentTypeName = Extract<EditorComponentTypeName,

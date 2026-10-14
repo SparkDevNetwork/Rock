@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,12 +28,13 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignatureDocumentList;
 using Rock.Web.Cache;
-using Person = Rock.Model.Person;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
+
+using Person = Rock.Model.Person;
 
 namespace Rock.Blocks.Core
 {
@@ -223,6 +224,31 @@ namespace Rock.Blocks.Core
                 .AddAttributeFields( GetGridAttributes() );
         }
 
+        /// <summary>
+        /// Determines whether the file attached to the signature document is
+        /// a signed document file, either of the template's file type or one
+        /// of the system signed document file types.
+        /// </summary>
+        /// <param name="signatureDocument">The signature document.</param>
+        /// <returns><c>true</c> if the attached file is a signed document file; otherwise, <c>false</c>.</returns>
+        private static bool IsSignedDocumentFile( SignatureDocument signatureDocument )
+        {
+            var binaryFileTypeId = signatureDocument.BinaryFile.BinaryFileTypeId;
+
+            if ( !binaryFileTypeId.HasValue )
+            {
+                return false;
+            }
+
+            if ( binaryFileTypeId == signatureDocument.SignatureDocumentTemplate?.BinaryFileTypeId )
+            {
+                return true;
+            }
+
+            return binaryFileTypeId == BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.SIGNED_DOCUMENT_FILE_TYPE.AsGuid() )
+                || binaryFileTypeId == BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.DIGITALLY_SIGNED_DOCUMENTS.AsGuid() );
+        }
+
         #endregion
 
         #region Block Actions
@@ -245,7 +271,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${SignatureDocument.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {SignatureDocument.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -253,8 +279,10 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( errorMessage );
             }
 
-            // Delete the binary file associated with the Signature Document
-            if ( entity.BinaryFile != null )
+            // Delete the binary file associated with the Signature Document, but
+            // only if it is a signed document file so that a file of another
+            // type that was attached to the document is not deleted.
+            if ( entity.BinaryFile != null && IsSignedDocumentFile( entity ) )
             {
                 var binaryFileService = new BinaryFileService( RockContext );
                 binaryFileService.Delete( entity.BinaryFile );

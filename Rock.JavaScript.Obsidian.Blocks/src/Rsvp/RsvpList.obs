@@ -112,6 +112,7 @@
     import { reactive, ref, watch, computed } from "vue";
     import GridSettingsModal from "./RsvpList/gridSettingsModal.partial.obs";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { alert } from "@Obsidian/Utility/dialogs";
 
     const config = useConfigurationValues<ListBlockBox<RsvpListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -183,6 +184,11 @@
             });
             if (!result.isSuccess || !result.data) {
                 isSelectingItem.value = false;
+
+                if (result.errorMessage) {
+                    await alert(result.errorMessage);
+                }
+
                 return;
             }
             key = result.data;

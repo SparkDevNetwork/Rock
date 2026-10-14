@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,6 +77,24 @@ namespace Rock.Model
         /// The name of the group.
         /// </value>
         public string GroupName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the registrant's group member record has been
+        /// archived, either directly or because the group it belongs to was archived.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the group member is archived; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsGroupMemberArchived { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the group that the registrant's group member
+        /// record belongs to has been archived.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the group is archived; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsGroupArchived { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias unique identifier.
@@ -272,6 +290,8 @@ namespace Rock.Model
             PersonId = null;
             GroupMemberId = null;
             GroupName = string.Empty;
+            IsGroupMemberArchived = false;
+            IsGroupArchived = false;
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
@@ -329,8 +349,37 @@ namespace Rock.Model
                 Id = registrant.Id;
                 Guid = registrant.Guid;
                 GroupMemberId = registrant.GroupMemberId;
-                GroupName = registrant.GroupMember != null && registrant.GroupMember.Group != null ?
-                    registrant.GroupMember.Group.Name : string.Empty;
+
+                if ( registrant.GroupMemberId.HasValue )
+                {
+                    /*
+                        9/18/26 - MSE
+
+                        Archiving a group also archives its members, and Rock's global query
+                        filters hide archived groups and group members from lazy loaded
+                        navigation properties. The registrant still references the archived
+                        group member, so query without the filters to get the group name and
+                        whether the member or its group has been archived. The Registration
+                        Detail block hides the group entirely when the group itself is archived.
+
+                        Reason: Registrant's group link showed a blank name once the group was archived. (Fixes #7047)
+                    */
+                    var groupMemberId = registrant.GroupMemberId.Value;
+                    var groupMemberInfo = new GroupMemberService( rockContext ).AsNoFilter()
+                        .Where( gm => gm.Id == groupMemberId )
+                        .Select( gm => new
+                        {
+                            GroupName = gm.Group.Name,
+                            IsGroupMemberArchived = gm.IsArchived,
+                            IsGroupArchived = gm.Group.IsArchived
+                        } )
+                        .FirstOrDefault();
+
+                    GroupName = groupMemberInfo?.GroupName ?? string.Empty;
+                    IsGroupMemberArchived = groupMemberInfo?.IsGroupMemberArchived ?? false;
+                    IsGroupArchived = groupMemberInfo?.IsGroupArchived ?? false;
+                }
+
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
                 DiscountApplies = registrant.DiscountApplies;

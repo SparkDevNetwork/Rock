@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -470,7 +470,7 @@ namespace Rock.Blocks.Reporting
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${MergeTemplate.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {MergeTemplate.FriendlyTypeName}." );
                 return false;
             }
 
@@ -591,10 +591,18 @@ namespace Rock.Blocks.Reporting
                     return actionError;
                 }
 
+                var originalTemplateBinaryFileId = entity.TemplateBinaryFileId;
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
+                }
+
+                // Only allow the template file to be changed to one the person is allowed to use.
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( entity.TemplateBinaryFileId, originalTemplateBinaryFileId, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Invalid template file." );
                 }
 
                 // Ensure everything is valid before saving.

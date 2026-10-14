@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+
 using Rock.Cms.Utm;
 using Rock.Data;
 

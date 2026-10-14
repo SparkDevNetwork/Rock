@@ -54,6 +54,12 @@ export type SaveFinancialAccountFormSaveAccountOptionsBag = {
      */
     scheduledTransactionGuid?: Guid | null;
 
+    /**
+     * Gets or sets the security grant token that allows the account
+     * to be saved.
+     */
+    securityGrantToken?: string | null;
+
     /** Gets or sets the transaction code. */
     transactionCode?: string | null;
 

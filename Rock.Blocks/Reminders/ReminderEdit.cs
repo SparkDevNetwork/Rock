@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,7 +67,8 @@ namespace Rock.Blocks.Reminders
                     .FirstOrDefault( r => r.Id == reminderId.Value )
                 : null;
 
-            if ( reminder == null )
+            // Only the reminder's owner may view or edit it.
+            if ( !IsReminderOwnedByCurrentPerson( reminder ) )
             {
                 box.ErrorMessage = "The specified reminder was not found.";
                 return box;
@@ -115,6 +116,31 @@ namespace Rock.Blocks.Reminders
                 IsExistingReminder = true,
                 EntityDescription = entityDescription
             };
+        }
+
+        /// <summary>
+        /// Determines whether the reminder exists and belongs to the current person.
+        /// </summary>
+        /// <param name="reminder">The reminder.</param>
+        /// <returns><c>true</c> if the reminder belongs to the current person; otherwise <c>false</c>.</returns>
+        private bool IsReminderOwnedByCurrentPerson( Reminder reminder )
+        {
+            /*
+                10/12/2026 - MSE
+
+                Reminder identifiers are sequential, so the ReminderId page
+                parameter could be changed to read or rewrite another person's
+                reminder. Block actions take the page parameter from the request
+                body, so Save checks ownership on its own. Missing and not owned
+                reminders get the same answer so Ids can not be probed.
+
+                Reason: Prevent viewing and editing other people's reminders.
+            */
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return reminder != null
+                && currentPerson != null
+                && reminder.PersonAlias?.PersonId == currentPerson.Id;
         }
 
         #endregion Methods
@@ -170,13 +196,29 @@ namespace Rock.Blocks.Reminders
                 return ActionBadRequest( "The reminder date is not valid." );
             }
 
-            var reminder = reminderService.Get(
+            var reminder = reminderService.GetInclude(
                 PageParameter( PageParameterKey.ReminderId ),
+                r => r.PersonAlias,
                 !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( reminder == null )
+            if ( !IsReminderOwnedByCurrentPerson( reminder ) )
             {
                 return ActionBadRequest( "The specified reminder was not found." );
+            }
+
+            // The reminder type comes from the client, so it must be one of the
+            // types the picker offers (those for the reminder's entity type that
+            // the person can view), or the type the reminder already has.
+            if ( reminderType.Id != reminder.ReminderTypeId )
+            {
+                var isReminderTypeAllowed = reminderTypeService
+                    .GetReminderTypesForEntityType( reminder.ReminderType.EntityTypeId, RequestContext.CurrentPerson )
+                    .Any( t => t.Id == reminderType.Id );
+
+                if ( !isReminderTypeAllowed )
+                {
+                    return ActionBadRequest( "The specified reminder type was not found." );
+                }
             }
 
             reminder.ReminderTypeId = reminderType.Id;

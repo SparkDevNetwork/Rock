@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -420,6 +420,14 @@ upnlFiles.ClientID // {2}
         {
             var (provider, component) = GetAssetStorageProvider();
             if ( provider == null || component == null )
+            {
+                return;
+            }
+
+            // The root folder of a provider can't be deleted.
+            var rootFolder = component.GetRootFolder( provider.ToEntity() ) ?? string.Empty;
+
+            if ( hfSelectFolder.Value.IsNullOrWhiteSpace() || hfSelectFolder.Value.Trim().TrimEnd( '/' ).Equals( rootFolder.Trim().TrimEnd( '/' ), StringComparison.OrdinalIgnoreCase ) )
             {
                 return;
             }

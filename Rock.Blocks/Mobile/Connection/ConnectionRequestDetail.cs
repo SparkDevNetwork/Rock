@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,16 +34,15 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+using ConnectionState = Rock.Model.ConnectionState;
+using GroupMemberStatus = Rock.Model.GroupMemberStatus;
+using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
+using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityEntryType;
 using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 using MobileDueStatus = Rock.Common.Mobile.Enums.DueStatus;
 using MobileGroupMemberStatus = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.GroupMemberStatus;
 using MobileMeetsGroupRequirement = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.MeetsGroupRequirement;
-using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityEntryType;
 using MobileSystemUpdateType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.SystemUpdateType;
-
-using ConnectionState = Rock.Model.ConnectionState;
-using GroupMemberStatus = Rock.Model.GroupMemberStatus;
-using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
 
 namespace Rock.Blocks.Mobile.Connection
 {
@@ -1198,7 +1197,14 @@ namespace Rock.Blocks.Mobile.Connection
             var sourceOpportunityId = connectionRequest.ConnectionOpportunityId;
             var newOpportunity = new ConnectionOpportunityService( RockContext ).Get( request.NewOpportunityGuid );
 
-            if ( newOpportunity == null )
+            // GetTransferDetails only offers opportunities of the request's
+            // current connection type, so reject any other opportunity. This
+            // keeps a tampered transfer from moving the request into another
+            // type while it still holds a status of the old type.
+            var isNewOpportunityOffered = newOpportunity != null
+                && newOpportunity.ConnectionTypeId == connectionRequest.ConnectionOpportunity.ConnectionTypeId;
+
+            if ( !isNewOpportunityOffered )
             {
                 return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
             }

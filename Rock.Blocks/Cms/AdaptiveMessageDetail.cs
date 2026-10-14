@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -432,7 +432,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AdaptiveMessage.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AdaptiveMessage.FriendlyTypeName}." );
                 return false;
             }
 
@@ -587,6 +587,13 @@ namespace Rock.Blocks.Cms
 
             var isNew = entity.Id == 0;
 
+            // Make sure the adaptation attributes are either new or already
+            // belong to this adaptive message.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.AdaptationAttributes, new AdaptiveMessageAdaptation().TypeId, "AdaptiveMessageId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
@@ -719,7 +726,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${AdaptiveMessageAdaptation.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {AdaptiveMessageAdaptation.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.IO;
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
+
 using Rock.Data;
 
 
@@ -83,6 +84,9 @@ namespace Rock.Migrations
             sqlFile = EfMapPath( sqlFile );
 
             string script = File.ReadAllText( sqlFile );
+            // The DI system may not be fully in place when migrations are run,
+            // so we need to create a RockContext here instead of using DI.
+            // This is especially true when running migrations from EF command line.
             using ( var rockContext = new RockContext() )
             {
                 Sql( script );

@@ -69,6 +69,9 @@ The `.claude/` directory is checked into the repo. Everything here is shared -- 
   README.md              -- This guide
   settings.json          -- Shared permissions and hooks (team-wide)
   settings.local.json    -- Personal overrides (gitignored)
+  model-tiers.json       (Shared model names and effort levels for Claude, Codex, and Grok)
+  agents/                (Sub-agents, such as the Sentinel security reviewer)
+  scripts/               (Shared scripts any skill can use, such as vendor-cli.js)
   commands/              -- Slash commands (/build, /test, /check)
   hooks/                 -- Safety hooks (block destructive git operations)
   rules/                 -- Contextual rules (auto-loaded based on file paths)
@@ -86,6 +89,8 @@ The `.claude/` directory is checked into the repo. Everything here is shared -- 
 | Rules | `.claude/rules/` | Always or by file path | Additional coding standards and domain conventions |
 | Skills | `.claude/skills/` | On demand (`/command` or keyword) | Multi-step workflows with reference material |
 | Commands | `.claude/commands/` | On demand (`/command`) | Simple one-shot operations |
+| Agents | `.claude/agents/` | When a skill or prompt calls them | Separate sub-agents with their own tools and fresh context |
+| Shared scripts | `.claude/scripts/` | When a skill runs them | Helpers reused across skills (see "Shared scripts" in Section 4) |
 | Settings | `.claude/settings.json` | Always | Permission allowlist and safety hooks |
 
 **Rules** deserve special attention: `block-architecture.md` only activates when Claude is working on files in `Rock.Blocks/`, `Rock.JavaScript.Obsidian.Blocks/`, `RockWeb/Blocks/`, or `Rock.ViewModels/Blocks/`. The other two rules load on every session. This keeps Claude's context focused -- it gets block patterns when working on blocks, not when writing a migration.
@@ -107,6 +112,7 @@ Skills are on-demand workflows that encode Rock-specific knowledge. They live in
 | `/migration` | "write migration", "EF migration", "review migration" | Writes/reviews Up() and Down() for EF migrations |
 | `/plugin-migration` | "plugin migration", "hotfix", "new hotfix" | Creates plugin migration .cs files in HotFixes/ |
 | `/review-conversion` | "review conversion", "check the conversion" | Audits completed Obsidian conversion against WebForms original |
+| `/sentinel` | "sentinel", "security review", "is this secure" | Read-only security review of a PR, commit, your changes, or a whole feature, with optional Codex and Grok second opinions |
 | `/sql` | "write sql", "seed data", "insert data" | Generates Rock-safe SQL with proper conventions |
 
 Skills can be invoked two ways:
@@ -116,6 +122,20 @@ Skills can be invoked two ways:
 Each skill has a `SKILL.md` (the workflow definition) and a `references/` folder (domain knowledge, patterns, common pitfalls). **Read the skill files** to understand what each one does -- this is the best way to learn the patterns.
 
 Full docs: https://code.claude.com/docs/en/skills
+
+### Shared scripts
+
+Some helpers are useful to more than one skill, so they live in `.claude/scripts/` instead of inside a skill folder.
+
+**`vendor-cli.js`** finds, checks, and runs other vendors' AI CLIs (Codex and Grok) for second opinions. Use it instead of calling those CLIs directly. It handles sign-in checks, Windows quirks, timeouts, parallel runs, and read-only mode.
+
+```bash
+node .claude/scripts/vendor-cli.js detect
+```
+
+That shows whether Codex and Grok are installed and signed in on your machine. Neither is required. Skills that use them skip them cleanly when they're missing. See the comments at the top of `vendor-cli.js` for the `run` job format and how to use it from another Node script.
+
+**`model-tiers.json`** maps each vendor to a `cheap`, `default`, and `deep` tier. Skills and agents ask for a tier, never a model version, so a new model lineup is a one-file change. Re-check the vendor model names when a vendor ships new models (`codex debug models`, `grok models`).
 
 ### Commands
 

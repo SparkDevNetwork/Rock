@@ -1,4 +1,4 @@
-﻿namespace Rock.CodeGeneration.Utility
+namespace Rock.CodeGeneration.Utility
 {
     /// <summary>
     /// The save state of a generated file after it is processed by the

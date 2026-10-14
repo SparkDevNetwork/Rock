@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -176,6 +176,12 @@ namespace Rock.Blocks.Core
             var restAction = new RestActionService( RockContext ).Get( model.ControllerActionId );
 
             if ( restAction == null )
+            {
+                return ActionBadRequest( "REST action not found." );
+            }
+
+            // Only allow editing actions that are shown in the list.
+            if ( !GetListQueryable( RockContext ).Any( a => a.Id == restAction.Id ) )
             {
                 return ActionBadRequest( "REST action not found." );
             }

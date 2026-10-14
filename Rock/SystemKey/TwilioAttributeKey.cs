@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+
+using System;
 
 namespace Rock.SystemKey
 {
@@ -39,6 +41,8 @@ namespace Rock.SystemKey
         /// <summary>
         /// The enable validation
         /// </summary>
+        [Obsolete( "Twilio webhook signatures are always validated. This setting is no longer used." )]
+        [RockObsolete( "17.11" )]
         public const string EnableValidation = "EnableValidation";
 
         /// <summary>

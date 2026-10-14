@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Newtonsoft.Json;
 
 using Rock.Attribute;
@@ -32,6 +33,7 @@ using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.ListItems;
+
 using Rock.Configuration;
 
 namespace Rock.Field.Types

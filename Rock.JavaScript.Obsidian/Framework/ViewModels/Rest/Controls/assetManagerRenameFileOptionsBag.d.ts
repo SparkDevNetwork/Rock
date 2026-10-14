@@ -29,6 +29,12 @@ export type AssetManagerRenameFileOptionsBag = {
     /** ID of the asset storage provider that this file resides on. */
     assetStorageProviderId: number;
 
+    /**
+     * The encrypted root folder that the file(s) must be in. This is
+     * required when using the local file system.
+     */
+    encryptedRoot?: string | null;
+
     /** The path and file name of the file that is being renamed. */
     file?: string | null;
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -751,6 +751,34 @@ namespace Rock.Model
                 case 0:
                 default:
                     return prayerRequests.ThenBy( a => a.PrayerCount );
+            }
+        }
+
+        /// <summary>
+        /// Orders the query of <see cref="PrayerRequest"/> by a defined set of
+        /// possible orders. Unlike the <see cref="IEnumerable{T}"/> overload the
+        /// ordering is translated to SQL, so a subsequent Take() becomes TOP
+        /// instead of loading every matching request into memory.
+        /// </summary>
+        /// <param name="prayerRequests">The prayer requests query.</param>
+        /// <param name="order">The order.</param>
+        /// <returns>The query in the requested order.</returns>
+        public static IOrderedQueryable<PrayerRequest> OrderBy( this IQueryable<PrayerRequest> prayerRequests, PrayerRequestOrder order )
+        {
+            switch ( order )
+            {
+                case PrayerRequestOrder.Newest:
+                    return prayerRequests.OrderByDescending( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Oldest:
+                    return prayerRequests.OrderBy( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Random:
+                    return prayerRequests.OrderBy( a => Guid.NewGuid() );
+
+                case 0:
+                default:
+                    return prayerRequests.OrderBy( a => a.PrayerCount );
             }
         }
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -298,19 +298,28 @@ namespace Rock.CheckIn.v2
                 };
             }
 
+            Group existingFamily = null;
+
+            if ( registrationFamily.Bag.Id.IsNotNullOrWhiteSpace() )
+            {
+                existingFamily = new GroupService( _rockContext ).Get( registrationFamily.Bag.Id, false );
+
+                if ( existingFamily == null || existingFamily.GroupTypeId != GroupTypeCache.GetFamilyGroupType( _rockContext ).Id )
+                {
+                    return new FamilyRegistrationSaveResult
+                    {
+                        ErrorMessage = "Family was not found."
+                    };
+                }
+            }
+
             try
             {
                 var saveResult = new FamilyRegistrationSaveResult();
 
                 _rockContext.WrapTransaction( () =>
                 {
-                    var groupService = new GroupService( _rockContext );
-                    Group primaryFamily = null;
-
-                    if ( registrationFamily.Bag.Id.IsNotNullOrWhiteSpace() )
-                    {
-                        primaryFamily = groupService.Get( registrationFamily.Bag.Id, false );
-                    }
+                    Group primaryFamily = existingFamily;
 
                     var registrationPeople = new List<(ValidPropertiesBox<RegistrationPersonBag> RegistrationPerson, Person Person)>();
 
@@ -377,18 +386,19 @@ namespace Rock.CheckIn.v2
 
             var groupService = new GroupService( _rockContext );
             var primaryFamily = groupService.GetInclude( familyId, g => g.Members.Select( gm => gm.Person ), false );
-            var adults = primaryFamily.Members
-                .Select( gm => gm.Person )
-                .Where( p => p.AgeClassification == AgeClassification.Adult )
-                .ToList();
 
-            if ( primaryFamily == null )
+            if ( primaryFamily == null || primaryFamily.GroupTypeId != GroupTypeCache.GetFamilyGroupType( _rockContext ).Id )
             {
                 return new FamilyRegistrationSaveResult
                 {
                     ErrorMessage = $"Family was not found."
                 };
             }
+
+            var adults = primaryFamily.Members
+                .Select( gm => gm.Person )
+                .Where( p => p.AgeClassification == AgeClassification.Adult )
+                .ToList();
 
             try
             {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -517,7 +517,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${NoteWatch.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {NoteWatch.FriendlyTypeName}." );
                 return false;
             }
 
@@ -628,7 +628,12 @@ namespace Rock.Blocks.Core
             {
                 var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                 var watchedEntity = new EntityTypeService( RockContext ).GetEntity( entityType.Id, entityId.Value );
-                if ( watchedEntity != null )
+                if ( watchedEntity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    // Do not disclose the name of an entity the person is not allowed to view.
+                    entityName = string.Format( "<span class='label label-danger'>Not authorized to view {0} with Id {1}</span>", EntityTypeCache.Get( entityTypeGuid.Value ).FriendlyName, entityId );
+                }
+                else if ( watchedEntity != null )
                 {
                     entityName = watchedEntity.ToString();
                 }

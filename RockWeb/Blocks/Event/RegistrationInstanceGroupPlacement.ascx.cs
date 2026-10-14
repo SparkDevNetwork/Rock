@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -332,6 +332,61 @@ namespace RockWeb.Blocks.Event
         #region Methods
 
         /// <summary>
+        /// Gets the registration instance and template placement from the page parameters, the
+        /// same way <see cref="ShowDetails"/> does, and makes sure the placement belongs to the
+        /// registration template. Used instead of the client controlled hidden fields.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationInstance">The registration instance, or <c>null</c> when in registration template mode.</param>
+        /// <param name="registrationTemplatePlacement">The registration template placement.</param>
+        /// <returns><c>true</c> if a valid placement was found; otherwise, <c>false</c>.</returns>
+        private bool TryGetPlacementContext( RockContext rockContext, out RegistrationInstance registrationInstance, out RegistrationTemplatePlacement registrationTemplatePlacement )
+        {
+            registrationInstance = null;
+            registrationTemplatePlacement = null;
+
+            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationInstanceId ) );
+
+            int? registrationTemplateId;
+            Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            if ( registrationTemplateGuid.HasValue )
+            {
+                registrationTemplateId = new RegistrationTemplateService( rockContext ).GetId( registrationTemplateGuid.Value );
+            }
+            else
+            {
+                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationTemplateId ) );
+            }
+
+            int? registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrantId ) );
+            if ( registrantId.HasValue )
+            {
+                registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( this.PageParameter( PageParameterKey.RegistrantId ), s => ( int? ) s.Registration.RegistrationInstanceId, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+
+            if ( registrationInstanceId.HasValue )
+            {
+                registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
+                if ( registrationInstance == null )
+                {
+                    return false;
+                }
+
+                registrationTemplateId = registrationInstance.RegistrationTemplateId;
+            }
+
+            int? registrationTemplatePlacementId = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ) );
+            if ( !registrationTemplateId.HasValue || !registrationTemplatePlacementId.HasValue )
+            {
+                return false;
+            }
+
+            registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( registrationTemplatePlacementId.Value );
+
+            return registrationTemplatePlacement != null && registrationTemplatePlacement.RegistrationTemplateId == registrationTemplateId.Value;
+        }
+
+        /// <summary>
         /// Shows the details.
         /// </summary>
         protected void ShowDetails()
@@ -401,7 +456,14 @@ namespace RockWeb.Blocks.Event
 
             var placementConfiguration = GetPlacementConfiguration();
 
-            hfOptionsRegistrantPersonDataViewFilterId.Value = placementConfiguration.RegistrantPersonDataViewFilterId.ToString();
+            // The filter Id comes from a person preference, so only pass along a filter this block created for this person.
+            var registrantPersonDataViewFilter = placementConfiguration.RegistrantPersonDataViewFilterId.HasValue
+                ? new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantPersonDataViewFilterId.Value )
+                : null;
+
+            hfOptionsRegistrantPersonDataViewFilterId.Value = IsBlockOwnedPlacementFilter( registrantPersonDataViewFilter, rockContext )
+                ? registrantPersonDataViewFilter.Id.ToString()
+                : string.Empty;
 
             hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
             hfOptionsDisplayedGroupMemberAttributeIds.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.ToJson();
@@ -874,6 +936,11 @@ namespace RockWeb.Blocks.Event
             if ( placementConfiguration.RegistrantPersonDataViewFilterId.HasValue )
             {
                 dataViewFilter = new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantPersonDataViewFilterId.Value );
+
+                if ( !IsBlockOwnedPlacementFilter( dataViewFilter, rockContext ) )
+                {
+                    dataViewFilter = null;
+                }
             }
 
             if ( dataViewFilter == null || dataViewFilter.ExpressionType == FilterExpressionType.Filter )
@@ -1012,7 +1079,13 @@ namespace RockWeb.Blocks.Event
             if ( dataViewFilterId.HasValue )
             {
                 var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+
+                // The Id comes from a person preference the person controls, so only
+                // delete a filter this block created for this person.
+                if ( IsBlockOwnedPlacementFilter( oldDataViewFilter, rockContext ) )
+                {
+                    DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+                }
             }
 
             dataViewFilterService.Add( dataViewFilter );
@@ -1191,10 +1264,21 @@ namespace RockWeb.Blocks.Event
         protected void mdAddPlacementGroup_SaveClick( object sender, EventArgs e )
         {
             List<Group> placementGroups;
-            var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
             var rockContext = RockApp.Current.CreateRockContext();
             nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
             nbAddExistingPlacementGroupWarning.Visible = false;
+
+            // The instance and placement ids are in hidden fields, so re-derive them from the
+            // page parameters the same way ShowDetails does.
+            RegistrationInstance registrationInstance;
+            RegistrationTemplatePlacement registrationTemplatePlacement;
+            if ( !TryGetPlacementContext( rockContext, out registrationInstance, out registrationTemplatePlacement ) )
+            {
+                mdAddPlacementGroup.Hide();
+                return;
+            }
+
+            var groupTypeId = registrationTemplatePlacement.GroupTypeId;
 
             if ( bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddExistingGroup.ConvertToInt().ToString() )
             {
@@ -1272,22 +1356,18 @@ namespace RockWeb.Blocks.Event
 
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
-            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
-            var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
 
             foreach ( var placementGroup in placementGroups )
             {
-                if ( registrationInstanceId.HasValue )
+                if ( registrationInstance != null )
                 {
-                    var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
-                    registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstanceId.Value, registrationTemplatePlacementId.Value );
+                    registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance.Id, registrationTemplatePlacement.Id );
 
                     // in RegistrationInstanceMode
-                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value );
+                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacement.Id );
                 }
-                else if ( registrationTemplatePlacementId.HasValue )
+                else
                 {
-                    var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
                     registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
                 }
             }
@@ -1675,6 +1755,55 @@ namespace RockWeb.Blocks.Event
 
                 service.Delete( dataViewFilter );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the filter is a placement filter this block created
+        /// for the current person. The filter Id comes from a person preference,
+        /// so ownership must be proved from the database.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the filter belongs to this block and the current person; otherwise <c>false</c>.</returns>
+        private bool IsBlockOwnedPlacementFilter( DataViewFilter filter, RockContext rockContext )
+        {
+            /*
+                10/13/2026 - MSE
+
+                The placement configuration is stored in a person preference, which
+                the person can change. Without this check the configuration modal
+                would show, and Save would delete, any DataView filter named there,
+                including filters of DataViews and of Content Channel View blocks.
+                Filters this block creates are always parentless group filters with
+                no DataView, created by the person whose preference holds them.
+
+                Reason: Staff could view and delete filters they do not own.
+            */
+            if ( filter == null
+                || filter.ParentId.HasValue
+                || filter.DataViewId.HasValue
+                || filter.ExpressionType == FilterExpressionType.Filter
+                || !CurrentPersonId.HasValue
+                || !filter.CreatedByPersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            if ( new PersonAliasService( rockContext ).GetPersonId( filter.CreatedByPersonAliasId.Value ) != CurrentPersonId )
+            {
+                return false;
+            }
+
+            if ( new DataViewService( rockContext ).Queryable().Any( dv => dv.DataViewFilterId == filter.Id ) )
+            {
+                return false;
+            }
+
+            // Content Channel View and Content Component keep their filter Id in a block setting with this key.
+            var filterIdText = filter.Id.ToString();
+
+            return !new AttributeValueService( rockContext ).Queryable()
+                .Any( av => av.Attribute.Key == "FilterId" && av.Value == filterIdText );
         }
 
         #endregion Person Filter

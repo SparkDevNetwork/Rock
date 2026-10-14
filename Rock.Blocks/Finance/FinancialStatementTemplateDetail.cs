@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -437,7 +437,7 @@ namespace Rock.Blocks.Finance
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${FinancialStatementTemplate.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {FinancialStatementTemplate.FriendlyTypeName}." );
                 return false;
             }
 
@@ -575,6 +575,11 @@ namespace Rock.Blocks.Finance
                 var binaryFileId = box.Bag.LogoBinaryFile.GetEntityId<BinaryFile>( RockContext );
                 if ( entity.LogoBinaryFileId != binaryFileId )
                 {
+                    if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( binaryFileId, entity.LogoBinaryFileId, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionBadRequest( "Invalid logo file." );
+                    }
+
                     MarkOldImageAsTemporary( entity.LogoBinaryFileId, binaryFileId );
                     entity.LogoBinaryFileId = binaryFileId;
                     // Ensure that the Image is not set as IsTemporary=True

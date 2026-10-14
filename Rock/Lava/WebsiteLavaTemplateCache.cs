@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,12 +23,40 @@ namespace Rock.Lava
     /// </summary>
     public class WebsiteLavaTemplateCache : ItemCache<WebsiteLavaTemplateCache>
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebsiteLavaTemplateCache"/> class.
+        /// </summary>
+        public WebsiteLavaTemplateCache()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebsiteLavaTemplateCache"/> class.
+        /// </summary>
+        /// <param name="template">The parsed template.</param>
+        /// <param name="sourceText">The Lava source text the template was parsed from.</param>
+        internal WebsiteLavaTemplateCache( ILavaTemplate template, string sourceText )
+        {
+            Template = template;
+            SourceText = sourceText;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// Gets or sets the Template object.
         /// </summary>
         public ILavaTemplate Template { get; set; }
+
+        /// <summary>
+        /// Gets the Lava source text the <see cref="Template"/> was parsed from,
+        /// or <c>null</c> if it is not known.
+        /// </summary>
+        public string SourceText { get; private set; }
 
         #endregion
     }

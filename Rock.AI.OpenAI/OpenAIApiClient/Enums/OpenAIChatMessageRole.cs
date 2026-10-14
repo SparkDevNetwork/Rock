@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Enums

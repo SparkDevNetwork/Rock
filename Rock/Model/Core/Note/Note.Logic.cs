@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -159,7 +159,7 @@ namespace Rock.Model
                 }
 
                 // If this is a private note, the creator has FULL access to it. Everybody else has NO access (including admins)
-                if ( this.CreatedByPersonAlias?.PersonId == person?.Id )
+                if ( IsCreatedBy( person ) )
                 {
                     return true;
                 }
@@ -177,7 +177,7 @@ namespace Rock.Model
             {
                 // If this note was created by the logged person, they should be able to EDIT their own note,
                 // otherwise EDIT (and DELETE) of other people's notes require ADMINISTRATE
-                if ( CreatedByPersonAlias?.PersonId == person?.Id )
+                if ( IsCreatedBy( person ) )
                 {
                     return true;
                 }
@@ -195,7 +195,7 @@ namespace Rock.Model
             else
             {
                 // If this note was created by the logged person, they should be able to do any action.
-                if ( CreatedByPersonAlias?.PersonId == person?.Id )
+                if ( IsCreatedBy( person ) )
                 {
                     return true;
                 }
@@ -220,6 +220,32 @@ namespace Rock.Model
             }
 
             return base.IsPrivate( action, person );
+        }
+
+        /// <summary>
+        /// Determines whether the note has a recorded author and the specified
+        /// person is that author. A note with no author never matches, even
+        /// when no person is provided.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns><c>true</c> if the person created this note; otherwise <c>false</c>.</returns>
+        private bool IsCreatedBy( Person person )
+        {
+            /*
+                10/13/2026 - MSE
+
+                The author checks used to compare CreatedByPersonAlias?.PersonId
+                to person?.Id, which treated a note with no author and a visitor
+                who is not signed in as a match. That gave anonymous visitors
+                author rights to every note with no recorded author. New notes
+                (which have no author yet) now always go through the normal note
+                type EDIT check instead.
+
+                Reason: Anonymous visitors could read, edit and delete notes.
+            */
+            return person != null
+                && CreatedByPersonAlias != null
+                && CreatedByPersonAlias.PersonId == person.Id;
         }
 
         #endregion Security Overrides

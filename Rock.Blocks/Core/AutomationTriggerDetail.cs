@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -363,7 +363,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AutomationTrigger.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AutomationTrigger.FriendlyTypeName}." );
                 return false;
             }
 
@@ -543,7 +543,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AutomationEvent.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AutomationEvent.FriendlyTypeName}." );
                 return false;
             }
 
@@ -840,6 +840,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderEvent( string key, string beforeKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {AutomationEvent.FriendlyTypeName}." );
+            }
+
             var eventCache = AutomationEventCache.GetByIdKey( key, RockContext );
 
             if ( eventCache == null )

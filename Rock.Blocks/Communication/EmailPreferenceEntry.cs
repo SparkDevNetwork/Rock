@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1107,6 +1107,15 @@ namespace Rock.Blocks.Communication
             var communicationListGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() );
 
             if ( group == null || group.GroupTypeId != communicationListGroupTypeId )
+            {
+                return ActionBadRequest( $"{errorMessagePrefix}, as the channel cannot be found." );
+            }
+
+            // Only allow the same lists that are offered to the person.
+            var shouldFilterByCampus = GetAttributeValue( AttributeKey.FilterCommunicationListsByCampusContext ).AsBoolean()
+                && ContextCampus != null;
+
+            if ( !group.IsActive || !group.IsPublic || ( shouldFilterByCampus && group.CampusId.HasValue && group.CampusId != ContextCampus.Id ) )
             {
                 return ActionBadRequest( $"{errorMessagePrefix}, as the channel cannot be found." );
             }

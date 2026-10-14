@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -330,7 +330,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {CheckInLabel.FriendlyTypeName}." );
             }
 
             if ( checkInLabel.IsSystem )
@@ -403,7 +403,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {CheckInLabel.FriendlyTypeName}." );
             }
 
             if ( label == null || label.LabelData == null )
@@ -532,7 +532,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             {
                 return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
                 {
-                    Error = $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}."
+                    Error = $"Not authorized to edit {CheckInLabel.FriendlyTypeName}."
                 };
             }
 

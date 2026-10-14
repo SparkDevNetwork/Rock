@@ -23,9 +23,10 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.WorkflowBuilderSkill;
-using Rock.Field;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -1014,6 +1015,39 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
             };
         }
 
+        /*
+            9/17/26 - CLAUDE
+
+            Resolved from the attribute's own configuration, so a select lists its
+            actual options and a Person attribute states that it stores a person alias
+            guid, not the person's own guid. This is the value an action's Lava has to
+            produce when it writes into the attribute, and getting it wrong produces no
+            error, only a reference that never resolves.
+
+            Wrapped in try/catch to match AgentToolHelper: a config-dependent field type
+            can run a SQL query in GetFieldHints, and a failure there should cost the
+            hint, not the whole attribute.
+
+            Reason: The stored value's format is the one thing the caller cannot infer
+            from the field type's name.
+        */
+        if ( attribute.FieldType?.Field is Rock.Field.FieldType field )
+        {
+            try
+            {
+                var hints = field.GetFieldHints( attribute.ConfigurationValues );
+
+                result.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
+                result.ValueInstructions = hints?.Instructions.ToStringOrDefault( null );
+            }
+            catch
+            {
+                // Intentionally swallowed: the hint is a supplement, and an attribute
+                // whose field type cannot produce one is left described by its
+                // configuration values alone.
+            }
+        }
+
         return result;
     }
 
@@ -1076,6 +1110,73 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
         }
 
         return KeyNameResult.FromCache( CategoryCache.Get( categoryId.Value, rockContext ) );
+    }
+
+    /// <summary>
+    /// Checks whether the current person may change the structure of a workflow
+    /// type, meaning the workflow type itself and every activity, action, form, and
+    /// attribute inside it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This mirrors Rock's own workflow type block, which allows editing with Edit
+    /// or Administrate on the workflow type and treats system workflow types as
+    /// read only. The workflow type is always what gets checked, never the child
+    /// being changed. Activity and action types carry their own security, but that
+    /// controls who may work an activity at runtime, not who may build it, and the
+    /// block ignores it for the same reason.
+    /// </para>
+    /// <para>
+    /// A workflow type's security falls back to its category, but only through the
+    /// Category navigation property. A new workflow type must have that property
+    /// set, not just CategoryId, before it is checked here.
+    /// </para>
+    /// </remarks>
+    /// <param name="workflowType">The workflow type being changed.</param>
+    /// <returns>The reason the change is not allowed, or <c>null</c> when it is.</returns>
+    private string GetWorkflowTypeEditError( Rock.Model.WorkflowType workflowType )
+    {
+        if ( workflowType == null )
+        {
+            return "The workflow type could not be found.";
+        }
+
+        if ( workflowType.IsSystem )
+        {
+            return $"The workflow type '{workflowType.Name}' is a system workflow type and cannot be changed.";
+        }
+
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        var isAuthorized = workflowType.IsAuthorized( Authorization.EDIT, currentPerson )
+            || workflowType.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
+
+        if ( !isAuthorized )
+        {
+            return $"You do not have permission to edit the workflow type '{workflowType.Name}'.";
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Checks whether the current person may read the configuration of a workflow
+    /// type.
+    /// </summary>
+    /// <param name="workflowType">The workflow type being read.</param>
+    /// <returns>The reason the read is not allowed, or <c>null</c> when it is.</returns>
+    private string GetWorkflowTypeViewError( Rock.Model.WorkflowType workflowType )
+    {
+        if ( workflowType == null )
+        {
+            return "The workflow type could not be found.";
+        }
+
+        if ( !workflowType.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+        {
+            return $"You do not have permission to view the workflow type '{workflowType.Name}'.";
+        }
+
+        return null;
     }
 
     /// <summary>

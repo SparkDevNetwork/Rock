@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Quartz.Impl.Matchers;
+
 using Quartz;
+using Quartz.Impl.Matchers;
 
 using Rock.Attribute;
 using Rock.Configuration;

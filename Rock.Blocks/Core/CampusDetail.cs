@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -368,50 +368,6 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Determines whether the string in <paramref name="phoneNumber"/> is a valid phone number.
-        /// Uses the RegEx match string attributes in the defined values for the defined type Communication Phone Country Code.
-        /// If there is nothing to match (<paramref name="phoneNumber"/> is null or empty) or match with (Missing defined values or MatchRegEx attribute) then true is returned.
-        /// </summary>
-        /// <param name="phoneNumber">The phone number to be validated.</param>
-        /// <remarks>Taken from PhoneNumberBox UI control.</remarks>
-        /// <returns>
-        ///   <c>true</c> if <paramref name="phoneNumber"/> is a valid phone number otherwise, <c>false</c>.
-        /// </returns>
-        private static bool IsPhoneNumberValid( string phoneNumber )
-        {
-            // No number is a valid number, let the required field validator handle this.
-            if ( phoneNumber.IsNullOrWhiteSpace() )
-            {
-                return true;
-            }
-
-            // This is the list of valid phone number formats, it must match one of them.
-            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
-            if ( definedType == null )
-            {
-                // If there is nothing to match against then return true
-                return true;
-            }
-
-            foreach ( var definedValue in definedType.DefinedValues )
-            {
-                string matchRegEx = definedValue.GetAttributeValue( "MatchRegEx" );
-                if ( matchRegEx.IsNullOrWhiteSpace() )
-                {
-                    // No available pattern so move on
-                    continue;
-                }
-
-                if ( System.Text.RegularExpressions.Regex.IsMatch( phoneNumber.RemoveAllNonNumericCharacters(), matchRegEx ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Determines whether the string is a valid URL.
         /// </summary>
         /// <param name="url">The URL to be validated.</param>
@@ -741,7 +697,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Campus.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Campus.FriendlyTypeName}." );
                 return false;
             }
 

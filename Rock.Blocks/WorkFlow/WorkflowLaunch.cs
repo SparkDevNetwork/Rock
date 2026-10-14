@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -152,8 +152,13 @@ namespace Rock.Blocks.WorkFlow
             PopulateWorkflowTypeSelection( box );
 
             // A bypass-confirm request launches immediately and renders in the launched state.
+            // Only bypass when the page parameter type is the one shown as locked,
+            // which requires that the individual can view it.
+            var workflowTypeFromParameter = GetWorkflowTypeFromParameter();
+
             if ( PageParameter( PageParameterKey.BypassConfirm ).AsBoolean()
-                && PageParameter( PageParameterKey.WorkflowTypeId ).IsNotNullOrWhiteSpace() )
+                && workflowTypeFromParameter != null
+                && workflowTypeFromParameter.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 if ( TryLaunch( null, out var successMessage, out _ ) )
                 {
@@ -360,7 +365,16 @@ namespace Rock.Blocks.WorkFlow
             // resolved value is returned even when null (an unresolved value fails the launch).
             if ( PageParameter( PageParameterKey.WorkflowTypeId ).IsNotNullOrWhiteSpace() )
             {
-                return GetWorkflowTypeFromParameter();
+                var workflowTypeFromParameter = GetWorkflowTypeFromParameter();
+
+                // PopulateWorkflowTypeSelection only locks the selection to the page
+                // parameter type when the individual can view it, and otherwise shows
+                // the configured selection. Apply the same rule here so a workflow
+                // type the individual can not view can not be launched by URL.
+                if ( workflowTypeFromParameter == null || workflowTypeFromParameter.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return workflowTypeFromParameter;
+                }
             }
 
             var configuredWorkflowTypes = GetConfiguredWorkflowTypes();
@@ -384,7 +398,26 @@ namespace Rock.Blocks.WorkFlow
                 return null;
             }
 
-            return WorkflowTypeCache.Get( selectedGuid.Value );
+            var selectedWorkflowType = WorkflowTypeCache.Get( selectedGuid.Value );
+
+            /*
+                10/13/2026 - MSE
+
+                With no configured workflow types the individual chooses from the
+                WorkflowTypePicker, which only lists types they can view. The selected
+                value is posted by the client, so the server must apply the same rule.
+                Configured workflow types are chosen by an administrator and stay unchecked.
+
+                Reason: Prevent launching a restricted workflow type by changing the posted value.
+            */
+            if ( configuredWorkflowTypes.Count == 0
+                && selectedWorkflowType != null
+                && !selectedWorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return selectedWorkflowType;
         }
 
         /// <summary>

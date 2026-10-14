@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,21 +16,22 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Collections.Generic;
 using Rock.Net;
-using Rock.Web.Cache;
-using Rock.ViewModels.Utility;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -265,8 +265,24 @@ namespace Rock.Blocks.Lms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.PageParameter( PageParameterKey.ReturnUrl ) ?? this.GetParentPageUrl( GetCurrentPageParams() ),
+                [NavigationUrlKey.ParentPage] = GetSafeReturnUrl() ?? this.GetParentPageUrl( GetCurrentPageParams() ),
             };
+        }
+
+        /// <summary>
+        /// Gets the ReturnUrl page parameter if it's safe to redirect to.
+        /// </summary>
+        /// <returns>The ReturnUrl page parameter, or an empty string if it's missing or not safe to redirect to.</returns>
+        private string GetSafeReturnUrl()
+        {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            if ( !this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
+            {
+                return string.Empty;
+            }
+
+            return returnUrl;
         }
 
         /// <inheritdoc/>
@@ -392,7 +408,7 @@ namespace Rock.Blocks.Lms
 
             RockContext.SaveChanges();
 
-            var returnToUrl = this.PageParameter( PageParameterKey.ReturnUrl ) ?? this.GetParentPageUrl( GetCurrentPageParams() );
+            var returnToUrl = GetSafeReturnUrl() ?? this.GetParentPageUrl( GetCurrentPageParams() );
             return ActionContent( System.Net.HttpStatusCode.Created, returnToUrl );
         }
 

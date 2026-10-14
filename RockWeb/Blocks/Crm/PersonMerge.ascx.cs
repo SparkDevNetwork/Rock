@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1056,7 +1056,7 @@ namespace RockWeb.Blocks.Crm
             emailMessage.Send( out errorMessages );
             if ( errorMessages.Count > 0 )
             {
-                Logger.LogWarning( $"Unable to send merge completion notification email to requester ${requester.FullName}.  Errors: {string.Join( "; ", errorMessages )}" );
+                Logger.LogWarning( $"Unable to send merge completion notification email to requester {requester.FullName}.  Errors: {string.Join( "; ", errorMessages )}" );
             }
         }
 

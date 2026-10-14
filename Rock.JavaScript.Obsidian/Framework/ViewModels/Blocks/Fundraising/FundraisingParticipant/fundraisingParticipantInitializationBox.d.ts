@@ -90,6 +90,12 @@ export type FundraisingParticipantInitializationBox = {
     /** Gets or sets the resolved Requirements Header Lava Template HTML. */
     requirementsHeaderHtml?: string | null;
 
+    /**
+     * Gets or sets the security grant token used by controls on the block.
+     * null when the viewer is not authorized to act on the participant's requirements.
+     */
+    securityGrantToken?: string | null;
+
     /** Gets or sets the resolved Updates Lava Template HTML (content channel items). */
     updatesHtml?: string | null;
 

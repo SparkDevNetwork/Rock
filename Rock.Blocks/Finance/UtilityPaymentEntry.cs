@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1256,7 +1256,15 @@ namespace Rock.Blocks.Finance
 
             if ( existingTransaction != null )
             {
-                return ActionOk( BuildSuccessResponse( request, financialGateway, paymentInfo, existingTransaction.TransactionCode ) );
+                // Only a retry by the same giver may show the existing
+                // transaction as the receipt. Otherwise a tampered Guid would
+                // render someone else's gift details.
+                if ( existingTransaction.AuthorizedPersonAlias?.Person?.GivingId != person.GivingId )
+                {
+                    return ActionOk( ProcessError( "There was a problem processing the transaction." ) );
+                }
+
+                return ActionOk( BuildSuccessResponse( request, financialGateway, paymentInfo, existingTransaction.TransactionCode, false ) );
             }
 
             var chargedTransaction = ChargePayment( financialGateway, financialGatewayComponent, request.GatewayToken, paymentInfo, out var chargeError );
@@ -1282,7 +1290,7 @@ namespace Rock.Blocks.Finance
                 ConfigureTextToGiveAccount( chargedTransaction, person, request );
             }
 
-            return ActionOk( BuildSuccessResponse( request, financialGateway, paymentInfo, chargedTransaction.TransactionCode ) );
+            return ActionOk( BuildSuccessResponse( request, financialGateway, paymentInfo, chargedTransaction.TransactionCode, true ) );
         }
 
         #endregion Block Actions
@@ -2960,8 +2968,9 @@ namespace Rock.Blocks.Finance
         /// <param name="financialGateway">The gateway that processed the gift.</param>
         /// <param name="paymentInfo">The payment info that was charged, carrying the reusable customer reference.</param>
         /// <param name="transactionCode">The gateway's confirmation code for the completed transaction.</param>
+        /// <param name="isNewlyProcessed"><c>true</c> if the transaction was processed by this request.</param>
         /// <returns>The success result.</returns>
-        private UtilityPaymentEntryProcessResponseBag BuildSuccessResponse( UtilityPaymentEntryProcessRequestBag request, FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, string transactionCode )
+        private UtilityPaymentEntryProcessResponseBag BuildSuccessResponse( UtilityPaymentEntryProcessRequestBag request, FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, string transactionCode, bool isNewlyProcessed )
         {
             // Reload the saved transaction from a fresh context with the Account and CurrencyTypeValue
             // navigations eager-loaded. The just-charged transaction is a new in-memory entity whose
@@ -2976,7 +2985,9 @@ namespace Rock.Blocks.Finance
 
                 // Offer to save the payment method only for a personal gift entered with a new payment method
                 // on a gateway that can store it, and never in Text-to-Give mode (which saves automatically).
-                var isSaveAccountOffered = !GetAttributeValue( AttributeKey.TextToGiveMode ).AsBoolean()
+                // The save is only offered for a gift processed by this request.
+                var isSaveAccountOffered = isNewlyProcessed
+                    && !GetAttributeValue( AttributeKey.TextToGiveMode ).AsBoolean()
                     && !IsGivingAsBusiness( request.IsGivingAsBusiness )
                     && !request.SavedAccountGuid.HasValue
                     && transactionCode.IsNotNullOrWhiteSpace()
@@ -2991,7 +3002,10 @@ namespace Rock.Blocks.Finance
                     TransactionCode = transactionCode,
                     IsSaveAccountOffered = isSaveAccountOffered,
                     GatewayGuid = financialGateway.Guid,
-                    GatewayPersonIdentifier = paymentInfo?.GatewayPersonIdentifier
+                    GatewayPersonIdentifier = paymentInfo?.GatewayPersonIdentifier,
+                    SaveAccountSecurityGrantToken = isSaveAccountOffered
+                        ? GetSaveAccountSecurityGrantToken( financialGateway.Guid, transactionCode, paymentInfo?.GatewayPersonIdentifier, null )
+                        : null
                 };
             }
         }
@@ -3004,8 +3018,9 @@ namespace Rock.Blocks.Finance
         /// <param name="request">The processed gift, used to detect a business or saved-account gift.</param>
         /// <param name="financialGateway">The gateway the schedule was created on.</param>
         /// <param name="paymentInfo">The payment info that was scheduled, carrying the reusable customer reference.</param>
+        /// <param name="isNewlyProcessed"><c>true</c> if the schedule was created by this request.</param>
         /// <returns>The success result.</returns>
-        private UtilityPaymentEntryProcessResponseBag BuildScheduledSuccessResponse( UtilityPaymentEntryProcessRequestBag request, FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo )
+        private UtilityPaymentEntryProcessResponseBag BuildScheduledSuccessResponse( UtilityPaymentEntryProcessRequestBag request, FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, bool isNewlyProcessed )
         {
             // Reload with the Account and CurrencyTypeValue navigations eager-loaded, for the same reason
             // as BuildSuccessResponse (a new in-memory entity's reference navigations are blank and cannot
@@ -3018,7 +3033,9 @@ namespace Rock.Blocks.Finance
                 var paymentDetail = scheduledTransaction?.FinancialPaymentDetail;
                 var mergeFields = GetSuccessMergeFields( scheduledTransaction, scheduledTransaction?.AuthorizedPersonAliasId, paymentDetail );
 
-                var isSaveAccountOffered = !GetAttributeValue( AttributeKey.TextToGiveMode ).AsBoolean()
+                // The save is only offered for a gift processed by this request.
+                var isSaveAccountOffered = isNewlyProcessed
+                    && !GetAttributeValue( AttributeKey.TextToGiveMode ).AsBoolean()
                     && !IsGivingAsBusiness( request.IsGivingAsBusiness )
                     && !request.SavedAccountGuid.HasValue
                     && scheduledTransaction?.TransactionCode.IsNotNullOrWhiteSpace() == true
@@ -3034,9 +3051,31 @@ namespace Rock.Blocks.Finance
                     IsSaveAccountOffered = isSaveAccountOffered,
                     GatewayGuid = financialGateway.Guid,
                     GatewayPersonIdentifier = paymentInfo?.GatewayPersonIdentifier,
-                    ScheduledTransactionGuid = request.TransactionGuid
+                    ScheduledTransactionGuid = request.TransactionGuid,
+                    SaveAccountSecurityGrantToken = isSaveAccountOffered
+                        ? GetSaveAccountSecurityGrantToken( financialGateway.Guid, scheduledTransaction?.TransactionCode, paymentInfo?.GatewayPersonIdentifier, request.TransactionGuid )
+                        : null
                 };
             }
+        }
+
+        /// <summary>
+        /// Gets the security grant token that allows the payment method used
+        /// for the transaction to be saved for future use.
+        /// </summary>
+        /// <param name="financialGatewayGuid">The unique identifier of the gateway that processed the transaction.</param>
+        /// <param name="transactionCode">The transaction code.</param>
+        /// <param name="gatewayPersonIdentifier">The gateway person identifier of the payment method.</param>
+        /// <param name="scheduledTransactionGuid">The unique identifier of the scheduled transaction, if any.</param>
+        /// <returns>The security grant token.</returns>
+        private static string GetSaveAccountSecurityGrantToken( Guid financialGatewayGuid, string transactionCode, string gatewayPersonIdentifier, Guid? scheduledTransactionGuid )
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule( financialGatewayGuid, transactionCode, gatewayPersonIdentifier, scheduledTransactionGuid ) );
+
+            grant.SetLifetime( TimeSpan.FromMinutes( 60 ) );
+
+            return grant.ToToken();
         }
 
         /// <summary>
@@ -3544,7 +3583,15 @@ namespace Rock.Blocks.Finance
 
             if ( existingSchedule != null )
             {
-                return BuildScheduledSuccessResponse( request, financialGateway, paymentInfo );
+                // Only a retry by the same giver may show the existing
+                // schedule as the receipt. Otherwise a tampered Guid would
+                // render someone else's scheduled gift details.
+                if ( existingSchedule.AuthorizedPersonAlias?.Person?.GivingId != person.GivingId )
+                {
+                    return ProcessError( "There was a problem scheduling the payment." );
+                }
+
+                return BuildScheduledSuccessResponse( request, financialGateway, paymentInfo, false );
             }
 
             var scheduledTransaction = financialGatewayComponent.AddScheduledPayment( financialGateway, schedule, paymentInfo, out var scheduleError );
@@ -3565,7 +3612,7 @@ namespace Rock.Blocks.Finance
                 CancelTransferredScheduledTransaction( scheduledTransactionToTransfer.Id );
             }
 
-            return BuildScheduledSuccessResponse( request, financialGateway, paymentInfo );
+            return BuildScheduledSuccessResponse( request, financialGateway, paymentInfo, true );
         }
 
         /// <summary>
@@ -4153,7 +4200,13 @@ namespace Rock.Blocks.Finance
                 return null;
             }
 
-            var business = request.BusinessGuid.HasValue ? personService.Get( request.BusinessGuid.Value ) : null;
+            // The business picker only lists the contact's own businesses, so
+            // only honor a selected business from that same list. Otherwise a
+            // tampered Guid would overwrite the name, email, phone and address
+            // of any person record.
+            var business = request.BusinessGuid.HasValue
+                ? personService.GetBusinesses( contactPerson.Id ).FirstOrDefault( candidate => candidate.Guid == request.BusinessGuid.Value )
+                : null;
 
             // Fall back to the contact's single business whose name matches what was entered.
             if ( business == null )

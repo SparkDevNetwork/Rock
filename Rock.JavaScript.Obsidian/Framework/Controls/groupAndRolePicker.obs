@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :modelValue="formFieldValue" name="group-and-role-picker" :disabled="disabled">
+    <RockFormField v-bind="fieldProps" :modelValue="formFieldValue?.value" name="group-and-role-picker" :disabled="disabled">
         <GroupTypeGroupPicker v-bind="standardProps"
                               v-model="internalGroupValue"
                               v-model:groupType="internalTypeValue"
@@ -23,6 +23,7 @@
 <script setup lang="ts">
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
@@ -76,17 +77,25 @@
     const standardProps = useStandardAsyncPickerProps(props);
     const fieldProps = useStandardRockFormFieldProps(props);
     const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
 
     const internalTypeValue = useVModelPassthrough(props, "groupType", emit);
     const internalGroupValue = useVModelPassthrough(props, "group", emit);
     const internalRoleValue = useVModelPassthrough(props, "modelValue", emit);
 
     const formFieldValue = computed(() => {
-        if (internalTypeValue.value && internalGroupValue.value && internalRoleValue.value) {
-            return internalRoleValue.value;
-        }
+        /*
+            9/22/26 - NA
 
-        return null;
+            Historically (in WebForms) the Role was not required - a required Group
+            And Role field only forces the Group (and its prerequisite Group
+            Type). So the value used for "required" validation reflects the
+            selected Group, not the Role. This is fine to change if the product
+            owner says so.
+
+            Reason: required forces a Group, not a Role, matching historical behavior.
+        */
+        return internalGroupValue.value;
     });
 
     const loadedRoleItems = ref<ListItemBag[] | null>(null);
@@ -116,7 +125,8 @@
         }
 
         const options: GroupAndRolePickerGetRolesOptionsBag = {
-            groupTypeGuid
+            groupTypeGuid,
+            securityGrantToken: securityGrantToken.value
         };
 
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupAndRolePickerGetRoles", null, options);

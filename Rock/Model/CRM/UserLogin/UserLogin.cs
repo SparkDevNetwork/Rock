@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -185,7 +185,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [HideFromReporting]
-        [DataMember]
         [StringValidation( StringValidationProfile.Unrestricted )]
         public string ApiKey { get; set; }
         

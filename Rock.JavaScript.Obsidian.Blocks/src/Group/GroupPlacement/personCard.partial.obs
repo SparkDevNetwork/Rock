@@ -1,18 +1,25 @@
 <template>
     <div v-if="person.personIdKey"
-         :class="['person-card', { 'selected': isSelected }]"
+         :class="['person-card', { 'selected': isSelected, 'person-card-inactive': groupMember?.isInactive }]"
          :style="{ borderLeftColor: getPersonBorderColor(person.gender) }"
          @click="onPersonCardClick"
          @mouseenter="togglePersonCardHover(true)"
          @mouseleave="togglePersonCardHover(false)">
         <div class="d-flex justify-content-between align-items-center person-row">
-            <div class="d-flex align-items-center w-100">
+            <div :class="['d-flex align-items-center w-100', { 'is-inactive': groupMember?.isInactive }]">
                 <div class="mr-3 flex-shrink-0"
                      :style="{ 'width': '32px', 'height': '32px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
                 </div>
                 <span :ref="(el) => addTooltipIfOverflow(el as HTMLElement, displayedPersonName)"
                       class="overflow-ellipsis">
                     {{ displayedPersonName }}
+                </span>
+                <span v-if="groupMember?.isInactive"
+                      class="label label-default ml-2 flex-shrink-0"
+                      :ref="(el) => addTooltip(el as Element)"
+                      data-toggle="tooltip"
+                      data-original-title="This group member's status is Inactive. They are still placed but are not counted toward capacity.">
+                    Inactive
                 </span>
             </div>
             <div v-if="isGroupMemberCard && groupMember?.groupMemberIdKey"
@@ -45,6 +52,7 @@
         </div>
         <TransitionVerticalCollapse v-if="isTransitionEnabled">
             <CardDetails v-if="isCardExpanded"
+                         :class="{ 'is-inactive': groupMember?.isInactive }"
                          :person="person"
                          :isInstanceDisplayed="isInstanceDisplayed"
                          :areFeesDisplayed="areFeesDisplayed"
@@ -55,6 +63,7 @@
         </TransitionVerticalCollapse>
         <template v-else>
             <CardDetails v-if="isCardExpanded"
+                         :class="{ 'is-inactive': groupMember?.isInactive }"
                          :person="person"
                          :isInstanceDisplayed="isInstanceDisplayed"
                          :areFeesDisplayed="areFeesDisplayed"
@@ -104,6 +113,7 @@
     import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { addTooltipIfOverflow } from "./types.partial";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { PropType, ref, computed } from "vue";
     import CardDetails from "./cardDetails.partial.obs";
@@ -239,5 +249,11 @@
     function removeGroupMember(): void {
         emit("removeGroupMember", props.groupMember?.groupMemberIdKey ?? "");
         openDropdownIndex.value = null;
+    }
+
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
     }
 </script>

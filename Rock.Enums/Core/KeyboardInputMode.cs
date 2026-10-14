@@ -1,4 +1,4 @@
-﻿namespace Rock.Enums.Core
+namespace Rock.Enums.Core
 {
     /// <summary>
     /// Specifies a keyboard mode for an input field.

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+    <RockFormField :modelValue="internalValue?.value" name="step-program-step-type-picker">
         <StepProgramPicker
                            v-if="!defaultStepProgramGuid"
                            v-model="internalProgramValue"

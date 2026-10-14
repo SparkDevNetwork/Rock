@@ -177,7 +177,19 @@
 
                 td.classList.add("last");
                 lastColumnElement.classList.remove("last");
-                lastColumnElement.insertAdjacentElement("afterend", td);
+
+                // When a gap is set, every column pair is separated by a spacer cell,
+                // so the new column needs one before it to match.
+                const existingSpacer = lastColumnElement.parentElement?.querySelector(":scope > .spacer");
+                let insertAfterElement: Element = lastColumnElement;
+
+                if (existingSpacer) {
+                    const spacer = existingSpacer.cloneNode(true) as HTMLElement;
+                    lastColumnElement.insertAdjacentElement("afterend", spacer);
+                    insertAfterElement = spacer;
+                }
+
+                insertAfterElement.insertAdjacentElement("afterend", td);
 
                 columnElements.value = getChildDropzones(props.componentElement);
 
@@ -204,6 +216,27 @@
             // Give the columns to the column to the right.
             const rightColumnElement = columnElements.value[columnIndex + 1];
             setCols(rightColumnElement, getCols(columnElement) + getCols(rightColumnElement));
+        }
+
+        // Remove the gap spacer that belongs with this column: the one before it,
+        // or the one after it when deleting the first column. Leaving it behind
+        // renders as an empty gap at the end of the row.
+        const previousSibling = columnElement.previousElementSibling;
+        const nextSibling = columnElement.nextElementSibling;
+
+        if (previousSibling?.classList.contains("spacer")) {
+            previousSibling.remove();
+        }
+        else if (nextSibling?.classList.contains("spacer")) {
+            nextSibling.remove();
+        }
+
+        // Hand the end-of-row layout class to the neighbor so exactly one column keeps it.
+        if (columnElement.classList.contains("last")) {
+            columnElements.value[columnIndex - 1]?.classList.add("last");
+        }
+        else if (columnElement.classList.contains("start")) {
+            columnElements.value[columnIndex + 1]?.classList.add("start");
         }
 
         // Remove the column element.

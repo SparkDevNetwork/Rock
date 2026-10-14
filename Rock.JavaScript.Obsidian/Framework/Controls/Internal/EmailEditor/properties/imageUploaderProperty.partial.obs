@@ -5,7 +5,7 @@
                    :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
                    :disableLabel="!label"
                    :label="label"
-                   :uploadAsTemporary="true" />
+                   :uploadAsTemporary="false" />
 </template>
 
 <script setup lang="ts">

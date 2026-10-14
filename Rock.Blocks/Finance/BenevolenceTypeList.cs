@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -173,7 +173,14 @@ namespace Rock.Blocks.Finance
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${BenevolenceType.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {BenevolenceType.FriendlyTypeName}." );
+                }
+
+                // The list only shows types the person can view, so don't
+                // allow deleting a type that would not have been displayed.
+                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete {BenevolenceType.FriendlyTypeName}." );
                 }
 
                 string errorMessage = null;

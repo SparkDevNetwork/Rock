@@ -1,0 +1,419 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData" keyField="guid" itemTerm="Fee" liveUpdates light @addItem="onAddFee">
+        <ReorderColumn @orderChanged="onOrderChanged" />
+        <TextColumn name="name" field="name" title="Fee" />
+        <TextColumn name="feeType" field="feeType" title="Options" />
+        <TextColumn name="cost" field="cost" title="Cost" />
+        <BooleanColumn name="allowMultiple" field="allowMultiple" title="Enable Quantity" />
+        <BooleanColumn name="discountApplies" field="discountApplies" title="Discount Applies" />
+        <BooleanColumn name="isActive" field="isActive" title="Is Active" />
+        <BooleanColumn name="isRequired" field="isRequired" title="Is Required" />
+        <EditColumn @click="onEditFee" />
+        <DeleteColumn @click="onDeleteFee" />
+    </Grid>
+
+    <Modal v-model="isModalVisible" title="Fee" saveText="Save" cancelText="Cancel" :onSave="onSaveFee">
+        <TextBox v-model="editName" label="Name" rules="required" :maxLength="100" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList :key="feeTypeKey" :modelValue="editFeeTypeValue" @update:modelValue="onFeeTypeChanged" label="Options" horizontal :items="feeTypeItems" />
+
+                <NotificationBox v-if="feeItemsWarning" alertType="warning">{{ feeItemsWarning }}</NotificationBox>
+
+                <template v-if="isSingleFeeType">
+                    <CurrencyBox v-model="editSingleCost" label="Cost" />
+
+                    <NumberBox v-model="editSingleMaximumUsageCount"
+                               label="Maximum Available"
+                               :decimalCount="0"
+                               :minimumValue="0"
+                               inputClasses="input-width-md"
+                               help="The maximum number of times this fee can be used per registration instance." />
+                </template>
+
+                <RockFormField v-else
+                               :modelValue="editFeeItems"
+                               name="fee-items"
+                               label="Costs"
+                               help="Enter the name, cost, and the maximum number of times this fee can be used per registration instance.">
+                    <div v-for="item in editFeeItems" :key="item.guid" class="form-control-group margin-b-sm">
+                        <TextBox :modelValue="item.name ?? ''"
+                                 @update:modelValue="item.name = $event"
+                                 placeholder="Option"
+                                 validationTitle="Option"
+                                 rules="required"
+                                 :maxLength="100"
+                                 inputClasses="input-width-md" />
+
+                        <CurrencyBox v-model="item.cost" />
+
+                        <NumberBox v-model="item.maximumUsageCount"
+                                   placeholder="Max Available"
+                                   :decimalCount="0"
+                                   :minimumValue="0"
+                                   inputClasses="input-width-md" />
+
+                        <RockButton v-if="editFeeItems.length > 1" btnType="danger" btnSize="sm" class="btn-square" title="Delete" @click="onDeleteFeeItem(item)">
+                            <i class="ti ti-x"></i>
+                        </RockButton>
+                    </div>
+
+                    <div class="actions">
+                        <RockButton btnType="default" btnSize="sm" class="btn-square" title="Add Option" @click="onAddFeeItem">
+                            <i class="ti ti-circle-plus"></i>
+                        </RockButton>
+                    </div>
+                </RockFormField>
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="editAllowMultiple" label="Enable Quantity" help="Should registrants be able to select more than one of this item?" />
+                <CheckBox v-model="editDiscountApplies" label="Discount Applies" help="Should discounts be applied to this fee?" />
+                <CheckBox v-model="editIsActive" label="Is Active" help="Unchecking this will remove the fee for new registrations but will not effect the existing registrants." />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="editIsRequired" label="Is Required" help="Checking this will mark the fee for new registrations required." />
+                <CheckBox v-model="editHideWhenNoneRemaining" label="Hide When None Remaining" help="If checked then items that have 0 remaining will not display. If not checked then the items will display but will not be selectable." />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { RegistrationFeeType, RegistrationFeeTypeDescription } from "@Obsidian/Enums/Event/registrationFeeType";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { RegistrationTemplateFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFeeBag";
+    import { RegistrationTemplateFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFeeItemBag";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+    import { formatFeeItems, getNextOrder, moveItem, renumberOrder } from "./utils.partial";
+
+    const props = defineProps({
+        /** The fees of the template. */
+        fees: {
+            type: Array as PropType<RegistrationTemplateFeeBag[]>,
+            required: true
+        },
+
+        /** The currency settings of the organization. */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:fees", value: RegistrationTemplateFeeBag[]): void
+    }>();
+
+    // #region Values
+
+    const isModalVisible = ref(false);
+    const feeItemsWarning = ref("");
+
+    /** The unique identifier of the fee being edited, or null when adding. */
+    const editingGuid = ref<string | null>(null);
+    const editName = ref("");
+    const editFeeType = ref<RegistrationFeeType>(RegistrationFeeType.Single);
+    const editAllowMultiple = ref(false);
+    const editDiscountApplies = ref(false);
+    const editIsActive = ref(true);
+    const editIsRequired = ref(false);
+    const editHideWhenNoneRemaining = ref(false);
+
+    /** The working copy of the fee options while the modal is open. */
+    const editFeeItems = ref<RegistrationTemplateFeeItemBag[]>([]);
+
+    /** The option that becomes the only option when the fee is saved as a single option fee. */
+    const editSingleItemGuid = ref<string | null>(null);
+    const editSingleCost = ref<number | null>(null);
+    const editSingleMaximumUsageCount = ref<number | null>(null);
+
+    const feeTypeItems = enumToListItemBag(RegistrationFeeTypeDescription);
+
+    /** Changed to rebuild the fee type list when a change to it is turned down. */
+    const feeTypeKey = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const fees = computed({
+        get(): RegistrationTemplateFeeBag[] {
+            return props.fees ?? [];
+        },
+        set(value: RegistrationTemplateFeeBag[]) {
+            emit("update:fees", value);
+        }
+    });
+
+    const gridData = computed(() => {
+        const rows = [...fees.value]
+            .sort((a, b) => a.order - b.order)
+            .map(fee => ({
+                guid: fee.guid,
+                name: fee.name ?? "",
+                feeType: RegistrationFeeTypeDescription[fee.feeType] ?? "",
+                cost: formatFeeItems(fee.feeItems, props.currencyInfo),
+                allowMultiple: fee.allowMultiple,
+                discountApplies: fee.discountApplies,
+                isActive: fee.isActive,
+                isRequired: fee.isRequired
+            }));
+
+        return { rows };
+    });
+
+    const editFeeTypeValue = computed((): string => {
+        return editFeeType.value.toString();
+    });
+
+    const isSingleFeeType = computed((): boolean => {
+        return editFeeType.value === RegistrationFeeType.Single;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button on the grid is clicked.
+     */
+    function onAddFee(): void {
+        openModal(null);
+    }
+
+    /**
+     * Called when the Edit button for a row is clicked.
+     *
+     * @param key The unique identifier of the fee to edit.
+     */
+    function onEditFee(key: string): void {
+        const fee = fees.value.find(f => f.guid === key);
+
+        if (fee) {
+            openModal(fee);
+        }
+    }
+
+    /**
+     * Called when the Delete button for a row is clicked.
+     *
+     * @param key The unique identifier of the fee to delete.
+     */
+    function onDeleteFee(key: string): void {
+        fees.value = renumberOrder(fees.value.filter(f => f.guid !== key));
+    }
+
+    /**
+     * Called when a row is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to the end.
+     *
+     * @returns True to keep the new order.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        fees.value = moveItem([...fees.value].sort((a, b) => a.order - b.order), item["guid"] as string, (beforeItem?.["guid"] as string | undefined) ?? null, f => f.guid);
+
+        return true;
+    }
+
+    /**
+     * Called when the fee type is changed. Switching to a single option fee is
+     * only possible when at most one of the existing options has already been
+     * used by a registrant, because only one option can survive the change.
+     *
+     * @param value The selected fee type.
+     */
+    function onFeeTypeChanged(value: string | string[]): void {
+        const newFeeType = toNumber(Array.isArray(value) ? value[0] : value) as RegistrationFeeType;
+
+        feeItemsWarning.value = "";
+
+        if (newFeeType === RegistrationFeeType.Single) {
+            const itemsInUse = editFeeItems.value.filter(item => item.isInUse);
+
+            if (editFeeItems.value.length > 1 && itemsInUse.length > 1) {
+                feeItemsWarning.value = "Unable to use single fee type. More than one of these fees have already been used.";
+                editFeeType.value = RegistrationFeeType.Multiple;
+
+                // The list has already moved to the single option on screen while
+                // the fee keeps the type it had, so there is no change for the list
+                // to follow. Rebuilding it puts the selection back where it was.
+                feeTypeKey.value = newGuid();
+
+                return;
+            }
+
+            selectSingleItem(itemsInUse.length === 1 ? itemsInUse[0] : editFeeItems.value[0]);
+        }
+        else if (editFeeItems.value.length === 0) {
+            editFeeItems.value = [createFeeItem(0)];
+        }
+
+        editFeeType.value = newFeeType;
+    }
+
+    /**
+     * Called when the delete button of a fee option is clicked. Options that a
+     * registrant has already used cannot be removed. The last remaining option
+     * is also kept so a multiple-option fee cannot be saved with nothing to pick.
+     *
+     * @param item The fee option to remove.
+     */
+    function onDeleteFeeItem(item: RegistrationTemplateFeeItemBag): void {
+        if (item.isInUse) {
+            feeItemsWarning.value = "This option has already been used by a registrant and cannot be deleted.";
+
+            return;
+        }
+
+        if (editFeeItems.value.length === 1) {
+            feeItemsWarning.value = "Each multiple-option fee must have at least one option.";
+
+            return;
+        }
+
+        feeItemsWarning.value = "";
+        editFeeItems.value = renumberOrder(editFeeItems.value.filter(i => i.guid !== item.guid));
+    }
+
+    /**
+     * Called when the add button of the fee options is clicked.
+     */
+    function onAddFeeItem(): void {
+        editFeeItems.value = [...editFeeItems.value, createFeeItem(getNextOrder(editFeeItems.value))];
+    }
+
+    /**
+     * Called when the modal Save button is clicked. Builds the fee from the
+     * working values and replaces or appends it in the list.
+     */
+    function onSaveFee(): void {
+        const existing = editingGuid.value ? fees.value.find(f => f.guid === editingGuid.value) : undefined;
+        let feeItems: RegistrationTemplateFeeItemBag[];
+
+        if (isSingleFeeType.value) {
+            // A single option fee has exactly one option named after the fee.
+            const singleItem = editFeeItems.value.find(i => i.guid === editSingleItemGuid.value) ?? createFeeItem(0);
+
+            feeItems = [{
+                ...singleItem,
+                order: 0,
+                name: editName.value,
+                cost: editSingleCost.value,
+                maximumUsageCount: editSingleMaximumUsageCount.value
+            }];
+        }
+        else {
+            feeItems = renumberOrder(editFeeItems.value.map(item => ({ ...item })));
+
+            if (feeItems.length === 0) {
+                feeItemsWarning.value = "Each multiple-option fee must have at least one option.";
+
+                return;
+            }
+        }
+
+        const fee: RegistrationTemplateFeeBag = {
+            guid: existing?.guid ?? newGuid(),
+            order: existing?.order ?? getNextOrder(fees.value),
+            name: editName.value,
+            feeType: editFeeType.value,
+            allowMultiple: editAllowMultiple.value,
+            discountApplies: editDiscountApplies.value,
+            isActive: editIsActive.value,
+            isRequired: editIsRequired.value,
+            hideWhenNoneRemaining: editHideWhenNoneRemaining.value,
+            feeItems: feeItems
+        };
+
+        if (existing) {
+            fees.value = fees.value.map(f => f.guid === existing.guid ? fee : f);
+        }
+        else {
+            fees.value = [...fees.value, fee];
+        }
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Opens the modal for a new fee, or populates it with an existing fee.
+     *
+     * @param fee The fee to edit, or null to add a new fee.
+     */
+    function openModal(fee: RegistrationTemplateFeeBag | null): void {
+        editingGuid.value = fee?.guid ?? null;
+        editName.value = fee?.name ?? "";
+        editFeeType.value = fee?.feeType ?? RegistrationFeeType.Single;
+        editAllowMultiple.value = fee?.allowMultiple ?? false;
+        editDiscountApplies.value = fee?.discountApplies ?? false;
+        editIsActive.value = fee?.isActive ?? true;
+        editIsRequired.value = fee?.isRequired ?? false;
+        editHideWhenNoneRemaining.value = fee?.hideWhenNoneRemaining ?? false;
+        editFeeItems.value = [...(fee?.feeItems ?? [])]
+            .sort((a, b) => a.order - b.order)
+            .map(item => ({ ...item }));
+        feeItemsWarning.value = "";
+
+        if (editFeeType.value === RegistrationFeeType.Multiple && editFeeItems.value.length === 0) {
+            editFeeItems.value = [createFeeItem(0)];
+        }
+
+        selectSingleItem(editFeeItems.value[0]);
+
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Makes the specified option the one edited by the single option controls.
+     *
+     * @param item The option, or undefined when the fee has no options yet.
+     */
+    function selectSingleItem(item: RegistrationTemplateFeeItemBag | undefined): void {
+        editSingleItemGuid.value = item?.guid ?? null;
+        editSingleCost.value = item?.cost ?? null;
+        editSingleMaximumUsageCount.value = item?.maximumUsageCount ?? null;
+    }
+
+    /**
+     * Creates a new, empty fee option.
+     *
+     * @param order The order of the option within the fee.
+     *
+     * @returns The new fee option.
+     */
+    function createFeeItem(order: number): RegistrationTemplateFeeItemBag {
+        return {
+            guid: newGuid(),
+            order: order,
+            name: "",
+            cost: null,
+            maximumUsageCount: null,
+            isInUse: false
+        };
+    }
+
+    // #endregion Functions
+</script>

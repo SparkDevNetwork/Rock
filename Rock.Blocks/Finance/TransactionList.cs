@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Linq;
 using RestSharp.Extensions;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
@@ -38,7 +39,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Finance.TransactionList;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Finance
 {
@@ -628,6 +628,16 @@ namespace Rock.Blocks.Finance
         /// <returns>A boolean value that indicates if delete should be enabled.</returns>
         private bool GetIsDeleteEnabled()
         {
+            /*
+                10/5/26 - CLAUDE
+
+                The context batch is only resolved lazily, so when this is called first from a
+                block action (such as Delete) _batch is still null and every delete was rejected.
+
+                Reason: Resolve the context entities before checking _batch.
+            */
+            InitializeContextEntities();
+
             return _batch != null && CanEdit && IsBatchEditable;
         }
 
@@ -886,6 +896,8 @@ namespace Rock.Blocks.Finance
                     // Referenced (not constructed) so it is materialized for GridAttributeLoader.
                     // Only its scalars/attributes are read later — never its navigations.
                     TransactionDetail = d,
+                    // Materialized so custom column Lava can read transaction scalars without a lazy load.
+                    Transaction = d.Transaction,
                     Id = d.Id,
                     TransactionId = d.TransactionId,
                     Person = d.Transaction.AuthorizedPersonAlias.Person,
@@ -1148,8 +1160,53 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<TransactionListRow> GetGridBuilder()
         {
+            // Custom column Lava can only read anonymous types, entities, or LavaDataObjects, so project the row's scalars for the Row merge field.
+            var blockOptions = new GridBuilderGridOptions<TransactionListRow>
+            {
+                LavaObject = row => new
+                {
+                    row.Id,
+                    row.TransactionId,
+                    row.AuthorizedPersonAliasId,
+                    AuthorizedPersonNickName = row.Person?.NickName ?? string.Empty,
+                    AuthorizedPersonLastName = row.Person?.LastName ?? string.Empty,
+                    row.BatchId,
+                    row.Transaction.ScheduledTransactionId,
+                    row.TransactionDateTime,
+                    row.FutureProcessingDateTime,
+                    row.DaysSinceLastTransaction,
+                    row.TotalAmount,
+                    row.CurrencyTypeValueId,
+                    row.CreditCardTypeValueId,
+                    row.ForeignCurrencyCodeValueId,
+                    row.SourceTypeValueId,
+                    row.TransactionTypeValueId,
+                    row.TransactionCode,
+                    row.ForeignKey,
+                    Summary = GetSummaryText( row ),
+                    row.Status,
+                    row.Transaction.StatusMessage,
+                    row.SettledDate,
+                    row.SettledGroupId,
+                    row.Transaction.FinancialGatewayId,
+                    row.Transaction.IsReconciled,
+                    row.Transaction.IsSettled,
+                    row.Transaction.NonCashAssetTypeValueId,
+                    row.Transaction.ProcessedDateTime,
+                    row.Transaction.ShowAsAnonymous,
+                    FinancialPaymentDetail = row.Transaction.FinancialPaymentDetailId.HasValue
+                        ? new
+                        {
+                            Id = row.Transaction.FinancialPaymentDetailId.Value,
+                            row.CurrencyTypeValueId,
+                            row.CreditCardTypeValueId
+                        }
+                        : null
+                }
+            };
+
             var gridBuilder = new GridBuilder<TransactionListRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => IdHasher.Instance.GetHash( a.Id ) )
                 .AddTextField( "transactionIdKey", a => IdHasher.Instance.GetHash( a.TransactionId ) )
                 .AddPersonField( "person", a => a.Person )
@@ -1332,7 +1389,9 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            if ( !CanEdit )
+            // The grid only offers delete when GetIsDeleteEnabled() is true (an open,
+            // non-automated context batch plus edit rights), so apply the same rule here.
+            if ( !GetIsDeleteEnabled() )
             {
                 return ActionBadRequest( $"Not authorized to delete {FinancialTransaction.FriendlyTypeName}." );
             }
@@ -1360,6 +1419,12 @@ namespace Rock.Blocks.Finance
             var transaction = transactionService.Get( key, allowIntegerId );
 
             if ( transaction == null )
+            {
+                return ActionBadRequest( $"{FinancialTransaction.FriendlyTypeName} not found." );
+            }
+
+            // Only transactions in the context batch are listed, so do not delete any other.
+            if ( transaction.BatchId != _batch.Id )
             {
                 return ActionBadRequest( $"{FinancialTransaction.FriendlyTypeName} not found." );
             }
@@ -1415,6 +1480,12 @@ namespace Rock.Blocks.Finance
             var transactionDetail = detailService.Get( key, allowIntegerId );
 
             if ( transactionDetail == null )
+            {
+                return ActionBadRequest( $"{FinancialTransactionDetail.FriendlyTypeName} not found." );
+            }
+
+            // Only details of transactions in the context batch are listed, so do not delete any other.
+            if ( transactionDetail.Transaction == null || transactionDetail.Transaction.BatchId != _batch.Id )
             {
                 return ActionBadRequest( $"{FinancialTransactionDetail.FriendlyTypeName} not found." );
             }
@@ -1491,16 +1562,25 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( "The selected batch does not exist, or is no longer open." );
             }
 
+            // The destination must be one of the batches the Move to Batch picker offered.
+            var newBatchIdKey = IdHasher.Instance.GetHash( newBatch.Id );
+            if ( !GetMoveToBatchTargets().Any( b => b.Value == newBatchIdKey ) )
+            {
+                return ActionBadRequest( "The selected batch does not exist, or is no longer open." );
+            }
+
             var transactionIds = transactionKeys
                 .Select( key => IdHasher.Instance.GetId( key ) ?? ( allowIntegerId ? key.AsIntegerOrNull() : null ) )
                 .Where( id => id.HasValue )
                 .Select( id => id.Value )
                 .ToList();
 
+            // Only transactions in the context batch are listed, so ignore any others.
+            var contextBatchId = _batch.Id;
             var transactions = new FinancialTransactionService( RockContext )
                 .Queryable()
                 .Include( t => t.TransactionDetails )
-                .Where( t => transactionIds.Contains( t.Id ) )
+                .Where( t => transactionIds.Contains( t.Id ) && t.BatchId == contextBatchId )
                 .ToList();
 
             var oldControlAmount = oldBatch.ControlAmount;
@@ -1593,6 +1673,18 @@ namespace Rock.Blocks.Finance
             var transactionsToReassign = CurrentViewMode == ViewMode.Accounts
                 ? transactionService.Queryable().Where( t => t.TransactionDetails.Any( d => selectedIds.Contains( d.Id ) ) )
                 : transactionService.Queryable().Where( t => selectedIds.Contains( t.Id ) );
+
+            // Only the context person's giving unit transactions are listed (the same
+            // GivingId filter the grid uses), so ignore any others.
+            var givingId = _person.GivingId;
+            var personAliasQry = new PersonAliasService( RockContext )
+                .Queryable()
+                .Where( a => a.Person.GivingId == givingId )
+                .Select( a => a.Id );
+
+            transactionsToReassign = transactionsToReassign
+                .Where( t => t.AuthorizedPersonAliasId.HasValue
+                    && personAliasQry.Contains( t.AuthorizedPersonAliasId.Value ) );
 
             foreach ( var transaction in transactionsToReassign.ToList() )
             {
@@ -1698,8 +1790,9 @@ namespace Rock.Blocks.Finance
         public class TransactionListRow
         {
             /// <summary>
-            /// The financial transaction, carried only so its attributes can be loaded
-            /// (Transactions view mode). Do not read its navigation properties in memory.
+            /// The financial transaction, carried so its attributes can be loaded (Transactions
+            /// view mode) and so custom column Lava can read its scalars (both view modes).
+            /// Do not read its navigation properties in memory.
             /// </summary>
             public FinancialTransaction Transaction { get; set; }
 

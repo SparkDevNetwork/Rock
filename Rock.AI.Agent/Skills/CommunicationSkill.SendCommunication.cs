@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,10 @@ internal partial class CommunicationSkill
         {
             helper.AddError( "The communication is not in a transient state and cannot be sent." );
             helper.AddInstructions( "Ensure the communication is in a transient state before sending." );
+        }
+        else if ( communication != null && !IsAuthorizedToEditDraft( communication, currentPerson ) )
+        {
+            helper.AddError( "You are not authorized to send this communication." );
         }
 
         if ( helper.HasErrors )

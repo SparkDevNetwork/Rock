@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -162,6 +162,23 @@ const label = ref(""hello"");
 
 <script setup>
 const count = 1;
+</script>
+";
+
+        private const string PlaceholderSource = @"<placeholder>
+    <div class=""panel panel-block"">
+        <div class=""skeleton skeleton-block"" style=""height: 200px""></div>
+    </div>
+</placeholder>
+
+<template>
+    <div class=""panel panel-block"">{{ label }}</div>
+</template>
+
+<script setup>
+import { ref } from ""vue"";
+
+const label = ref(""hello"");
 </script>
 ";
 
@@ -342,7 +359,75 @@ const count = 1;
             Assert.IsTrue( result.Errors.Any( e => e.Contains( unreachableEndpoint ) ), "The error must name the endpoint that could not be reached." );
         }
 
+        [TestMethod]
+        public void CompileSource_WithPlaceholderBlock_IgnoresThePlaceholder()
+        {
+            // The Vue SFC parser must treat <placeholder> as a custom block and
+            // leave it out of the compiled component entirely.
+            var compiler = new ForgeContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
+
+            var result = compiler.CompileSource( PlaceholderSource );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+            Assert.IsFalse( result.CompiledContent.Contains( "skeleton-block" ), "The placeholder HTML must not be compiled into the component." );
+        }
+
         #endregion CompileSource
+
+        #region GetPlaceholderHtml
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithPlaceholderBlock_ReturnsItsContent()
+        {
+            var html = ForgeContentCompiler.GetPlaceholderHtml( PlaceholderSource );
+
+            Assert.IsTrue( html.StartsWith( "<div class=\"panel panel-block\">", StringComparison.Ordinal ), "Unexpected placeholder: " + html );
+            Assert.IsTrue( html.EndsWith( "</div>", StringComparison.Ordinal ), "Unexpected placeholder: " + html );
+            Assert.IsTrue( html.Contains( "skeleton-block" ) );
+            Assert.IsFalse( html.Contains( "placeholder>" ), "The placeholder tags themselves must not be returned." );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithWindowsLineEndings_ReturnsItsContent()
+        {
+            var html = ForgeContentCompiler.GetPlaceholderHtml( PlaceholderSource.Replace( "\r\n", "\n" ).Replace( "\n", "\r\n" ) );
+
+            Assert.IsTrue( html.Contains( "skeleton-block" ) );
+            Assert.IsFalse( html.Contains( "placeholder>" ) );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithoutPlaceholderBlock_ReturnsEmpty()
+        {
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( ValidSource ) );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithEmptySource_ReturnsEmpty()
+        {
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( null ) );
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( string.Empty ) );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithIndentedTagInsideTemplate_ReturnsEmpty()
+        {
+            // Only a top-level block counts. A <placeholder> element used inside
+            // the template is component markup, not the block's initial HTML.
+            var source = @"<template>
+    <placeholder>
+        <span>inside the template</span>
+    </placeholder>
+</template>
+
+<script setup>
+</script>
+";
+
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( source ) );
+        }
+
+        #endregion GetPlaceholderHtml
 
         #region Support
 

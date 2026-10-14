@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -36,7 +37,6 @@ using Twilio.Rest.Api.V2010.Account;
 
 using TwilioExceptions = Twilio.Exceptions;
 using TwilioTypes = Twilio.Types;
-using Rock.Configuration;
 
 namespace Rock.Communication.Transport
 {
@@ -62,10 +62,6 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 500,
         Order = 2,
         Key = TwilioAttributeKey.LongCodeThrottling )]
-    [BooleanField( "Enable Signature Validation",
-        Description = "The Auth Token will be validated with each request to the Twilio web hooks. If enabled, the Public Application Root must be used as the Webhook URL of your configuration in Twilio otherwise your incoming messages will not validate (be accepted).  Also, if you change your AuthToken or create a secondary AuthToken in Twilio, your incoming Twilio messages would not validate until the Token has been promoted to your primary AuthToken.",
-        Order = 3,
-        Key = TwilioAttributeKey.EnableValidation )]
     [IntegerField( "Concurrent Send Workers",
         IsRequired = false,
         DefaultIntegerValue = 10,

@@ -10,8 +10,8 @@
                 <Badge :class="[capacityStatusClass]">
                     {{ capacityText }}
                 </Badge>
-                <template v-for="role in groupTypeRoles"
-                          :key="role.idKey">
+                <template v-for="(role, index) in groupTypeRoles"
+                          :key="role.idKey ?? index">
                     <span v-if="role.idKey"
                           :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]">
                         {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.idKey).toLocaleString() }}
@@ -49,8 +49,8 @@
                          @dismiss="clearGroupError(destinationGroup.groupIdKey)">
             {{ getGroupError(destinationGroup.groupIdKey) }}
         </NotificationBox>
-        <template v-for="role in groupTypeRoles"
-                  :key=role.idKey>
+        <template v-for="(role, roleIndex) in groupTypeRoles"
+                  :key="role.idKey ?? roleIndex">
             <div v-if="role.idKey"
                  class="panel-inline">
                 <div class="panel-heading panel-heading-bottom">
@@ -83,12 +83,12 @@
                                     <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length > 0">
                                         <HighlightLabel :customClass="`gender-highlight-label ${section.class}`"
                                                         labelType="custom">
-                                            {{ section.label }} ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length.toLocaleString() }})
+                                            {{ section.label }} ({{ getActiveGroupMemberCountByRoleAndGender(role.idKey, section.value).toLocaleString() }})
                                         </HighlightLabel>
                                         <div class="group-role-wrapper"
                                              v-drag-source="groupMemberDragOptions">
                                             <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, section.value)"
-                                                      :key="groupMember.groupMemberIdKey">
+                                                      :key="groupMember.groupMemberIdKey ?? index">
                                                 <PersonCard v-if="groupMember.person"
                                                             :isCardExpanded="arePersonCardsExpanded"
                                                             :person="groupMember.person"
@@ -158,7 +158,6 @@
 </template>
 
 <style scoped>
-
 :deep(.panel.panel-block) {
     height: 100%;
     margin-bottom: var(--spacing-large);
@@ -191,7 +190,6 @@
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-semibold);
 }
-
 </style>
 
 <script setup lang="ts">
@@ -352,12 +350,17 @@
         return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
     }
 
+    // Inactive members are displayed in the group but do not count toward capacity, role, or gender totals.
+    const activeGroupMembers = computed((): GroupMemberBag[] => {
+        return destinationGroup.value.groupMembers?.filter(gm => !gm.isInactive) ?? [];
+    });
+
     const capacityStatusClass = computed(() => {
         if (!destinationGroup.value.groupCapacity) {
             return "status-under";
         }
 
-        const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
+        const groupMemberCount = activeGroupMembers.value.length;
         const groupCapacityPercent = (groupMemberCount / destinationGroup.value.groupCapacity) * 100;
 
         if (groupCapacityPercent > 100) {
@@ -381,11 +384,7 @@
             unknown: 0
         };
 
-        if (!destinationGroup.value.groupMembers) {
-            return counts;
-        }
-
-        for (const groupMember of destinationGroup.value.groupMembers) {
+        for (const groupMember of activeGroupMembers.value) {
             switch (groupMember.person?.gender) {
                 case Gender.Male:
                     counts.males++;
@@ -403,7 +402,7 @@
     });
 
     const capacityText = computed(() => {
-        const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
+        const groupMemberCount = activeGroupMembers.value.length;
 
         if (!destinationGroup.value.groupCapacity) {
             return `${groupMemberCount.toLocaleString()}`;
@@ -441,7 +440,7 @@
     });
 
     function getRoleCount(roleIdKey: string): number {
-        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey).length ?? 0;
+        return activeGroupMembers.value.filter(gm => gm.groupRoleIdKey === roleIdKey).length;
     }
 
     function getRoleCountOverUnderCapacityClass(roleIdKey: string): string {
@@ -471,6 +470,10 @@
 
     function getGroupMembersFilteredByRoleAndGender(roleIdKey: string, gender: Gender): GroupMemberBag[] {
         return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey && gm.person?.gender === gender) ?? [];
+    }
+
+    function getActiveGroupMemberCountByRoleAndGender(roleIdKey: string, gender: Gender): number {
+        return activeGroupMembers.value.filter(gm => gm.groupRoleIdKey === roleIdKey && gm.person?.gender === gender).length;
     }
 
     function getRoleCountTooltipText(roleIdKey: string): string {

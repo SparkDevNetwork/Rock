@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,14 +23,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaElementList;
 using Rock.Web.Cache;
-using Rock.Media;
-using Rock.Utility;
 
 namespace Rock.Blocks.Cms
 {

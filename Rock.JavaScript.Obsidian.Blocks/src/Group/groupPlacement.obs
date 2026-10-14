@@ -740,7 +740,8 @@
      */
     const filteredAndSortedGroups = computed(() => {
         const filteredPlacementGroups = placementGroups.value.filter(g => {
-            if (placementConfigurationSettings.value.areFullGroupsHidden && g.groupCapacity && g.groupMembers && g.groupMembers.length >= g.groupCapacity) {
+            const activeGroupMemberCount = g.groupMembers?.filter(gm => !gm.isInactive).length ?? 0;
+            if (placementConfigurationSettings.value.areFullGroupsHidden && g.groupCapacity && activeGroupMemberCount >= g.groupCapacity) {
                 return false;
             }
 
@@ -808,10 +809,16 @@
                 });
             });
 
+            // Inactive members are listed after active members so the active roster reads first.
+            const activeFirstGroupMembers = [
+                ...sortedGroupMembers.filter(m => !m.isInactive),
+                ...sortedGroupMembers.filter(m => m.isInactive)
+            ];
+
             // Return the updated group object with its sorted and filtered group members.
             return {
                 ...group,
-                groupMembers: sortedGroupMembers
+                groupMembers: activeFirstGroupMembers
             };
         });
     });
@@ -1159,7 +1166,8 @@
                                 groupMemberId: 0,
                                 groupRoleIdKey: groupRoleIdKey,
                                 person: person,
-                                groupMemberIdKey: null
+                                groupMemberIdKey: null,
+                                isInactive: false
                             });
                         });
                     }
@@ -1173,7 +1181,8 @@
                             groupMemberId: 0,
                             groupRoleIdKey: groupRoleIdKey,
                             person: person,
-                            groupMemberIdKey: null
+                            groupMemberIdKey: null,
+                            isInactive: false
                         });
                     }
                 }
@@ -1956,7 +1965,8 @@
                 groupRoleIdKey: groupMember.groupRoleIdKey,
                 person: personToUse,
                 groupMemberIdKey: groupMember.groupMemberIdKey,
-                dateTimeAdded: groupMember.dateTimeAdded
+                dateTimeAdded: groupMember.dateTimeAdded,
+                isInactive: groupMember.isInactive
             });
 
             // If multiple placements aren’t allowed, remove this person

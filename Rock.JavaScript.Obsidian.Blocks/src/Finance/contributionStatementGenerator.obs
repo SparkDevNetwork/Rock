@@ -12,7 +12,7 @@
             ref="statementIframe"
             class="contribution-statement-iframe"
             :srcdoc="statementHtml"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts allow-same-origin allow-modals allow-popups"
             @load="onIframeLoad"></iframe>
 </template>
 

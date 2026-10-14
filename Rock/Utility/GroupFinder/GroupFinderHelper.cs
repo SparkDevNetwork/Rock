@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -496,7 +496,7 @@ namespace Rock.Utility.GroupFinder
             // the Google maps API.
             if ( originString.StartsWith( "postalcode" ) )
             {
-                originString = originString.Substring( 3 ).Trim();
+                originString = originString.Substring( 10 ).Trim();
             }
 
             // Otherwise, run it through the geocoder

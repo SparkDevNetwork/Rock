@@ -48,4 +48,18 @@ internal class FieldTypeDetailResult : EntityResultBase
     /// created with it.
     /// </summary>
     public List<FieldTypeConfigurationKeyResult> ConfigurationKeys { get; set; }
+
+    /// <summary>
+    /// Describes the shape of a stored value for this field type, when the field
+    /// type describes itself. Null when it does not. For a Person field type this
+    /// is what warns that the stored value is a person alias guid rather than the
+    /// person's own guid.
+    /// </summary>
+    public string ValueFormat { get; set; }
+
+    /// <summary>
+    /// How to obtain a correct value for this field type. Null when the field type
+    /// does not describe one.
+    /// </summary>
+    public string ValueInstructions { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,11 +23,14 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -42,7 +45,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER )]
-    public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, IEntityReferenceFieldType
+    public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, IEntityReferenceFieldType, IPublicSecurityGrantFieldType
     {
         #region Configuration
 
@@ -553,6 +556,23 @@ namespace Rock.Field.Types
                 ValueFormat = "One or more guids identifying rows in the GroupMember table, separated by commas. This identifies a person's membership in a specific group, not the person, so it is never a Person or PersonAlias guid.",
                 Instructions = "To find the correct values, read the group members of the group this setting is configured against and take the guid of each one you want."
             };
+        }
+
+        #endregion
+
+        #region IPublicSecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Only allow the members of the configured group to be listed.
+            if ( privateConfigurationValues != null
+                && privateConfigurationValues.TryGetValue( GROUP_KEY, out var groupIdValue )
+                && int.TryParse( groupIdValue, out var groupId )
+                && groupId > 0 )
+            {
+                grant.AddRule( new GroupMemberPickerSecurityGrantRule( groupId ) );
+            }
         }
 
         #endregion

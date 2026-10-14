@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Net;
 using System.Web;
 using System.Web.Security;
+
 using Newtonsoft.Json;
 
 using RestSharp;

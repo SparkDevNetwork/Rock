@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,8 +24,8 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using Rock.Model;
 using Rock.MergeTemplates;
+using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Cms.EmailForm;
 using Rock.Web.Cache;
@@ -405,12 +405,25 @@ namespace Rock.Blocks.Cms
             foreach ( var guid in bag.AttachmentGuids ?? new List<Guid>() )
             {
                 var binaryFile = binaryFileService.Get( guid );
-                if ( binaryFile != null )
+
+                if ( binaryFile == null )
                 {
-                    binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                    binaryFile.IsTemporary = false;
-                    attachments.Add( binaryFile );
+                    continue;
                 }
+
+                // The attachment guids come from the client, and the client uploads
+                // attachments as temporary files of the default type. So only
+                // accept new uploads of that type by the current person. The file
+                // type is not changed, since that would change who can view the
+                // file. The attachments are only needed while the email is sent,
+                // so they stay temporary and the cleanup job removes them later.
+                if ( binaryFile.BinaryFileTypeId != binaryFileType.Id
+                    || !binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFile.Id, null, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Invalid attachment." );
+                }
+
+                attachments.Add( binaryFile );
             }
 
             RockContext.SaveChanges();
@@ -434,8 +447,14 @@ namespace Rock.Blocks.Cms
 
             foreach ( var emailAddress in recipientEmails )
             {
-                var email = emailAddress.ResolveMergeFields( mergeFields, enabledLavaCommands );
-                
+                var email = emailAddress.ResolveMergeFields( mergeFields, enabledLavaCommands ).Trim();
+
+                // Only send to a single valid email address.
+                if ( email.IsNullOrWhiteSpace() || email.IsLavaTemplate() || !EmailAddressFieldValidator.IsValid( email ) )
+                {
+                    continue;
+                }
+
                 RockEmailMessageRecipient recipient;
                 if ( saveCommunicationHistory )
                 {
@@ -459,10 +478,20 @@ namespace Rock.Blocks.Cms
 
             message.CCEmails = GetAttributeValue( AttributeKey.CCEmail ).ResolveMergeFields( mergeFields, enabledLavaCommands ).Split( ',' ).ToList();
             message.BCCEmails = GetAttributeValue( AttributeKey.BCCEmail ).ResolveMergeFields( mergeFields, enabledLavaCommands ).Split( ',' ).ToList();
-            message.FromEmail = GetAttributeValue( AttributeKey.FromEmail ).ResolveMergeFields( mergeFields, enabledLavaCommands );
-            message.FromName = GetAttributeValue( AttributeKey.FromName ).ResolveMergeFields( mergeFields, enabledLavaCommands );
-            message.Subject = GetAttributeValue( AttributeKey.Subject ).ResolveMergeFields( mergeFields, enabledLavaCommands );
-            message.Message = GetAttributeValue( AttributeKey.MessageBody ).ResolveMergeFields( mergeFields, enabledLavaCommands );
+
+            /*
+                10/7/2026 - MSE
+
+                From Email, From Name, Subject and Message Body are passed as
+                templates. The transport resolves them once with the recipient
+                merge fields.
+
+                Reason: Keep all email templates resolved in one place.
+            */
+            message.FromEmail = GetAttributeValue( AttributeKey.FromEmail );
+            message.FromName = GetAttributeValue( AttributeKey.FromName );
+            message.Subject = GetAttributeValue( AttributeKey.Subject );
+            message.Message = GetAttributeValue( AttributeKey.MessageBody );
 
             message.AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash();
             message.ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" );

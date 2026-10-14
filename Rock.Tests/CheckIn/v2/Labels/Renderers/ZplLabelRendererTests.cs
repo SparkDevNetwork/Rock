@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -2976,6 +2976,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
             var rockContext = app.App.CreateRockContext();
             var sampleSearchKey = new PersonSearchKey
             {
+                Id = 1,
                 PersonAlias = new PersonAlias
                 {
                     PersonId = 2

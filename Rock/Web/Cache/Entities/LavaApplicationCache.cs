@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -57,24 +57,33 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaApplicationCache GetBySlug( string slug )
         {
+            // Build the lookup in a local and publish it only once complete, the same as
+            // GetEndpoint(). See the engineering note there.
+            var lavaApplicationSlugs = _lavaApplicationSlugs;
+
             // Load slug dictionary if needed.
-            if ( _lavaApplicationSlugs == null )
+            if ( lavaApplicationSlugs == null )
             {
                 lock ( _lavaApplicationSlugLock )
                 {
-                    if ( _lavaApplicationSlugs == null )
+                    lavaApplicationSlugs = _lavaApplicationSlugs;
+
+                    if ( lavaApplicationSlugs == null )
                     {
-                        _lavaApplicationSlugs = new Dictionary<string, int>();
+                        lavaApplicationSlugs = new Dictionary<string, int>();
+
                         foreach ( var lavaApplication in LavaApplicationCache.All() )
                         {
-                            _lavaApplicationSlugs.AddOrReplace( lavaApplication.Slug, lavaApplication.Id );
+                            lavaApplicationSlugs.AddOrReplace( lavaApplication.Slug, lavaApplication.Id );
                         }
+
+                        _lavaApplicationSlugs = lavaApplicationSlugs;
                     }
                 }
             }
 
             // Lookup Lava application by slug
-            return LavaApplicationCache.Get( _lavaApplicationSlugs.GetValueOrDefault( slug, 0 ) );
+            return LavaApplicationCache.Get( lavaApplicationSlugs.GetValueOrDefault( slug, 0 ) );
         }
 
         /// <summary>
@@ -182,24 +191,32 @@ namespace Rock.Web.Cache
             {
                 var lavaEndpoints = new List<LavaEndpointCache>();
 
-                if ( _lavaEndpointIds == null )
+                // Read the field once so a concurrent FlushEndpoints() cannot null it
+                // between the check and the loop below.
+                var lavaEndpointIds = _lavaEndpointIds;
+
+                if ( lavaEndpointIds == null )
                 {
                     lock ( _lavaEndpointLock )
                     {
-                        if ( _lavaEndpointIds == null )
+                        lavaEndpointIds = _lavaEndpointIds;
+
+                        if ( lavaEndpointIds == null )
                         {
                             using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
-                                _lavaEndpointIds = new LavaEndpointService( rockContext )
+                                lavaEndpointIds = new LavaEndpointService( rockContext )
                                     .GetByLavApplicationId( Id )
                                     .Select( v => v.Id )
                                     .ToList();
                             }
+
+                            _lavaEndpointIds = lavaEndpointIds;
                         }
                     }
                 }
 
-                foreach ( var id in _lavaEndpointIds )
+                foreach ( var id in lavaEndpointIds )
                 {
                     var laveEndpoint = LavaEndpointCache.Get( id );
                     if ( laveEndpoint != null )
@@ -264,26 +281,32 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public LavaEndpointCache GetEndpoint( string slug, LavaEndpointHttpMethod method )
         {
+            var lavaEndpointSlugs = _lavaEndpointSlugs;
+
             // Load the cache if needed
-            if ( _lavaEndpointSlugs == null )
+            if ( lavaEndpointSlugs == null )
             {
                 lock ( _lavaEndpointSlugLock )
                 {
-                    if ( _lavaEndpointSlugs == null )
+                    lavaEndpointSlugs = _lavaEndpointSlugs;
+
+                    if ( lavaEndpointSlugs == null )
                     {
-                        _lavaEndpointSlugs = new Dictionary<string, int>();
+                        lavaEndpointSlugs = new Dictionary<string, int>();
 
                         foreach ( var lavaEndpoint in this.LavaEndpoints )
                         {
                             var key = $"{lavaEndpoint.Slug}-{lavaEndpoint.HttpMethod}";
-                            _lavaEndpointSlugs.AddOrReplace( key, lavaEndpoint.Id );
+                            lavaEndpointSlugs.AddOrReplace( key, lavaEndpoint.Id );
                         }
+
+                        _lavaEndpointSlugs = lavaEndpointSlugs;
                     }
                 }
             }
 
             // Return the matching Lava endpoint
-            return LavaEndpointCache.Get( _lavaEndpointSlugs.GetValueOrDefault( $"{slug}-{method}", 0 ) );
+            return LavaEndpointCache.Get( lavaEndpointSlugs.GetValueOrDefault( $"{slug}-{method}", 0 ) );
         }
 
         /// <summary>

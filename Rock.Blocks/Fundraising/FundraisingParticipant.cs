@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,8 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Fundraising.FundraisingParticipant;
 using Rock.ViewModels.Controls;
@@ -268,6 +270,9 @@ namespace Rock.Blocks.Fundraising
                 return;
             }
 
+            // The introduction is plain text, so encode it before any Lava template prints it.
+            groupMember.SetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction, groupMember.GetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction ).EncodeHtml() );
+
             var currentPerson = RequestContext.CurrentPerson;
 
             // Set the page and browser title to the opportunity title.
@@ -307,6 +312,7 @@ namespace Rock.Blocks.Fundraising
 
                     box.RequirementsHeaderHtml = GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate ).ResolveMergeFields( mergeFields );
                     box.Requirements = GetRequirementsBag( group, groupMember );
+                    box.SecurityGrantToken = GetSecurityGrantToken( groupMember );
                 }
             }
 
@@ -361,6 +367,42 @@ namespace Rock.Blocks.Fundraising
         }
 
         /// <summary>
+        /// Validates a changed personal opportunity introduction against the
+        /// attribute's own field type rules (e.g. a plain text Memo rejects HTML).
+        /// </summary>
+        /// <param name="groupMember">The group member with the posted attribute values.</param>
+        /// <param name="originalIntroduction">The introduction value before the posted values were applied.</param>
+        /// <param name="errorMessage">The error message if the introduction is not valid.</param>
+        /// <returns><c>true</c> if the introduction is unchanged or valid; otherwise <c>false</c>.</returns>
+        private static bool IsIntroductionValid( GroupMember groupMember, string originalIntroduction, out string errorMessage )
+        {
+            errorMessage = null;
+
+            AttributeCache introductionAttribute = null;
+            groupMember.Attributes?.TryGetValue( FundraisingAttributeKey.PersonalOpportunityIntroduction, out introductionAttribute );
+            var newIntroduction = groupMember.GetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction );
+
+            if ( introductionAttribute == null || newIntroduction == originalIntroduction )
+            {
+                return true;
+            }
+
+            var rules = introductionAttribute.FieldType.Field.GetValidationRules( introductionAttribute.ConfigurationValues );
+
+            try
+            {
+                StringValueValidator.Validate( newIntroduction, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+            }
+            catch ( PropertyValidationException ex )
+            {
+                errorMessage = $"{introductionAttribute.Name} {ex.Reason}.";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Builds the profile-completeness tip for the participant, listing the missing
         /// pieces (a photo and/or a personal introduction).
         /// </summary>
@@ -386,6 +428,32 @@ namespace Rock.Blocks.Fundraising
             }
 
             return $"Edit your profile to add a {missingItems.AsDelimited( ", ", " and " )}.";
+        }
+
+        /// <summary>
+        /// Gets a security grant token that lets the viewer act on the participant's requirements.
+        /// </summary>
+        /// <param name="groupMember">The participant group member.</param>
+        /// <returns>A security grant token covering the participant's group member and person records.</returns>
+        private string GetSecurityGrantToken( GroupMember groupMember )
+        {
+            return new SecurityGrant()
+                .AddRule( new EntitySecurityGrantRule( groupMember.TypeId, groupMember.Id, Authorization.EDIT ) )
+                .AddRule( new EntitySecurityGrantRule( groupMember.Person.TypeId, groupMember.PersonId ) )
+                .ToToken();
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            var groupMember = GetGroupMember();
+
+            if ( groupMember == null || !IsViewerAuthorized() )
+            {
+                return string.Empty;
+            }
+
+            return GetSecurityGrantToken( groupMember );
         }
 
         /// <summary>
@@ -435,19 +503,48 @@ namespace Rock.Blocks.Fundraising
 
         /// <summary>
         /// Gets the fundraising opportunity group, loading it (and its attributes) once from
-        /// the page parameter. The parameter may be supplied as an Id, IdKey, or Guid.
+        /// the page parameter. The parameter may be supplied as an Id, IdKey, or Guid. Groups
+        /// that are not fundraising opportunities are treated as not found.
         /// </summary>
         /// <returns>The group, or <c>null</c> when it could not be found.</returns>
         private Rock.Model.Group GetGroup()
         {
             if ( _group == null )
             {
-                _group = new GroupService( RockContext )
+                var group = new GroupService( RockContext )
                     .Get( PageParameter( PageParameterKey.GroupId ), !PageCache.Layout.Site.DisablePredictableIds );
-                _group?.LoadAttributes( RockContext );
+
+                if ( group != null && IsFundraisingOpportunityGroupType( group.GroupTypeId ) )
+                {
+                    group.LoadAttributes( RockContext );
+                    _group = group;
+                }
             }
 
             return _group;
+        }
+
+        /// <summary>
+        /// Determines whether the group type is Fundraising Opportunity or inherits from it.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns><c>true</c> if the group type is a fundraising opportunity type; otherwise, <c>false</c>.</returns>
+        private static bool IsFundraisingOpportunityGroupType( int groupTypeId )
+        {
+            var fundraisingGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() );
+            if ( !fundraisingGroupTypeId.HasValue )
+            {
+                return false;
+            }
+
+            var groupType = GroupTypeCache.Get( groupTypeId );
+            if ( groupType == null )
+            {
+                return false;
+            }
+
+            return groupType.Id == fundraisingGroupTypeId.Value
+                || groupType.InheritedGroupTypeId == fundraisingGroupTypeId.Value;
         }
 
         /// <summary>
@@ -931,12 +1028,33 @@ namespace Rock.Blocks.Fundraising
                 return ActionNotFound();
             }
 
+            // Set the group member attribute values, re-enforcing the editable filter so a
+            // client cannot save attributes it was not allowed to edit. (Group member
+            // attributes are already loaded by GetGroupMember.) This runs before the photo
+            // handling so a refused introduction stops the save before anything changes.
+            var originalIntroduction = groupMember.GetAttributeValue( FundraisingAttributeKey.PersonalOpportunityIntroduction );
+            var editableGroupMemberAttributeKeys = GetEditableGroupMemberAttributeKeys( groupMember, group, currentPerson );
+            groupMember.SetPublicAttributeValues( bag.GroupMemberAttributeValues, currentPerson, enforceSecurity: false, attributeFilter: a => editableGroupMemberAttributeKeys.Contains( a.Key ) );
+
+            if ( !IsIntroductionValid( groupMember, originalIntroduction, out var introductionErrorMessage ) )
+            {
+                return ActionBadRequest( introductionErrorMessage );
+            }
+
             var binaryFileService = new BinaryFileService( RockContext );
 
             // Resolve the newly selected photo (if any) and detect a change.
             var newPhotoGuid = bag.PhotoBinaryFile?.Value.AsGuidOrNull();
             var newPhotoBinaryFile = newPhotoGuid.HasValue ? binaryFileService.Get( newPhotoGuid.Value ) : null;
             var newPhotoId = newPhotoBinaryFile?.Id;
+
+            // Only accept a photo the participant uploaded (or the one already
+            // set). Otherwise a tampered Guid could attach any file as the photo
+            // and a later change would mark that file temporary for cleanup.
+            if ( newPhotoBinaryFile != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( newPhotoBinaryFile.Id, person.PhotoId, currentPerson ) )
+            {
+                return ActionBadRequest( "Invalid photo." );
+            }
 
             int? orphanedPhotoId = null;
             if ( person.PhotoId != newPhotoId )
@@ -954,12 +1072,6 @@ namespace Rock.Blocks.Fundraising
                 // Request group for re-verification.
                 AddOrUpdatePhotoVerifyPending( person );
             }
-
-            // Save the group member attribute values, re-enforcing the editable filter so a
-            // client cannot save attributes it was not allowed to edit. (Group member
-            // attributes are already loaded by GetGroupMember.)
-            var editableGroupMemberAttributeKeys = GetEditableGroupMemberAttributeKeys( groupMember, group, currentPerson );
-            groupMember.SetPublicAttributeValues( bag.GroupMemberAttributeValues, currentPerson, enforceSecurity: false, attributeFilter: a => editableGroupMemberAttributeKeys.Contains( a.Key ) );
 
             // Save the selected person attribute values (limited to those in the block setting).
             person.LoadAttributes( RockContext );

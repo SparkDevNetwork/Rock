@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Constants;
@@ -25,11 +31,7 @@ using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
 using Rock.ViewModels.Blocks.WebFarm.WebFarmSettings;
 using Rock.Web;
 using Rock.WebFarm;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
+
 using static Rock.Model.WebFarmNodeMetricService;
 
 namespace Rock.Blocks.WebFarm
@@ -383,6 +385,11 @@ namespace Rock.Blocks.WebFarm
         [BlockAction]
         public BlockActionResult Edit()
         {
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Not authorized to edit Web Farm Settings." );
+            }
+
             var box = new DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag>
             {
                 Entity = GetEntityBagForEdit(),
@@ -400,6 +407,11 @@ namespace Rock.Blocks.WebFarm
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box )
         {
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Not authorized to edit Web Farm Settings." );
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Ensure everything is valid before saving.

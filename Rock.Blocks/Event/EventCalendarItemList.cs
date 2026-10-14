@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -356,6 +356,16 @@ namespace Rock.Blocks.Event
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
+                {
+                    return ActionBadRequest( $"{EventCalendarItem.FriendlyTypeName} not found." );
+                }
+
+                // The grid only lists items on the page's event calendar, and the permission
+                // check below is evaluated against that calendar. Reject items from any other
+                // calendar so Edit rights on one calendar cannot delete items of another.
+                var eventCalendarId = GetEventCalendar()?.Id;
+
+                if ( !eventCalendarId.HasValue || entity.EventCalendarId != eventCalendarId.Value )
                 {
                     return ActionBadRequest( $"{EventCalendarItem.FriendlyTypeName} not found." );
                 }

@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="RockWeb.Webhooks.Checkr" %>
+<%@ WebHandler Language="C#" Class="RockWeb.Webhooks.Checkr" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //

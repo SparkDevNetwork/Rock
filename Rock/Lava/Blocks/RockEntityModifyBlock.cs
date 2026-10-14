@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -318,10 +318,11 @@ namespace Rock.Lava.Blocks
 
                     rockContext.SaveChanges();
 
-                    // Save attributes if any were updated.
+                    // Save attributes if any were updated. Pass the Lava context's RockContext
+                    // so the values are part of any surrounding dbtransaction and roll back with it.
                     if ( attributesWereUpdated )
                     {
-                        entityAsIHasAttributes.SaveAttributeValues();
+                        entityAsIHasAttributes.SaveAttributeValues( rockContext );
                         rockContext.SaveChanges();
                     }
 

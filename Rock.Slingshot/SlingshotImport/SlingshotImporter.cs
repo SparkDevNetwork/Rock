@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,13 +31,12 @@ using System.Threading;
 using CsvHelper;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
-using Rock.Configuration;
 
 namespace Rock.Slingshot
 {
@@ -517,6 +516,10 @@ namespace Rock.Slingshot
                     Interlocked.Increment( ref photoLoadProgress );
                     try
                     {
+                        // The stream was read to the end above, so go back to the
+                        // start or the image can't be decoded.
+                        fileStream.Position = 0;
+
                         using ( var image = new Bitmap( fileStream ) )
                         {
                             photoImport.MimeType = mimetypeLookup.GetValueOrNull( image.RawFormat.Guid );
@@ -694,7 +697,12 @@ namespace Rock.Slingshot
                     using ( var ms = new MemoryStream() )
                     {
                         imageStream.CopyTo( ms );
-                        photoImport.MimeType = imageResponse.ContentType;
+
+                        // Remote servers often send images as binary/octet-stream, which
+                        // GetImage.ashx refuses to serve. Use the type from the image's
+                        // contents when we can, otherwise keep what the server sent.
+                        ms.Position = 0;
+                        photoImport.MimeType = Rock.Utility.FileUtilities.GetImageMimeType( ms ) ?? imageResponse.ContentType;
                         photoImport.PhotoData = Convert.ToBase64String( ms.ToArray(), Base64FormattingOptions.None );
                         photoImport.FileName = $"Photo{photoImport.ForeignId}";
                     }

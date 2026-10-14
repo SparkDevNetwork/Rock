@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -171,8 +171,6 @@ namespace Rock.Blocks.Connection
 
         private static class PageParameterKey
         {
-            public const string PersonId = "PersonId";
-            public const string PersonGuid = "PersonGuid";
             public const string OpportunityId = "OpportunityId";
         }
 
@@ -203,7 +201,7 @@ namespace Rock.Blocks.Connection
                 return box;
             }
 
-            Person person = GetPerson();
+            Person person = GetCurrentPerson();
 
             if ( person != null )
             {
@@ -245,10 +243,7 @@ namespace Rock.Blocks.Connection
                 }
             }
 
-            var campuses = CampusCache.All()
-                .Where( c => c.IsActive ?? false )
-                .Where( c => opportunity.ConnectionOpportunityCampuses.Any( oc => oc.CampusId == c.Id ) )
-                .ToList();
+            var campuses = GetAvailableCampuses( opportunity );
 
             box.Campuses = campuses
                 .Select( c => new ListItemBag { Value = c.Id.ToString(), Text = c.Name } )
@@ -299,6 +294,40 @@ namespace Rock.Blocks.Connection
             connectionRequest.ConnectionOpportunityId = opportunity.Id;
             connectionRequest.ConnectionTypeId = opportunity.ConnectionTypeId;
 
+            var attributes = GetAvailableAttributes( connectionRequest );
+
+            // Convert to PublicAttributeBag format
+            box.Attributes = attributes
+                .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) );
+
+            box.CommentFieldLabel = GetAttributeValue( AttributeKey.CommentFieldLabel );
+
+            box.NavigationUrls = GetBoxNavigationUrls();
+
+            return box;
+        }
+
+        /// <summary>
+        /// Gets the active campuses that are offered for the opportunity.
+        /// </summary>
+        /// <param name="opportunity">The connection opportunity.</param>
+        /// <returns>A list of campuses that can be selected.</returns>
+        private List<CampusCache> GetAvailableCampuses( ConnectionOpportunity opportunity )
+        {
+            return CampusCache.All()
+                .Where( c => c.IsActive ?? false )
+                .Where( c => opportunity.ConnectionOpportunityCampuses.Any( oc => oc.CampusId == c.Id ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the connection request attributes that are offered on the
+        /// signup form after applying the block's attribute filters.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request, with the opportunity and type identifiers set.</param>
+        /// <returns>A list of attributes that can be edited.</returns>
+        private List<AttributeCache> GetAvailableAttributes( ConnectionRequest connectionRequest )
+        {
             var categoryService = new CategoryService( this.RockContext );
             var categoryNames = categoryService.Queryable().ToDictionary( c => c.Guid, c => c.Name );
 
@@ -331,15 +360,7 @@ namespace Rock.Blocks.Connection
                 attributes = attributes.Where( a => a.IsPublic ).ToList();
             }
 
-            // Convert to PublicAttributeBag format
-            box.Attributes = attributes
-                .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) );
-
-            box.CommentFieldLabel = GetAttributeValue( AttributeKey.CommentFieldLabel );
-
-            box.NavigationUrls = GetBoxNavigationUrls();
-
-            return box;
+            return attributes;
         }
 
         /// <summary>
@@ -352,27 +373,6 @@ namespace Rock.Blocks.Connection
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
             };
-        }
-
-        /// <summary>
-        /// Gets the person.
-        /// </summary>
-        /// <returns>The matching Person or null.</returns>
-        private Person GetPerson()
-        {
-            var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
-            if ( personGuid.HasValue )
-            {
-                return new PersonService( this.RockContext ).Get( personGuid.Value );
-            }
-
-            var personId = PageParameter( PageParameterKey.PersonId );
-            if ( !personId.IsNullOrWhiteSpace() )
-            {
-                return new PersonService( this.RockContext ).Get( personId, !PageCache.Layout.Site.DisablePredictableIds );
-            }
-
-            return GetCurrentPerson();
         }
 
         /// <summary>
@@ -482,7 +482,7 @@ namespace Rock.Blocks.Connection
 
                 var opportunity = GetConnectionOpportunity();
 
-                if ( opportunity == null )
+                if ( opportunity == null || !opportunity.IsActive || opportunity.ConnectionType == null || !opportunity.ConnectionType.IsActive )
                 {
                     resultBag.ResultType = ConnectionOpportunitySignupResultType.OpportunityNotFound;
                     resultBag.ResponseMessage = "The opportunity you are trying to sign up for does not exist, or is no longer available.";
@@ -503,18 +503,38 @@ namespace Rock.Blocks.Connection
 
                 int? campusId = bag.CampusId;
 
-                var person = GetPerson();
+                // Only allow the campuses that were offered on the form.
+                if ( campusId.HasValue && !GetAvailableCampuses( opportunity ).Any( c => c.Id == campusId.Value ) )
+                {
+                    resultBag.ResultType = ConnectionOpportunitySignupResultType.InvalidRequest;
+                    resultBag.ResponseMessage = "Invalid campus.";
+                    return ActionBadRequest( resultBag.ResponseMessage );
+                }
+
+                Person person;
                 var currentPerson = GetCurrentPerson();
 
-                if ( person == null ||
-                    !bag.LastName.Equals( person.LastName, StringComparison.OrdinalIgnoreCase ) ||
-                    !( bag.FirstName.Equals( person.NickName, StringComparison.OrdinalIgnoreCase ) || bag.FirstName.Equals( person.FirstName, StringComparison.OrdinalIgnoreCase ) ) ||
-                    !bag.Email.Equals( person.Email, StringComparison.OrdinalIgnoreCase ) )
+                var shouldUseCurrentPerson = currentPerson != null
+                    && bag.LastName.Equals( currentPerson.LastName, StringComparison.OrdinalIgnoreCase )
+                    && (
+                        bag.FirstName.Equals( currentPerson.NickName, StringComparison.OrdinalIgnoreCase )
+                        || bag.FirstName.Equals( currentPerson.FirstName, StringComparison.OrdinalIgnoreCase )
+                    )
+                    && bag.Email.Equals( currentPerson.Email, StringComparison.OrdinalIgnoreCase );
+
+                if ( shouldUseCurrentPerson )
                 {
+                    // Load on the block's context so any phone number changes are saved.
+                    person = new PersonService( this.RockContext ).GetInclude( currentPerson.Id, p => p.PhoneNumbers );
+                }
+                else
+                {
+                    // Try to find matching person.
                     var personQuery = new PersonService.PersonMatchQuery( bag.FirstName, bag.LastName, bag.Email, bag.MobilePhone?.Number );
                     person = new PersonService( this.RockContext ).FindPerson( personQuery, true );
                 }
 
+                // If person was not found, create a new one.
                 if ( person == null || !person.PrimaryAliasId.HasValue )
                 {
                     var connectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
@@ -563,8 +583,14 @@ namespace Rock.Blocks.Connection
 
                 if ( bag.AttributeValues != null )
                 {
+                    // Only allow setting the attributes that were offered on the form.
+                    var availableAttributeKeys = new HashSet<string>( GetAvailableAttributes( connectionRequest ).Select( a => a.Key ) );
+                    var attributeValues = bag.AttributeValues
+                        .Where( kvp => availableAttributeKeys.Contains( kvp.Key ) )
+                        .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+
                     connectionRequest.SetPublicAttributeValues(
-                        bag.AttributeValues,
+                        attributeValues,
                         currentPerson,
                         enforceSecurity: false
                     );

@@ -10,6 +10,7 @@
         <ReorderColumn v-if="!isReorderHidden" @orderChanged="onOrderChanged" />
         <TextColumn name="name" field="name" title="Attribute" />
         <TextColumn name="description" field="description" title="Description" />
+        <TextColumn v-if="isCategoryShown" name="category" field="category" title="Category" />
         <BooleanColumn name="isRequired" field="isRequired" title="Required" />
         <SecurityColumn itemTitle="name" idField="guid" />
         <EditColumn @click="onEditClick" />
@@ -122,6 +123,12 @@
         isAddHidden: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** True if a Category column should be shown. */
+        isCategoryShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -181,6 +188,7 @@
             guid: a.guid ?? null,
             name: a.name,
             description: a.description,
+            category: getAttributeCategoryText(a),
             isRequired: a.isRequired,
             isSystem: a.isSystem
         }));
@@ -361,6 +369,21 @@
         }
 
         return key;
+    }
+
+    /**
+     * Builds the Category column text: names joined with commas, matching
+     * WebForms AsDelimited(",").
+     *
+     * @param attribute The attribute whose categories should be displayed.
+     *
+     * @returns The comma-delimited category names, or an empty string.
+     */
+    function getAttributeCategoryText(attribute: PublicEditableAttributeBag): string {
+        return (attribute.categories ?? [])
+            .map(c => c.text)
+            .filter((t): t is string => !!t)
+            .join(",");
     }
 
     /**

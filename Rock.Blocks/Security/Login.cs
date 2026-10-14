@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.Login;
 using Rock.Enums.Security;
@@ -40,7 +41,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using Authorization = Rock.Security.Authorization;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Security
 {
@@ -1135,7 +1135,7 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            if ( thirdPartyReturnUrl.IsNotNullOrWhiteSpace() )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( thirdPartyReturnUrl, RequestContext.RequestUri ) )
             {
                 return thirdPartyReturnUrl;
             }
@@ -1156,10 +1156,7 @@ namespace Rock.Blocks.Security
 
             var decodedUrl = url.GetFullyUrlDecodedValue();
 
-            // Remove the http and https schemes before checking if URL contains XSS objects.
-            if ( decodedUrl.Replace( "https://", string.Empty )
-                .Replace( "http://", string.Empty )
-                .RedirectUrlContainsXss() )
+            if ( !PageCache.Layout.Site.IsSafeRedirectUrl( decodedUrl, RequestContext.RequestUri ) )
             {
                 return null;
             }

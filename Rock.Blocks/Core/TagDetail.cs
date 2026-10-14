@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -356,7 +356,7 @@ namespace Rock.Blocks.Core
 
             if ( !IsAuthorized( entity, Rock.Security.Authorization.EDIT ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Tag.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Tag.FriendlyTypeName}." );
                 return false;
             }
 

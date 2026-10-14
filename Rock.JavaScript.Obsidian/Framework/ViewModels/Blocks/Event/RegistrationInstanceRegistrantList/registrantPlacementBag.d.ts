@@ -40,6 +40,13 @@ export type RegistrantPlacementBag = {
     groupNames?: string[] | null;
 
     /**
+     * Gets or sets the names of the placement groups in which the
+     * registrant is an Inactive member. These are not included in the
+     * group count or group names.
+     */
+    inactiveGroupNames?: string[] | null;
+
+    /**
      * Gets or sets the identifier of the registration template placement
      * this entry belongs to.
      */

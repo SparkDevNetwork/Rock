@@ -104,12 +104,12 @@ internal sealed partial class LavaApplicationBuilderSkill
 
         Reason: Map a plain-English audience onto exact audience values.
     */
-    [Description( "Lists this instance's security roles and maps a plain-English description of who a page is for onto the exact audience values AddOrUpdateLavaApplication accepts." )]
+    [Description( "Lists this instance's security roles and maps a plain-English description of who a page is for onto the groupIdKey and specialRole values the Core Administration skill's AddOrUpdateAuthorizationForEntity accepts." )]
     [AgentToolPreamble( "Matching the audience to security roles." )]
-    [AgentUsage( "Call this when the user describes the people a page is for rather than naming a security role, and before passing audiences to AddOrUpdateLavaApplication. Pass the user's own words as audienceDescription." )]
-    [AgentUsage( "suggestedAudiences is ranked; a score of 100 is an exact role name, and anything under 50 is a guess. Confirm guesses with the user, naming the role and its description, before granting it. When several suggestions each cover part of the description (for example 'staff and campus pastors' matching two roles), pass all of them in the audiences list." )]
-    [AgentUsage( "securityRoles is the complete list of valid role names. If no suggestion fits, choose from it with the user rather than passing a name that is not in the list." )]
-    [AgentUsage( "A 'Public' suggestion means the description sounded like everyone, including anonymous visitors. Treat it as a question for the user, not a decision; only the user can choose to make read endpoints public." )]
+    [AgentUsage( "Call this when the user describes the people a page is for rather than naming a security role, and before granting anyone access with AddOrUpdateAuthorizationForEntity. Pass the user's own words as audienceDescription." )]
+    [AgentUsage( "suggestedAudiences is ranked; a score of 100 is an exact role name, and anything under 50 is a guess. Confirm guesses with the user, naming the role and its description, before granting it. When several suggestions each cover part of the description (for example 'staff and campus pastors' matching two roles), grant each of them." )]
+    [AgentUsage( "securityRoles is the complete list of valid role names. If no suggestion fits, choose from it with the user rather than guessing a role." )]
+    [AgentUsage( "A 'Public' suggestion means the description sounded like everyone, including anonymous visitors. It maps to the AllUsers special role. Treat it as a question for the user, not a decision; only the user can choose to open something to anonymous visitors." )]
     [AgentToolGuid( "248182EA-2B76-4127-A864-BE48F8E15585" )]
     public AgentToolResult ResolveAudience(
         [Description( "Who the page is for, in the user's own words, such as 'the worship team leaders' or 'anyone who is logged in'. Optional; omit to list the security roles without matching." )]
@@ -127,6 +127,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             new AudienceMatchResult
             {
                 Audience = PublicAudienceKeyword,
+                SpecialRole = Rock.Model.SpecialRole.AllUsers.ToString(),
                 Description = "everyone, including anonymous visitors",
                 Score = 0,
                 Reason = "Always available. Use only when the user explicitly wants the data visible without logging in."
@@ -134,6 +135,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             new AudienceMatchResult
             {
                 Audience = AllAuthenticatedAudienceKeyword,
+                SpecialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers.ToString(),
                 Description = "anyone who is logged in",
                 Score = 0,
                 Reason = "Always available. Use when the page is for any logged-in person regardless of role."
@@ -154,6 +156,7 @@ internal sealed partial class LavaApplicationBuilderSkill
                 .Select( r => new SecurityRoleResult
                 {
                     Name = r.Name,
+                    GroupIdKey = r.Id.AsIdKey(),
                     Description = r.Description
                 } )
                 .ToList(),
@@ -164,7 +167,7 @@ internal sealed partial class LavaApplicationBuilderSkill
 
         if ( audienceDescription.IsNullOrWhiteSpace() )
         {
-            return toolResult.WithInstructions( $"No description was given, so nothing was matched. Choose from securityRoles or the keyword audiences and pass the exact values to {nameof( AddOrUpdateLavaApplication )}." );
+            return toolResult.WithInstructions( $"No description was given, so nothing was matched. Choose from securityRoles or the keyword audiences with the user, then grant them with AddOrUpdateAuthorizationForEntity using each groupIdKey or specialRole." );
         }
 
         if ( !suggestions.Any() )
@@ -177,7 +180,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             ? "The top suggestion is a strong match. State it to the user as your plan and proceed unless they object."
             : "Every suggestion is a guess. Ask the user which of these roles the page is for before granting any of them.";
 
-        return toolResult.WithInstructions( $"{confidence} Pass the chosen audience values, exactly as returned, in the audiences list of {nameof( AddOrUpdateLavaApplication )}. If the description covers more than one group, pass every matching role." );
+        return toolResult.WithInstructions( $"{confidence} Grant the chosen values with AddOrUpdateAuthorizationForEntity, passing each suggestion's groupIdKey (or specialRole for a keyword) as its own allow rule in order, then deny specialRole AllUsers. If the description covers more than one group, grant every matching role." );
     }
 
     #endregion
@@ -201,6 +204,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             suggestions.Add( new AudienceMatchResult
             {
                 Audience = PublicAudienceKeyword,
+                SpecialRole = Rock.Model.SpecialRole.AllUsers.ToString(),
                 Description = "everyone, including anonymous visitors",
                 Score = 90,
                 Reason = "The description sounds like everyone, including people who are not logged in. Confirm with the user before making read endpoints public."
@@ -212,6 +216,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             suggestions.Add( new AudienceMatchResult
             {
                 Audience = AllAuthenticatedAudienceKeyword,
+                SpecialRole = Rock.Model.SpecialRole.AllAuthenticatedUsers.ToString(),
                 Description = "anyone who is logged in",
                 Score = 90,
                 Reason = "The description sounds like any logged-in person, regardless of role."
@@ -232,6 +237,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             suggestions.Add( new AudienceMatchResult
             {
                 Audience = role.Name,
+                GroupIdKey = role.Id.AsIdKey(),
                 Description = $"members of the '{role.Name}' security role",
                 Score = score,
                 Reason = reason

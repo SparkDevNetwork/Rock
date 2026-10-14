@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -282,6 +283,16 @@ namespace Rock.Blocks.Engagement
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
+            {
+                return ActionBadRequest( $"{Streak.FriendlyTypeName} not found." );
+            }
+
+            // The grid only lists streaks of the page's streak type, and the permission
+            // check below is evaluated against that streak type. Reject streaks of any
+            // other type so rights on one streak type cannot delete enrollments of another.
+            var streakType = GetStreakType();
+
+            if ( streakType == null || entity.StreakTypeId != streakType.Id )
             {
                 return ActionBadRequest( $"{Streak.FriendlyTypeName} not found." );
             }

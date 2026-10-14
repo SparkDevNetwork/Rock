@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,11 +27,11 @@ using Rock.Field;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.MetricValueList;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reporting
@@ -617,6 +617,16 @@ namespace Rock.Blocks.Reporting
 
             var metricValue = metricValueService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
             if ( metricValue == null )
+            {
+                return ActionBadRequest( $"{MetricValue.FriendlyTypeName} not found." );
+            }
+
+            // The grid only lists values of the page's metric, and the metric Edit check
+            // in CanEdit is evaluated against that metric. Reject values of any other
+            // metric so Edit rights on one metric cannot delete values of another.
+            var metric = ResolvedMetric;
+
+            if ( metric == null || metricValue.MetricId != metric.Id )
             {
                 return ActionBadRequest( $"{MetricValue.FriendlyTypeName} not found." );
             }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -527,7 +527,6 @@ namespace Rock.Blocks.Group
                 .AddField( "didAttendCount", a => a.DidAttendCount )
                 .AddField( "attendanceRate", a => a.AttendanceRate )
                 .AddTextField( "notes", a => a.Notes )
-                .AddTextField( "notesPlain", a => a.Notes.StripHtml() )
                 .AddTextField( "attendanceType", a => a.AttendanceType )
                 .AddField( "locationId", a => a.LocationId )
                 .AddField( "scheduleId", a => a.ScheduleId )
@@ -657,7 +656,11 @@ namespace Rock.Blocks.Group
             var occurrenceService = new AttendanceOccurrenceService( RockContext );
             var occurrence = occurrenceService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( occurrence == null )
+            // The grid only lists occurrences of the page's group, and the
+            // edit check above was made against that group. Reject any other
+            // occurrence so a tampered key cannot delete another group's
+            // attendance.
+            if ( occurrence == null || occurrence.GroupId != group.Id )
             {
                 return ActionBadRequest( "Attendance occurrence not found." );
             }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -347,6 +347,11 @@ namespace Rock.Workflow.Action
                         {
                             fromEmailAddress = fromAttributeValue;
                         }
+
+                        // The email transport renders the From values as Lava. These came
+                        // from data (possibly submitted), so do not use one that contains Lava.
+                        fromEmailAddress = GetValueWithoutLava( fromEmailAddress, "From", action );
+                        fromName = GetValueWithoutLava( fromName, "From Name", action );
                     }
                 }
             }
@@ -371,7 +376,10 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    var recipientEmails = toValue.ResolveMergeFields( mergeFields );
+                                    // The attribute value may have been submitted by a visitor, so it
+                                    // is used as data and not rendered as Lava.
+                                    var recipientEmails = toValue;
+                                    LogLavaRecipients( action, recipientEmails );
                                     Send( recipientEmails, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, communicationTopicValueId, metaData );
                                     break;
                                 }
@@ -417,7 +425,22 @@ namespace Rock.Workflow.Action
             else
             {
                 var recipientEmails = to.ResolveMergeFields( mergeFields );
+                LogLavaRecipients( action, recipientEmails );
                 Send( recipientEmails, fromEmailAddress, fromName, subject, body, mergeFields, createCommunicationRecord, communicationTopicValueId, metaData );
+            }
+        }
+
+        /// <summary>
+        /// Adds a log entry when the recipient list still contains Lava, since
+        /// those addresses are skipped and no email is sent to them.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="recipientEmails">The recipient emails.</param>
+        private static void LogLavaRecipients( WorkflowAction action, string recipientEmails )
+        {
+            if ( recipientEmails.IsLavaTemplate() )
+            {
+                action.AddLogEntry( "Email was not sent to a recipient address that contains Lava.", true );
             }
         }
 
@@ -435,7 +458,27 @@ namespace Rock.Workflow.Action
         /// <param name="metaData">The meta data.</param>
         private void Send( string recipientEmails, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, bool createCommunicationRecord, int? communicationTopicValueId, Dictionary<string, string> metaData )
         {
-            var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
+            /*
+                10/13/2026 - MSE
+
+                A To value typed into the action is rendered once by the caller, and a
+                Text attribute value is used as data. Both used to be rendered again
+                here, and the email transport renders each address once more, so
+                submitted text in a To value ran as Lava. Skip any address that is empty,
+                contains a Lava brace or is not a valid email address. Braces are checked
+                on each address because splitting can break a Lava tag into pieces.
+
+                Reason: Submitted values were rendered as Lava.
+            */
+            var recipients = EmailAddressFieldValidator.GetValidEmailAddresses( recipientEmails, out _, out _ )
+                .Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) )
+                .ToList();
+
+            if ( !recipients.Any() )
+            {
+                return;
+            }
+
             Send( recipients, fromEmail, fromName, subject, body, createCommunicationRecord, communicationTopicValueId, metaData );
         }
 

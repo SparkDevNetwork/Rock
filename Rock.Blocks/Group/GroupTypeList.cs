@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -31,7 +32,6 @@ using Rock.ViewModels.Blocks.Group.GroupTypeList;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Group.GroupTypeList;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Group
 {
@@ -214,6 +214,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !GetIsAddEnabled() )
+            {
+                return ActionBadRequest( "Not authorized to reorder items." );
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.

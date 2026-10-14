@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -708,6 +708,12 @@ namespace Rock.Blocks.Lms
             if ( entity == null )
             {
                 return ActionBadRequest( $"{LearningCourseRequirement.FriendlyTypeName} not found." );
+            }
+
+            // Make sure the person can edit the course the requirement belongs to.
+            if ( entity.LearningCourse?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) != true )
+            {
+                return ActionBadRequest( $"Not authorized to delete {LearningCourseRequirement.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

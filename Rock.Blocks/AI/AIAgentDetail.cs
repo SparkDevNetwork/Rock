@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -251,6 +251,7 @@ namespace Rock.Blocks.AI
                     : mcpSettings.IsExcludingSystemSkills,
                 IsSystem = entity.IsSystem,
                 Role = chatSettings.Role,
+                ReasoningEffort = chatSettings.ReasoningEffort ?? ReasoningEffort.Low,
                 CurrentPersonTemplate = chatSettings.CurrentPersonTemplate,
                 Slug = mcpSettings.Slug,
             };
@@ -377,6 +378,9 @@ namespace Rock.Blocks.AI
                 box.IfValidProperty( nameof( box.Bag.Role ),
                     () => chatSettings.Role = box.Bag.Role );
 
+                box.IfValidProperty( nameof( box.Bag.ReasoningEffort ),
+                    () => chatSettings.ReasoningEffort = box.Bag.ReasoningEffort );
+
                 box.IfValidProperty( nameof( box.Bag.CurrentPersonTemplate ),
                     () => chatSettings.CurrentPersonTemplate = box.Bag.CurrentPersonTemplate );
 
@@ -444,7 +448,58 @@ namespace Rock.Blocks.AI
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AIAgent.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AIAgent.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Builds the lookup of tool descriptions used by the UI to explain what
+        /// each tool lets the agent do. The keys are the tool Guids, which is what
+        /// ToListItemBagList() puts in each item's Value, so the UI can pair a
+        /// description with its tool without a second lookup.
+        /// Tools with no description are omitted rather than mapped to an empty
+        /// string, which would render an empty help icon.
+        /// </summary>
+        /// <param name="tools">The tools defined on the skill.</param>
+        /// <returns>A dictionary of tool descriptions keyed by the tool's Guid.</returns>
+        private static Dictionary<string, string> GetToolDescriptions( IEnumerable<AISkillTool> tools )
+        {
+            if ( tools == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            return tools
+                .Where( t => t != null && t.Description.IsNotNullOrWhiteSpace() )
+                .ToDictionary( t => t.Guid.ToString(), t => t.Description );
+        }
+
+        /// <summary>
+        /// Gets the agent skill for an edit action and makes sure the current
+        /// person is allowed to edit the agent that the skill belongs to.
+        /// </summary>
+        /// <param name="agentSkillGuid">The unique identifier of the agent skill.</param>
+        /// <param name="agentSkill">On return, contains the agent skill.</param>
+        /// <param name="error">On return, contains the error to send to the client if the skill cannot be edited.</param>
+        /// <returns><c>true</c> if the agent skill can be edited; otherwise <c>false</c>.</returns>
+        private bool TryGetAgentSkillForEditAction( Guid agentSkillGuid, out AIAgentSkill agentSkill, out BlockActionResult error )
+        {
+            agentSkill = new AIAgentSkillService( RockContext ).Get( agentSkillGuid );
+            error = null;
+
+            if ( agentSkill == null )
+            {
+                error = ActionNotFound( "That skill was not found." );
+                return false;
+            }
+
+            if ( agentSkill.AIAgent == null || !agentSkill.AIAgent.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {AIAgent.FriendlyTypeName}." );
+                agentSkill = null;
                 return false;
             }
 
@@ -576,8 +631,11 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult EditSkill( Guid agentSkillGuid )
         {
-            var agentSkillService = new AIAgentSkillService( RockContext );
-            var agentSkill = agentSkillService.Get( agentSkillGuid );
+            if ( !TryGetAgentSkillForEditAction( agentSkillGuid, out var agentSkill, out var actionError ) )
+            {
+                return actionError;
+            }
+
             var response = new EditSkillResponseBag();
 
             if ( agentSkill.AISkill.CodeEntityType != null )
@@ -591,6 +649,7 @@ namespace Rock.Blocks.AI
             response.Skill = GetSkillBag( agentSkill, true );
             response.AvailableTools = agentSkill.AISkill.AISkillTools
                 .ToListItemBagList();
+            response.ToolDescriptions = GetToolDescriptions( agentSkill.AISkill.AISkillTools );
 
             return ActionOk( response );
         }
@@ -605,11 +664,10 @@ namespace Rock.Blocks.AI
         public BlockActionResult RemoveSkill( Guid agentSkillGuid )
         {
             var agentSkillService = new AIAgentSkillService( RockContext );
-            var agentSkill = agentSkillService.Get( agentSkillGuid );
 
-            if ( agentSkill == null )
+            if ( !TryGetAgentSkillForEditAction( agentSkillGuid, out var agentSkill, out var actionError ) )
             {
-                return ActionNotFound( "That skill was not found." );
+                return actionError;
             }
 
             agentSkillService.Delete( agentSkill );
@@ -638,6 +696,12 @@ namespace Rock.Blocks.AI
             }
 
             var agentSkill = agentSkillService.Get( bag.Guid );
+
+            // An existing skill may only be updated on the agent it belongs to.
+            if ( agentSkill != null && agentSkill.AIAgentId != agent.Id )
+            {
+                return ActionBadRequest( "That skill was not found." );
+            }
 
             if ( agentSkill == null )
             {
@@ -698,6 +762,7 @@ namespace Rock.Blocks.AI
 
             response.AvailableTools = skill.AISkillTools
                 .ToListItemBagList();
+            response.ToolDescriptions = GetToolDescriptions( skill.AISkillTools );
 
             return ActionOk( response );
         }

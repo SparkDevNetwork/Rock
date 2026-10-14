@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
@@ -476,14 +478,23 @@ namespace Rock.Storage.AssetStorage
                 var blob = container.GetBlobReferenceFromServer( asset.Key ) as CloudBlob;
 
                 // Create a new access policy and define its constraints.
-                // Note that the SharedAccessBlobPolicy class is used both to define the parameters of an ad-hoc SAS, and 
-                // to construct a shared access policy that is saved to the container's shared access policies. 
+                // Note that the SharedAccessBlobPolicy class is used both to define the parameters of an ad-hoc SAS, and
+                // to construct a shared access policy that is saved to the container's shared access policies.
+                /*
+                    10/9/2026 - MSE
+
+                    The SAS is read-only because this link is handed to anyone who
+                    can see the asset value. Rock never writes through this link;
+                    uploads, renames and deletes use the account key.
+
+                    Reason: Download links only need read access.
+                */
                 SharedAccessBlobPolicy adHocSAS = new SharedAccessBlobPolicy()
                 {
-                    // When the start time for the SAS is omitted, the start time is assumed to be the time when the storage service receives the request. 
+                    // When the start time for the SAS is omitted, the start time is assumed to be the time when the storage service receives the request.
                     // Omitting the start time for a SAS that is effective immediately helps to avoid clock skew.
                     SharedAccessExpiryTime = DateTime.UtcNow.AddHours( 24 ),
-                    Permissions = SharedAccessBlobPermissions.Read | SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.Create
+                    Permissions = SharedAccessBlobPermissions.Read
                 };
 
                 // Generate the shared access signature on the blob, setting the constraints directly on the signature.

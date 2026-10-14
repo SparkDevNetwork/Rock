@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -365,7 +365,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AchievementAttempt.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AchievementAttempt.FriendlyTypeName}." );
                 return false;
             }
 
@@ -571,6 +571,8 @@ namespace Rock.Blocks.Engagement
                 return actionError;
             }
 
+            var originalAchievementTypeId = entity.AchievementTypeId;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
@@ -578,6 +580,21 @@ namespace Rock.Blocks.Engagement
             }
 
             var achievementType = AchievementTypeCache.Get( entity.AchievementTypeId );
+
+            if ( achievementType == null )
+            {
+                return ActionBadRequest( "Invalid achievement type." );
+            }
+
+            // If an existing attempt is being moved to a different achievement
+            // type then make sure the person can also edit the new type.
+            if ( entity.Id != 0
+                && entity.AchievementTypeId != originalAchievementTypeId
+                && !achievementType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {AchievementAttempt.FriendlyTypeName}." );
+            }
+
             var progress = box.Bag.Progress.AsDecimal();
 
             if ( progress < 0m )

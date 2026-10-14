@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -584,7 +584,9 @@ namespace Rock.Model
                 key.Contains( "cvv" ) ||
                 key.Contains( "ssn" ) ||
                 key.Contains( "accountnumber" ) ||
-                key.Contains( "account-number" );
+                key.Contains( "account-number" ) ||
+                key.Contains( "apikey" ) ||
+                key.Contains( "api-key" ); // Just for good measure, in case someone uses a hyphen instead of camel case.
         }
     }
 }

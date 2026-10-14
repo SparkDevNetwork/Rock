@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,8 +66,8 @@ namespace Rock.Field.Types
             var publicConfig = new Dictionary<string, string>( privateConfigurationValues );
 
             publicConfig.AddOrReplace( CONDENSED_HTML, GetCondensedHtmlValue( value, privateConfigurationValues ) );
-            publicConfig.AddOrReplace( ENCRYPTED_DOCUMENT_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
-            publicConfig.AddOrReplace( ENCRYPTED_IMAGE_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
+            publicConfig.AddOrReplace( ENCRYPTED_DOCUMENT_FOLDER_ROOT, Rock.Security.Encryption.EncryptRootFolder( publicConfig.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
+            publicConfig.AddOrReplace( ENCRYPTED_IMAGE_FOLDER_ROOT, Rock.Security.Encryption.EncryptRootFolder( publicConfig.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
 
             return publicConfig;
         }
@@ -421,6 +421,18 @@ namespace Rock.Field.Types
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+            // Uploads are checked separately from the asset manager, so
+            // allow uploads to the configured folders the browsers use.
+            grant.AddRule( new FileUploadSecurityGrantRule( privateConfigurationValues.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
+            grant.AddRule( new FileUploadSecurityGrantRule( privateConfigurationValues.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
+
+            // The asset storage provider button only shows when the asset
+            // manager is enabled, so only allow provider uploads then.
+            if ( privateConfigurationValues.GetValueOrDefault( ENABLE_ASSET_MANAGER, "" ).AsBoolean() )
+            {
+                grant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
+            }
         }
     }
 }

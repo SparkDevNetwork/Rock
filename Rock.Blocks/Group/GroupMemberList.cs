@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -57,6 +58,14 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                // Ensure the current person is allowed to view the requested group.
+                var group = new GroupService( rockContext ).Get( groupId );
+
+                if ( group == null || !group.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "You are not authorized to view the members of this group." );
+                }
+
                 var groupMemberService = new GroupMemberService( rockContext );
                 var query = groupMemberService.Queryable()
                     .AsNoTracking()

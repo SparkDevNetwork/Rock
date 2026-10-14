@@ -39,4 +39,10 @@ export type GroupTypePickerGetGroupTypesOptionsBag = {
 
     /** Whether or not to filter out the group types that aren't flagged to be on the group list */
     onlyGroupListItems: boolean;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

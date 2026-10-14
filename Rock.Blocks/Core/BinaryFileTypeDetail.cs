@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -361,7 +361,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${BinaryFileType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {BinaryFileType.FriendlyTypeName}." );
                 return false;
             }
 
@@ -464,6 +464,13 @@ namespace Rock.Blocks.Core
             if ( !ValidateBinaryFileType( entity, out var validationMessage ) )
             {
                 return ActionBadRequest( validationMessage );
+            }
+
+            // Make sure existing attributes can only be updated if they
+            // already belong to this file type.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.BinaryFileTypeAttributes, new BinaryFile().TypeId, "BinaryFileTypeId", entity.Id == 0 ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
             }
 
             RockContext.WrapTransaction( () =>

@@ -22,7 +22,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
+
 using Newtonsoft.Json;
+
 using RestSharp;
 
 namespace Rock.Communication.VideoEmbed

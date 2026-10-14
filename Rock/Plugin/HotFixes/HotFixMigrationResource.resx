@@ -286,4 +286,7 @@
   <data name="_313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_323_ShowInactiveGroupPlacementMembers_spGetGroupPlacementPeople" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>323_ShowInactiveGroupPlacementMembers_spGetGroupPlacementPeople.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

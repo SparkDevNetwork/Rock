@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,13 +17,13 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared.Constants;
 
 using static Rock.Tests.Integration.TestData.LocationDataManager;
-using Rock.Configuration;
 
 namespace Rock.Tests.Integration.TestData
 {

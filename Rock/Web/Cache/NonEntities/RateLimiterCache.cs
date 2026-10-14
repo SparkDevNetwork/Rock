@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -101,7 +101,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public static bool CanProcessPage( int pageId, string clientIpAddress, TimeSpan period, int maxActionsInPeriod, TimeSpan? minTimeBetweenActions = null )
         {
-            var limiter = GetRateLimiter( $"page-${pageId}", clientIpAddress, period, maxActionsInPeriod, minTimeBetweenActions );
+            var limiter = GetRateLimiter( $"page-{pageId}", clientIpAddress, period, maxActionsInPeriod, minTimeBetweenActions );
 
             if ( limiter.CanPerformAction() )
             {

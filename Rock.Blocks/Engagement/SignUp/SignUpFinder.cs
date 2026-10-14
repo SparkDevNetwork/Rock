@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Configuration;
 
 namespace Rock.Blocks.Engagement.SignUp

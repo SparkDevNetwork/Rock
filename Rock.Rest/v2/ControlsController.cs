@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -101,14 +101,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetChildren" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
         public IActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            var isPublicView = IsAccountPickerPublicView();
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                return Ok( AccountPickerGetChildrenData( options, rockContext ) );
+                return Ok( AccountPickerGetChildrenData( options, isPublicView, rockContext ) );
             }
         }
 
@@ -116,41 +124,59 @@ namespace Rock.Rest.v2
         /// Gets the accounts that can be displayed in the account picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
         /// <param name="rockContext">DB context.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
-        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, RockContext rockContext )
+        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, bool isPublicView, RockContext rockContext )
         {
             var financialAccountService = new FinancialAccountService( rockContext );
+            var includeInactive = options.IncludeInactive && !isPublicView;
 
             IQueryable<FinancialAccount> qry;
 
             if ( options.ParentGuid == Guid.Empty )
             {
-                qry = financialAccountService.Queryable().AsNoTracking()
-                    .Where( f => f.ParentAccountId.HasValue == false );
+                if ( isPublicView )
+                {
+                    // A public account whose parent is not part of the public
+                    // view is shown at the top level, otherwise it could
+                    // never be selected.
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false
+                            || f.ParentAccount.IsPublic != true
+                            || f.ParentAccount.IsActive == false );
+                }
+                else
+                {
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false );
+                }
             }
             else
             {
+                if ( isPublicView )
+                {
+                    var parentAccount = FinancialAccountCache.Get( options.ParentGuid );
+
+                    if ( parentAccount == null || !IsAccountInPublicView( parentAccount.IsPublic, parentAccount.IsActive ) )
+                    {
+                        return new List<TreeItemBag>();
+                    }
+                }
+
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => f.ParentAccount != null && f.ParentAccount.Guid == options.ParentGuid );
             }
 
-            if ( !options.IncludeInactive )
-            {
-                qry = qry
-                    .Where( f => f.IsActive == true );
-            }
+            qry = FilterAccountPickerQuery( qry, isPublicView, includeInactive );
 
-            var accountList = qry
-                .OrderBy( f => f.Order )
-                .ThenBy( f => f.Name )
-                .ToList();
+            var accountList = OrderAccountPickerResults( qry, isPublicView );
 
             var accountTreeViewItems = accountList
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
+                    Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView ),
                     IsActive = a.IsActive,
                     IconCssClass = "ti ti-file"
                 } ).ToList();
@@ -169,7 +195,7 @@ namespace Rock.Rest.v2
                         ParentGuid = new Guid( accountTreeViewItem.Value ),
                         SecurityGrantToken = options.SecurityGrantToken
                     };
-                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, rockContext );
+                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, isPublicView, rockContext );
                     int childrenCount = accountTreeViewItem.Children.Count;
 
                     accountTreeViewItem.HasChildren = childrenCount > 0;
@@ -189,10 +215,7 @@ namespace Rock.Rest.v2
                     f.ParentAccountId.HasValue && resultIds.Contains( f.ParentAccountId.Value )
                     );
 
-                if ( !options.IncludeInactive )
-                {
-                    childQry = childQry.Where( f => f.IsActive == true );
-                }
+                childQry = FilterAccountPickerQuery( childQry, isPublicView, includeInactive );
 
                 var childrenList = childQry.Select( f => f.ParentAccount.Guid.ToString() )
                     .ToList();
@@ -223,22 +246,45 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetParentGuids" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( HashSet<Guid> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
         public IActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
         {
+            if ( options?.Guids == null )
+            {
+                return BadRequest();
+            }
+
+            var isPublicView = IsAccountPickerPublicView();
             var results = new HashSet<Guid>();
 
             foreach ( var guid in options.Guids )
             {
-                var result = FinancialAccountCache.Get( guid )?
-                    .GetAncestorFinancialAccounts()?
-                    .OrderBy( a => 0 )?
-                    .Reverse()?
-                    .Select( a => a.Guid );
+                var account = FinancialAccountCache.Get( guid );
 
-                foreach ( var resultGuid in result )
+                if ( account == null )
+                {
+                    continue;
+                }
+
+                IEnumerable<FinancialAccountCache> ancestors = account.GetAncestorFinancialAccounts();
+
+                if ( isPublicView )
+                {
+                    if ( !IsAccountInPublicView( account.IsPublic, account.IsActive ) )
+                    {
+                        continue;
+                    }
+
+                    // Only include the ancestors that are part of the path
+                    // shown in the public view. The path stops at the first
+                    // ancestor that is not in the public view.
+                    ancestors = ancestors.TakeWhile( a => IsAccountInPublicView( a.IsPublic, a.IsActive ) );
+                }
+
+                foreach ( var resultGuid in ancestors.Reverse().Select( a => a.Guid ) )
                 {
                     results.Add( resultGuid );
                 }
@@ -255,7 +301,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetSearchedAccounts" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
@@ -263,30 +309,43 @@ namespace Rock.Rest.v2
         {
             IQueryable<FinancialAccount> qry;
 
-            if ( options.SearchTerm.IsNullOrWhiteSpace() )
+            if ( options == null || options.SearchTerm.IsNullOrWhiteSpace() )
             {
                 return BadRequest( "Search Term is required" );
             }
 
+            var isPublicView = IsAccountPickerPublicView();
+            var includeInactive = options.IncludeInactive && !isPublicView;
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
 
-                if ( !options.IncludeInactive )
+                if ( isPublicView )
                 {
-                    qry = qry.Where( f => f.IsActive == true );
+                    // Only match on the text that is displayed in the public
+                    // view, so the search can't be used to discover internal
+                    // names or GL codes.
+                    var searchTerm = options.SearchTerm;
+
+                    qry = financialAccountService.Queryable()
+                        .Where( f => ( f.PublicName != null && f.PublicName.Trim() != string.Empty && f.PublicName.Contains( searchTerm ) )
+                            || ( ( f.PublicName == null || f.PublicName.Trim() == string.Empty ) && f.Name != null && f.Name.Contains( searchTerm ) ) );
+                }
+                else
+                {
+                    qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
                 }
 
-                var accountList = qry
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .ToList()
+                qry = FilterAccountPickerQuery( qry, isPublicView, includeInactive );
+
+                var accountList = OrderAccountPickerResults( qry, isPublicView )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView )
+                            + ( !isPublicView && a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
+                        Category = GetAccountPickerHierarchy( a, isPublicView, financialAccountService )
                     } )
                     .ToList();
 
@@ -302,17 +361,19 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetPreviewItems" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "b080e9d6-207a-412d-acf5-d811fdec30a3" )]
         public IActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
         {
             IQueryable<FinancialAccount> qry;
 
-            if ( options.SelectedGuids.Count == 0 )
+            if ( options?.SelectedGuids == null || options.SelectedGuids.Count == 0 )
             {
                 return Ok( new List<ListItemBag>() );
             }
+
+            var isPublicView = IsAccountPickerPublicView();
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
@@ -320,15 +381,16 @@ namespace Rock.Rest.v2
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => options.SelectedGuids.Contains( f.Guid ) );
 
-                var accountList = qry
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .ToList()
+                // Selected accounts are shown even if they have since become
+                // inactive, the same as before.
+                qry = FilterAccountPickerQuery( qry, isPublicView, true );
+
+                var accountList = OrderAccountPickerResults( qry, isPublicView )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView ),
+                        Category = GetAccountPickerHierarchy( a, isPublicView, financialAccountService )
                     } )
                     .ToList();
 
@@ -343,7 +405,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetAllowSelectAll" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( bool ) )]
         [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
         public IActionResult AccountPickerGetAllowSelectAll()
@@ -351,10 +413,144 @@ namespace Rock.Rest.v2
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                var count = financialAccountService.Queryable().Count();
+                var count = FilterAccountPickerQuery( financialAccountService.Queryable(), IsAccountPickerPublicView(), true ).Count();
 
                 return Ok( count < 1500 );
             }
+        }
+
+        /// <summary>
+        /// Determines if the current request should only see the public view
+        /// of the account picker. People with the REST action permission, or
+        /// with permission to view financial accounts (such as the finance
+        /// security roles), see all accounts.
+        /// </summary>
+        /// <returns><c>true</c> if only the public view should be returned; otherwise <c>false</c>.</returns>
+        private bool IsAccountPickerPublicView()
+        {
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return false;
+            }
+
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            // Check the financial account entity type security, which only
+            // allows the finance security roles to view accounts by default.
+            // If those rules are changed then the account picker follows
+            // whatever the site has configured for viewing accounts.
+            if ( currentPerson != null && new FinancialAccount().IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Orders the accounts for the account picker. The public view is
+        /// ordered by the text that is displayed so the order does not reveal
+        /// anything about the internal account names.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <returns>The ordered list of accounts.</returns>
+        private static List<FinancialAccount> OrderAccountPickerResults( IQueryable<FinancialAccount> qry, bool isPublicView )
+        {
+            if ( !isPublicView )
+            {
+                return qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList();
+            }
+
+            return qry
+                .ToList()
+                .OrderBy( f => f.Order )
+                .ThenBy( f => GetAccountPickerText( f.Name, f.PublicName, true, true ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines if an account is part of the public view of the account
+        /// picker. Callers without the REST action permission only see the
+        /// public view, which is active accounts that are marked as public.
+        /// </summary>
+        /// <param name="isPublic">The account's public flag.</param>
+        /// <param name="isActive">The account's active flag.</param>
+        /// <returns><c>true</c> if the account is part of the public view; otherwise <c>false</c>.</returns>
+        private static bool IsAccountInPublicView( bool? isPublic, bool isActive )
+        {
+            return isPublic == true && isActive;
+        }
+
+        /// <summary>
+        /// Limits the account query to the accounts that can be returned.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <param name="includeInactive">If <c>true</c> then inactive accounts are included. Ignored for the public view.</param>
+        /// <returns>The filtered query.</returns>
+        private static IQueryable<FinancialAccount> FilterAccountPickerQuery( IQueryable<FinancialAccount> qry, bool isPublicView, bool includeInactive )
+        {
+            if ( isPublicView )
+            {
+                return qry.Where( f => f.IsPublic == true && f.IsActive == true );
+            }
+
+            if ( !includeInactive )
+            {
+                qry = qry.Where( f => f.IsActive == true );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the text to display for an account in the account picker.
+        /// </summary>
+        /// <param name="name">The account name.</param>
+        /// <param name="publicName">The account public name.</param>
+        /// <param name="displayPublicName">If <c>true</c> then the caller requested the public name.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <returns>The text to display.</returns>
+        private static string GetAccountPickerText( string name, string publicName, bool displayPublicName, bool isPublicView )
+        {
+            if ( !isPublicView )
+            {
+                return displayPublicName ? publicName : name;
+            }
+
+            // The public view only contains public accounts, so the name can
+            // be used when the account does not have a public name.
+            return publicName.IsNotNullOrWhiteSpace() ? publicName : name;
+        }
+
+        /// <summary>
+        /// Gets the '^' delimited names of the account's ancestors.
+        /// </summary>
+        /// <param name="account">The account.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <param name="financialAccountService">The financial account service.</param>
+        /// <returns>The delimited account hierarchy.</returns>
+        private static string GetAccountPickerHierarchy( FinancialAccount account, bool isPublicView, FinancialAccountService financialAccountService )
+        {
+            if ( !isPublicView )
+            {
+                return financialAccountService.GetDelimitedAccountHierarchy( account, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent );
+            }
+
+            var ancestors = FinancialAccountCache.Get( account.Id )?.GetAncestorFinancialAccounts() ?? new FinancialAccountCache[0];
+
+            // Only include the ancestors that are part of the path shown in
+            // the public view. The path stops at the first ancestor that is
+            // not in the public view.
+            return ancestors
+                .TakeWhile( a => IsAccountInPublicView( a.IsPublic, a.IsActive ) )
+                .OrderBy( a => a.Id )
+                .Select( a => System.Net.WebUtility.HtmlEncode( GetAccountPickerText( a.Name, a.PublicName, true, true ) ) )
+                .JoinStrings( "^" );
         }
 
         #endregion
@@ -817,6 +1013,11 @@ namespace Rock.Rest.v2
             {
                 var (folder, expandedFileFolders) = GetRootFolder( options.RootFolder, expandedFolders, selectedFolder, options.UserSpecificRoot );
 
+                if ( folder == null )
+                {
+                    return BadRequest( "Invalid root folder." );
+                }
+
                 tree.Add( folder );
                 if ( expandedFileFolders != null )
                 {
@@ -989,6 +1190,12 @@ namespace Rock.Rest.v2
 
             if ( asset.IsLocalAsset )
             {
+                // The root folder and restricted folders can't be deleted.
+                if ( IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                {
+                    return BadRequest();
+                }
+
                 try
                 {
                     var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
@@ -1010,7 +1217,22 @@ namespace Rock.Rest.v2
                     return BadRequest();
                 }
 
-                return Ok( component.DeleteAsset( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder } ) );
+                // The root folder of a provider can't be deleted.
+                var providerRootFolder = component.GetRootFolder( provider.ToEntity() ) ?? string.Empty;
+
+                if ( asset.SubPath.IsNullOrWhiteSpace() || asset.FullPath.TrimEnd( '/' ).Equals( providerRootFolder.TrimEnd( '/' ), StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return BadRequest();
+                }
+
+                try
+                {
+                    return Ok( component.DeleteAsset( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder } ) );
+                }
+                catch ( Exception ex )
+                {
+                    return InternalServerError( ex );
+                }
             }
 
             return BadRequest();
@@ -1038,7 +1260,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            if ( !IsValidAssetFolderName( options.NewFolderName ) || options.NewFolderName.IsNullOrWhiteSpace() )
+            if ( options.NewFolderName.IsNullOrWhiteSpace() || !IsValidAssetFolderName( options.NewFolderName ) )
             {
                 return null;
             }
@@ -1125,11 +1347,30 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
+            if ( options.NewFolderName.IsNullOrWhiteSpace() || !IsValidAssetFolderName( options.NewFolderName ) )
+            {
+                return BadRequest( "Invalid folder name." );
+            }
+
             try
             {
                 var asset = ParseAssetKey( options.AssetFolderId );
+
+                // Only local folders inside the root can be renamed, and not
+                // the root folder or restricted folders.
+                if ( asset == null || !asset.IsLocalAsset || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                {
+                    return BadRequest();
+                }
+
                 var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
                 var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath.TrimEnd( '/', '\\' ) ), options.NewFolderName );
+
+                if ( !IsPhysicalPathWithinRoot( renamedPath, asset.Root ) || IsUploadRestrictedLocalPath( renamedPath ) )
+                {
+                    return BadRequest();
+                }
+
                 Directory.Move( physicalPath, renamedPath );
 
                 var newKey = $"0,{asset.EncryptedRoot},{Path.Combine( Path.GetDirectoryName( asset.SubPath.TrimEnd( '/', '\\' ) ), options.NewFolderName ).Replace( "\\", "/" ).TrimEnd( '/', '\\' ) + "/"}";
@@ -1167,10 +1408,23 @@ namespace Rock.Rest.v2
             try
             {
                 var asset = ParseAssetKey( options.AssetFolderId );
+
+                // Only local folders inside the root can be moved, and not
+                // the root folder or restricted folders.
+                if ( asset == null || !asset.IsLocalAsset || options.TargetFolder == null || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                {
+                    return BadRequest();
+                }
+
                 var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
                 var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
                 var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder.TrimStart( '/', '\\' ), baseFolderName );
                 var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
+
+                if ( !IsPhysicalPathWithinRoot( targetPhyicalPath, asset.Root ) || IsUploadRestrictedLocalPath( targetPhyicalPath ) )
+                {
+                    return BadRequest( "Invalid target location." );
+                }
 
                 if ( !Directory.Exists( targetPhyicalPath ) && !File.Exists( targetPhyicalPath ) )
                 {
@@ -1217,6 +1471,20 @@ namespace Rock.Rest.v2
             {
                 if ( options.AssetStorageProviderId == 0 )
                 {
+                    var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                    // Every file must be inside the root folder and outside the
+                    // restricted folders before any are deleted.
+                    if ( root == null || options.Files == null || !options.Files.All( f => f.IsNotNullOrWhiteSpace() && IsLocalPathWithinRoot( f, root ) ) )
+                    {
+                        return BadRequest();
+                    }
+
+                    if ( options.Files.Any( f => IsUploadRestrictedLocalPath( System.Web.HttpContext.Current.Server.MapPath( f ) ) ) )
+                    {
+                        return BadRequest();
+                    }
+
                     foreach ( string file in options.Files )
                     {
                         var physicalPath = System.Web.HttpContext.Current.Server.MapPath( file );
@@ -1275,9 +1543,16 @@ namespace Rock.Rest.v2
             {
                 if ( options.AssetStorageProviderId == 0 )
                 {
+                    var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                    if ( root == null || options.File.IsNullOrWhiteSpace() || !IsLocalPathWithinRoot( options.File, root ) )
+                    {
+                        return BadRequest( "Invalid file." );
+                    }
+
                     var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
                     fileName = Path.GetFileName( physicalPath );
-                    stream = File.Open( physicalPath, FileMode.Open );
+                    stream = File.Open( physicalPath, FileMode.Open, FileAccess.Read );
                 }
                 else
                 {
@@ -1343,8 +1618,27 @@ namespace Rock.Rest.v2
             {
                 if ( options.AssetStorageProviderId == 0 )
                 {
+                    var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                    if ( root == null || options.File.IsNullOrWhiteSpace() || !IsLocalPathWithinRoot( options.File, root ) )
+                    {
+                        return BadRequest( "Invalid file." );
+                    }
+
+                    // The new name can't include a folder and must be an allowed file type.
+                    if ( !IsValidAssetFileName( options.NewFileName ) )
+                    {
+                        return BadRequest( "Invalid file name." );
+                    }
+
                     var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
                     var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
+
+                    if ( !IsPhysicalPathWithinRoot( renamedPath, root ) || IsUploadRestrictedLocalPath( renamedPath ) )
+                    {
+                        return BadRequest( "Invalid file name." );
+                    }
+
                     File.Move( physicalPath, renamedPath );
 
                     return Ok( true );
@@ -1356,6 +1650,11 @@ namespace Rock.Rest.v2
                     if ( provider == null || component == null || options.File.IsNullOrWhiteSpace() || options.NewFileName.IsNullOrWhiteSpace() )
                     {
                         return BadRequest();
+                    }
+
+                    if ( !IsValidAssetFileName( options.NewFileName ) )
+                    {
+                        return BadRequest( "Invalid file name." );
                     }
 
                     return Ok( component.RenameAsset( provider.ToEntity(), new Asset { Key = options.File, Type = AssetType.File }, options.NewFileName ) );
@@ -1394,9 +1693,31 @@ namespace Rock.Rest.v2
                 return BadRequest();
             }
 
-            var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot, false );
-            var fullPath = Path.Combine( root, options.FileName );
-            var physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( fullPath );
+            var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+            if ( root == null )
+            {
+                return BadRequest();
+            }
+
+            string physicalZipFile;
+
+            try
+            {
+                physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( root, options.FileName ) );
+            }
+            catch ( Exception )
+            {
+                return BadRequest();
+            }
+
+            // The zip file must be inside the root folder. Nothing outside of
+            // the root is touched, including the delete in the catch below.
+            if ( !IsPhysicalPathWithinRoot( physicalZipFile, root ) )
+            {
+                return BadRequest();
+            }
+
             var directoryPath = Path.GetDirectoryName( physicalZipFile );
 
             try
@@ -1411,10 +1732,24 @@ namespace Rock.Rest.v2
                             foreach ( ZipArchiveEntry file in archive.Entries )
                             {
                                 string completeFileName = Path.Combine( directoryPath, file.FullName );
+
+                                // Skip any entry that would extract outside of the
+                                // folder or into a restricted folder.
+                                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( completeFileName, directoryPath ) || IsUploadRestrictedLocalPath( completeFileName ) )
+                                {
+                                    continue;
+                                }
+
                                 if ( file.Name == string.Empty )
                                 {
                                     // Assuming Empty for Directory
                                     Directory.CreateDirectory( Path.GetDirectoryName( completeFileName ) );
+                                    continue;
+                                }
+
+                                // Skip any file type that can't be uploaded directly.
+                                if ( !Rock.Utility.FileUtilities.IsFileTypeAllowed( file.Name ) )
+                                {
                                     continue;
                                 }
 
@@ -1472,7 +1807,12 @@ namespace Rock.Rest.v2
 
             try
             {
-                var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot, false );
+                var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                if ( root == null )
+                {
+                    return BadRequest();
+                }
 
                 if ( options.UserSpecificRoot )
                 {
@@ -1480,8 +1820,27 @@ namespace Rock.Rest.v2
                     root = root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
                 }
 
+                // The selected folder is the root followed by a sub path. Only
+                // the sub path is used, resolved against the decrypted root.
+                // Both are normalized the same way because the client also
+                // normalizes the root it was given.
+                var normalizedRoot = NormalizeVirtualPath( root ).EnsureTrailingForwardslash();
+                var selectedFolder = NormalizeVirtualPath( options.SelectedFolder ).EnsureTrailingForwardslash();
+
+                if ( !selectedFolder.StartsWith( normalizedRoot, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return BadRequest();
+                }
+
+                var selectedSubPath = selectedFolder.Substring( normalizedRoot.Length ).TrimStart( '/' );
                 var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( root );
-                var physicalSelectedFolder = System.Web.HttpContext.Current.Server.MapPath( options.SelectedFolder ).TrimEnd( '/', '\\' );
+                var physicalSelectedFolder = Path.GetFullPath( Path.Combine( physicalRootFolder, selectedSubPath.Replace( '/', Path.DirectorySeparatorChar ) ) ).TrimEnd( '/', '\\' );
+
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSelectedFolder, physicalRootFolder ) )
+                {
+                    return BadRequest();
+                }
+
                 var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder, physicalSelectedFolder );
 
                 if ( folders != null )
@@ -1531,7 +1890,25 @@ namespace Rock.Rest.v2
                 {
                     assetStorageProviderId = assetParts[0].AsInteger();
                     var encryptedRoot = assetParts[1].Trim();
-                    var root = Rock.Security.Encryption.DecryptString( encryptedRoot, false );
+                    string root;
+
+                    // Asset storage providers can have an empty root, which
+                    // is never encrypted. Local roots must always decrypt.
+                    if ( encryptedRoot == string.Empty && assetStorageProviderId != 0 )
+                    {
+                        root = string.Empty;
+                    }
+                    else
+                    {
+                        root = assetStorageProviderId == 0
+                            ? Rock.Security.Encryption.DecryptRootFolder( encryptedRoot )
+                            : DecryptAssetStorageProviderRoot( assetStorageProviderId, encryptedRoot );
+
+                        if ( root.IsNullOrWhiteSpace() )
+                        {
+                            return null;
+                        }
+                    }
 
                     // Verify all local roots start with "~/"
                     if ( assetStorageProviderId == 0 && !root.StartsWith( "~/" ) )
@@ -1550,19 +1927,270 @@ namespace Rock.Rest.v2
                         partialPath = partialPath.TrimStart( '/', '\\' ).EnsureTrailingForwardslash();
                     }
 
-                    return new AssetManagerAsset
+                    var asset = new AssetManagerAsset
                     {
                         ProviderId = assetStorageProviderId,
                         EncryptedRoot = encryptedRoot,
                         Root = root,
                         SubPath = partialPath
                     };
+
+                    /*
+                        10/6/2026 - MSE
+
+                        Local folders must resolve to a location inside the root
+                        folder that was issued with the key.
+
+                        Reason: Keep the file manager inside its root folder.
+                    */
+                    if ( asset.IsLocalAsset && !IsLocalPathWithinRoot( asset.FullPath, asset.Root ) )
+                    {
+                        return null;
+                    }
+
+                    return asset;
                 }
             }
             catch ( Exception )
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// The purpose used when encrypting asset storage provider root folders.
+        /// </summary>
+        private const string AssetStorageProviderRootPurpose = "Rock.AssetStorageProviderRoot";
+
+        /// <summary>
+        /// Encrypts the root folder of an asset storage provider so that it
+        /// can only be used with that provider.
+        /// </summary>
+        /// <param name="assetStorageProviderId">The asset storage provider identifier.</param>
+        /// <param name="rootFolder">The root folder of the provider.</param>
+        /// <returns>The encrypted root folder, or an empty string if <paramref name="rootFolder"/> is empty.</returns>
+        private static string EncryptAssetStorageProviderRoot( int assetStorageProviderId, string rootFolder )
+        {
+            if ( string.IsNullOrEmpty( rootFolder ) )
+            {
+                return string.Empty;
+            }
+
+            return Rock.Security.Encryption.EncryptStringForPurpose( rootFolder, $"{AssetStorageProviderRootPurpose}.{assetStorageProviderId}" );
+        }
+
+        /// <summary>
+        /// Decrypts the root folder of an asset storage provider that was
+        /// encrypted by <see cref="EncryptAssetStorageProviderRoot(int, string)"/>.
+        /// </summary>
+        /// <param name="assetStorageProviderId">The asset storage provider identifier.</param>
+        /// <param name="encryptedRootFolder">The encrypted root folder.</param>
+        /// <returns>The root folder; otherwise <c>null</c>.</returns>
+        private static string DecryptAssetStorageProviderRoot( int assetStorageProviderId, string encryptedRootFolder )
+        {
+            /*
+                10/6/2026 - MSE
+
+                Provider root folders are encrypted separately from local root
+                folders and include the provider identifier.
+
+                Reason: A provider's root folder should only be usable with
+                that provider.
+            */
+            return Rock.Security.Encryption.DecryptStringForPurpose( encryptedRootFolder, $"{AssetStorageProviderRootPurpose}.{assetStorageProviderId}" );
+        }
+
+        /// <summary>
+        /// Decrypts and normalizes the root folder of a local asset.
+        /// </summary>
+        /// <param name="encryptedRoot">The encrypted root folder.</param>
+        /// <returns>The root folder in the form "~/Folder/", or <c>null</c> if it is not valid.</returns>
+        private string GetLocalAssetRoot( string encryptedRoot )
+        {
+            if ( encryptedRoot.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            try
+            {
+                var root = Rock.Security.Encryption.DecryptRootFolder( encryptedRoot );
+
+                if ( root.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                if ( !root.StartsWith( "~/" ) )
+                {
+                    root = "~/" + root;
+                }
+
+                return root.EnsureTrailingForwardslash();
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a virtual path resolves to a location inside the
+        /// virtual root folder.
+        /// </summary>
+        /// <param name="path">The virtual path to check.</param>
+        /// <param name="root">The virtual root folder.</param>
+        /// <returns><c>true</c> if the path is the root folder or inside it; otherwise <c>false</c>.</returns>
+        private bool IsLocalPathWithinRoot( string path, string root )
+        {
+            try
+            {
+                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( path );
+
+                return IsPhysicalPathWithinRoot( physicalPath, root );
+            }
+            catch ( Exception )
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a physical path is inside the virtual root folder.
+        /// </summary>
+        /// <param name="physicalPath">The physical path to check.</param>
+        /// <param name="root">The virtual root folder.</param>
+        /// <returns><c>true</c> if the path is the root folder or inside it; otherwise <c>false</c>.</returns>
+        private bool IsPhysicalPathWithinRoot( string physicalPath, string root )
+        {
+            if ( root.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            try
+            {
+                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( root );
+
+                return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalRoot );
+            }
+            catch ( Exception )
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the path of a local file or folder relative to the web root,
+        /// after the path has been fully resolved.
+        /// </summary>
+        /// <param name="physicalPath">The physical path.</param>
+        /// <returns>The resolved path relative to the web root, or <c>null</c> if it is not inside the web root.</returns>
+        private string GetResolvedWebRootRelativePath( string physicalPath )
+        {
+            try
+            {
+                var physicalWebRoot = Path.GetFullPath( System.Web.HttpContext.Current.Server.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
+                var fullPath = Path.GetFullPath( physicalPath ).TrimEnd( '/', '\\' );
+
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalWebRoot ) )
+                {
+                    return null;
+                }
+
+                return fullPath.Substring( physicalWebRoot.Length ).TrimStart( '/', '\\' );
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the resolved local folder is a restricted folder.
+        /// </summary>
+        /// <param name="physicalPath">The physical path of the folder.</param>
+        /// <returns><c>true</c> if the folder is restricted; otherwise <c>false</c>.</returns>
+        private bool IsRestrictedLocalFolder( string physicalPath )
+        {
+            var relativePath = GetResolvedWebRootRelativePath( physicalPath );
+
+            if ( relativePath == null )
+            {
+                return false;
+            }
+
+            // Short (8.3) folder names contain "~" and would not match the
+            // restricted folder names, so treat them as restricted.
+            return relativePath.Contains( "~" ) || IsRestrictedFolder( relativePath );
+        }
+
+        /// <summary>
+        /// Determines whether the resolved local path is in a folder that
+        /// files and folders can't be placed in.
+        /// </summary>
+        /// <param name="physicalPath">The physical path.</param>
+        /// <returns><c>true</c> if the path is upload restricted; otherwise <c>false</c>.</returns>
+        private bool IsUploadRestrictedLocalPath( string physicalPath )
+        {
+            var relativePath = GetResolvedWebRootRelativePath( physicalPath );
+
+            if ( relativePath == null )
+            {
+                return false;
+            }
+
+            // Short (8.3) folder names contain "~" and would not match the
+            // restricted folder names, so treat them as restricted.
+            if ( relativePath.Contains( "~" ) )
+            {
+                return true;
+            }
+
+            return new[] { "Bin", "App_Code" }.Any( a => relativePath.Equals( a, StringComparison.OrdinalIgnoreCase )
+                || relativePath.StartsWith( a + "\\", StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
+        /// Determines whether the local asset is the root folder itself.
+        /// </summary>
+        /// <param name="asset">The local asset.</param>
+        /// <returns><c>true</c> if the asset resolves to its root folder or the path can't be resolved; otherwise <c>false</c>.</returns>
+        private bool IsLocalRootFolder( AssetManagerAsset asset )
+        {
+            try
+            {
+                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+
+                return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRoot, physicalPath );
+            }
+            catch ( Exception )
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the name is a valid name for a file in the file
+        /// manager. The name cannot include a folder and its type must be
+        /// allowed for content files.
+        /// </summary>
+        /// <param name="fileName">The name of the file.</param>
+        /// <returns><c>true</c> if the name is valid; otherwise <c>false</c>.</returns>
+        private bool IsValidAssetFileName( string fileName )
+        {
+            if ( fileName.IsNullOrWhiteSpace() || fileName == "." || fileName == ".." )
+            {
+                return false;
+            }
+
+            if ( fileName.IndexOfAny( Path.GetInvalidFileNameChars() ) >= 0 )
+            {
+                return false;
+            }
+
+            return Rock.Utility.FileUtilities.IsFileTypeAllowed( fileName );
         }
 
         /// <summary>
@@ -1574,7 +2202,7 @@ namespace Rock.Rest.v2
             if ( encryptedRootFolder.IsNullOrWhiteSpace() )
             {
                 // Set root to default
-                encryptedRootFolder = Rock.Security.Encryption.EncryptString( "~/Content/" );
+                encryptedRootFolder = Rock.Security.Encryption.EncryptRootFolder( "~/Content/" );
             }
 
             var rootAssetKey = $"0,{encryptedRootFolder},,True";
@@ -1595,7 +2223,7 @@ namespace Rock.Rest.v2
             {
                 var username = RockRequestContext.CurrentUser.UserName;
                 parsedAsset.Root = parsedAsset.Root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
-                encryptedRootFolder = Rock.Security.Encryption.EncryptString( parsedAsset.Root );
+                encryptedRootFolder = Rock.Security.Encryption.EncryptRootFolder( parsedAsset.Root );
                 parsedAsset.EncryptedRoot = encryptedRootFolder;
             }
 
@@ -1785,7 +2413,7 @@ namespace Rock.Rest.v2
                 string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
                 string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                 string rootRelativePath = asset.Root.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + System.Web.HttpUtility.UrlEncode( rootRelativePath ) );
+                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + System.Web.HttpUtility.UrlEncode( rootRelativePath ) + "&rootFolder=" + System.Web.HttpUtility.UrlEncode( asset.EncryptedRoot ) );
                 string downloadUrl = RockApp.Current.ResolveRockUrl( rootRelativePath );
 
                 file = new Asset
@@ -1826,7 +2454,7 @@ namespace Rock.Rest.v2
             {
                 var component = provider.AssetStorageComponent;
                 var rootFolder = component.GetRootFolder( provider.ToEntity() );
-                var encryptedRootFolder = Rock.Security.Encryption.EncryptString( rootFolder );
+                var encryptedRootFolder = EncryptAssetStorageProviderRoot( provider.Id, rootFolder );
 
                 // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
                 if ( selectedFolder != null && selectedFolder.ProviderId == provider.Id && selectedFolder.Root == rootFolder )
@@ -1941,12 +2569,21 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// Recursively gets a list of every folder that is in the given directory.
+        /// Normalizes a virtual path so that equivalent paths can be compared.
+        /// Backslashes become forward slashes, and repeated slashes and "./"
+        /// segments are removed.
         /// </summary>
-        /// <param name="directoryPath">The folder we want to get the children of.</param>
-        /// <param name="physicalRootFolder">The root folder where this list was started from.</param>
-        /// <param name="excludedFolder">The name of a folder that should be excluded from the list (and its children).</param>
-        /// <returns>A list of <see cref="ListItemBag"/> items of each child directory.</returns>
+        /// <param name="path">The virtual path.</param>
+        /// <returns>The normalized virtual path.</returns>
+        private static string NormalizeVirtualPath( string path )
+        {
+            var segments = path.Replace( '\\', '/' )
+                .Split( new[] { '/' }, StringSplitOptions.RemoveEmptyEntries )
+                .Where( s => s != "." );
+
+            return string.Join( "/", segments );
+        }
+
         private List<string> GetRecursiveFolders( string directoryPath, string physicalRootFolder, string excludedFolder )
         {
             // If this is a hidden folder, don't show it.
@@ -2153,7 +2790,12 @@ namespace Rock.Rest.v2
                 // If the entity can be secured, ensure the person has access to it.
                 if ( entity is ISecured securedEntity )
                 {
-                    var isAuthorized = securedEntity.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    // Require EDIT access to the entity itself or VIEW access
+                    // to the entity via a security grant token. The EDIT
+                    // requirement helps cover situations where the entity type
+                    // does not have default security applied and is thus open
+                    // to all users. The grant remains at VIEW permissive.
+                    var isAuthorized = securedEntity.IsAuthorized( Security.Authorization.EDIT, RockRequestContext.CurrentPerson )
                         || grant?.IsAccessGranted( entity, Security.Authorization.VIEW ) == true;
 
                     if ( !isAuthorized )
@@ -2214,6 +2856,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
         public IActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -2227,7 +2874,7 @@ namespace Rock.Rest.v2
                 }
 
                 // Load the entity and verify we got one.
-                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey, false, rockContext );
 
                 if ( entity == null )
                 {
@@ -2276,6 +2923,7 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [Route( "BadgeListGetBadges" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( RenderedBadgeBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
@@ -2284,6 +2932,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
         public IActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -2297,7 +2950,7 @@ namespace Rock.Rest.v2
                 }
 
                 // Load the entity and verify we got one.
-                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey, false, rockContext );
 
                 if ( entity == null )
                 {
@@ -2985,10 +3638,30 @@ namespace Rock.Rest.v2
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
+                // Categorized items are only included for people with access
+                // to the REST action. The category picker only requests categories.
+                var canViewItems = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ );
+
+                /*
+                    10/12/2026 - MSE
+
+                    The Category Tree View block loads its items through this
+                    endpoint. People who can view that block but are not in a
+                    role with EXECUTE_READ on this controller still need to see
+                    the items, so the block issues a grant for its configured
+                    entity type. The grant only allows items, not the item
+                    filter, and each item is still checked for VIEW access.
+
+                    Reason: Allow the Category Tree View block to show items to people who can view the block.
+                */
+                var entityTypeId = options.EntityTypeGuid.HasValue ? EntityTypeCache.GetId( options.EntityTypeGuid.Value ) : null;
+                var canViewGrantedItems = entityTypeId.HasValue
+                    && grant?.IsAccessGranted( new CategoryTreeItemsSecurityGrantRule.CategoryTreeItemsAccess( entityTypeId.Value ), Security.Authorization.VIEW ) == true;
+
                 var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
                 {
                     ParentGuid = options.ParentGuid,
-                    GetCategorizedItems = options.GetCategorizedItems,
+                    GetCategorizedItems = options.GetCategorizedItems && ( canViewItems || canViewGrantedItems ),
                     EntityTypeGuid = options.EntityTypeGuid,
                     EntityTypeQualifierColumn = options.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = GetQualifierValueLookupResult( options.EntityTypeQualifierValue, rockContext ),
@@ -2996,8 +3669,8 @@ namespace Rock.Rest.v2
                     IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
                     DefaultIconCssClass = options.DefaultIconCssClass,
                     IncludeInactiveItems = options.IncludeInactiveItems,
-                    ItemFilterPropertyName = options.ItemFilterPropertyName,
-                    ItemFilterPropertyValue = options.ItemFilterPropertyValue,
+                    ItemFilterPropertyName = canViewItems ? options.ItemFilterPropertyName : null,
+                    ItemFilterPropertyValue = canViewItems ? options.ItemFilterPropertyValue : null,
                     LazyLoad = options.LazyLoad,
                     SecurityGrant = grant
                 } );
@@ -3103,281 +3776,6 @@ namespace Rock.Rest.v2
         }
 
         #endregion Color Picker
-
-        #region Communication Recipient Activity
-
-        /// <summary>
-        /// Gets activity for a communication recipient.
-        /// </summary>
-        /// <param name="options">The options that describe the recipient for whom to get activity.</param>
-        /// <returns>A <see cref="CommunicationRecipientGetActivityResultsBag"/> tht represents the activity.</returns>
-        [HttpPost]
-        [Route( "CommunicationRecipientGetActivity" )]
-        [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CommunicationRecipientGetActivityResultsBag ) )]
-        [ProducesResponse( HttpStatusCode.BadRequest )]
-        [ProducesResponse( HttpStatusCode.Unauthorized )]
-        [Rock.SystemGuid.RestActionGuid( "429DAC7A-5026-444A-9EC7-B5259DE64432" )]
-        public IActionResult CommunicationRecipientGetActivity( [FromBody] CommunicationRecipientGetActivityOptionsBag options )
-        {
-            if ( ( options?.CommunicationRecipientIdKey ).IsNullOrWhiteSpace() )
-            {
-                return BadRequest( "Communication Recipient IdKey is required." );
-            }
-
-            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
-            {
-                // Eager-load related entities needed for authorization checks.
-                var recipientData = new CommunicationRecipientService( rockContext )
-                    .GetQueryableByKey( options.CommunicationRecipientIdKey )
-                    .Include( cr => cr.Communication.CommunicationTemplate )
-                    .Include( cr => cr.Communication.SystemCommunication )
-                    .AsNoTracking()
-                    .Where( cr => cr.PersonAlias != null )
-                    .Select( cr => new
-                    {
-                        cr.Communication,
-                        CommunicationRecipient = cr,
-                        cr.PersonAlias.Person,
-                        cr.PersonAlias.Person.PhoneNumbers,
-                        CampusName = cr.PersonAlias.Person.PrimaryCampus != null
-                            ? cr.PersonAlias.Person.PrimaryCampus.Name
-                            : string.Empty
-                    } )
-                    .FirstOrDefault();
-
-                var communication = recipientData.Communication;
-                if ( communication == null )
-                {
-                    return BadRequest();
-                }
-
-                if ( grant?.IsAccessGranted( communication, Security.Authorization.VIEW ) != true
-                    && !communication.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                {
-                    return Unauthorized( EditModeMessage.NotAuthorizedToView( Rock.Model.Communication.FriendlyTypeName ) );
-                }
-
-                var recipient = recipientData.CommunicationRecipient;
-                var person = recipientData.Person;
-
-                var personConnectionStatus = person.ConnectionStatusValueId.HasValue
-                    ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value )?.Value
-                    : string.Empty;
-
-                var personMaritalStatus = person.MaritalStatusValueId.HasValue
-                    ? DefinedValueCache.Get( person.MaritalStatusValueId.Value )?.Value
-                    : string.Empty;
-
-                string personPhoneNumber = string.Empty;
-                if ( recipientData.PhoneNumbers?.Any() == true )
-                {
-                    // Prefer SMS phone number; fall back to first phone number.
-                    var phoneNumber = recipientData.PhoneNumbers
-                        .FirstOrDefault( p => p.IsMessagingEnabled )
-                        ?? recipientData.PhoneNumbers.First();
-
-                    personPhoneNumber = phoneNumber.NumberFormatted;
-                }
-
-                var results = new CommunicationRecipientGetActivityResultsBag
-                {
-                    PersonIdKey = person.IdKey,
-                    PersonNickName = person.NickName,
-                    PersonLastName = person.LastName,
-                    PersonPhotoUrl = person.PhotoUrl,
-                    PersonEmail = person.Email,
-                    PersonCampusName = recipientData.CampusName,
-                    PersonAge = person.Age,
-                    PersonConnectionStatus = personConnectionStatus,
-                    PersonMaritalStatus = personMaritalStatus,
-                    PersonPhoneNumber = personPhoneNumber
-                };
-
-                var activities = new List<CommunicationRecipientActivityBag>();
-
-                // A local function to aid with consistent adding and sorting of activities when we've determined there
-                // are no more activities to add below.
-                IActionResult ResponseWithSortedActivities()
-                {
-                    results.Activities = activities
-                        .OrderBy( a => a.ActivityDateTime )
-                        .ThenBy( a => a.Activity ) // Order "Opened" before "Click" (Etc.) when the timestamps match.
-                        .ToList();
-
-                    return Ok( results );
-                }
-
-                var recipientModifiedDateTime = recipient.ModifiedDateTime ?? recipient.CreatedDateTime ?? RockDateTime.Now;
-
-                if ( recipient.Status == CommunicationRecipientStatus.Pending )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Pending,
-                        ActivityDateTime = recipientModifiedDateTime,
-                        Description = $"Message created {communication.CreatedDateTime?.ToString( "g" ) ?? string.Empty}."
-                    } );
-
-                    return ResponseWithSortedActivities();
-                }
-
-                if ( recipient.Status == CommunicationRecipientStatus.Cancelled )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Cancelled,
-                        ActivityDateTime = recipientModifiedDateTime,
-                        Description = "Message cancelled before delivering."
-                    } );
-
-                    return ResponseWithSortedActivities();
-                }
-
-                if ( recipient.SendDateTime.HasValue )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Sent,
-                        ActivityDateTime = recipient.SendDateTime.Value,
-                        Description = "Message successfully sent."
-                    } );
-                }
-
-                if ( recipient.Status == CommunicationRecipientStatus.Failed )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.DeliveryFailed,
-                        ActivityDateTime = recipientModifiedDateTime,
-                        Description = recipient.StatusNote ?? "Message delivery failed."
-                    } );
-
-                    return ResponseWithSortedActivities();
-                }
-
-                if ( recipient.DeliveredDateTime.HasValue )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Delivered,
-                        ActivityDateTime = recipient.DeliveredDateTime.Value,
-                        Description = "Message successfully delivered to recipient."
-                    } );
-                }
-
-                if ( recipient.SpamComplaintDateTime.HasValue )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.MarkedAsSpam,
-                        ActivityDateTime = recipient.SpamComplaintDateTime.Value,
-                        Description = "Recipient marked message as spam."
-                    } );
-                }
-
-                if ( recipient.UnsubscribeDateTime.HasValue )
-                {
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Unsubscribed,
-                        ActivityDateTime = recipient.UnsubscribeDateTime.Value,
-                        Description = "Recipient unsubscribed from message."
-                    } );
-                }
-
-                var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() )?.Id;
-
-                var interactionsByOperation = new InteractionService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( i =>
-                        i.InteractionComponent.InteractionChannelId == interactionChannelId
-                        && i.InteractionComponent.EntityId == communication.Id
-                        && i.EntityId == recipient.Id
-                    )
-                    .Select( i => new
-                    {
-                        i.InteractionDateTime,
-                        i.Operation,
-                        i.InteractionData,
-
-                        IpAddress = i.InteractionSession != null
-                            ? i.InteractionSession.IpAddress
-                            : string.Empty,
-
-                        DeviceTypeName = i.InteractionSession != null
-                            && i.InteractionSession.DeviceType != null
-                                ? i.InteractionSession.DeviceType.Name
-                                : string.Empty
-                    } )
-                    .GroupBy( i => i.Operation )
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select( i =>
-                            {
-                                var ipAddressSuffix = i.IpAddress.IsNotNullOrWhiteSpace()
-                                    ? $" from {i.IpAddress}"
-                                    : string.Empty;
-
-                                var deviceTypeSuffix = i.DeviceTypeName.IsNotNullOrWhiteSpace()
-                                    ? $" using {i.DeviceTypeName}"
-                                    : string.Empty;
-
-                                return new
-                                {
-                                    i.InteractionDateTime,
-                                    i.Operation,
-                                    i.InteractionData,
-                                    DescriptionSuffix = $"{ipAddressSuffix}{deviceTypeSuffix}"
-                                };
-                            } )
-                            .OrderBy( i => i.InteractionDateTime )
-                            .ToList()
-                    );
-
-                interactionsByOperation.TryGetValue( "Opened", out var openedInteractions );
-                interactionsByOperation.TryGetValue( "Click", out var clickInteractions );
-
-                if ( openedInteractions?.Any() != true && clickInteractions?.Any() == true )
-                {
-                    // Treat the first click as an open. This is to capture the scenario where an email is viewed
-                    // without loading the image links that are required to trigger the open event.
-                    var firstClick = clickInteractions.First();
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Opened,
-                        ActivityDateTime = firstClick.InteractionDateTime,
-                        Description = $"Recipient opened message{firstClick.DescriptionSuffix}."
-                    } );
-                }
-
-                openedInteractions?.ForEach( i =>
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Opened,
-                        ActivityDateTime = i.InteractionDateTime,
-                        Description = $"Recipient opened message{i.DescriptionSuffix}."
-                    } )
-                );
-
-                clickInteractions?.ForEach( i =>
-                    activities.Add( new CommunicationRecipientActivityBag
-                    {
-                        Activity = CommunicationRecipientActivity.Clicked,
-                        ActivityDateTime = i.InteractionDateTime,
-                        Description = $"Recipient clicked link{( i.InteractionData.IsNotNullOrWhiteSpace() ? $": {i.InteractionData}" : string.Empty )}{i.DescriptionSuffix}."
-                    } )
-                );
-
-                return ResponseWithSortedActivities();
-            }
-        }
-
-        #endregion
 
         #region Component Picker
 
@@ -3649,7 +4047,8 @@ namespace Rock.Rest.v2
                         Value = connectionType.Guid.ToString(),
                         Text = connectionType.Name,
                         HasChildren = connectionType.ConnectionOpportunities.Any(),
-                        IconCssClass = connectionType.IconCssClass
+                        IconCssClass = connectionType.IconCssClass,
+                        IsFolder = true
                     };
 
                     connectionTreeItems.Add( connectionTypeTreeItem );
@@ -3693,7 +4092,8 @@ namespace Rock.Rest.v2
                                 cr.ConnectionState == ConnectionState.Active
                                 || cr.ConnectionState == ConnectionState.FutureFollowUp
                             ),
-                        IconCssClass = opportunity.IconCssClass
+                        IconCssClass = opportunity.IconCssClass,
+                        IsFolder = true
                     };
 
                     connectionTreeItems.Add( connectionOpportunityTreeItem );
@@ -4996,10 +5396,16 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<EntityTagListTagBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "7542D4B3-17DC-4640-ACBD-F02784130401" )]
         public IActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
@@ -5034,10 +5440,16 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<EntityTagListTagBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "91890D39-6E3E-4623-AAD7-F32E686C784E" )]
         public IActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
@@ -5153,10 +5565,16 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( EntityTagListTagBag ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "C9CACC7F-68DE-4765-8967-B50EE2949062" )]
         public IActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -5182,7 +5600,7 @@ namespace Rock.Rest.v2
                 var tagService = new TagService( rockContext );
                 var tag = tagService.Get( options.TagKey );
 
-                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.VIEW ) != true ) )
+                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.TAG ) != true ) )
                 {
                     return NotFound();
                 }
@@ -5219,33 +5637,50 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Description = "The tag was removed." )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "6A78D538-87DB-43FE-9150-4E9A3F276AFE" )]
         public IActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
-                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-                var tagService = new TagService( rockContext );
-                var taggedItemService = new TaggedItemService( rockContext );
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
 
-                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                if ( entityType == null )
                 {
                     return NotFound();
                 }
 
+                var entity = Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityKey, false, rockContext );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var tagService = new TagService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                if ( entity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized();
+                }
+
                 var tag = tagService.Get( options.TagKey );
 
-                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.VIEW ) != true ) )
+                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.TAG ) != true ) )
                 {
                     return NotFound();
                 }
 
                 // If the entity is tagged, then untag it.
                 var taggedItem = taggedItemService.Queryable()
-                    .FirstOrDefault( ti => ti.TagId == tag.Id && ti.EntityGuid == entityGuid.Value );
+                    .FirstOrDefault( ti => ti.TagId == tag.Id && ti.EntityGuid == entity.Guid );
 
                 if ( taggedItem != null )
                 {
@@ -5269,9 +5704,15 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<EntityTagListTagBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "02886e54-6088-40ea-98be-9157ec2a3369" )]
         public IActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Person currentPerson = RockRequestContext.CurrentPerson;
@@ -5739,12 +6180,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "FieldTypeEditorUpdateAttributeConfiguration" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( FieldTypeEditorUpdateAttributeConfigurationResultBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "AFDF0EC4-5D17-4278-9FA6-3F859F38E3B5" )]
         public IActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
         {
+            // This is only used by the attribute editor on administrative
+            // blocks. The caller supplies arbitrary configuration values and
+            // the field type turns them into public edit data, so it must
+            // never be available to anonymous or non-staff callers.
+            if ( RockRequestContext.CurrentPerson == null || !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return Unauthorized();
+            }
+
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
 
             if ( fieldType == null )
@@ -5755,6 +6206,7 @@ namespace Rock.Rest.v2
             // Convert the public configuration options into our private
             // configuration options (values).
             var configurationValues = fieldType.GetPrivateConfigurationValues( options.ConfigurationValues );
+            configurationValues = Field.Helper.RemoveDynamicListSources( configurationValues, RockRequestContext.CurrentPerson );
 
             // Convert the default value from the public value into our
             // private internal value.
@@ -5766,6 +6218,19 @@ namespace Rock.Rest.v2
 
             // Get the public configuration options from the internal options (values).
             var publicAdminConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+
+            // Return the custom values exactly as they were posted so the
+            // editor keeps them when the attribute is saved.
+            foreach ( var key in publicAdminConfigurationValues.Keys.ToList() )
+            {
+                var postedKey = options.ConfigurationValues?.Keys
+                    .FirstOrDefault( k => k.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+
+                if ( postedKey != null && key.Equals( "customValues", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    publicAdminConfigurationValues[key] = options.ConfigurationValues[postedKey];
+                }
+            }
 
             // Get the public configuration options from the internal options (values).
             var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
@@ -6232,15 +6697,28 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupAndRolePickerGetRoles" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
         public IActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            if ( !IsGroupListPickerAuthorized( options.SecurityGrantToken, out var isGrantOnly ) )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupRoles = new List<ListItemBag>();
-                if ( options.GroupTypeGuid != Guid.Empty )
+                var groupType = GroupTypeCache.Get( options.GroupTypeGuid );
+
+                if ( groupType != null && IsGroupTypeAllowedForGroupListPicker( groupType, isGrantOnly ) )
                 {
                     var groupTypeRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
                     groupRoles = groupTypeRoleService.Queryable()
@@ -6267,40 +6745,76 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
         public IActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
-            Rock.Model.Group group;
+            var hasRestAccess = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ );
+            var grant = SecurityGrant.FromToken( options?.SecurityGrantToken );
 
-            if ( !options.GroupGuid.HasValue )
+            // Reject callers that have no possible way to be authorized before
+            // looking anything up so we don't reveal which groups exist.
+            if ( !hasRestAccess && grant == null )
+            {
+                return Unauthorized();
+            }
+
+            if ( options?.GroupGuid.HasValue != true )
             {
                 return NotFound();
             }
 
-            group = new GroupService( RockApp.Current.CreateRockContext() ).Get( options.GroupGuid.Value );
-
-            if ( group == null || !group.Members.Any() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                return NotFound();
-            }
+                var group = new GroupService( rockContext ).Get( options.GroupGuid.Value );
 
-            var list = new List<ListItemBag>();
-
-            foreach ( var groupMember in group.Members.OrderBy( m => m.Person.FullName ) )
-            {
-                var li = new ListItemBag
+                if ( group == null )
                 {
-                    Text = groupMember.Person.FullName,
-                    Value = groupMember.Guid.ToString()
-                };
+                    return hasRestAccess ? ( IActionResult ) NotFound() : Unauthorized();
+                }
 
-                list.Add( li );
+                // Access requires either the REST action permission along with
+                // VIEW access to the group, or a security grant that allows
+                // the members of this specific group to be listed.
+                var isAuthorized = ( hasRestAccess && group.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    || grant?.IsAccessGranted( new GroupMemberPickerSecurityGrantRule.Access( group.Id ), Security.Authorization.VIEW ) == true;
+
+                if ( !isAuthorized )
+                {
+                    return Unauthorized();
+                }
+
+                var list = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( m => m.GroupId == group.Id )
+                    .Select( m => new
+                    {
+                        m.Guid,
+                        m.Person.NickName,
+                        m.Person.LastName,
+                        m.Person.SuffixValueId,
+                        m.Person.RecordTypeValueId
+                    } )
+                    .ToList()
+                    .Select( m => new ListItemBag
+                    {
+                        Text = Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId, m.RecordTypeValueId ),
+                        Value = m.Guid.ToString()
+                    } )
+                    .OrderBy( m => m.Text )
+                    .ToList();
+
+                if ( !list.Any() )
+                {
+                    return NotFound();
+                }
+
+                return Ok( list );
             }
-
-            return Ok( list );
         }
 
         #endregion
@@ -6440,35 +6954,64 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Description = "An empty response indicates success." )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
         public IActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+
+                if ( groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Marking a requirement met takes the same access as editing the member, and only manual requirements have a checkbox.
+                var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+
+                if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                if ( groupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
+                {
+                    return BadRequest( "Only manual requirements can be marked as met." );
+                }
+
+                if ( groupMemberRequirement == null )
                 {
                     // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                    var groupRequirementService = new GroupRequirementService( rockContext );
-                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                    if ( groupRequirement != null && groupMember != null )
+                    groupMemberRequirement = new GroupMemberRequirement
                     {
-                        groupMemberRequirement = new GroupMemberRequirement
-                        {
-                            GroupRequirementId = groupRequirement.Id,
-                            GroupMemberId = groupMember.Id
-                        };
-                        groupMemberRequirementService.Add( groupMemberRequirement );
-                    }
+                        GroupRequirementId = groupRequirement.Id,
+                        GroupMemberId = groupMember.Id
+                    };
+                    new GroupMemberRequirementService( rockContext ).Add( groupMemberRequirement );
                 }
 
                 groupMemberRequirement.WasManuallyCompleted = true;
-                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = currentPerson.PrimaryAliasId;
                 groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
                 groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
@@ -6488,25 +7031,38 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Description = "An empty response indicates success." )]
         [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
         public IActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            // Determine if current person is authorized to override
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                var groupRequirementService = new GroupRequirementService( rockContext );
-                var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-                var currentPerson = RockRequestContext.CurrentPerson;
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
 
-                // Determine if current person is authorized to override
-                if ( currentPerson == null )
+                if ( groupRequirement == null )
                 {
-                    return Unauthorized();
+                    return NotFound();
                 }
 
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Group type requirements have no group of their own, so leadership is checked in the member's group.
                 var currentPersonIsLeaderOfCurrentGroup = new GroupMemberService( rockContext )
-                    .GetByGroupId( groupRequirement.Group.Id )
+                    .GetByGroupId( groupMember.GroupId )
                     .Where( m => m.GroupRole.IsLeader )
                     .Select( m => m.PersonId )
                     .Contains( currentPerson.Id );
@@ -6516,24 +7072,18 @@ namespace Rock.Rest.v2
 
                 if ( !( currentPersonCanOverride || hasPermissionToOverride ) )
                 {
-                    return Unauthorized();
+                    return StatusCode( HttpStatusCode.Forbidden );
                 }
 
-                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                if ( groupMemberRequirement == null )
                 {
                     // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                    if ( groupRequirement != null && groupMember != null )
+                    groupMemberRequirement = new GroupMemberRequirement
                     {
-                        groupMemberRequirement = new GroupMemberRequirement
-                        {
-                            GroupRequirementId = groupRequirement.Id,
-                            GroupMemberId = groupMember.Id
-                        };
-                        groupMemberRequirementService.Add( groupMemberRequirement );
-                    }
+                        GroupRequirementId = groupRequirement.Id,
+                        GroupMemberId = groupMember.Id
+                    };
+                    new GroupMemberRequirementService( rockContext ).Add( groupMemberRequirement );
                 }
 
                 groupMemberRequirement.WasOverridden = true;
@@ -6557,14 +7107,47 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Description = "Custom result data to indicate what is displayed next." )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
         public IActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+
+                if ( groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
+                var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+
+                if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                var groupRequirementType = groupRequirement.GroupRequirementType;
 
                 if ( !groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
                 {
@@ -6604,28 +7187,19 @@ namespace Rock.Rest.v2
                     }
                     else
                     {
-                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        if ( groupMemberRequirement == null )
                         {
-                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                            var groupRequirementService = new GroupRequirementService( rockContext );
-                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                            if ( groupRequirement != null && groupMember != null )
+                            // Couldn't find the GroupMemberRequirement, so build a new one
+                            groupMemberRequirement = new GroupMemberRequirement
                             {
-                                groupMemberRequirement = new GroupMemberRequirement
-                                {
-                                    GroupRequirementId = groupRequirement.Id,
-                                    GroupMemberId = groupMember.Id
-                                };
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
+                                GroupRequirementId = groupRequirement.Id,
+                                GroupMemberId = groupMember.Id
+                            };
+                            groupMemberRequirementService.Add( groupMemberRequirement );
                         }
 
                         workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
-                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        workflow.SetAttributeValue( "Person", groupMember.Person.PrimaryAlias.Guid );
                         var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                         if ( processed )
@@ -6678,14 +7252,47 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Description = "Custom result data to indicate what is displayed next." )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
         public IActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+
+                if ( groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
+                var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+
+                if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                var groupRequirementType = groupRequirement.GroupRequirementType;
 
                 if ( !groupRequirementType.WarningWorkflowTypeId.HasValue )
                 {
@@ -6725,28 +7332,19 @@ namespace Rock.Rest.v2
                     }
                     else
                     {
-                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        if ( groupMemberRequirement == null )
                         {
-                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                            var groupRequirementService = new GroupRequirementService( rockContext );
-                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                            if ( groupRequirement != null && groupMember != null )
+                            // Couldn't find the GroupMemberRequirement, so build a new one
+                            groupMemberRequirement = new GroupMemberRequirement
                             {
-                                groupMemberRequirement = new GroupMemberRequirement
-                                {
-                                    GroupRequirementId = groupRequirement.Id,
-                                    GroupMemberId = groupMember.Id
-                                };
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
+                                GroupRequirementId = groupRequirement.Id,
+                                GroupMemberId = groupMember.Id
+                            };
+                            groupMemberRequirementService.Add( groupMemberRequirement );
                         }
 
                         workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
-                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        workflow.SetAttributeValue( "Person", groupMember.Person.PrimaryAlias.Guid );
                         var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                         if ( processed )
@@ -6789,6 +7387,52 @@ namespace Rock.Rest.v2
             }
         }
 
+        /// <summary>
+        /// Gets the group member and existing group member requirement that the identifiers describe for the group requirement.
+        /// </summary>
+        /// <param name="groupMemberRequirementGuid">The unique identifier of the group member requirement, or empty when no requirement record exists yet.</param>
+        /// <param name="groupMemberGuid">The unique identifier of the group member, used when no requirement record exists yet.</param>
+        /// <param name="groupRequirement">The group requirement that the group member requirement must belong to.</param>
+        /// <param name="rockContext">The context to load the records with.</param>
+        /// <returns>
+        /// The group member and their requirement record, which is <c>null</c> when one has not been created yet.
+        /// Both are <c>null</c> when the identifiers do not describe a group member that the group requirement applies to.
+        /// </returns>
+        private static (GroupMember groupMember, GroupMemberRequirement groupMemberRequirement) GroupMemberRequirementCardGetGroupMemberAndRequirement( Guid groupMemberRequirementGuid, Guid groupMemberGuid, GroupRequirement groupRequirement, RockContext rockContext )
+        {
+            var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( groupMemberRequirementGuid );
+
+            if ( groupMemberRequirement != null )
+            {
+                var isRequestedRequirement = groupMemberRequirement.GroupRequirementId == groupRequirement.Id
+                    && ( groupMemberGuid.IsEmpty() || groupMemberRequirement.GroupMember.Guid == groupMemberGuid );
+
+                if ( !isRequestedRequirement )
+                {
+                    return (null, null);
+                }
+
+                return (groupMemberRequirement.GroupMember, groupMemberRequirement);
+            }
+
+            var groupMember = new GroupMemberService( rockContext ).Get( groupMemberGuid );
+
+            // The requirement must apply to the member's group, either directly or through its group type.
+            if ( groupMember == null || ( groupRequirement.GroupId != groupMember.GroupId && groupRequirement.GroupTypeId != groupMember.Group.GroupTypeId ) )
+            {
+                return (null, null);
+            }
+
+            // Callers may not have the record's guid yet, so reuse an existing record rather than creating a duplicate.
+            var groupMemberId = groupMember.Id;
+            var groupRequirementId = groupRequirement.Id;
+            var existingGroupMemberRequirement = new GroupMemberRequirementService( rockContext )
+                .Queryable()
+                .FirstOrDefault( r => r.GroupMemberId == groupMemberId && r.GroupRequirementId == groupRequirementId );
+
+            return (groupMember, existingGroupMemberRequirement);
+        }
+
         #endregion
 
         #region Group Member Requirements Container
@@ -6803,9 +7447,19 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( GroupMemberRequirementContainerGetDataResultsBag ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "B1F29337-BD8B-4F62-A68E-F67C32E8CFDE" )]
         public IActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             var results = new GroupMemberRequirementContainerGetDataResultsBag
             {
                 Errors = new List<GroupMemberRequirementErrorBag>(),
@@ -6818,7 +7472,22 @@ namespace Rock.Rest.v2
                 var person = new PersonService( rockContext ).Get( options.PersonGuid );
                 var group = new GroupService( rockContext ).Get( options.GroupGuid );
 
-                var currentPerson = RockRequestContext.CurrentPerson;
+                if ( group == null || groupRole == null )
+                {
+                    return NotFound();
+                }
+
+                // Statuses are shown to the person themselves, to someone who can manage the group's members, or to viewers a block has granted access to the person.
+                var isOwnRequirements = person != null && person.Id == currentPerson.Id;
+                var canManageMembers = group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
+                var isGranted = person != null
+                    && SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( person, Authorization.VIEW ) == true;
+
+                if ( !isOwnRequirements && !canManageMembers && !isGranted )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
 
                 // Determine whether the current person is a leader of the chosen group.
                 var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupGuid( options.GroupGuid );
@@ -6904,20 +7573,48 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupTypeGroupPickerGetGroups" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
         public IActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
         {
-            var groups = new List<ListItemBag>();
-            if ( options.GroupTypeGuid != Guid.Empty )
+            if ( !IsGroupListPickerAuthorized( options?.SecurityGrantToken, out var isGrantOnly ) )
             {
-                var groupService = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() );
-                groups = groupService.Queryable()
-                    .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
-                    .OrderBy( g => g.Name )
-                    .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
-                    .ToList();
+                return Unauthorized();
+            }
+
+            var groups = new List<ListItemBag>();
+            var groupType = GroupTypeCache.Get( options?.GroupTypeGuid ?? Guid.Empty );
+
+            if ( groupType != null && IsGroupTypeAllowedForGroupListPicker( groupType, isGrantOnly ) )
+            {
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
+                {
+                    var currentPerson = RockRequestContext.CurrentPerson;
+                    var qry = new GroupService( rockContext ).Queryable()
+                        .Where( g => g.GroupTypeId == groupType.Id )
+                        .OrderBy( g => g.Name );
+
+                    if ( isGrantOnly )
+                    {
+                        // The security grant authorizes listing the groups of
+                        // group types shown in the group list. This matches the
+                        // groups offered by the picker on public forms.
+                        groups = qry
+                            .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                            .ToList();
+                    }
+                    else
+                    {
+                        groups = qry
+                            .Include( g => g.ParentGroup )
+                            .ToList()
+                            .Where( g => g.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+                            .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                            .ToList();
+                    }
+                }
             }
 
             return Ok( groups );
@@ -6931,26 +7628,91 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
         public IActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
         {
-            if ( options.GroupGuid != Guid.Empty )
+            if ( !IsGroupListPickerAuthorized( options?.SecurityGrantToken, out var isGrantOnly ) )
             {
-                var groupService = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() );
-                var group = groupService.Get( options.GroupGuid );
+                return Unauthorized();
+            }
 
-                if ( group == null )
+            if ( options != null && options.GroupGuid != Guid.Empty )
+            {
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
-                    return NotFound();
-                }
+                    var group = new GroupService( rockContext ).Get( options.GroupGuid );
+                    var groupType = group != null ? GroupTypeCache.Get( group.GroupTypeId ) : null;
 
-                return Ok( new ListItemBag { Text = group.GroupType.Name, Value = group.GroupType.Guid.ToString() } );
+                    // Treat groups the caller is not allowed to see the same
+                    // as groups that do not exist.
+                    if ( group == null
+                        || groupType == null
+                        || !IsGroupTypeAllowedForGroupListPicker( groupType, isGrantOnly )
+                        || ( !isGrantOnly && !group.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) ) )
+                    {
+                        return NotFound();
+                    }
+
+                    return Ok( new ListItemBag { Text = groupType.Name, Value = groupType.Guid.ToString() } );
+                }
             }
 
             return NotFound();
+        }
+
+        /// <summary>
+        /// Determines if the current request is allowed to use the group list
+        /// pickers (Group Type Group Picker and Group and Role Picker). This
+        /// requires either the EXECUTE_READ permission on the REST action or
+        /// a security grant for the group list pickers.
+        /// </summary>
+        /// <param name="securityGrantToken">The security grant token provided in the request.</param>
+        /// <param name="isGrantOnly">On return, contains <c>true</c> if access was only allowed by the security grant.</param>
+        /// <returns><c>true</c> if the request is allowed; otherwise <c>false</c>.</returns>
+        private bool IsGroupListPickerAuthorized( string securityGrantToken, out bool isGrantOnly )
+        {
+            isGrantOnly = false;
+
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return true;
+            }
+
+            var grant = SecurityGrant.FromToken( securityGrantToken );
+
+            if ( grant?.IsAccessGranted( GroupListPickerSecurityGrantRule.AccessInstance, Security.Authorization.VIEW ) == true )
+            {
+                isGrantOnly = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if the group type can be used by the group list pickers.
+        /// When access was only allowed by a security grant then the group type
+        /// must be configured to show in the group list, which matches the
+        /// group types offered by the picker. The grant itself authorizes
+        /// access, since group types are not viewable by most people by
+        /// default. Otherwise the current person must be able to view the
+        /// group type.
+        /// </summary>
+        /// <param name="groupType">The group type to check.</param>
+        /// <param name="isGrantOnly"><c>true</c> if access was only allowed by a security grant.</param>
+        /// <returns><c>true</c> if the group type can be used; otherwise <c>false</c>.</returns>
+        private bool IsGroupTypeAllowedForGroupListPicker( GroupTypeCache groupType, bool isGrantOnly )
+        {
+            if ( isGrantOnly )
+            {
+                return groupType.ShowInGroupList;
+            }
+
+            return groupType.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
         }
 
         #endregion
@@ -6965,11 +7727,25 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupTypePickerGetGroupTypes" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
         public IActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            // The group list security grant is accepted here because the
+            // Group Type Group Picker and Group and Role Picker use this
+            // picker to select the group type.
+            if ( !IsGroupListPickerAuthorized( options.SecurityGrantToken, out var isGrantOnly ) )
+            {
+                return Unauthorized();
+            }
+
             var groupTypes = new List<GroupTypeCache>();
             var results = new List<ListItemBag>();
 
@@ -6982,7 +7758,11 @@ namespace Rock.Rest.v2
                 foreach ( var groupTypeGuid in options.GroupTypes )
                 {
                     var groupType = GroupTypeCache.Get( groupTypeGuid );
-                    groupTypes.Add( groupType );
+
+                    if ( groupType != null )
+                    {
+                        groupTypes.Add( groupType );
+                    }
                 }
             }
 
@@ -6990,6 +7770,10 @@ namespace Rock.Rest.v2
             {
                 groupTypes = groupTypes.Where( gt => !options.ExcludeGroupTypes.Contains( gt.Guid ) ).ToList();
             }
+
+            groupTypes = groupTypes
+                .Where( gt => IsGroupTypeAllowedForGroupListPicker( gt, isGrantOnly ) )
+                .ToList();
 
             if ( options.OnlyGroupListItems )
             {
@@ -7026,11 +7810,33 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupPickerGetChildren" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
         public IActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            // Access requires either the REST action permission or a security
+            // grant for the group picker.
+            var isGrantOnly = false;
+
+            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( grant?.IsAccessGranted( GroupPickerSecurityGrantRule.AccessInstance, Security.Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
+                }
+
+                isGrantOnly = true;
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
@@ -7057,19 +7863,40 @@ namespace Rock.Rest.v2
                     campusId = CampusCache.Get( options.CampusGuid.Value )?.Id ?? 0;
                 }
 
+                if ( isGrantOnly )
+                {
+                    // When access was only allowed by a security grant, ignore any
+                    // requested group types so that the results are limited to
+                    // groups whose group type is shown in navigation.
+                    includedGroupTypeIds = new List<int>();
+
+                    // Callers using a security grant can only browse into groups
+                    // that they would have been able to see in the tree.
+                    var parentGroup = groupService.GetByGuid( options.Guid ?? Guid.Empty );
+                    var rootGroup = groupService.GetByGuid( options.RootGroupGuid ?? Guid.Empty );
+
+                    if ( !IsGroupVisibleToGroupPickerGrant( parentGroup ) || !IsGroupVisibleToGroupPickerGrant( rootGroup ) )
+                    {
+                        return Ok( new List<TreeItemBag>() );
+                    }
+                }
+
+                // Inactive groups and counts are only available to callers with
+                // the REST action permission.
                 var groupNameList = GroupPickerGetChildrenInternal(
                     options.Guid,
                     options.RootGroupGuid,
                     includedGroupTypeIds,
                     excludedGroupTypeIds,
-                    options.IncludeInactiveGroups,
+                    options.IncludeInactiveGroups && !isGrantOnly,
                     options.LimitToSchedulingEnabled,
                     options.LimitToRSVPEnabled,
                     options.LimitToSecurityRoleGroups,
                     campusId,
                     options.IncludeNoCampus,
                     options.LimitToPublic,
-                    options.CountsType,
+                    isGrantOnly ? 0 : options.CountsType,
+                    isGrantOnly,
                     groupService,
                     GroupPickerGetAutoExpandGuids( options.ExpandToValues ),
                     grant,
@@ -7130,6 +7957,7 @@ namespace Rock.Rest.v2
         /// <param name="includeNoCampus">When campus filtering, whether to include groups with no campus.</param>
         /// <param name="limitToPublic">Whether to limit to public groups only.</param>
         /// <param name="countsType">0 = None, 1 = Child Groups, 2 = Group Members.</param>
+        /// <param name="isGrantOnly">Whether the caller is only authorized by a security grant.</param>
         /// <param name="groupService">The service to use when accessing the database.</param>
         /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
         /// <param name="grant">Optional security grant used to elevate VIEW beyond the person's normal rights.</param>
@@ -7148,6 +7976,7 @@ namespace Rock.Rest.v2
             bool includeNoCampus,
             bool limitToPublic,
             int countsType,
+            bool isGrantOnly,
             GroupService groupService,
             List<Guid> autoExpandGuids,
             SecurityGrant grant,
@@ -7311,6 +8140,7 @@ namespace Rock.Rest.v2
                         includeNoCampus,
                         limitToPublic,
                         countsType,
+                        isGrantOnly,
                         groupService,
                         autoExpandGuids,
                         grant,
@@ -7384,6 +8214,13 @@ namespace Rock.Rest.v2
             if ( limitToShowInNavigation )
             {
                 structuralChildrenQry = structuralChildrenQry.Where( a => a.GroupType.ShowInNavigation == true );
+            }
+
+            // Make sure callers using a security grant only see that a
+            // group has children if those children could be shown to them.
+            if ( isGrantOnly )
+            {
+                structuralChildrenQry = structuralChildrenQry.Where( a => a.IsActive && a.GroupType.ShowInNavigation );
             }
 
             /*
@@ -7512,6 +8349,29 @@ namespace Rock.Rest.v2
             return groupTreeItems;
         }
 
+        /// <summary>
+        /// Determines if the group could be displayed by the group picker to
+        /// a caller that is only authorized by a security grant. A
+        /// <c>null</c> group is considered visible since it means the top
+        /// level of the tree.
+        /// </summary>
+        /// <param name="group">The group to check.</param>
+        /// <returns><c>true</c> if the group is visible; otherwise <c>false</c>.</returns>
+        private bool IsGroupVisibleToGroupPickerGrant( Rock.Model.Group group )
+        {
+            if ( group == null )
+            {
+                return true;
+            }
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+            return group.IsActive
+                && groupType != null
+                && groupType.ShowInNavigation
+                && group.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+        }
+
         #endregion
 
         #region Group Role Picker
@@ -7523,11 +8383,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupRolePickerGetGroupTypes" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
-        public IActionResult GroupRolePickerGetGroupTypes()
+        public IActionResult GroupRolePickerGetGroupTypes( [FromBody] GroupRolePickerGetGroupTypesOptionsBag options )
         {
+            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                var grant = SecurityGrant.FromToken( options?.SecurityGrantToken );
+
+                if ( grant?.IsAccessGranted( GroupRolePickerSecurityGrantRule.GroupTypeListInstance, Security.Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
+                }
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
@@ -7552,11 +8423,24 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupRolePickerGetGroupRoles" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "968033ab-2596-4b0c-b06e-2c9cf59949c5" )]
         public IActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            var groupType = GroupTypeCache.Get( options.GroupTypeGuid );
+
+            if ( !IsGroupRolePickerAuthorized( groupType, options.SecurityGrantToken ) )
+            {
+                return Unauthorized();
+            }
+
             return Ok( GroupRolePickerGetGroupRolesForGroupType( options.GroupTypeGuid, options.ExcludeGroupRoles ) );
         }
 
@@ -7568,11 +8452,18 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupRolePickerGetAllForGroupRole" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( GroupRolePickerGetAllForGroupRoleResultsBag ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
         public IActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<Guid> excludeGroupRoles = options.ExcludeGroupRoles;
@@ -7580,9 +8471,26 @@ namespace Rock.Rest.v2
                 var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
                 var groupRole = groupRoleService.Queryable()
                     .Where( r => r.Guid == options.GroupRoleGuid )
-                    .First();
+                    .FirstOrDefault();
+
+                if ( groupRole == null )
+                {
+                    // Don't reveal which roles exist to callers without the
+                    // REST action permission.
+                    return IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) ? ( IActionResult ) NotFound() : Unauthorized();
+                }
+
+                if ( !IsGroupRolePickerAuthorized( GroupTypeCache.Get( groupRole.GroupTypeId ?? 0 ), options.SecurityGrantToken ) )
+                {
+                    return Unauthorized();
+                }
 
                 var groupType = groupRole.GroupType;
+
+                if ( groupType == null )
+                {
+                    return NotFound();
+                }
 
                 var groupRoles = GroupRolePickerGetGroupRolesForGroupType( groupType.Guid, excludeGroupRoles, rockContext );
 
@@ -7629,6 +8537,32 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return groupRoles;
+        }
+
+        /// <summary>
+        /// Determines if the current request is allowed to load the roles of
+        /// the group type in the group role picker. This requires either the
+        /// EXECUTE_READ permission on the REST action or a security grant for
+        /// the group role picker that covers the group type.
+        /// </summary>
+        /// <param name="groupType">The group type whose roles will be loaded.</param>
+        /// <param name="securityGrantToken">The security grant token provided in the request.</param>
+        /// <returns><c>true</c> if the request is allowed; otherwise <c>false</c>.</returns>
+        private bool IsGroupRolePickerAuthorized( GroupTypeCache groupType, string securityGrantToken )
+        {
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return true;
+            }
+
+            if ( groupType == null )
+            {
+                return false;
+            }
+
+            var grant = SecurityGrant.FromToken( securityGrantToken );
+
+            return grant?.IsAccessGranted( new GroupRolePickerSecurityGrantRule.Access( groupType.Id ), Security.Authorization.VIEW ) == true;
         }
 
         #endregion
@@ -8191,14 +9125,23 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
         public IActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
 
-                // Create and save new location with data from client
                 var location = new Location
                 {
                     Name = options.Name,
@@ -8216,10 +9159,19 @@ namespace Rock.Rest.v2
                     location.PostalCode = options.Address.PostalCode;
                 }
 
-                if ( options.ParentLocationGuid != null )
+                Location parentLocation = null;
+
+                if ( !options.ParentLocationGuid.IsEmpty() )
                 {
-                    Location parentLocation = locationService.Get( options.ParentLocationGuid );
+                    parentLocation = locationService.Get( options.ParentLocationGuid );
+
+                    if ( parentLocation == null )
+                    {
+                        return BadRequest( "Parent location not found." );
+                    }
+
                     location.ParentLocation = parentLocation;
+                    location.ParentLocationId = parentLocation.Id;
                 }
 
                 if ( options.LocationTypeValueGuid != null )
@@ -8234,12 +9186,17 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                locationService.Add( location );
+                // An unnamed location does not inherit security from its parent, so the parent is checked on its own as well.
+                var canEditLocation = location.IsAuthorized( Authorization.EDIT, currentPerson );
+                var canEditParent = parentLocation == null
+                    || parentLocation.IsAuthorized( Authorization.EDIT, currentPerson );
 
-                rockContext.SaveChanges();
+                if ( !canEditLocation || !canEditParent )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
 
-                // Load up the new location's attributes and save those
-                location.LoadAttributes();
+                location.LoadAttributes( rockContext );
 
                 foreach ( KeyValuePair<string, AttributeValueCache> attr in location.AttributeValues )
                 {
@@ -8248,10 +9205,16 @@ namespace Rock.Rest.v2
 
                 if ( !location.IsValid )
                 {
-                    return InternalServerError();
+                    return BadRequest( string.Join( ", ", location.ValidationResults.Select( r => r.ErrorMessage ) ) );
                 }
 
-                location.SaveAttributeValues( rockContext );
+                rockContext.WrapTransaction( () =>
+                {
+                    locationService.Add( location );
+                    rockContext.SaveChanges();
+
+                    location.SaveAttributeValues( rockContext );
+                } );
 
                 // Return a representation of the location so it can be used right away on the client
                 return Ok( new ListItemBag
@@ -10845,6 +11808,21 @@ namespace Rock.Rest.v2
                 };
             }
 
+            // The account can only be saved for the transaction that the
+            // security grant was issued for.
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var saveAccess = new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( options.GatewayGuid, options.TransactionCode, options.GatewayPersonIdentifier, options.ScheduledTransactionGuid );
+
+            if ( grant?.IsAccessGranted( saveAccess, Security.Authorization.EDIT ) != true )
+            {
+                return new SaveFinancialAccountFormSaveAccountResultBag
+                {
+                    Title = "Invalid Transaction",
+                    Detail = "Sorry, the account information cannot be saved as there's not a valid transaction to reference",
+                    IsSuccess = false
+                };
+            }
+
             var currentPerson = GetPerson();
             var isAnonymous = currentPerson == null;
 
@@ -10950,6 +11928,19 @@ namespace Rock.Rest.v2
                     };
                 }
 
+                // Only one saved account can be created from a transaction.
+                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+
+                if ( financialPersonSavedAccountService.Queryable().Any( a => a.FinancialGatewayId == financialGateway.Id && a.TransactionCode == options.TransactionCode ) )
+                {
+                    return new SaveFinancialAccountFormSaveAccountResultBag
+                    {
+                        Title = "Account Already Saved",
+                        Detail = "The account information for this transaction has already been saved",
+                        IsSuccess = false
+                    };
+                }
+
                 // Create the login if needed
                 if ( isAnonymous )
                 {
@@ -11008,7 +11999,6 @@ namespace Rock.Rest.v2
                     }
                 };
 
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
                 financialPersonSavedAccountService.Add( savedAccount );
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );

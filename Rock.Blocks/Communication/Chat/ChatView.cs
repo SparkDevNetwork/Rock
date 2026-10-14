@@ -1,21 +1,21 @@
-﻿using Rock.Communication.Chat;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Security.Policy;
+using System.Threading.Tasks;
+
+using Rock.Attribute;
+using Rock.Communication.Chat;
+using Rock.Enums.Communication.Chat;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.SystemGuid;
-
-using System.ComponentModel;
-using System.Threading.Tasks;
-using Rock.Attribute;
-using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
-using Rock.Web.Cache;
-using System;
-using Rock.ViewModels.Controls;
-using Rock.Enums.Communication.Chat;
-using Rock.ViewModels.Utility;
-using System.Collections.Generic;
-using System.Linq;
-using Rock.Mobile;
 using Rock.Utility;
-using System.Security.Policy;
+using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
 {
@@ -550,6 +550,18 @@ namespace Rock.Blocks.Communication.Chat
             if ( currentPerson == null )
             {
                 return ActionUnauthorized( "You must be logged in to update your birth date." );
+            }
+
+            // Age verification only asks for a birth date when the person does
+            // not already have one, so don't allow an existing one to be replaced.
+            if ( currentPerson.Age != null )
+            {
+                return ActionBadRequest( "Your birth date has already been provided." );
+            }
+
+            if ( birthDate == null )
+            {
+                return ActionBadRequest( "A birth date is required." );
             }
 
             var birthDateTime = new DateTime( birthDate.Year, birthDate.Month, birthDate.Day );

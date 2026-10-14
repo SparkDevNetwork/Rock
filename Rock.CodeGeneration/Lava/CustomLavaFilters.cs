@@ -1,4 +1,4 @@
-﻿using Rock;
+using Rock;
 
 namespace Rock.CodeGeneration.Lava
 {

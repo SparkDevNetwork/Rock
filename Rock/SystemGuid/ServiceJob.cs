@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -507,6 +507,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES = "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912";
 
         /// <summary>
+        /// The job to run Post v17.10 Data Migrations to fix the mime type of check images uploaded by the Check Scanner.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1710_FIX_TRANSACTION_IMAGE_MIME_TYPES = "B954DAC7-D30C-45CF-9CD4-872E8F9856DE";
+
+        /// <summary>
         /// The job to run Post v18.0 Data Migrations to migrate existing eRA records from the History table to the Steps table.
         /// </summary>
         public const string DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS = "64CB888D-0F81-473B-B200-8FA38337DAED";
@@ -605,5 +610,15 @@ namespace Rock.SystemGuid
         /// The job to run Post v20.0 Data Migrations to remove Anonymous Visitor PersonAlias records that were created for bot traffic whose page view interaction was subsequently discarded as a crawler.
         /// </summary>
         public const string DATA_MIGRATIONS_200_REMOVE_ORPHANED_ANONYMOUS_VISITOR_ALIASES = "900876CC-F6E1-4FBE-A7BB-F8DF5124BA43";
+
+        /// <summary>
+        /// The job to run Post v17.11 Data Migrations to clean up unsafe Social Media Account attribute values.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1711_CLEAN_SOCIAL_MEDIA_ACCOUNT_VALUES = "230F32E9-68A9-4741-BEA2-5B5C020A761E";
+
+        /// <summary>
+        /// The job to run Post v17.11 Data Migrations to fix the mime type of person photos uploaded through the profile photo REST API.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1711_FIX_PERSON_IMAGE_MIME_TYPES = "A7ABFE1B-8160-4507-BAE2-505A3DB96217";
     }
 }

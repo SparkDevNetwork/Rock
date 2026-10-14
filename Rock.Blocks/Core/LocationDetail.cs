@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -561,7 +561,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Location.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Location.FriendlyTypeName}." );
                 return false;
             }
 
@@ -704,10 +704,24 @@ namespace Rock.Blocks.Core
                 return actionError;
             }
 
+            var originalParentLocationId = entity.ParentLocationId;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Location security inherits from the parent location, so make
+            // sure the person can edit the parent location if it was changed.
+            if ( entity.ParentLocationId.HasValue && entity.ParentLocationId != originalParentLocationId )
+            {
+                var parentLocation = new LocationService( RockContext ).Get( entity.ParentLocationId.Value );
+
+                if ( parentLocation == null || !parentLocation.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "You are not authorized to add a location to the selected parent location." );
+                }
             }
 
             // Ensure everything is valid before saving.

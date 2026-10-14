@@ -29,6 +29,12 @@ export type AssetManagerDownloadFileOptionsBag = {
     /** The ID of the asset storage provider where the file to be downloaded resides. */
     assetStorageProviderId: number;
 
+    /**
+     * The encrypted root folder that the file(s) must be in. This is
+     * required when using the local file system.
+     */
+    encryptedRoot?: string | null;
+
     /** The identifier for the file that is to be downloaded. */
     file?: string | null;
 

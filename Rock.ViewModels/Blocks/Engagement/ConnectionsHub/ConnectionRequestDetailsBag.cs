@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -150,6 +150,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the list of activity feed entries for this connection request.
         /// </summary>
         public List<ActivityEntryBag> ActivityEntries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted workflows launched from this connection request that the current person is authorized to view, newest first.
+        /// </summary>
+        public List<ConnectionRequestWorkflowBag> Workflows { get; set; }
 
         /// <summary>
         /// The attributes for the selected Connection Request.

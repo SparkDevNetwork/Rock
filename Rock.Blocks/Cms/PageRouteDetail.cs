@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,20 +15,20 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageRouteDetail;
 using Rock.Web.Cache;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Cms
 {
@@ -397,7 +397,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${PageRoute.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {PageRoute.FriendlyTypeName}." );
                 return false;
             }
 

@@ -1,0 +1,96 @@
+name: Mirror to Private
+
+# Copies the shared branches and tags from the public repo into the private
+# mirror (SparkStealth/Rock-Mirror). Sync is one way: public to private.
+#
+# Runs in the public repo so it uses free Actions minutes. It only moves
+# commits that are already public, so its logs reveal nothing.
+#
+# Required in this repo:
+#   vars.MIRROR_APP_ID              App ID of the "Rock Mirror Sync" GitHub App
+#   secrets.MIRROR_APP_PRIVATE_KEY  Private key of that App
+# The App is installed ONLY on Rock-Mirror with Contents and Workflows write.
+#
+# No force pushes: if the mirror ever diverges, this job fails loudly instead
+# of overwriting anything.
+#
+# Speed: a full clone of Rock is ~2.2 GB and took 12+ minutes per run. Instead,
+# a bare copy of the repo is kept in the Actions cache. Each run restores it,
+# fetches only what's new, and pushes. Only runs on develop save the cache,
+# because caches saved on other branches can't be read by runs on develop.
+
+on:
+  push:
+    branches:
+      - develop
+      - "release-*"
+      - "hotfix-*"
+    tags:
+      - "*"
+  schedule:
+    # Hourly safety net in case a push-triggered run is ever missed.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-to-private
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    if: github.repository == 'SparkDevNetwork/Rock'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Create mirror token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.MIRROR_APP_ID }}
+          private-key: ${{ secrets.MIRROR_APP_PRIVATE_KEY }}
+          owner: SparkStealth
+          repositories: Rock-Mirror
+
+      - name: Restore the cached copy of the repo
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: rock.git
+          key: rock-mirror-${{ github.run_id }}
+          restore-keys: rock-mirror-
+
+      - name: Fetch new branches and tags from public
+        run: |
+          # No cache yet (first run, or the cache expired): start an empty
+          # copy, and this fetch downloads the full history once.
+          if [ ! -d rock.git ]; then
+            git init -q --bare rock.git
+          fi
+
+          # Public repo, so no token is needed to read it.
+          git -C rock.git fetch --prune --tags https://github.com/SparkDevNetwork/Rock.git \
+            "+refs/heads/develop:refs/heads/develop" \
+            "+refs/heads/release-*:refs/heads/release-*" \
+            "+refs/heads/hotfix-*:refs/heads/hotfix-*"
+
+      - name: Push shared branches and tags to the mirror
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          git -C rock.git push "https://x-access-token:${TOKEN}@github.com/SparkStealth/Rock-Mirror.git" \
+            "refs/heads/develop:refs/heads/develop" \
+            "refs/heads/release-*:refs/heads/release-*" \
+            "refs/heads/hotfix-*:refs/heads/hotfix-*" \
+            "refs/tags/*:refs/tags/*"
+
+      - name: Save the updated copy to the cache
+        # Hourly and manual runs refresh the cache. Push runs only save when no
+        # cache existed yet, so the cache isn't rewritten on every push.
+        if: github.ref == 'refs/heads/develop' && (github.event_name != 'push' || steps.cache.outputs.cache-matched-key == '')
+        uses: actions/cache/save@v6
+        with:
+          path: rock.git
+          key: rock-mirror-${{ github.run_id }}

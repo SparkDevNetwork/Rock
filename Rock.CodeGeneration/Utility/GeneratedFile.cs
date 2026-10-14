@@ -1,4 +1,4 @@
-﻿namespace Rock.CodeGeneration.Utility
+namespace Rock.CodeGeneration.Utility
 {
     /// <summary>
     /// Representation of a generated file that is waiting to be written to disk.

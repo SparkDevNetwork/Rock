@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -553,7 +553,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${InteractiveExperience.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {InteractiveExperience.FriendlyTypeName}." );
                 return false;
             }
 
@@ -824,7 +824,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 if ( !actionEntityTypeId.HasValue )
                 {
-                    errorMessage = $"Invalid action type '${box.Bag.ActionType.Text}' specified.";
+                    errorMessage = $"Invalid action type '{box.Bag.ActionType.Text}' specified.";
                     return false;
                 }
 

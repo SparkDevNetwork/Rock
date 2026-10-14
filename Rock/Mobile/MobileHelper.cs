@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
@@ -38,7 +39,6 @@ using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
-using Rock.Configuration;
 
 namespace Rock.Mobile
 {
@@ -510,6 +510,12 @@ namespace Rock.Mobile
                 EntraClientId = additionalSettings.EntraClientId,
                 OrganizationBeaconGuid = Rock.Web.SystemSettings.GetRockInstanceId(),
                 OrganizationName = organizationName,
+                ImpersonationTokenDomains = SiteCache.All()
+                    .Where( s => s.IsActive )
+                    .SelectMany( s => s.SiteDomainNames )
+                    .Where( d => d.IsNotNullOrWhiteSpace() )
+                    .Distinct( StringComparer.OrdinalIgnoreCase )
+                    .ToList(),
             };
 
             if ( ChatHelper.IsChatEnabled )

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -461,6 +461,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             var canEditRecordStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditRecordStatus, RequestContext.CurrentPerson );
             var canEditRecordSource = canAdministrate;
             var canEditFinancials = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
+            var isPhotoInvalid = false;
 
             box.IfValidProperty( nameof( box.Bag.Title ),
                 () => entity.TitleValueId = GetDefinedValueId( box.Bag.Title ) );
@@ -485,6 +486,17 @@ namespace Rock.Blocks.Crm.PersonDetail
                 {
                     var newPhotoGuid = box.Bag.Photo?.Value.AsGuidOrNull();
                     var newPhotoBinaryFile = newPhotoGuid.HasValue ? new BinaryFileService( RockContext ).Get( newPhotoGuid.Value ) : null;
+
+                    // Only accept a photo the current person uploaded (or the one
+                    // already set). Otherwise a tampered Guid could attach any file
+                    // as the photo, and a later change would mark that file
+                    // temporary so cleanup deletes it.
+                    if ( newPhotoBinaryFile != null && !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( newPhotoBinaryFile.Id, entity.PhotoId, RequestContext.CurrentPerson ) )
+                    {
+                        isPhotoInvalid = true;
+                        return;
+                    }
+
                     entity.PhotoId = newPhotoBinaryFile?.Id;
 
                     // A newly uploaded photo starts out temporary; keep it now that it is in use.
@@ -646,12 +658,26 @@ namespace Rock.Blocks.Crm.PersonDetail
             box.IfValidProperty( nameof( box.Bag.GivingGroupGuid ),
                 () =>
                 {
-                    if ( canEditFinancials )
+                    if ( !canEditFinancials )
                     {
-                        // The giving group is one of the person's families; resolve its guid back to the group id.
-                        entity.GivingGroupId = box.Bag.GivingGroupGuid.HasValue
-                            ? new GroupService( RockContext ).Get( box.Bag.GivingGroupGuid.Value )?.Id
-                            : null;
+                        return;
+                    }
+
+                    if ( !box.Bag.GivingGroupGuid.HasValue )
+                    {
+                        entity.GivingGroupId = null;
+                        return;
+                    }
+
+                    // Only one of the person's own families may be the giving group; a forged guid for any other group is ignored.
+                    var givingFamilyId = new PersonService( RockContext ).GetFamilies( entity.Id )
+                        .Where( f => f.Guid == box.Bag.GivingGroupGuid.Value )
+                        .Select( f => ( int? ) f.Id )
+                        .FirstOrDefault();
+
+                    if ( givingFamilyId.HasValue )
+                    {
+                        entity.GivingGroupId = givingFamilyId;
                     }
                 } );
 
@@ -666,6 +692,11 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             box.IfValidProperty( nameof( box.Bag.SearchKeys ),
                 () => UpdateSearchKeys( entity, box.Bag.SearchKeys ) );
+
+            if ( isPhotoInvalid )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -1236,6 +1267,23 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionBadRequest( "A phone number with SMS enabled is required when Communication Preference is set to SMS." );
             }
 
+            // The client enforces these block settings inline; re-check them here so a forged save cannot skip them.
+            if ( GetAttributeValue( AttributeKey.RequireCompleteBirthDate ).AsBoolean()
+                && entity.BirthMonth.HasValue && entity.BirthDay.HasValue && !entity.BirthYear.HasValue )
+            {
+                return ActionBadRequest( "Birth Date requires a year." );
+            }
+
+            if ( GetAttributeValue( AttributeKey.RaceOption ) == "Required" && !entity.RaceValueId.HasValue )
+            {
+                return ActionBadRequest( "Race is required." );
+            }
+
+            if ( GetAttributeValue( AttributeKey.EthnicityOption ) == "Required" && !entity.EthnicityValueId.HasValue )
+            {
+                return ActionBadRequest( "Ethnicity is required." );
+            }
+
             // Server-side backstop: an alternate identifier may not be shared with another person. The client
             // shows the detailed inline messages (CheckAlternateIdsInUse); this only guards a bypassed client.
             if ( box.IsValidProperty( nameof( box.Bag.AlternateIds ) ) )
@@ -1353,9 +1401,13 @@ namespace Rock.Blocks.Crm.PersonDetail
         [BlockAction]
         public BlockActionResult CheckAlternateIdsInUse( string idKey, List<string> alternateIds )
         {
-            var person = new PersonService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            // The response names the people using each identifier, so require the same Edit authorization as Save.
+            if ( !TryGetEntityForEditAction( idKey, out var person, out var actionError ) )
+            {
+                return actionError;
+            }
 
-            return ActionOk( GetAlternateIdConflicts( person?.Id ?? 0, alternateIds ) );
+            return ActionOk( GetAlternateIdConflicts( person.Id, alternateIds ) );
         }
 
         #endregion Block Actions

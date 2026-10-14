@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -100,6 +100,11 @@ internal partial class CommunicationSkill
             if ( draftCommunication != null && draftCommunication.Status != CommunicationStatus.Transient )
             {
                 helper.AddError( "This draft is not in a transient state. It has likely already been sent." );
+                helper.AddInstructions( "Ask the user if they would prefer you create a new draft." );
+            }
+            else if ( draftCommunication != null && !IsAuthorizedToEditDraft( draftCommunication, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this draft." );
                 helper.AddInstructions( "Ask the user if they would prefer you create a new draft." );
             }
         }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -121,6 +121,20 @@ namespace Rock.Blocks.Finance
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
+            {
+                return ActionBadRequest( $"{FinancialPersonBankAccount.FriendlyTypeName} not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {FinancialPersonBankAccount.FriendlyTypeName}." );
+            }
+
+            // Only allow deleting bank accounts that belong to the person
+            // this list is displaying.
+            var personId = GetPersonForBankAccountList( RockContext )?.Id;
+
+            if ( !personId.HasValue || entity.PersonAlias?.PersonId != personId.Value )
             {
                 return ActionBadRequest( $"{FinancialPersonBankAccount.FriendlyTypeName} not found." );
             }

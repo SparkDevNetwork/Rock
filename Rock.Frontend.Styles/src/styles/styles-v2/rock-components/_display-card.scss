@@ -6,28 +6,59 @@
 //  + Display Card Add Button
 //  + Display Card Container
 // =============================================================
+//
+// All display card styling lives in this file. displayCard.obs has no
+// <style> block; do not reintroduce one, since scoped rules outrank these
+// and silently win over anything declared here.
 
 
 // ======================== BASE STYLE ========================
 
+/* The card is a vertical wrapper: the heading/content/actions row lives in
+   .displaycard-main and the accordion region spans the full width beneath it.
+   Padding lives on .displaycard-main so the expanded band runs edge to edge. */
 .displaycard {
     display: flex;
-    flex-direction: row;
-    gap: var(--spacing-large);
-    align-items: center;
-    padding: var(--spacing-large);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
     background-color: var(--color-interface-softest);
-    border-radius: var(--rounded-xsmall);
+    border-radius: var(--rounded-medium);
     border: 1px solid var(--color-interface-soft);
     transition: background-color .15s ease-in-out;
+}
 
-    /* May need to revisit this if a mobile version of the UI is needed */
-    min-width: v-bind(minWidth);
+.displaycard-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-large);
+    padding: var(--spacing-large);
 }
 
 /* Only show hover state if the item is clickable. */
 .displaycard.clickable.is-hovering {
     background-color: var(--color-info-soft);
+}
+
+/* A selected card holds the soft-info tint persistently, the same treatment the
+   clickable hover state applies, so a chosen card stays visually distinct. The
+   expanded band keeps its own surface below, so the tint reads as a highlighted
+   header above white content. */
+.displaycard.is-selected {
+    background-color: var(--color-info-soft);
+}
+
+/* A disabled card ignores clicks and dims to signal it is not interactive. Slot
+   content is disabled by the consumer, so only the card chrome is dimmed here. */
+.displaycard.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.displaycard:has(.displaycard-selection.is-checked) {
+    border: 1px solid var(--color-primary);
 }
 
 .displaycard-badge {
@@ -45,6 +76,54 @@
     font-size: var(--font-size-h4);
 }
 
+/* Opt-in (iconStyle="tile") icon tile: a soft, rounded square holding the icon
+   glyph, tinted by iconLabelType. The per-type classes set the tile's fg/bg via
+   custom properties; an unmapped type falls back to neutral interface colors.
+
+   These must stay below .displaycard-heading-icon: the tile element carries both
+   classes, and the `i` font-size override relies on source order to win. */
+.displaycard-heading-icon-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--rounded-small);
+    background-color: var(--icon-tile-bg, var(--color-interface-softer));
+    color: var(--icon-tile-fg, var(--color-interface-strong));
+}
+
+.displaycard-heading-icon-tile i {
+    font-size: var(--font-size-h5);
+    line-height: 1;
+}
+
+.displaycard-heading-icon-tile-primary {
+    --icon-tile-bg: var(--color-primary-soft);
+    --icon-tile-fg: var(--color-primary);
+}
+
+.displaycard-heading-icon-tile-info {
+    --icon-tile-bg: var(--color-info-soft);
+    --icon-tile-fg: var(--color-info-strong);
+}
+
+.displaycard-heading-icon-tile-success {
+    --icon-tile-bg: var(--color-success-soft);
+    --icon-tile-fg: var(--color-success-strong);
+}
+
+.displaycard-heading-icon-tile-warning {
+    --icon-tile-bg: var(--color-warning-soft);
+    --icon-tile-fg: var(--color-warning-strong);
+}
+
+.displaycard-heading-icon-tile-danger {
+    --icon-tile-bg: var(--color-danger-soft);
+    --icon-tile-fg: var(--color-danger-strong);
+}
+
 .displaycard-heading {
     display: flex;
     flex-direction: row;
@@ -52,11 +131,6 @@
     gap: var(--spacing-medium);
     flex: 1 1 0;
     overflow: hidden;
-
-    /* The icon+title+desc container needs a min width;
-       otherwise, it'll shrink until it's hidden
-       before the aside shrinks. */
-    min-width: v-bind(iconTitleAndDescMinWidth);
 }
 
 .displaycard-heading-text {
@@ -135,13 +209,53 @@
     color: var(--color-interface-medium);
 }
 
+.displaycard-selection {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--color-interface-soft);
+}
+
+.displaycard-selection.is-checked {
+    border-color: var(--color-primary);
+    background-image: radial-gradient(circle, var(--color-primary) 0 35%, transparent 36% 100%);
+}
+
+.displaycard-reorder {
+    cursor: grab;
+}
+
+.displaycard-reorder:active {
+    cursor: grabbing;
+}
+
+/* An opaque surface keeps the band distinct from the selected/hover header tint.
+   Spacing is left to the slot content so the expanded region is not opinionated. */
+.displaycard-expanded {
+    background-color: var(--color-interface-softer);
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+}
+
+/* Bootstrap's xs tier (below the small breakpoint) stacks the row and tightens
+   its spacing; the active breakpoint comes from useBreakpointHelper, so this
+   tracks the same width as the max-width: 767px block below. */
+.displaycard.is-compact .displaycard-main {
+    flex-direction: column;
+    height: auto;
+    padding: var(--spacing-medium);
+    gap: var(--spacing-medium);
+}
+
 @media (max-width: 767px) {
 
     /*Allow display card to stack content on smaller screens*/
 
+    /* The card is already a column at every width and .displaycard.is-compact
+       handles the stacking of .displaycard-main at this same breakpoint, so only
+       the width constraint is left here. */
     .displaycard {
-        flex-direction: column;
-        height: auto;
         min-width: 100%;
     }
 
@@ -229,6 +343,10 @@
 
 // ======================== DISPLAY CARD CONTAINER ========================
 
+.control-label + .displaycard-container {
+    margin-top: var(--spacing-tiny);
+}
+
 .displaycard-connector {
     width: 2px;
     height: var(--spacing-medium);
@@ -258,13 +376,16 @@
 
 // ======================== END DISPLAY CARD CONTAINER ========================
 
-// ======================= MOBILE ADJUSTMENTS =======================
+/*
+    9/18/26 - CLAUDE
 
-@media (max-width: 480px) {
-    .displaycard {
-        padding: var(--spacing-medium);
-        gap: var(--spacing-medium);
-    }
-}
+    The former "MOBILE ADJUSTMENTS" block tightened .displaycard padding and gap
+    at 480px. Those declarations were already inert: .displaycard carries no
+    padding or gap now that both moved to .displaycard-main, and the same tighter
+    spacing is applied by .displaycard.is-compact .displaycard-main across the
+    whole xs tier. Leaving them here would have started overriding the base rule
+    once these styles stopped being scoped, so they were removed rather than
+    migrated.
 
-// ========================= END MOBILE ADJUSTMENTS =======================
+    Reason: Dead rules that would have become live during the scoped-style merge.
+*/

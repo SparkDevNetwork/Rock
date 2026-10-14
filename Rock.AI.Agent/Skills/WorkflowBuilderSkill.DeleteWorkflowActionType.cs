@@ -61,6 +61,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
+        var editError = GetWorkflowTypeEditError( actionType.ActivityType?.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         var actionName = actionType.Name;
         var activityTypeId = actionType.ActivityTypeId;
         var hasForm = actionType.WorkflowFormId.HasValue;
@@ -116,7 +123,10 @@ internal sealed partial class WorkflowBuilderSkill
             DeletedFormCount = hasForm ? 1 : 0,
             DeletedInstanceCount = instanceCount,
             ActivityTypeIdKey = activityTypeId.AsIdKey()
-        } );
+        } )
+            // Deleting an action can be what removed the only route to an activity,
+            // and nothing else in this flow can see that.
+            .WithInstructions( $"Call {nameof( GetWorkflowTypeConfiguration )} to confirm nothing was orphaned. If this action was the only route to an activity, that activity is now unreachable and Rock will not report it." );
     }
 
     #endregion

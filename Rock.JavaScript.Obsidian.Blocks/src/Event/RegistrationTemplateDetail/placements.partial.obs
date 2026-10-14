@@ -1,0 +1,325 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData" keyField="guid" itemTerm="Placement Configuration" liveUpdates light @addItem="onAddPlacement">
+        <ReorderColumn @orderChanged="onOrderChanged" />
+        <TextColumn name="name" field="name" title="Placement Name" />
+        <TextColumn name="groupType" field="groupType" title="Group Type" />
+        <TextColumn name="sharedGroups" field="sharedGroups" title="Shared Groups" />
+        <BooleanColumn name="allowMultiplePlacements" field="allowMultiplePlacements" title="Allow Multiple" />
+        <EditColumn @click="onEditPlacement" />
+        <DeleteColumn @click="onDeletePlacement" />
+    </Grid>
+
+    <Modal v-model="isModalVisible" title="Placement Configuration" saveText="Save" cancelText="Cancel" :onSave="onSavePlacement">
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="editName" label="Name" rules="required" :maxLength="100" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <GroupTypePicker v-if="isNewPlacement"
+                                 v-model="editGroupType"
+                                 label="Group Type"
+                                 rules="required"
+                                 :groupTypes="options.groupTypeGuids ?? []"
+                                 isSortedByName
+                                 help="The group type to limit placement groups by." />
+
+                <StaticFormControl v-else :modelValue="editGroupType?.text ?? ''" label="Group Type" />
+
+                <CheckBox v-model="editAllowMultiplePlacements" label="Allow Multiple" help="Determines if a registrant can be in more than one group for this placement." />
+            </div>
+
+            <div class="col-md-6">
+                <TextBox v-model="editIconCssClass" label="Icon CSS Class" :maxLength="100" help="CSS Icon to use for the placement. If not provided, the icon for the group type will be used." />
+            </div>
+        </div>
+
+        <RockFormField :modelValue="editSharedGroups" name="shared-groups" label="Shared Groups">
+            <p>The groups below will be linked as placement groups to each registration instance of this template.</p>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <Grid :data="sharedGroupsGridData" keyField="value" itemTerm="Group" liveUpdates light @addItem="onShowAddSharedGroup">
+                        <TextColumn name="text" field="text" title="Group" />
+                        <DeleteColumn @click="onDeleteSharedGroup" disableConfirmation />
+                    </Grid>
+                </div>
+
+                <div v-if="isAddSharedGroupVisible" class="col-md-6">
+                    <NotificationBox v-if="sharedGroupWarning" alertType="warning">{{ sharedGroupWarning }}</NotificationBox>
+
+                    <GroupPicker v-model="newSharedGroup" label="Add Group" :includedGroupTypeGuids="includedGroupTypeGuids" />
+
+                    <RockButton btnType="primary" btnSize="xs" @click="onAddSharedGroup">Add</RockButton>
+                    <RockButton btnType="link" btnSize="xs" @click="onCancelAddSharedGroup">Cancel</RockButton>
+                </div>
+            </div>
+        </RockFormField>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RegistrationTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateDetailOptionsBag";
+    import { RegistrationTemplatePlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplatePlacementBag";
+    import { getNextOrder, moveItem, renumberOrder } from "./utils.partial";
+
+    const props = defineProps({
+        /** The placement configurations of the template. */
+        placements: {
+            type: Array as PropType<RegistrationTemplatePlacementBag[]>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RegistrationTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:placements", value: RegistrationTemplatePlacementBag[]): void
+    }>();
+
+    // #region Values
+
+    const isModalVisible = ref(false);
+
+    /** The unique identifier of the placement being edited, or null when adding. */
+    const editingGuid = ref<string | null>(null);
+    const editName = ref("");
+    const editGroupType = ref<ListItemBag | null>(null);
+    const editAllowMultiplePlacements = ref(false);
+    const editIconCssClass = ref("");
+    const editSharedGroups = ref<ListItemBag[]>([]);
+
+    const isAddSharedGroupVisible = ref(false);
+    const sharedGroupWarning = ref("");
+    const newSharedGroup = ref<ListItemBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const placements = computed({
+        get(): RegistrationTemplatePlacementBag[] {
+            return props.placements ?? [];
+        },
+        set(value: RegistrationTemplatePlacementBag[]) {
+            emit("update:placements", value);
+        }
+    });
+
+    const gridData = computed(() => {
+        const rows = [...placements.value]
+            .sort((a, b) => a.order - b.order || (a.name ?? "").localeCompare(b.name ?? ""))
+            .map(placement => ({
+                guid: placement.guid,
+                name: placement.name ?? "",
+                groupType: placement.groupType?.text ?? "",
+                sharedGroups: formatSharedGroups(placement.sharedGroups ?? []),
+                allowMultiplePlacements: placement.allowMultiplePlacements
+            }));
+
+        return { rows };
+    });
+
+    const sharedGroupsGridData = computed(() => {
+        const rows = editSharedGroups.value.map(group => ({
+            value: group.value ?? "",
+            text: group.text ?? ""
+        }));
+
+        return { rows };
+    });
+
+    const isNewPlacement = computed((): boolean => {
+        return editingGuid.value === null;
+    });
+
+    /** Limits the group picker to groups of the selected group type. */
+    const includedGroupTypeGuids = computed((): Guid[] => {
+        return editGroupType.value?.value ? [editGroupType.value.value] : [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button on the grid is clicked.
+     */
+    function onAddPlacement(): void {
+        openModal(null);
+    }
+
+    /**
+     * Called when the Edit button for a row is clicked.
+     *
+     * @param key The unique identifier of the placement to edit.
+     */
+    function onEditPlacement(key: string): void {
+        const placement = placements.value.find(p => p.guid === key);
+
+        if (placement) {
+            openModal(placement);
+        }
+    }
+
+    /**
+     * Called when the Delete button for a row is clicked.
+     *
+     * @param key The unique identifier of the placement to delete.
+     */
+    function onDeletePlacement(key: string): void {
+        placements.value = renumberOrder(placements.value.filter(p => p.guid !== key));
+    }
+
+    /**
+     * Called when a row is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to the end.
+     *
+     * @returns True to keep the new order.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        placements.value = moveItem([...placements.value].sort((a, b) => a.order - b.order), item["guid"] as string, (beforeItem?.["guid"] as string | undefined) ?? null, p => p.guid);
+
+        return true;
+    }
+
+    /**
+     * Called when the Add button of the shared groups grid is clicked.
+     */
+    function onShowAddSharedGroup(): void {
+        sharedGroupWarning.value = "";
+        newSharedGroup.value = null;
+        isAddSharedGroupVisible.value = true;
+    }
+
+    /**
+     * Called when the Add button next to the group picker is clicked. The group
+     * must belong to the selected group type, which the picker already enforces.
+     */
+    function onAddSharedGroup(): void {
+        sharedGroupWarning.value = "";
+
+        if (!editGroupType.value?.value) {
+            sharedGroupWarning.value = "Please select a group type before adding a group";
+
+            return;
+        }
+
+        const group = newSharedGroup.value;
+
+        if (group?.value && !editSharedGroups.value.some(g => areEqual(g.value, group.value))) {
+            editSharedGroups.value = [...editSharedGroups.value, { value: group.value, text: group.text }];
+        }
+
+        newSharedGroup.value = null;
+        isAddSharedGroupVisible.value = false;
+    }
+
+    /**
+     * Called when the Cancel button next to the group picker is clicked.
+     */
+    function onCancelAddSharedGroup(): void {
+        newSharedGroup.value = null;
+        isAddSharedGroupVisible.value = false;
+    }
+
+    /**
+     * Called when the Delete button of a shared group is clicked.
+     *
+     * @param key The unique identifier of the group to remove.
+     */
+    function onDeleteSharedGroup(key: string): void {
+        editSharedGroups.value = editSharedGroups.value.filter(g => !areEqual(g.value, key));
+    }
+
+    /**
+     * Called when the modal Save button is clicked. Builds the placement from
+     * the working values and replaces or appends it in the list.
+     */
+    function onSavePlacement(): void {
+        const existing = editingGuid.value ? placements.value.find(p => p.guid === editingGuid.value) : undefined;
+
+        const placement: RegistrationTemplatePlacementBag = {
+            guid: existing?.guid ?? newGuid(),
+            order: existing?.order ?? getNextOrder(placements.value),
+            name: editName.value,
+            groupType: editGroupType.value ? { ...editGroupType.value } : null,
+            iconCssClass: editIconCssClass.value,
+            allowMultiplePlacements: editAllowMultiplePlacements.value,
+            sharedGroups: editSharedGroups.value.map(g => ({ ...g }))
+        };
+
+        if (existing) {
+            placements.value = placements.value.map(p => p.guid === existing.guid ? placement : p);
+        }
+        else {
+            placements.value = [...placements.value, placement];
+        }
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Opens the modal for a new placement, or populates it with an existing placement.
+     *
+     * @param placement The placement to edit, or null to add a new placement.
+     */
+    function openModal(placement: RegistrationTemplatePlacementBag | null): void {
+        editingGuid.value = placement?.guid ?? null;
+        editName.value = placement?.name ?? "";
+        editGroupType.value = placement?.groupType ? { ...placement.groupType } : null;
+        editAllowMultiplePlacements.value = placement?.allowMultiplePlacements ?? false;
+        editIconCssClass.value = placement?.iconCssClass ?? "";
+        editSharedGroups.value = (placement?.sharedGroups ?? []).map(g => ({ ...g }));
+        isAddSharedGroupVisible.value = false;
+        sharedGroupWarning.value = "";
+        newSharedGroup.value = null;
+
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Formats the shared group names as a sentence, such as "Alpha, Beta and Gamma".
+     *
+     * @param groups The shared groups.
+     *
+     * @returns The formatted names.
+     */
+    function formatSharedGroups(groups: ListItemBag[]): string {
+        const names = groups.map(g => g.text ?? "").filter(n => n);
+
+        if (names.length <= 1) {
+            return names.join("");
+        }
+
+        return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+    }
+
+    // #endregion Functions
+</script>

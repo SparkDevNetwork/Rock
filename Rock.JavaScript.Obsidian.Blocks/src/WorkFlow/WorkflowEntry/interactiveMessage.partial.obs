@@ -2,7 +2,10 @@
     <NotificationBox v-if="isNotificationType"
                      :alertType="alertType"
                      :heading="message.title ?? undefined">
-        &nbsp;<span>{{ message.content }}</span>
+        <ul v-if="errorLines.length > 1" class="mb-0">
+            <li v-for="(line, index) in errorLines" :key="index">{{ line }}</li>
+        </ul>
+        <template v-else>&nbsp;<span>{{ message.content }}</span></template>
     </NotificationBox>
 
     <div v-else-if="message.type === InteractiveMessageType.Html"
@@ -42,6 +45,24 @@
             || props.message.type === InteractiveMessageType.Warning
             || props.message.type === InteractiveMessageType.Information
             || props.message.type === InteractiveMessageType.Success;
+    });
+
+    /**
+     * The individual error lines to display as a bulleted list. Workflow
+     * processing errors are returned as multiple messages joined by newlines,
+     * so split them back out to match the WebForms list presentation. Only
+     * Error messages are treated this way; other message types keep their
+     * single-content rendering.
+     */
+    const errorLines = computed((): string[] => {
+        if (props.message.type !== InteractiveMessageType.Error || !props.message.content) {
+            return [];
+        }
+
+        return props.message.content
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
     });
 
     /** The type of alert for the notification box. */

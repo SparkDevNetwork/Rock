@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -35,7 +36,6 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
-using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Group
 {

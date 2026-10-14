@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -253,9 +253,17 @@ namespace RockWeb.Blocks.Security.Oidc
                 }.SaveAfterDelay();
             }
 
+            // An unknown client or unregistered redirect URI must not be redirected to (RFC 6749 section 4.1.2.1).
+            var redirectUri = GetValidatedRedirectUri( authClient );
+            if ( redirectUri == null )
+            {
+                divContent.Visible = false;
+                ShowError( "The application requesting access could not be verified." );
+                return;
+            }
+
             // Notify the client that the authorization grant has been denied by the resource owner.
             var owinContext = Context.GetOwinContext();
-            var redirectUri = owinContext.Request.Query["redirect_uri"];
             var state = owinContext.Request.Query["state"];
 
             var separator = redirectUri.Contains( "?" ) ? "&" : "?";
@@ -268,6 +276,36 @@ namespace RockWeb.Blocks.Security.Oidc
 
             Response.Redirect( $"{redirectUri}{separator}{qs}", true );
             ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Gets the redirect URI registered for the auth client.
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> for which authorization is being requested.</param>
+        /// <returns>
+        /// The request's <c>redirect_uri</c> if it's registered for the client, the client's redirect URI if the
+        /// request has none, or <c>null</c> if the client is unknown or the request's <c>redirect_uri</c> isn't
+        /// registered.
+        /// </returns>
+        private string GetValidatedRedirectUri( AuthClient authClient )
+        {
+            if ( authClient == null || authClient.RedirectUri.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var requestedRedirectUri = Context.GetOwinContext().Request.Query["redirect_uri"];
+            if ( requestedRedirectUri.IsNullOrWhiteSpace() )
+            {
+                return authClient.RedirectUri;
+            }
+
+            if ( !AuthClientService.IsRedirectUriAllowed( authClient, requestedRedirectUri ) )
+            {
+                return null;
+            }
+
+            return requestedRedirectUri;
         }
 
         /// <summary>
@@ -342,32 +380,51 @@ namespace RockWeb.Blocks.Security.Oidc
                 .Where( ac => parsedAllowedClientClaims.Contains( ac.Name ) )
                 .Where( ac => ac.IsActive )
                 .Where( ac => requestedScopes.Contains( ac.Scope.Name ) )
-                .Select( ac => new { Scope = ac.Scope.PublicName, Claim = ac.PublicName } )
+                .Select( ac => new { ScopeName = ac.Scope.Name, Scope = ac.Scope.PublicName, Claim = ac.PublicName } )
+                .ToList();
+
+            /*
+                9/30/2026 - MSE
+
+                The list of display strings built below holds scope public names
+                (e.g. "Profile (Name, Email)"), while the requested scopes are
+                scope names (e.g. "profile"). Comparing the two never matched, so
+                every scope that had claims was added a second time. Track the
+                scope names that were already displayed through their claims and
+                compare names to names instead.
+
+                Reason: Prevent duplicate scopes on the consent screen (#7070).
+            */
+            var scopeNamesWithClaims = new HashSet<string>( activeAllowedClientClaims.Select( ac => ac.ScopeName ), StringComparer.OrdinalIgnoreCase );
+
+            scopes.AddRange( activeAllowedClientClaims
                 .GroupBy( ac => ac.Scope, ac => ac.Claim )
-                .ToList()
-                .Select( ac => new { Scope = ac.Key, Claims = string.Join( ", ", ac.ToArray() ) } );
+                .Select( ac => new { Scope = ac.Key, Claims = string.Join( ", ", ac.ToArray() ) } )
+                .Select( ac => ac.Scope == ac.Claims ? ac.Scope : ac.Scope + " (" + ac.Claims + ")" ) );
 
-            scopes.AddRange( activeAllowedClientClaims.Select( ac => ac.Scope == ac.Claims ? ac.Scope : ac.Scope + " (" + ac.Claims + ")" ) );
-
-            var activeScopes = new AuthScopeService( rockContext )
+            var activeScopePublicNames = new AuthScopeService( rockContext )
                 .Queryable()
                 .Where( s => s.IsActive )
                 .Select( s => new
                 {
                     s.Name,
                     s.PublicName
-                } );
+                } )
+                .ToList()
+                .ToDictionary( s => s.Name, s => s.PublicName );
 
             // If the client requested a scope that is in the client's allowed
             // scopes, but not included in the active allowed claims, we should
             // still show that scope to the user.
-            foreach ( var requestedScope in requestedScopes )
+            foreach ( var requestedScope in requestedScopes.Distinct() )
             {
-                if ( !scopes.Contains( requestedScope ) && parsedAllowedClientScopes.Contains( requestedScope ) )
+                if ( scopeNamesWithClaims.Contains( requestedScope ) || !parsedAllowedClientScopes.Contains( requestedScope ) )
                 {
-                    var scope = activeScopes.FirstOrDefault( s => s.Name == requestedScope );
-                    scopes.Add( scope.PublicName.IfEmpty( requestedScope ) );
+                    continue;
                 }
+
+                activeScopePublicNames.TryGetValue( requestedScope, out var publicName );
+                scopes.Add( publicName.IfEmpty( requestedScope ) );
             }
 
             return scopes;

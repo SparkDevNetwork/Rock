@@ -165,6 +165,25 @@ namespace Rock.Blocks.Crm
             return items;
 		}
 
+        /// <summary>
+        /// Determines whether the personal device belongs to the person this block displays.
+        /// The block only lists that person's devices, so actions must not accept a device
+        /// key belonging to anyone else.
+        /// </summary>
+        /// <param name="personalDevice">The personal device to check.</param>
+        /// <returns><c>true</c> if the device belongs to the displayed person; otherwise, <c>false</c>.</returns>
+        private bool IsDeviceOfDisplayedPerson( PersonalDevice personalDevice )
+        {
+            var person = GetPerson();
+
+            if ( person == null || personalDevice.PersonAlias == null )
+            {
+                return false;
+            }
+
+            return personalDevice.PersonAlias.PersonId == person.Id;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -180,6 +199,12 @@ namespace Rock.Blocks.Crm
             var personalDevice = personalDeviceService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( personalDevice == null )
+            {
+                return ActionBadRequest( "Personal Device not found." );
+            }
+
+            // Only devices shown in the list (those of the displayed person) may be used here.
+            if ( !IsDeviceOfDisplayedPerson( personalDevice ) )
             {
                 return ActionBadRequest( "Personal Device not found." );
             }
@@ -212,6 +237,12 @@ namespace Rock.Blocks.Crm
             var personalDevice = personalDeviceService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( personalDevice == null )
+            {
+                return ActionBadRequest( "Personal Device not found." );
+            }
+
+            // Only devices shown in the list (those of the displayed person) may be used here.
+            if ( !IsDeviceOfDisplayedPerson( personalDevice ) )
             {
                 return ActionBadRequest( "Personal Device not found." );
             }

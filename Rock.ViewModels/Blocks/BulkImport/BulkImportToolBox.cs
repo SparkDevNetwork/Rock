@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,5 +32,10 @@ namespace Rock.ViewModels.Blocks.BulkImport
         /// Gets or sets the options for the block.
         /// </summary>
         public BulkImportToolOptionsBag Options { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 } 

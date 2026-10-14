@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -44,6 +45,18 @@ internal sealed partial class StepSkill
         if ( helper.HasErrors )
         {
             return helper.ErrorResult;
+        }
+
+        // Step.IsAuthorized() also grants EDIT to anybody with EDIT or
+        // MANAGE_STEPS on the step type.
+        if ( !existingStep.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+        {
+            return Error( "You are not authorized to delete this step." );
+        }
+
+        if ( !stepService.CanDelete( existingStep, out var errorMessage ) )
+        {
+            return Error( errorMessage );
         }
 
         stepService.Delete( existingStep );

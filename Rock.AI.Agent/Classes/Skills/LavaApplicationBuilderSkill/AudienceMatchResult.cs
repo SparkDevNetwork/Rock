@@ -24,11 +24,24 @@ namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 internal class AudienceMatchResult
 {
     /// <summary>
-    /// The exact value to pass in the audiences parameter of
-    /// AddOrUpdateLavaApplication: 'Public', 'AllAuthenticatedPeople', or a
-    /// security role name.
+    /// The display name of the candidate: a security role name, or the
+    /// 'Public' or 'AllAuthenticatedPeople' keyword.
     /// </summary>
     public string Audience { get; set; }
+
+    /// <summary>
+    /// The groupIdKey to pass to AddOrUpdateAuthorizationForEntity when the
+    /// candidate is a security role; otherwise <c>null</c>.
+    /// </summary>
+    public string GroupIdKey { get; set; }
+
+    /// <summary>
+    /// The specialRole to pass to AddOrUpdateAuthorizationForEntity when the
+    /// candidate is a keyword: <c>AllUsers</c> for everyone including
+    /// anonymous visitors, or <c>AllAuthenticatedUsers</c> for anyone who is
+    /// logged in; otherwise <c>null</c>.
+    /// </summary>
+    public string SpecialRole { get; set; }
 
     /// <summary>
     /// Who the audience value covers, in plain English.

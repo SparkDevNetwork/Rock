@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -261,7 +261,7 @@ namespace Rock.Blocks.AI
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AISkill.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AISkill.FriendlyTypeName}." );
                 return false;
             }
 

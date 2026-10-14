@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.ContactProfile;
+using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.cs;
 using Rock.Enums.Core;
 using Rock.Enums.Engagement;
@@ -341,8 +341,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult GetContactTouchpointHistory( int contactId )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );

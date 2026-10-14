@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -22,6 +23,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+
 using Microsoft.IdentityModel.Tokens;
 
 namespace Rock.Security
@@ -443,6 +445,287 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Encrypts and authenticates the string using keys that are derived
+        /// from the data encryption key and the specified purpose. Text
+        /// encrypted for one purpose can only be decrypted by
+        /// <see cref="DecryptStringForPurpose(string, string)"/> with the same
+        /// purpose, never by <see cref="DecryptString(string)"/> or with a
+        /// different purpose, and it can't be modified without detection.
+        /// </summary>
+        /// <param name="plainText">The text to encrypt.</param>
+        /// <param name="purpose">The purpose the encrypted text will be used for.</param>
+        /// <returns>The encrypted text.</returns>
+        internal static string EncryptStringForPurpose( string plainText, string purpose )
+        {
+            var keyBytes = _dataEncryptionKeyBytes;
+            var cipherText = EncryptString( plainText, GetPurposeKeyBytes( "DataEncryptionKey", keyBytes, PurposeEncryptionKeyUse, purpose ) );
+
+            if ( string.IsNullOrEmpty( cipherText ) )
+            {
+                return cipherText;
+            }
+
+            var mac = ComputePurposeMac( cipherText, GetPurposeKeyBytes( "DataEncryptionKey", keyBytes, PurposeAuthenticationKeyUse, purpose ) );
+
+            return $"{cipherText}{PurposeMacSeparator}{mac}";
+        }
+
+        /// <summary>
+        /// Decrypts text that was encrypted by <see cref="EncryptStringForPurpose(string, string)"/>
+        /// with the same purpose. The text is only decrypted if it has not
+        /// been modified. Old data encryption keys are also tried, the same
+        /// as <see cref="DecryptString(string)"/>.
+        /// </summary>
+        /// <param name="cipherText">The text to decrypt.</param>
+        /// <param name="purpose">The purpose the encrypted text is being used for.</param>
+        /// <returns>The decrypted text; otherwise <c>null</c>.</returns>
+        internal static string DecryptStringForPurpose( string cipherText, string purpose )
+        {
+            if ( string.IsNullOrWhiteSpace( cipherText ) )
+            {
+                return null;
+            }
+
+            var separatorIndex = cipherText.LastIndexOf( PurposeMacSeparator );
+
+            if ( separatorIndex <= 0 || separatorIndex == cipherText.Length - 1 )
+            {
+                return null;
+            }
+
+            var encryptedText = cipherText.Substring( 0, separatorIndex );
+            var mac = cipherText.Substring( separatorIndex + 1 );
+
+            try
+            {
+                var plainText = DecryptStringForPurpose( encryptedText, mac, "DataEncryptionKey", _dataEncryptionKeyBytes, purpose );
+
+                if ( plainText != null )
+                {
+                    return plainText;
+                }
+            }
+            catch
+            {
+                // Intentionally left blank
+            }
+
+            if ( _oldDataEncryptionKeyBytes != null )
+            {
+                foreach ( var oldDataEncryptionKeyBytes in _oldDataEncryptionKeyBytes )
+                {
+                    try
+                    {
+                        var plainText = DecryptStringForPurpose( encryptedText, mac, oldDataEncryptionKeyBytes.Key, oldDataEncryptionKeyBytes.Value, purpose );
+
+                        if ( plainText.IsNotNullOrWhiteSpace() )
+                        {
+                            return plainText;
+                        }
+                    }
+                    catch
+                    {
+                        // Intentionally left blank
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Encrypts a root folder path, such as "~/Content", so that it can be
+        /// sent to the browser and later trusted by <see cref="DecryptRootFolder(string)"/>.
+        /// Root folders must always be encrypted with this method so that they
+        /// can't be produced by any other use of encryption.
+        /// </summary>
+        /// <param name="rootFolder">The root folder path.</param>
+        /// <returns>The encrypted root folder, or an empty string if <paramref name="rootFolder"/> is empty.</returns>
+        public static string EncryptRootFolder( string rootFolder )
+        {
+            if ( string.IsNullOrEmpty( rootFolder ) )
+            {
+                return string.Empty;
+            }
+
+            return EncryptStringForPurpose( rootFolder, RootFolderEncryptionPurpose );
+        }
+
+        /// <summary>
+        /// Decrypts a root folder that was encrypted by <see cref="EncryptRootFolder(string)"/>.
+        /// </summary>
+        /// <param name="encryptedRootFolder">The encrypted root folder.</param>
+        /// <returns>The root folder path; otherwise <c>null</c>.</returns>
+        public static string DecryptRootFolder( string encryptedRootFolder )
+        {
+            if ( string.IsNullOrWhiteSpace( encryptedRootFolder ) )
+            {
+                return null;
+            }
+
+            var rootFolder = DecryptStringForPurpose( encryptedRootFolder, RootFolderEncryptionPurpose );
+
+            if ( rootFolder != null )
+            {
+                return rootFolder;
+            }
+
+            /*
+                10/6/2026 - MSE
+
+                Root folders used to be encrypted with EncryptString(). Values
+                in that format are still accepted, but only for the content
+                folder, which is the default root folder anyway. This keeps
+                existing links and custom code working.
+
+                Reason: Root folders should only come from Rock.
+            */
+            rootFolder = DecryptString( encryptedRootFolder, false );
+
+            return IsLegacyRootFolderAllowed( rootFolder ) ? rootFolder : null;
+        }
+
+        /// <summary>
+        /// Determines whether a root folder that was encrypted with
+        /// <see cref="EncryptString(string)"/> can still be used. Only the
+        /// content folder and folders inside of it are allowed.
+        /// </summary>
+        /// <param name="rootFolder">The root folder path.</param>
+        /// <returns><c>true</c> if the root folder can be used; otherwise <c>false</c>.</returns>
+        private static bool IsLegacyRootFolderAllowed( string rootFolder )
+        {
+            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            {
+                return false;
+            }
+
+            var segments = rootFolder.Trim().Replace( '\\', '/' ).TrimEnd( '/' ).Split( '/' );
+
+            if ( segments.Length < 2 || segments[0] != "~" || !segments[1].Equals( LegacyRootFolderName, StringComparison.OrdinalIgnoreCase ) )
+            {
+                return false;
+            }
+
+            return segments.Skip( 1 ).All( s => s.Length > 0 && s.Trim( '.', ' ' ).Length > 0 && s.IndexOfAny( Path.GetInvalidFileNameChars() ) < 0 );
+        }
+
+        /// <summary>
+        /// Verifies the authentication code and then decrypts the text using
+        /// the keys derived from a single data encryption key.
+        /// </summary>
+        /// <param name="encryptedText">The encrypted text.</param>
+        /// <param name="mac">The authentication code that was stored with the encrypted text.</param>
+        /// <param name="keyName">The name of the data encryption key, used to cache the derived keys.</param>
+        /// <param name="keyBytes">The data encryption key bytes.</param>
+        /// <param name="purpose">The purpose the encrypted text is being used for.</param>
+        /// <returns>The decrypted text, or <c>null</c> if it could not be verified or decrypted.</returns>
+        private static string DecryptStringForPurpose( string encryptedText, string mac, string keyName, byte[] keyBytes, string purpose )
+        {
+            var macKeyBytes = GetPurposeKeyBytes( keyName, keyBytes, PurposeAuthenticationKeyUse, purpose );
+
+            if ( macKeyBytes == null || !FixedTimeEquals( ComputePurposeMac( encryptedText, macKeyBytes ), mac ) )
+            {
+                return null;
+            }
+
+            return DecryptString( encryptedText, GetPurposeKeyBytes( keyName, keyBytes, PurposeEncryptionKeyUse, purpose ), false );
+        }
+
+        /// <summary>
+        /// Gets the key bytes derived from the data encryption key bytes for
+        /// the specified purpose. The derived keys are cached.
+        /// </summary>
+        /// <param name="keyName">The name of the data encryption key, used to cache the derived key.</param>
+        /// <param name="keyBytes">The data encryption key bytes.</param>
+        /// <param name="keyUse">What the derived key is used for, either encryption or authentication.</param>
+        /// <param name="purpose">The purpose the key will be used for.</param>
+        /// <returns>The derived key bytes.</returns>
+        private static byte[] GetPurposeKeyBytes( string keyName, byte[] keyBytes, string keyUse, string purpose )
+        {
+            if ( keyBytes == null )
+            {
+                return null;
+            }
+
+            return _purposeKeyBytes.GetOrAdd( $"{keyName}|{keyUse}|{purpose}", _ =>
+            {
+                using ( var hmac = new HMACSHA256( keyBytes ) )
+                {
+                    // HMACSHA256 produces 32 bytes, which is the size of an
+                    // AES-256 key.
+                    return hmac.ComputeHash( Encoding.UTF8.GetBytes( $"Rock.Encryption.Purpose.{keyUse}:{purpose}" ) );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Computes the authentication code for the encrypted text.
+        /// </summary>
+        /// <param name="encryptedText">The encrypted text.</param>
+        /// <param name="macKeyBytes">The key used to compute the authentication code.</param>
+        /// <returns>The authentication code as a Base64 string.</returns>
+        private static string ComputePurposeMac( string encryptedText, byte[] macKeyBytes )
+        {
+            using ( var hmac = new HMACSHA256( macKeyBytes ) )
+            {
+                return Convert.ToBase64String( hmac.ComputeHash( Encoding.UTF8.GetBytes( encryptedText ) ) );
+            }
+        }
+
+        /// <summary>
+        /// Compares two strings in a way that takes the same amount of time
+        /// regardless of where they differ.
+        /// </summary>
+        /// <param name="a">The first string.</param>
+        /// <param name="b">The second string.</param>
+        /// <returns><c>true</c> if the strings are equal; otherwise <c>false</c>.</returns>
+        private static bool FixedTimeEquals( string a, string b )
+        {
+            if ( a == null || b == null || a.Length != b.Length )
+            {
+                return false;
+            }
+
+            var difference = 0;
+
+            for ( var i = 0; i < a.Length; i++ )
+            {
+                difference |= a[i] ^ b[i];
+            }
+
+            return difference == 0;
+        }
+
+        /// <summary>
+        /// The character that separates the encrypted text from its
+        /// authentication code. This never appears in Base64 text.
+        /// </summary>
+        private const char PurposeMacSeparator = '.';
+
+        /// <summary>
+        /// The key use for the derived key that encrypts the text.
+        /// </summary>
+        private const string PurposeEncryptionKeyUse = "Encryption";
+
+        /// <summary>
+        /// The key use for the derived key that authenticates the encrypted text.
+        /// </summary>
+        private const string PurposeAuthenticationKeyUse = "Authentication";
+
+        private static readonly ConcurrentDictionary<string, byte[]> _purposeKeyBytes = new ConcurrentDictionary<string, byte[]>();
+
+        /// <summary>
+        /// The purpose used when encrypting root folders.
+        /// </summary>
+        private const string RootFolderEncryptionPurpose = "Rock.RootFolder";
+
+        /// <summary>
+        /// The only top level folder that root folders in the old format
+        /// can be in.
+        /// </summary>
+        private const string LegacyRootFolderName = "Content";
+
+        /// <summary>
         /// Decrypts the string. Dual-mode Decrypt (footer → v2; else v2-no-footer; else v1)
         /// </summary>
         /// <param name="cipherText">The cipher text.</param>
@@ -835,6 +1118,22 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Computes an HMAC-SHA256 signature of the data with a key derived from the data encryption key for the given purposes.
+        /// </summary>
+        /// <param name="data">The data to sign.</param>
+        /// <param name="purposes">The purposes that scope the derived key, so a signature made for one purpose never validates for another.</param>
+        /// <returns>The 32-byte signature.</returns>
+        /// <remarks>
+        /// The signature changes whenever the data encryption key changes, so it suits short-lived tokens rather than long-term storage.
+        /// </remarks>
+        internal static byte[] ComputePurposeHmacSha256( byte[] data, string[] purposes )
+        {
+            DeriveKeys( _dataEncryptionKeyBytes, BuildPurposeContext( purposes ), out _, out var macKey );
+
+            return ComputeHmacSha256( macKey, data );
+        }
+
+        /// <summary>
         /// converts a hexadecimal string to byte.
         /// </summary>
         /// <param name="hexString">The hexadecimal string.</param>
@@ -988,7 +1287,14 @@ namespace Rock.Security
                 return hmac.ComputeHash( data );
             }
         }
-        private static bool ConstantTimeEquals( byte[] a, byte[] b )
+
+        /// <summary>
+        /// Compares two byte arrays in time that does not depend on where they differ.
+        /// </summary>
+        /// <param name="a">The first array.</param>
+        /// <param name="b">The second array.</param>
+        /// <returns><c>true</c> if both arrays are non-null and contain the same bytes; otherwise <c>false</c>.</returns>
+        internal static bool ConstantTimeEquals( byte[] a, byte[] b )
         {
             if ( a == null || b == null || a.Length != b.Length )
             {

@@ -1,0 +1,31 @@
+{
+  "last_reviewed": "2026-09-30",
+  "note": "Model lineups shift every few weeks. Re-verify vendor model IDs before trusting them. List Codex models with 'codex debug models' and Grok models with 'grok models'.",
+  "vendors": {
+    "openai": {
+      "cli": "codex",
+      "tiers": {
+        "cheap":   { "model": "gpt-5.6-terra", "default_effort": "low",    "overridable_to": [ "low", "medium" ] },
+        "default": { "model": "gpt-6.1-sol",   "default_effort": "medium", "overridable_to": [ "low", "medium", "high" ] },
+        "deep":    { "model": "gpt-6-astra",   "default_effort": "medium", "overridable_to": [ "medium", "high", "xhigh" ], "note": "Expensive. Reserve for real need." }
+      }
+    },
+    "grok": {
+      "cli": "grok",
+      "tiers": {
+        "cheap":   { "model": "grok-4.7", "default_effort": "low",   "overridable_to": [ "low", "medium" ] },
+        "default": { "model": "grok-4.7", "default_effort": "high",  "overridable_to": [ "medium", "high" ] },
+        "deep":    { "model": "grok-4.7", "default_effort": "xhigh", "overridable_to": [ "high", "xhigh" ] }
+      }
+    },
+    "claude": {
+      "cli": "native (sub-agent frontmatter 'model' and 'effort' fields)",
+      "note": "Rolling aliases (sonnet, opus, fable) stay current without edits. Do not pin versions for this vendor. Frontmatter can't read this file, so agents mirror their Claude tier by hand.",
+      "tiers": {
+        "cheap":   { "model": "sonnet", "default_effort": "low",    "overridable_to": [ "low", "medium", "high" ] },
+        "default": { "model": "opus",   "default_effort": "medium", "overridable_to": [ "medium", "high", "xhigh", "max" ] },
+        "deep":    { "model": "fable",  "default_effort": "high",   "overridable_to": [ "high", "xhigh", "max" ] }
+      }
+    }
+  }
+}

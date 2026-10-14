@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,18 +18,19 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.SystemKey;
 using Rock.Utility;
-using Rock;
 using Rock.ViewModels.Blocks;
-using System.Data.Entity;
-using Rock.Security;
 using Rock.ViewModels.Blocks.Engagement.CampaignList;
 
 namespace Rock.Blocks.Engagement

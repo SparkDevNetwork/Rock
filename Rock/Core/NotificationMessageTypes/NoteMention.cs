@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,16 +21,17 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
 using Rock.Net;
 using Rock.ViewModels.Core;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
-using Rock.Configuration;
 
 namespace Rock.Core.NotificationMessageTypes
 {
@@ -187,7 +188,21 @@ namespace Rock.Core.NotificationMessageTypes
         public override NotificationMessageMetadataBag GetMetadata( NotificationMessage message )
         {
             var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
-            var url = messageData != null ? $"~/GetAvatar.ashx?PersonAliasId={messageData.PersonAliasId}" : "~/GetAvatar.ashx?Style=Icon";
+            var url = "~/GetAvatar.ashx?Style=Icon";
+
+            // The shared URL builder signs the avatar URL, which GetAvatar.ashx requires before it shows a photo.
+            if ( messageData != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var person = new PersonAliasService( rockContext ).GetPerson( messageData.PersonAliasId );
+
+                    if ( person != null )
+                    {
+                        url = Person.GetPersonPhotoUrl( person );
+                    }
+                }
+            }
 
             return new NotificationMessageMetadataBag
             {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.NamelessPersonList;
 using Rock.ViewModels.Rest.Controls;
@@ -80,7 +83,7 @@ namespace Rock.Blocks.Crm
 
                 // Get the nameless person by their ID
                 var namelessPerson = personService.Get( namelessPersonId );
-                if ( namelessPerson == null )
+                if ( namelessPerson == null || !IsNamelessPerson( namelessPerson ) )
                 {
                     return ActionBadRequest( "Nameless person not found" );
                 }
@@ -110,7 +113,7 @@ namespace Rock.Blocks.Crm
                     .FirstOrDefault( p => p.PhoneNumbers.Any( n => n.Number == cleanMobilePhone ) );
 
                 var namelessPerson = personService.Get( namelessPersonId );
-                if ( namelessPerson == null )
+                if ( namelessPerson == null || !IsNamelessPerson( namelessPerson ) )
                 {
                     return ActionNotFound( "Nameless person not found." );
                 }
@@ -135,6 +138,18 @@ namespace Rock.Blocks.Crm
                 var mergePageUrl = string.Format( "/PersonMerge/{0}", mergeRequest.Id );
                 return new BlockActionResult( System.Net.HttpStatusCode.OK, mergePageUrl );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified person is a nameless person record.
+        /// </summary>
+        /// <param name="person">The person to check.</param>
+        /// <returns><c>true</c> if the person is a nameless person record; otherwise, <c>false</c>.</returns>
+        private static bool IsNamelessPerson( Person person )
+        {
+            var namelessPersonRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() )?.Id;
+
+            return namelessPersonRecordTypeId.HasValue && person.RecordTypeValueId == namelessPersonRecordTypeId.Value;
         }
 
         private void UpdatePersonFromEditorBag( Person person, PersonBasicEditorBag personBag, RockContext rockContext )
@@ -231,8 +246,35 @@ namespace Rock.Blocks.Crm
             box.ExpectedRowCount = null;
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+
+            // Allow the family role picker used when creating a new person.
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            if ( familyGroupType != null )
+            {
+                securityGrant.AddRule( new GroupRolePickerSecurityGrantRule( familyGroupType.Id ) );
+            }
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>

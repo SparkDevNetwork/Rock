@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 
 using Newtonsoft.Json;
+
 using RestSharp;
+
 using Rock.Attribute;
 using Rock.Web.Cache;
 

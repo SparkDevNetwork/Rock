@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -521,6 +521,13 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                // This block only works with businesses, never allow it to
+                // modify or delete a regular person record.
+                if ( entity != null && !entity.IsBusiness() )
+                {
+                    entity = null;
+                }
             }
             else
             {
@@ -537,7 +544,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Person.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Person.FriendlyTypeName}." );
                 return false;
             }
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,34 @@ namespace Rock.Core.EntitySearch
         /// <param name="rockContext">The database context that <paramref name="queryable"/> is valid for. This may be <c>null</c> but will disable certain features.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
         public static EntitySearchResultsBag GetSearchResults<TEntity>( IQueryable<TEntity> queryable, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
+            where TEntity : IEntity
+        {
+            /*
+                10/9/2026 - MSE
+
+                Person tokens are only allowed for the current person while the
+                search runs. Expressions that read the token properties directly
+                are rejected by RestrictedMemberExpressionVisitor.
+
+                Reason: Prevent entity searches from creating sign-in tokens for other people.
+            */
+            using ( PersonTokenScope.RestrictTo( systemQuery?.CurrentPerson ) )
+            {
+                return GetSearchResultsInternal( queryable, systemQuery, userQuery, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the search results from the specified queryable using the
+        /// provided query information.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of objects in the queryable.</typeparam>
+        /// <param name="queryable">The queryable to search.</param>
+        /// <param name="systemQuery">The system query definition.</param>
+        /// <param name="userQuery">The additional user query details.</param>
+        /// <param name="rockContext">The database context that <paramref name="queryable"/> is valid for. This may be <c>null</c> but will disable certain features.</param>
+        /// <returns>A list of dynamic objects that represents the results.</returns>
+        private static EntitySearchResultsBag GetSearchResultsInternal<TEntity>( IQueryable<TEntity> queryable, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
             where TEntity : IEntity
         {
             var config = _parsingConfig;
@@ -200,6 +228,10 @@ namespace Rock.Core.EntitySearch
             {
                 resultQry = resultQry.Take( takeCount.Value );
             }
+
+            // Check the full expression before anything is evaluated, including
+            // the count below and any results that are evaluated later.
+            RestrictedMemberExpressionVisitor.Validate( resultQry.Expression );
 
             // If they only want the count then just return that.
             if ( userQuery?.IsCountOnly == true )

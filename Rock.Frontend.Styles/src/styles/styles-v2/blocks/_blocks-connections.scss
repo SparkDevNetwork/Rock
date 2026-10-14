@@ -611,16 +611,6 @@
         padding-right: var(--spacing-tiny);
     }
 
-    .flyout-footer-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        &-laststatus {
-            justify-content: flex-end;
-        }
-    }
-
     // Board View
     .connection-request-card {
         cursor: pointer;
@@ -698,6 +688,16 @@
         @media (max-width: 500px) {
             grid-template-columns: repeat(1, 1fr);
         }
+    }
+}
+
+.flyout-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &-laststatus {
+        justify-content: flex-end;
     }
 }
 

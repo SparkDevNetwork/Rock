@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -164,6 +164,37 @@ namespace Rock.Blocks.Security
             }
 
             /*
+                10/13/2026 - MSE
+
+                Unlocking writes a security rule, so the current person must be able to
+                administrate the checked entity, the same check the Security block makes.
+                The governing rule is recomputed for the entity and person in the request
+                and the matching row is kept, so a rule key cannot be applied to a different
+                entity or person than the one it was shown for. Flipping a rule that lives
+                on a parent item also requires administrate access on that parent item.
+
+                Reason: People who could view this block could grant any permission to anyone.
+            */
+            var currentPerson = GetCurrentPerson();
+
+            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
+            {
+                return ActionForbidden( "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of this item." );
+            }
+
+            // The grid only offers the unlock button on rows whose governing
+            // rule is a Deny found by walking this entity's authority chain for
+            // this person. Recompute those rows so a tampered rule key cannot
+            // flip or copy a rule from some unrelated entity or action.
+            var unlockRow = BuildSecurityRows( entity, person )
+                .FirstOrDefault( r => r.Action == auth.Action && r.AuthIdKey == auth.IdKey );
+
+            if ( unlockRow == null || !unlockRow.IsUnlockable || auth.AllowOrDeny == "A" )
+            {
+                return ActionBadRequest( "The security rule could not be found." );
+            }
+
+            /*
                 6/4/26 - MSE
 
                 The denying rule can belong to a parent authority (for example a
@@ -182,6 +213,11 @@ namespace Rock.Blocks.Security
 
             if ( explicitAuth != null )
             {
+                if ( unlockRow.AuthoritativeEntity == null || !unlockRow.AuthoritativeEntity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
+                {
+                    return ActionForbidden( "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of the item that owns this rule." );
+                }
+
                 explicitAuth.AllowOrDeny = "A";
                 RockContext.SaveChanges();
 
@@ -314,7 +350,8 @@ namespace Rock.Blocks.Security
                     Role = roleName,
                     Access = auth.AllowOrDeny == "A" ? "Allow" : "Deny",
                     IsUnlockable = auth.AllowOrDeny != "A",
-                    AuthIdKey = auth.IdKey
+                    AuthIdKey = auth.IdKey,
+                    AuthoritativeEntity = authoritativeEntity
                 };
 
                 if ( authoritativeEntity is IEntity authoritative )
@@ -578,6 +615,13 @@ namespace Rock.Blocks.Security
             /// null when no explicit rule was found.
             /// </summary>
             public string AuthIdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the secured entity that owns the governing rule, or
+            /// null when no explicit rule was found. This is only used on the
+            /// server and is never sent to the client.
+            /// </summary>
+            internal ISecured AuthoritativeEntity { get; set; }
         }
 
         #endregion Supporting Classes

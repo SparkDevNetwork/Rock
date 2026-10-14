@@ -1,7 +1,11 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Loading :isLoading="isLoading">
-        <div class="fee-table">
+        <NotificationBox v-if="fetchCostErrorMessage" alertType="danger">
+            <p>{{ fetchCostErrorMessage }}</p>
+            <RockButton btnType="default" btnSize="xs" @click="onRetryFetchCost">Retry</RockButton>
+        </NotificationBox>
+        <div v-if="!fetchCostErrorMessage" class="fee-table">
             <div class="row hidden-xs fee-header">
                 <div :class="{ 'col-sm-6': hasDiscount, 'col-sm-9': !hasDiscount }">
                     <strong>Description</strong>
@@ -41,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="row fee-totals">
+        <div v-if="!fetchCostErrorMessage" class="row fee-totals">
             <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
                 <div class="form-group static-control">
                     <label class="control-label">Total Cost</label>
@@ -198,6 +202,12 @@
     const isConfigurePaymentPlanModalShown = ref<boolean>(false);
     const isDeletePaymentPlanModalShown = ref<boolean>(false);
     const deletePaymentPlanErrorMessage = ref<string>("");
+
+    /** The error message to display when the cost line items could not be retrieved from the server. */
+    const fetchCostErrorMessage = ref<string>("");
+
+    /** The message shown when the server does not provide a more specific reason the cost could not be calculated. */
+    const defaultFetchCostErrorMessage = "The registration cost could not be calculated. Please check your connection and try again.";
 
     // #endregion
 
@@ -406,22 +416,41 @@
     /** Retrieve the line item costs from the server */
     async function fetchCostData(): Promise<void> {
         isLoading.value = true;
-        // lineItems.value = [];
+        fetchCostErrorMessage.value = "";
+
+        // Block submission until the cost has been (re)calculated so the
+        // registration is never submitted against stale or missing cost data.
+        updateRegistrationCostSummary({ isLoaded: false });
 
         try {
             const response = await invokeBlockAction<RegistrationEntryCostSummaryBag[]>("CalculateCost", {
                 args: getRegistrationEntryBlockArgs()
             });
 
-            if (response.data) {
-                lineItems.value = response.data;
-            }
-            else {
+            /*
+                9/18/26 - MSE
+
+                A failed request (an error response, or a network failure that the
+                HTTP layer reports as an error result rather than throwing) used to
+                fall through to an empty line item list. That made a paid registration
+                look free: the amount to pay became $0, the payment step was skipped
+                and SubmitRegistration was posted with no payment method. Treat it as
+                an error state instead and let the registrant retry.
+
+                Reason: A failed CalculateCost request must not be treated as a $0 cost.
+                https://github.com/SparkDevNetwork/Rock/issues/7048
+            */
+            if (response.isError) {
                 lineItems.value = [];
+                fetchCostErrorMessage.value = response.errorMessage || defaultFetchCostErrorMessage;
+                return;
             }
+
+            lineItems.value = response.data ?? [];
         }
         catch (e) {
             lineItems.value = [];
+            fetchCostErrorMessage.value = defaultFetchCostErrorMessage;
             throw e;
         }
         finally {
@@ -432,7 +461,8 @@
         updateRegistrationCostSummary({
             paidAmount: amountPreviouslyPaid.value,
             remainingAmount: amountRemaining.value,
-            minimumRemainingAmount: amountDueToday.value
+            minimumRemainingAmount: amountDueToday.value,
+            isLoaded: true
         });
     }
 
@@ -497,6 +527,11 @@
     /** Event handler that removes the registration's payment plan configuration. */
     function onCancelPaymentPlanConfiguration(): void {
         cancel();
+    }
+
+    /** Event handler for the Retry button shown when the cost could not be calculated. */
+    async function onRetryFetchCost(): Promise<void> {
+        await fetchCostData();
     }
 
     // #endregion

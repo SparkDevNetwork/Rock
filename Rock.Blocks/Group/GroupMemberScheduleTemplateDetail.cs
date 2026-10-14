@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Group.GroupMemberScheduleTemplateDetail;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Group
 {
@@ -305,7 +305,7 @@ namespace Rock.Blocks.Group
         {
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest($"Not authorized to edit ${GroupMemberScheduleTemplate.FriendlyTypeName}.");
+                return ActionBadRequest($"Not authorized to edit {GroupMemberScheduleTemplate.FriendlyTypeName}.");
             }
 
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )

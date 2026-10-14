@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,11 +23,11 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Group.GroupTypeMap;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Group.GroupTypeMap;
 
 namespace Rock.Blocks.Group
 {
@@ -601,7 +601,19 @@ namespace Rock.Blocks.Group
             }
 
             var group = new GroupService( RockContext ).Get( request.GroupId );
-            if ( group == null )
+            var groupType = ResolveGroupType( GetAttributeValue( AttributeKey.GroupType ), PageParameter( PageParameterKey.GroupTypeId ) );
+            var includeInactiveGroups = GetAttributeValue( AttributeKey.IncludeInactiveGroups ).AsBoolean();
+
+            // The map only shows groups of the configured group type (and
+            // only active ones unless inactive groups are included), so any
+            // other group is treated as not found. Otherwise a tampered id
+            // could render the members of any group the person can view.
+            var isGroupMapped = group != null
+                && groupType != null
+                && group.GroupTypeId == groupType.Id
+                && ( includeInactiveGroups || group.IsActive );
+
+            if ( !isGroupMapped )
             {
                 return ActionBadRequest( "The group could not be found." );
             }

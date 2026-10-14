@@ -175,7 +175,7 @@
 
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./ContentChannelNavigation/types.partial";
+    import { NavigationUrlKey, PageParameterKey, PreferenceKey, GridSettingsOptions } from "./ContentChannelNavigation/types.partial";
     import GridSettingsModal from "./ContentChannelNavigation/gridSettingsModal.partial.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -184,6 +184,7 @@
     import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, DateTimeColumn, DeleteColumn, NumberColumn, PersonColumn, ReorderColumn, SecurityColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged, usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { isValidGuid } from "@Obsidian/Utility/guid";
     import { safeParseJson } from "@Obsidian/Utility/jsonUtils";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -207,8 +208,13 @@
 
     const blockError = ref("");
 
-    const selectedChannelGuid = ref<string | null>(config.bag?.selectedChannelGuid || preferences.getValue(PreferenceKey.SelectedChannel) || null);
-    const selectedCategoryValue = ref(config.bag?.selectedCategoryGuid || preferences.getValue(PreferenceKey.CategoryFilter) || "");
+    const linkedChannelGuid = config.bag?.selectedChannelGuid || null;
+    const linkedCategoryGuid = config.bag?.selectedCategoryGuid || "";
+
+    const selectedChannelGuid = ref<string | null>(linkedChannelGuid || preferences.getValue(PreferenceKey.SelectedChannel) || null);
+    const selectedCategoryValue = ref(linkedChannelGuid
+        ? linkedCategoryGuid
+        : (linkedCategoryGuid || preferences.getValue(PreferenceKey.CategoryFilter) || ""));
     const isPendingFilterActive = ref(asBooleanOrNull(preferences.getValue(PreferenceKey.StatusFilter)) ?? false);
 
     const channels = ref<ContentChannelNavigationChannelBag[]>([]);
@@ -404,6 +410,51 @@
         }
     }
 
+    /**
+     * Writes the selected channel and category to the browser URL so the
+     * current view can be copied and shared as a link. Uses replaceState so
+     * tile clicks do not add entries to the browser history.
+     */
+    function updateUrlQueryParams(): void {
+        const url = new URL(window.location.href);
+        const queryParams = url.searchParams;
+
+        // Remove every parameter this block owns (case-insensitively, since
+        // Rock page parameters are not case-sensitive) before writing the
+        // current selection. The Id form is accepted as an incoming page
+        // parameter but only the Guid form is written, so dropping the Id
+        // keeps a stale value from lingering beside a newer Guid.
+        const ownedKeys: string[] = [
+            PageParameterKey.ContentChannelId,
+            PageParameterKey.ContentChannelGuid,
+            PageParameterKey.CategoryGuid
+        ];
+
+        for (const key of Array.from(queryParams.keys())) {
+            if (ownedKeys.some(ownedKey => ownedKey.toLowerCase() === key.toLowerCase())) {
+                queryParams.delete(key);
+            }
+        }
+
+        // Only write well-formed Guids. The WebForms version of this block
+        // stored integer Ids under the same preference keys, so a person who
+        // used it before the conversion can still have a legacy value here.
+        if (selectedChannelGuid.value && isValidGuid(selectedChannelGuid.value)) {
+            queryParams.set(PageParameterKey.ContentChannelGuid, selectedChannelGuid.value);
+        }
+
+        if (selectedCategoryValue.value && isValidGuid(selectedCategoryValue.value)) {
+            queryParams.set(PageParameterKey.CategoryGuid, selectedCategoryValue.value);
+        }
+
+        const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+        if (nextUrl !== currentUrl) {
+            window.history.replaceState(null, "", nextUrl);
+        }
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -533,14 +584,14 @@
         }
     });
 
-    // #endregion Watchers
+    /**
+     * Keep the browser URL in sync with the selected channel and category.
+     * This covers tile clicks, category changes, and the channel being
+     * cleared when it drops out of the filtered list.
+     */
+    watch([selectedChannelGuid, selectedCategoryValue], updateUrlQueryParams);
 
-    // Persist page-parameter-driven selections to preferences so they
-    // survive a return visit without the query string.
-    if (config.bag?.selectedCategoryGuid) {
-        preferences.setValue(PreferenceKey.CategoryFilter, config.bag.selectedCategoryGuid);
-        preferences.save();
-    }
+    // #endregion Watchers
 
     (async () => {
         try {
@@ -549,6 +600,28 @@
             if (selectedChannelGuid.value && !gridDataSource.value) {
                 gridDataSource.value = loadGridData();
             }
+
+            // Persist link-driven selections so a return visit without the
+            // query string lands on the same view. The link takes priority
+            // over the saved preferences, but a linked channel is only
+            // persisted once the list confirms the person can actually see
+            // it, so a link to an unavailable channel leaves their saved
+            // preferences alone.
+            if (linkedChannelGuid) {
+                if (selectedChannelGuid.value === linkedChannelGuid) {
+                    preferences.setValue(PreferenceKey.SelectedChannel, linkedChannelGuid);
+                    preferences.setValue(PreferenceKey.CategoryFilter, selectedCategoryValue.value);
+                    await preferences.save();
+                }
+            }
+            else if (linkedCategoryGuid) {
+                preferences.setValue(PreferenceKey.CategoryFilter, linkedCategoryGuid);
+                await preferences.save();
+            }
+
+            // Reflect the resolved selection in the URL so the page is
+            // shareable even when the channel came from a saved preference.
+            updateUrlQueryParams();
         }
         catch (error) {
             blockError.value = error instanceof Error ? error.message : "Failed to initialize block.";

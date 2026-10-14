@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -680,6 +680,13 @@ namespace Rock.Net
                 {
                     // Load from IdKey.
                     entity = Reflection.GetIEntityForEntityType( type, entityKey );
+                }
+
+                // Don't provide a context entity the current person isn't
+                // allowed to view.
+                if ( entity is Rock.Security.ISecured securedEntity && !securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                {
+                    return null;
                 }
 
                 if ( entity != null && entity is IHasAttributes attributedEntity )

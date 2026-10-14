@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,19 +34,22 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+
 using Humanizer;
 using Humanizer.Localisation;
+
 using Ical.Net;
+
 using ImageResizer;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Core.Geography;
+using Rock.Core.Geography.Classes;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Enums.Geography;
-using Rock.Core.Geography;
-using Rock.Core.Geography.Classes;
 using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;
@@ -245,6 +248,61 @@ namespace Rock.Lava
             }
 
             return new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).Get( personId );
+        }
+
+        /// <summary>
+        /// Returns a signed avatar URL for a person, which shows their photo until it expires and their initials or icon after that.
+        /// </summary>
+        /// <param name="context">The Lava render context.</param>
+        /// <param name="input">The person, or a person Id, IdKey, or Guid.</param>
+        /// <param name="size">The avatar's width and height in pixels; when omitted or blank, the avatar's default size is used.</param>
+        /// <param name="rootUrl"><c>true</c> or <c>"rootUrl"</c> to prefix the URL with the PublicApplicationRoot global attribute, as the ImageUrl filter does; otherwise the URL is site-relative.</param>
+        /// <returns>The avatar URL, or an empty string when no person is found.</returns>
+        /// <remarks>The URL stops showing the photo seven days after the start of the day it was created.</remarks>
+        public static string PersonAvatarUrl( ILavaRenderContext context, object input, object size = null, object rootUrl = null )
+        {
+            var person = GetPerson( input, context );
+
+            if ( person == null && input != null )
+            {
+                person = new PersonService( LavaHelper.GetRockContextFromLavaContext( context ) ).Get( input.ToString() );
+            }
+
+            if ( person == null )
+            {
+                return string.Empty;
+            }
+
+            var url = Person.GetPersonPhotoUrl( person, size.ToStringSafe().AsIntegerOrNull() );
+
+            var rootUrlString = rootUrl.ToStringSafe();
+            var isRootUrlRequested = rootUrlString.Equals( "rootUrl", StringComparison.OrdinalIgnoreCase ) || rootUrlString.AsBoolean();
+            var publicApplicationRoot = isRootUrlRequested ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : null;
+
+            return ResolveAvatarUrl( url, Rock.Configuration.RockApp.Current.HostingSettings.VirtualRootPath, publicApplicationRoot );
+        }
+
+        /// <summary>
+        /// Turns an avatar URL into one a browser or email client can load: site-relative, or absolute when a public application root is given.
+        /// </summary>
+        /// <param name="url">The avatar URL, which may be a virtual path starting with <c>~/</c>.</param>
+        /// <param name="virtualRootPath">The application's virtual root path, such as <c>/</c>.</param>
+        /// <param name="publicApplicationRoot">The public application root to prefix, or <c>null</c> to keep the URL site-relative.</param>
+        /// <returns>The resolved avatar URL.</returns>
+        internal static string ResolveAvatarUrl( string url, string virtualRootPath, string publicApplicationRoot )
+        {
+            // Outside a web request, such as a job sending email, the URL comes back as a "~/" virtual path that nothing can load.
+            if ( url.StartsWith( "~/" ) )
+            {
+                url = ( virtualRootPath ?? "/" ).EnsureTrailingForwardslash() + url.Substring( 2 );
+            }
+
+            if ( publicApplicationRoot.IsNullOrWhiteSpace() )
+            {
+                return url;
+            }
+
+            return publicApplicationRoot.TrimEnd( '/' ) + url;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,13 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.AI;
@@ -24,12 +30,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestDetail;
 using Rock.Web.Cache;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Prayer
 {
@@ -578,7 +578,7 @@ namespace Rock.Blocks.Prayer
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${PrayerRequest.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {PrayerRequest.FriendlyTypeName}." );
                 return false;
             }
 
@@ -624,11 +624,27 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult GetPersonName( string personAliasGuid )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( $"Not authorized to edit {PrayerRequest.FriendlyTypeName}." );
+            }
+
+            var aliasGuid = personAliasGuid.AsGuidOrNull();
+
+            if ( !aliasGuid.HasValue || aliasGuid.Value == Guid.Empty )
+            {
+                return ActionNotFound();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
-                var person = personAliasService.Get( personAliasGuid ).Person;
+                var person = personAliasService.Get( aliasGuid.Value )?.Person;
 
+                if ( person == null )
+                {
+                    return ActionNotFound();
+                }
 
                 return ActionOk( new PrayerRequestDetailAddPersonResponseBag
                 {

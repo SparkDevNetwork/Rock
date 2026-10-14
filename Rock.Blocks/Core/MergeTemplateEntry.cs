@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -152,7 +152,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Resolves the entity set identified by the <c>Set</c> page parameter.
         /// </summary>
-        /// <returns>The entity set, or <c>null</c> when one was not provided or could not be found.</returns>
+        /// <returns>The entity set, or <c>null</c> when one was not provided, could not be found or was not created by the current person.</returns>
         private EntitySet GetEntitySet()
         {
             var entitySetKey = PageParameter( PageParameterKey.Set );
@@ -161,7 +161,44 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
-            return new EntitySetService( RockContext ).Get( entitySetKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var entitySet = new EntitySetService( RockContext ).Get( entitySetKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( entitySet == null || !IsEntitySetOwnedByCurrentPerson( entitySet ) )
+            {
+                return null;
+            }
+
+            return entitySet;
+        }
+
+        /// <summary>
+        /// Determines whether the entity set was created by the current person.
+        /// </summary>
+        /// <param name="entitySet">The entity set.</param>
+        /// <returns><c>true</c> if the entity set was created by the current person; otherwise <c>false</c>.</returns>
+        private bool IsEntitySetOwnedByCurrentPerson( EntitySet entitySet )
+        {
+            /*
+                10/12/2026 - MSE
+
+                Entity set identifiers are sequential, so the Set page parameter
+                could be changed to open a set another person created, such as
+                the rows of a report or giving list they can not view. Grids
+                create the set while the person is signed in, so the creator is
+                the person who should be able to merge it. The person Id is
+                compared instead of the alias Id so a merged person still matches.
+                Sets with no creator are rejected.
+
+                Reason: Prevent merging entity sets created by other people.
+            */
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( currentPerson == null || !entitySet.CreatedByPersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            var ownerPersonId = new PersonAliasService( RockContext ).GetPersonId( entitySet.CreatedByPersonAliasId.Value );
+
+            return ownerPersonId.HasValue && ownerPersonId.Value == currentPerson.Id;
         }
 
         /// <summary>
@@ -589,6 +626,28 @@ namespace Rock.Blocks.Core
             };
         }
 
+        /// <summary>
+        /// Determines whether the merge template can be used by the current person. This
+        /// matches the picker's <see cref="Rock.Enums.Controls.MergeTemplateOwnership.PersonalAndGlobal"/>
+        /// ownership: global templates, or personal templates owned by the current person.
+        /// The template Guid is posted by the browser, so it must be checked here too.
+        /// </summary>
+        /// <param name="mergeTemplate">The merge template.</param>
+        /// <returns><c>true</c> if the merge template can be used; otherwise <c>false</c>.</returns>
+        private bool IsMergeTemplateAllowed( MergeTemplate mergeTemplate )
+        {
+            if ( !mergeTemplate.PersonAliasId.HasValue )
+            {
+                return true;
+            }
+
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return currentPerson != null
+                && mergeTemplate.PersonAlias != null
+                && mergeTemplate.PersonAlias.PersonId == currentPerson.Id;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -612,7 +671,7 @@ namespace Rock.Blocks.Core
             var mergeTemplate = bag.MergeTemplateGuid.HasValue
                 ? new MergeTemplateService( RockContext ).Get( bag.MergeTemplateGuid.Value )
                 : null;
-            if ( mergeTemplate == null )
+            if ( mergeTemplate == null || !IsMergeTemplateAllowed( mergeTemplate ) )
             {
                 return ActionOk( new MergeTemplateEntryMergeResponseBag { ErrorMessage = "Unable to get merge template", IsErrorDanger = true } );
             }
@@ -714,6 +773,13 @@ namespace Rock.Blocks.Core
             var mergeTemplate = bag.MergeTemplateGuid.HasValue
                 ? new MergeTemplateService( RockContext ).Get( bag.MergeTemplateGuid.Value )
                 : null;
+
+            // Fall back to the default help for a template the picker would not offer.
+            if ( mergeTemplate != null && !IsMergeTemplateAllowed( mergeTemplate ) )
+            {
+                mergeTemplate = null;
+            }
+
             var mergeTemplateType = mergeTemplate?.GetMergeTemplateType();
 
             var lavaDebugHtml = mergeTemplateType != null

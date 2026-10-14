@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -228,10 +228,14 @@ namespace Rock.Blocks.Finance
             if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
             {
                 var currentPerson = RequestContext.CurrentPerson;
-                if ( currentPerson != null && !string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
+                if ( currentPerson == null || string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
                 {
-                    query = query.Where( a => a.PersonAlias.Person.GivingId == currentPerson.GivingId );
+                    // No signed-in person means no pledges to show.
+                    return query.Where( a => false );
                 }
+
+                var givingId = currentPerson.GivingId;
+                query = query.Where( a => a.PersonAlias.Person.GivingId == givingId );
             }
             else
             {
@@ -327,6 +331,13 @@ namespace Rock.Blocks.Finance
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {FinancialPledge.FriendlyTypeName}." );
+                }
+
+                // Make sure the pledge is one this list would display, such
+                // as when limited to the current person's pledges.
+                if ( !GetListQueryable( rockContext ).Any( p => p.Id == entity.Id ) )
+                {
+                    return ActionBadRequest( $"{FinancialPledge.FriendlyTypeName} not found." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

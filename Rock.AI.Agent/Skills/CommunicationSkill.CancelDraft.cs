@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,14 @@ internal partial class CommunicationSkill
         if ( draft.Status != CommunicationStatus.Transient )
         {
             return Error( "You can not cancel a communication that is not in a transient state." );
+        }
+
+        // Security is not checked when loading so that people can cancel
+        // their own drafts even without VIEW access to communications. So
+        // make sure they are allowed to change this specific draft.
+        if ( !IsAuthorizedToEditDraft( draft, AgentRequestContext.CurrentPerson ) )
+        {
+            return Error( "You are not authorized to cancel this draft." );
         }
 
         if ( !communicationService.CanDelete( draft, out var errorMessage ) )

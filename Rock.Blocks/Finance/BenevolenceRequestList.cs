@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -369,6 +369,16 @@ namespace Rock.Blocks.Finance
             }
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {BenevolenceRequest.FriendlyTypeName}." );
+            }
+
+            // Only allow deleting requests this block would display, which
+            // limits them to the context family and the configured types.
+            var entityId = entity.Id;
+            var isInList = GetListQueryable( RockContext ).Any( r => r.Id == entityId );
+
+            if ( !isInList || !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {BenevolenceRequest.FriendlyTypeName}." );
             }

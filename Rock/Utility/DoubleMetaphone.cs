@@ -1,4 +1,4 @@
-﻿// **
+// **
 // * DoubleMetaphone.cs
 // * 
 // * An implementation of Lawrence Phillips' Double Metaphone phonetic matching

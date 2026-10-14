@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -422,7 +422,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${ContentChannelType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {ContentChannelType.FriendlyTypeName}." );
                 return false;
             }
 
@@ -552,6 +552,18 @@ namespace Rock.Blocks.Cms
                      && !ValidateItemAttributeKeysAgainstChannels( entity.Id, box.Entity.ItemAttributes, rockContext, out validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
+                }
+
+                // Make sure the channel and item attributes are either new or
+                // already belong to this content channel type.
+                var qualifierValue = entity.Id == 0 ? null : entity.Id.ToString();
+                var channelEntityTypeId = EntityTypeCache.Get( typeof( ContentChannel ) ).Id;
+                var itemEntityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
+
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.ChannelAttributes, channelEntityTypeId, "ContentChannelTypeId", qualifierValue, rockContext )
+                    || !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.ItemAttributes, itemEntityTypeId, "ContentChannelTypeId", qualifierValue, rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
                 }
 
                 if ( entity.Id == 0 )

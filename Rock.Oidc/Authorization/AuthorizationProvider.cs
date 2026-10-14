@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -124,6 +124,7 @@ namespace Rock.Oidc.Authorization
                 ClaimsIdentity identity = null;
                 IEnumerable<string> allowedClientScopes = null;
                 var loginValid = false;
+                var isTwoFactorRequired = false;
 
                 // Do all the data access here so we can dispose of the rock context asap.
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
@@ -131,12 +132,23 @@ namespace Rock.Oidc.Authorization
                     var userLoginService = new UserLoginService( rockContext );
                     user = userLoginService.GetByUserName( context.Request.Username );
 
+                    if ( user == null )
+                    {
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "Invalid credentials." );
+                        return Task.CompletedTask;
+                    }
+
                     // Populate the entity type for use later.
                     _ = user.EntityType;
 
                     allowedClientScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, context.Request.ClientId, context.Request.GetScopes() ).ToList();
                     var allowedClientClaims = RockIdentityHelper.GetAllowedClientClaims( rockContext, context.Request.ClientId, allowedClientScopes );
                     identity = RockIdentityHelper.GetRockClaimsIdentity( user, allowedClientClaims, context.Request.ClientId );
+
+                    isTwoFactorRequired = user.Person != null
+                        && new SecuritySettingsService().SecuritySettings?.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( user.Person.AccountProtectionProfile ) == true;
 
                     var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
@@ -168,6 +180,15 @@ namespace Rock.Oidc.Authorization
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
                         description: "The specified user is not allowed to sign in." );
+                    return Task.CompletedTask;
+                }
+
+                // The password grant can't collect a second factor, so these accounts must use the authorization code flow.
+                if ( isTwoFactorRequired )
+                {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "Two-factor authentication is required for this account. Sign in with the authorization code flow." );
                     return Task.CompletedTask;
                 }
 
@@ -287,9 +308,7 @@ namespace Rock.Oidc.Authorization
             {
                 // Verify that the redirect URI is one of the URIs registered for
                 // this client application.
-                var validRedirectUris = authClient.RedirectUri?.SplitDelimitedValues( "," ) ?? new string[0];
-
-                if ( !validRedirectUris.Contains( context.RedirectUri, StringComparer.Ordinal ) )
+                if ( !AuthClientService.IsRedirectUriAllowed( authClient, context.RedirectUri ) )
                 {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -353,14 +372,13 @@ namespace Rock.Oidc.Authorization
         /// <param name="context">The context instance associated with this event.</param>
         public override async Task ValidateTokenRequest( ValidateTokenRequestContext context )
         {
-            // Note: the OpenID Connect server middleware supports authorization code, refresh token, client credentials
-            // and resource owner password credentials grant types but this authorization provider uses a safer policy
-            // rejecting the last two ones. You may consider relaxing it to support the ROPC or client credentials grant types.
-            if ( !context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() && !context.Request.IsTokenRequest() )
+            // Accept the authorization code, refresh token, password and client credentials grant types.
+            if ( !context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType()
+                && !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType() )
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "Only authorization code and refresh token grant types are accepted by this authorization server." );
+                    description: $"The '{context.Request.GrantType}' grant type is not supported by this authorization server." );
 
                 return;
             }

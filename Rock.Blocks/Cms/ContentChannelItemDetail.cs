@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -273,6 +273,31 @@ namespace Rock.Blocks.Cms
                 ExpireDateTime = entity.ExpireDateTime?.ToRockDateTimeOffset(),
                 Priority = entity.Priority
             };
+        }
+
+        /// <inheritdoc/>
+        protected override SecurityGrant GetSecurityGrant( ContentChannelItem entity )
+        {
+            var securityGrant = base.GetSecurityGrant( entity );
+
+            /*
+                10/7/2026 - MSE
+
+                Uploads are checked separately from the asset manager. People
+                who can edit the item may upload to the channel's image folder,
+                which is the root the content editor uses. An empty folder
+                means the default ~/Content folder, same as the editor.
+
+                Reason: Keep uploads working in the content editor.
+            */
+            var contentChannel = entity != null ? ContentChannelCache.Get( entity.ContentChannelId ) : null;
+
+            if ( contentChannel != null && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                securityGrant.AddRule( new Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule( contentChannel.RootImageDirectory ) );
+            }
+
+            return securityGrant;
         }
 
         /// <inheritdoc/>
@@ -1700,7 +1725,7 @@ namespace Rock.Blocks.Cms
             if ( contentChannel.RootImageDirectory.IsNotNullOrWhiteSpace() )
             {
                 // The HTML editor wants encrypted roots; both image and document use the same path.
-                var encryptedRoot = Encryption.EncryptString( contentChannel.RootImageDirectory );
+                var encryptedRoot = Encryption.EncryptRootFolder( contentChannel.RootImageDirectory );
                 state.EncryptedImageRootFolder = encryptedRoot;
                 state.EncryptedDocumentRootFolder = encryptedRoot;
             }

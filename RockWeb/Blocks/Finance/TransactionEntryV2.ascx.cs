@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -838,6 +838,9 @@ mission. We are so grateful for your commitment.</p>
             public const string CustomerTokenEncrypted = "CustomerTokenEncrypted";
             public const string TargetPersonGuid = "TargetPersonGuid";
             public const string ScheduledTransactionIdToBeTransferred = "ScheduledTransactionIdToBeTransferred";
+            public const string TransactionGuid = "TransactionGuid";
+            public const string CreatedScheduledTransactionId = "CreatedScheduledTransactionId";
+            public const string IsTargetPersonVerified = "IsTargetPersonVerified";
         }
 
         #endregion ViewState Keys
@@ -971,6 +974,29 @@ mission. We are so grateful for your commitment.</p>
             set { ViewState[ViewStateKey.SelectedCampusId] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the unique guid used for the transaction being processed.
+        /// This is kept in ViewState so it cannot be changed by the client.
+        /// </summary>
+        /// <value>
+        /// The transaction unique identifier.
+        /// </value>
+        protected Guid TransactionGuid
+        {
+            get { return ViewState[ViewStateKey.TransactionGuid] as Guid? ?? Guid.Empty; }
+            set { ViewState[ViewStateKey.TransactionGuid] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the identifier of the scheduled transaction created on this page, which
+        /// an anonymous giver is allowed to manage.
+        /// </summary>
+        protected int? CreatedScheduledTransactionId
+        {
+            get { return ViewState[ViewStateKey.CreatedScheduledTransactionId] as int?; }
+            set { ViewState[ViewStateKey.CreatedScheduledTransactionId] = value; }
+        }
+
         #endregion Properties
 
         #region Base Control Methods
@@ -1039,7 +1065,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 // Ensure that there is only one transaction processed by getting a unique guid when this block loads for the first time
                 // This will ensure there are no (unintended) duplicate transactions
-                hfTransactionGuid.Value = Guid.NewGuid().ToString();
+                TransactionGuid = Guid.NewGuid();
                 ShowDetails();
             }
             else
@@ -1526,9 +1552,17 @@ mission. We are so grateful for your commitment.</p>
 
             var targetPersonGivingId = targetPerson.GivingId;
             givingIdList.Add( targetPersonGivingId );
-            var scheduledTransactionList = financialScheduledTransactionService.Queryable()
-                .Where( a => givingIdList.Contains( a.AuthorizedPersonAlias.Person.GivingId ) && a.FinancialGatewayId.HasValue && a.IsActive == true && hostedGatewayIdList.Contains( a.FinancialGatewayId.Value ) )
-                .ToList();
+            var scheduledTransactionQuery = financialScheduledTransactionService.Queryable()
+                .Where( a => givingIdList.Contains( a.AuthorizedPersonAlias.Person.GivingId ) && a.FinancialGatewayId.HasValue && a.IsActive == true && hostedGatewayIdList.Contains( a.FinancialGatewayId.Value ) );
+
+            // An anonymous giver only sees the schedule they created on this page, not the matched person's other schedules.
+            if ( !IsTargetPersonVerified() )
+            {
+                var createdScheduledTransactionId = CreatedScheduledTransactionId ?? 0;
+                scheduledTransactionQuery = scheduledTransactionQuery.Where( a => a.Id == createdScheduledTransactionId );
+            }
+
+            var scheduledTransactionList = scheduledTransactionQuery.ToList();
 
             // Refresh the active transactions
             financialScheduledTransactionService.GetStatus( scheduledTransactionList, true );
@@ -1565,7 +1599,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 FinancialScheduledTransactionService financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var scheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
-                if ( scheduledTransaction == null )
+                if ( scheduledTransaction == null || !CanManageScheduledTransaction( scheduledTransaction, rockContext ) )
                 {
                     return;
                 }
@@ -1597,6 +1631,43 @@ mission. We are so grateful for your commitment.</p>
             }
 
             BindScheduledTransactions();
+        }
+
+        /// <summary>
+        /// Determines whether the target person has been identified by login or person token,
+        /// rather than by person matching on an anonymous gift.
+        /// </summary>
+        /// <returns><c>true</c> if the target person is verified; otherwise <c>false</c>.</returns>
+        private bool IsTargetPersonVerified()
+        {
+            return ViewState[ViewStateKey.IsTargetPersonVerified] as bool? ?? false;
+        }
+
+        /// <summary>
+        /// Determines whether the scheduled transaction can be managed from this block. A verified
+        /// target person can manage their own and their businesses' schedules, while an anonymous
+        /// giver can only manage the schedule they created on this page.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the scheduled transaction can be managed; otherwise <c>false</c>.</returns>
+        private bool CanManageScheduledTransaction( FinancialScheduledTransaction scheduledTransaction, RockContext rockContext )
+        {
+            if ( !IsTargetPersonVerified() )
+            {
+                return CreatedScheduledTransactionId.HasValue && CreatedScheduledTransactionId.Value == scheduledTransaction.Id;
+            }
+
+            var targetPerson = GetTargetPerson( rockContext );
+            if ( targetPerson == null || scheduledTransaction.AuthorizedPersonAlias?.Person == null )
+            {
+                return false;
+            }
+
+            var givingIdList = targetPerson.GetBusinesses( rockContext ).Select( g => g.GivingId ).ToList();
+            givingIdList.Add( targetPerson.GivingId );
+
+            return givingIdList.Contains( scheduledTransaction.AuthorizedPersonAlias.Person.GivingId );
         }
 
         #endregion Scheduled Gifts
@@ -1717,11 +1788,11 @@ mission. We are so grateful for your commitment.</p>
             var financialGatewayComponent = this.FinancialGatewayComponent;
             var financialGateway = this.FinancialGateway;
 
-            var financialPaymentDetail = new FinancialTransactionService( rockContext ).GetSelect( hfTransactionGuid.Value.AsGuid(), s => s.FinancialPaymentDetail );
+            var financialPaymentDetail = new FinancialTransactionService( rockContext ).GetSelect( TransactionGuid, s => s.FinancialPaymentDetail );
             if ( financialPaymentDetail == null )
             {
                 // if this was a ScheduledTransaction, get the FinancialPaymentDetail from that instead
-                financialPaymentDetail = new FinancialScheduledTransactionService( rockContext ).GetSelect( hfTransactionGuid.Value.AsGuid(), s => s.FinancialPaymentDetail );
+                financialPaymentDetail = new FinancialScheduledTransactionService( rockContext ).GetSelect( TransactionGuid, s => s.FinancialPaymentDetail );
             }
 
             var gatewayPersonIdentifier = Rock.Security.Encryption.DecryptString( this.CustomerTokenEncrypted );
@@ -2178,6 +2249,9 @@ mission. We are so grateful for your commitment.</p>
             {
                 ViewState[ViewStateKey.TargetPersonGuid] = string.Empty;
             }
+
+            // The target person here came from a login or a validated person token, not from person matching.
+            ViewState[ViewStateKey.IsTargetPersonVerified] = targetPerson != null;
 
             SetCampus( targetPerson );
 
@@ -2832,7 +2906,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            var transactionGuid = TransactionGuid;
             var rockContext = RockApp.Current.CreateRockContext();
 
             // to make duplicate transactions impossible, make sure that our Transaction hasn't already been processed as a regular or scheduled transaction
@@ -3116,7 +3190,7 @@ mission. We are so grateful for your commitment.</p>
         protected void ShowTransactionSummary()
         {
             var rockContext = RockApp.Current.CreateRockContext();
-            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            var transactionGuid = TransactionGuid;
 
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
@@ -3187,7 +3261,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = RockApp.Current.CreateRockContext();
 
             // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
-            transaction.Guid = hfTransactionGuid.Value.AsGuid();
+            transaction.Guid = TransactionGuid;
 
             transaction.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
             if ( this.GivingAsBusiness() )
@@ -3218,7 +3292,7 @@ mission. We are so grateful for your commitment.</p>
             since it is the gateway that collects the payment info. But just in case paymentInfo has information the the gateway hasn't set,
             we'll fill in any missing details.
 
-            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info. 
+            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info.
             */
 
             transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway as GatewayComponent, rockContext );
@@ -3397,7 +3471,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = RockApp.Current.CreateRockContext();
 
             // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
-            scheduledTransaction.Guid = hfTransactionGuid.Value.AsGuid();
+            scheduledTransaction.Guid = TransactionGuid;
 
             scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
             scheduledTransaction.StartDate = schedule.StartDate;
@@ -3428,6 +3502,8 @@ mission. We are so grateful for your commitment.</p>
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             financialScheduledTransactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
+
+            CreatedScheduledTransactionId = scheduledTransaction.Id;
 
             // If this is a transfer, now we can delete the old transaction
             if ( _scheduledTransactionIdToBeTransferred.HasValue )

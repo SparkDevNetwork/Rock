@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -490,9 +490,25 @@ namespace Rock.Blocks.Lms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = PageParameter(PageParameterKey.ReturnUrl) ?? this.GetParentPageUrl(),
+                [NavigationUrlKey.ParentPage] = GetSafeReturnUrl() ?? this.GetParentPageUrl(),
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.LearningProgramId, idKey ),
             };
+        }
+
+        /// <summary>
+        /// Gets the ReturnUrl page parameter if it's safe to redirect to.
+        /// </summary>
+        /// <returns>The ReturnUrl page parameter, or an empty string if it's missing or not safe to redirect to.</returns>
+        private string GetSafeReturnUrl()
+        {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            if ( !this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
+            {
+                return string.Empty;
+            }
+
+            return returnUrl;
         }
 
         /// <summary>
@@ -573,6 +589,11 @@ namespace Rock.Blocks.Lms
         public BlockActionResult GetEntityBagWithAllAttributes()
         {
             var entity = GetInitialEntity();
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningProgram.FriendlyTypeName ) );
+            }
 
             // Reload attributes based on the new property values.
             entity.LoadAttributes( RockContext );
@@ -739,10 +760,14 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult GetCompletions()
         {
-            var entityKey = PageParameter( PageParameterKey.LearningProgramId );
-            var program = new LearningProgramService( RockContext ).GetSelect( entityKey, p => new { p.ConfigurationMode, p.Id } );
+            var program = GetInitialEntity();
 
-            var queryable = program == null ? new List<LearningProgramCompletion>().AsQueryable() : GetCompletionListQueryable( program.Id );
+            if ( !program.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningProgram.FriendlyTypeName ) );
+            }
+
+            var queryable = program.Id == 0 ? new List<LearningProgramCompletion>().AsQueryable() : GetCompletionListQueryable( program.Id );
 
             var grid = new GridBuilder<LearningProgramCompletion>()
                  .WithBlock( this )
@@ -774,6 +799,13 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult GetSemesters()
         {
+            var entity = GetInitialEntity();
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningProgram.FriendlyTypeName ) );
+            }
+
             var gridBuilder = new GridBuilder<LearningSemester>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
@@ -783,7 +815,7 @@ namespace Rock.Blocks.Lms
                 .AddDateTimeField( "closeDate", a => a.EnrollmentCloseDate )
                 .AddField( "classCount", a => a.LearningClasses.Count() );
 
-            var semestersQueryable = GetSemesterListQueryable();
+            var semestersQueryable = GetSemesterListQueryable( entity.Id );
             return ActionOk( gridBuilder.Build( semestersQueryable ) );
         }
 
@@ -806,11 +838,10 @@ namespace Rock.Blocks.Lms
         /// <summary>
         /// Gets the Learning Semester Queryable for semesters grid.
         /// </summary>
+        /// <param name="entityId">The identifier of the learning program whose semesters should be returned.</param>
         /// <returns>A Queryable of LearningSemester.</returns>
-        private IQueryable<LearningSemester> GetSemesterListQueryable()
+        private IQueryable<LearningSemester> GetSemesterListQueryable( int entityId )
         {
-            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-
             // If a Learning Program has been specified then get the semesters for that.
             if ( entityId > 0 )
             {

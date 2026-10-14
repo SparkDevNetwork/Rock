@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,12 @@ namespace Rock.ViewModels.Rest.Controls
         /// The path and file name of the file that is being renamed.
         /// </summary>
         public string File { get; set; }
+
+        /// <summary>
+        /// The encrypted root folder that the file(s) must be in. This is
+        /// required when using the local file system.
+        /// </summary>
+        public string EncryptedRoot { get; set; }
 
         /// <summary>
         /// The new name of the file.

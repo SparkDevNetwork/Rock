@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -382,6 +382,20 @@ namespace Rock.Blocks.Communication
             {
                 error = ActionBadRequest( $"{Snippet.FriendlyTypeName} not found." );
                 return false;
+            }
+
+            if ( entity.Id != 0 )
+            {
+                // Existing snippets must belong to the snippet type configured
+                // on this block. Otherwise saving would move the snippet into
+                // this block's snippet type.
+                var snippetType = GetSnippetType();
+
+                if ( snippetType == null || entity.SnippetTypeId != snippetType.Id )
+                {
+                    error = ActionBadRequest( $"{Snippet.FriendlyTypeName} not found." );
+                    return false;
+                }
             }
 
             if ( !IsAuthorizedToEditSnippet( entity ) )

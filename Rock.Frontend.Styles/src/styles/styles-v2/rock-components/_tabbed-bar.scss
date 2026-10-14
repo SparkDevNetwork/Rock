@@ -5,6 +5,8 @@
 // Table of Content
 //  + Base style
 //  + Pills style
+//  + Modal style
+//  + Card style
 //  + Drop Down Menu button overrides
 // =============================================================
 
@@ -13,7 +15,7 @@
 
 .tabbed-bar {
     border-bottom: 6px solid var(--color-interface-soft);
-    padding: 0 var(--spacing-large);
+    padding: 0 var(--spacing-medium);
 
     > .toolbar-nav {
         display: flex;
@@ -70,8 +72,14 @@
     margin-bottom: 0;
     border-bottom: 0;
 
+    // Pills have no underline to overlap the bar's border, so drop the
+    // negative margin the base style uses for that overlap.
+    > .toolbar-nav {
+        margin-bottom: 0;
+    }
+
     > .toolbar-nav > li {
-        padding: 0 6px;
+        padding: 0 var(--spacing-xsmall) 0 0;
         border-bottom: 0;
 
         .title {
@@ -89,7 +97,71 @@
     }
 }
 
+// In a panel, pills get their own band with a divider below, matching the
+// panel header's divider. Without it the pills read as buttons in the body
+// rather than navigation for it. The band uses the same color as the inactive
+// pills, so only the active pill stands out.
+.panel > .tabbed-bar.pills {
+    padding: var(--spacing-small) var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
+// The panel's own border closes off a collapsed panel, so the divider would
+// double up.
+.panel.panel-collapsed > .tabbed-bar.pills {
+    border-bottom: 0;
+}
+
 // ====================== END PILLS STYLE ======================
+
+// ======================== MODAL STYLE ========================
+
+// Modal bodies use wider side padding than panel bodies, so match it to keep
+// the tabs aligned with the modal content. Targets .modal-content so it covers
+// the Obsidian Modal as well as the WebForms modal and iframe dialog pages,
+// which have no .modal wrapper.
+.modal-content .tabbed-bar {
+    padding: 0 var(--spacing-large);
+}
+
+// Pills in a modal get the same band as pills in a panel, with the modal's
+// wider side padding.
+.modal-content .tabbed-bar.pills {
+    padding: var(--spacing-small) var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
+// Pulls the bar up against the modal header and out to the modal edges so its
+// underline track or pills band spans the full width. Offsets the modal body's
+// padding. Scoped to .modal-content so a bar that also renders outside a modal
+// is unaffected there.
+.modal-content .tabbed-bar.tight-to-modal-top {
+    margin-top: calc(0px - var(--spacing-large));
+}
+
+.modal-content .tabbed-bar.tight-to-modal-sides {
+    margin-right: calc(0px - var(--spacing-large));
+    margin-left: calc(0px - var(--spacing-large));
+}
+
+// ====================== END MODAL STYLE ======================
+
+// ======================== CARD STYLE ========================
+
+// Opt-in card for a standalone pills bar that sits between other content
+// instead of inside a panel or modal. Inactive pills keep their default fill,
+// so they show as chips on the card like other standalone pill navs. The
+// radius matches panels so the card reads as a sibling of the panels around it.
+.tabbed-bar.pills.tabbed-bar-card {
+    padding: var(--spacing-small) var(--spacing-medium);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    background-color: var(--color-interface-softest);
+}
+
+// ====================== END CARD STYLE ======================
 
 // ======================== WRAPPING STYLE ========================
 

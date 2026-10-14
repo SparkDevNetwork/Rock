@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -516,7 +516,9 @@ namespace Rock.Blocks.Engagement
                 .AsNoTracking()
                 .FirstOrDefault( ss => ss.Guid == request.StepStatusGuid );
 
-            if ( stepStatus == null )
+            // The status picker only offers statuses of the step type's program,
+            // so a status from another program is treated as not found.
+            if ( stepStatus == null || stepStatus.StepProgramId != stepType.StepProgramId )
             {
                 return ActionBadRequest( "The step status could not be found." );
             }

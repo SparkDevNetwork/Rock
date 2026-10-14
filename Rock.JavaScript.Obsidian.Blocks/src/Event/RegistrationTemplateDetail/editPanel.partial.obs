@@ -1,0 +1,1266 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name" label="Name" rules="required" :maxLength="100" />
+
+                        <CategoryPicker v-model="category" label="Category" rules="required" :entityTypeGuid="EntityType.RegistrationTemplate" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive" label="Active" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description" label="Description" textMode="multiline" :rows="3" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="General" icon="ti ti-settings">
+            <ContentStack title="Group" description="How registrants are added to a group.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <GroupTypePicker v-model="groupType"
+                                         label="Group Type"
+                                         :groupTypes="options.groupTypeGuids ?? []"
+                                         isSortedByName
+                                         showBlankItem />
+
+                        <GroupRolePicker v-model="groupMemberRole"
+                                         label="Group Member Role"
+                                         :groupTypeGuid="groupType?.value ?? null"
+                                         hideGroupTypePicker
+                                         showBlankItem
+                                         help="The group member role that new registrants should be added to group with." />
+
+                        <DropDownList v-model="groupMemberStatusValue"
+                                      label="Group Member Status"
+                                      :items="groupMemberStatusItems"
+                                      :showBlankItem="false"
+                                      help="The group member status that new registrants should be added to group with." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="connectionStatus"
+                                            label="Connection Status"
+                                            :definedTypeGuid="DefinedType.PersonConnectionStatus"
+                                            showBlankItem
+                                            help="The connection status to use for new individuals. Setting this here will override the setting on the Registration Entry block." />
+
+                        <DefinedValuePicker v-model="recordSource"
+                                            label="Record Source"
+                                            :definedTypeGuid="DefinedType.RecordSourceType"
+                                            showBlankItem
+                                            help="The record source to use for new individuals. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Registrants" description="Who can register and how the registrar is identified.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="allowMultipleRegistrants"
+                                  label="Allow Multiple Registrants"
+                                  help="Should user be allowed to register multiple registrants at the same time?" />
+
+                        <NumberBox v-if="allowMultipleRegistrants"
+                                   v-model="maxRegistrants"
+                                   label="Max Registrants Per Registration"
+                                   :minimumValue="1"
+                                   :decimalCount="0"
+                                   help="The maximum number of registrants that a person is allowed to register at one time. Leave blank for unlimited." />
+
+                        <RadioButtonList v-model="registrantsSameFamilyValue"
+                                         label="Registrants In Same Family"
+                                         horizontal
+                                         :items="registrantsSameFamilyItems"
+                                         help="Typical relationship of registrants that user would register." />
+
+                        <CheckBox v-if="isShowFamilyMembersVisible"
+                                  v-model="showCurrentFamilyMembers"
+                                  label="Show Family Members"
+                                  help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+
+                        <CheckBox v-model="waitListEnabled"
+                                  label="Enable Wait List"
+                                  help="Check to enable a 'wait list' once the registration's maximum attendees has been reached. The 'Maximum Attendees' must be set on the registration instance for this feature to work." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DropDownList v-model="registrarOptionValue"
+                                      label="Registrar Options"
+                                      :items="registrarOptionItems"
+                                      :showBlankItem="false"
+                                      :help="registrarOptionHelp" />
+
+                        <CheckBox v-model="showSmsOptIn"
+                                  label="Show SMS Opt-In"
+                                  help="When enabled a checkbox will be shown next to each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number." />
+
+                        <CheckBox v-model="areDuplicateRegistrantsPrevented"
+                                  label="Prevent Duplicate Registrants"
+                                  help="When enabled, this prevents the same database record (same Person ID) from being added to the event multiple times. This setting does not resolve or detect separate records that may represent the same individual." />
+                    </div>
+                </div>
+
+                <NotificationBox v-if="areDuplicateRegistrantsPrevented" alertType="warning">
+                    <div><strong>Before enabling duplicate detection:</strong></div>
+                    This feature can unintentionally expose attendee information. If someone knows a registrant's name plus their email, phone, or birthdate, they may be able to determine that person is attending this event. Consider whether your event requires this level of privacy protection before proceeding.
+                </NotificationBox>
+            </ContentStack>
+
+            <ContentStack title="Notifications" description="Who is told about new registrations and what is recorded.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBoxList v-model="notifyValues"
+                                      label="Notify"
+                                      :items="notifyItems"
+                                      help="Who should be notified when new people are registered?" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="addPersonNote"
+                                  label="Add Person Note"
+                                  help="Should a note be added to a person's record whenever they register?" />
+
+                        <CheckBox v-model="loginRequired"
+                                  label="Login Required"
+                                  help="Is user required to be logged in when registering?" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Payment" description="Cost, gateway and payment plan settings.">
+                <Toggle v-model="isSetCostOnTemplate" label="Set Cost On" trueText="Template" falseText="Instance" btnSize="xs" />
+
+                <NotificationBox v-if="gatewayFeaturesError" alertType="warning">
+                    {{ gatewayFeaturesError }} The payment settings below were left as they were and will be checked against the gateway when this template is saved.
+                </NotificationBox>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <FinancialGatewayPicker v-model="financialGateway"
+                                                label="Financial Gateway"
+                                                showAllGatewayComponents
+                                                showBlankItem
+                                                help="The financial gateway to use for processing registration payments." />
+
+                        <TextBox v-if="!gatewayFeatures.isRedirectionGateway"
+                                 v-model="batchNamePrefix"
+                                 label="Batch Prefix"
+                                 help="Optional prefix to add the financial batches. If left blank the prefix from the registration block will be used." />
+
+                        <CurrencyBox v-if="isSetCostOnTemplate"
+                                     v-model="cost"
+                                     label="Cost"
+                                     help="The cost per registrant." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isPaymentPlanAllowed"
+                                  label="Enable Payment Plans"
+                                  :disabled="!gatewayFeatures.isPaymentPlanSupported"
+                                  help="Determines if individuals should be able to pay their registration costs in multiple, scheduled installments. Not all payment gateways support this feature." />
+
+                        <CheckBoxList v-if="isPaymentPlanEnabled"
+                                      v-model="paymentPlanFrequencyValues"
+                                      label="Selectable Payment Frequencies"
+                                      horizontal
+                                      :items="gatewayFeatures.paymentPlanFrequencies ?? []"
+                                      help="The payment frequencies that the individual can select from." />
+
+                        <CheckBox v-if="isPaymentPlanEnabled"
+                                  v-model="isFullPaymentOrPaymentPlanRequired"
+                                  label="Require Full Payment or Payment Plan"
+                                  help="When enabled, registrants must either pay the registration in full or set up a valid payment plan that covers the remaining balance before they can save the registration. This setting takes precedence over other payment settings (such as Minimum Initial Payment) that would otherwise allow no or partial payment without a plan." />
+                    </div>
+                </div>
+
+                <div v-if="isSetCostOnTemplate" class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="minimumInitialPayment"
+                                     label="Minimum Initial Payment"
+                                     disablePlaceholder
+                                     :rules="minimumInitialPaymentRules"
+                                     help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="defaultPayment"
+                                     label="Default Payment Amount"
+                                     disablePlaceholder
+                                     help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Workflows and Documents" description="Workflows to launch and documents that must be signed.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <WorkflowTypePicker v-model="registrationWorkflowType"
+                                            label="Registration Workflow"
+                                            help="An optional workflow type to launch when a new registration is completed." />
+
+                        <WorkflowTypePicker v-model="registrantWorkflowType"
+                                            label="Registrant Workflow"
+                                            help="An optional workflow type to launch for each Registrant when a new registration is completed. Both the 'RegistrationRegistrantId' and the 'RegistrationId' will be passed to the workflow." />
+
+                        <CheckBox v-model="allowExternalRegistrationUpdates"
+                                  label="Allow External Updates to Saved Registrations"
+                                  :disabled="isNonLegacySignatureSelected"
+                                  :help="allowExternalUpdatesHelp" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DropDownList v-model="requiredSignatureDocumentTemplateValue"
+                                      label="Required Signature Document"
+                                      :items="options.signatureDocumentTemplates ?? []"
+                                      help="A document that needs to be signed for registrations of this type." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Registrant Forms" icon="ti ti-forms">
+            <ContentStack title="Registrant Forms" description="The forms and fields each registrant completes." headerLocation="top">
+                <RegistrantForms v-model:forms="forms"
+                                 :groupType="groupType"
+                                 :waitListEnabled="waitListEnabled"
+                                 :options="options" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Registrant Eligibility" icon="ti ti-filter">
+            <ContentStack title="Eligibility" description="Limit who is allowed to register.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberRangeBox v-model="eligibilityAgeRange"
+                                        label="Age Range"
+                                        help="Enter the age range allowed to register. You may use decimal values for more precise limits, such as 5.5." />
+
+                        <DropDownList v-model="eligibilityAgeClassificationValue"
+                                      label="Age Classification"
+                                      :items="ageClassificationItems"
+                                      help="Limit registration to individuals who match the selected age classification." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <NotificationBox v-if="isAgeEligibilityWarningVisible" alertType="warning">
+                            <div><strong>Warning</strong></div>
+                            To ensure this filter works correctly, include a Birthdate Person Field in your form.
+                        </NotificationBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <RockFormField :modelValue="gradeRangeValue"
+                                       name="grade-range"
+                                       label="Grade Range"
+                                       help="Define the eligible grade range. The starting and ending grades are included in the range.">
+                            <div class="control-wrapper">
+                                <div class="form-control-group">
+                                    <DropDownList v-model="eligibilityMaximumGradeOffsetValue" :items="options.gradeOptions ?? []" inputClasses="input-width-md" />
+                                    <span class="to"> to </span>
+                                    <DropDownList v-model="eligibilityMinimumGradeOffsetValue" :items="options.gradeOptions ?? []" inputClasses="input-width-md" />
+                                </div>
+                            </div>
+                        </RockFormField>
+                    </div>
+
+                    <div class="col-md-6">
+                        <NotificationBox v-if="isGradeEligibilityWarningVisible" alertType="warning">
+                            <div><strong>Warning</strong></div>
+                            To ensure this filter works correctly, include a Grade Person Field in your form.
+                        </NotificationBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="eligibilityGenderValue"
+                                      label="Gender"
+                                      :items="genderItems"
+                                      help="Select a single gender for eligibility. Only individuals who match this selection may register." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <NotificationBox v-if="isGenderEligibilityWarningVisible" alertType="warning">
+                            <div><strong>Warning</strong></div>
+                            To ensure this filter works correctly, include a Gender Person Field in your form.
+                        </NotificationBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DataViewPicker v-model="eligibilityDataView"
+                                        label="Data View"
+                                        :entityTypeGuid="EntityType.Person"
+                                        showBlankItem
+                                        help="Limit registration to individuals contained within the selected data view. This is an advanced configuration option and should be used with caution to avoid unintentionally preventing eligible individuals from registering." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Registration Attributes" icon="ti ti-tag">
+            <ContentStack title="Registration Attributes" description="Attributes collected once for each registration." headerLocation="top">
+                <RegistrationAttributes v-model:attributes="registrationAttributes" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Fees" icon="ti ti-receipt">
+            <ContentStack title="Fees" description="Optional or required items that can be added to a registration." headerLocation="top">
+                <Fees v-model:fees="fees" :currencyInfo="options.currencyInfo" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Discounts" icon="ti ti-discount">
+            <ContentStack title="Discounts" description="Codes that reduce the cost of a registration." headerLocation="top">
+                <Discounts v-model:discounts="discounts" :currencyInfo="options.currencyInfo" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Placement Configuration" icon="ti ti-route-square">
+            <ContentStack title="Placement Configuration" description="How registrants are placed into groups." headerLocation="top">
+                <Placements v-model:placements="placements" :options="options" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Terms/Text" icon="ti ti-typography">
+            <ContentStack title="Terms" description="The words used to describe registrations on the registration screens.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="registrationTerm" label="Registration Term" placeholder="Registration" :maxLength="100" />
+
+                        <TextBox v-model="registrantTerm" label="Registrant Term" placeholder="Person" :maxLength="100" />
+
+                        <TextBox v-model="registrationAttributeTitleStart"
+                                 label="Registration Attribute Title - Start"
+                                 placeholder="Registration Information"
+                                 :maxLength="200"
+                                 help="The section title for attributes that are collected at the start of the registration entry process." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <TextBox v-model="feeTerm" label="Fee Term" placeholder="Additional Options" :maxLength="100" />
+
+                        <TextBox v-model="discountCodeTerm" label="Discount Code Term" placeholder="Discount Code" :maxLength="100" />
+
+                        <TextBox v-model="registrationAttributeTitleEnd"
+                                 label="Registration Attribute Title - End"
+                                 placeholder="Registration Information"
+                                 :maxLength="200"
+                                 help="The section title for attributes that are collected at the end of the registration entry process." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Text" description="The messages shown during and after registration.">
+                <TextBox v-if="isFullPaymentMessageVisible"
+                         v-model="fullPaymentOrPaymentPlanRequiredMessage"
+                         label="Full Payment or Payment Plan Required Message"
+                         textMode="multiline"
+                         :rows="3"
+                         help="The message displayed to a registrant on the Registration Entry block when the registration cannot be saved because it is not paid in full and does not have a valid payment plan that covers the remaining balance. The following merge fields are available: 'RegistrationInstance' and 'Registration'. Note that for new registrations, 'Registration' refers to a transient unsaved object, so avoid referencing 'Registration.Id', 'Registration.Guid', or 'Registration.Payments'. <span class='tip tip-lava'></span>" />
+
+                <TextBox v-model="successTitle"
+                         label="Success Title"
+                         placeholder="Congratulations"
+                         help="The heading to display to user after successfully completing a registration of this type." />
+
+                <HtmlEditor v-model="registrationInstructions"
+                            label="Registration Instructions"
+                            toolbar="light"
+                            :editorHeight="300"
+                            help="These instructions will appear at the beginning of the registration process." />
+
+                <CodeEditor v-model="successText"
+                            label="Registration Confirmation Text"
+                            mode="lava"
+                            :editorHeight="300"
+                            help="The text to display to user after successfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Communications" icon="ti ti-mail" isCollapsed>
+            <ContentStack title="Confirmation Email" description="Sent to the registrar when a registration is completed.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="confirmationFromName" label="From Name" :maxLength="200" />
+                        <TextBox v-model="confirmationFromEmail" label="From Email" :maxLength="200" />
+                    </div>
+                </div>
+
+                <TextBox v-model="confirmationSubject" label="Subject" :maxLength="200" />
+
+                <CodeEditor v-model="confirmationEmailTemplate" label="Email Template" mode="lava" :editorHeight="300" />
+            </ContentStack>
+
+            <ContentStack title="Reminder Email" description="Sent before the event to remind registrants.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="reminderFromName" label="From Name" :maxLength="200" />
+                        <TextBox v-model="reminderFromEmail" label="From Email" :maxLength="200" />
+                    </div>
+                </div>
+
+                <TextBox v-model="reminderSubject" label="Subject" :maxLength="200" />
+
+                <CodeEditor v-model="reminderEmailTemplate" label="Email Template" mode="lava" :editorHeight="300" />
+            </ContentStack>
+
+            <ContentStack title="Payment Reminder Email" description="Sent when a registration still has a balance due.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="paymentReminderFromName" label="From Name" :maxLength="200" />
+                        <TextBox v-model="paymentReminderFromEmail" label="From Email" :maxLength="200" />
+                    </div>
+                </div>
+
+                <TextBox v-model="paymentReminderSubject" label="Subject" :maxLength="200" />
+
+                <CodeEditor v-model="paymentReminderEmailTemplate" label="Email Template" mode="lava" :editorHeight="300" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="paymentReminderTimeSpan"
+                                   label="Payment Reminder Time Span"
+                                   :decimalCount="0"
+                                   :minimumValue="0"
+                                   inputClasses="input-width-xs"
+                                   help="The number of days in between automatic payment reminders." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Wait List Transition Email" description="Sent when a registrant moves off the wait list.">
+                <NotificationBox alertType="info">
+                    This email template will be used when the individual needs to be notified that they are no longer on the wait list and have been transitioned to a full registrant.
+                </NotificationBox>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="waitListTransitionFromName" label="From Name" :maxLength="200" />
+                        <TextBox v-model="waitListTransitionFromEmail" label="From Email" :maxLength="200" />
+                    </div>
+                </div>
+
+                <TextBox v-model="waitListTransitionSubject" label="Subject" :maxLength="200" />
+
+                <CodeEditor v-model="waitListTransitionEmailTemplate" label="Email Template" mode="lava" :editorHeight="300" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker.obs";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { AgeClassification, AgeClassificationDescription } from "@Obsidian/Enums/Crm/ageClassification";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { RegistrantsSameFamily, RegistrantsSameFamilyDescription } from "@Obsidian/Enums/Event/registrantsSameFamily";
+    import { RegistrarOption } from "@Obsidian/Enums/Event/registrarOption";
+    import { RegistrationNotify } from "@Obsidian/Enums/Event/registrationNotify";
+    import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { GroupMemberStatus, GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { RegistrationTemplateBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateBag";
+    import { RegistrationTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateDetailOptionsBag";
+    import { RegistrationTemplateGatewayFeaturesBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateGatewayFeaturesBag";
+    import Discounts from "./discounts.partial.obs";
+    import Fees from "./fees.partial.obs";
+    import Placements from "./placements.partial.obs";
+    import RegistrantForms from "./registrantForms.partial.obs";
+    import RegistrationAttributes from "./registrationAttributes.partial.obs";
+    import { hasPersonField } from "./utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<RegistrationTemplateBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RegistrationTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<RegistrationTemplateBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const defaultFullPaymentOrPaymentPlanRequiredMessage = "To complete your registration, please either pay the full amount or set up a payment plan.";
+
+    const registrarOptionHelp = "How should the registrar's information be collected?<br><br>"
+        + "<strong>Prompt For Registrar</strong><br>Registrar information will be collected at the end.<br><br>"
+        + "<strong>Pre-fill First Registrant</strong><br>The first registrant's information will be used to complete the registrar information form but can be changed if needed.<br><br>"
+        + "<strong>Use First Registrant</strong><br>The first registrant's information will be used to complete the registrar information form and the form will not be displayed.  (If the first registrant's name and email is not provided the registrar information form will still display.)<br><br>"
+        + "<strong>Use Logged In Person</strong><br>The logged-in person's information will be used to complete the registrar information form and the form will not be displayed.  (If the logged in person's email is not known, a prompt for email will be shown.)";
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? true, "IsActive");
+    const category = propertyRef(props.modelValue.bag?.category ?? null, "Category");
+    const groupType = propertyRef(props.modelValue.bag?.groupType ?? null, "GroupType");
+    const groupMemberRole = propertyRef(props.modelValue.bag?.groupMemberRole ?? null, "GroupMemberRole");
+    const groupMemberStatus = propertyRef(props.modelValue.bag?.groupMemberStatus ?? GroupMemberStatus.Active, "GroupMemberStatus");
+    const connectionStatus = propertyRef(props.modelValue.bag?.connectionStatus ?? null, "ConnectionStatus");
+    const recordSource = propertyRef(props.modelValue.bag?.recordSource ?? null, "RecordSource");
+    const allowMultipleRegistrants = propertyRef(props.modelValue.bag?.allowMultipleRegistrants ?? false, "AllowMultipleRegistrants");
+    const maxRegistrants = propertyRef(props.modelValue.bag?.maxRegistrants ?? null, "MaxRegistrants");
+    const registrantsSameFamily = propertyRef(props.modelValue.bag?.registrantsSameFamily ?? RegistrantsSameFamily.No, "RegistrantsSameFamily");
+    const showCurrentFamilyMembers = propertyRef(props.modelValue.bag?.showCurrentFamilyMembers ?? false, "ShowCurrentFamilyMembers");
+    const waitListEnabled = propertyRef(props.modelValue.bag?.waitListEnabled ?? false, "WaitListEnabled");
+    const registrarOption = propertyRef(props.modelValue.bag?.registrarOption ?? RegistrarOption.PromptForRegistrar, "RegistrarOption");
+    const showSmsOptIn = propertyRef(props.modelValue.bag?.showSmsOptIn ?? false, "ShowSmsOptIn");
+    const areDuplicateRegistrantsPrevented = propertyRef(props.modelValue.bag?.areDuplicateRegistrantsPrevented ?? false, "AreDuplicateRegistrantsPrevented");
+    const notify = propertyRef(props.modelValue.bag?.notify ?? RegistrationNotify.None, "Notify");
+    const addPersonNote = propertyRef(props.modelValue.bag?.addPersonNote ?? false, "AddPersonNote");
+    const loginRequired = propertyRef(props.modelValue.bag?.loginRequired ?? false, "LoginRequired");
+    const isSetCostOnInstance = propertyRef(props.modelValue.bag?.isSetCostOnInstance ?? false, "IsSetCostOnInstance");
+    const financialGateway = propertyRef(props.modelValue.bag?.financialGateway ?? null, "FinancialGateway");
+    const batchNamePrefix = propertyRef(props.modelValue.bag?.batchNamePrefix ?? "", "BatchNamePrefix");
+    const cost = propertyRef(props.modelValue.bag?.cost ?? null, "Cost");
+    const minimumInitialPayment = propertyRef(props.modelValue.bag?.minimumInitialPayment ?? null, "MinimumInitialPayment");
+    const defaultPayment = propertyRef(props.modelValue.bag?.defaultPayment ?? null, "DefaultPayment");
+    const isPaymentPlanAllowed = propertyRef(props.modelValue.bag?.isPaymentPlanAllowed ?? false, "IsPaymentPlanAllowed");
+    const paymentPlanFrequencies = propertyRef(props.modelValue.bag?.paymentPlanFrequencies ?? [], "PaymentPlanFrequencies");
+    const isFullPaymentOrPaymentPlanRequired = propertyRef(props.modelValue.bag?.isFullPaymentOrPaymentPlanRequired ?? false, "IsFullPaymentOrPaymentPlanRequired");
+    const fullPaymentOrPaymentPlanRequiredMessage = propertyRef(props.modelValue.bag?.fullPaymentOrPaymentPlanRequiredMessage ?? "", "FullPaymentOrPaymentPlanRequiredMessage");
+    const registrationWorkflowType = propertyRef(props.modelValue.bag?.registrationWorkflowType ?? null, "RegistrationWorkflowType");
+    const registrantWorkflowType = propertyRef(props.modelValue.bag?.registrantWorkflowType ?? null, "RegistrantWorkflowType");
+    const allowExternalRegistrationUpdates = propertyRef(props.modelValue.bag?.allowExternalRegistrationUpdates ?? false, "AllowExternalRegistrationUpdates");
+    const requiredSignatureDocumentTemplate = propertyRef(props.modelValue.bag?.requiredSignatureDocumentTemplate ?? null, "RequiredSignatureDocumentTemplate");
+    const eligibilityMinimumAge = propertyRef(props.modelValue.bag?.eligibilityMinimumAge ?? null, "EligibilityMinimumAge");
+    const eligibilityMaximumAge = propertyRef(props.modelValue.bag?.eligibilityMaximumAge ?? null, "EligibilityMaximumAge");
+    const eligibilityAgeClassification = propertyRef(props.modelValue.bag?.eligibilityAgeClassification ?? null, "EligibilityAgeClassification");
+    const eligibilityMinimumGradeOffset = propertyRef(props.modelValue.bag?.eligibilityMinimumGradeOffset ?? null, "EligibilityMinimumGradeOffset");
+    const eligibilityMaximumGradeOffset = propertyRef(props.modelValue.bag?.eligibilityMaximumGradeOffset ?? null, "EligibilityMaximumGradeOffset");
+    const eligibilityGender = propertyRef(props.modelValue.bag?.eligibilityGender ?? null, "EligibilityGender");
+    const eligibilityDataView = propertyRef(props.modelValue.bag?.eligibilityDataView ?? null, "EligibilityDataView");
+    const registrationTerm = propertyRef(props.modelValue.bag?.registrationTerm ?? "", "RegistrationTerm");
+    const registrantTerm = propertyRef(props.modelValue.bag?.registrantTerm ?? "", "RegistrantTerm");
+    const feeTerm = propertyRef(props.modelValue.bag?.feeTerm ?? "", "FeeTerm");
+    const discountCodeTerm = propertyRef(props.modelValue.bag?.discountCodeTerm ?? "", "DiscountCodeTerm");
+    const registrationAttributeTitleStart = propertyRef(props.modelValue.bag?.registrationAttributeTitleStart ?? "", "RegistrationAttributeTitleStart");
+    const registrationAttributeTitleEnd = propertyRef(props.modelValue.bag?.registrationAttributeTitleEnd ?? "", "RegistrationAttributeTitleEnd");
+    const successTitle = propertyRef(props.modelValue.bag?.successTitle ?? "", "SuccessTitle");
+    const successText = propertyRef(props.modelValue.bag?.successText ?? "", "SuccessText");
+    const registrationInstructions = propertyRef(props.modelValue.bag?.registrationInstructions ?? "", "RegistrationInstructions");
+    const confirmationFromName = propertyRef(props.modelValue.bag?.confirmationFromName ?? "", "ConfirmationFromName");
+    const confirmationFromEmail = propertyRef(props.modelValue.bag?.confirmationFromEmail ?? "", "ConfirmationFromEmail");
+    const confirmationSubject = propertyRef(props.modelValue.bag?.confirmationSubject ?? "", "ConfirmationSubject");
+    const confirmationEmailTemplate = propertyRef(props.modelValue.bag?.confirmationEmailTemplate ?? "", "ConfirmationEmailTemplate");
+    const reminderFromName = propertyRef(props.modelValue.bag?.reminderFromName ?? "", "ReminderFromName");
+    const reminderFromEmail = propertyRef(props.modelValue.bag?.reminderFromEmail ?? "", "ReminderFromEmail");
+    const reminderSubject = propertyRef(props.modelValue.bag?.reminderSubject ?? "", "ReminderSubject");
+    const reminderEmailTemplate = propertyRef(props.modelValue.bag?.reminderEmailTemplate ?? "", "ReminderEmailTemplate");
+    const paymentReminderFromName = propertyRef(props.modelValue.bag?.paymentReminderFromName ?? "", "PaymentReminderFromName");
+    const paymentReminderFromEmail = propertyRef(props.modelValue.bag?.paymentReminderFromEmail ?? "", "PaymentReminderFromEmail");
+    const paymentReminderSubject = propertyRef(props.modelValue.bag?.paymentReminderSubject ?? "", "PaymentReminderSubject");
+    const paymentReminderEmailTemplate = propertyRef(props.modelValue.bag?.paymentReminderEmailTemplate ?? "", "PaymentReminderEmailTemplate");
+    const paymentReminderTimeSpan = propertyRef(props.modelValue.bag?.paymentReminderTimeSpan ?? null, "PaymentReminderTimeSpan");
+    const waitListTransitionFromName = propertyRef(props.modelValue.bag?.waitListTransitionFromName ?? "", "WaitListTransitionFromName");
+    const waitListTransitionFromEmail = propertyRef(props.modelValue.bag?.waitListTransitionFromEmail ?? "", "WaitListTransitionFromEmail");
+    const waitListTransitionSubject = propertyRef(props.modelValue.bag?.waitListTransitionSubject ?? "", "WaitListTransitionSubject");
+    const waitListTransitionEmailTemplate = propertyRef(props.modelValue.bag?.waitListTransitionEmailTemplate ?? "", "WaitListTransitionEmailTemplate");
+    const forms = propertyRef(props.modelValue.bag?.forms ?? [], "Forms");
+    const registrationAttributes = propertyRef(props.modelValue.bag?.registrationAttributes ?? [], "RegistrationAttributes");
+    const fees = propertyRef(props.modelValue.bag?.fees ?? [], "Fees");
+    const discounts = propertyRef(props.modelValue.bag?.discounts ?? [], "Discounts");
+    const placements = propertyRef(props.modelValue.bag?.placements ?? [], "Placements");
+    const gatewayFeatures = propertyRef(props.modelValue.bag?.gatewayFeatures ?? createEmptyGatewayFeatures(), "GatewayFeatures");
+
+    /** Set when the capabilities of the selected gateway could not be loaded. */
+    const gatewayFeaturesError = ref("");
+
+    const propRefs = [
+        name,
+        description,
+        isActive,
+        category,
+        groupType,
+        groupMemberRole,
+        groupMemberStatus,
+        connectionStatus,
+        recordSource,
+        allowMultipleRegistrants,
+        maxRegistrants,
+        registrantsSameFamily,
+        showCurrentFamilyMembers,
+        waitListEnabled,
+        registrarOption,
+        showSmsOptIn,
+        areDuplicateRegistrantsPrevented,
+        notify,
+        addPersonNote,
+        loginRequired,
+        isSetCostOnInstance,
+        financialGateway,
+        batchNamePrefix,
+        cost,
+        minimumInitialPayment,
+        defaultPayment,
+        isPaymentPlanAllowed,
+        paymentPlanFrequencies,
+        isFullPaymentOrPaymentPlanRequired,
+        fullPaymentOrPaymentPlanRequiredMessage,
+        registrationWorkflowType,
+        registrantWorkflowType,
+        allowExternalRegistrationUpdates,
+        requiredSignatureDocumentTemplate,
+        eligibilityMinimumAge,
+        eligibilityMaximumAge,
+        eligibilityAgeClassification,
+        eligibilityMinimumGradeOffset,
+        eligibilityMaximumGradeOffset,
+        eligibilityGender,
+        eligibilityDataView,
+        registrationTerm,
+        registrantTerm,
+        feeTerm,
+        discountCodeTerm,
+        registrationAttributeTitleStart,
+        registrationAttributeTitleEnd,
+        successTitle,
+        successText,
+        registrationInstructions,
+        confirmationFromName,
+        confirmationFromEmail,
+        confirmationSubject,
+        confirmationEmailTemplate,
+        reminderFromName,
+        reminderFromEmail,
+        reminderSubject,
+        reminderEmailTemplate,
+        paymentReminderFromName,
+        paymentReminderFromEmail,
+        paymentReminderSubject,
+        paymentReminderEmailTemplate,
+        paymentReminderTimeSpan,
+        waitListTransitionFromName,
+        waitListTransitionFromEmail,
+        waitListTransitionSubject,
+        waitListTransitionEmailTemplate,
+        forms,
+        registrationAttributes,
+        fees,
+        discounts,
+        placements,
+        gatewayFeatures
+    ];
+
+    const groupMemberStatusItems = enumToListItemBag(GroupMemberStatusDescription);
+    const registrantsSameFamilyItems = enumToListItemBag(RegistrantsSameFamilyDescription);
+
+    const registrarOptionItems: ListItemBag[] = [
+        { value: RegistrarOption.PromptForRegistrar.toString(), text: "Prompt For Registrar" },
+        { value: RegistrarOption.PrefillFirstRegistrant.toString(), text: "Pre-fill First Registrant" },
+        { value: RegistrarOption.UseFirstRegistrant.toString(), text: "Use First Registrant" },
+        { value: RegistrarOption.UseLoggedInPerson.toString(), text: "Use Logged In Person" }
+    ];
+
+    const notifyItems: ListItemBag[] = [
+        { value: RegistrationNotify.RegistrationContact.toString(), text: "Registration Contact" },
+        { value: RegistrationNotify.GroupFollowers.toString(), text: "Group Followers" },
+        { value: RegistrationNotify.GroupLeaders.toString(), text: "Group Leaders" }
+    ];
+
+    const ageClassificationItems = enumToListItemBag(AgeClassificationDescription)
+        .filter(item => item.value !== AgeClassification.Unknown.toString());
+
+    const genderItems = enumToListItemBag(GenderDescription)
+        .filter(item => item.value !== Gender.Unknown.toString());
+
+    /*
+        9/11/2026 - MSE
+
+        The values below drive side effects, so the watchers that own those side
+        effects have to tell a change made by the individual apart from a refresh
+        of the bag.
+
+        Comparing against the bag itself does not work. The watcher that emits
+        update:modelValue writes the new value into the bag, and Vue flushes the
+        resulting prop update before the rest of this component's pending
+        watchers, so the bag already holds the new value by the time the
+        comparison runs and every side effect is skipped.
+
+        These values are the answer instead. The bag watcher seeds them when it
+        applies a refresh, which is what makes a refresh look like "no change",
+        and each side effect watcher records the value it acted on, so changing
+        a value and then changing it back is still seen as two changes. Nothing
+        else writes them, so the comparison does not depend on where the
+        watchers sit in the file.
+
+        Reason: Refresh the gateway capabilities and the other dependent values
+        whenever the individual changes them.
+    */
+    let lastHandledValues = {
+        financialGateway: props.modelValue.bag?.financialGateway?.value ?? null,
+        groupType: props.modelValue.bag?.groupType?.value ?? null,
+        registrantsSameFamily: props.modelValue.bag?.registrantsSameFamily ?? null,
+        isFullPaymentOrPaymentPlanRequired: props.modelValue.bag?.isFullPaymentOrPaymentPlanRequired ?? false
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const groupMemberStatusValue = computed({
+        get(): string {
+            return groupMemberStatus.value.toString();
+        },
+        set(value: string) {
+            groupMemberStatus.value = toNumber(value) as GroupMemberStatus;
+        }
+    });
+
+    const registrantsSameFamilyValue = computed({
+        get(): string {
+            return registrantsSameFamily.value.toString();
+        },
+        set(value: string) {
+            registrantsSameFamily.value = toNumber(value) as RegistrantsSameFamily;
+        }
+    });
+
+    const isShowFamilyMembersVisible = computed((): boolean => {
+        return registrantsSameFamily.value !== RegistrantsSameFamily.No;
+    });
+
+    const registrarOptionValue = computed({
+        get(): string {
+            return registrarOption.value.toString();
+        },
+        set(value: string) {
+            registrarOption.value = toNumber(value) as RegistrarOption;
+        }
+    });
+
+    /** The notify flags as the list of selected values used by the check box list. */
+    const notifyValues = computed({
+        get(): string[] {
+            return notifyItems
+                .map(item => toNumber(item.value))
+                .filter(flag => (notify.value & flag) === flag)
+                .map(flag => flag.toString());
+        },
+        set(values: string[]) {
+            notify.value = values.reduce((flags, value) => flags | toNumber(value), 0) as RegistrationNotify;
+        }
+    });
+
+    /** The toggle shows where the cost is set, which is the inverse of the stored flag. */
+    const isSetCostOnTemplate = computed({
+        get(): boolean {
+            return !isSetCostOnInstance.value;
+        },
+        set(value: boolean) {
+            isSetCostOnInstance.value = !value;
+        }
+    });
+
+    const isPaymentPlanEnabled = computed((): boolean => {
+        return gatewayFeatures.value.isPaymentPlanSupported && isPaymentPlanAllowed.value;
+    });
+
+    /** The selected payment plan frequencies as the list of values used by the check box list. */
+    const paymentPlanFrequencyValues = computed({
+        get(): string[] {
+            return paymentPlanFrequencies.value.map(frequency => frequency.value ?? "").filter(value => value);
+        },
+        set(values: string[]) {
+            const available = gatewayFeatures.value.paymentPlanFrequencies ?? [];
+
+            paymentPlanFrequencies.value = values
+                .map(value => available.find(frequency => areEqual(frequency.value, value)))
+                .filter((frequency): frequency is ListItemBag => !!frequency)
+                .map(frequency => ({ ...frequency }));
+        }
+    });
+
+    /** A payment plan cannot be set up without an initial payment, so the minimum is required when plans are enabled. */
+    const minimumInitialPaymentRules = computed((): string => {
+        return isPaymentPlanEnabled.value ? "required" : "";
+    });
+
+    const isFullPaymentMessageVisible = computed((): boolean => {
+        return isPaymentPlanEnabled.value && isFullPaymentOrPaymentPlanRequired.value;
+    });
+
+    const requiredSignatureDocumentTemplateValue = computed({
+        get(): string {
+            return requiredSignatureDocumentTemplate.value?.value ?? "";
+        },
+        set(value: string) {
+            const template = (props.options.signatureDocumentTemplates ?? []).find(t => areEqual(t.value, value));
+
+            requiredSignatureDocumentTemplate.value = template ? { ...template } : null;
+        }
+    });
+
+    /** Legacy signature providers allow external updates; the built-in signature process does not. */
+    const isNonLegacySignatureSelected = computed((): boolean => {
+        const selectedGuid = requiredSignatureDocumentTemplate.value?.value;
+
+        if (!selectedGuid) {
+            return false;
+        }
+
+        return !(props.options.legacySignatureDocumentTemplateGuids ?? []).some(guid => areEqual(guid, selectedGuid));
+    });
+
+    const allowExternalUpdatesHelp = computed((): string => {
+        if (isNonLegacySignatureSelected.value) {
+            return "Updating details of a registration are not allowed when a signature document is used because it could otherwise invalidate the previously signed document.";
+        }
+
+        return "Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will not be allowed to change any of the registrant information and attributes.";
+    });
+
+    const eligibilityAgeRange = computed({
+        get(): NumberRangeModelValue {
+            return {
+                lower: eligibilityMinimumAge.value,
+                upper: eligibilityMaximumAge.value
+            };
+        },
+        set(value: NumberRangeModelValue) {
+            eligibilityMinimumAge.value = value?.lower ?? null;
+            eligibilityMaximumAge.value = value?.upper ?? null;
+        }
+    });
+
+    const eligibilityAgeClassificationValue = computed({
+        get(): string {
+            return eligibilityAgeClassification.value?.toString() ?? "";
+        },
+        set(value: string) {
+            eligibilityAgeClassification.value = value ? toNumber(value) as AgeClassification : null;
+        }
+    });
+
+    const eligibilityMinimumGradeOffsetValue = computed({
+        get(): string {
+            return eligibilityMinimumGradeOffset.value?.toString() ?? "";
+        },
+        set(value: string) {
+            eligibilityMinimumGradeOffset.value = toNumberOrNull(value);
+        }
+    });
+
+    const eligibilityMaximumGradeOffsetValue = computed({
+        get(): string {
+            return eligibilityMaximumGradeOffset.value?.toString() ?? "";
+        },
+        set(value: string) {
+            eligibilityMaximumGradeOffset.value = toNumberOrNull(value);
+        }
+    });
+
+    /** The value the grade range form field tracks so it re-renders when either grade changes. */
+    const gradeRangeValue = computed((): (number | null)[] => {
+        return [eligibilityMinimumGradeOffset.value, eligibilityMaximumGradeOffset.value];
+    });
+
+    const eligibilityGenderValue = computed({
+        get(): string {
+            return eligibilityGender.value?.toString() ?? "";
+        },
+        set(value: string) {
+            eligibilityGender.value = value ? toNumber(value) as Gender : null;
+        }
+    });
+
+    const isAgeEligibilityWarningVisible = computed((): boolean => {
+        const hasAgeRule = eligibilityMinimumAge.value !== null
+            || eligibilityMaximumAge.value !== null
+            || eligibilityAgeClassification.value !== null;
+
+        return hasAgeRule && !hasPersonField(forms.value, RegistrationPersonFieldType.Birthdate);
+    });
+
+    const isGradeEligibilityWarningVisible = computed((): boolean => {
+        const hasGradeRule = eligibilityMinimumGradeOffset.value !== null || eligibilityMaximumGradeOffset.value !== null;
+
+        return hasGradeRule && !hasPersonField(forms.value, RegistrationPersonFieldType.Grade);
+    });
+
+    const isGenderEligibilityWarningVisible = computed((): boolean => {
+        return eligibilityGender.value !== null && !hasPersonField(forms.value, RegistrationPersonFieldType.Gender);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Creates the gateway features used when no gateway is selected.
+     *
+     * @returns Gateway features with everything turned off.
+     */
+    function createEmptyGatewayFeatures(): RegistrationTemplateGatewayFeaturesBag {
+        return {
+            isRedirectionGateway: false,
+            isPaymentPlanSupported: false,
+            paymentPlanFrequencies: []
+        };
+    }
+
+    let gatewayFeaturesRequestId = 0;
+    let gatewayFeaturesRequest: Promise<void> = Promise.resolve();
+
+    /**
+     * Loads the capabilities of the selected gateway from the server and then
+     * removes any payment settings the gateway does not support.
+     */
+    async function loadGatewayFeatures(): Promise<void> {
+        const requestedGuid = financialGateway.value?.value || null;
+        const requestId = ++gatewayFeaturesRequestId;
+
+        gatewayFeaturesError.value = "";
+
+        const result = await invokeBlockAction<RegistrationTemplateGatewayFeaturesBag>("GetFinancialGatewayFeatures", {
+            financialGatewayGuid: requestedGuid
+        });
+
+        if (requestId !== gatewayFeaturesRequestId || !areEqual(financialGateway.value?.value, requestedGuid)) {
+            return;
+        }
+
+        // A failed request means the capabilities are unknown, not that the gateway
+        // supports nothing, so the payment settings are left as they are.
+        if (!result.isSuccess || !result.data) {
+            gatewayFeaturesError.value = result.errorMessage || "Unable to load the payment features of the selected financial gateway.";
+
+            return;
+        }
+
+        gatewayFeatures.value = result.data;
+
+        applyGatewayFeatures();
+    }
+
+    /**
+     * Waits for any in-flight gateway features request to finish and for the
+     * edit bag to pick up the frequencies that request kept.
+     */
+    async function waitForGatewayFeatures(): Promise<void> {
+        await gatewayFeaturesRequest;
+        await nextTick();
+    }
+
+    /**
+     * Clears the payment settings that the selected gateway cannot support.
+     */
+    function applyGatewayFeatures(): void {
+        if (gatewayFeatures.value.isRedirectionGateway) {
+            batchNamePrefix.value = "";
+        }
+
+        if (!gatewayFeatures.value.isPaymentPlanSupported) {
+            isPaymentPlanAllowed.value = false;
+            paymentPlanFrequencies.value = [];
+
+            return;
+        }
+
+        const available = gatewayFeatures.value.paymentPlanFrequencies ?? [];
+        const stillAvailable = paymentPlanFrequencies.value.filter(frequency => available.some(a => areEqual(a.value, frequency.value)));
+
+        if (stillAvailable.length !== paymentPlanFrequencies.value.length) {
+            paymentPlanFrequencies.value = stillAvailable;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? true);
+        updateRefValue(category, props.modelValue.bag?.category ?? null);
+        updateRefValue(groupType, props.modelValue.bag?.groupType ?? null);
+        updateRefValue(groupMemberRole, props.modelValue.bag?.groupMemberRole ?? null);
+        updateRefValue(groupMemberStatus, props.modelValue.bag?.groupMemberStatus ?? GroupMemberStatus.Active);
+        updateRefValue(connectionStatus, props.modelValue.bag?.connectionStatus ?? null);
+        updateRefValue(recordSource, props.modelValue.bag?.recordSource ?? null);
+        updateRefValue(allowMultipleRegistrants, props.modelValue.bag?.allowMultipleRegistrants ?? false);
+        updateRefValue(maxRegistrants, props.modelValue.bag?.maxRegistrants ?? null);
+        updateRefValue(registrantsSameFamily, props.modelValue.bag?.registrantsSameFamily ?? RegistrantsSameFamily.No);
+        updateRefValue(showCurrentFamilyMembers, props.modelValue.bag?.showCurrentFamilyMembers ?? false);
+        updateRefValue(waitListEnabled, props.modelValue.bag?.waitListEnabled ?? false);
+        updateRefValue(registrarOption, props.modelValue.bag?.registrarOption ?? RegistrarOption.PromptForRegistrar);
+        updateRefValue(showSmsOptIn, props.modelValue.bag?.showSmsOptIn ?? false);
+        updateRefValue(areDuplicateRegistrantsPrevented, props.modelValue.bag?.areDuplicateRegistrantsPrevented ?? false);
+        updateRefValue(notify, props.modelValue.bag?.notify ?? RegistrationNotify.None);
+        updateRefValue(addPersonNote, props.modelValue.bag?.addPersonNote ?? false);
+        updateRefValue(loginRequired, props.modelValue.bag?.loginRequired ?? false);
+        updateRefValue(isSetCostOnInstance, props.modelValue.bag?.isSetCostOnInstance ?? false);
+        updateRefValue(financialGateway, props.modelValue.bag?.financialGateway ?? null);
+        updateRefValue(batchNamePrefix, props.modelValue.bag?.batchNamePrefix ?? "");
+        updateRefValue(cost, props.modelValue.bag?.cost ?? null);
+        updateRefValue(minimumInitialPayment, props.modelValue.bag?.minimumInitialPayment ?? null);
+        updateRefValue(defaultPayment, props.modelValue.bag?.defaultPayment ?? null);
+        updateRefValue(isPaymentPlanAllowed, props.modelValue.bag?.isPaymentPlanAllowed ?? false);
+        updateRefValue(paymentPlanFrequencies, props.modelValue.bag?.paymentPlanFrequencies ?? []);
+        updateRefValue(isFullPaymentOrPaymentPlanRequired, props.modelValue.bag?.isFullPaymentOrPaymentPlanRequired ?? false);
+        updateRefValue(fullPaymentOrPaymentPlanRequiredMessage, props.modelValue.bag?.fullPaymentOrPaymentPlanRequiredMessage ?? "");
+        updateRefValue(registrationWorkflowType, props.modelValue.bag?.registrationWorkflowType ?? null);
+        updateRefValue(registrantWorkflowType, props.modelValue.bag?.registrantWorkflowType ?? null);
+        updateRefValue(allowExternalRegistrationUpdates, props.modelValue.bag?.allowExternalRegistrationUpdates ?? false);
+        updateRefValue(requiredSignatureDocumentTemplate, props.modelValue.bag?.requiredSignatureDocumentTemplate ?? null);
+        updateRefValue(eligibilityMinimumAge, props.modelValue.bag?.eligibilityMinimumAge ?? null);
+        updateRefValue(eligibilityMaximumAge, props.modelValue.bag?.eligibilityMaximumAge ?? null);
+        updateRefValue(eligibilityAgeClassification, props.modelValue.bag?.eligibilityAgeClassification ?? null);
+        updateRefValue(eligibilityMinimumGradeOffset, props.modelValue.bag?.eligibilityMinimumGradeOffset ?? null);
+        updateRefValue(eligibilityMaximumGradeOffset, props.modelValue.bag?.eligibilityMaximumGradeOffset ?? null);
+        updateRefValue(eligibilityGender, props.modelValue.bag?.eligibilityGender ?? null);
+        updateRefValue(eligibilityDataView, props.modelValue.bag?.eligibilityDataView ?? null);
+        updateRefValue(registrationTerm, props.modelValue.bag?.registrationTerm ?? "");
+        updateRefValue(registrantTerm, props.modelValue.bag?.registrantTerm ?? "");
+        updateRefValue(feeTerm, props.modelValue.bag?.feeTerm ?? "");
+        updateRefValue(discountCodeTerm, props.modelValue.bag?.discountCodeTerm ?? "");
+        updateRefValue(registrationAttributeTitleStart, props.modelValue.bag?.registrationAttributeTitleStart ?? "");
+        updateRefValue(registrationAttributeTitleEnd, props.modelValue.bag?.registrationAttributeTitleEnd ?? "");
+        updateRefValue(successTitle, props.modelValue.bag?.successTitle ?? "");
+        updateRefValue(successText, props.modelValue.bag?.successText ?? "");
+        updateRefValue(registrationInstructions, props.modelValue.bag?.registrationInstructions ?? "");
+        updateRefValue(confirmationFromName, props.modelValue.bag?.confirmationFromName ?? "");
+        updateRefValue(confirmationFromEmail, props.modelValue.bag?.confirmationFromEmail ?? "");
+        updateRefValue(confirmationSubject, props.modelValue.bag?.confirmationSubject ?? "");
+        updateRefValue(confirmationEmailTemplate, props.modelValue.bag?.confirmationEmailTemplate ?? "");
+        updateRefValue(reminderFromName, props.modelValue.bag?.reminderFromName ?? "");
+        updateRefValue(reminderFromEmail, props.modelValue.bag?.reminderFromEmail ?? "");
+        updateRefValue(reminderSubject, props.modelValue.bag?.reminderSubject ?? "");
+        updateRefValue(reminderEmailTemplate, props.modelValue.bag?.reminderEmailTemplate ?? "");
+        updateRefValue(paymentReminderFromName, props.modelValue.bag?.paymentReminderFromName ?? "");
+        updateRefValue(paymentReminderFromEmail, props.modelValue.bag?.paymentReminderFromEmail ?? "");
+        updateRefValue(paymentReminderSubject, props.modelValue.bag?.paymentReminderSubject ?? "");
+        updateRefValue(paymentReminderEmailTemplate, props.modelValue.bag?.paymentReminderEmailTemplate ?? "");
+        updateRefValue(paymentReminderTimeSpan, props.modelValue.bag?.paymentReminderTimeSpan ?? null);
+        updateRefValue(waitListTransitionFromName, props.modelValue.bag?.waitListTransitionFromName ?? "");
+        updateRefValue(waitListTransitionFromEmail, props.modelValue.bag?.waitListTransitionFromEmail ?? "");
+        updateRefValue(waitListTransitionSubject, props.modelValue.bag?.waitListTransitionSubject ?? "");
+        updateRefValue(waitListTransitionEmailTemplate, props.modelValue.bag?.waitListTransitionEmailTemplate ?? "");
+        updateRefValue(forms, props.modelValue.bag?.forms ?? []);
+        updateRefValue(registrationAttributes, props.modelValue.bag?.registrationAttributes ?? []);
+        updateRefValue(fees, props.modelValue.bag?.fees ?? []);
+        updateRefValue(discounts, props.modelValue.bag?.discounts ?? []);
+        updateRefValue(placements, props.modelValue.bag?.placements ?? []);
+        updateRefValue(gatewayFeatures, props.modelValue.bag?.gatewayFeatures ?? createEmptyGatewayFeatures());
+
+        // Record what the bag supplied so the side effect watchers below see a
+        // refresh as "no change" rather than as an edit by the individual.
+        lastHandledValues = {
+            financialGateway: props.modelValue.bag?.financialGateway?.value ?? null,
+            groupType: props.modelValue.bag?.groupType?.value ?? null,
+            registrantsSameFamily: props.modelValue.bag?.registrantsSameFamily ?? null,
+            isFullPaymentOrPaymentPlanRequired: props.modelValue.bag?.isFullPaymentOrPaymentPlanRequired ?? false
+        };
+    });
+
+    // The watchers below react to changes the individual makes. Each one records
+    // the value it handled and skips values that did not change, so a refresh of
+    // the bag is ignored while a real edit is always acted on.
+
+    // A different gateway may not support the current payment settings.
+    watch(financialGateway, (newValue) => {
+        const previousValue = lastHandledValues.financialGateway;
+
+        lastHandledValues.financialGateway = newValue?.value ?? null;
+
+        if (areEqual(newValue?.value, previousValue)) {
+            return;
+        }
+
+        gatewayFeaturesRequest = loadGatewayFeatures();
+    });
+
+    // Roles belong to a group type, so a new group type invalidates the selected role.
+    watch(groupType, (newValue) => {
+        const previousValue = lastHandledValues.groupType;
+
+        lastHandledValues.groupType = newValue?.value ?? null;
+
+        if (areEqual(newValue?.value, previousValue)) {
+            return;
+        }
+
+        groupMemberRole.value = null;
+    });
+
+    // Family members can only be offered when registrants may be in the same family.
+    watch(registrantsSameFamily, (newValue) => {
+        const previousValue = lastHandledValues.registrantsSameFamily;
+
+        lastHandledValues.registrantsSameFamily = newValue;
+
+        if (newValue === previousValue) {
+            return;
+        }
+
+        if (newValue === RegistrantsSameFamily.No) {
+            showCurrentFamilyMembers.value = false;
+        }
+    });
+
+    // Seed the message shown to registrants the first time the requirement is turned on.
+    watch(isFullPaymentOrPaymentPlanRequired, (newValue) => {
+        const previousValue = lastHandledValues.isFullPaymentOrPaymentPlanRequired;
+
+        lastHandledValues.isFullPaymentOrPaymentPlanRequired = newValue;
+
+        if (newValue === previousValue) {
+            return;
+        }
+
+        if (newValue && !fullPaymentOrPaymentPlanRequiredMessage.value) {
+            fullPaymentOrPaymentPlanRequiredMessage.value = defaultFullPaymentOrPaymentPlanRequiredMessage;
+        }
+    });
+
+    // A signature document that is not from a legacy provider blocks external updates.
+    watch(isNonLegacySignatureSelected, (newValue) => {
+        if (newValue) {
+            allowExternalRegistrationUpdates.value = false;
+        }
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<RegistrationTemplateBag> = {
+            bag: { ...props.modelValue.bag } as RegistrationTemplateBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "groupType", groupType.value);
+        setPropertiesBoxValue(newValue, "groupMemberRole", groupMemberRole.value);
+        setPropertiesBoxValue(newValue, "groupMemberStatus", groupMemberStatus.value);
+        setPropertiesBoxValue(newValue, "connectionStatus", connectionStatus.value);
+        setPropertiesBoxValue(newValue, "recordSource", recordSource.value);
+        setPropertiesBoxValue(newValue, "allowMultipleRegistrants", allowMultipleRegistrants.value);
+        setPropertiesBoxValue(newValue, "maxRegistrants", maxRegistrants.value);
+        setPropertiesBoxValue(newValue, "registrantsSameFamily", registrantsSameFamily.value);
+        setPropertiesBoxValue(newValue, "showCurrentFamilyMembers", showCurrentFamilyMembers.value);
+        setPropertiesBoxValue(newValue, "waitListEnabled", waitListEnabled.value);
+        setPropertiesBoxValue(newValue, "registrarOption", registrarOption.value);
+        setPropertiesBoxValue(newValue, "showSmsOptIn", showSmsOptIn.value);
+        setPropertiesBoxValue(newValue, "areDuplicateRegistrantsPrevented", areDuplicateRegistrantsPrevented.value);
+        setPropertiesBoxValue(newValue, "notify", notify.value);
+        setPropertiesBoxValue(newValue, "addPersonNote", addPersonNote.value);
+        setPropertiesBoxValue(newValue, "loginRequired", loginRequired.value);
+        setPropertiesBoxValue(newValue, "isSetCostOnInstance", isSetCostOnInstance.value);
+        setPropertiesBoxValue(newValue, "financialGateway", financialGateway.value);
+        setPropertiesBoxValue(newValue, "batchNamePrefix", batchNamePrefix.value);
+        setPropertiesBoxValue(newValue, "cost", cost.value);
+        setPropertiesBoxValue(newValue, "minimumInitialPayment", minimumInitialPayment.value);
+        setPropertiesBoxValue(newValue, "defaultPayment", defaultPayment.value);
+        setPropertiesBoxValue(newValue, "isPaymentPlanAllowed", isPaymentPlanAllowed.value);
+        setPropertiesBoxValue(newValue, "paymentPlanFrequencies", paymentPlanFrequencies.value);
+        setPropertiesBoxValue(newValue, "isFullPaymentOrPaymentPlanRequired", isFullPaymentOrPaymentPlanRequired.value);
+        setPropertiesBoxValue(newValue, "fullPaymentOrPaymentPlanRequiredMessage", fullPaymentOrPaymentPlanRequiredMessage.value);
+        setPropertiesBoxValue(newValue, "registrationWorkflowType", registrationWorkflowType.value);
+        setPropertiesBoxValue(newValue, "registrantWorkflowType", registrantWorkflowType.value);
+        setPropertiesBoxValue(newValue, "allowExternalRegistrationUpdates", allowExternalRegistrationUpdates.value);
+        setPropertiesBoxValue(newValue, "requiredSignatureDocumentTemplate", requiredSignatureDocumentTemplate.value);
+        setPropertiesBoxValue(newValue, "eligibilityMinimumAge", eligibilityMinimumAge.value);
+        setPropertiesBoxValue(newValue, "eligibilityMaximumAge", eligibilityMaximumAge.value);
+        setPropertiesBoxValue(newValue, "eligibilityAgeClassification", eligibilityAgeClassification.value);
+        setPropertiesBoxValue(newValue, "eligibilityMinimumGradeOffset", eligibilityMinimumGradeOffset.value);
+        setPropertiesBoxValue(newValue, "eligibilityMaximumGradeOffset", eligibilityMaximumGradeOffset.value);
+        setPropertiesBoxValue(newValue, "eligibilityGender", eligibilityGender.value);
+        setPropertiesBoxValue(newValue, "eligibilityDataView", eligibilityDataView.value);
+        setPropertiesBoxValue(newValue, "registrationTerm", registrationTerm.value);
+        setPropertiesBoxValue(newValue, "registrantTerm", registrantTerm.value);
+        setPropertiesBoxValue(newValue, "feeTerm", feeTerm.value);
+        setPropertiesBoxValue(newValue, "discountCodeTerm", discountCodeTerm.value);
+        setPropertiesBoxValue(newValue, "registrationAttributeTitleStart", registrationAttributeTitleStart.value);
+        setPropertiesBoxValue(newValue, "registrationAttributeTitleEnd", registrationAttributeTitleEnd.value);
+        setPropertiesBoxValue(newValue, "successTitle", successTitle.value);
+        setPropertiesBoxValue(newValue, "successText", successText.value);
+        setPropertiesBoxValue(newValue, "registrationInstructions", registrationInstructions.value);
+        setPropertiesBoxValue(newValue, "confirmationFromName", confirmationFromName.value);
+        setPropertiesBoxValue(newValue, "confirmationFromEmail", confirmationFromEmail.value);
+        setPropertiesBoxValue(newValue, "confirmationSubject", confirmationSubject.value);
+        setPropertiesBoxValue(newValue, "confirmationEmailTemplate", confirmationEmailTemplate.value);
+        setPropertiesBoxValue(newValue, "reminderFromName", reminderFromName.value);
+        setPropertiesBoxValue(newValue, "reminderFromEmail", reminderFromEmail.value);
+        setPropertiesBoxValue(newValue, "reminderSubject", reminderSubject.value);
+        setPropertiesBoxValue(newValue, "reminderEmailTemplate", reminderEmailTemplate.value);
+        setPropertiesBoxValue(newValue, "paymentReminderFromName", paymentReminderFromName.value);
+        setPropertiesBoxValue(newValue, "paymentReminderFromEmail", paymentReminderFromEmail.value);
+        setPropertiesBoxValue(newValue, "paymentReminderSubject", paymentReminderSubject.value);
+        setPropertiesBoxValue(newValue, "paymentReminderEmailTemplate", paymentReminderEmailTemplate.value);
+        setPropertiesBoxValue(newValue, "paymentReminderTimeSpan", paymentReminderTimeSpan.value);
+        setPropertiesBoxValue(newValue, "waitListTransitionFromName", waitListTransitionFromName.value);
+        setPropertiesBoxValue(newValue, "waitListTransitionFromEmail", waitListTransitionFromEmail.value);
+        setPropertiesBoxValue(newValue, "waitListTransitionSubject", waitListTransitionSubject.value);
+        setPropertiesBoxValue(newValue, "waitListTransitionEmailTemplate", waitListTransitionEmailTemplate.value);
+        setPropertiesBoxValue(newValue, "forms", forms.value);
+        setPropertiesBoxValue(newValue, "registrationAttributes", registrationAttributes.value);
+        setPropertiesBoxValue(newValue, "fees", fees.value);
+        setPropertiesBoxValue(newValue, "discounts", discounts.value);
+        setPropertiesBoxValue(newValue, "placements", placements.value);
+        setPropertiesBoxValue(newValue, "gatewayFeatures", gatewayFeatures.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion Watchers
+
+    defineExpose({
+        waitForGatewayFeatures
+    });
+</script>

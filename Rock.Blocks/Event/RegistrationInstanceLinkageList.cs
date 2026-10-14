@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -393,6 +393,13 @@ namespace Rock.Blocks.Event
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
+            {
+                return ActionBadRequest( $"{EventItemOccurrenceGroupMap.FriendlyTypeName} not found." );
+            }
+
+            // Only linkages of the registration instance shown in the list may be deleted.
+            var registrationInstance = GetRegistrationInstance();
+            if ( registrationInstance == null || entity.RegistrationInstanceId != registrationInstance.Id )
             {
                 return ActionBadRequest( $"{EventItemOccurrenceGroupMap.FriendlyTypeName} not found." );
             }

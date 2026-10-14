@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -301,6 +301,12 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            // The reorder column is only shown to people that can configure the block.
+            if ( !GetCanConfigure() )
+            {
+                return ActionBadRequest( $"Not authorized to reorder {Tag.FriendlyTypeName}." );
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.

@@ -32,6 +32,12 @@ export type RegistrationEntrySuccessBag = {
     /** Gets or sets the number of registered registrants in this registration. */
     registeredCount: number;
 
+    /**
+     * Gets or sets the security grant token that allows the payment
+     * method to be saved for future use.
+     */
+    saveAccountSecurityGrantToken?: string | null;
+
     /** Gets or sets the number of remaining spots for the registration instance. */
     spotsRemaining?: number | null;
 

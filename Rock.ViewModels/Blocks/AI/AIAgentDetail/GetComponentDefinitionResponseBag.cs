@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,13 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// The list of tools defined on the skill that can be enabled.
         /// </summary>
         public List<ListItemBag> AvailableTools { get; set; }
+
+        /// <summary>
+        /// The description of each available tool, keyed by the tool's unique
+        /// identifier. The keys match the values in <see cref="AvailableTools"/>
+        /// so the UI can display each tool's purpose alongside its checkbox.
+        /// </summary>
+        public Dictionary<string, string> ToolDescriptions { get; set; }
 
         /// <summary>
         /// The current configuration values for the skill.

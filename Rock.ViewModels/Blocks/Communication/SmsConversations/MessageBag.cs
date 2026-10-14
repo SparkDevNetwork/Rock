@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+
+using Rock.ViewModels.Communication;
 
 namespace Rock.ViewModels.Blocks.Communication.SmsConversations
 {
@@ -50,8 +52,9 @@ namespace Rock.ViewModels.Blocks.Communication.SmsConversations
         public DateTimeOffset? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of Attachment URL's
+        /// Gets or sets the attachments. Non-image attachments will not have
+        /// a <see cref="ConversationAttachmentBag.ThumbnailUrl"/>.
         /// </summary>
-        public List<string> AttachmentUrls { get; set; }
+        public List<ConversationAttachmentBag> Attachments { get; set; }
     }
 }

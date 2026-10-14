@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -389,7 +389,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${BlockType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {BlockType.FriendlyTypeName}." );
                 return false;
             }
 

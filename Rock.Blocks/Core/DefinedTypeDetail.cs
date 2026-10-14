@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -376,7 +376,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${DefinedType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {DefinedType.FriendlyTypeName}." );
                 return false;
             }
 
@@ -397,6 +397,68 @@ namespace Rock.Blocks.Core
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the defined type whose attributes are being managed by an
+        /// attribute block action and makes sure the current person is
+        /// allowed to edit it.
+        /// </summary>
+        /// <param name="idKey">The identifier of the defined type.</param>
+        /// <param name="definedType">On return contains the defined type.</param>
+        /// <param name="error">On return contains the error to be returned if the defined type could not be used.</param>
+        /// <returns><c>true</c> if the defined type was found and can be used; otherwise <c>false</c>.</returns>
+        private bool TryGetDefinedTypeForAttributeAction( string idKey, out DefinedType definedType, out BlockActionResult error )
+        {
+            error = null;
+
+            /*
+                10/8/2026 - MSE
+
+                Attributes can't be changed when the block is configured for a
+                single defined type.
+
+                Reason: Matches the UI, which doesn't offer attribute editing there.
+            */
+            if ( GetAttributeValue( AttributeKey.DefinedType ).AsGuidOrNull().HasValue )
+            {
+                definedType = null;
+                error = ActionBadRequest( "Attributes cannot be changed when the block is configured for a single defined type." );
+                return false;
+            }
+
+            definedType = idKey.IsNotNullOrWhiteSpace()
+                ? new DefinedTypeService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+
+            if ( definedType == null )
+            {
+                error = ActionBadRequest( $"{DefinedType.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !definedType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {DefinedType.FriendlyTypeName}." );
+                definedType = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the attribute is a defined value attribute that
+        /// belongs to the specified defined type.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <param name="definedTypeId">The defined type identifier.</param>
+        /// <returns><c>true</c> if the attribute belongs to the defined type; otherwise <c>false</c>.</returns>
+        private static bool IsDefinedTypeAttribute( Rock.Model.Attribute attribute, int definedTypeId )
+        {
+            return attribute.EntityTypeId == EntityTypeCache.GetId<DefinedValue>()
+                && string.Equals( attribute.EntityTypeQualifierColumn, "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
+                && attribute.EntityTypeQualifierValue == definedTypeId.ToString();
         }
 
         /// <summary>
@@ -524,10 +586,13 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
         {
-            // Get the queryable and make sure it is ordered correctly.
-            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
+            if ( !TryGetDefinedTypeForAttributeAction( idKey, out var definedType, out var actionError ) )
+            {
+                return actionError;
+            }
 
-            var attributes = GetAttributes( id ?? 0, RockContext );
+            // Get the queryable and make sure it is ordered correctly.
+            var attributes = GetAttributes( definedType.Id, RockContext );
 
             if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
             {
@@ -548,8 +613,21 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveAttribute( string idKey, PublicEditableAttributeBag attributebag )
         {
-            string qualifierValue = Rock.Utility.IdHasher.Instance.GetId( idKey ).ToString();
+            if ( !TryGetDefinedTypeForAttributeAction( idKey, out var definedType, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            string qualifierValue = definedType.Id.ToString();
             var entityTypeIdDefinedType = EntityTypeCache.GetId<DefinedValue>();
+
+            // Make sure an existing attribute can only be updated if it
+            // already belongs to this defined type.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( new[] { attributebag }, entityTypeIdDefinedType, "DefinedTypeId", qualifierValue, RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             var attribute = Helper.SaveAttributeEdits( attributebag, entityTypeIdDefinedType, "DefinedTypeId", qualifierValue, RockContext );
             attributebag = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             return ActionOk( attributebag );
@@ -564,6 +642,26 @@ namespace Rock.Blocks.Core
         {
             var attributeService = new AttributeService( RockContext );
             var attribute = attributeService.Get( guid );
+
+            // Make sure the attribute is a defined type attribute and that
+            // the current person has access to the defined type.
+            if ( attribute != null )
+            {
+                var definedTypeId = attribute.EntityTypeQualifierValue.AsIntegerOrNull();
+                var definedType = definedTypeId.HasValue && IsDefinedTypeAttribute( attribute, definedTypeId.Value )
+                    ? new DefinedTypeService( RockContext ).Get( definedTypeId.Value )
+                    : null;
+
+                if ( definedType == null )
+                {
+                    return ActionBadRequest();
+                }
+
+                if ( !TryGetDefinedTypeForAttributeAction( definedType.IdKey, out _, out var actionError ) )
+                {
+                    return actionError;
+                }
+            }
 
             if ( attribute != null && attributeService.CanDelete( attribute, out string errorMessage ) )
             {

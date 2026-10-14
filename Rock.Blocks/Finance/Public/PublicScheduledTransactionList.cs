@@ -286,15 +286,8 @@ namespace Rock.Blocks.Finance
         private List<FinancialScheduledTransaction> LoadSchedulesForCurrentPerson()
         {
             var transactionService = new FinancialScheduledTransactionService( RockContext );
-            var personService = new PersonService( RockContext );
 
-            // Collect the giving IDs we want to match: the current person's
-            // own giving ID plus the giving ID of every business they own.
-            // Matches historical schedules attached to either form (G{n} or P{n}).
-            var givingIds = personService.GetBusinesses( RequestContext.CurrentPerson.Id )
-                .Select( g => g.GivingId )
-                .ToList();
-            givingIds.Add( RequestContext.CurrentPerson.GivingId );
+            var givingIds = GetCurrentPersonGivingIds();
 
             var schedules = transactionService.Queryable()
                 .Include( a => a.TransactionTypeValue )
@@ -326,6 +319,22 @@ namespace Rock.Blocks.Finance
             transactionService.GetStatus( scheduleList, true );
 
             return scheduleList;
+        }
+
+        /// <summary>
+        /// Gets the giving IDs whose schedules this block shows: the current
+        /// person's own giving ID plus the giving ID of every business they own.
+        /// </summary>
+        /// <returns>The giving IDs that the current person may manage.</returns>
+        private List<string> GetCurrentPersonGivingIds()
+        {
+            // Matches historical schedules attached to either form (G{n} or P{n}).
+            var givingIds = new PersonService( RockContext ).GetBusinesses( RequestContext.CurrentPerson.Id )
+                .Select( g => g.GivingId )
+                .ToList();
+            givingIds.Add( RequestContext.CurrentPerson.GivingId );
+
+            return givingIds;
         }
 
         /// <summary>
@@ -611,11 +620,29 @@ namespace Rock.Blocks.Finance
 
             */
 
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionNotFound();
+            }
+
             var scheduledTransactionId = IdHasher.Instance.GetId( idKey ) ?? 0;
 
             var fstService = new FinancialScheduledTransactionService( RockContext );
             var currentTransaction = fstService.Get( scheduledTransactionId );
-            if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
+
+            // Only schedules belonging to the current person or one of their
+            // businesses are shown in the list, so only those may be cancelled.
+            // Otherwise a tampered key could cancel another person's gift.
+            var givingIds = GetCurrentPersonGivingIds();
+            var isScheduleOwnedByCurrentPerson = currentTransaction?.AuthorizedPersonAlias?.Person != null
+                && givingIds.Contains( currentTransaction.AuthorizedPersonAlias.Person.GivingId );
+
+            if ( !isScheduleOwnedByCurrentPerson )
+            {
+                return ActionNotFound();
+            }
+
+            if ( currentTransaction.FinancialGateway != null )
             {
                 currentTransaction.FinancialGateway.LoadAttributes( RockContext );
             }

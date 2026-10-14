@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,34 @@ namespace Rock.Model
     /// </summary>
     public partial class UserLoginService
     {
+        /// <inheritdoc/>
+        public override void SetValues( UserLogin sourceItem, UserLogin targetItem )
+        {
+            // Neither property is serialized, so a null source value means the caller didn't supply one.
+            var password = targetItem.Password;
+            var apiKey = targetItem.ApiKey;
+
+            base.SetValues( sourceItem, targetItem );
+
+            targetItem.Password = sourceItem.Password ?? password;
+            targetItem.ApiKey = sourceItem.ApiKey ?? apiKey;
+        }
+
+        /// <summary>
+        /// How long a confirmation code is valid after it is issued.
+        /// </summary>
+        private static readonly TimeSpan ConfirmationCodeLifetime = TimeSpan.FromHours( 2 );
+
+        /// <summary>
+        /// How far in the future a confirmation code's issue time can be and still be accepted.
+        /// </summary>
+        private static readonly TimeSpan ConfirmationCodeFutureAllowance = TimeSpan.FromHours( 1 );
+
+        /// <summary>
+        /// How far the stored password change date can be after a code's issue time and still be accepted.
+        /// </summary>
+        private static readonly TimeSpan PasswordChangedRoundingAllowance = TimeSpan.FromSeconds( 1 );
+
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by their API Key.
         /// </summary>
@@ -131,10 +159,31 @@ namespace Rock.Model
                             ticks = 0;
                         }
 
+                        if ( ticks <= 0 || ticks > DateTime.MaxValue.Ticks )
+                        {
+                            return null;
+                        }
+
                         DateTime dateTime = new DateTime( ticks );
 
-                        // Confirmation Code is only valid for an hour
-                        if ( RockDateTime.Now.Subtract( dateTime ).Hours > 1 )
+                        /*
+                            10/8/2026 - CH
+
+                            Confirmation codes are valid for two hours from issue, and a code issued
+                            before the most recent password change is no longer valid.
+
+                            The future allowance covers the daylight saving fall-back (the ticks are
+                            org-local RockDateTime) and clock drift between web servers. The rounding
+                            allowance covers SQL datetime rounding when the confirmation email is built
+                            in the same request that creates the login. Don't tighten either one.
+
+                            Reason: Codes stayed valid long after issue and after they were used.
+                        */
+                        var codeAge = RockDateTime.Now - dateTime;
+                        var isExpired = codeAge > ConfirmationCodeLifetime;
+                        var isIssuedInFuture = codeAge < -ConfirmationCodeFutureAllowance;
+
+                        if ( isExpired || isIssuedInFuture )
                         {
                             return null;
                         }
@@ -142,6 +191,14 @@ namespace Rock.Model
                         UserLogin user = this.GetByEncryptedKey( publicKey );
                         if ( user != null && user.UserName == username )
                         {
+                            var isIssuedBeforePasswordChange = user.LastPasswordChangedDateTime.HasValue
+                                && user.LastPasswordChangedDateTime.Value > dateTime + PasswordChangedRoundingAllowance;
+
+                            if ( isIssuedBeforePasswordChange )
+                            {
+                                return null;
+                            }
+
                             return user;
                         }
                     }

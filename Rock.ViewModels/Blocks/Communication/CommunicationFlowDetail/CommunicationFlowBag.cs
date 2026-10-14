@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,10 +16,10 @@
 //
 
 using System;
-
-using Rock.ViewModels.Utility;
-using Rock.Enums.Communication;
 using System.Collections.Generic;
+
+using Rock.Enums.Communication;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowDetail
 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+
 using Microsoft.Web.XmlTransform;
+
 using Rock.Model;
 using Rock.Update.Exceptions;
 using Rock.Update.Helpers;
@@ -74,7 +76,7 @@ namespace Rock.Update
 
             if ( targetRelease == null )
             {
-                throw new PackageNotFoundException( $"Target Release ${targetRelease} was not found." );
+                throw new PackageNotFoundException( $"Target Release {targetRelease} was not found." );
             }
 
             var targetPackagePath = DownloadPackage( targetRelease );
@@ -343,7 +345,7 @@ namespace Rock.Update
         {
             if ( release.PackageUri.IsNullOrWhiteSpace() )
             {
-                throw new Exception( $"Target Release ${release} doesn't have a Package URI specified." );
+                throw new Exception( $"Target Release {release} doesn't have a Package URI specified." );
             }
 
             var localRockPackageDirectory = Path.Combine( FileManagementHelper.ROOT_PATH, LOCAL_ROCK_PACKAGE_FOLDER );

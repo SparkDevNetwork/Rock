@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,8 +40,8 @@ namespace Rock.Workflow.Action
     #region Block Attributes
 
     [WorkflowAttribute(
-        "Communication Flow",
-        Description = "The communication flow to trigger.",
+        "Communication Flow Attribute",
+        Description = "The workflow attribute that contains the communication flow to trigger.",
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.CommunicationFlow,

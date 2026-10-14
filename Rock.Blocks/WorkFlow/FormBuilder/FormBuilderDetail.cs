@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,21 +106,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             {
                 var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
 
-                // If WorkflowType has an explicit rule for EDIT, use it. Otherwise, fall back to Category security.
-                bool canEdit = false;
-                if ( workflowType != null )
-                {
-                    var wfAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, RequestContext.CurrentPerson, false );
-                    if ( wfAuth.HasValue )
-                    {
-                        canEdit = wfAuth.Value;
-                    }
-                    else
-                    {
-                        var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
-                        canEdit = category != null && category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-                    }
-                }
+                bool canEdit = workflowType != null && CanEditWorkflowType( workflowType );
 
                 if ( workflowType != null && workflowType.IsFormBuilder && canEdit )
                 {
@@ -824,6 +810,55 @@ namespace Rock.Blocks.Workflow.FormBuilder
             return filteredPages;
         }
 
+        /// <summary>
+        /// Determines if the current person is allowed to edit the form. If the
+        /// workflow type has an explicit rule for EDIT, use it. Otherwise, fall
+        /// back to Category security.
+        /// </summary>
+        /// <param name="workflowType">The workflow type that represents the form.</param>
+        /// <returns><c>true</c> if the current person can edit the form; otherwise <c>false</c>.</returns>
+        private bool CanEditWorkflowType( WorkflowType workflowType )
+        {
+            var wfAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, RequestContext.CurrentPerson, false );
+
+            if ( wfAuth.HasValue )
+            {
+                return wfAuth.Value;
+            }
+
+            var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
+
+            return category != null && category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the specified form,
+        /// using the same check as <see cref="SaveForm(Guid, FormSettingsViewModel)"/>.
+        /// </summary>
+        /// <param name="formGuid">The unique identifier of the form.</param>
+        /// <returns><c>true</c> if the current person can edit the form; otherwise <c>false</c>.</returns>
+        private bool CanEditForm( Guid formGuid )
+        {
+            /*
+                10/9/2026 - MSE
+
+                The preview actions run field type configuration sent by the
+                browser, so they need the same edit access as saving the form.
+
+                Reason: Limit the preview actions to people who can edit the form.
+            */
+            if ( formGuid == Guid.Empty )
+            {
+                return false;
+            }
+
+            var workflowType = new WorkflowTypeService( RockContext ).Get( formGuid );
+
+            return workflowType != null
+                && workflowType.IsFormBuilder
+                && CanEditWorkflowType( workflowType );
+        }
+
         #endregion
 
         #region Block Action
@@ -848,6 +883,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
             if ( workflowType == null || !workflowType.IsFormBuilder )
             {
                 return ActionBadRequest( "Specified workflow type is not a form builder." );
+            }
+
+            // Make sure the person is allowed to edit this form, the same way
+            // the initialization code checks before sending the form.
+            if ( !CanEditWorkflowType( workflowType ) )
+            {
+                return ActionBadRequest( "You are not authorized to edit this form." );
             }
 
             // Ensure the slug is unique.
@@ -884,11 +926,22 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <summary>
         /// Gets the field filter sources that relate to the specified form fields.
         /// </summary>
+        /// <param name="formGuid">The unique identifier of the form being edited.</param>
         /// <param name="formFields">The form fields that need to be represented as filter sources.</param>
         /// <returns>A response that contains the list of <see cref="FieldFilterSourceBag"/> objects.</returns>
         [BlockAction]
-        public BlockActionResult GetFilterSources( List<FormFieldViewModel> formFields )
+        public BlockActionResult GetFilterSources( Guid formGuid, List<FormFieldViewModel> formFields )
         {
+            if ( !CanEditForm( formGuid ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this form." );
+            }
+
+            if ( formFields == null )
+            {
+                return ActionBadRequest( "Invalid parameters provided." );
+            }
+
             var fieldFilterSources = new List<FieldFilterSourceBag>();
 
             foreach ( var field in formFields )
@@ -906,6 +959,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 // Convert the attribute configuration into values that can be used
                 // for filtering a value.
                 var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
+                privateConfigurationValues = Field.Helper.RemoveDynamicListSources( privateConfigurationValues, RequestContext.CurrentPerson );
                 var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, Field.ConfigurationValueUsage.Edit, null );
 
                 /*
@@ -945,12 +999,23 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// values. This allows the UI to refresh the preview fields as the user
         /// is making changes to the configuration values.
         /// </summary>
+        /// <param name="formGuid">The unique identifier of the form being edited.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
         /// <param name="configurationValues">The admin configuration values.</param>
         /// <returns>The edit configuration values.</returns>
         [BlockAction]
-        public BlockActionResult GetEditConfigurationValues( Guid fieldTypeGuid, Dictionary<string, string> configurationValues )
+        public BlockActionResult GetEditConfigurationValues( Guid formGuid, Guid fieldTypeGuid, Dictionary<string, string> configurationValues )
         {
+            if ( !CanEditForm( formGuid ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this form." );
+            }
+
+            if ( configurationValues == null )
+            {
+                return ActionBadRequest( "Invalid parameters provided." );
+            }
+
             var fieldType = FieldTypeCache.Get( fieldTypeGuid );
 
             // If the field type or its C# component could not be found then
@@ -961,6 +1026,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             }
 
             var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( configurationValues );
+            privateConfigurationValues = Field.Helper.RemoveDynamicListSources( privateConfigurationValues, RequestContext.CurrentPerson );
 
             var publicEditConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, ConfigurationValueUsage.Edit, null );
 
