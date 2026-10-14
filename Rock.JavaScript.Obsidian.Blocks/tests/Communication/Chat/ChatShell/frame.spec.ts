@@ -958,6 +958,29 @@ describe("a named group direct message", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='sender-name']").text()).toBe("Anna Kim");
     });
 
+    test("writes no head count under its name, since the platform counts only an unnamed room's people", async () => {
+        const w = await mountBlock(1200);
+        await openHike(w);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-title']").text()).toContain("Hike planning");
+        expect(w.find("[data-testid='frame-main'] [data-testid='header-subtitle']").exists()).toBe(false);
+    });
+
+    test("an unnamed group still counts its people with the reader under its title", async () => {
+        const w = await mountBlock(1200);
+        const trio = sidebarRow({
+            channel_id: "c0000010-0000-4000-8000-000000000000",
+            channel_type: "dm",
+            dm_names: ["Anna Kim", "Ben Ortiz"],
+            dm_other_count: 2
+        });
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(trio);
+        await settle();
+        await openRow(w, trio.channel_id);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("3 people");
+    });
+
     test("heads each run of replies in its thread drawer with its sender's name", async () => {
         const w = await mountBlock(1200);
         await openHike(w);

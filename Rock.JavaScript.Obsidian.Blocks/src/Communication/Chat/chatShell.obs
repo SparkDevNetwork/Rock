@@ -529,7 +529,14 @@
             return null;
         }
 
+        // The platform counts a room's people only when it has no name, so a named group arrives
+        // with 0 and has no count to show until the member count gets a field of its own.
         const others = draft.value ? draft.value.people.length : (activeRow.value?.dm_other_count ?? activePeople.value.length);
+        if (others < 1) {
+            return null;
+        }
+
+        // A group always holds the reader and at least one other, so the count is never singular.
         return `${others + 1} people`;
     });
 
