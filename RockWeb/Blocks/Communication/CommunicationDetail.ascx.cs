@@ -816,7 +816,16 @@ namespace RockWeb.Blocks.Communication
                 Literal lActivityDetails = e.Row.FindControl( "lActivityDetails" ) as Literal;
                 if ( lActivityDetails != null )
                 {
-                    lActivityDetails.Text = CommunicationRecipient.GetInteractionDetails( interaction );
+                    /*
+                        10/13/2026 - MSE
+
+                        The interaction details include data such as the clicked URL, which can be
+                        set from outside the organization (for example through an email provider
+                        webhook). Encode it so it shows as text instead of being rendered as HTML.
+
+                        Reason: Prevent stored cross-site scripting on the Activity tab.
+                    */
+                    lActivityDetails.Text = CommunicationRecipient.GetInteractionDetails( interaction ).EncodeHtml();
                 }
             }
         }
@@ -847,7 +856,16 @@ namespace RockWeb.Blocks.Communication
             if ( topLinksInfo != null )
             {
                 Literal lUrl = e.Item.FindControl( "lUrl" ) as Literal;
-                lUrl.Text = topLinksInfo.Url;
+                /*
+                    10/13/2026 - MSE
+
+                    The link URL comes from click interaction data, which can be set from outside
+                    the organization (for example through an email provider webhook). Encode it so
+                    it shows as text instead of being rendered as HTML.
+
+                    Reason: Prevent stored cross-site scripting in the Popular Links list.
+                */
+                lUrl.Text = topLinksInfo.Url.EncodeHtml();
 
                 Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
                 lUrlProgressHTML.Text = string.Format(
@@ -883,7 +901,16 @@ namespace RockWeb.Blocks.Communication
             {
                 var lApplicationName = e.Item.FindControl( "lApplicationName" ) as Literal;
                 var lUsagePercent = e.Item.FindControl( "lUsagePercent" ) as Literal;
-                lApplicationName.Text = applicationUsageInfo.Application ?? "Unknown";
+                /*
+                    10/13/2026 - MSE
+
+                    The application name is parsed from the browser user agent, which can be set
+                    from outside the organization (for example through an email provider webhook).
+                    Encode it so it shows as text instead of being rendered as HTML.
+
+                    Reason: Prevent stored cross-site scripting in the Clients In Use list.
+                */
+                lApplicationName.Text = ( applicationUsageInfo.Application ?? "Unknown" ).EncodeHtml();
                 lUsagePercent.Text = Math.Round( applicationUsageInfo.UsagePercent, 2 ).ToString() + "%";
             }
         }
