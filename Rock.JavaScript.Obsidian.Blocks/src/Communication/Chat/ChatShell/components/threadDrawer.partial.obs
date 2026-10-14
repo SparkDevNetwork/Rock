@@ -97,11 +97,11 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-/* The border is the church color mixed at 45 percent, the same mix the unread thread pill draws. */
+/* Following: the church's tint, its ink, and a border of the church color at 45 percent. */
 .chat-th-follow[aria-pressed="true"] {
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-color: var(--chat-thread-unread-line);
+    border-color: var(--chat-brand-line);
 }
 
 /* Older replies are asked for as this comes into view at the top of the scroller. */

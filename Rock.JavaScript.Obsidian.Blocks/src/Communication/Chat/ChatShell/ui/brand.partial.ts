@@ -21,7 +21,7 @@
 // chat's root, each in a light and a dark form the sheet picks between.
 
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
-export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "flash" | "own-hairline"
+export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "brand-line" | "flash" | "own-hairline"
     | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"
     | "badge-quiet" | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
 
@@ -189,6 +189,9 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
     const { fill, onBrand } = brandFill(color);
     const ring = withAlpha(church, 0.32);
 
+    // A pressed pill's border, the church color at 45% over whatever is under it.
+    const line = withAlpha(church, 0.45);
+
     // The message row's tints. The chips and the pill are the church color over whatever lies
     // under them, a bubble or a tinted row, so they stay alpha; the rest sit on a known background.
     // An unread thread's border is drawn a little stronger than the announcement ring, 45% over the line.
@@ -220,6 +223,7 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "brand-tint": toHex(mixSrgb(church, parseColor(lightSurface)!, 0.13)),
             "brand-wash": toHex(mixSrgb(church, parseColor(lightSidebar)!, 0.10)),
             "brand-ring": ring,
+            "brand-line": line,
             "flash": withAlpha(church, 0.20),
             "own-hairline": "transparent",
             ...row(lightSurface, lightLine, lightSidebar),
@@ -232,6 +236,7 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "brand-tint": toHex(mixOklab(church, parseColor(darkTintBase)!, 0.24)),
             "brand-wash": toHex(mixSrgb(church, parseColor(darkSidebar)!, 0.15)),
             "brand-ring": ring,
+            "brand-line": line,
             "flash": withAlpha(church, 0.26),
             "own-hairline": withAlpha(church, 0.24),
             ...row(darkSurface, darkLine, darkSidebar),

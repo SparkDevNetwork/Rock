@@ -125,6 +125,7 @@ describe("the tokens drawn from the church color", () => {
             "brand-tint": "#FDECE0",
             "brand-wash": "#F9EBE6",
             "brand-ring": "rgba(255, 121, 29, 0.32)",
+            "brand-line": "rgba(255, 121, 29, 0.45)",
             "flash": "rgba(255, 121, 29, 0.20)",
             "own-hairline": "transparent",
             "mn-bg": "rgba(255, 121, 29, 0.11)",
@@ -147,6 +148,7 @@ describe("the tokens drawn from the church color", () => {
             "brand-tint": "#503A35",
             "brand-wash": "#2F1C12",
             "brand-ring": "rgba(255, 121, 29, 0.32)",
+            "brand-line": "rgba(255, 121, 29, 0.45)",
             "flash": "rgba(255, 121, 29, 0.26)",
             "own-hairline": "rgba(255, 121, 29, 0.24)",
             "mn-bg": "rgba(255, 121, 29, 0.11)",
@@ -174,7 +176,8 @@ describe("the tokens drawn from the church color", () => {
     // line (#E4E4EC, #22272F), and an unread thread's border 45% over it; Community's announcement row 6% over the surface (#FDFDFD,
     // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10); the open room's
     // icon box 30% and the focused search box 55% over the line; the focused composer's border 60% over
-    // the line, and its glow the church color at 60% alpha.
+    // the line, and its glow the church color at 60% alpha. A pressed
+    // pill's border is the church color at 45% alpha, over whatever is under it.
     const forest = {
         light: {
             "brand-fill": "#1D8350",
@@ -183,6 +186,7 @@ describe("the tokens drawn from the church color", () => {
             "brand-tint": "#E0EEE7",
             "brand-wash": "#E2EDEB",
             "brand-ring": "rgba(30, 138, 84, 0.32)",
+            "brand-line": "rgba(30, 138, 84, 0.45)",
             "flash": "rgba(30, 138, 84, 0.20)",
             "own-hairline": "transparent",
             "mn-bg": "rgba(30, 138, 84, 0.11)",
@@ -205,6 +209,7 @@ describe("the tokens drawn from the church color", () => {
             "brand-tint": "#233B38",
             "brand-wash": "#0D1F1A",
             "brand-ring": "rgba(30, 138, 84, 0.32)",
+            "brand-line": "rgba(30, 138, 84, 0.45)",
             "flash": "rgba(30, 138, 84, 0.26)",
             "own-hairline": "rgba(30, 138, 84, 0.24)",
             "mn-bg": "rgba(30, 138, 84, 0.11)",

@@ -18,6 +18,7 @@
     --chat-brand-tint: var(--chat-brand-tint-light, #FDECE0);
     --chat-brand-wash: var(--chat-brand-wash-light, #F9EBE6);
     --chat-brand-ring: var(--chat-brand-ring-light, rgba(255, 121, 29, .32));
+    --chat-brand-line: var(--chat-brand-line-light, rgba(255, 121, 29, .45));
     --chat-own-hairline: var(--chat-own-hairline-light, transparent);
     --chat-flash: var(--chat-flash-light, rgba(255, 121, 29, .20));
     --chat-intro-k: 8%;
@@ -226,6 +227,7 @@
     --chat-announcement-pill: var(--chat-announcement-pill-dark, rgba(255, 121, 29, .13));
     --chat-announcement-ring: var(--chat-announcement-ring-dark, #7A4828);
     --chat-thread-unread-line: var(--chat-thread-unread-line-dark, #854C27);
+    --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
     --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
     --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
     --chat-current-line: var(--chat-current-line-dark, #64402A);
@@ -294,6 +296,7 @@
         --chat-announcement-pill: var(--chat-announcement-pill-dark, rgba(255, 121, 29, .13));
         --chat-announcement-ring: var(--chat-announcement-ring-dark, #7A4828);
         --chat-thread-unread-line: var(--chat-thread-unread-line-dark, #854C27);
+        --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
         --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
         --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
         --chat-current-line: var(--chat-current-line-dark, #64402A);
