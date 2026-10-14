@@ -1516,7 +1516,15 @@ namespace RockWeb.Blocks.Communication
         {
             if ( person != null )
             {
-                literal.Text = String.Format( "<dt>{0}</dt><dd>{1}", labelText, person.FullName );
+                /*
+                    10/14/2026 - MSE
+
+                    The sender or approver can set their own name (for example through Public
+                    Profile Edit), so the name is HTML encoded before being written into markup.
+
+                    Reason: Prevent stored XSS through a person's name.
+                */
+                literal.Text = String.Format( "<dt>{0}</dt><dd>{1}", labelText, person.FullName.EncodeHtml() );
 
                 if ( datetime.HasValue )
                 {
