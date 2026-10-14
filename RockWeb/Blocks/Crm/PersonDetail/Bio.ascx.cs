@@ -539,9 +539,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
 
+            /*
+                10/14/2026 - MSE
+
+                Person names are plain text that anyone can set (for example through a public
+                signup form), so each name part is HTML encoded before being placed in the
+                header markup.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( isBusiness )
             {
-                lName.Text = $@"<h1>{Person.LastName}</h1>";
+                lName.Text = $@"<h1>{Person.LastName.EncodeHtml()}</h1>";
                 return;
             }
 
@@ -574,7 +583,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 middleName = $" {Person.MiddleName}";
             }
 
-            string nameText = $"{titleText}{Person.NickName}{middleName} {Person.LastName}{suffixText}";
+            string nameText = $"{titleText.EncodeHtml()}{Person.NickName.EncodeHtml()}{middleName.EncodeHtml()} {Person.LastName.EncodeHtml()}{suffixText.EncodeHtml()}";
 
             // Add First Name if different from NickName.
             string firstName = string.Empty;
@@ -582,7 +591,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
                 {
-                    firstName = $"{Person.FirstName}";
+                    firstName = $"{Person.FirstName.EncodeHtml()}";
                 }
             }
 
@@ -594,7 +603,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 if ( previousNames.Any() )
                 {
-                    previousNameText = $"<br><span class='previous-names'>(Previous Names: {previousNames.ToList().AsDelimited( ", " )})</span>";
+                    previousNameText = $"<br><span class='previous-names'>(Previous Names: {previousNames.ToList().Select( n => n.EncodeHtml() ).ToList().AsDelimited( ", " )})</span>";
                 }
             }
 
