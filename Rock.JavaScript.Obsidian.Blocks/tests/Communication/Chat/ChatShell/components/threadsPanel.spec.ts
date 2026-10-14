@@ -243,16 +243,55 @@ describe("a row", () => {
         expect(sub.findAllComponents(Icon).map(i => i.props("name"))).toEqual([icon]);
     });
 
-    test("names a two-person direct message as the conversation with that person, not by the name alone", () => {
+    // A two-person direct message is titled by the other person, so a root of theirs would name
+    // them twice: once as its author and again as the conversation.
+    describe("in a two-person direct message", () => {
         const dm = "c0000003-0000-4000-8000-000000000000";
-        const w = draw({
-            tab: "all",
-            rows: [row(80, { channel_id: dm, reply_count: 1 }, { sender_nick_name: "Priya", sender_last_name: "Shah", body: "Slides?" })],
-            roomTitles: { ...roomTitles, [dm]: "Priya Shah" },
-            roomKinds: { [dm]: "person" }
+
+        function drawDm(author: Record<string, unknown>): VueWrapper {
+            return draw({
+                tab: "all",
+                rows: [row(80, { channel_id: dm, reply_count: 1 }, { body: "Slides?", ...author })],
+                roomTitles: { ...roomTitles, [dm]: "Priya Shah" },
+                roomKinds: { [dm]: "person" }
+            });
+        }
+
+        test("a root by the other person names them once: the head keeps the icon without the conversation's name", () => {
+            const w = drawDm({ sender_nick_name: "Priya", sender_last_name: "Shah" });
+
+            const head = w.get("[data-testid='thread-row'] .chat-ls-head");
+            expect(plain(head.get("b").text())).toBe("Priya Shah");
+            const sub = head.get(".chat-ls-sub");
+            expect(sub.findAllComponents(Icon).map(i => i.props("name"))).toEqual(["message"]);
+            expect(plain(sub.text())).toBe("");
         });
 
-        expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toMatch(/^Priya Shah in your conversation with Priya Shah: Slides\? 1 reply, /);
+        test("a root by the other person is said to be in your conversation, not your conversation with them", () => {
+            const w = drawDm({ sender_nick_name: "Priya", sender_last_name: "Shah" });
+
+            expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toMatch(/^Priya Shah in your conversation: Slides\? 1 reply, /);
+        });
+
+        test("the reader's own root still names the conversation with the other person", () => {
+            const w = drawDm({ person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Ellis" });
+
+            expect(plain(w.get("[data-testid='thread-row'] .chat-ls-sub").text())).toBe("Priya Shah");
+            expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toMatch(/^You in your conversation with Priya Shah: Slides\? 1 reply, /);
+        });
+    });
+
+    test("a group conversation's root names the group in its head and its label", () => {
+        const group = "c0000004-0000-4000-8000-000000000000";
+        const w = draw({
+            tab: "all",
+            rows: [row(90, { channel_id: group, reply_count: 1 }, { sender_nick_name: "Priya", sender_last_name: "Shah", body: "Slides?" })],
+            roomTitles: { ...roomTitles, [group]: "Priya, Ben and you" },
+            roomKinds: { [group]: "group" }
+        });
+
+        expect(plain(w.get("[data-testid='thread-row'] .chat-ls-sub").text())).toBe("Priya, Ben and you");
+        expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toMatch(/^Priya Shah in Priya, Ben and you: Slides\? 1 reply, /);
     });
 
     test("names the reader's own root You", () => {

@@ -96,7 +96,7 @@
                                     <b>{{ drawn.who }}</b>
                                     <span v-if="tab === 'all'" class="chat-ls-sub">
                                         <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
-                                        <span>{{ drawn.room }}</span>
+                                        <span v-if="drawn.isRoomNamed">{{ drawn.room }}</span>
                                     </span>
                                     <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
                                 </div>
@@ -670,6 +670,8 @@
         who: string;
         author: AvatarPerson;
         room: string;
+        /** False where the author already names the conversation, a two-person one's other person. */
+        isRoomNamed: boolean;
         roomIcon: string | null;
         text: string | null;
         pieces: DisplayPiece[] | null;
@@ -1014,8 +1016,10 @@
         const followWords = !isFollowing ? ", not following" : props.tab === "channel" ? ", following" : "";
         const mentionWords = mentions ? `, ${mentions} ${mentions === 1 ? "mention" : "mentions"} of you` : "";
         // A two-person conversation is titled by the other person, so "in" alone would read as
-        // "Priya Shah in Priya Shah".
-        const where = roomKind === "person" ? `your conversation with ${room}` : room;
+        // "Priya Shah in Priya Shah"; and when that person wrote the root, their name is already
+        // its author, so the conversation goes unnamed rather than naming them twice.
+        const isAuthorTheTitle = roomKind === "person" && !isMine;
+        const where = roomKind !== "person" ? room : isAuthorTheTitle ? "your conversation" : `your conversation with ${room}`;
         const label = `${row.has_unread ? "New replies. " : ""}${who} in ${where}: ${spokenText(root)} ${count}, last reply ${lastSaid}${mentionWords}${followWords}. Open thread`;
 
         return {
@@ -1024,6 +1028,7 @@
             who,
             author: { name: name || who, photoUrl: root.sender_avatar_url ?? null },
             room,
+            isRoomNamed: !isAuthorTheTitle,
             roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
             text: display.text,
             pieces: isShown ? root.pieces ?? null : null,
