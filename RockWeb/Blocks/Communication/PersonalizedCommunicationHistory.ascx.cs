@@ -102,6 +102,18 @@ namespace RockWeb.Blocks.Communication
         private Dictionary<int, CommunicationType> _mediumEntityIdToCommunicationTypeMap;
         private List<int> _currentPersonAliasIdList;
 
+        /*
+            10/13/2026 - MSE
+
+            The values printed by this template (subjects, names, status notes, messages and
+            interaction details such as clicked URLs) come from the database and can be set by
+            people outside the organization, for example through a public form or an email
+            provider webhook. Lava does not encode output, so each stored text value uses the
+            Escape filter, and the click tooltip no longer asks Bootstrap to treat its text as HTML.
+            URLs, the postback reference, the row id and the More/Less markup are left as they are.
+
+            Reason: Prevent stored cross-site scripting on the person History tab.
+        */
         private const string _communicationItemLavaTemplate = @"
 <div class='communication-item pt-3 d-flex flex-row cursor-default'>
     <div class='d-none d-sm-block pt-1 pl-2 pr-3'>
@@ -127,8 +139,8 @@ namespace RockWeb.Blocks.Communication
     <div class='flex-grow-1'>
         <div class='d-flex flex-row align-items-top align-items-sm-center pb-3'>
             <div class='flex-fill pr-sm-3 leading-snug'>
-                <span class='d-block text-wrap text-break mb-1'>{{ Communication.Title }}</span>
-                <span class='d-block text-sm text-muted mb-1'>{{ Communication.Sender.FullName }}</span>
+                <span class='d-block text-wrap text-break mb-1'>{{ Communication.Title | Escape }}</span>
+                <span class='d-block text-sm text-muted mb-1'>{{ Communication.Sender.FullName | Escape }}</span>
                 {% capture moreHtml %}<i class=&quot;ti ti-xs mr-1 ti-chevron-right&quot;></i> <span>More</span>{% endcapture %}
                 {% capture lessHtml %}<i class=&quot;ti ti-xs mr-1 ti-chevron-down&quot;></i> <span>Less</span>{% endcapture %}
                 {% if HasDetail %}
@@ -146,7 +158,7 @@ namespace RockWeb.Blocks.Communication
                 {% when 'Delivered' %}
                     <span class='label label-info' data-toggle='tooltip' data-placement='top' title='Sent on {{ Communication.SendDateTime | Date:'sd' }} at {{ Communication.SendDateTime | Date:'st' }}'>Delivered</span>
                 {% when 'Failed' %}
-                    <span class='label label-danger' data-toggle='tooltip' data-placement='top' title='{{ Communication.RecipientStatusNote }}'>Failed</span>
+                    <span class='label label-danger' data-toggle='tooltip' data-placement='top' title='{{ Communication.RecipientStatusNote | Escape }}'>Failed</span>
                 {% when 'Cancelled' %}
                     <span class='label label-warning'>Cancelled</span>
                 {% when 'Opened' %}
@@ -201,9 +213,9 @@ namespace RockWeb.Blocks.Communication
                                     {% if Communication.Detail.CommunicationListName != null %}
                                         <dt>Communication List</dt>
                                         {% if ListDetailUrl != empty %}
-                                            <dd><a href=""{{ ListDetailUrl }}"">{{ Communication.Detail.CommunicationListName }}</a></dd>
+                                            <dd><a href=""{{ ListDetailUrl }}"">{{ Communication.Detail.CommunicationListName | Escape }}</a></dd>
                                         {% else %}
-                                            <dd>{{ Communication.Detail.CommunicationListName }}</dd>
+                                            <dd>{{ Communication.Detail.CommunicationListName | Escape }}</dd>
                                         {% endif %}
                                     {% endif %}
                                     {% if Communication.Detail.CommunicationSegments != null %}
@@ -211,9 +223,9 @@ namespace RockWeb.Blocks.Communication
                                         <dd>
                                             {% for segment in Communication.Detail.CommunicationSegments %}
                                                 {% if ListSegmentDetailUrlTemplate != empty %}
-                                                    <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@segmentId',segment.Id }}"">{{ segment.Name }}</a><br>
+                                                    <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@segmentId',segment.Id }}"">{{ segment.Name | Escape }}</a><br>
                                                 {% else %}
-                                                    {{ segment.Name }}<br>
+                                                    {{ segment.Name | Escape }}<br>
                                                 {% endif %}
                                             {% endfor %}
                                         </dd>
@@ -221,9 +233,9 @@ namespace RockWeb.Blocks.Communication
                                     {% if Communication.Detail.CommunicationTemplateName != empty %}
                                         <dt>Communication Template</dt>
                                         {% if TemplateDetailUrl != empty %}
-                                            <dd><a href=""{{ TemplateDetailUrl }}"">{{ Communication.Detail.CommunicationTemplateName }}</a></dd>
+                                            <dd><a href=""{{ TemplateDetailUrl }}"">{{ Communication.Detail.CommunicationTemplateName | Escape }}</a></dd>
                                         {% else %}
-                                            <dd>{{ Communication.Detail.CommunicationTemplateName }}</dd>
+                                            <dd>{{ Communication.Detail.CommunicationTemplateName | Escape }}</dd>
                                         {% endif %}
                                     {% endif %}
                                 </dl>
@@ -233,11 +245,11 @@ namespace RockWeb.Blocks.Communication
                                 {% case Communication.CommunicationType %}
                                 {% when 'SMS' %}
                                     <div class='card communication-preview'>
-                                        <div class='card-heading text-center'><span class='d-block font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='d-block text-xs text-muted'>{{ Communication.Detail.SenderAddress }}</span></div>
+                                        <div class='card-heading text-center'><span class='d-block font-weight-semibold'>{{ Communication.Detail.SenderName | Escape }}</span> <span class='d-block text-xs text-muted'>{{ Communication.Detail.SenderAddress | Escape }}</span></div>
                                         <div class='card-body'>
                                             {% if Communication.Detail.Message != null %}
                                                 <div class='sms-bubble'>
-                                                    {{ Communication.Detail.Message }}
+                                                    {{ Communication.Detail.Message | Escape }}
                                                 </div>
                                             {% endif %}
                                             {% for attachmentUrl in Communication.Detail.Attachments %}
@@ -249,16 +261,16 @@ namespace RockWeb.Blocks.Communication
                                     </div>
                                 {% when 'PushNotification' %}
                                     <div class='card communication-preview'>
-                                        <div class='card-heading'><span class='font-weight-semibold'>{{ Communication.Detail.RecipientName }}</span></div>
+                                        <div class='card-heading'><span class='font-weight-semibold'>{{ Communication.Detail.RecipientName | Escape }}</span></div>
                                         <div class='card-body' style='background:#FCFCFC'>
                                             <div class='push-msg'>
                                                 <div class='push-msg-header'>
                                                     <div class='push-msg-icon'></div>
-                                                    <div class='push-msg-app-name'>{{ Communication.Detail.ApplicationName }}</div>
+                                                    <div class='push-msg-app-name'>{{ Communication.Detail.ApplicationName | Escape }}</div>
                                                 </div>
                                                 <div class='push-msg-body'>
-                                                    <span class='push-msg-title'>{{ Communication.Title }}</span>
-                                                    <span class='push-summary'>{{ Communication.Detail.Message }}</span>
+                                                    <span class='push-msg-title'>{{ Communication.Title | Escape }}</span>
+                                                    <span class='push-summary'>{{ Communication.Detail.Message | Escape }}</span>
                                                 </div>
                                             </div>
                                             {% for attachmentUrl in Communication.Detail.Attachments %}
@@ -271,8 +283,8 @@ namespace RockWeb.Blocks.Communication
                                 {% else %}
                                     {%- assign orgName = 'Global' | Attribute:'OrganizationName' -%}
                                     <div class='card communication-preview'>
-                                        <div class='card-heading text-wrap' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName | Default:orgName }}</span> {% if Communication.Detail.SenderAddress != '' %}<span class='text-muted'>{{ Communication.Detail.SenderAddress }}</span>{% endif %} </div>
-                                        <div class='card-heading text-wrap' title='Message Subject'>{{ Communication.Title }}</div>
+                                        <div class='card-heading text-wrap' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName | Default:orgName | Escape }}</span> {% if Communication.Detail.SenderAddress != '' %}<span class='text-muted'>{{ Communication.Detail.SenderAddress | Escape }}</span>{% endif %} </div>
+                                        <div class='card-heading text-wrap' title='Message Subject'>{{ Communication.Title | Escape }}</div>
                                         <div class='card-body p-0 position-relative' style='background:#FCFCFC'>
                                             {% if Communication.ViewDetailIsAllowed and DetailUrl != empty %}
                                                 <div class='d-flex justify-content-center align-items-center position-absolute inset-0 z-10'>
@@ -309,13 +321,13 @@ namespace RockWeb.Blocks.Communication
                                         {% for item in Communication.Detail.Activities %}
                                             <tr>
                                                 <td>
-                                                    {{ item.Name }}
+                                                    {{ item.Name | Escape }}
                                                     {% if item.Name == 'Click' %}
-                                                        <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' data-html='true' title='' data-original-title='{{ item.Details }}'><i class='ti ti-info-circle'></i></a>
+                                                        <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' title='' data-original-title='{{ item.Details | Escape }}'><i class='ti ti-info-circle'></i></a>
                                                     {% endif %}
                                                 </td>
                                                 {% if Communication.CommunicationType != 'PushNotification' %}
-                                                <td class='wrap-contents'>{{ item.Details }}</td>
+                                                <td class='wrap-contents'>{{ item.Details | Escape }}</td>
                                                 {% endif %}
                                                 <td class='w-1 text-nowrap'>{{ item.DateTime | Date:'' }}</td>
                                             </tr>
@@ -397,7 +409,8 @@ namespace RockWeb.Blocks.Communication
                 // Full page load.
                 if ( _person != null )
                 {
-                    lBlockTitle.Text = $"{_person.FullName}'s Communication History";
+                    // Names can be entered by anyone through public forms, so encode the name.
+                    lBlockTitle.Text = $"{_person.FullName.EncodeHtml()}'s Communication History";
                 }
 
                 SetFilter();
