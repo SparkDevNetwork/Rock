@@ -496,6 +496,38 @@ describe("the thread page", () => {
         expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42]);
     });
 
+    // The platform sends a reply's message.created before the thread.updated its recount sends,
+    // so a first-time replier is usually named when thread.updated lands.
+    test("names a first-time replier's live reply once thread.updated lists them", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_get_thread_history = [threadAnswer(root(40, { repliers: [annaReplier] }), [reply(41, 40)])];
+        await threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "message.created", {
+            id: 42, channel_id: channel, parent_id: 40, shown_in_channel: false, person_alias_guid: ben,
+            message_type: "text", body: "first time here", created_at: "2026-10-13T10:05:00Z"
+        });
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [benReplier, annaReplier], 2));
+
+        const named = threads.state.thread?.replies.find(r => r.id === 42);
+        expect([named?.sender_nick_name, named?.sender_last_name]).toEqual(["Ben", "Okafor"]);
+    });
+
+    test("names a first-time replier's live reply from the root's repliers when thread.updated came first", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_get_thread_history = [threadAnswer(root(40, { repliers: [annaReplier] }), [reply(41, 40)])];
+        await threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [benReplier, annaReplier], 2));
+        threads.applyEvent(channel, "message.created", {
+            id: 42, channel_id: channel, parent_id: 40, shown_in_channel: false, person_alias_guid: ben,
+            message_type: "text", body: "first time here", created_at: "2026-10-13T10:05:00Z"
+        });
+
+        const named = threads.state.thread?.replies.find(r => r.id === 42);
+        expect([named?.sender_nick_name, named?.sender_last_name]).toEqual(["Ben", "Okafor"]);
+    });
+
     test("keeps a reply that arrived live while the page was on its way", async () => {
         const { threads, answers } = await setup();
         const answer = deferred<CallResult>();

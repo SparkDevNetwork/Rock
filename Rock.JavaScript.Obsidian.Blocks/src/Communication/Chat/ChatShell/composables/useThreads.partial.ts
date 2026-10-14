@@ -35,6 +35,7 @@ import {
     FollowThreadAnswer,
     MarkThreadReadAnswer,
     MessageCreatedEvent,
+    Replier,
     ThreadListPage,
     ThreadListRow,
     ThreadPage,
@@ -388,6 +389,24 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         else if (isOpen) {
             pendingRootUpdate = update;
         }
+
+        // a reply that arrived before this, from someone nothing held named, is named now
+        if (isOpen && state.thread) {
+            for (const reply of state.thread.replies.filter(r => r.sender_nick_name === undefined)) {
+                nameFromRepliers(reply, update.repliers);
+            }
+        }
+    }
+
+    /** The sender's name and photo from the root's repliers, for a reply whose sender nothing held names. */
+    function nameFromRepliers(message: TimelineMessage, repliers: Replier[] | null | undefined): void {
+        const guid = message.person_alias_guid?.toLowerCase();
+        const replier = guid ? repliers?.find(r => r.person_alias_guid.toLowerCase() === guid) : undefined;
+        if (replier) {
+            message.sender_nick_name = replier.nick_name;
+            message.sender_last_name = replier.last_name;
+            message.sender_avatar_url = replier.avatar_url;
+        }
     }
 
     /** Takes a live reply of the open thread, naming its sender from what the thread holds. */
@@ -401,13 +420,21 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         // sender's newest message already held here
         const held = [...thread.replies].reverse().concat(thread.root ? [thread.root] : []);
         const sender = held.find(m => m.person_alias_guid === created.person_alias_guid && m.sender_nick_name !== undefined);
-        insertReply({
+        const message = {
             ...created,
             sender_nick_name: sender?.sender_nick_name,
             sender_last_name: sender?.sender_last_name,
             sender_avatar_url: sender?.sender_avatar_url,
             sender_listed: sender?.sender_listed
-        } as TimelineMessage);
+        } as TimelineMessage;
+
+        // A first-time replier has nothing held here, but is among the root's repliers once
+        // thread.updated has told of their reply. The platform sends that after the reply itself,
+        // so usually the name is filled in when thread.updated lands instead.
+        if (!sender) {
+            nameFromRepliers(message, thread.root?.repliers ?? pendingRootUpdate?.repliers);
+        }
+        insertReply(message);
     }
 
     /** Puts a reply in place by id, keeping what is held over a copy that carries less. */
