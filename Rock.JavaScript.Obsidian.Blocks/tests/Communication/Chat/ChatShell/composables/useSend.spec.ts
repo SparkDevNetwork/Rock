@@ -470,6 +470,13 @@ describe("a send's key", () => {
         expect(newLocalId()).toBe("11111111-2222-4333-8444-555555555555");
     });
 
+    // A key is matched against every copy of its message as text, so it is made in one case.
+    test("is lower case even when the browser's randomUUID answers in upper case", () => {
+        useCrypto({ randomUUID: () => "ABCDEF01-2222-4333-8444-55555555CDEF" });
+
+        expect(newLocalId()).toBe("abcdef01-2222-4333-8444-55555555cdef");
+    });
+
     test("without randomUUID, is a version 4 UUID built from getRandomValues, never from Math.random", () => {
         const random = jest.spyOn(Math, "random");
         useCrypto({
@@ -878,6 +885,29 @@ describe("a send settles on the first copy of its message", () => {
         expect(await sending).toBe(true);
         expect(h.sender.pending(channel)).toEqual([]);
         expect(ids(h)).toEqual([]);
+    });
+
+    // The platform stores a key as a uuid, and a uuid may be written back in either case.
+    test("a copy whose key differs from the send's only in case settles it, and is held under the send's key", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        const sending = h.sender.send(channel, "shouting");
+
+        h.timelines.applyEvent(channel, "message.created", live(56, "LOCAL-1"));
+
+        expect(await sending).toBe(true);
+        expect(h.sender.pending(channel)).toEqual([]);
+        expect(h.timelines.state(channel).messages.map(m => m.client_key)).toEqual(["local-1"]);
+    });
+
+    test("a try under a key given in another case is the same send", async () => {
+        const h = await harness([deferred<SendResult>()]);
+        void h.sender.send(channel, "once", { localId: "KEY-1", isLast: true });
+
+        h.sender.landed({ id: 57, client_key: "key-1" });
+
+        expect(await h.sender.send(channel, "once", { localId: "Key-1", isLast: true })).toBe(true);
+        expect(h.sent.map(s => s.key)).toEqual(["key-1"]);
+        expect(h.sender.sentKeys.has("key-1")).toBe(true);
     });
 
     test("the person's message from another tab, under a key this session never sent, settles nothing", async () => {

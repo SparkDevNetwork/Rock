@@ -1049,6 +1049,55 @@ describe("the person's own live copy while their send is out", () => {
     });
 });
 
+// A key is a uuid, and the platform or a proxy may write a uuid back in upper case; the copy is
+// still the send's, in the conversation and in the open thread.
+describe("a send key on the wire in upper case", () => {
+    test("settles the send in the conversation and is held in lower case", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        let isSent = false;
+        void h.shell.send("on my way").then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 901, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "on my way", created_at: "2026-10-06T10:00:00Z", client_key: key.toUpperCase() }
+        });
+        await settle();
+
+        expect(isSent).toBe(true);
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
+        expect(h.shell.timelines.state(channelA).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[10, null], [901, key]]);
+    });
+
+    test("is held in lower case in the open thread, from its live copy and from a page", async () => {
+        const h = await started();
+        const opening = h.shell.threads.openThread(channelA, 10);
+        await settle();
+        const root = { id: 10, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "m10", created_at: "2026-09-23T10:00:00Z" };
+        const older = { id: 800, parent_id: 10, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "before", created_at: "2026-10-06T09:00:00Z", client_key: "ABCDEF01-0000-4000-8000-000000000000" };
+        h.saves[h.saves.length - 1].answer.resolve(fakeResponse(200, { root, messages: [older], read_cursor: null, unread_count: 0, following: true, has_more: false }));
+        await opening;
+
+        h.heldSends.value = [];
+        let isSent = false;
+        void (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> })
+            .sendReply(10, "just here", false).then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 901, channel_id: channelA, parent_id: 10, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "just here", created_at: "2026-10-06T10:00:00Z", client_key: key.toUpperCase() }
+        });
+        await settle();
+
+        expect(isSent).toBe(true);
+        expect(h.shell.threads.state.thread?.replies.map(r => [r.id, r.client_key])).toEqual([[800, "abcdef01-0000-4000-8000-000000000000"], [901, key]]);
+    });
+});
+
 describe("a reply in a thread", () => {
     // The shell sends a reply to the open conversation as shell.sendReply(rootId, body,
     // isShownInChannel), through the same sender and retry key as any message.

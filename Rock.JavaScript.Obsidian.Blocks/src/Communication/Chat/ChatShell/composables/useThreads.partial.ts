@@ -42,7 +42,7 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, firstPageSize, Timelines } from "./useHistory.partial";
+import { applyMessageChange, firstPageSize, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 
 /** How many rows a page of the threads list holds. */
@@ -462,7 +462,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
      * Puts a reply in place by id, keeping what is held over a copy that carries less. A copy of
      * a reply already held is still reported, since it may be the first the sender hears of.
      */
-    function insertReply(message: TimelineMessage): void {
+    function insertReply(arrived: TimelineMessage): void {
+        // held in the case the sender and the drawer compare keys in
+        const message = withSendKey(arrived);
         const replies = state.thread?.replies;
         if (!replies) {
             return;
@@ -646,7 +648,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             // A reply that arrived live while the page was on its way may be newer than the page,
             // so what is held joins the page by id rather than being replaced by it.
             const live = thread.replies;
-            thread.replies = [...(page.messages ?? [])].sort((a, b) => a.id - b.id);
+            thread.replies = (page.messages ?? []).map(withSendKey).sort((a, b) => a.id - b.id);
             reportLanded(thread.replies);
             for (const reply of live) {
                 insertReply(reply);
@@ -679,7 +681,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
             const page = body<ThreadPage>(result);
             state.thread.olderError = null;
-            const older = (page.messages ?? []).filter(m => m.id < oldest.id).sort((a, b) => a.id - b.id);
+            const older = (page.messages ?? []).filter(m => m.id < oldest.id).map(withSendKey).sort((a, b) => a.id - b.id);
             state.thread.replies.unshift(...older);
             reportLanded(older);
             state.thread.hasMore = page.has_more === true;

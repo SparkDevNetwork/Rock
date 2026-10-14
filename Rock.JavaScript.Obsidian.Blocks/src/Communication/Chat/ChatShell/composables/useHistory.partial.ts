@@ -49,6 +49,32 @@ export type MessageDisplay = {
 };
 
 /**
+ * A send's key in the one form every comparison uses. The platform stores the key as a UUID, and
+ * a UUID may be written back in either case, so a key is matched only once lowered; otherwise a
+ * copy of the person's message would stand beside its pending row and never settle the send.
+ *
+ * @param key The key as it arrived, if any.
+ *
+ * @returns The key in lower case, or null when there is none.
+ */
+export function sendKey(key: string | null | undefined): string | null {
+    return key ? key.toLowerCase() : null;
+}
+
+/**
+ * A message as it is held: its send's key, if any, in the form every comparison uses. A message
+ * already in that form is returned as it is, so most copies cost nothing.
+ *
+ * @param message The message as it arrived.
+ *
+ * @returns The message with its key lowered.
+ */
+export function withSendKey<T extends Pick<TimelineMessage, "client_key">>(message: T): T {
+    const key = sendKey(message.client_key);
+    return message.client_key && key !== message.client_key ? { ...message, client_key: key } : message;
+}
+
+/**
  * What a row shows for a message. The server decides when a message is hidden or removed and
  * writes the sentence shown in its place, and a message type this client was not built with is
  * drawn by its text, so a released client still shows what later releases of the platform send.
@@ -396,7 +422,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     }
 
     /** Puts one message in place by id. */
-    function upsert(channelId: string, message: TimelineMessage): void {
+    function upsert(channelId: string, arrived: TimelineMessage): void {
+        const message = withSendKey(arrived);
         const messages = state(channelId).messages;
         const index = positionOf(messages, message.id);
 

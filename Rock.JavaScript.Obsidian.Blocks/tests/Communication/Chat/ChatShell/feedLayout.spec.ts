@@ -261,6 +261,18 @@ describe("pending and failed sends", () => {
         expect(keys[1]).toEqual(["k:a", "k:a"]);
     });
 
+    // A key read back from the platform may come in either case; it is still the pending row's key.
+    test("a message whose key differs from its pending row's only in case is the same row", () => {
+        const rows = lay([message(1, anna, at(14, 50)), message(2, me, at(15, 0), { client_key: "A" })], { pending: [pendingRow("a")] })
+            .flatMap(section => section.items)
+            .flatMap(item => item.kind === "group" ? item.rows : []);
+
+        expect(rows.map(row => [row.key, row.message?.id ?? null, row.pending?.localId ?? null])).toEqual([
+            ["k:1", 1, null],
+            ["k:a", 2, null]
+        ]);
+    });
+
     test("a message with no send key, a system line or one sent before keys existed, is keyed by its id", () => {
         const keys = items([message(1, anna, at(14, 50)), message(2, me, at(15, 0), { client_key: null })])
             .map(item => item.key);

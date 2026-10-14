@@ -30,7 +30,7 @@
 // stored with its answer lost; changed words are a new message under a new key.
 import { reactive } from "vue";
 import { ChatError, DisplayPiece, MessageBlock, PendingMessage, TimelineMessage } from "../types.partial";
-import { Timelines } from "./useHistory.partial";
+import { sendKey, Timelines } from "./useHistory.partial";
 
 /** What Rock's Join door answers. */
 export type JoinResult = {
@@ -91,7 +91,7 @@ export function textAfterSend(text: string, isTextKept: boolean): string {
 export function newLocalId(): string | null {
     const crypto = globalThis.crypto;
     if (typeof crypto?.randomUUID === "function") {
-        return crypto.randomUUID();
+        return sendKey(crypto.randomUUID());
     }
 
     if (typeof crypto?.getRandomValues !== "function") {
@@ -336,7 +336,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
 
     /** A copy of a message reached the page; one of this session's sends settles. */
     function landed(message: Pick<TimelineMessage, "id" | "client_key">): void {
-        const key = message.client_key;
+        const key = sendKey(message.client_key);
         if (!key || !sentKeys.has(key)) {
             return;
         }
@@ -359,8 +359,11 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
 
+            // The key a caller kept is matched in the case the sender stores it in.
+            const attemptKey = sendKey(attempt?.localId);
+
             // A key already on the page is posted; another try would only ask for it again.
-            if (attempt && landedKeys.has(attempt.localId)) {
+            if (attemptKey && landedKeys.has(attemptKey)) {
                 return true;
             }
 
@@ -368,13 +371,13 @@ export function createSender(dependencies: SenderDependencies): Sender {
             // stored with its answer lost, and other words under its key would be refused or posted
             // beside it. A row the person discarded in the meantime is gone, and its key still
             // keeps a repeat from posting twice.
-            const earlier = attempt ? rows.find(r => r.localId === attempt.localId) : undefined;
+            const earlier = attemptKey ? rows.find(r => r.localId === attemptKey) : undefined;
             if (earlier) {
                 return deliver(earlier, attempt?.isLast);
             }
 
             // Nothing is sent without a key no one else could guess.
-            const localId = attempt?.localId ?? dependencies.newLocalId();
+            const localId = attemptKey ?? sendKey(dependencies.newLocalId());
             if (!localId) {
                 return false;
             }
@@ -395,7 +398,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
         },
 
         retry: async (localId: string): Promise<boolean> => {
-            const row = rows.find(r => r.localId === localId);
+            const row = rows.find(r => r.localId === sendKey(localId));
 
             if (!row || row.status !== "failed") {
                 return false;
@@ -405,7 +408,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
         },
 
         discard: (localId: string): void => {
-            const index = rows.findIndex(r => r.localId === localId && r.status === "failed");
+            const index = rows.findIndex(r => r.localId === sendKey(localId) && r.status === "failed");
             if (index >= 0) {
                 rows.splice(index, 1);
             }

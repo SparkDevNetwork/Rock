@@ -19,6 +19,7 @@
 // unread strip and Jump to latest. Pure rules, so both layouts draw the same groups and a test
 // reads them without mounting anything. The clock and the locale are arguments for the same
 // reason; the feed passes the browser's own.
+import { sendKey } from "./composables/useHistory.partial";
 import { PendingMessage, TimelineMessage } from "./types.partial";
 
 /** Messages from one sender this close together share a group. */
@@ -109,15 +110,18 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
         const at = new Date(message.created_at);
         // A time that does not parse keeps its place beside the message before it.
         lastAt = isNaN(at.getTime()) ? lastAt : at;
-        if (message.client_key) {
-            sentKeys.add(message.client_key);
+        // keys compared in one case, so a message read back in another is still its row's
+        const key = sendKey(message.client_key);
+        if (key) {
+            sentKeys.add(key);
         }
         return { key: rowKey(message), message, pending: null, sender: (message.person_alias_guid ?? "").toLowerCase(), at: lastAt };
     });
 
     for (const pending of options.pending) {
-        if (!sentKeys.has(pending.localId)) {
-            entries.push({ key: `k:${pending.localId}`, message: null, pending, sender: me, at: options.now });
+        const key = sendKey(pending.localId);
+        if (!sentKeys.has(key ?? "")) {
+            entries.push({ key: `k:${key}`, message: null, pending, sender: me, at: options.now });
         }
     }
 
@@ -339,7 +343,7 @@ export function jumpLabel(newCount: number): string {
  * @returns The row's key.
  */
 function rowKey(message: TimelineMessage): string {
-    return `k:${message.client_key ?? message.id}`;
+    return `k:${sendKey(message.client_key) ?? message.id}`;
 }
 
 /** Whether a message is laid out in blocks, which draws it as a card of its own. */
