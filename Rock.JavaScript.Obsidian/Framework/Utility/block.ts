@@ -29,6 +29,8 @@ import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
 import { BrowserBus, useBrowserBus } from "./browserBus";
 import { ICancellationToken } from "./cancellation";
+import { postForBlob } from "./http";
+import { downloadFile } from "./file";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
@@ -70,6 +72,10 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
 /**
  * Gets the function that will return the URL for a block action.
  *
+ * The block action endpoint only accepts POST requests. Navigating to this
+ * URL or using it as a link returns 405 Method Not Allowed. Use
+ * useDownloadBlockAction() to download a file from a block action.
+ *
  * @returns A function that can be called to determine the URL for a block action.
  */
 export function useBlockActionUrl(): (actionName: string) => string {
@@ -80,6 +86,45 @@ export function useBlockActionUrl(): (actionName: string) => string {
     }
 
     return result;
+}
+
+/**
+ * Gets the function that will download a file from a block action. The
+ * action is called with a POST request and the file it returns is saved by
+ * the browser. This must be called during setup, like the other use
+ * functions.
+ *
+ * Page parameters are not sent to the block action, so anything the action
+ * needs must be included in the data.
+ *
+ * @returns A function that can be called to download a file from a block action.
+ */
+export function useDownloadBlockAction(): (actionName: string, data?: HttpBodyData, fallbackFileName?: string) => Promise<HttpResult<null>> {
+    const blockActionUrl = useBlockActionUrl();
+
+    return async (actionName: string, data?: HttpBodyData, fallbackFileName?: string): Promise<HttpResult<null>> => {
+        const result = await postForBlob(blockActionUrl(actionName), data);
+
+        if (!result.isSuccess || !result.data) {
+            return {
+                data: null,
+                isError: true,
+                isSuccess: false,
+                statusCode: result.statusCode,
+                errorMessage: result.errorMessage
+            };
+        }
+
+        await downloadFile(result.data, result.fileName ?? fallbackFileName ?? "download");
+
+        return {
+            data: null,
+            isError: false,
+            isSuccess: true,
+            statusCode: result.statusCode,
+            errorMessage: null
+        };
+    };
 }
 
 /**
