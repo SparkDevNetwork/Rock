@@ -20,6 +20,16 @@ These are true of Rock today. Use them to decide whether a check is needed.
 - **VIEW is allowed by default.** When no rule matches, `Model.IsAllowedByDefault` allows VIEW
   and TAG for everyone, including anonymous visitors. EDIT and ADMINISTRATE default to deny. A
   VIEW check alone passes for anyone on a record with no rules.
+- **REST is the exception, and v1 and v2 differ.** On a stock install, an anonymous caller of
+  a `[Secured]` REST action is denied before the rule above applies.
+  - v1 checks VIEW (GET) or EDIT (other verbs) on the RestAction, then its RestController,
+    then the RestController type rules. Those allow VIEW to RSR - Rock Administration, Staff
+    Workers, Staff Like Workers, and Finance Worker, then deny All Users. They allow EDIT to
+    Staff Workers and Staff Like Workers.
+  - v2 has no VIEW or EDIT on the endpoint. It uses `EXECUTE_READ`, `EXECUTE_WRITE`,
+    `EXECUTE_UNRESTRICTED_READ`, and `EXECUTE_UNRESTRICTED_WRITE`. With no grant, it falls
+    back to `GlobalRestrictedDefault`, which denies everyone.
+  - Endpoints with no `[Secured]` skip both. See `checklists/rest-api.md`.
 - **Parent security is inherited automatically.** `IsAuthorized` falls back to the parent
   through `ParentAuthority`. It reads only the parent's `Auth` rows, not the parent's
   `IsAuthorized` override.
@@ -134,7 +144,8 @@ These are true of Rock today. Use them to decide whether a check is needed.
   blocks on pages where All Users can VIEW, REST actions granted to All Users, `.ashx` handlers
   and `RockWeb/Webhooks/`, RealTime topics, and Lava Application endpoints.
 - **Fresh install.** With no rules, VIEW and TAG are allowed to everyone, including anonymous
-  visitors. New data-holding entities ship explicit rules (see `migrations.md`).
+  visitors. `[Secured]` REST actions are the exception (see "Framework facts"). New
+  data-holding entities ship explicit rules (see `migrations.md`).
 
 ## Places to look
 

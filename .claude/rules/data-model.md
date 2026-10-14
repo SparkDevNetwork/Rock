@@ -1,6 +1,6 @@
 # Rock Data Model
 
-Rock's data layer conventions: entities, columns, foreign keys, GUIDs, and data access patterns. Always loaded.
+Rock's data layer conventions: entities, columns, foreign keys, GUIDs, entity authorization, and data access patterns. Always loaded.
 
 ---
 
@@ -55,6 +55,55 @@ Note: Some newer entity declarations use lowercase inline GUIDs. When adding new
 
 - Do **not** dispose `RockContext` prematurely — it kills lazy loading for any entities retrieved from that context.
 - Do **not** create a new `RockContext` per iteration in loops. Instead, query all needed data into a list or dictionary before the loop.
+
+---
+
+## Entity Authorization
+
+An entity supports security when it implements `ISecured`. Every `Model<T>` and its `*Cache` class does. A plain `Entity<T>` does not.
+
+**Rule:** Before code returns, changes, or deletes a secured entity for a person, check that person's rights on that record.
+
+```csharp
+var group = new GroupService( rockContext ).Get( groupIdKey, false );
+
+if ( group == null )
+{
+    return ActionNotFound();
+}
+
+if ( !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+{
+    return ActionForbidden( "You are not authorized to edit this group." );
+}
+```
+
+**Which action to check:**
+
+| What the code does | Check |
+|---|---|
+| Returns or shows the record | `Authorization.VIEW` |
+| Creates, changes, or deletes the record | `Authorization.EDIT` |
+| Changes the record's security | `Authorization.ADMINISTRATE` |
+| A feature gated by a custom action (for example `APPROVE`) | That custom action |
+
+**What does not count as a check:**
+
+- **Block security.** `BlockCache.IsAuthorized()` checks the block, not the record. Use both when the feature needs both.
+- **An IdKey or Guid.** These are hard to guess, but anyone who has one can still send it.
+- **The record exists, or the person is signed in.**
+- **A check in the UI only.** If the UI hides a button, the action behind it must repeat the same check.
+
+**Things that are easy to miss:**
+
+- **VIEW is allowed by default.** When no rule matches, `IsAllowedByDefault` allows VIEW for everyone, including anonymous visitors. So a VIEW check alone does not limit a record that has no rules.
+- **Call it on the record itself.** `IsAuthorized` already falls back to the parent through `ParentAuthority`. Don't check only the parent.
+- **Create paths need a check too.** When there is no existing record, check the parent named by the posted foreign keys. For example, check a new `GroupMember` against its `Group`.
+- **Filter lists per item.** Lists, picker options, and totals sent to the client leave out records the person can't VIEW.
+- **Every entry point checks.** A block action, REST endpoint, Lava command, workflow action, job, and AI agent skill tool that do the same thing all check the same rights.
+- **Jobs and workflow actions** often run with no current person. With a `null` person, VIEW is still allowed by default.
+
+If you aren't sure which action applies, or whether the block or the record is the right thing to check, ask before you write the code.
 
 ---
 

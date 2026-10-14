@@ -77,7 +77,7 @@ The `.claude/` directory is checked into the repo. Everything here is shared -- 
   rules/                 -- Contextual rules (auto-loaded based on file paths)
     block-architecture.md     Loads when editing block files
     code-conventions.md       Always loaded (formatting, SQL, enums, etc.)
-    data-model.md             Always loaded (entities, FKs, GUIDs, etc.)
+    data-model.md             Always loaded (entities, FKs, GUIDs, entity authorization, etc.)
   skills/                -- On-demand workflows (/convert-block, /bugfix, etc.)
 ```
 
@@ -112,7 +112,7 @@ Skills are on-demand workflows that encode Rock-specific knowledge. They live in
 | `/migration` | "write migration", "EF migration", "review migration" | Writes/reviews Up() and Down() for EF migrations |
 | `/plugin-migration` | "plugin migration", "hotfix", "new hotfix" | Creates plugin migration .cs files in HotFixes/ |
 | `/review-conversion` | "review conversion", "check the conversion" | Audits completed Obsidian conversion against WebForms original |
-| `/sentinel` | "sentinel", "security review", "is this secure" | Read-only security review of a PR, commit, your changes, or a whole feature, with optional Codex and Grok second opinions |
+| `/sentinel` | "sentinel", "security review", "is this secure" | Read-only security review of a PR, commit, your changes, or a whole feature, with optional Codex and Grok second opinions and a verifier agent that checks every Critical and High finding |
 | `/sql` | "write sql", "seed data", "insert data" | Generates Rock-safe SQL with proper conventions |
 
 Skills can be invoked two ways:

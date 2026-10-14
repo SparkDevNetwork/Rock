@@ -117,6 +117,19 @@ const vendorAdapters = {
 
             if ( readOnly ) {
                 args.push( "--permission-mode", "plan" );
+
+                /*
+                    10/4/26 - CLAUDE
+
+                    In headless plan mode, any tool that needs a permission prompt (web_fetch,
+                    run_terminal_command) gets "permission_cancelled", and Grok then ends the whole
+                    turn after its opening line. A read-only review only needs to read and search, so
+                    limit Grok to those tools. Nothing left can prompt, and code never leaves the
+                    machine.
+
+                    Reason: Stop Grok reviews from ending early on a permission prompt.
+                */
+                args.push( "--tools", "read_file,grep,list_dir", "--disallowed-tools", "Agent", "--disable-web-search" );
             }
 
             return { args, stdin: null, tempFiles: [ promptFile ] };
@@ -689,6 +702,18 @@ if ( require.main === module ) {
         } );
 }
 
-module.exports = { detect, run, formatRunResults, formatDetection };
+/*
+    10/5/26 - CLAUDE
+
+    External tools, such as the Sentinel audit driver, run Claude, Codex, and Grok with flags this
+    helper does not build (structured output, JSON events, cost caps). They reuse these low-level
+    pieces so they get the same safe Windows process handling, timeouts, and process-tree kill.
+    Nothing here changes how run() behaves.
+
+    Reason: Let external tools share this file's process handling instead of copying it.
+*/
+const processHelpers = { which, runAsync, getWorkingTreeFingerprint, loadModelTiers, vendorAdapters };
+
+module.exports = { detect, run, formatRunResults, formatDetection, processHelpers };
 
 // #endregion Command line

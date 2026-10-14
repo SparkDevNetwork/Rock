@@ -45,6 +45,7 @@ This does **not** apply to questions already settled by Rock conventions (rules,
 ## Critical Rules
 
 - **Never break backward compatibility** unless explicitly instructed.
+- **Check the person's rights on a secured entity before acting on it.** Before code returns, changes, or deletes an entity that implements `ISecured`, call `entity.IsAuthorized( Authorization.<ACTION>, person )` on that record. Block security, an IdKey, or a UI check is not enough. See "Entity Authorization" in `.claude/rules/data-model.md`.
 - Use `RockDateTime` instead of `DateTime`. Format as ISO 8601: `RockDateTime.ToString("s")`.
 - Do not add optional parameters that change a public method's signature — add a new overload and keep the original intact. (Plugins are not recompiled as often as core.)
 - `System.Web` is the enemy — wrap any usage in `#if WEBFORMS` blocks. Obsidian blocks and shared code must not reference `System.Web`.

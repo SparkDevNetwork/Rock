@@ -5,8 +5,8 @@ description: >-
   "sentinel", "security review", "security check my changes", "is this secure", or
   "review the X feature for security". Works on a PR, a commit, uncommitted changes, a
   file, a folder, or a whole feature. Codex and Grok second opinions run automatically
-  when installed; add "--no-cross-check" to skip them. Do NOT use for correctness or
-  style review.
+  when installed; add "--no-cross-check" to skip them. A separate verifier agent checks
+  every Critical and High finding. Do NOT use for correctness or style review.
 argument-hint: "[what to review, e.g. 'PR 1234' or 'the Giving Overview block'] [--no-cross-check]"
 context: fork
 agent: sentinel

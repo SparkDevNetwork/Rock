@@ -14,6 +14,16 @@ headers, JWT, or CORS.
   security grants. An endpoint that only makes sense for a signed-in person checks first. In
   v2: `if ( RockRequestContext.CurrentPerson == null ) { return Unauthorized(); }`. In v1:
   check `GetPerson() == null`.
+- **Who can reach a `[Secured]` action.** Before you call a `[Secured]` endpoint anonymous,
+  cite the Auth row that grants All Users. Check the action's own rows first, because some
+  ship their own (for example, `api/People/Export` is admin-only). On a stock install, a v1
+  caller with no such row is a staff role. A v2 caller needs an explicit EXECUTE grant.
+  Endpoints with no `[Secured]` skip all of this, so anyone can reach them.
+- **v1 and v2 use different security actions.** v1 checks VIEW for GET and EDIT for other
+  verbs on the REST action, unless `[Secured]` names other actions. v2 endpoints check only
+  `EXECUTE_READ`, `EXECUTE_WRITE`, `EXECUTE_UNRESTRICTED_READ`, and
+  `EXECUTE_UNRESTRICTED_WRITE`, never VIEW or EDIT. A v2 finding names the EXECUTE action the
+  caller needs.
 
 ## Records
 
@@ -21,6 +31,11 @@ headers, JWT, or CORS.
   v1 base GETs only check the REST action. v2 CRUD checks the record unless the caller has
   `EXECUTE_UNRESTRICTED_*`. A person Id from the query string (`personId`, `personAliasId`) is
   checked against the current person or their rights.
+- **v2 record security.** With `EXECUTE_READ` or `EXECUTE_WRITE`, `CrudEndpointHelper` also
+  checks entity VIEW or EDIT on the record. `EXECUTE_UNRESTRICTED_*` sets `IsSecurityIgnored`
+  and skips the record check. That is an admin-level grant working as designed, not a
+  finding. A controller that sets `IsSecurityIgnored = true` for everyone exposes every record
+  to any EXECUTE grant, so check that it holds nothing sensitive.
 - **Create (POST) paths.** The v1 base `Post` authorizes new records against their parent
   (`IsAuthorizedForNewModel`). Custom POSTs and v1 overrides that skip `CheckCanEdit` don't, so
   they follow the index "Create paths" rule.
