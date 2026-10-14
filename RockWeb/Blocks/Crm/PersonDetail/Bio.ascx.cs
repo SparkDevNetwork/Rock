@@ -359,9 +359,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     return;
                 }
 
-                string quickReturnLava = "{{ Person.FullName | AddQuickReturn:'People', 10 }}";
+                /*
+                    10/14/2026 - MSE
+
+                    The quick return filter places its input inside a single quoted JavaScript
+                    string in an inline script and only escapes quotes. The name is JavaScript
+                    string encoded first (double quotes become \u0022 so the filter does not
+                    escape them again), so a backslash or a closing script tag in the name
+                    cannot break out of the script.
+
+                    Reason: Prevent script injection through the person's name.
+                */
+                string quickReturnLava = "{{ QuickReturnName | AddQuickReturn:'People', 10 }}";
                 var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Person", Person );
+                quickReturnMergeFields.Add( "QuickReturnName", System.Web.HttpUtility.JavaScriptStringEncode( Person.FullName ).Replace( "\\\"", "\\u0022" ) );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 
                 ShowPersonImage();
