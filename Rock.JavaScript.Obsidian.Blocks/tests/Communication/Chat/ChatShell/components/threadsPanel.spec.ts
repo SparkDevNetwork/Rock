@@ -39,6 +39,8 @@
 //
 // A refusal shows the server's sentence; a call that never reached the platform has none, and
 // shows the design's offline sentence.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadsPanel from "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
@@ -405,5 +407,25 @@ describe("the keyboard", () => {
         const w = draw();
 
         expect((w.get("[data-testid='thread-row-follow']").element as HTMLElement).tabIndex).toBe(-1);
+    });
+});
+
+describe("a row's text", () => {
+    // A mention in a row's text is quiet, an inline pill whose padding takes no room in the line,
+    // so two lines of a root holding a chip are as tall as two without. In the conversation a
+    // chip is an inline block that may grow its line; the list must not.
+
+    /** The panel's own style rules, selector and body, read from the component's source. */
+    function panelRules(): Array<{ selector: string, body: string }> {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] }));
+    }
+
+    test("draws a mention chip inline, so a chip never makes its line taller", () => {
+        const chip = panelRules().find(r => r.selector === ".chat-ls-text :deep(.chat-mn)");
+
+        expect(chip?.body).toMatch(/display:\s*inline;/);
+        expect(chip?.body).toMatch(/box-decoration-break:\s*clone;/);
     });
 });

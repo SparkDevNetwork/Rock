@@ -347,6 +347,17 @@
     -webkit-line-clamp: 2;
 }
 
+/*
+    A chip here is quiet and inline, its padding drawn around the name but taking no room in the
+    line, so two lines holding a chip are as tall as two without. In the conversation it is an
+    inline block, a control whose padding grows its line.
+*/
+.chat-ls-text :deep(.chat-mn) {
+    display: inline;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
 .chat-ls-foot {
     display: flex;
     gap: 6px;
