@@ -1192,3 +1192,29 @@ describe("the person's own live copy while the channel's first page loads", () =
         expect(h.shell.timelines.state(channelB).messages.map(m => [m.id, m.client_key ?? null])).toEqual([[20, null], [901, key]]);
     });
 });
+
+describe("a page's report after the shell stops", () => {
+    test("settles no send", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        const opening = h.shell.threads.openThread(channelA, 10);
+        await settle();
+        let isSent = false;
+        void (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> })
+            .sendReply(10, "just here", false).then(() => isSent = true);
+        await settle();
+        const key = h.sent[0].args.p_client_key as string;
+        await h.shell.threads.closeThread();
+
+        const root = { id: 10, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "m10", created_at: "2026-09-23T10:00:00Z" };
+        const reply = { id: 901, parent_id: 10, shown_in_channel: false, person_alias_guid: person, message_type: "text", body: "just here", created_at: "2026-10-06T10:00:00Z", client_key: key };
+        h.saves.find(s => s.channelId === undefined && s.messageId === undefined)?.answer.resolve(fakeResponse(200, { root, messages: [reply], read_cursor: null, unread_count: 0, following: true, has_more: false }));
+        await opening;
+        void h.shell.stop();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+
+        expect(isSent).toBe(false);
+        expect(h.shell.sender.pending(channelA).map(r => r.status)).toEqual(["sending"]);
+    });
+});

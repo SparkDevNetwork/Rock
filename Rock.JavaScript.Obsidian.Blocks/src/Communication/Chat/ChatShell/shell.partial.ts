@@ -471,7 +471,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         const keyed = (messages as TimelineMessage[]).filter(m => typeof m?.id === "number" && !!m.client_key);
         if (keyed.length > 0) {
-            setTimeout(() => keyed.forEach(m => sender.landed(m)), 0);
+            // The turn can end after the shell stopped, when nothing it settles is on screen.
+            setTimeout(() => {
+                if (!isStopped) {
+                    keyed.forEach(m => sender.landed(m));
+                }
+            }, 0);
         }
     }
 
