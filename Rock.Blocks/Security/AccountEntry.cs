@@ -487,6 +487,22 @@ namespace Rock.Blocks.Security
             {
                 var config = GetInitializationBox( box.State );
 
+                /*
+                    10/15/2026 - MSE
+
+                    The passwordless state is returned to the browser when the
+                    code is sent, before anyone enters it. Only a state from a
+                    successful code entry has a registration code, so any other
+                    passwordless state is refused here, before any person is
+                    looked up or created and before any email is sent.
+
+                    Reason: Passwordless state is not proof the code was entered.
+                */
+                if ( IsFromPasswordlessAuthentication( box, out var passwordlessState ) && passwordlessState.RegistrationCode.IsNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( "Code invalid or expired" );
+                }
+
                 if ( !IsRequestValid( box, config, rockContext, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
@@ -1394,8 +1410,16 @@ namespace Rock.Blocks.Security
         /// <returns><c>true</c> if a passwordless authentication session was finalized; otherwise, <c>false</c>.</returns>
         private bool IsPasswordlessAuthenticationValid( PasswordlessAuthenticationState passwordlessAuthenticationState, RockContext rockContext, out RemoteAuthenticationSession remoteAuthenticationSession )
         {
+            // Only the registration code proves the individual entered the
+            // code that was sent to the mobile number or email.
+            if ( passwordlessAuthenticationState.RegistrationCode.IsNullOrWhiteSpace() )
+            {
+                remoteAuthenticationSession = null;
+                return false;
+            }
+
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
-            remoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession( passwordlessAuthenticationState.UniqueIdentifier, passwordlessAuthenticationState.Code, passwordlessAuthenticationState.CodeIssueDate, passwordlessAuthenticationState.CodeLifetime );
+            remoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession( passwordlessAuthenticationState.UniqueIdentifier, passwordlessAuthenticationState.RegistrationCode, passwordlessAuthenticationState.CodeIssueDate, passwordlessAuthenticationState.CodeLifetime );
 
             if ( remoteAuthenticationSession == null )
             {
@@ -1601,15 +1625,10 @@ namespace Rock.Blocks.Security
             {
                 var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
-                // The original code proves the individual has access to the
-                // mobile number or email they started passwordless sign in with.
-                var remoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
-                    passwordlessAuthenticationState.UniqueIdentifier,
-                    passwordlessAuthenticationState.Code,
-                    passwordlessAuthenticationState.CodeIssueDate,
-                    passwordlessAuthenticationState.CodeLifetime );
-
-                if ( remoteAuthenticationSession == null )
+                // The registration code proves the individual entered the code
+                // sent to the mobile number or email they started passwordless
+                // sign in with.
+                if ( !IsPasswordlessAuthenticationValid( passwordlessAuthenticationState, rockContext, out var remoteAuthenticationSession ) )
                 {
                     return ActionBadRequest( "Code invalid or expired" );
                 }
@@ -1801,19 +1820,32 @@ namespace Rock.Blocks.Security
         /// <param name="rockContext">The Rock context.</param>
         private BlockActionResult RegisterNewPerson( AccountEntryRegisterRequestBox box, AccountEntryInitializationBox config, RockContext rockContext )
         {
+            var isFromPasswordlessAuthentication = IsFromPasswordlessAuthentication( box, out var passwordlessAuthenticationState );
+            RemoteAuthenticationSession remoteAuthenticationSession = null;
+
+            /*
+                10/15/2026 - MSE
+
+                The passwordless state is verified before the person is
+                created, so a refused state does not leave a new person
+                behind. The remote authentication session is completed after
+                the logins are created, so the same state cannot be used to
+                register again.
+
+                Reason: Passwordless state is not proof the code was entered.
+            */
+            if ( isFromPasswordlessAuthentication && !IsPasswordlessAuthenticationValid( passwordlessAuthenticationState, rockContext, out remoteAuthenticationSession ) )
+            {
+                return ActionBadRequest( "Code invalid or expired" );
+            }
+
             var person = CreatePerson( box, config, rockContext );
 
             UserLogin userLogin;
-            var isFromPasswordlessAuthentication = IsFromPasswordlessAuthentication( box, out var passwordlessAuthenticationState );
 
             // Create confirmed UserLogin.
             if ( isFromPasswordlessAuthentication )
             {
-                if ( !IsPasswordlessAuthenticationValid( passwordlessAuthenticationState, rockContext, out var remoteAuthenticationSession ) )
-                {
-                    return ActionBadRequest( "Code invalid or expired" );
-                }
-
                 userLogin = CreatePasswordlessUserLogin( person, PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier ), rockContext );
 
                 /*  
@@ -1830,6 +1862,8 @@ namespace Rock.Blocks.Security
                 {
                     CreateDatabaseUserLogin( person, true, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
                 }
+
+                FinalizePasswordlessAuthentication( person, remoteAuthenticationSession, rockContext );
             }
             else
             {
