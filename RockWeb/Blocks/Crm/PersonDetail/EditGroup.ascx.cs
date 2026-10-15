@@ -1649,6 +1649,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             btnDelete.Visible = btnDelete.Visible && _canEdit;
 
+            /*
+                10/15/2026 - MSE
+
+                The member names are written by data binding expressions in the ascx, which do
+                not encode, and person names are plain text that anyone can set (for example
+                through a public signup form), so the ascx HTML encodes NickName and LastName.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             lvMembers.DataSource = GetMembersOrdered();
             lvMembers.DataBind();
         }

@@ -797,6 +797,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 return;
             }
 
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return;
+            }
+
             // The note and note type come from page parameters, so only move
             // a note the person can edit into a connection request note type.
             var isConnectionRequestNoteType = noteType.EntityTypeId == EntityTypeCache.GetId<ConnectionRequest>();
