@@ -7,6 +7,15 @@
         </div>
 
         <template v-else>
+            <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
+                <Icon name="reply" size="sm" />
+                <span class="chat-composer-quote-main">
+                    <b>{{ quoteTitle }}</b>
+                    <span data-testid="composer-quote-preview">{{ quotePreview }}</span>
+                </span>
+                <IconButton icon="x" icon-size="sm" label="Cancel quote" @click="emit('cancelQuote')" />
+            </div>
+
             <form class="chat-composer-box" @submit.prevent="onSubmit">
                 <textarea ref="inputElement"
                           v-model="text"
@@ -52,6 +61,54 @@
 
 .chat-composer.is-phone {
     padding: 0 10px 10px;
+}
+
+/* The message being quoted, above the box, rising into place as it appears. */
+.chat-composer-quote {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 8px 8px 12px;
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-quote-top) var(--chat-r-quote-top) var(--chat-r-quote-bottom) var(--chat-r-quote-bottom);
+    animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* A channel's look is squarer, matching its box. */
+.chat-composer.is-channel .chat-composer-quote {
+    border-radius: var(--chat-r-lg) var(--chat-r-lg) var(--chat-r-sm) var(--chat-r-sm);
+}
+
+@keyframes chat-strip-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+.chat-composer-quote > :deep(.chat-ic) {
+    color: var(--chat-brand-ink);
+}
+
+.chat-composer-quote-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-composer-quote-main b {
+    font-size: 12.5px;
+}
+
+.chat-composer-quote-main span {
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* The box draws the focus for the text inside it, a ring and a soft glow in the church color. */
@@ -185,11 +242,15 @@
     color: var(--chat-icon);
 }
 
-/* Reduced motion: the send button does not lift or press. */
+/* Reduced motion: the send button does not lift or press, and the quote only fades in. */
 @media (prefers-reduced-motion: reduce) {
     .chat-composer-send.is-ready:hover,
     .chat-composer-send.is-ready:active {
         transform: none;
+    }
+
+    .chat-composer-quote {
+        animation-name: chat-crossfade;
     }
 }
 </style>
@@ -197,7 +258,9 @@
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { canMakeSendKey, textAfterSend } from "../composables/useSend.partial";
+    import { TimelineMessage } from "../types.partial";
     import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
 
     const props = defineProps({
         isDisabled: {
@@ -268,13 +331,28 @@
         isThread: {
             type: Boolean,
             default: false
+        },
+
+        /** The message being quoted into the next send, drawn in a strip above the box. */
+        quote: {
+            type: Object as PropType<TimelineMessage | null>,
+            default: null
+        },
+
+        /** Whether the quoted message is the person's own, which the strip calls "yourself". */
+        isQuoteOwn: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         /** The text, and for a thread's reply whether it is also sent to the conversation. */
         (e: "send", body: string, isAlsoSent?: boolean): void;
-        (e: "edit", body: string): void
+        (e: "edit", body: string): void;
+        /** Up in an empty box: the person asks to edit their newest message. */
+        (e: "editLast"): void;
+        (e: "cancelQuote"): void
     }>();
 
     // #region Values
@@ -300,6 +378,26 @@
 
     /** A channel is named, plain, as everywhere else; a direct message's people are "the conversation". */
     const alsoText = computed((): string => props.isChannel && props.title ? `Also send to ${props.title}` : "Also send to the conversation");
+
+    const quoteTitle = computed((): string => {
+        if (props.isQuoteOwn) {
+            return "Quoting yourself";
+        }
+
+        const name = [props.quote?.sender_nick_name, props.quote?.sender_last_name].filter(part => !!part).join(" ");
+        return name ? `Quoting ${name}` : "Quoting a message";
+    });
+
+    /** The quoted text on one line, a mention as the person's name as the body draws it, never its token. */
+    const quotePreview = computed((): string => {
+        const quote = props.quote;
+        if (!quote) {
+            return "";
+        }
+
+        const text = quote.pieces?.length ? quote.pieces.map(piece => piece.text).join("") : quote.body ?? "";
+        return text.replace(/\s+/g, " ").trim();
+    });
 
     /** Whether there is something to send, which turns the send button to the church's fill. */
     const isReady = computed((): boolean => text.value.trim() !== "");
@@ -328,11 +426,18 @@
         isAlsoSent.value = false;
     }
 
-    /** Enter sends; Shift and Enter starts a new line. */
+    /**
+     * Enter sends; Shift and Enter starts a new line. Up in an empty box asks to edit the
+     * person's newest message, and with text in the box it only moves the caret.
+     */
     function onKeydown(event: KeyboardEvent): void {
         if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
             event.preventDefault();
             onSubmit();
+        }
+        else if (event.key === "ArrowUp" && !event.isComposing && text.value === "") {
+            event.preventDefault();
+            emit("editLast");
         }
     }
 
