@@ -528,8 +528,27 @@ namespace RockWeb.Blocks.Communication
             btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
             CommunicationTemplateHelper.CreateDynamicLavaValueControls( lavaFieldsTemplateDictionary, lavaFieldsDefaultDictionary, phLavaFieldsControls );
 
+            var previewSource = ceEmailTemplate.Text;
+            var emailTemplateId = hfEmailTemplateId.ValueAsInt();
+
+            if ( emailTemplateId != 0 )
+            {
+                var storedTemplate = new SystemCommunicationService( new RockContext() ).Get( emailTemplateId );
+
+                if ( storedTemplate == null || !storedTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    previewSource = storedTemplate?.Body ?? string.Empty;
+                }
+            }
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage );
-            string resolvedPreviewHtml = ceEmailTemplate.Text.ResolveMergeFields( mergeFields );
+            string resolvedPreviewHtml;
+
+            using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+            {
+                resolvedPreviewHtml = previewSource.ResolveMergeFields( mergeFields );
+            }
+
             if ( cbCssInliningEnabled.Checked )
             {
                 resolvedPreviewHtml = resolvedPreviewHtml.ConvertHtmlStylesToInlineAttributes();
