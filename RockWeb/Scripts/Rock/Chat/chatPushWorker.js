@@ -53,10 +53,11 @@
     });
 
     /**
-     * Asks one window whether a channel is on screen. Resolves false when it does not answer in
-     * time, so a page that is busy or not chat costs at most the wait and the banner still shows.
+     * Asks one window whether a channel is on screen, or with a root, whether that thread is.
+     * Resolves false when it does not answer in time, so a page that is busy or not chat costs at
+     * most the wait and the banner still shows.
      */
-    function askIsOpen(windowClient, channelId) {
+    function askIsOpen(windowClient, channelId, rootId) {
         return new Promise(function (resolve) {
             var channel = new MessageChannel();
             var timer = setTimeout(function () {
@@ -68,19 +69,22 @@
                 resolve(!!(event.data && event.data.open === true));
             };
 
-            windowClient.postMessage({ type: "chat.push.is-open", channel_id: channelId }, [channel.port2]);
+            var ask = { type: "chat.push.is-open", channel_id: channelId };
+
+            // A root's ask stays exactly as it was, so a page that predates threads still answers it.
+            if (rootId) {
+                ask.root_id = rootId;
+            }
+
+            windowClient.postMessage(ask, [channel.port2]);
         });
     }
 
     /**
-     * Whether the message is already on screen in a window the person is looking at. Only a
-     * message that appears in its channel can be; a reply kept to its thread always shows.
+     * Whether the message is already on screen in a window the person is looking at: a root or a
+     * reply shown in the channel when its channel is, and any reply when its thread's drawer is.
      */
     async function isOnScreen(data) {
-        if (data.in_channel !== "true") {
-            return false;
-        }
-
         var windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
         var focused = windows.filter(function (w) {
             return w.focused;
@@ -90,9 +94,23 @@
             return false;
         }
 
-        var answers = await Promise.all(focused.map(function (w) {
-            return askIsOpen(w, data.channel_id);
-        }));
+        // A reply kept to its thread is seen only in the drawer, so only its thread is asked about;
+        // one shown in the channel is seen in either, so both are asked at once and share the wait.
+        var isReply = !!data.parent_id;
+        var isInChannel = !isReply || data.in_channel === "true";
+        var asks = [];
+
+        focused.forEach(function (w) {
+            if (isInChannel) {
+                asks.push(askIsOpen(w, data.channel_id));
+            }
+
+            if (isReply) {
+                asks.push(askIsOpen(w, data.channel_id, data.parent_id));
+            }
+        });
+
+        var answers = await Promise.all(asks);
 
         return answers.indexOf(true) !== -1;
     }
@@ -156,15 +174,31 @@
             return new URL(w.url, self.location.href).pathname === chatPage;
         });
 
+        // Any push about a reply, a reaction to one included, opens the reply in its thread; the
+        // parent is always a root, since a reply answers only a root.
+        var rootId = data.parent_id || "";
+        var open = { type: "chat.push.open", channel_id: data.channel_id };
+
+        if (rootId) {
+            open.root_id = rootId;
+            open.message_id = data.message_id;
+        }
+
         // A worker cannot navigate a window it does not control, so an open chat window is
-        // focused and told which channel to open.
+        // focused and told what to open.
         if (chatWindow) {
             await chatWindow.focus();
-            chatWindow.postMessage({ type: "chat.push.open", channel_id: data.channel_id });
+            chatWindow.postMessage(open);
             return;
         }
 
-        await self.clients.openWindow(chatPage + "?ChannelGuid=" + encodeURIComponent(data.channel_id || ""));
+        var url = chatPage + "?ChannelGuid=" + encodeURIComponent(data.channel_id || "");
+
+        if (rootId) {
+            url += "&ThreadRoot=" + encodeURIComponent(rootId) + "&Message=" + encodeURIComponent(data.message_id || "");
+        }
+
+        await self.clients.openWindow(url);
     }
 
     self.addEventListener("push", function (event) {
