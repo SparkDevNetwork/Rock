@@ -1707,35 +1707,29 @@ namespace Rock.Blocks.Security
                 /*
                     10/15/2026 - MSE
 
-                    Only the existing Person's email is proven at this point,
-                    by the emailed OTP. The mobile number or email in the
-                    state is not proven, because the state is returned to the
-                    browser before anyone enters the original code.
+                    The existing Person's email is proven by the emailed OTP.
+                    The mobile number or email the individual started with is
+                    proven by the registration code in the state (checked
+                    above), which is only added after the code sent to it was
+                    entered. A state from the send step, before anyone entered
+                    the code, is refused.
 
-                    So the passwordless login is for the started identifier
-                    only when it is the existing Person's email. Otherwise it
-                    is for the existing Person's email, and the started mobile
-                    number or email is not added to the Person. Linking the
-                    started identifier let someone attach another person's
-                    email or mobile number to their own record, and an
-                    existing login for it signed them in as that other person.
+                    So the passwordless login is for the started identifier.
+                    This lets someone who shares a family email, or who
+                    started with their own mobile number, link to their record
+                    and sign in with that identifier next time. The started
+                    mobile number is not added to the Person, so an existing
+                    mobile number on the record is not replaced.
 
                     The login must also belong to the existing Person. If it
                     belongs to someone else the request is refused with the
                     same message as an invalid code, so it does not reveal
                     that the login exists.
 
-                    Reason: Only link a passwordless login the code proves.
+                    Reason: Only link a passwordless login the codes prove.
                 */
-                var passwordlessIdentifier = person.Email.Trim();
-                if ( passwordlessAuthenticationState.UniqueIdentifier.IsNotNullOrWhiteSpace()
-                    && passwordlessAuthenticationState.UniqueIdentifier.Trim().Equals( passwordlessIdentifier, StringComparison.OrdinalIgnoreCase ) )
-                {
-                    passwordlessIdentifier = passwordlessAuthenticationState.UniqueIdentifier;
-                }
-
                 var userLoginService = new UserLoginService( rockContext );
-                var username = PasswordlessAuthentication.GetUsername( passwordlessIdentifier );
+                var username = PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier );
                 userLogin = userLoginService.GetByUserName( username );
 
                 if ( userLogin != null && userLogin.PersonId != person.Id )
