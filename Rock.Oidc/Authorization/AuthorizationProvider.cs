@@ -405,6 +405,19 @@ namespace Rock.Oidc.Authorization
                 return;
             }
 
+            // Self-registered (DCR) and CIMD clients are only offered the authorization code flow.
+            var isSelfRegisteredClient = authClient.Id == 0 || authClient.ClientId.StartsWith( "dcr.", StringComparison.Ordinal );
+            var isBrowserSignInGrant = context.Request.IsAuthorizationCodeGrantType() || context.Request.IsRefreshTokenGrantType();
+
+            if ( isSelfRegisteredClient && !isBrowserSignInGrant )
+            {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    description: "Only authorization code and refresh token grant types are accepted for this client." );
+
+                return;
+            }
+
             context.Validate();
         }
 
