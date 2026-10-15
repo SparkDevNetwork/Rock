@@ -235,6 +235,11 @@ namespace Rock.Blocks.Communication
 
             var currentPerson = GetCurrentPerson();
 
+            if ( !CanEditPageFlow( currentPerson ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( CommunicationFlow.FriendlyTypeName ) );
+            }
+
             // Build the communication template (without saving).
             var communicationTemplate = GetOrCreateFlowCommunicationTemplate( this.RockContext, bag.CommunicationTemplate );
 
@@ -252,7 +257,13 @@ namespace Rock.Blocks.Communication
             // Generate the preview message.
             var commonMergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             var mergeFields = communication.Recipients.First().CommunicationMergeValues( commonMergeFields );
-            var previewHtml = GenerateEmailHtmlPreview( communication, currentPerson, mergeFields );
+            string previewHtml;
+
+            // The preview goes back to its author, so only the author's own token may appear in it.
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                previewHtml = GenerateEmailHtmlPreview( communication, currentPerson, mergeFields );
+            }
 
             return ActionOk( previewHtml );
         }
@@ -267,8 +278,24 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            if ( SendTestCommunication( this.RockContext, GetCurrentPerson(), bag, out var communicationTemplate, out validationResult ) )
-            { 
+            var currentPerson = GetCurrentPerson();
+
+            if ( !CanEditPageFlow( currentPerson ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( CommunicationFlow.FriendlyTypeName ) );
+            }
+
+            bool isSent;
+            CommunicationTemplate communicationTemplate;
+
+            // The test goes only to the current person, so only their own token may be created while it renders.
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                isSent = SendTestCommunication( this.RockContext, currentPerson, bag, out communicationTemplate, out validationResult );
+            }
+
+            if ( isSent )
+            {
                 return ActionOk( GetCommunicationTemplateAsBag( communicationTemplate ) );
             }
             else
@@ -1919,6 +1946,28 @@ namespace Rock.Blocks.Communication
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
             };
+        }
+
+        /// <summary>
+        /// Determines whether the person may edit the communication flow this page is showing.
+        /// </summary>
+        /// <param name="currentPerson">The person making the request.</param>
+        /// <returns><c>true</c> if the page's flow exists and the person has EDIT access to it; otherwise <c>false</c>.</returns>
+        private bool CanEditPageFlow( Person currentPerson )
+        {
+            var flow = GetInitialEntity( this.RockContext );
+
+            if ( flow == null )
+            {
+                return false;
+            }
+
+            if ( flow.Id == 0 )
+            {
+                return true;
+            }
+
+            return flow.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <inheritdoc/>
