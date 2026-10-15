@@ -388,6 +388,11 @@ namespace RockWeb
         private const string UnknownMimeType = "application/octet-stream";
 
         /// <summary>
+        /// The longest mime type that can be stored on a <see cref="BinaryFile"/>.
+        /// </summary>
+        private const int MaxMimeTypeLength = 255;
+
+        /// <summary>
         /// The mime types that clients and remote servers send when they do not know the type
         /// of the file.
         /// </summary>
@@ -397,6 +402,13 @@ namespace RockWeb
             "binary/octet-stream",
             "application/x-octet-stream"
         };
+
+        /// <summary>
+        /// Matches a well-formed mime type, a type and subtype with optional parameters.
+        /// </summary>
+        private static readonly Regex _validMimeTypeRegex = new Regex(
+            @"^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*(\s*;\s*[A-Za-z0-9!#$&^_.+-]+=([A-Za-z0-9!#$&^_.+-]+|""[^""\\\r\n]*""))*\z",
+            RegexOptions.Compiled );
 
         /// <summary>
         /// The image mime types that can be inferred from the file's contents when the client
@@ -481,9 +493,13 @@ namespace RockWeb
             */
             isInferred = false;
 
-            var mimeType = uploadedFile.ContentType;
+            var mimeType = uploadedFile.ContentType?.Trim();
 
-            if ( mimeType.IsNotNullOrWhiteSpace() && !_unknownMimeTypes.Contains( mimeType.Trim() ) )
+            // A malformed or oversized type is handled like a missing one rather than failing the upload.
+            if ( mimeType.IsNotNullOrWhiteSpace()
+                && mimeType.Length <= MaxMimeTypeLength
+                && !_unknownMimeTypes.Contains( mimeType )
+                && _validMimeTypeRegex.IsMatch( mimeType ) )
             {
                 return mimeType;
             }
