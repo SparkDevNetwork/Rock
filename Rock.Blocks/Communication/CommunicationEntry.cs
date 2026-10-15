@@ -707,9 +707,22 @@ namespace Rock.Blocks.Communication
                 communicationService.Add( testCommunication );
                 rockContext.SaveChanges();
 
-                foreach ( var medium in testCommunication.GetMediums() )
+                /*
+                    10/15/2026 - MSE
+
+                    A test is only sent to the current person, so only that person's
+                    sign-in token belongs in it. Without this scope, Lava in the test
+                    (or a Lava-off bypass) could mint a working token for any other
+                    person. This matches the Communication Entry Wizard test send.
+
+                    Reason: Prevent person token minting in test sends (RCVE-2026-2gmq).
+                */
+                using ( PersonTokenScope.RestrictTo( currentPerson ) )
                 {
-                    medium.Send( testCommunication );
+                    foreach ( var medium in testCommunication.GetMediums() )
+                    {
+                        medium.Send( testCommunication );
+                    }
                 }
 
                 testRecipient = new CommunicationRecipientService( rockContext )
