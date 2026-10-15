@@ -81,6 +81,12 @@ jobs:
       - name: The tripwire still has its tests
         run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/connected-services.trx --minimum 78
 
+      # The chat components import the shared framework, and its compiled helpers resolve tslib from
+      # the framework package's own node_modules, so both packages are installed.
+      - name: Install the framework dependencies the client tests import
+        run: npm ci
+        working-directory: ./Rock.JavaScript.Obsidian
+
       - name: Install the client dependencies
         run: npm ci
         working-directory: ./Rock.JavaScript.Obsidian.Blocks

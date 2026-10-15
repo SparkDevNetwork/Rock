@@ -146,3 +146,16 @@ test('every msbuild call restores in its own evaluation, so a package adapter is
     assert.match(build, / -restore /, `no -restore: ${build}`);
   }
 });
+
+test('the client suite runs with the framework package installed as well as the blocks package', () => {
+  // The chat components import the shared framework, whose compiled helpers come from tslib in the
+  // framework package's own node_modules; with only the blocks package installed, eight suites fail
+  // to resolve it on a runner while passing on any machine that has built the framework.
+  const steps = unlabelled().steps ?? [];
+  const installIn = (dir) => steps.findIndex((step) => /npm ci/.test(String(step.run ?? '')) && String(step['working-directory'] ?? '').replace(/^\.\//, '') === dir);
+  const jest = steps.findIndex((step) => /\bjest\b/.test(String(step.run ?? '')));
+
+  assert.ok(installIn('Rock.JavaScript.Obsidian') >= 0, 'nothing installs the framework package');
+  assert.ok(installIn('Rock.JavaScript.Obsidian.Blocks') >= 0, 'nothing installs the blocks package');
+  assert.ok(installIn('Rock.JavaScript.Obsidian') < jest && installIn('Rock.JavaScript.Obsidian.Blocks') < jest, 'the client tests run before an install');
+});
