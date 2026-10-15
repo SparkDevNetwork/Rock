@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Newtonsoft.Json;
+
 using Rock.Web.UI;
 
 namespace Rock.Lava.Shortcodes
@@ -216,6 +218,29 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         private string _internalMarkup = string.Empty;
 
+        /*
+            10/15/2026 - MSE
+
+            The graph options are written into an inline script block, and node and edge
+            labels often come from person or group names that anyone can set. The default
+            JSON escaping leaves "<" and "/" alone, so a label containing "</script>" would
+            close the script block. Escaping HTML characters keeps the JSON valid and the
+            labels unchanged once parsed by the browser.
+
+            Reason: Prevent stored XSS through graph labels.
+        */
+        /// <summary>
+        /// The serializer settings used to write the graph options into the script block.
+        /// </summary>
+        private static readonly Lazy<JsonSerializerSettings> _serializerSettings = new Lazy<JsonSerializerSettings>( () =>
+        {
+            var settings = Rock.JsonExtensions.CreateSerializerSettings( false, false, true );
+
+            settings.StringEscapeHandling = StringEscapeHandling.EscapeHtml;
+
+            return settings;
+        } );
+
         #endregion
 
         #region Methods
@@ -280,7 +305,7 @@ namespace Rock.Lava.Shortcodes
             // Construct the JavaScript to initialize the graph.
             var script = $@"<script>
 (function() {{
-    new Rock.UI.NetworkGraph(""#{elementId}"", {options.ToCamelCaseJson( false, false )});
+    new Rock.UI.NetworkGraph(""#{elementId}"", {SerializeOptions( options )});
 }})();
 </script>";
 
@@ -300,6 +325,17 @@ namespace Rock.Lava.Shortcodes
             }
 
             result.Write( residualBlockContent.Trim() );
+        }
+
+        /// <summary>
+        /// Serializes the graph options into camel case JSON that is safe to
+        /// place inside an inline script block.
+        /// </summary>
+        /// <param name="options">The options object to serialize.</param>
+        /// <returns>The JSON string with HTML characters escaped.</returns>
+        internal static string SerializeOptions( object options )
+        {
+            return JsonConvert.SerializeObject( options, _serializerSettings.Value );
         }
 
         /// <summary>
