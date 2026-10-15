@@ -816,10 +816,21 @@
             event.ports[0]?.postMessage({ open: isOpen });
         }
         else if (message.type === "chat.push.open" && message.channel_id) {
+            // A tap brings what it was for to the front, even when its conversation is already
+            // the one open behind a phone's list: the thread for a reply, else the conversation,
+            // which a phone's panel would cover. A desktop shows a panel beside it, so keeps it.
             const channelId = message.channel_id.toLowerCase();
+            isListChosen.value = false;
+            isPaneMotionOn.value = true;
             void shell.value.selectChannel(channelId);
             if (rootId !== null) {
                 void landOnReply({ channelId, rootId, messageId: messageIdOf(message.message_id) });
+            }
+            else if (isPhone.value && panelKind.value === "thread") {
+                closeThreadDrawer();
+            }
+            else if (isPhone.value) {
+                closePanel();
             }
         }
     }
@@ -1149,10 +1160,13 @@
         }
     });
 
-    // The push worker's ask about a thread is answered by the shell, which cannot see the panes:
-    // a thread is out of view unless the panel shows it, and a phone shows only one pane.
+    // The push worker's asks are answered by the shell, which cannot see the panes: a thread is
+    // out of view unless the panel shows it, and a phone shows only one pane.
     watchEffect(() => {
-        shell.value.state.isThreadPaneHidden = isPanelHidden.value || panelKind.value !== "thread";
+        shell.value.state.hiddenPanes = {
+            conversation: isConversationHidden.value,
+            thread: isPanelHidden.value || panelKind.value !== "thread"
+        };
     });
 
     // Any conversation that opens, from a row, a push or a new message, comes forward on a phone.

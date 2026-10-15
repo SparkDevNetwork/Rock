@@ -767,6 +767,11 @@ describe("what the page tells push", () => {
         expect(h.shell.isChannelOnScreen(channelA)).toBe(false);
     });
 
+    /** The panes the frame says are out of view, which only the frame can see. */
+    function hiddenPanesOf(shell: ChatShell): { conversation: boolean; thread: boolean } {
+        return (shell.state as unknown as { hiddenPanes: { conversation: boolean; thread: boolean } }).hiddenPanes;
+    }
+
     // A reply kept to its thread is on screen only while its thread is open in the drawer, so the
     // worker asks by the reply's root.
     type ThreadScreenShell = { isThreadOnScreen: (rootId: number) => boolean };
@@ -802,11 +807,23 @@ describe("what the page tells push", () => {
         expect(shell.isThreadOnScreen(40)).toBe(true);
 
         // the frame says the pane that draws the thread is out of view
-        (h.shell.state as unknown as { isThreadPaneHidden: boolean }).isThreadPaneHidden = true;
+        hiddenPanesOf(h.shell).thread = true;
         expect(shell.isThreadOnScreen(40)).toBe(false);
 
-        (h.shell.state as unknown as { isThreadPaneHidden: boolean }).isThreadPaneHidden = false;
+        hiddenPanesOf(h.shell).thread = false;
         expect(shell.isThreadOnScreen(40)).toBe(true);
+    });
+
+    test("the open channel behind another pane, as a phone's list or thread over it, is not on screen", async () => {
+        const h = await started();
+        expect(h.shell.isChannelOnScreen(channelA)).toBe(true);
+
+        // the frame says the pane that draws the conversation is out of view
+        hiddenPanesOf(h.shell).conversation = true;
+        expect(h.shell.isChannelOnScreen(channelA)).toBe(false);
+
+        hiddenPanesOf(h.shell).conversation = false;
+        expect(h.shell.isChannelOnScreen(channelA)).toBe(true);
     });
 
     test("the badge is the sidebar's unread mentions, never its unread messages", async () => {

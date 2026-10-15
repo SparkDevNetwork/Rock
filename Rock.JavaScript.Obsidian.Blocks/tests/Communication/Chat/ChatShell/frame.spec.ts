@@ -1156,6 +1156,11 @@ describe("a push about a thread reply", () => {
         return !!replyRow(w, id)?.classList.contains("is-flashing");
     }
 
+    /** The panes the frame told the shell are out of view. */
+    function hiddenPanes(): { conversation: boolean; thread: boolean } {
+        return (mockShell!.state as unknown as { hiddenPanes: { conversation: boolean; thread: boolean } }).hiddenPanes;
+    }
+
     function flashingRows(w: VueWrapper): Element[] {
         return Array.from(w.element.querySelectorAll("[data-testid='frame-panel'] .is-flashing"));
     }
@@ -1302,7 +1307,7 @@ describe("a push about a thread reply", () => {
     test("tells the shell the thread's pane is out of view while a phone shows the list over an open thread", async () => {
         mockThreadPages = { newest: [41, 42, 43], older: [] };
         const w = await mountBlock(390);
-        const paneHidden = (): unknown => (mockShell!.state as Record<string, unknown>).isThreadPaneHidden;
+        const paneHidden = (): unknown => hiddenPanes().thread;
         await openRow(w, team.channel_id);
 
         fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
@@ -1311,15 +1316,8 @@ describe("a push about a thread reply", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
         expect(paneHidden()).toBe(false);
 
-        await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
-        await settle();
-        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        // Back to the list, the thread still open behind it
         await w.get("[data-testid='header-back']").trigger("click");
-        await settle();
-
-        // a tap for the conversation already open behind the list leaves the list in front
-        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
-        await settle();
         await settle();
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
         expect(paneHidden()).toBe(true);
@@ -1327,6 +1325,95 @@ describe("a push about a thread reply", () => {
         FakeResizeObserver.resize(1200);
         await settle();
         expect(paneHidden()).toBe(false);
+    });
+
+    test("tells the shell the conversation's pane is out of view while a phone shows the list or a thread over it", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(hiddenPanes().conversation).toBe(false);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        expect(hiddenPanes().conversation).toBe(true);
+
+        // on a desktop the conversation and the drawer beside it are both on screen
+        FakeResizeObserver.resize(1200);
+        await settle();
+        expect(hiddenPanes()).toEqual({ conversation: false, thread: false });
+
+        FakeResizeObserver.resize(390);
+        await settle();
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
+        expect(hiddenPanes()).toEqual({ conversation: true, thread: true });
+    });
+
+    test("on a phone, a reply's tap for the conversation open behind the list brings its thread to the front", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+        expect(isPaneHidden(w, "frame-panel")).toBe(false);
+        expect(isFlashing(w, 42)).toBe(true);
+    });
+
+    test("on a phone, a root's tap for the conversation open behind the list brings the conversation to the front", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id });
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(isPaneHidden(w, "frame-main")).toBe(false);
+    });
+
+    test("on a phone, a root's tap for the conversation under an open thread brings the conversation to the front", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id });
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(threadsOf().closeThread).toHaveBeenCalled();
+    });
+
+    test("on a desktop, a root's tap leaves an open thread's drawer beside the conversation", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id });
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(threadsOf().closeThread).not.toHaveBeenCalled();
     });
 
     test("a tap on a root's push opens its conversation and no thread", async () => {

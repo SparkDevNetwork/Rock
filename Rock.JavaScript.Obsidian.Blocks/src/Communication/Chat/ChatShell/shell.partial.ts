@@ -155,10 +155,10 @@ export type ShellState = {
     isPushOffered: boolean;
 
     /**
-     * Whether the pane that draws the open thread is out of view, as when a phone shows its list
-     * in front; written by the frame, which alone knows its panes.
+     * Which of the panes that draw the open conversation and the open thread are out of view, as
+     * when a phone shows its list in front; written by the frame, which alone knows its panes.
      */
-    isThreadPaneHidden: boolean;
+    hiddenPanes: { conversation: boolean; thread: boolean };
 };
 
 /** The shell a block holds. */
@@ -308,7 +308,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isUpdateRequired: false,
         isComposerOpen: true,
         isPushOffered: false,
-        isThreadPaneHidden: false
+        hiddenPanes: { conversation: false, thread: false }
     }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
     const publishableKey = options.session.publishableKey ?? "";
@@ -901,15 +901,18 @@ export function createChatShell(options: ShellOptions): ChatShell {
             state.isPushOffered = push?.isOffered() ?? false;
         },
 
+        // Only while its pane is the one in view: a phone's list or thread can cover it.
         isChannelOnScreen: (channelId: string): boolean => {
-            return channelId === state.activeChannelId && options.pageTargets.document.visibilityState === "visible";
+            return channelId === state.activeChannelId
+                && !state.hiddenPanes.conversation
+                && options.pageTargets.document.visibilityState === "visible";
         },
 
         // A reply kept to its thread is seen only in the drawer, so only the open thread counts,
         // whatever conversation is behind it, and only while its pane is the one in view.
         isThreadOnScreen: (rootId: number): boolean => {
             return threads.state.thread?.rootId === rootId
-                && !state.isThreadPaneHidden
+                && !state.hiddenPanes.thread
                 && options.pageTargets.document.visibilityState === "visible";
         },
 
