@@ -820,6 +820,7 @@
             // the one open behind a phone's list: the thread for a reply, else the conversation,
             // which a phone's panel would cover. A desktop shows a panel beside it, so keeps it.
             const channelId = message.channel_id.toLowerCase();
+            const isOpenConversation = channelId === activeChannelId.value;
             isListChosen.value = false;
             isPaneMotionOn.value = true;
             void shell.value.selectChannel(channelId);
@@ -827,7 +828,11 @@
                 void landOnReply({ channelId, rootId, messageId: messageIdOf(message.message_id) });
             }
             else if (isPhone.value && panelKind.value === "thread") {
-                closeThreadDrawer();
+                // Closing here would aim focus at the root in the conversation being replaced;
+                // another conversation's arrival closes the thread itself and moves focus.
+                if (isOpenConversation) {
+                    closeThreadDrawer();
+                }
             }
             else if (isPhone.value) {
                 closePanel();
@@ -1196,11 +1201,18 @@
     });
 
     // A thread belongs to its own conversation, so another conversation or a draft closes it. A
-    // thread opened from the list switches to its conversation first, which keeps it open.
+    // thread opened from the list switches to its conversation first, which keeps it open. Focus
+    // inside the closing drawer would drop to the page as it leaves reach, so it goes to the title
+    // of what replaced it, as a phone's row does when it opens a conversation.
     watch([activeChannelId, draft], ([channelId, openDraft]) => {
         if (panelKind.value === "thread" && (openDraft || channelId !== threadChannelId)) {
+            const hadFocus = !!panelElement.value?.contains(document.activeElement);
             leaveThread();
             finishClosing();
+
+            if (hadFocus) {
+                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus());
+            }
         }
     });
 

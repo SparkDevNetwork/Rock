@@ -1401,6 +1401,41 @@ describe("a push about a thread reply", () => {
         expect(threadsOf().closeThread).toHaveBeenCalled();
     });
 
+    test("on a phone, a root's tap for another conversation over an open thread brings that conversation to the front, focus on its title", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 3, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        (w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element as HTMLElement).focus();
+
+        // Here the shell names the new conversation only after the tap is handled, so the old
+        // feed is still drawn then: where focus lands must not depend on when the swap comes.
+        let swap: (() => void) | null = null;
+        mockShell!.selectChannel = jest.fn((channelId: string) => new Promise<void>(resolve => {
+            swap = (): void => {
+                (mockShell!.state as { activeChannelId: string | null }).activeChannelId = channelId;
+                resolve();
+            };
+        }));
+
+        fromWorker({ type: "chat.push.open", channel_id: dmAnna.channel_id });
+        await settle();
+        swap!();
+        await settle();
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenCalledWith(dmAnna.channel_id);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+        expect(threadsOf().closeThread).toHaveBeenCalled();
+        expect(document.activeElement).not.toBe(document.body);
+        expect(document.activeElement).toBe(w.get("[data-testid='header-title']").element);
+    });
+
     test("on a desktop, a root's tap leaves an open thread's drawer beside the conversation", async () => {
         mockThreadPages = { newest: [41, 42, 43], older: [] };
         const w = await mountBlock(1200);
