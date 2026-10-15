@@ -287,5 +287,153 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         #endregion
+
+        #region SanitizeLava
+
+        private static readonly Regex _lavaOpenerRegex = new Regex( @"\{[{%\[]" );
+
+        private static void AssertNoLavaOpener( string input )
+        {
+            var output = input.SanitizeLava();
+
+            Assert.IsFalse( _lavaOpenerRegex.IsMatch( output ), $"Input '{input}' produced '{output}', which still contains a Lava opener." );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereTagIsSplitByInnerTag_RemovesAllOpeners()
+        {
+            AssertNoLavaOpener( "{{% x %}{ 7 | Plus:7 }}" );
+            Assert.AreEqual( string.Empty, "{{% x %}{ 7 | Plus:7 }}".SanitizeLava() );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereOutputBodyContainsClosingBrace_RemovesOpener()
+        {
+            AssertNoLavaOpener( "{{ 7 | Plus:7 | Append:'}' }}" );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereTagIsSplitByNestedTags_RemovesAllOpeners()
+        {
+            AssertNoLavaOpener( "{{{% a %}{% b %}% x %}{ 7 | Plus:7 }}" );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereTagBodyContainsClosingBrace_RemovesOpener()
+        {
+            AssertNoLavaOpener( "{% assign x = '}' %}{{ x }}" );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereShortcodeIsSplitByInnerTag_RemovesOpener()
+        {
+            AssertNoLavaOpener( "{[{% x %} sc ]}" );
+            AssertNoLavaOpener( "{{[ a ]}[ sc ]}" );
+            AssertNoLavaOpener( "{{[ sc ]}{ 7 | Plus:7 }}" );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereInputHasOnlySingleBraces_ReturnsInputUnchanged()
+        {
+            Assert.AreEqual( "Room {A1} and {B}", "Room {A1} and {B}".SanitizeLava() );
+            Assert.AreEqual( "{ { 1 } }", "{ { 1 } }".SanitizeLava() );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereInputIsNullOrWhiteSpace_ReturnsEmptyString()
+        {
+            string lava = null;
+
+            Assert.AreEqual( string.Empty, lava.SanitizeLava() );
+            Assert.AreEqual( string.Empty, string.Empty.SanitizeLava() );
+            Assert.AreEqual( string.Empty, "   ".SanitizeLava() );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereInputIsNormalLava_RemovesLava()
+        {
+            Assert.AreEqual( string.Empty, "{{ Person.NickName }}".SanitizeLava() );
+            Assert.AreEqual( "x", "{%- if 1 -%}x{%- endif -%}".SanitizeLava() );
+            Assert.AreEqual( "Hi !", "Hi {[ sc arg:'1' ]}!".SanitizeLava() );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereInputIsGenerated_NeverReturnsLavaOpener()
+        {
+            // Build every string up to length 7 from the characters that matter to
+            // the Lava parser, plus a filler character, and make sure none of them
+            // can produce an opener after sanitizing.
+            var alphabet = new[] { '{', '}', '%', '[', ']', 'x' };
+            var buffer = new char[7];
+
+            for ( var length = 1; length <= buffer.Length; length++ )
+            {
+                var total = ( int ) System.Math.Pow( alphabet.Length, length );
+
+                for ( var n = 0; n < total; n++ )
+                {
+                    var value = n;
+                    for ( var i = 0; i < length; i++ )
+                    {
+                        buffer[i] = alphabet[value % alphabet.Length];
+                        value /= alphabet.Length;
+                    }
+
+                    AssertNoLavaOpener( new string( buffer, 0, length ) );
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereInputIsDeeplyNested_ReturnsQuicklyWithoutLavaOpener()
+        {
+            // Each nesting level needs its own pass, so this would take minutes
+            // if the number of passes were not capped.
+            const int depth = 14000;
+            var input = new string( '{', depth )
+                + "{% x %}"
+                + string.Concat( Enumerable.Repeat( "% x %}", depth ) )
+                + "{ 7 }}";
+
+            Assert.IsTrue( input.Length > 95000 );
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var output = input.SanitizeLava();
+            stopwatch.Stop();
+
+            Assert.IsFalse( _lavaOpenerRegex.IsMatch( output ), "The output still contains a Lava opener." );
+            Assert.IsTrue( stopwatch.Elapsed.TotalSeconds < 2, $"Sanitizing took {stopwatch.Elapsed.TotalSeconds} seconds." );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereInputMakesPatternSlow_ReturnsQuicklyWithoutLavaOpener()
+        {
+            // Every "{{" here scans ahead to the same closing brace, so one pass
+            // of the output pattern takes far longer than its time limit.
+            var input = string.Concat( Enumerable.Repeat( "{{a", 33000 ) ) + "}x";
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var output = input.SanitizeLava();
+            stopwatch.Stop();
+
+            Assert.IsFalse( _lavaOpenerRegex.IsMatch( output ), "The output still contains a Lava opener." );
+            Assert.IsTrue( stopwatch.Elapsed.TotalSeconds < 5, $"Sanitizing took {stopwatch.Elapsed.TotalSeconds} seconds." );
+        }
+
+        [TestMethod]
+        public void SanitizeLava_WhereCommentJoinsBraces_RemovesBraceBeforeComment()
+        {
+            // The legacy RockLiquid engine strips "/- ... -/" comments before
+            // parsing, which would join the two braces into an output.
+            var input = "{/-" + "-/{ 7 | Plus:7 }}";
+            var output = input.SanitizeLava();
+            var withoutComments = Regex.Replace( output, @"/-.*?-/", string.Empty, RegexOptions.Singleline );
+
+            AssertNoLavaOpener( input );
+            Assert.AreEqual( "/-" + "-/{ 7 | Plus:7 }}", output );
+            Assert.IsFalse( _lavaOpenerRegex.IsMatch( withoutComments ), $"Output '{output}' contains a Lava opener once comments are removed." );
+        }
+
+        #endregion
     }
 }

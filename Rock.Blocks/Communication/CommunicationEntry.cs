@@ -897,9 +897,22 @@ namespace Rock.Blocks.Communication
                 communicationService.Add( testCommunication );
                 rockContext.SaveChanges();
 
-                foreach ( var medium in testCommunication.GetMediums() )
+                /*
+                    10/15/2026 - MSE
+
+                    A test is only sent to the current person, so only that person's
+                    sign-in token belongs in it. Without this scope, Lava in the test
+                    (or a Lava-off bypass) could mint a working token for any other
+                    person. This matches the Communication Entry Wizard test send.
+
+                    Reason: Prevent person token minting in test sends (RCVE-2026-2gmq).
+                */
+                using ( PersonTokenScope.RestrictTo( currentPerson ) )
                 {
-                    medium.Send( testCommunication );
+                    foreach ( var medium in testCommunication.GetMediums() )
+                    {
+                        medium.Send( testCommunication );
+                    }
                 }
 
                 testRecipient = new CommunicationRecipientService( rockContext )
@@ -2381,6 +2394,22 @@ namespace Rock.Blocks.Communication
                 communication.FromEmail = communication.FromEmail.SanitizeLava();
                 communication.FromName = communication.FromName.SanitizeLava();
                 communication.ReplyToEmail = communication.ReplyToEmail.SanitizeLava();
+
+                /*
+                    10/15/2026 - MSE
+
+                    The SMS and push transports render these fields as Lava too
+                    (PushSound is not shown in the UI but can be posted to the block
+                    action, and PushOpenMessage is rendered when the recipient opens a
+                    Show Details push). Without this, Enable Lava = No only held for
+                    email.
+
+                    Reason: Enable Lava = No must not run Lava (RCVE-2026-2gmq).
+                */
+                communication.SMSMessage = communication.SMSMessage.SanitizeLava();
+                communication.PushTitle = communication.PushTitle.SanitizeLava();
+                communication.PushOpenMessage = communication.PushOpenMessage.SanitizeLava();
+                communication.PushSound = communication.PushSound.SanitizeLava();
             }
 
             return communication;
