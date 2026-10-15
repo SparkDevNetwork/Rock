@@ -1685,29 +1685,51 @@ namespace Rock.Blocks.Security
                     return ActionBadRequest( "Code invalid or expired" );
                 }
 
-                UpdatePerson( person, box.PersonInfo, rockContext );
+                /*
+                    10/15/2026 - MSE
+
+                    Only the existing Person's email is proven at this point,
+                    by the emailed OTP. The mobile number or email in the
+                    state is not proven, because the state is returned to the
+                    browser before anyone enters the original code.
+
+                    So the passwordless login is for the started identifier
+                    only when it is the existing Person's email. Otherwise it
+                    is for the existing Person's email, and the started mobile
+                    number or email is not added to the Person. Linking the
+                    started identifier let someone attach another person's
+                    email or mobile number to their own record, and an
+                    existing login for it signed them in as that other person.
+
+                    The login must also belong to the existing Person. If it
+                    belongs to someone else the request is refused with the
+                    same message as an invalid code, so it does not reveal
+                    that the login exists.
+
+                    Reason: Only link a passwordless login the code proves.
+                */
+                var passwordlessIdentifier = person.Email.Trim();
+                if ( passwordlessAuthenticationState.UniqueIdentifier.IsNotNullOrWhiteSpace()
+                    && passwordlessAuthenticationState.UniqueIdentifier.Trim().Equals( passwordlessIdentifier, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    passwordlessIdentifier = passwordlessAuthenticationState.UniqueIdentifier;
+                }
 
                 var userLoginService = new UserLoginService( rockContext );
-                var username = PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier );
+                var username = PasswordlessAuthentication.GetUsername( passwordlessIdentifier );
                 userLogin = userLoginService.GetByUserName( username );
+
+                if ( userLogin != null && userLogin.PersonId != person.Id )
+                {
+                    return ActionBadRequest( "Code invalid or expired" );
+                }
+
+                UpdatePerson( person, box.PersonInfo, rockContext );
 
                 if ( userLogin == null )
                 {
                     // Create new UserLogin for existing person.
                     userLogin = CreatePasswordlessUserLogin( person, username, rockContext );
-
-                    // Add the phone number used for passwordless to the person.
-                    if ( passwordlessAuthenticationState.PhoneNumber.IsNotNullOrWhiteSpace() )
-                    {
-                        person.UpdatePhoneNumber(
-                            DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Value,
-                            null,
-                            passwordlessAuthenticationState.PhoneNumber,
-                            true,
-                            false,
-                            rockContext );
-                        rockContext.SaveChanges();
-                    }
 
                     isAccountCreated = true;
                 }
