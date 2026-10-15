@@ -103,8 +103,16 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
+            /*
+                10/15/2026 - MSE
+
+                PersonName and Role are plain text, and person names can be set by anyone (for
+                example through a public signup form), so they are written HTML encoded.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             writer.RenderBeginTag( HtmlTextWriterTag.Strong );
-            writer.Write( PersonName );
+            writer.WriteEncodedText( PersonName ?? string.Empty );
             writer.RenderEndTag();
 
             base.RenderEndTag( writer );
@@ -113,7 +121,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.RenderBeginTag(HtmlTextWriterTag.Small);
                 writer.Write( " (" );
-                writer.Write( Role );
+                writer.WriteEncodedText( Role );
                 writer.Write( ")" );
                 writer.RenderEndTag();
             }
