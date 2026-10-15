@@ -1412,8 +1412,9 @@ describe("a push about a thread reply", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
         (w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element as HTMLElement).focus();
 
-        // Here the shell names the new conversation only after the tap is handled, so the old
-        // feed is still drawn then: where focus lands must not depend on when the swap comes.
+        // The shell today names the new conversation before its first await; this one names it
+        // only after the tap is handled, so where focus lands is shown not to depend on when the
+        // swap comes.
         let swap: (() => void) | null = null;
         mockShell!.selectChannel = jest.fn((channelId: string) => new Promise<void>(resolve => {
             swap = (): void => {

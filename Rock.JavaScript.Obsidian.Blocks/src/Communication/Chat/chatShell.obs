@@ -828,8 +828,9 @@
                 void landOnReply({ channelId, rootId, messageId: messageIdOf(message.message_id) });
             }
             else if (isPhone.value && panelKind.value === "thread") {
-                // Closing here would aim focus at the root in the conversation being replaced;
-                // another conversation's arrival closes the thread itself and moves focus.
+                // Only the open conversation's thread is closed here, so focus never aims at a root
+                // in a feed about to be replaced, however late the switch lands; another
+                // conversation's arrival closes the thread itself and moves focus.
                 if (isOpenConversation) {
                     closeThreadDrawer();
                 }
