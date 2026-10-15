@@ -128,3 +128,21 @@ test('the integration suite runs only when the label asks for it', () => {
   const triggers = workflow().on?.pull_request?.types ?? [];
   assert.ok(triggers.includes('labeled'), 'the workflow does not listen for a label being added');
 });
+
+test('every msbuild call restores in its own evaluation, so a package adapter is copied', () => {
+  // Restore and Build as targets of one call share an evaluation made before restore wrote the
+  // packages' build files, so MSTest's adapter never reaches the output and the test run finds
+  // nothing; measured on a runner and reproduced locally. The -restore switch evaluates again.
+  const calls = [
+    ...jobs().flatMap(([, job]) => (job.steps ?? []).map((step) => String(step.run ?? ''))),
+    readFileSync(resolve(repoRoot, 'Dev Tools/chat-ci/ci.mjs'), 'utf8'),
+  ];
+  for (const call of calls) {
+    assert.doesNotMatch(call, /\/t:Restore/i, `restore as a target: ${call.slice(0, 120)}`);
+  }
+  const builds = jobs().flatMap(([, job]) => (job.steps ?? []).map((step) => String(step.run ?? ''))).filter((run) => /^msbuild /.test(run));
+  assert.ok(builds.length >= 3, 'the workflow builds with msbuild');
+  for (const build of builds) {
+    assert.match(build, / -restore /, `no -restore: ${build}`);
+  }
+});

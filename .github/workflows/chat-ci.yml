@@ -56,10 +56,10 @@ jobs:
         working-directory: ./Dev Tools/chat-ci
 
       - name: Build the unit test project and what it depends on
-        run: msbuild Rock.Tests\Rock.Tests.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
+        run: msbuild Rock.Tests\Rock.Tests.csproj -restore /t:Build /p:Configuration=Debug /m /v:minimal /nologo
 
       - name: Build the blocks project, which holds the chat blocks
-        run: msbuild Rock.Blocks\Rock.Blocks.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
+        run: msbuild Rock.Blocks\Rock.Blocks.csproj -restore /t:Build /p:Configuration=Debug /m /v:minimal /nologo
 
       - name: Unit tests
         run: dotnet test Rock.Tests\Rock.Tests.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform" --logger "trx;LogFileName=unit.trx" --results-directory TestResults
@@ -113,7 +113,7 @@ jobs:
           (Get-Content Rock.Tests.Integration\app.TestSettings.config) -replace '"DatabaseHost" value="docker"', '"DatabaseHost" value="localdb"' | Set-Content Rock.Tests.Integration\app.TestSettings.config
 
       - name: Build the integration test project and what it depends on
-        run: msbuild Rock.Tests.Integration\Rock.Tests.Integration.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
+        run: msbuild Rock.Tests.Integration\Rock.Tests.Integration.csproj -restore /t:Build /p:Configuration=Debug /m /v:minimal /nologo
 
       - name: Integration tests
         run: dotnet test Rock.Tests.Integration\Rock.Tests.Integration.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform" --logger "trx;LogFileName=integration.trx" --results-directory TestResults

@@ -64,7 +64,7 @@ const gates = [
     ? {
         name: 'build the unit test project and what it depends on',
         cmd: 'msbuild',
-        args: [testProject, '/t:Restore,Build', '/p:Configuration=Debug', '/m', '/v:minimal', '/nologo'],
+        args: [testProject, '-restore', '/t:Build', '/p:Configuration=Debug', '/m', '/v:minimal', '/nologo'],
         cwd: repoRoot,
         shell: true,
       }
@@ -78,7 +78,7 @@ const gates = [
     ? {
         name: 'build the blocks project, which holds the chat blocks',
         cmd: 'msbuild',
-        args: [blocksProject, '/t:Restore,Build', '/p:Configuration=Debug', '/m', '/v:minimal', '/nologo'],
+        args: [blocksProject, '-restore', '/t:Build', '/p:Configuration=Debug', '/m', '/v:minimal', '/nologo'],
         cwd: repoRoot,
         shell: true,
       }
