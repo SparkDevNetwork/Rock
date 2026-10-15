@@ -342,15 +342,26 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// Delete a reminder.
         /// </summary>
         /// <param name="reminderGuid">The reminder GUID.</param>
-        private static void DeleteReminderInternal( Guid reminderGuid )
+        /// <param name="currentPersonId">The identifier of the person making the request.</param>
+        /// <returns><c>true</c> if the reminder was deleted; otherwise <c>false</c>.</returns>
+        private static bool DeleteReminderInternal( Guid reminderGuid, int currentPersonId )
         {
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var reminder = reminderService.Get( reminderGuid );
+                var reminder = reminderService.GetInclude( reminderGuid, r => r.PersonAlias );
+
+                // Only the owner of the reminder may delete it.
+                if ( reminder == null || reminder.PersonAlias == null || reminder.PersonAlias.PersonId != currentPersonId )
+                {
+                    return false;
+                }
+
                 reminderService.Delete( reminder );
                 rockContext.SaveChanges();
             }
+
+            return true;
         }
 
         #endregion
@@ -365,7 +376,22 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         [BlockAction]
         public BlockActionResult GetReminders( RequestBag requestBag )
         {
-            var reminders = GetReminderBags( requestBag.PersonGuid, requestBag.EntityTypeGuid, requestBag.EntityGuid, requestBag.ReminderTypeGuid, requestBag.StartIndex, requestBag.Count, requestBag.ExcludedReminderTypes, requestBag.Filter );
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            if ( requestBag == null )
+            {
+                return ActionBadRequest();
+            }
+
+            // Always list the current person's reminders. The PersonGuid in
+            // the request bag is ignored so it can't be used to read another
+            // person's reminders.
+            var reminders = GetReminderBags( currentPerson.Guid, requestBag.EntityTypeGuid, requestBag.EntityGuid, requestBag.ReminderTypeGuid, requestBag.StartIndex, requestBag.Count, requestBag.ExcludedReminderTypes, requestBag.Filter );
 
             return ActionOk( reminders );
         }
@@ -379,12 +405,20 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         [BlockAction]
         public BlockActionResult SetReminderCompletion( Guid reminderGuid, bool complete )
         {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var reminder = reminderService.Get( reminderGuid );
+                var reminder = reminderService.GetInclude( reminderGuid, r => r.PersonAlias );
 
-                if ( reminder == null )
+                // Only the owner of the reminder may change it.
+                if ( reminder == null || reminder.PersonAlias == null || reminder.PersonAlias.PersonId != currentPerson.Id )
                 {
                     return ActionNotFound();
                 }
@@ -412,7 +446,17 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         [BlockAction]
         public BlockActionResult DeleteReminder( Guid reminderGuid )
         {
-            DeleteReminderInternal( reminderGuid );
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            if ( !DeleteReminderInternal( reminderGuid, currentPerson.Id ) )
+            {
+                return ActionNotFound();
+            }
 
             return ActionOk();
         }

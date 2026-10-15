@@ -211,7 +211,17 @@ namespace RockWeb.Blocks.Core
                             var person = new PersonService( new RockContext() ).GetNoTracking( personId );
                             if ( person != null )
                             {
-                                e.Value = person.FullName;
+                                /*
+                                    10/15/2026 - MSE
+
+                                    The grid filter writes this display value as raw HTML, and person names
+                                    can be set by anyone (for example through a public signup form), so the
+                                    name is HTML encoded. The saved preference is the person Id, so the name
+                                    is only encoded once.
+
+                                    Reason: Prevent stored XSS through a person's name.
+                                */
+                                e.Value = person.FullName.EncodeHtml();
                             }
                         }
                         break;
@@ -644,6 +654,16 @@ namespace RockWeb.Blocks.Core
                         .Select( h => h.SummaryHtml )
                         .ToList(),
 
+                        /*
+                            10/15/2026 - MSE
+
+                            CreatedByPersonName stays plain text here so the Excel export shows the name as
+                            typed. The "Who" column in the ascx is a template field that HTML encodes it,
+                            because the HyperLinkField it replaced wrote the name without encoding and person
+                            names can be set by anyone (for example through a public signup form).
+
+                            Reason: Prevent stored XSS through a person's name.
+                        */
                         CreatedByPersonName = Person.FormatFullName( x.CreatedByPersonNickName, x.CreatedByPersonLastName, x.CreatedByPersonSuffixValueId ),
                         
                         Verb = x.HistoryEntryValues.OrderBy( h => h.Id ).FirstOrDefault()?.Verb,

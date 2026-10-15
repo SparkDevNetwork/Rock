@@ -90,10 +90,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 return;
             }
 
+            /*
+                10/15/2026 - MSE
+
+                Person names are plain text that anyone can set (for example through a public
+                signup form), so they are HTML encoded before being placed in the dropdown markup.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             var sb = new StringBuilder(
             $@"<a href=""#"" id=""familyDropdownNav"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
                     <img src=""{Person.GetPersonPhotoUrl( this.Person, 400 )}&Style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA"" class=""avatar mr-2 flex-shrink-0"" alt="""" />
-                    <span class=""d-none d-sm-inline text-nowrap font-weight-semibold"">{this.Person.FullName}<i class=""ti ti-chevron-down ml-2""></i></span>
+                    <span class=""d-none d-sm-inline text-nowrap font-weight-semibold"">{this.Person.FullName.EncodeHtml()}<i class=""ti ti-chevron-down ml-2""></i></span>
                 </a>
 
                 <ul class=""dropdown-menu"" aria-labelledby=""familyDropdownNav"">");
@@ -112,12 +120,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private string CreateGroupMemberListItem( GroupMember groupMember )
         {
             var personLink = FormatPersonLink( groupMember.Person.Id.ToString() );
+
+            /*
+                10/15/2026 - MSE
+
+                Person names are plain text that anyone can set (for example through a public
+                signup form), so they are HTML encoded before being placed in the list item markup.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             var groupMemberListItem = $@"
                 <li>
                     <a href=""{personLink}"">
                         <img src=""{Person.GetPersonPhotoUrl( groupMember.Person.Initials, groupMember.Person.PhotoId, groupMember.Person.Age, groupMember.Person.Gender, groupMember.Person.RecordTypeValueId, groupMember.Person.AgeClassification, 400 )}&Style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA"" alt="""" class=""avatar"">
                         <span class=""name"">
-                            {groupMember.Person.FullName}
+                            {groupMember.Person.FullName.EncodeHtml()}
                         </span>
                     </a>
                 </li>";

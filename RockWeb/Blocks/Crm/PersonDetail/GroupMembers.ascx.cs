@@ -618,12 +618,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         protected string FormatPersonName( string nickName, string lastName )
         {
+            /*
+                10/15/2026 - MSE
+
+                The result is placed into HTML markup without further encoding, and person
+                names are plain text that anyone can set (for example through a public signup
+                form), so the names are HTML encoded here. The comparison uses the raw values.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( Person != null && ( Person.LastName != lastName || !_IsFamilyGroupType ) )
             {
-                return string.Format( "{0} {1}", nickName, lastName );
+                return string.Format( "{0} {1}", nickName.EncodeHtml(), lastName.EncodeHtml() );
             }
 
-            return nickName;
+            return nickName.EncodeHtml();
         }
 
         /// <summary>
