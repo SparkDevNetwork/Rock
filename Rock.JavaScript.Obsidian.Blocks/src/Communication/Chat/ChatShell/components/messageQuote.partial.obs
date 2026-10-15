@@ -1,0 +1,33 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span></span>
+</template>
+
+<script setup lang="ts">
+    // A message's quote. An empty stand-in with the planned props and no behaviour yet, so the
+    // tests written against it fail on what they assert.
+    import { PropType } from "vue";
+    import { TimelineMessage } from "../types.partial";
+
+    defineProps({
+        message: {
+            type: Object as PropType<TimelineMessage>,
+            required: true
+        },
+
+        isOwn: {
+            type: Boolean,
+            default: false
+        },
+
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        isCommunity: {
+            type: Boolean,
+            default: false
+        }
+    });
+</script>

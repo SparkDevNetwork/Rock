@@ -182,3 +182,80 @@ describe("the composer while the service is paused", () => {
         expect(wrapper.find("[data-testid='composer-input']").exists()).toBe(false);
     });
 });
+
+// Up in an empty composer asks to edit the person's newest message they could edit, which the
+// shell picks from the conversation; with text in the box Up only moves the caret. The composer
+// says so by emitting editLast.
+describe("the composer's Up key", () => {
+    test("in an empty box asks to edit the newest own message, and keeps the key from moving the caret", async () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
+
+        const event = new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, cancelable: true });
+        wrapper.get("[data-testid='composer-input']").element.dispatchEvent(event);
+
+        expect(wrapper.emitted("editLast")).toEqual([[]]);
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    test("with text in the box asks for nothing", async () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes", heldText: "", heldBy: null } });
+        await wrapper.setProps({ heldText: "draft", heldBy: { draft: 1 } });
+
+        await wrapper.get("[data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
+        expect(wrapper.emitted("editLast")).toBeUndefined();
+
+        await wrapper.setProps({ heldText: "", heldBy: { draft: 2 } });
+        await wrapper.get("[data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
+        expect(wrapper.emitted("editLast")).toEqual([[]]);
+    });
+});
+
+// The message being quoted sits in a strip above the box: who is quoted and a one-line preview,
+// with a cancel. The composer takes it as quote, the message as a page carries it, and
+// isQuoteOwn, whether it is the person's own; its cancel emits cancelQuote. The strip is marked
+// data-testid="composer-quote", its preview data-testid="composer-quote-preview".
+describe("the composer's quote strip", () => {
+    const annasMessage = {
+        id: 40,
+        person_alias_guid: "a0000002-0000-4000-8000-000000000000",
+        sender_nick_name: "Anna",
+        sender_last_name: "Reyes",
+        message_type: "text",
+        body: "Morning all",
+        pieces: null,
+        created_at: "2026-10-15T09:00:00Z"
+    };
+
+    test("is not drawn with nothing quoted", () => {
+        const quoting = mount(Composer, { props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+        expect(quoting.find("[data-testid='composer-quote']").exists()).toBe(true);
+
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: null } as Record<string, unknown> });
+
+        expect(wrapper.find("[data-testid='composer-quote']").exists()).toBe(false);
+    });
+
+    test("names the person quoted over a preview of the message", () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+
+        const strip = wrapper.get("[data-testid='composer-quote']");
+        expect(strip.text()).toContain("Quoting Anna Reyes");
+        expect(strip.get("[data-testid='composer-quote-preview']").text()).toBe("Morning all");
+    });
+
+    test("says Quoting yourself for the person's own message", () => {
+        const own = { ...annasMessage, person_alias_guid: "a0000001-0000-4000-8000-000000000000", sender_nick_name: "Jordan", sender_last_name: "Ellis" };
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: own, isQuoteOwn: true } as Record<string, unknown> });
+
+        expect(wrapper.get("[data-testid='composer-quote']").text()).toContain("Quoting yourself");
+        expect(wrapper.get("[data-testid='composer-quote']").text()).not.toContain("Jordan");
+    });
+
+    test("its cancel button says what it does and drops the quote", async () => {
+        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+
+        await wrapper.get("[data-testid='composer-quote'] button[aria-label='Cancel quote']").trigger("click");
+
+        expect(wrapper.emitted("cancelQuote")).toEqual([[]]);
+    });
+});

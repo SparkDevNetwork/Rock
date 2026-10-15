@@ -662,6 +662,72 @@ describe("a send's identity", () => {
     });
 });
 
+describe("a quoted send", () => {
+    // A send that quotes a message names it as the sender's fifth argument:
+    // sender.send(channelId, body, attempt?, reply?, quotedMessageId?). The sender passes it to the
+    // platform on every try, beside the row's key, as the fifth argument of its send:
+    // send(channelId, body, key, reply, quotedMessageId), which the shell turns into
+    // chat_send_message's p_quoted_message_id. The platform compares the quote with the key's
+    // first try, so a retry must carry the same quote under the same key.
+    type Sent = { body: string, key: string | undefined, quotedMessageId: number | undefined };
+
+    async function quoteSetup(answers: SendResult[]): Promise<{
+        sender: ReturnType<typeof createSender>,
+        timelines: ReturnType<typeof createTimelines>,
+        sent: Sent[]
+    }> {
+        const sent: Sent[] = [];
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        const sender = createSender({
+            send: ((_c: string, body: string, key?: string, _reply?: unknown, quotedMessageId?: number) => {
+                sent.push({ body, key, quotedMessageId });
+                return Promise.resolve(answers.shift() as SendResult);
+            }) as Parameters<typeof createSender>[0]["send"],
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => "6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e"
+        });
+        return { sender, timelines, sent };
+    }
+
+    /** Sends a quote through the sender's fifth argument. */
+    function sendQuoting(sender: ReturnType<typeof createSender>, body: string, quotedMessageId: number): Promise<boolean> {
+        return (sender.send as (channelId: string, body: string, attempt?: unknown, reply?: unknown, quotedMessageId?: number) => Promise<boolean>)(channel, body, undefined, undefined, quotedMessageId);
+    }
+
+    test("carries the quoted message's id to the platform", async () => {
+        const { sender, sent } = await quoteSetup([{ ok: true, id: 70, createdAt: "2026-10-15T10:00:00Z" }]);
+
+        await sendQuoting(sender, "count me in", 40);
+
+        expect(sent).toEqual([{ body: "count me in", key: "6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e", quotedMessageId: 40 }]);
+    });
+
+    test("a retry carries the same quote under the same key", async () => {
+        const { sender, sent } = await quoteSetup([
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 71, createdAt: "2026-10-15T10:01:00Z" }
+        ]);
+        await sendQuoting(sender, "count me in", 40);
+
+        expect(await sender.retry("6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e")).toBe(true);
+
+        expect(sent).toEqual([
+            { body: "count me in", key: "6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e", quotedMessageId: 40 },
+            { body: "count me in", key: "6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e", quotedMessageId: 40 }
+        ]);
+    });
+
+    test("the confirmed message names what it quotes, so its quote draws before the live copy arrives", async () => {
+        const { sender, timelines } = await quoteSetup([{ ok: true, id: 72, createdAt: "2026-10-15T10:02:00Z" }]);
+
+        await sendQuoting(sender, "count me in", 40);
+
+        expect(timelines.state(channel).messages[0].quoted_message_id).toBe(40);
+    });
+});
+
 
 // Three copies of a person's message reach the page in any order: the send's answer, the live copy
 // and any page that holds it (history, catch-up, a resync). Whichever comes first settles the send:

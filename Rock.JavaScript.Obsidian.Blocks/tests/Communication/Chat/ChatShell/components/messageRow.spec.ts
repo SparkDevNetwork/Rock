@@ -24,6 +24,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -548,5 +549,54 @@ describe("a reply also sent to the conversation", () => {
         const wrapper = draw({ message: message({ parent_id: null, shown_in_channel: false }), isChannel: true, position: "single" });
 
         expect(wrapper.find("[data-testid='thread-reply-label']").exists()).toBe(false);
+    });
+});
+
+// A failed send's Delete is the quieter of its two links, so Try again reads as the way forward.
+describe("a failed send's links", () => {
+    test.each([["a direct message", false], ["a channel", true]] as const)("Delete is drawn muted beside Try again in %s", (_kind, isChannel) => {
+        const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel, position: "single" });
+
+        expect(wrapper.get("[data-testid='discard-send']").classes()).toContain("is-quiet");
+        expect(wrapper.get("[data-testid='retry-send']").classes()).not.toContain("is-quiet");
+    });
+});
+
+// A message that quotes another draws the quote above it, in the conversation's look, and a jump
+// asked from the quote is the row's to pass on as jump(quotedMessageId).
+describe("a message that quotes another", () => {
+    const quoted = {
+        id: 40,
+        person_alias_guid: lee,
+        sender_nick_name: "Lee",
+        sender_last_name: "Leader",
+        sender_avatar_url: null,
+        body: "Doors open at 6",
+        pieces: null,
+        visibility: "visible",
+        visibility_notice: null,
+        created_at: nineOhTwo,
+        deleted_at: null
+    };
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("draws its quote above it in %s, in that look", (_kind, isChannel) => {
+        const plainRow = draw({ message: message(), isChannel, position: "single" });
+        expect(plainRow.findComponent(MessageQuote).exists()).toBe(false);
+
+        const wrapper = draw({ message: message({ quoted_message_id: 40, quoted } as Partial<TimelineMessage>), isChannel, position: "single" });
+
+        const quote = wrapper.findComponent(MessageQuote);
+        expect(quote.exists()).toBe(true);
+        expect(quote.props("isCommunity")).toBe(isChannel);
+        expect(quote.props("personAliasGuid")).toBe(me);
+    });
+
+    test("passes on a jump to the original", async () => {
+        const wrapper = draw({ message: message({ quoted_message_id: 40, quoted } as Partial<TimelineMessage>), position: "single" });
+        expect(wrapper.findComponent(MessageQuote).exists()).toBe(true);
+
+        wrapper.findComponent(MessageQuote).vm.$emit("jump", 40);
+
+        expect(wrapper.emitted("jump")).toEqual([[40]]);
     });
 });

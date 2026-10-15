@@ -1,0 +1,23 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div></div>
+</template>
+
+<script setup lang="ts">
+    // The chip editor. An empty stand-in with the planned props and no behaviour yet, so the
+    // tests written against it fail on what they assert.
+    import { PropType } from "vue";
+    import { DisplayPiece } from "../types.partial";
+
+    defineProps({
+        text: {
+            type: String,
+            default: ""
+        },
+
+        pieces: {
+            type: Array as PropType<DisplayPiece[] | null>,
+            default: null
+        }
+    });
+</script>

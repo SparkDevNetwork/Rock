@@ -194,3 +194,67 @@ describe("a message's blocks", () => {
         expect(body.get("[data-testid='block-fallback']").text()).toBe("A picture");
     });
 });
+
+// A buttons block is a row of buttons, each naming the action it runs. The body only draws them:
+// a press is handed to whoever drew the body, through a runAction prop (button) => Promise<void>
+// that runs the action and shows its sentence, and the pressed button is busy, its label kept,
+// until that settles. The row is marked data-testid="block-buttons", each button
+// data-testid="block-button".
+describe("a buttons block", () => {
+    const approve = { id: "approve", label: "Approve", call: "chat_action_approve" };
+    const decline = { id: "decline", label: "Decline", call: "chat_action_decline" };
+    const buttonsBlock = { type: "buttons", buttons: [approve, decline], fallback: fallback("Approve or decline in the app") };
+
+    function drawWith(blocks: unknown[], runAction: (button: unknown) => Promise<void> = async () => undefined): VueWrapper {
+        return mount(MessageBody, { props: { text: "x", blocks, runAction } as Record<string, unknown> });
+    }
+
+    test("draws its buttons by their labels, in place of its fallback", () => {
+        const body = drawWith([{ type: "text", text: "Sam asked to join", pieces: null, fallback: fallback("Sam asked to join") }, buttonsBlock]);
+
+        const buttons = body.get("[data-testid='block-buttons']").findAll("[data-testid='block-button']");
+        expect(buttons.map(button => button.text())).toEqual(["Approve", "Decline"]);
+        expect(buttons.every(button => button.element.tagName === "BUTTON")).toBe(true);
+        expect(body.text()).not.toContain("Approve or decline in the app");
+    });
+
+    test("a press runs the button's action and is busy, its label kept, until the action settles", async () => {
+        let settleAction!: () => void;
+        const runAction = jest.fn(() => new Promise<void>(resolve => settleAction = resolve));
+        const body = drawWith([buttonsBlock], runAction);
+        expect(body.findAll("[data-testid='block-button']")).toHaveLength(2);
+
+        await body.findAll("[data-testid='block-button']")[0].trigger("click");
+
+        expect(runAction).toHaveBeenCalledWith(approve);
+        const pressed = body.findAll("[data-testid='block-button']")[0];
+        expect(pressed.attributes("aria-busy")).toBe("true");
+        expect(pressed.attributes("disabled")).toBeDefined();
+        expect(pressed.text()).toBe("Approve");
+        expect(body.findAll("[data-testid='block-button']")[1].attributes("aria-busy")).not.toBe("true");
+
+        settleAction();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(body.findAll("[data-testid='block-button']")[0].attributes("aria-busy")).not.toBe("true");
+        expect(body.findAll("[data-testid='block-button']")[0].attributes("disabled")).toBeUndefined();
+    });
+
+    test("a busy button is not run again by a second press", async () => {
+        const runAction = jest.fn(() => new Promise<void>(() => undefined));
+        const body = drawWith([buttonsBlock], runAction);
+        expect(body.findAll("[data-testid='block-button']")).toHaveLength(2);
+
+        await body.findAll("[data-testid='block-button']")[0].trigger("click");
+        await body.findAll("[data-testid='block-button']")[0].trigger("click");
+
+        expect(runAction).toHaveBeenCalledTimes(1);
+    });
+
+    test("a block of a kind this client does not know still draws its fallback beside the buttons", () => {
+        const body = drawWith([{ type: "poll", options: ["a", "b"], fallback: fallback("Vote: a or b") }, buttonsBlock]);
+
+        expect(body.get("[data-testid='block-fallback']").text()).toBe("Vote: a or b");
+        expect(body.findAll("[data-testid='block-button']")).toHaveLength(2);
+    });
+});

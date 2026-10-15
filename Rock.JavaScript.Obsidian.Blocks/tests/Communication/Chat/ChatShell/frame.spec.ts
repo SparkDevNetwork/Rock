@@ -1505,3 +1505,26 @@ describe("a push about a thread reply", () => {
         expect(fromWorker({ type: "chat.push.is-open", channel_id: dmAnna.channel_id })).toHaveBeenCalledWith({ open: false });
     });
 });
+
+// A toast reports on the conversation, so it centres over the conversation's column, not the whole
+// block: with a panel open beside it, a toast over the block would sit off the conversation. The
+// toast's status region is drawn inside that column.
+describe("the toasts", () => {
+    test("are drawn inside the conversation's column, with a conversation open", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        expect(w.find("[data-testid='error-toast']").exists()).toBe(true);
+        expect(w.find("[data-testid='frame-main'] [data-testid='error-toast']").exists()).toBe(true);
+    });
+
+    test("stay inside the conversation's column with the threads panel open beside it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        expect(w.find("[data-testid='frame-panel'] [data-testid='error-toast']").exists()).toBe(false);
+        expect(w.find("[data-testid='frame-main'] [data-testid='error-toast']").exists()).toBe(true);
+    });
+});
