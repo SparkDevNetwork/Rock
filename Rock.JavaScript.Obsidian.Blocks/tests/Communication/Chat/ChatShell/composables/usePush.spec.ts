@@ -41,6 +41,44 @@ async function settle(): Promise<void> {
     }
 }
 
+/**
+ * A service worker as the browser hands it over: an event target with its state, which fires
+ * statechange as it moves from installing to installed, activating and activated, or redundant.
+ */
+class FakeServiceWorker extends EventTarget {
+    constructor(public state: ServiceWorkerState, public readonly scriptURL = "/Scripts/Rock/Chat/chatPushWorker.js?page=%2Fchat") {
+        super();
+    }
+}
+
+/** A registration as navigator.serviceWorker.register answers it, its one worker in the slot its state puts it in. */
+type FakeRegistration = {
+    scope: string;
+    installing: FakeServiceWorker | null;
+    waiting: FakeServiceWorker | null;
+    active: FakeServiceWorker | null;
+};
+
+function fakeRegistration(state: ServiceWorkerState): { registration: FakeRegistration, worker: FakeServiceWorker, become: (next: ServiceWorkerState) => void } {
+    const worker = new FakeServiceWorker(state);
+    const registration: FakeRegistration = { scope: "/Scripts/Rock/Chat/", installing: null, waiting: null, active: null };
+
+    /** Moves the worker on as the browser does: the registration's slots first, then the event. */
+    const become = (next: ServiceWorkerState): void => {
+        registration.installing = next === "installing" ? worker : null;
+        registration.waiting = next === "installed" ? worker : null;
+        registration.active = next === "activating" || next === "activated" ? worker : null;
+        worker.state = next;
+        worker.dispatchEvent(new Event("statechange"));
+    };
+
+    registration.installing = state === "installing" ? worker : null;
+    registration.waiting = state === "installed" ? worker : null;
+    registration.active = state === "activating" || state === "activated" ? worker : null;
+
+    return { registration, worker, become };
+}
+
 /** The answer createPlatformCall gives for a register the platform accepted. */
 const registered: CallResult = { ok: true, data: { token: "fcm-token-1", platform: "web", notifications_enabled: true } };
 
@@ -58,7 +96,7 @@ function dependencies(overrides: Partial<PushDependencies> & { prompt?: string, 
             permission = "granted";
             return permission;
         }),
-        registerWorker: jest.fn(async (pagePath: string) => ({ scope: "/Scripts/Rock/Chat/", pagePath })),
+        registerWorker: jest.fn(async (_pagePath: string) => fakeRegistration("activated").registration),
         getToken: jest.fn(async () => "fcm-token-1"),
         call: jest.fn(async (name: string, args: Record<string, unknown>) => {
             calls.push({ name, args });
@@ -164,6 +202,66 @@ describe("web push on this browser", () => {
         await push.turnOn();
 
         expect(push.isOffered()).toBe(false);
+        expect(calls).toEqual([]);
+    });
+
+    test("a worker still installing, as in a browser's first visit, is waited for: no token is asked for until it is active", async () => {
+        const { registration, become } = fakeRegistration("installing");
+        const { deps, calls, cookies } = dependencies({ permission: "granted" });
+        deps.registerWorker = jest.fn(async () => registration);
+        const push = createPushRegistration(deps);
+
+        const started = push.start();
+        await settle();
+        expect(deps.getToken).not.toHaveBeenCalled();
+
+        become("installed");
+        await settle();
+        become("activating");
+        await settle();
+        expect(deps.getToken).not.toHaveBeenCalled();
+
+        become("activated");
+        await started;
+
+        expect(deps.getToken).toHaveBeenCalledWith(web, "vapid", registration);
+        expect(calls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(cookies).toEqual(["fcm-token-1"]);
+    });
+
+    test("a worker that never activates ends this load with nothing registered and throws nothing", async () => {
+        jest.useFakeTimers();
+        try {
+            const { registration } = fakeRegistration("installing");
+            const { deps, calls, cookies } = dependencies({ permission: "granted" });
+            deps.registerWorker = jest.fn(async () => registration);
+            const push = createPushRegistration(deps);
+
+            const started = push.start();
+            await jest.advanceTimersByTimeAsync(60000);
+
+            await expect(started).resolves.toBeUndefined();
+            expect(deps.getToken).not.toHaveBeenCalled();
+            expect(calls).toEqual([]);
+            expect(cookies).toEqual([]);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("a worker the browser throws away while installing ends this load with nothing registered", async () => {
+        const { registration, become } = fakeRegistration("installing");
+        const { deps, calls } = dependencies({ permission: "granted" });
+        deps.registerWorker = jest.fn(async () => registration);
+        const push = createPushRegistration(deps);
+
+        const started = push.start();
+        await settle();
+        become("redundant");
+
+        await expect(started).resolves.toBeUndefined();
+        expect(deps.getToken).not.toHaveBeenCalled();
         expect(calls).toEqual([]);
     });
 

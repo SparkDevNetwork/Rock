@@ -40,7 +40,7 @@ export type PushDependencies = {
     requestPermission: () => Promise<string>;
 
     /** Registers the push worker for this page, answering its registration. */
-    registerWorker: (pagePath: string) => Promise<unknown>;
+    registerWorker: (pagePath: string) => Promise<WorkerRegistration>;
 
     /** Loads Firebase and answers this browser's messaging token. */
     getToken: (web: Record<string, unknown>, vapidKey: string, registration: unknown) => Promise<string>;
@@ -51,6 +51,15 @@ export type PushDependencies = {
     /** Keeps this browser's token for Rock's sign-out, or clears it with null. */
     writeCookie: (token: string | null) => void;
 };
+
+/** The part of a ServiceWorkerRegistration push reads: the worker in each slot. */
+export type WorkerRegistration = Pick<ServiceWorkerRegistration, "installing" | "waiting" | "active">;
+
+/**
+ * How long a new push worker may take to become active. A small script activates in well under a
+ * second; past this the load gives up and the next one tries again.
+ */
+const workerActivationMs = 10000;
 
 /** Push as the shell holds it. */
 export type PushRegistration = {
@@ -97,6 +106,11 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return;
             }
 
+            await whenActive(registration);
+            if (isStopped) {
+                return;
+            }
+
             const token = await dependencies.getToken(push.web as Record<string, unknown>, push.vapid_key as string, registration);
             if (isStopped) {
                 return;
@@ -113,6 +127,50 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
             // Push is extra: a browser that blocks it, or a Firebase that will not answer, leaves
             // chat working as before, and the next load tries again.
         }
+    }
+
+    /**
+     * Settles once the registration has an active worker. On a browser's first visit the worker
+     * is still installing, and a token asked for then waits on a push subscription that never
+     * settles. navigator.serviceWorker.ready cannot be used: it waits for a worker whose scope
+     * holds this page, and the push worker's scope is its own folder.
+     */
+    function whenActive(registration: WorkerRegistration): Promise<void> {
+        // An update installs beside a worker that is already active, which push can use at once.
+        const worker = registration.active ?? registration.waiting ?? registration.installing;
+        if (worker?.state === "activated") {
+            return Promise.resolve();
+        }
+
+        if (!worker) {
+            return Promise.reject(new Error("The push registration holds no worker."));
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            const timer = window.setTimeout(() => finish(new Error("The push worker did not activate.")), workerActivationMs);
+
+            function finish(error?: Error): void {
+                window.clearTimeout(timer);
+                worker?.removeEventListener("statechange", onStateChange);
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    resolve();
+                }
+            }
+
+            function onStateChange(): void {
+                if (worker?.state === "activated") {
+                    finish();
+                }
+                else if (worker?.state === "redundant") {
+                    finish(new Error("The push worker was discarded."));
+                }
+            }
+
+            worker.addEventListener("statechange", onStateChange);
+        });
     }
 
     return {
