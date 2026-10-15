@@ -1626,54 +1626,63 @@ namespace Rock.Blocks.Security
                     registration data they added matches an existing Person
                     who they opted to authenticate as.
 
-                    If the mobile number or email they already verified
-                    belongs to the existing Person, they can be linked now.
-                    Otherwise a new one-time passcode (OTP) is emailed to the
-                    existing Person and the individual must supply it in
-                    another registration request. That OTP gets its own
-                    remote authentication session for the existing Person's
-                    email so that only the emailed code is accepted.
+                    A new one-time passcode (OTP) is emailed to the existing
+                    Person and the individual must supply it in another
+                    registration request. That OTP gets its own remote
+                    authentication session for the existing Person's email
+                    so that only the emailed code is accepted.
 
                     Reason: Passwordless Authentication
                 */
-                RemoteAuthenticationSession confirmationRemoteAuthenticationSession = null;
 
-                if ( !IsPasswordlessIdentifierForPerson( person, passwordlessAuthenticationState.UniqueIdentifier ) )
+                /*
+                    10/15/2026 - MSE
+
+                    The emailed OTP is now always required, even when the
+                    mobile number or email the individual started
+                    passwordless sign in with belongs to the existing Person.
+                    The state is returned to the browser when the original
+                    code is sent, before anyone enters it, so the original
+                    code in the state does not prove the individual received
+                    it. Linking right away let anyone who knew a person's
+                    email or mobile number and last name sign in as that
+                    person without a code.
+
+                    Reason: Passwordless state is not proof the code was entered.
+                */
+                if ( person.Email.IsNullOrWhiteSpace() )
                 {
-                    if ( person.Email.IsNullOrWhiteSpace() )
-                    {
-                        // There is no way to confirm the individual has
-                        // access to the existing Person so create a new one.
-                        return RegisterNewPerson( box, config, rockContext );
-                    }
+                    // There is no way to confirm the individual has
+                    // access to the existing Person so create a new one.
+                    return RegisterNewPerson( box, config, rockContext );
+                }
 
-                    if ( box.Code.IsNullOrWhiteSpace() )
-                    {
-                        return SendPasswordlessAccountConfirmation( person, passwordlessAuthenticationState, rockContext );
-                    }
+                if ( box.Code.IsNullOrWhiteSpace() )
+                {
+                    return SendPasswordlessAccountConfirmation( person, passwordlessAuthenticationState, rockContext );
+                }
 
-                    // The code must be the one that was emailed for this
-                    // person, not just any code for the person's email.
-                    var isConfirmationForPerson = passwordlessAuthenticationState.ConfirmationPersonId == person.Id
-                        && passwordlessAuthenticationState.ConfirmationCodeIssueDate.HasValue
-                        && passwordlessAuthenticationState.ConfirmationCode.IsNotNullOrWhiteSpace()
-                        && string.Equals( box.Code.Trim(), passwordlessAuthenticationState.ConfirmationCode, StringComparison.OrdinalIgnoreCase );
+                // The code must be the one that was emailed for this
+                // person, not just any code for the person's email.
+                var isConfirmationForPerson = passwordlessAuthenticationState.ConfirmationPersonId == person.Id
+                    && passwordlessAuthenticationState.ConfirmationCodeIssueDate.HasValue
+                    && passwordlessAuthenticationState.ConfirmationCode.IsNotNullOrWhiteSpace()
+                    && string.Equals( box.Code.Trim(), passwordlessAuthenticationState.ConfirmationCode, StringComparison.OrdinalIgnoreCase );
 
-                    if ( !isConfirmationForPerson )
-                    {
-                        return ActionBadRequest( "Code invalid or expired" );
-                    }
+                if ( !isConfirmationForPerson )
+                {
+                    return ActionBadRequest( "Code invalid or expired" );
+                }
 
-                    confirmationRemoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
-                        person.Email,
-                        passwordlessAuthenticationState.ConfirmationCode,
-                        passwordlessAuthenticationState.ConfirmationCodeIssueDate.Value,
-                        passwordlessAuthenticationState.CodeLifetime );
+                var confirmationRemoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
+                    person.Email,
+                    passwordlessAuthenticationState.ConfirmationCode,
+                    passwordlessAuthenticationState.ConfirmationCodeIssueDate.Value,
+                    passwordlessAuthenticationState.CodeLifetime );
 
-                    if ( confirmationRemoteAuthenticationSession == null )
-                    {
-                        return ActionBadRequest( "Code invalid or expired" );
-                    }
+                if ( confirmationRemoteAuthenticationSession == null )
+                {
+                    return ActionBadRequest( "Code invalid or expired" );
                 }
 
                 UpdatePerson( person, box.PersonInfo, rockContext );
@@ -1704,11 +1713,7 @@ namespace Rock.Blocks.Security
                 }
 
                 FinalizePasswordlessAuthentication( person, remoteAuthenticationSession, rockContext );
-
-                if ( confirmationRemoteAuthenticationSession != null )
-                {
-                    FinalizePasswordlessAuthentication( person, confirmationRemoteAuthenticationSession, rockContext );
-                }
+                FinalizePasswordlessAuthentication( person, confirmationRemoteAuthenticationSession, rockContext );
             }
             else
             {
@@ -1899,37 +1904,6 @@ namespace Rock.Blocks.Security
             {
                 ExceptionLogService.LogException( ex );
             }
-        }
-
-        /// <summary>
-        /// Determines whether the verified passwordless identifier (a mobile
-        /// number or an email) belongs to the person.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="uniqueIdentifier">The verified passwordless identifier.</param>
-        /// <returns><c>true</c> if the identifier is the person's email or one of their phone numbers; otherwise, <c>false</c>.</returns>
-        private static bool IsPasswordlessIdentifierForPerson( Person person, string uniqueIdentifier )
-        {
-            if ( uniqueIdentifier.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            // Email sessions use the email as the identifier.
-            if ( person.Email.IsNotNullOrWhiteSpace() && person.Email.Trim().Equals( uniqueIdentifier.Trim(), StringComparison.OrdinalIgnoreCase ) )
-            {
-                return true;
-            }
-
-            // SMS sessions use the cleaned mobile number as the identifier,
-            // which may or may not include the country code.
-            return person.PhoneNumbers.Any( pn =>
-            {
-                var number = PhoneNumber.CleanNumber( pn.Number );
-
-                return number.IsNotNullOrWhiteSpace()
-                    && ( number == uniqueIdentifier || PhoneNumber.CleanNumber( pn.CountryCode ) + number == uniqueIdentifier );
-            } );
         }
 
         /// <summary>
