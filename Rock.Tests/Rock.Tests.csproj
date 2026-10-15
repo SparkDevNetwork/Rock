@@ -316,6 +316,7 @@
     <Compile Include="Model\PageRouteTests.cs" />
     <Compile Include="Model\PageTests.cs" />
     <Compile Include="Model\BinaryFileTypeTests.cs" />
+    <Compile Include="Model\ModelAuditHtmlTests.cs" />
     <Compile Include="Reporting\ValueFilterTests.cs" />
     <Compile Include="Utility\ExtensionMethods\DateTimeExtensionTests.cs" />
     <Compile Include="Utility\ExtensionMethods\RequestExtensionsTests.cs" />

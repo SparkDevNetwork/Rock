@@ -325,9 +325,18 @@ namespace Rock.Data
         {
             var sb = new StringBuilder();
 
+            /*
+                10/15/2026 - MSE
+
+                This HTML is written as is by the PanelDrawer audit section, and a person
+                can choose their own name (for example through a public signup form), so the
+                name must be HTML encoded here.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( personAlias != null && personAlias.Person != null )
             {
-                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a> ", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a> ", rootUrl, personAlias.PersonId, personAlias.Person.FullName.EncodeHtml() );
             }
 
             if ( dateTime.HasValue )
