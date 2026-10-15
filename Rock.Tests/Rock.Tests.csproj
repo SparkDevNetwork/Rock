@@ -294,6 +294,7 @@
     <Compile Include="Observability\ObservabilityHelperTests.cs" />
     <Compile Include="Rest\BlockActionRouteTests.cs" />
     <Compile Include="Security\EncryptionTests.cs" />
+    <Compile Include="Security\PasswordlessAuthenticationStateTests.cs" />
     <Compile Include="Security\SecurityGrantTests.cs" />
     <Compile Include="Security\PersonTokenScopeTests.cs" />
     <Compile Include="Security\StringValueValidatorTests.cs" />
