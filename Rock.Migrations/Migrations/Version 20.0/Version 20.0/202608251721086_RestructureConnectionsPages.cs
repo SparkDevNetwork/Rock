@@ -214,7 +214,8 @@ END" );
             //  Internal Name: Connections (the duplicate page, a container only)
             //  Site: Rock RMS
             //  Layout: Full Width
-            RockMigrationHelper.DeletePage( Rock.SystemGuid.Page.CONNECTIONS );
+            //  Any remaining custom child pages move to the Connections root.
+            RockMigrationHelper.DeletePage( Rock.SystemGuid.Page.CONNECTIONS, Rock.SystemGuid.Page.CONNECTION_OPPORTUNITY_SELECT );
 
             // ----------------------------------
 
