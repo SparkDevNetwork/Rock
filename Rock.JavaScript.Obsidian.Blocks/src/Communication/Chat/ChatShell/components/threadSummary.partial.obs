@@ -1,12 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button type="button"
+    <button ref="pillElement"
+            type="button"
             class="chat-tsum"
             :class="{ 'is-unread': isUnread, 'is-popping': isPopping }"
             data-testid="thread-summary"
             :aria-label="ariaLabel"
-            :title="`Last reply ${lastTime}`"
-            @click="emit('open', message.id)"
+            @mouseenter="onPointerEnter"
+            @mouseleave="onPointerLeave"
+            @pointerdown="onPointerDown"
+            @focus="onFocus"
+            @blur="onBlur"
+            @click="onClick"
             @animationend.self="isPopping = false">
         <!-- Icon, count and the newest repliers, the unread dot at the pill's outer top corner. -->
         <Icon name="thread" size="sm" />
@@ -15,6 +20,12 @@
             <Avatar v-for="(face, index) in faces" :key="index" :people="[face]" :size="18" />
         </span>
         <span v-if="isUnread" class="chat-tsum-dot" data-testid="thread-unread-dot"></span>
+        <!-- Inside the pill, so the pill stays one element; fixed, so it is placed against the window. -->
+        <span v-if="isTipShown"
+              ref="tipElement"
+              class="chat-tip"
+              role="tooltip"
+              :style="floatingStyles">Last reply {{ lastTime }}</span>
     </button>
 </template>
 
@@ -117,6 +128,7 @@
     import { computed, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
     import { replyCountText, timeLabel } from "../feedLayout.partial";
     import { TimelineMessage } from "../types.partial";
 
@@ -146,6 +158,11 @@
         Only the second pops; a page load popping every thread at once would be noise.
     */
     const isPopping = ref(props.isRowOnScreen);
+
+    const pillElement = ref<HTMLButtonElement>();
+
+    // The chat's own tooltip rather than the browser's, which cannot be styled or timed.
+    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur } = useTooltip(pillElement);
 
     // #endregion Values
 
@@ -177,4 +194,13 @@
     });
 
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onClick(): void {
+        hideTip();
+        emit("open", props.message.id);
+    }
+
+    // #endregion Event Handlers
 </script>

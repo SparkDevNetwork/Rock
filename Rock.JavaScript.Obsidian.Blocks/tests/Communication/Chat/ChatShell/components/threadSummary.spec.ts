@@ -28,13 +28,14 @@
 //   emits: open(rootId: number)
 //   marks: root data-testid="thread-summary", class is-unread while unread; data-testid
 //          thread-count, thread-faces (the faces drawn with the shared avatar), thread-unread-dot.
-//          The pill's tooltip is its title, "Last reply 9:41 AM".
+//          The pill's tooltip, role="tooltip" inside it once the pointer has rested, reads
+//          "Last reply 9:41 AM".
 //
 // The message row draws the summary under any root with a live reply, a tombstone included, in
 // its reactions row (.chat-reacts), and re-emits its open as openThread(rootId). In a channel
 // that row sits in the text column (.chat-cm-main), after the text.
-import { defineComponent, h } from "vue";
-import { mount, VueWrapper } from "@vue/test-utils";
+import { defineComponent, h, nextTick } from "vue";
+import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 import ThreadSummary from "../../../../../src/Communication/Chat/ChatShell/components/threadSummary.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -105,6 +106,21 @@ function plain(text: string | undefined | null): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
 }
 
+/** The pill's tooltip as a resting pointer sees it, after the chat's half second delay. */
+async function tooltipOf(pill: VueWrapper | DOMWrapper<Element>): Promise<string> {
+    jest.useFakeTimers();
+    try {
+        await pill.trigger("mouseenter");
+        jest.advanceTimersByTime(500);
+        await nextTick();
+        const tip = pill.find("[role='tooltip']");
+        return tip.exists() ? plain(tip.text()) : "";
+    }
+    finally {
+        jest.useRealTimers();
+    }
+}
+
 /** The first letters of the faces drawn, in order. */
 function faces(w: VueWrapper): string {
     return w.get("[data-testid='thread-faces']").findAll("[data-testid='avatar']").map(face => face.text()).join("");
@@ -137,13 +153,13 @@ describe("the faces", () => {
 });
 
 describe("the pill, in a direct message", () => {
-    test("is a button labelled with the count and the last reply's time", () => {
+    test("is a button labelled with the count and the last reply's time", async () => {
         const pill = draw(root());
 
         expect(pill.element.tagName).toBe("BUTTON");
         expect(pill.attributes("data-testid")).toBe("thread-summary");
         expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM. Open thread");
-        expect(plain(pill.attributes("title"))).toBe("Last reply 9:41 AM");
+        expect(await tooltipOf(pill)).toBe("Last reply 9:41 AM");
     });
 
     test("unread: marked, dotted and said so in its label", () => {
@@ -171,12 +187,12 @@ describe("the pill, in a direct message", () => {
 });
 
 describe("the pill, in a channel", () => {
-    test("is the same pill, with the same label and tooltip, and no written-out last reply", () => {
+    test("is the same pill, with the same label and tooltip, and no written-out last reply", async () => {
         const pill = drawRow(root(), true).get("[data-testid='thread-summary']");
 
         expect(pill.element.tagName).toBe("BUTTON");
         expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM. Open thread");
-        expect(plain(pill.attributes("title"))).toBe("Last reply 9:41 AM");
+        expect(await tooltipOf(pill)).toBe("Last reply 9:41 AM");
         expect(pill.classes()).not.toContain("is-community");
         expect(pill.find("[data-testid='thread-last']").exists()).toBe(false);
         expect(pill.find("[data-testid='thread-view']").exists()).toBe(false);
@@ -201,12 +217,12 @@ describe("the pill, in a channel", () => {
 });
 
 describe("in the message row", () => {
-    test.each([["a direct message", false], ["a channel", true]] as const)("a root with replies draws its thread in %s", (_kind, isChannel) => {
+    test.each([["a direct message", false], ["a channel", true]] as const)("a root with replies draws its thread in %s", async (_kind, isChannel) => {
         const row = drawRow(root(), isChannel);
 
         const summary = row.findComponent(ThreadSummary);
         expect(summary.exists()).toBe(true);
-        expect(plain(summary.attributes("title"))).toBe("Last reply 9:41 AM");
+        expect(await tooltipOf(summary)).toBe("Last reply 9:41 AM");
     });
 
     test("a root with no reply draws none", () => {
