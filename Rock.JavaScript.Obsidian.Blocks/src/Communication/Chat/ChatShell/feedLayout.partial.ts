@@ -89,6 +89,24 @@ type Entry = {
 const dayMs = 24 * 60 * 60 * 1000;
 
 /**
+ * Whether a message is the reader's own. A page says so itself, under any of the person's aliases,
+ * a merged one included; a live copy cannot, since one broadcast reaches every viewer, so it is
+ * the reader's when its sender is the session's alias.
+ *
+ * @param message The message.
+ * @param personAliasGuid The reader, as the session knows them.
+ *
+ * @returns True when the reader sent it.
+ */
+export function isOwnMessage(message: Pick<TimelineMessage, "is_own" | "person_alias_guid">, personAliasGuid: string): boolean {
+    if (typeof message.is_own === "boolean") {
+        return message.is_own;
+    }
+
+    return (message.person_alias_guid ?? "").toLowerCase() === personAliasGuid.toLowerCase();
+}
+
+/**
  * Lays the feed out in day sections of groups, system lines, block posts and the New divider.
  * The person's pending and failed sends go after the newest stored message, today, as their own
  * rows, so a send settles in place.
@@ -122,7 +140,9 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
         if (key) {
             sentKeys.add(key);
         }
-        return { key: rowKey(message), message, pending: null, sender: (message.person_alias_guid ?? "").toLowerCase(), at: lastAt };
+        // The reader's own messages group as one sender, whichever of their aliases sent them.
+        const sender = isOwnMessage(message, me) ? me : (message.person_alias_guid ?? "").toLowerCase();
+        return { key: rowKey(message), message, pending: null, sender, at: lastAt };
     });
 
     for (const pending of options.pending) {
@@ -200,7 +220,7 @@ export function newDividerBeforeId(messages: TimelineMessage[], readCursor: numb
     const me = personAliasGuid.toLowerCase();
     const first = messages.find(m => m.id > readCursor
         && m.message_type !== "system"
-        && (m.person_alias_guid ?? "").toLowerCase() !== me);
+        && !isOwnMessage(m, me));
 
     return first?.id ?? null;
 }
@@ -226,7 +246,7 @@ export function unreadStripCount(messages: TimelineMessage[], readCursor: number
 
     const me = personAliasGuid.toLowerCase();
     const isCounted = (m: TimelineMessage): boolean => m.message_type !== "system" && !m.deleted_at && (m.visibility ?? "visible") === "visible";
-    const isOwn = (m: TimelineMessage): boolean => (m.person_alias_guid ?? "").toLowerCase() === me;
+    const isOwn = (m: TimelineMessage): boolean => isOwnMessage(m, me);
 
     if (!messages.some(m => m.id > readCursor && isOwn(m) && isCounted(m))) {
         return unreadCount;

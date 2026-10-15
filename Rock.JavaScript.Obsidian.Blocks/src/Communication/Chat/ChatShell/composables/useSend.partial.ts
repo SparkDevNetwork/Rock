@@ -21,8 +21,9 @@
 // message the first try posted rather than posting it twice; the live echo of a confirmed send
 // is matched by its id. A send into a public or pinned room the person has not joined is refused
 // until they join, which is Rock's door, so the sender joins through it and sends again under the
-// same key. A reply names its root and whether it is also sent to the conversation, and keeps both
-// on its row so every try sends the same reply; one shown only in its thread never enters the
+// same key. A reply names its root and whether it is also sent to the conversation, and a quote the
+// message it quotes; the row keeps both so every try sends the same message, since the platform
+// compares a retry with the key's first try. A reply shown only in its thread never enters the
 // conversation's timeline. The send's key travels on every copy of the message, the answer, the
 // live copy and each page, so the feeds draw the row and whichever copy arrives as one message,
 // and whichever copy lands first settles the send: its row goes and the send resolves, even when
@@ -131,8 +132,11 @@ export type ReplyTarget = {
 
 /** What the sender reaches outside itself. */
 export type SenderDependencies = {
-    /** Sends a text message to a channel, with the key that makes a retry safe, as a reply when one is named. */
-    send: (channelId: string, body: string, key?: string, reply?: ReplyTarget) => Promise<SendResult>;
+    /**
+     * Sends a text message to a channel, with the key that makes a retry safe, as a reply when one
+     * is named, quoting a message when one is named.
+     */
+    send: (channelId: string, body: string, key?: string, reply?: ReplyTarget, quotedMessageId?: number) => Promise<SendResult>;
 
     /** The timelines a confirmed message is put into. */
     timelines: Pick<Timelines, "upsert">;
@@ -176,9 +180,10 @@ export type Sender = {
     /**
      * Sends a message. Resolves true as soon as any copy of it reaches the page, or the platform
      * answers it. Blank text sends nothing. A try names the row it shares with the message's other
-     * tries, and sends that row's own text whatever text it is given; a reply names its root.
+     * tries, and sends that row's own text whatever text it is given; a reply names its root, and
+     * a quote the message it quotes.
      */
-    send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget) => Promise<boolean>;
+    send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number) => Promise<boolean>;
 
     /** Sends a failed row's text again. */
     retry: (localId: string) => Promise<boolean>;
@@ -227,7 +232,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
         try {
             // read off the row, so a retry sends the same reply the first try did
             const reply = typeof row.parentId === "number" ? { parentId: row.parentId, isShownInChannel: row.isShownInChannel === true } : undefined;
-            return await dependencies.send(row.channelId, row.body, row.localId, reply);
+            return typeof row.quotedMessageId === "number"
+                ? await dependencies.send(row.channelId, row.body, row.localId, reply, row.quotedMessageId)
+                : await dependencies.send(row.channelId, row.body, row.localId, reply);
         }
         catch {
             return { ok: false, error: { code: "rpc.transport", severity: "failed" } };
@@ -325,6 +332,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
         const confirmed: TimelineMessage = {
             id: result.id,
             ...(isReply ? { parent_id: row.parentId, shown_in_channel: row.isShownInChannel === true } : {}),
+            // named at once, so the quote draws from what is held before the live copy brings its preview
+            ...(typeof row.quotedMessageId === "number" ? { quoted_message_id: row.quotedMessageId } : {}),
             person_alias_guid: dependencies.personAliasGuid,
             sender_listed: true,
             message_type: "text",
@@ -370,7 +379,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
     return {
         pending: (channelId: string): PendingMessage[] => rows.filter(row => row.channelId === channelId),
 
-        send: async (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget): Promise<boolean> => {
+        send: async (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number): Promise<boolean> => {
             if (body.trim() === "") {
                 return false;
             }
@@ -405,7 +414,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 body,
                 status: "sending",
                 errorCode: null,
-                ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {})
+                ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {}),
+                ...(typeof quotedMessageId === "number" ? { quotedMessageId } : {})
             });
 
             // The row read back from the list is the reactive one, so the status the person

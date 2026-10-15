@@ -1003,6 +1003,10 @@
         return createChatShell({
             session,
             linkedChannelId: config.channelGuid ?? null,
+            // one toast per code, the newest kept, so a second copy or delete restarts its toast
+            notify: notice => {
+                notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
+            },
             areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
             mintChurchToken: async () => {
                 const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");

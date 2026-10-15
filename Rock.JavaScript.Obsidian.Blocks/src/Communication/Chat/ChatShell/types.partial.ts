@@ -67,11 +67,51 @@ export type MessageBlock = {
     [key: string]: unknown;
 };
 
+/**
+ * An action the server lists on a message, the same for every viewer. Its call names the
+ * function it runs, which the client calls only under the chat's action prefix.
+ */
+export type MessageAction = {
+    id: string;
+    label: string;
+    call: string;
+};
+
+/**
+ * The message a message quotes, as the platform previews it. Its body is withheld once it is
+ * hidden or removed, and it is deleted or gone when the original went.
+ */
+export type QuotedMessage = {
+    id: number;
+    person_alias_guid: string | null;
+    sender_nick_name?: string | null;
+    sender_last_name?: string | null;
+    sender_avatar_url?: string | null;
+    body: string | null;
+    pieces?: DisplayPiece[] | null;
+    visibility?: string;
+    visibility_notice?: string | null;
+    created_at: string;
+    deleted_at?: string | null;
+};
+
 /** One message of a channel's timeline, as chat_get_history returns it. */
 export type TimelineMessage = {
     id: number;
     parent_id?: number | null;
     quoted_message_id?: number | null;
+
+    /** The quoted message's preview; null when it quotes nothing, or the original is gone. */
+    quoted?: QuotedMessage | null;
+
+    /**
+     * Whether the reader sent it, under any of their aliases. Only a page carries it, since a
+     * live copy goes to every viewer alike.
+     */
+    is_own?: boolean;
+
+    /** The actions the server lists on it; empty when it lists none. */
+    actions?: MessageAction[];
     shown_in_channel?: boolean;
     person_alias_guid: string | null;
     sender_nick_name?: string | null;
@@ -227,6 +267,11 @@ export type MessageCreatedEvent = {
     body: string | null;
     pieces?: DisplayPiece[] | null;
     blocks?: MessageBlock[] | null;
+    quoted_message_id?: number | null;
+    quoted?: QuotedMessage | null;
+
+    /** The actions the server lists on it, the same for every viewer. */
+    actions?: MessageAction[];
     created_at: string;
 
     /** The key the message was sent under; null for a message sent without one. */
@@ -313,6 +358,9 @@ export type PendingMessage = {
 
     /** Whether a reply is also sent to the conversation. */
     isShownInChannel?: boolean;
+
+    /** The message it quotes, sent on every try under the row's key. */
+    quotedMessageId?: number;
 
     /**
      * The stored message's id once a copy of it reached the page, set as the row goes, so the

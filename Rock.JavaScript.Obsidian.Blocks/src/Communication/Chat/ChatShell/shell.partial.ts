@@ -32,6 +32,7 @@ import { createPushRegistration, PushDependencies, PushRegistration } from "./co
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
+import { ActionNotice, createMessageActions, MessageActions } from "./composables/useMessageActions.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -103,6 +104,9 @@ export type ShellOptions = {
 
     /** Loads the page again; the browser's own reload when not given. */
     reloadPage?: () => void;
+
+    /** Shows a toast that is not a failure, such as a message deleted or text copied. */
+    notify?: (notice: ActionNotice) => void;
 };
 
 /**
@@ -171,6 +175,9 @@ export type ChatShell = {
 
     /** The threads list, the open thread and the live counts of thread roots. */
     threads: Threads;
+
+    /** Editing, deleting, copying and quoting a message, and the actions the server lists on it. */
+    messageActions: MessageActions;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -422,6 +429,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         cancelRecheck();
         timelines.stop();
         threads.stop();
+        messageActions.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -524,13 +532,23 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // a reply shown only in its thread lands nowhere else, so the open thread settles its send
     const threads = createThreads({ call, timelines, personAliasGuid, onLanded: message => sender.landed(message) });
 
+    const messageActions = createMessageActions({
+        call,
+        timelines,
+        personAliasGuid,
+        notify: notice => options.notify?.(notice),
+        // the clipboard is only there on a secure page; without it copy says it isn't available
+        writeText: globalThis.navigator?.clipboard ? text => globalThis.navigator.clipboard.writeText(text) : undefined
+    });
+
     const sender = createSender({
-        send: async (channelId, body, key, reply) => {
+        send: async (channelId, body, key, reply, quotedMessageId) => {
             const result = await call("chat_send_message", {
                 p_channel_id: channelId,
                 p_body: body,
                 p_client_key: key ?? null,
-                ...(reply ? { p_parent_id: reply.parentId, p_shown_in_channel: reply.isShownInChannel } : {})
+                ...(reply ? { p_parent_id: reply.parentId, p_shown_in_channel: reply.isShownInChannel } : {}),
+                ...(typeof quotedMessageId === "number" ? { p_quoted_message_id: quotedMessageId } : {})
             });
             if (!result.ok) {
                 return { ok: false, error: result.error };
@@ -708,6 +726,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         sender,
         directMessages,
         threads,
+        messageActions,
         isNewMessageShown: isNewMessageShown(options.session),
 
         openDirectMessage: async (): Promise<void> => {
@@ -947,6 +966,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             // answers reaches the screen.
             const threadSaved = threads.closeThread();
             threads.stop();
+            messageActions.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.
