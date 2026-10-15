@@ -132,7 +132,52 @@ namespace Rock
         }
 
         /// <summary>
+        /// The maximum time each Lava pattern may run, and the total time the
+        /// patterns may keep repeating, in <see cref="SanitizeLava(string)"/>.
+        /// </summary>
+        private static readonly TimeSpan _sanitizeLavaTimeLimit = TimeSpan.FromSeconds( 1 );
+
+        /// <summary>
+        /// Matches a Lava output such as <c>{{ value }}</c>.
+        /// </summary>
+        /// <remarks>
+        /// The <c>(?&lt;!\{)</c> lookbehind skips match attempts that start inside
+        /// a run of braces. Every brace in a run reaches the same first closing
+        /// brace, so if the first brace of the run cannot match, none of the others
+        /// can either, and the matches are the same as without the lookbehind.
+        /// Without it a long run of braces is scanned once per brace.
+        /// </remarks>
+        private static readonly Regex _lavaDoubleBracesRegex = new Regex( @"(?<!\{)\{\{([^\}]+)\}\}", RegexOptions.Compiled, _sanitizeLavaTimeLimit );
+
+        /// <summary>
+        /// Matches a Lava tag such as <c>{% tag %}</c>.
+        /// </summary>
+        private static readonly Regex _lavaBracePercentRegex = new Regex( @"\{%([^\}]+)%\}", RegexOptions.Compiled, _sanitizeLavaTimeLimit );
+
+        /// <summary>
+        /// Matches a Lava shortcode such as <c>{[ shortcode ]}</c>.
+        /// </summary>
+        private static readonly Regex _lavaBraceBracketRegex = new Regex( @"\{\[([^\}]+)\]\}", RegexOptions.Compiled, _sanitizeLavaTimeLimit );
+
+        /// <summary>
+        /// Matches an opening brace that starts a Lava output, tag or shortcode opener,
+        /// or that is directly followed by a "/" (which could start a Lava comment).
+        /// </summary>
+        private static readonly Regex _lavaOpenerBraceRegex = new Regex( @"\{(?=[{%\[/])", RegexOptions.Compiled );
+
+        /// <summary>
+        /// The maximum number of times the Lava patterns are repeated before the
+        /// final opener removal pass in <see cref="SanitizeLava(string)"/>.
+        /// </summary>
+        private const int MaxSanitizeLavaPasses = 10;
+
+        /// <summary>
         /// Removes all lava markup from the string including short codes.
+        /// The Lava patterns are repeated a limited number of times to tidy up
+        /// nested or split markup, then every brace directly followed by
+        /// <c>{</c>, <c>%</c>, <c>[</c> or <c>/</c> is removed. The result never
+        /// contains a Lava output, tag or shortcode opener (<c>{{</c>, <c>{%</c>
+        /// or <c>{[</c>), and a brace is never left directly before a <c>/</c>.
         /// </summary>
         /// <param name="lava">The lava.</param>
         /// <returns></returns>
@@ -144,16 +189,49 @@ namespace Rock
                 return string.Empty;
             }
 
-            var doubleBracesRegex = new Regex( @"\{\{([^\}]+)\}\}" );
-            lava = doubleBracesRegex.Replace( lava, string.Empty );
+            /*
+                10/15/2026 - MSE
 
-            var bracePercentRegex = new Regex( @"\{%([^\}]+)%\}" );
-            lava = bracePercentRegex.Replace( lava, string.Empty );
+                A single pass of these patterns could be bypassed. Removing an inner
+                tag could join the text around it into a new tag ("{{% x %}{ 1 }}"),
+                and a tag whose body held a closing brace was never matched at all
+                ("{{ 1 | Append:'}' }}"). So we repeat the patterns until the text
+                stops changing, but at most MaxSanitizeLavaPasses times. The cap
+                matters: crafted deep nesting can need one pass per level, and each
+                pass costs at least a full scan, so without it one request could tie
+                up the CPU for minutes. The repeat only tidies up leftover text. The
+                safety comes from the final pass, which always runs after the loop
+                and deletes every brace that is still directly followed by "{", "%",
+                "[" or "/". A brace that survives that last pass is followed by a
+                character that also survives and is not "{", so no opener can remain
+                or be created, however many passes the loop ran. For the same reason
+                the patterns have a time limit: some inputs make a single pattern
+                scan the text once per brace, so if the patterns run too long we stop
+                repeating them and go straight to the final pass. The "/" case stops
+                a Lava comment from joining two braces ("{/- x -/{ 1 }}") under the
+                legacy RockLiquid engine, which strips comments before parsing.
 
-            var bracBracketRegex = new Regex( @"\{\[([^\}]+)\]\}" );
-            lava = bracBracketRegex.Replace( lava, string.Empty );
+                Reason: Enable Lava = No must not run Lava (RCVE-2026-2gmq).
+            */
+            var previous = string.Empty;
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            return lava;
+            try
+            {
+                for ( var pass = 0; pass < MaxSanitizeLavaPasses && lava != previous && stopwatch.Elapsed < _sanitizeLavaTimeLimit; pass++ )
+                {
+                    previous = lava;
+                    lava = _lavaDoubleBracesRegex.Replace( lava, string.Empty );
+                    lava = _lavaBracePercentRegex.Replace( lava, string.Empty );
+                    lava = _lavaBraceBracketRegex.Replace( lava, string.Empty );
+                }
+            }
+            catch ( RegexMatchTimeoutException )
+            {
+                // The final pass below still removes every opener.
+            }
+
+            return _lavaOpenerBraceRegex.Replace( lava, string.Empty );
         }
 
         /// <summary>
