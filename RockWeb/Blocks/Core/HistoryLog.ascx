@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HistoryLog.ascx.cs" Inherits="RockWeb.Blocks.Core.HistoryLog" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -25,7 +26,9 @@
                     <Rock:Grid ID="gHistory" runat="server" AllowSorting="true" RowItemText="Change" >
                         <Columns>
                             <Rock:RockBoundField DataField="CategoryName" SortExpression="Category" HeaderText="Category" />
-                            <asp:HyperLinkField DataTextField="CreatedByPersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="CreatedByPerson" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
+                            <Rock:RockTemplateField HeaderText="Who" SortExpression="CreatedByPerson" OnRowSelectedEnabled="false">
+                                <ItemTemplate><a href='<%# ResolveRockUrl( "~/Person/" + Eval( "CreatedByPersonId" ) ) %>'><%# ( Eval( "CreatedByPersonName" ) as string ).EncodeHtml() %></a></ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:ListDelimitedField DataField="HistoryList" Delimiter="<br />" HeaderText="Did" HtmlEncode="false" SortExpression="Verb,ValueName" />
                             <Rock:RockBoundField DataField="FormattedCaption" HeaderText="What" SortExpression="Caption" HtmlEncode="false" />
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" HeaderText="When" FormatAsElapsedTime="true" />

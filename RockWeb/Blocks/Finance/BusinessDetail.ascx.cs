@@ -758,7 +758,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( business != null )
             {
                 SetHeadingStatusInfo( business );
-                lViewPanelBusinessName.Text = business.LastName;
+
+                /*
+                    10/15/2026 - MSE
+
+                    The business name is plain text that can be set by anyone who can edit the
+                    business, and the Literal writes it without encoding, so it is HTML encoded here.
+
+                    Reason: Prevent stored XSS through a business name.
+                */
+                lViewPanelBusinessName.Text = business.LastName.EncodeHtml();
 
                 var detailsLeft = new DescriptionList();
                 var detailsRight = new DescriptionList();
