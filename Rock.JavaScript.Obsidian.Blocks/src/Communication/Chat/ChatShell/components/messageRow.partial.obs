@@ -102,7 +102,7 @@
                 <span v-if="!isOwn" class="chat-msg-face">
                     <Avatar v-if="isLastOfGroup" :people="[face]" :size="34" />
                 </span>
-                <div class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
+                <div class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading, 'is-flashing': isFlashing }">
                     <div v-if="isAnnouncement" class="chat-bubble-label">
                         <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     </div>
@@ -204,13 +204,27 @@
     transform-origin: 0 100%;
 }
 
-.chat-msg.is-flashing::after {
+/*
+    A message jumped to flashes the church's wash, held for most of its length and then let go, so
+    the eye finds it before it fades. A channel's row fades it out of its own background; a bubble
+    fades a wash laid just past its edge. Reduced motion keeps it, being a color fade only.
+*/
+.chat-msg.is-community.is-flashing {
+    animation: chat-cm-flash var(--chat-d-flash) var(--chat-ease-state);
+}
+
+.chat-bubble.is-flashing {
+    position: relative;
+}
+
+.chat-bubble.is-flashing::after {
     position: absolute;
-    inset: 0;
+    inset: -3px;
     pointer-events: none;
     content: "";
+    background: var(--chat-flash);
     border-radius: inherit;
-    animation: chat-flash-fade var(--chat-d-flash) var(--chat-ease-state) both;
+    animation: chat-flash-fade var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
 .is-crossfading {
@@ -816,15 +830,22 @@
     }
 }
 
-/* Held for most of its length, then let go, so the eye finds the message before it fades. */
+/* The row's own background is where the flash ends, so no last frame is named. */
+@keyframes chat-cm-flash {
+    0%,
+    45% {
+        background-color: var(--chat-flash);
+    }
+}
+
 @keyframes chat-flash-fade {
     0%,
     55% {
-        background: var(--chat-flash);
+        opacity: 1;
     }
 
     100% {
-        background: transparent;
+        opacity: 0;
     }
 }
 </style>

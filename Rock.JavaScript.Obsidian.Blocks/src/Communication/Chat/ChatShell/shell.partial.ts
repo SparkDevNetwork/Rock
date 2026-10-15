@@ -202,6 +202,9 @@ export type ChatShell = {
     /** Whether a channel is the one on screen while the page is visible, for the push worker. */
     isChannelOnScreen: (channelId: string) => boolean;
 
+    /** Whether a thread is the one open in the drawer while the page is visible, for the push worker. */
+    isThreadOnScreen: (rootId: number) => boolean;
+
     /** The unread mentions in the rooms the sidebar lists, for the app badge. */
     mentionBadge: () => number;
 
@@ -893,6 +896,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         isChannelOnScreen: (channelId: string): boolean => {
             return channelId === state.activeChannelId && options.pageTargets.document.visibilityState === "visible";
+        },
+
+        // A reply kept to its thread is seen only in the drawer, so only the open thread counts,
+        // whatever conversation is behind it.
+        isThreadOnScreen: (rootId: number): boolean => {
+            return threads.state.thread?.rootId === rootId && options.pageTargets.document.visibilityState === "visible";
         },
 
         // Mentions, never messages: the icon counts what was meant for the person, as the

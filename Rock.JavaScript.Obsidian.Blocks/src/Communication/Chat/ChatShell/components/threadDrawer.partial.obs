@@ -19,7 +19,7 @@
             </button>
         </template>
 
-        <div ref="bodyElement" class="chat-th-body" :class="{ 'is-community': isChannel, 'is-phone': isPhone }">
+        <div ref="bodyElement" class="chat-th-body" :class="{ 'is-community': isChannel, 'is-phone': isPhone }" @animationend="onAnimationEnd">
             <div v-if="hasMore" ref="topElement" class="chat-th-topmark" aria-hidden="true"></div>
 
             <div v-if="error || olderError" class="chat-th-err" role="status" data-testid="thread-error">
@@ -44,6 +44,7 @@
                             :isChannel="isChannel"
                             :isPhone="isPhone"
                             :isInThread="true"
+                            :isFlashing="item.isReply && item.message.id === flashingId"
                             :data-reply-id="item.isReply ? item.message.id : undefined" />
 
                 <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
@@ -64,6 +65,7 @@
                                 :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                 :senderNames="senderNames"
                                 :isInThread="true"
+                                :isFlashing="item.isReply && !!row.message && row.message.id === flashingId"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @retry="emit('retry', $event)"
                                 @discard="emit('discard', $event)" />
@@ -342,6 +344,12 @@
             default: ""
         },
 
+        /** The reply a push or a link opened the thread at, once the replies hold it; scrolled to and flashed once. */
+        landOnId: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
         /** Every key this session sent under; a reply carrying one already rose as its pending row. */
         sentKeys: {
             type: Object as PropType<ReadonlySet<string>>,
@@ -380,6 +388,12 @@
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
+
+    /** The reply flashing now, cleared once its flash ends so a row drawn again does not replay it. */
+    const flashingId = ref<number | null>(null);
+
+    /** The reply already landed on, so it is scrolled to and flashed only once. */
+    let landedId: number | null = null;
 
     // #endregion Values
 
@@ -450,6 +464,13 @@
         emit("send", body, isAlsoSent === true);
     }
 
+    /** A row's flash plays once: the flash goes from the row as it ends. */
+    function onAnimationEnd(event: AnimationEvent): void {
+        if (flashingId.value !== null && event.animationName.includes("flash")) {
+            flashingId.value = null;
+        }
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
@@ -512,6 +533,39 @@
         scrollToBottom();
         observeRows();
         isPlaced = true;
+        void land();
+    }
+
+    /**
+     * Brings the reply a push or a link named to the middle of the scroller, flashes it and gives
+     * it focus, as a jump to a message does, once the thread is placed at its newest, so that
+     * placing does not scroll it away again. Focus moves from the composer to the reply, which is
+     * what the person came to read.
+     */
+    async function land(): Promise<void> {
+        const id = props.landOnId;
+        if (!isPlaced || id === null || id === landedId) {
+            return;
+        }
+
+        landedId = id;
+        flashingId.value = id;
+        await nextTick();
+
+        const row = bodyElement.value?.querySelector<HTMLElement>(`[data-reply-id='${id}']`);
+        if (!row) {
+            flashingId.value = null;
+            return;
+        }
+
+        if (focusTimer) {
+            clearTimeout(focusTimer);
+            focusTimer = null;
+        }
+
+        const isMotionReduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        row.scrollIntoView({ block: "center", behavior: isMotionReduced ? "auto" : "smooth" });
+        row.focus({ preventScroll: true });
     }
 
     /**
@@ -569,6 +623,8 @@
     });
 
     watch(topElement, observeTop);
+
+    watch(() => props.landOnId, () => void land());
 
     // #endregion Watchers
 

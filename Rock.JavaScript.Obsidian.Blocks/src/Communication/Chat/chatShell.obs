@@ -153,6 +153,7 @@
                                   :isLoading="drawnThread.isLoading"
                                   :error="drawnThread.error"
                                   :olderError="drawnThread.olderError"
+                                  :landOnId="landingReplyId"
                                   :isLocked="!shell.state.isComposerOpen"
                                   :personName="personName"
                                   :personPhotoUrl="personPhotoUrl"
@@ -360,7 +361,10 @@
 
     /** What the push worker posts to a window of the site, in the worker's own names. */
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    type WorkerMessage = { type?: string, channel_id?: string };
+    type WorkerMessage = { type?: string, channel_id?: string, root_id?: string, message_id?: string };
+
+    /** A reply to open its thread at: from a push's tap, or from a link to it. */
+    type ReplyLanding = { channelId: string, rootId: number, messageId: number | null };
 
     // #endregion Types
 
@@ -436,6 +440,26 @@
 
     /** The conversation the open thread belongs to, which the drawer stays open over. */
     let threadChannelId: string | null = null;
+
+    /**
+     * Counts every thread opened or left, so a landing on a reply that awaited an older page can
+     * tell the drawer it started in is gone and stop.
+     */
+    let threadOpenCount = 0;
+
+    /** A landing fetches at most this many older pages before it stays at the newest. */
+    const maxLandingOlderPages = 2;
+
+    /** The reply the drawer scrolls to and flashes once it holds it, or null. */
+    const landingReplyId = ref<number | null>(null);
+
+    /**
+     * The reply a link to this page named, until the first conversation opens: its thread opens
+     * over that conversation, and over no other the page load falls back to.
+     */
+    let linkedReply: ReplyLanding | null = config.channelGuid && config.threadRootId
+        ? { channelId: config.channelGuid.toLowerCase(), rootId: config.threadRootId, messageId: config.messageId ?? null }
+        : null;
 
     // The block's own width, not the window's or a container query's, since the oldest Safari Rock
     // supports has no container queries and a narrow zone of a wide window is still narrow.
@@ -777,16 +801,26 @@
 
     /**
      * The push worker asks whether a push's channel is on screen, so it can leave the banner out,
-     * and after a tap tells this window which channel to open.
+     * and after a tap tells this window which channel to open. A reply's push names its root: the
+     * ask is then about the thread alone, since a reply kept to its thread is seen only in the
+     * drawer, and the tap opens the thread at the reply over its conversation.
      */
     function onWorkerMessage(event: MessageEvent): void {
         const message = (event.data ?? {}) as WorkerMessage;
+        const rootId = messageIdOf(message.root_id);
 
         if (message.type === "chat.push.is-open") {
-            event.ports[0]?.postMessage({ open: !!message.channel_id && shell.value.isChannelOnScreen(message.channel_id) });
+            const isOpen = rootId !== null
+                ? shell.value.isThreadOnScreen(rootId)
+                : !!message.channel_id && shell.value.isChannelOnScreen(message.channel_id);
+            event.ports[0]?.postMessage({ open: isOpen });
         }
         else if (message.type === "chat.push.open" && message.channel_id) {
-            void shell.value.selectChannel(message.channel_id.toLowerCase());
+            const channelId = message.channel_id.toLowerCase();
+            void shell.value.selectChannel(channelId);
+            if (rootId !== null) {
+                void landOnReply({ channelId, rootId, messageId: messageIdOf(message.message_id) });
+            }
         }
     }
 
@@ -850,6 +884,44 @@
         });
     }
 
+    /** A message id the worker posted as a string, or null when it is not one. */
+    function messageIdOf(value: string | undefined): number | null {
+        const id = Number(value);
+        return value && Number.isSafeInteger(id) && id > 0 ? id : null;
+    }
+
+    /**
+     * Opens a thread at a reply. A push or a link is about a recent reply, so the newest page
+     * nearly always holds it; when not, a few older pages are fetched before the drawer simply
+     * stays at the newest. Each await checks the drawer is still the one this opened, so one
+     * closed or replaced meanwhile asks for nothing more and flashes nothing.
+     */
+    async function landOnReply(landing: ReplyLanding): Promise<void> {
+        const opened = openThreadDrawer(landing.channelId, landing.rootId, false);
+        const thisOpen = threadOpenCount;
+        await opened;
+
+        const threads = shell.value.threads;
+        for (let olderPages = 0; ; olderPages++) {
+            const thread = threads.state.thread;
+            if (thisOpen !== threadOpenCount || !thread || thread.rootId !== landing.rootId || landing.messageId === null) {
+                return;
+            }
+
+            if (thread.replies.some(reply => reply.id === landing.messageId)) {
+                landingReplyId.value = landing.messageId;
+                return;
+            }
+
+            // A failed page is shown in the drawer; trying again here would only repeat it.
+            if (olderPages >= maxLandingOlderPages || !thread.hasMore || thread.error || thread.olderError) {
+                return;
+            }
+
+            await threads.loadOlderReplies();
+        }
+    }
+
     /**
      * Opens a thread in the drawer. One opened from the conversation replaces whatever the column
      * held; one opened from the list keeps the list to go back to.
@@ -859,6 +931,8 @@
             shell.value.threads.closeList();
         }
 
+        threadOpenCount++;
+        landingReplyId.value = null;
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
         isThreadFromList.value = isFromList;
@@ -871,6 +945,7 @@
     /** Lets go of the open thread, which saves where the reader got to, without moving focus. */
     function leaveThread(): void {
         if (panelKind.value === "thread") {
+            threadOpenCount++;
             panelKind.value = null;
             void shell.value.threads.closeThread();
         }
@@ -1083,6 +1158,20 @@
     watch(() => shell.value.threads.state.thread, thread => {
         if (thread) {
             drawnThread.value = thread;
+        }
+    });
+
+    // A link to a reply opens its thread once the conversation it names is the first to open; a
+    // page load that fell back to another conversation, or a person who chose one first, drops it.
+    watch(activeChannelId, channelId => {
+        const landing = linkedReply;
+        if (!landing || !channelId) {
+            return;
+        }
+
+        linkedReply = null;
+        if (channelId === landing.channelId) {
+            void landOnReply(landing);
         }
     });
 
