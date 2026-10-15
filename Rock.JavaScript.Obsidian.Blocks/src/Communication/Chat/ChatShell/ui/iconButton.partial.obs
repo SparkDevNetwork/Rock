@@ -57,25 +57,13 @@
     background: var(--chat-brand-wash);
 }
 
-/* Fixed, so the chat's clipped frame cannot cut a tip near its edge. */
-.chat-tip {
-    z-index: 1060;
-    max-width: 260px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--chat-tip-fg);
-    pointer-events: none;
-    background: var(--chat-tip-bg);
-    border-radius: var(--chat-r-tip);
-}
+/* The tip's look is the sheet's chat-tip, shared with every other tooltip. */
 </style>
 
 <script setup lang="ts">
-    import { onBeforeUnmount, PropType, ref } from "vue";
-    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { PropType, ref } from "vue";
     import Icon from "./icon.partial.obs";
-    import { tokenDuration } from "./brand.partial";
+    import { useTooltip } from "./tooltip.partial";
 
     defineOptions({ inheritAttrs: false });
 
@@ -112,51 +100,12 @@
     // #region Values
 
     const buttonElement = ref<HTMLButtonElement>();
-    const tipElement = ref<HTMLElement>();
-    const isTipShown = ref(false);
 
-    /** The design's tip delay, used when the sheet is not on the page. */
-    const fallbackTipDelayMs = 500;
-
-    let tipTimer: number | undefined;
-
-    /** Whether the focus that is coming was a press, since a tip under the pointer is noise. */
-    let isPointerFocus = false;
-
-    // Above the button, or below it when there is no room, kept 8px inside the window.
-    const { floatingStyles } = useFloating(buttonElement, tipElement, {
-        placement: "top",
-        strategy: "fixed",
-        middleware: [offset(8), flip(), shift({ padding: 8 })],
-        whileElementsMounted: autoUpdate
-    });
+    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerDown, onFocus, onBlur } = useTooltip(buttonElement, () => props.isTooltipDisabled);
 
     // #endregion Values
 
     // #region Event Handlers
-
-    function onPointerEnter(): void {
-        scheduleTip();
-    }
-
-    /**
-     * Only a keyboard focus shows the tip. Told apart by the press before it rather than by
-     * :focus-visible, which the oldest Safari Rock supports cannot match from script.
-     */
-    function onFocus(): void {
-        if (!isPointerFocus) {
-            scheduleTip();
-        }
-    }
-
-    function onPointerDown(): void {
-        isPointerFocus = true;
-    }
-
-    function onBlur(): void {
-        isPointerFocus = false;
-        hideTip();
-    }
 
     function onClick(event: MouseEvent): void {
         hideTip();
@@ -167,38 +116,12 @@
 
     // #region Functions
 
-    /** Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker tips. */
-    function scheduleTip(): void {
-        if (props.isTooltipDisabled) {
-            return;
-        }
-
-        window.clearTimeout(tipTimer);
-        const delay = buttonElement.value ? tokenDuration(buttonElement.value, "--chat-d-tip-delay", fallbackTipDelayMs) : fallbackTipDelayMs;
-        tipTimer = window.setTimeout(() => {
-            isTipShown.value = true;
-        }, delay);
-    }
-
-    function hideTip(): void {
-        window.clearTimeout(tipTimer);
-        isTipShown.value = false;
-    }
-
     /** Focuses the button, for a menu returning focus to the button that opened it. */
     function focus(): void {
         buttonElement.value?.focus();
     }
 
     // #endregion Functions
-
-    // #region Lifecycle Hooks
-
-    onBeforeUnmount(() => {
-        window.clearTimeout(tipTimer);
-    });
-
-    // #endregion Lifecycle Hooks
 
     defineExpose({ buttonElement, focus });
 </script>

@@ -1,23 +1,587 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div></div>
+    <div ref="editorElement"
+         class="chat-ed"
+         :contenteditable="isDisabled ? 'false' : 'true'"
+         role="textbox"
+         aria-multiline="true"
+         :aria-label="placeholder || undefined"
+         :aria-disabled="isDisabled || undefined"
+         :data-placeholder="placeholder"
+         spellcheck="true"
+         data-testid="chip-editor"
+         @keydown="onKeydown"
+         @input="onInput"
+         @paste="onPaste"
+         @copy="onCopy($event, false)"
+         @cut="onCopy($event, true)"
+         @drop.prevent
+         @dragover.prevent></div>
 </template>
 
-<script setup lang="ts">
-    // The chip editor. An empty stand-in with the planned props and no behaviour yet, so the
-    // tests written against it fail on what they assert.
-    import { PropType } from "vue";
-    import { DisplayPiece } from "../types.partial";
+<style scoped>
+/* One 21px line at 14.5px, as the composer's text box; the host sets the height range. */
+.chat-ed {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 35px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 7px 4px;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--chat-text);
+    caret-color: var(--chat-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    outline: 0;
+    cursor: text;
+}
 
-    defineProps({
+/* Absolute, so the caret sits at the start of the line rather than after the placeholder. */
+.chat-ed:empty::before {
+    position: absolute;
+    top: 7px;
+    right: 4px;
+    left: 4px;
+    overflow: hidden;
+    color: var(--chat-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    content: attr(data-placeholder);
+}
+
+/* A chip is one unit: selected, deleted and copied whole, and never a caret target inside. */
+.chat-ed :deep(.chat-mn) {
+    vertical-align: top;
+    cursor: default;
+    user-select: all;
+}
+
+.chat-ed :deep(.chat-mn::selection),
+.chat-ed :deep(.chat-mn *::selection) {
+    background: transparent;
+}
+
+.chat-ed :deep(.chat-mn.is-selected) {
+    box-shadow: 0 0 0 2px var(--chat-brand-ring);
+}
+</style>
+
+<script setup lang="ts">
+    import { h, onBeforeUnmount, onMounted, PropType, ref, render, watch } from "vue";
+    import { DisplayPiece } from "../types.partial";
+    import Icon from "./icon.partial.obs";
+    import { avatarHue } from "./brand.partial";
+
+    const props = defineProps({
+        /** The wire text to load, a mention written as its token, <@guid> or <@all>. */
         text: {
             type: String,
             default: ""
         },
 
+        /**
+         * The server's pieces for that text. A mention piece names its token's chip; a token with
+         * no piece, one the server did not admit, stays the text it is.
+         */
         pieces: {
             type: Array as PropType<DisplayPiece[] | null>,
             default: null
+        },
+
+        /** Shown while the box is empty, and its accessible name. */
+        placeholder: {
+            type: String,
+            default: ""
+        },
+
+        isDisabled: {
+            type: Boolean,
+            default: false
         }
     });
+
+    const emit = defineEmits<{
+        /** Enter, with the wire text. */
+        (e: "send", text: string): void;
+        /** Each change, with the wire text. */
+        (e: "update:text", text: string): void;
+        (e: "escape"): void;
+        /** Up with nothing in the box, which a host may take as a wish to edit. */
+        (e: "upWhenEmpty"): void;
+    }>();
+
+    // #region Values
+
+    const editorElement = ref<HTMLElement>();
+
+    /** A mention token in any letter case, as the server reads it. */
+    const tokenPattern = /<@([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|all)>/i;
+
+    /**
+     * The last caret inside the box. A click on a picker moves focus away, and what it inserts
+     * should still land where the person was typing.
+     */
+    let lastRange: Range | null = null;
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onKeydown(event: KeyboardEvent): void {
+        // A picker on top claims its keys first by preventing them; an input method owns Enter.
+        if (event.defaultPrevented || event.isComposing || event.keyCode === 229) {
+            return;
+        }
+
+        if (event.key === "Enter") {
+            event.preventDefault();
+            if (event.shiftKey) {
+                insertText("\n");
+            }
+            else {
+                emit("send", getText());
+            }
+        }
+        else if (event.key === "Escape") {
+            emit("escape");
+        }
+        else if (event.key === "ArrowUp" && getText() === "") {
+            event.preventDefault();
+            emit("upWhenEmpty");
+        }
+        else if ((event.ctrlKey || event.metaKey) && /^[biu]$/i.test(event.key)) {
+            // The wire is plain text, so bold, italic and underline would show what never sends.
+            event.preventDefault();
+        }
+        else if (event.key === "Backspace" || event.key === "Delete") {
+            removeChipBeside(event);
+        }
+    }
+
+    function onInput(event: Event): void {
+        const element = editorElement.value;
+        // A browser leaves a stray line break when everything is deleted, which hides the placeholder.
+        if (element && !(event as InputEvent).isComposing && element.firstChild && getText() === "") {
+            element.textContent = "";
+        }
+
+        emit("update:text", getText());
+    }
+
+    /** Paste is plain text only, so markup from a web page never reaches the wire. */
+    function onPaste(event: ClipboardEvent): void {
+        event.preventDefault();
+        insertText(event.clipboardData?.getData("text/plain") ?? "");
+    }
+
+    /** Copy writes the wire text, so a chip pasted back into chat is the same mention. */
+    function onCopy(event: ClipboardEvent, isCut: boolean): void {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !event.clipboardData) {
+            return;
+        }
+
+        event.preventDefault();
+        const range = selection.getRangeAt(0);
+        event.clipboardData.setData("text/plain", serialize(range.cloneContents(), false));
+        if (isCut) {
+            range.deleteContents();
+            changed();
+        }
+    }
+
+    /** Marks the chips inside a selection and remembers the caret, for every editor on the page. */
+    function onSelectionChange(): void {
+        const element = editorElement.value;
+        const selection = window.getSelection();
+        if (!element || !selection) {
+            return;
+        }
+
+        const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+        if (range && element.contains(range.startContainer)) {
+            lastRange = range.cloneRange();
+        }
+
+        for (const chip of Array.from(element.querySelectorAll<HTMLElement>("[data-token]"))) {
+            chip.classList.toggle("is-selected", !!range && !range.collapsed && selection.containsNode(chip, false));
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** The wire text the box holds now. */
+    function getText(): string {
+        return editorElement.value ? serialize(editorElement.value, true) : "";
+    }
+
+    /** Replaces what the box holds with a wire text, drawing each admitted mention as a chip. */
+    function setText(text: string): void {
+        const element = editorElement.value;
+        if (!element) {
+            return;
+        }
+
+        element.replaceChildren(...nodesFor(text));
+        lastRange = null;
+    }
+
+    function focus(): void {
+        editorElement.value?.focus({ preventScroll: true });
+    }
+
+    /**
+     * Inserts plain text at the caret, or at the end when the box has none. New lines become
+     * line breaks built by hand, since a browser's own turn into divs or raw text under pre-wrap.
+     */
+    function insertText(text: string): void {
+        const element = editorElement.value;
+        const normalized = text.replace(/\r\n?/g, "\n");
+        if (!element || !normalized) {
+            return;
+        }
+
+        const range = caretRange(element);
+        range.deleteContents();
+        const fragment = document.createDocumentFragment();
+        normalized.split("\n").forEach((line, index) => {
+            if (index > 0) {
+                fragment.append(document.createElement("br"));
+            }
+            if (line) {
+                fragment.append(line);
+            }
+        });
+
+        const last = fragment.lastChild;
+        range.insertNode(fragment);
+        if (last) {
+            padTrailingBreak(element, last);
+            placeCaretAfter(element, last);
+        }
+        changed();
+    }
+
+    /** Inserts a mention chip and a space after it at the caret, for a mention picker. */
+    function insertMention(token: string, name: string): void {
+        const element = editorElement.value;
+        if (!element) {
+            return;
+        }
+
+        const range = caretRange(element);
+        range.deleteContents();
+        const space = document.createTextNode(" ");
+        // Both go in at the range's start, so the chip lands before the space.
+        range.insertNode(space);
+        range.insertNode(chipFor(token, name));
+        placeCaretAfter(element, space);
+        changed();
+    }
+
+    /** The live caret when it is in the box, else the last one it had, else the end. */
+    function caretRange(element: HTMLElement): Range {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0 && element.contains(selection.getRangeAt(0).startContainer)) {
+            return selection.getRangeAt(0);
+        }
+
+        if (lastRange && element.contains(lastRange.startContainer)) {
+            return lastRange.cloneRange();
+        }
+
+        const range = document.createRange();
+        // Before a trailing line break, since text after it would start a line never made.
+        if (element.lastChild?.nodeName === "BR") {
+            range.setStartBefore(element.lastChild);
+        }
+        else {
+            range.selectNodeContents(element);
+            range.collapse(false);
+        }
+
+        return range;
+    }
+
+    function placeCaretAfter(element: HTMLElement, node: Node): void {
+        const range = document.createRange();
+        range.setStartAfter(node);
+        range.collapse(true);
+        placeCaret(element, range);
+    }
+
+    function placeCaret(element: HTMLElement, range: Range): void {
+        if (document.activeElement !== element) {
+            element.focus({ preventScroll: true });
+        }
+
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        lastRange = range.cloneRange();
+    }
+
+    /** A line break with nothing after it draws no line, so it is given a partner. */
+    function padTrailingBreak(element: HTMLElement, node: Node): void {
+        if (node.nodeName !== "BR") {
+            return;
+        }
+
+        const after = document.createRange();
+        after.setStartAfter(node);
+        after.setEnd(element, element.childNodes.length);
+        if (serialize(after.cloneContents(), false) === "") {
+            element.append(document.createElement("br"));
+        }
+    }
+
+    /**
+     * Backspace beside a chip, or Delete before one, removes the chip whole; the browser would
+     * otherwise step into it or leave half of it.
+     */
+    function removeChipBeside(event: KeyboardEvent): void {
+        const element = editorElement.value;
+        const selection = window.getSelection();
+        if (!element || !selection || selection.rangeCount === 0 || !selection.isCollapsed) {
+            return;
+        }
+
+        const chip = chipBeside(selection.getRangeAt(0), event.key === "Backspace");
+        if (!chip) {
+            return;
+        }
+
+        event.preventDefault();
+        const range = document.createRange();
+        range.setStartBefore(chip);
+        range.collapse(true);
+        chip.remove();
+        placeCaret(element, range);
+        changed();
+    }
+
+    /** The chip touching a collapsed caret on one side, past the empty text nodes edits leave. */
+    function chipBeside(range: Range, isBackward: boolean): HTMLElement | null {
+        const node = range.startContainer;
+        const offset = range.startOffset;
+        const host = node.nodeType === Node.ELEMENT_NODE ? node as HTMLElement : node.parentElement;
+        const inside = host?.closest<HTMLElement>("[data-token]");
+        if (inside) {
+            return inside;
+        }
+
+        let sibling: Node | null;
+        if (node.nodeType === Node.TEXT_NODE) {
+            const length = (node as Text).data.length;
+            if (isBackward ? offset > 0 : offset < length) {
+                return null;
+            }
+            sibling = isBackward ? node.previousSibling : node.nextSibling;
+        }
+        else {
+            sibling = node.childNodes[isBackward ? offset - 1 : offset] ?? null;
+        }
+
+        while (sibling && sibling.nodeType === Node.TEXT_NODE && !(sibling as Text).data) {
+            sibling = isBackward ? sibling.previousSibling : sibling.nextSibling;
+        }
+
+        return sibling instanceof HTMLElement && sibling.dataset.token ? sibling : null;
+    }
+
+    /** Hand-made edits fire no input event, so the host is told here. */
+    function changed(): void {
+        emit("update:text", getText());
+    }
+
+    /**
+     * The box, or a piece of it, as wire text: a chip its token, a line break a new line. A
+     * trailing break is the browser's placeholder for the last line, so it is dropped when the
+     * whole box is read.
+     */
+    function serialize(root: Node, isTailTrimmed: boolean): string {
+        let text = "";
+        let isLastBreak = false;
+
+        const walk = (parent: Node): void => {
+            for (const node of Array.from(parent.childNodes)) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const data = (node as Text).data;
+                    if (data) {
+                        text += data;
+                        isLastBreak = false;
+                    }
+                }
+                else if (node instanceof HTMLElement) {
+                    if (node.dataset.token) {
+                        text += node.dataset.token;
+                        isLastBreak = false;
+                    }
+                    else if (node.nodeName === "BR") {
+                        text += "\n";
+                        isLastBreak = true;
+                    }
+                    else {
+                        // A block only comes from a browser's editing quirk; each starts a line.
+                        if (/^(DIV|P|LI)$/.test(node.nodeName) && text && !text.endsWith("\n")) {
+                            text += "\n";
+                        }
+                        walk(node);
+                    }
+                }
+            }
+        };
+        walk(root);
+
+        if (isTailTrimmed && isLastBreak) {
+            text = text.slice(0, -1);
+        }
+
+        // Some browsers type a no-break space where a space would collapse.
+        return text.replace(/\u00a0/g, " ").replace(/\u200b/g, "");
+    }
+
+    /** A wire text as the box's nodes: text, line breaks, and a chip for each named token. */
+    function nodesFor(text: string): Node[] {
+        const names = mentionNames();
+        const nodes: Node[] = [];
+        const pushText = (part: string): void => {
+            part.split("\n").forEach((line, index) => {
+                if (index > 0) {
+                    nodes.push(document.createElement("br"));
+                }
+                if (line) {
+                    nodes.push(document.createTextNode(line));
+                }
+            });
+        };
+
+        let last = 0;
+        const pattern = new RegExp(tokenPattern.source, "gi");
+        let match: RegExpExecArray | null;
+        while ((match = pattern.exec(text)) !== null) {
+            const name = names.get(match[1].toLowerCase());
+            if (name === undefined) {
+                continue;
+            }
+
+            pushText(text.slice(last, match.index));
+            // The token is kept as written, so the text comes back exactly as it was loaded.
+            nodes.push(chipFor(match[0], name));
+            last = match.index + match[0].length;
+        }
+        pushText(text.slice(last));
+
+        // A trailing break draws no line on its own; a second one shows the empty last line.
+        if (text.endsWith("\n")) {
+            nodes.push(document.createElement("br"));
+        }
+
+        return nodes;
+    }
+
+    /** Each admitted mention's name, by its guid in lower case or "all". */
+    function mentionNames(): Map<string, string> {
+        const names = new Map<string, string>();
+        for (const piece of props.pieces ?? []) {
+            if (piece.type !== "mention") {
+                continue;
+            }
+
+            if (piece.all === true) {
+                names.set("all", "@all");
+            }
+            else if (typeof piece.person_alias_guid === "string") {
+                names.set(piece.person_alias_guid.toLowerCase(), piece.text.replace(/^@/, ""));
+            }
+        }
+
+        return names;
+    }
+
+    /**
+     * A chip as the message body draws one. A span, not a button: a button inside an editable
+     * box takes focus and clicks away from the caret. The editor never draws the "you" chip,
+     * since nobody is their own mention target.
+     */
+    function chipFor(token: string, name: string): HTMLElement {
+        const chip = document.createElement("span");
+        chip.className = "chat-mn";
+        chip.setAttribute("contenteditable", "false");
+        chip.dataset.token = token;
+        chip.dataset.testid = "editor-chip";
+
+        const isAll = token.toLowerCase() === "<@all>";
+        if (isAll) {
+            chip.classList.add("is-all");
+            chip.setAttribute("aria-label", "@all, everyone in this channel");
+            const glyph = document.createElement("span");
+            glyph.className = "chat-mn-glyph";
+            glyph.setAttribute("aria-hidden", "true");
+            glyph.append(usersIcon());
+            chip.append(glyph);
+        }
+        else {
+            const face = document.createElement("span");
+            face.className = "chat-av chat-mn-av";
+            face.dataset.initial = Array.from(name.trim())[0]?.toUpperCase() ?? "";
+            face.style.setProperty("--chat-av-hue", String(avatarHue(name)));
+            face.setAttribute("aria-hidden", "true");
+            const at = document.createElement("span");
+            at.className = "chat-sr-only";
+            at.textContent = "@";
+            chip.append(face, at);
+        }
+
+        const label = document.createElement("span");
+        label.className = "chat-mn-name";
+        label.textContent = name;
+        chip.append(label);
+
+        return chip;
+    }
+
+    /** The chat's people icon, drawn once by its component and copied, so it keeps its styles. */
+    function usersIcon(): Node {
+        const holder = document.createElement("span");
+        render(h(Icon, { name: "users", size: "xs" }), holder);
+        const icon = holder.firstElementChild?.cloneNode(true) ?? document.createTextNode("");
+        render(null, holder);
+        return icon;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // A host that binds the text back gets its own change here; the box is reloaded only for a
+    // text it does not already hold, so typing never loses the caret.
+    watch(() => props.text, text => {
+        if (text !== getText()) {
+            setText(text);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        setText(props.text);
+        document.addEventListener("selectionchange", onSelectionChange);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("selectionchange", onSelectionChange);
+    });
+
+    // #endregion Lifecycle Hooks
+
+    defineExpose({ editorElement, getText, setText, focus, insertText, insertMention });
 </script>

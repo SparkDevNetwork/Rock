@@ -50,6 +50,9 @@
     --chat-danger: var(--base-danger, #D70015);
     --chat-danger-ink: #B8000F;
     --chat-danger-soft: #FAE9EA;
+    /* A danger button's text, and its fill on hover, the danger color 15 percent toward black. */
+    --chat-on-danger: #ffffff;
+    --chat-danger-hover: #B70012;
     --chat-warning: var(--base-warning, #E58600);
     --chat-warning-ink: #9A5A00;
     --chat-warning-soft: #FAEFDF;
@@ -581,4 +584,120 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/*
+    A mention chip, shared by a message's body and the editor. An inline block on the text's
+    baseline, so its 1px top and bottom padding count toward the line: a line holding a chip is
+    that much taller, as a pill needs room above and below its text.
+*/
+.chat-mn {
+    display: inline-block;
+    padding: 1px 6px 1px 2px;
+    font-weight: 600;
+    color: var(--chat-brand-ink);
+    white-space: nowrap;
+    background: var(--chat-mn-bg);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mn:hover {
+    background: var(--chat-mn-bg-hover);
+}
+
+.chat-mn.is-you {
+    color: var(--chat-text);
+    background: var(--chat-mn-me-bg);
+}
+
+.chat-mn.is-all {
+    color: var(--chat-info-ink);
+    background: var(--chat-mn-all-bg);
+}
+
+/* Punctuation right after a chip stays on its line, and the chip's end padding gives way to it. */
+.chat-mn-wrap {
+    white-space: nowrap;
+}
+
+.chat-mn.is-punctuated {
+    padding-right: 3px;
+    margin-right: -1px;
+}
+
+/*
+    A one-letter face in the sheet's avatar colors, its letter drawn by the style so the chip's
+    text stays the mention as written. Its bottom sits 4px below the name's baseline: an inline
+    block that clips takes its bottom edge as its baseline, where a grid would take its letter's.
+*/
+.chat-mn-av {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    font-size: 10px;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: -4px;
+}
+
+.chat-mn-av::before {
+    content: attr(data-initial);
+}
+
+/* The room's mark, 16px with a 10px glyph centred by its top padding, sunk like the faces. */
+.chat-mn-glyph {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    padding-top: 3px;
+    margin-right: 4px;
+    overflow: hidden;
+    line-height: 0;
+    color: var(--chat-on-info);
+    text-align: center;
+    vertical-align: -4px;
+    background: var(--chat-info);
+    border-radius: 50%;
+}
+
+/* Under the root as well, so it outranks the icon's own scoped size. */
+.chat-shell .chat-mn-glyph .chat-ic {
+    width: 10px;
+    height: 10px;
+    stroke-width: 2.4;
+}
+
+/*
+    A tooltip, placed by script beside its anchor. Fixed, so the chat's clipped frame cannot cut a
+    tip near its edge. It fades in from 3px below on the translate property, since the placement
+    owns the transform.
+*/
+.chat-tip {
+    z-index: 1060;
+    max-width: 260px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--chat-tip-fg);
+    pointer-events: none;
+    background: var(--chat-tip-bg);
+    border-radius: var(--chat-r-tip);
+    animation: chat-tip-in var(--chat-t-fast) var(--chat-ease-in);
+}
+
+@keyframes chat-tip-in {
+    from {
+        opacity: 0;
+        translate: 0 3px;
+    }
+}
+
+/* Reduced motion: the tip only fades. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-tip {
+        animation-name: chat-crossfade;
+    }
 }
