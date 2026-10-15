@@ -367,11 +367,19 @@ describe("the Follow toggle", () => {
     });
 });
 
+/** Types one line into the reply composer's editor as a browser does: the text, then input. */
+async function typeReply(w: VueWrapper, text: string): Promise<void> {
+    const editor = w.get("[data-testid='composer-input']").element as HTMLElement;
+    editor.textContent = text;
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+    await nextTick();
+}
+
 describe("the reply composer", () => {
     test("asks for a reply in the thread", () => {
         const w = draw();
 
-        expect(w.get("[data-testid='composer-input']").attributes("placeholder")).toBe("Reply in thread");
+        expect(w.get("[data-testid='composer-input']").attributes("data-placeholder")).toBe("Reply in thread");
     });
 
     test("offers to send the reply to the channel too, by the channel's name", () => {
@@ -390,7 +398,7 @@ describe("the reply composer", () => {
     test("sends a reply to the thread alone unless the box is checked", async () => {
         const w = draw();
 
-        await w.get("[data-testid='composer-input']").setValue("Count me in");
+        await typeReply(w, "Count me in");
         await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
 
         expect(w.emitted("send")).toEqual([["Count me in", false]]);
@@ -400,7 +408,7 @@ describe("the reply composer", () => {
         const w = draw();
 
         await w.get("[data-testid='composer-also'] input[type='checkbox']").setValue(true);
-        await w.get("[data-testid='composer-input']").setValue("Count me in");
+        await typeReply(w, "Count me in");
         await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
 
         expect(w.emitted("send")).toEqual([["Count me in", true]]);

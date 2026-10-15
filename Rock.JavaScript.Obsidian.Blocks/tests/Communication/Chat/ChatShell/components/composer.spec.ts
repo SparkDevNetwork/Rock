@@ -16,16 +16,48 @@
 //
 // The composer itself, mounted: what is left in its box after a send is what the person sees,
 // so it is read from the box rather than from the rule the box is meant to follow.
-import { mount } from "@vue/test-utils";
+//
+// The box is the chip editor, an editable element marked data-testid="composer-input". A test
+// types into it as a browser does, drawing the lines and firing input, and reads back the wire
+// text it holds, a mention as its token.
+import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
+import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
+
+function editorOf(wrapper: VueWrapper): HTMLElement {
+    return wrapper.get("[data-testid='composer-input']").element as HTMLElement;
+}
+
+/** Types into the editor as a browser does: each line a text node, a line break between, then input. */
+async function type(wrapper: VueWrapper, text: string): Promise<void> {
+    const editor = editorOf(wrapper);
+    const nodes: Node[] = [];
+    text.split("\n").forEach((line, index) => {
+        if (index > 0) {
+            nodes.push(document.createElement("br"));
+        }
+        if (line) {
+            nodes.push(document.createTextNode(line));
+        }
+    });
+    editor.replaceChildren(...nodes);
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+    await nextTick();
+}
+
+/** The wire text the box holds now, as a send would hand it over. */
+function boxText(wrapper: VueWrapper): string {
+    return (wrapper.findComponent(ChipEditor).vm as unknown as { getText: () => string }).getText();
+}
 
 async function sendFrom(isTextKeptOnSend: boolean): Promise<{ box: string, sent: unknown[] }> {
     const wrapper = mount(Composer, { props: { isTextKeptOnSend } });
-    await wrapper.get("[data-testid='composer-input']").setValue("hello");
+    await type(wrapper, "hello");
     await wrapper.get("form").trigger("submit");
 
     return {
-        box: (wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement).value,
+        box: boxText(wrapper),
         sent: wrapper.emitted("send") ?? []
     };
 }
@@ -67,7 +99,7 @@ describe("the composer", () => {
 describe("the composer's box", () => {
     test("tells the shell each change to its text, so a draft holds what the person sees", async () => {
         const wrapper = mount(Composer);
-        await wrapper.get("[data-testid='composer-input']").setValue("hello, edited");
+        await type(wrapper, "hello, edited");
 
         expect(wrapper.emitted("edit")?.slice(-1)).toEqual([["hello, edited"]]);
     });
@@ -76,11 +108,12 @@ describe("the composer's box", () => {
 describe("the composer's held text", () => {
     test("is put back in the box whenever what holds it changes, so a new empty draft does not show text typed in a channel", async () => {
         const wrapper = mount(Composer, { props: { heldText: "", heldBy: null } });
-        await wrapper.get("[data-testid='composer-input']").setValue("typed in a channel");
+        await type(wrapper, "typed in a channel");
 
         await wrapper.setProps({ heldText: "", heldBy: { people: [] } });
 
-        expect((wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement).value).toBe("");
+        expect(boxText(wrapper)).toBe("");
+        expect(editorOf(wrapper).textContent).toBe("");
     });
 });
 
@@ -88,13 +121,15 @@ describe("the composer's placeholder", () => {
     test("names a channel plainly, with no hash character, since the hash is an icon", () => {
         const wrapper = mount(Composer, { props: { title: "young-adults", isChannel: true } });
 
-        expect(wrapper.get("[data-testid='composer-input']").attributes("placeholder")).toBe("Message young-adults");
+        expect(wrapper.get("[data-testid='composer-input']").attributes("data-placeholder")).toBe("Message young-adults");
+        expect(wrapper.get("[data-testid='composer-input']").attributes("aria-label")).toBe("Message young-adults");
     });
 
     test("names the other person of a direct message", () => {
         const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
 
-        expect(wrapper.get("[data-testid='composer-input']").attributes("placeholder")).toBe("Message Anna Reyes");
+        expect(wrapper.get("[data-testid='composer-input']").attributes("data-placeholder")).toBe("Message Anna Reyes");
+        expect(wrapper.get("[data-testid='composer-input']").attributes("aria-label")).toBe("Message Anna Reyes");
     });
 });
 
@@ -116,21 +151,23 @@ describe("the composer's keys", () => {
     test("Enter sends the text", async () => {
         const wrapper = mount(Composer);
         const input = wrapper.get("[data-testid='composer-input']");
-        await input.setValue("hello");
+        await type(wrapper, "hello");
 
         await input.trigger("keydown", { key: "Enter" });
 
         expect(wrapper.emitted("send")).toEqual([["hello"]]);
+        expect(boxText(wrapper)).toBe("");
     });
 
     test("Shift and Enter does not send, leaving the new line to the box", async () => {
         const wrapper = mount(Composer);
         const input = wrapper.get("[data-testid='composer-input']");
-        await input.setValue("hello");
+        await type(wrapper, "hello");
 
         await input.trigger("keydown", { key: "Enter", shiftKey: true });
 
         expect(wrapper.emitted("send")).toBeUndefined();
+        expect(boxText(wrapper)).toBe("hello\n");
     });
 });
 
@@ -141,35 +178,39 @@ describe("the composer's send button", () => {
         expect(send.classes()).not.toContain("is-ready");
         expect(send.attributes("aria-label")).toBe("Send");
 
-        await wrapper.get("[data-testid='composer-input']").setValue("hello");
+        await type(wrapper, "hello");
 
         expect(send.classes()).toContain("is-ready");
     });
 });
 
+// The editor is a block that grows with its lines between the sheet's one-line minimum and its
+// cap, past which it scrolls; jsdom lays nothing out, so a cell reads what decides that height:
+// the lines drawn, and no fixed height set over them.
 describe("the composer's text box", () => {
     test("grows to the height of what is typed, which the sheet caps before it scrolls", async () => {
         const wrapper = mount(Composer, { attachTo: document.body });
-        const input = wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement;
-        Object.defineProperty(input, "scrollHeight", { configurable: true, get: () => 98 });
 
-        await wrapper.get("[data-testid='composer-input']").setValue("one\ntwo\nthree\nfour");
+        await type(wrapper, "one\ntwo\nthree\nfour");
 
-        expect(input.style.height).toBe("98px");
+        const editor = editorOf(wrapper);
+        expect(boxText(wrapper)).toBe("one\ntwo\nthree\nfour");
+        expect(editor.querySelectorAll("br")).toHaveLength(3);
+        expect(editor.style.height).toBe("");
         wrapper.unmount();
     });
 
     test("goes back to one line once it is emptied by a send", async () => {
         const wrapper = mount(Composer, { attachTo: document.body });
-        const input = wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement;
-        let contentHeight = 98;
-        Object.defineProperty(input, "scrollHeight", { configurable: true, get: () => contentHeight });
-        await wrapper.get("[data-testid='composer-input']").setValue("one\ntwo\nthree\nfour");
+        await type(wrapper, "one\ntwo\nthree\nfour");
 
-        contentHeight = 35;
         await wrapper.get("form").trigger("submit");
 
-        expect(input.style.height).toBe("35px");
+        // Empty to the last node: a line break left behind would hold a second line open.
+        const editor = editorOf(wrapper);
+        expect(boxText(wrapper)).toBe("");
+        expect(editor.childNodes).toHaveLength(0);
+        expect(editor.style.height).toBe("");
         wrapper.unmount();
     });
 });

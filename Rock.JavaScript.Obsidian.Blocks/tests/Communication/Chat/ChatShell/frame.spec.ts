@@ -860,7 +860,10 @@ describe("the thread drawer", () => {
 
         const input = w.get("[data-testid='frame-panel'] [data-testid='composer-input']");
         await w.get("[data-testid='frame-panel'] [data-testid='composer-also'] input").setValue(true);
-        await input.setValue("Count me in");
+        // typed as a browser types into the editor: the text, then input
+        input.element.textContent = "Count me in";
+        input.element.dispatchEvent(new Event("input", { bubbles: true }));
+        await nextTick();
         await input.trigger("keydown", { key: "Enter" });
 
         expect(mockShell!.sendReply).toHaveBeenCalledWith(40, "Count me in", true);

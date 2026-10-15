@@ -17,14 +17,13 @@
             </div>
 
             <form class="chat-composer-box" @submit.prevent="onSubmit">
-                <textarea ref="inputElement"
-                          v-model="text"
-                          class="chat-composer-input"
-                          rows="1"
-                          :placeholder="placeholder"
-                          data-testid="composer-input"
-                          :disabled="isDisabled"
-                          @keydown="onKeydown"></textarea>
+                <ChipEditor v-model:text="text"
+                            class="chat-composer-input"
+                            :placeholder="placeholder"
+                            :isDisabled="isDisabled"
+                            data-testid="composer-input"
+                            @send="onSubmit"
+                            @upWhenEmpty="emit('editLast')" />
                 <button type="submit"
                         class="chat-composer-send"
                         :class="{ 'is-ready': isReady }"
@@ -135,28 +134,10 @@
     box-shadow: 0 0 0 3px var(--chat-brand-ring), 0 6px 18px -10px var(--chat-composer-glow);
 }
 
-/* One 21px line at 14.5px, grown by script to what is typed until the cap, then it scrolls. */
-.chat-composer-input {
-    flex: 1;
-    min-width: 0;
-    height: 35px;
-    min-height: 35px;
-    max-height: 180px;
-    padding: 7px 4px;
-    margin: 0;
-    font-size: 14.5px;
-    line-height: 1.45;
-    color: var(--chat-text);
-    resize: none;
-    background: none;
-    border: 0;
-    outline: 0;
-    box-shadow: none;
-}
-
-.chat-composer-input::placeholder {
+/* The editor carries its own line, padding and cap; a disabled box, while a draft starts, reads as resting. */
+.chat-composer-input[aria-disabled="true"] {
     color: var(--chat-muted);
-    opacity: 1;
+    cursor: default;
 }
 
 .chat-composer-send {
@@ -256,9 +237,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { canMakeSendKey, textAfterSend } from "../composables/useSend.partial";
     import { TimelineMessage } from "../types.partial";
+    import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
 
@@ -357,9 +339,8 @@
 
     // #region Values
 
+    /** The box's wire text, a mention written as its token, kept in step with the editor both ways. */
     const text = ref("");
-
-    const inputElement = ref<HTMLTextAreaElement>();
 
     /** A thread reply's choice to show it in the conversation too, cleared with each send. */
     const isAlsoSent = ref(false);
@@ -426,41 +407,7 @@
         isAlsoSent.value = false;
     }
 
-    /**
-     * Enter sends; Shift and Enter starts a new line. Up in an empty box asks to edit the
-     * person's newest message, and with text in the box it only moves the caret.
-     */
-    function onKeydown(event: KeyboardEvent): void {
-        if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
-            event.preventDefault();
-            onSubmit();
-        }
-        else if (event.key === "ArrowUp" && !event.isComposing && text.value === "") {
-            event.preventDefault();
-            emit("editLast");
-        }
-    }
-
     // #endregion Event Handlers
-
-    // #region Functions
-
-    /**
-     * Sizes the box to what is typed. The height is let go first so a shorter text can shrink
-     * it, and the sheet's minimum and maximum keep it between one line and the cap, past which
-     * the text scrolls.
-     */
-    function fitToText(): void {
-        const input = inputElement.value;
-        if (!input) {
-            return;
-        }
-
-        input.style.height = "auto";
-        input.style.height = `${input.scrollHeight}px`;
-    }
-
-    // #endregion Functions
 
     // #region Watchers
 
@@ -469,10 +416,10 @@
     });
 
     // The shell keeps a failed draft's text when the person leaves it, so it is told what the
-    // box holds now, not only what was last sent. The box is sized once the text is in it.
+    // box holds now, not only what was last sent. The editor grows with its lines by itself, up
+    // to its cap, so nothing here sizes it.
     watch(text, value => {
         emit("edit", value);
-        void nextTick(fitToText);
     });
 
     // #endregion Watchers
