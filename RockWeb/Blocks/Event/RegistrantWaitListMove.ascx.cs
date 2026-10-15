@@ -31,6 +31,7 @@ using Rock.Attribute;
 using System.Data.Entity;
 using Humanizer;
 using Rock.Communication;
+using Rock.Security;
 using System.Text;
 
 namespace RockWeb.Blocks.Event
@@ -140,11 +141,15 @@ namespace RockWeb.Blocks.Event
                     {
                         Dictionary<string, object> mergeObjects = GetMergeObjects( _firstRegistration );
 
-                        tbFromSubject.Text = _template.WaitListTransitionSubject.ResolveMergeFields( mergeObjects );
-                        tbFromName.Text = _template.WaitListTransitionFromName.ResolveMergeFields( mergeObjects );
-                        tbFromEmail.Text = _template.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
                         ceEmailMessage.Text = _template.WaitListTransitionEmailTemplate;
-                        ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+
+                        using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                        {
+                            tbFromSubject.Text = _template.WaitListTransitionSubject.ResolveMergeFields( mergeObjects );
+                            tbFromName.Text = _template.WaitListTransitionFromName.ResolveMergeFields( mergeObjects );
+                            tbFromEmail.Text = _template.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
+                            ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                        }
 
                         // needed to work in IE
                         ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
@@ -188,7 +193,11 @@ namespace RockWeb.Blocks.Event
                 if ( _firstRegistration != null )
                 {
                     Dictionary<string, object> mergeObjects = GetMergeObjects( _firstRegistration );
-                    ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+
+                    using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                    {
+                        ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                    }
 
                     // needed to work in IE
                     ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
@@ -266,7 +275,11 @@ namespace RockWeb.Blocks.Event
                         emailMessage.Message = ceEmailMessage.Text;
                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                        emailMessage.Send();
+
+                        using ( PersonTokenScope.RestrictTo( registration.PersonAlias?.Person ) )
+                        {
+                            emailMessage.Send();
+                        }
 
                         sendCount++;
                     }

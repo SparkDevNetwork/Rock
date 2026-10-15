@@ -30,6 +30,7 @@ using Rock.Attribute;
 using System.Data.Entity;
 using Humanizer;
 using Rock.Communication;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Event
 {
@@ -159,7 +160,10 @@ namespace RockWeb.Blocks.Event
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = true;
-                                emailMessage.Send();
+                                using ( PersonTokenScope.RestrictTo( registration.PersonAlias?.Person ) )
+                                {
+                                    emailMessage.Send();
+                                }
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;
                                 rockContext.SaveChanges();
@@ -242,7 +246,10 @@ namespace RockWeb.Blocks.Event
                             mergeObjects.Add( "Registration", registrationSample );
                             mergeObjects.Add( "RegistrationInstance", _registrationInstance );
 
-                            ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                            using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                            {
+                                ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                            }
                             
                             // needed to work in IE
                             ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
@@ -297,14 +304,16 @@ namespace RockWeb.Blocks.Event
 
                         ceEmailMessage.Text = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
 
-                        ifEmailPreview.Attributes["srcdoc"] = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.ResolveMergeFields( mergeObjects );
-
                         // needed to work in IE
                         ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
 
-                        txtFromEmail.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromEmail.ResolveMergeFields( mergeObjects );
-                        txtFromName.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromName.ResolveMergeFields( mergeObjects );
-                        txtFromSubject.Text = _registrationInstance.RegistrationTemplate.PaymentReminderSubject.ResolveMergeFields( mergeObjects );
+                        using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                        {
+                            ifEmailPreview.Attributes["srcdoc"] = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.ResolveMergeFields( mergeObjects );
+                            txtFromEmail.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromEmail.ResolveMergeFields( mergeObjects );
+                            txtFromName.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromName.ResolveMergeFields( mergeObjects );
+                            txtFromSubject.Text = _registrationInstance.RegistrationTemplate.PaymentReminderSubject.ResolveMergeFields( mergeObjects );
+                        }
 
                         if ( _registrationInstance.RegistrationTemplate.PaymentReminderTimeSpan.HasValue )
                         {
