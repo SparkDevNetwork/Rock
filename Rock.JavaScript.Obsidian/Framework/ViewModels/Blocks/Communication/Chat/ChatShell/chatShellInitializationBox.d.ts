@@ -45,6 +45,18 @@ export type ChatShellInitializationBox = {
     channelGuid?: Guid | null;
 
     /**
+     * Gets or sets the root of the thread named by the ThreadRoot page parameter, whose drawer
+     * opens over the channel when present, or null.
+     */
+    threadRootId?: number | null;
+
+    /**
+     * Gets or sets the message named by the Message page parameter, which the thread drawer
+     * scrolls to and flashes when present, or null.
+     */
+    messageId?: number | null;
+
+    /**
      * Gets or sets a value indicating whether the page narrows the directory, the people
      * search and the rooms pinned for everyone to the person's campus.
      */

@@ -37,6 +37,18 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         public Guid? ChannelGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the root of the thread named by the ThreadRoot page parameter, whose drawer
+        /// opens over the channel when present, or null.
+        /// </summary>
+        public long? ThreadRootId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message named by the Message page parameter, which the thread drawer
+        /// scrolls to and flashes when present, or null.
+        /// </summary>
+        public long? MessageId { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the page narrows the directory, the people
         /// search and the rooms pinned for everyone to the person's campus.
         /// </summary>

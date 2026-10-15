@@ -76,6 +76,16 @@ namespace Rock.Blocks.Communication.Chat
             /// message names it.
             /// </summary>
             public const string ChannelGuid = "ChannelGuid";
+
+            /// <summary>
+            /// The root of the thread to open over the channel, as a thread reply's push names it.
+            /// </summary>
+            public const string ThreadRoot = "ThreadRoot";
+
+            /// <summary>
+            /// The message to scroll to and flash in that thread, as a thread reply's push names it.
+            /// </summary>
+            public const string Message = "Message";
         }
 
         #endregion Keys
@@ -90,9 +100,13 @@ namespace Rock.Blocks.Communication.Chat
             RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Communication/Chat/chat.css" ), true );
 
             var session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext );
-            var box = ChatSessionHelper.BuildInitializationBox( session, GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME ) );
+            var box = ChatSessionHelper.BuildInitializationBox(
+                session,
+                GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME ),
+                PageParameter( PageParameterKey.ChannelGuid ),
+                PageParameter( PageParameterKey.ThreadRoot ),
+                PageParameter( PageParameterKey.Message ) );
 
-            box.ChannelGuid = PageParameter( PageParameterKey.ChannelGuid ).AsGuidOrNull();
             box.AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean();
 
             return box;

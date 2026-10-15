@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -293,6 +294,46 @@ namespace Rock.Communication.Chat.Platform.Session
                 Session = session,
                 OrganizationName = organizationName
             };
+        }
+
+        /// <summary>
+        /// Builds what the chat shell is given when it opens, with what the page's link names: the
+        /// channel to open first and, for a link to a thread reply, its root and the reply.
+        /// </summary>
+        /// <param name="session">The session the gates opened, or refused.</param>
+        /// <param name="organizationName">The church's name, from Rock's global attributes.</param>
+        /// <param name="channelGuid">The ChannelGuid page parameter as the link spelled it, or null.</param>
+        /// <param name="threadRoot">The ThreadRoot page parameter as the link spelled it, or null.</param>
+        /// <param name="message">The Message page parameter as the link spelled it, or null.</param>
+        /// <returns>The box, without the block's settings, which the block adds.</returns>
+        internal static ChatShellInitializationBox BuildInitializationBox( ChatShellSessionBag session, string organizationName, string channelGuid, string threadRoot, string message )
+        {
+            var box = BuildInitializationBox( session, organizationName );
+
+            // A link is typed, pasted and shared, so anything malformed is dropped and the page
+            // opens with less rather than failing.
+            box.ChannelGuid = channelGuid.AsGuidOrNull();
+            box.ThreadRootId = ToMessageIdOrNull( threadRoot );
+            box.MessageId = ToMessageIdOrNull( message );
+
+            return box;
+        }
+
+        /// <summary>
+        /// Reads a message id from a link: a positive whole number in plain digits, else null.
+        /// </summary>
+        /// <param name="value">The page parameter as the link spelled it.</param>
+        /// <returns>The id, or null when the value names no message.</returns>
+        private static long? ToMessageIdOrNull( string value )
+        {
+            // Plain digits only: no sign, spaces, separators or decimals, and an overflow fails the
+            // parse, so a hand-edited link can never name some other message.
+            if ( long.TryParse( value, NumberStyles.None, CultureInfo.InvariantCulture, out var id ) && id > 0 )
+            {
+                return id;
+            }
+
+            return null;
         }
 
         /// <summary>
