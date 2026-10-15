@@ -767,6 +767,32 @@ describe("what the page tells push", () => {
         expect(h.shell.isChannelOnScreen(channelA)).toBe(false);
     });
 
+    // A reply kept to its thread is on screen only while its thread is open in the drawer, so the
+    // worker asks by the reply's root.
+    type ThreadScreenShell = { isThreadOnScreen: (rootId: number) => boolean };
+
+    test("a thread is on screen only while its root is open in the drawer and the page is visible", async () => {
+        const h = await started();
+        const shell = h.shell as unknown as ThreadScreenShell;
+
+        expect(shell.isThreadOnScreen(40)).toBe(false);
+
+        void h.shell.threads.openThread(channelA, 40);
+        await settle();
+
+        expect(shell.isThreadOnScreen(40)).toBe(true);
+        expect(shell.isThreadOnScreen(41)).toBe(false);
+
+        h.pageDocument.visibilityState = "hidden";
+        expect(shell.isThreadOnScreen(40)).toBe(false);
+
+        h.pageDocument.visibilityState = "visible";
+        void h.shell.threads.closeThread();
+        await settle();
+
+        expect(shell.isThreadOnScreen(40)).toBe(false);
+    });
+
     test("the badge is the sidebar's unread mentions, never its unread messages", async () => {
         const h = build();
         h.bootstrap.value = {

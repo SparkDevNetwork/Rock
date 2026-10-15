@@ -69,6 +69,15 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
     };
 }
 
+/**
+ * The thread a test holds for a push to land in, by reply id: its newest page, and the older pages
+ * each loadOlderReplies call answers, in order, when the test answers it.
+ */
+let mockThreadPages: { newest: number[], older: number[][] } | null = null;
+
+/** The loadOlderReplies calls waiting for the test to answer them, oldest first. */
+const mockOlderAnswers: Array<() => void> = [];
+
 /** The shell the test mounted last, so a test can open a draft on it. */
 let mockShell: Record<string, unknown> | null = null;
 
@@ -143,6 +152,8 @@ function fakeShell(): Record<string, unknown> {
         isPushOffered: false
     });
 
+    const threads = fakeThreads();
+
     mockShell = {
         state,
         channels: reactive({ rows: [team, dmAnna] }),
@@ -153,7 +164,12 @@ function fakeShell(): Record<string, unknown> {
         directMessages: reactive({ draft: null, held: null, chosen: [], error: null, search: jest.fn(), choose: jest.fn(), unchoose: jest.fn(), edit: jest.fn() }),
         isNewMessageShown: true,
         openDirectMessage: jest.fn(),
-        start: jest.fn(async () => undefined),
+        // The page load opens the channel a link named, as the shell's start does.
+        start: jest.fn(async () => {
+            if (mockConfig.channelGuid) {
+                state.activeChannelId = (mockConfig.channelGuid as string).toLowerCase();
+            }
+        }),
         stop: jest.fn(async () => undefined),
         selectChannel: jest.fn(async (channelId: string) => {
             state.activeChannelId = channelId;
@@ -164,11 +180,13 @@ function fakeShell(): Record<string, unknown> {
         send: jest.fn(),
         turnOnPush: jest.fn(),
         isChannelOnScreen: () => false,
+        // as the shell answers it: the thread open in the drawer, on a page the test calls visible
+        isThreadOnScreen: (rootId: number) => (threads.state as { thread: { rootId: number } | null }).thread?.rootId === rootId,
         mentionBadge: () => 0,
         loadOlder: jest.fn(),
         dismissError: jest.fn(),
         sendReply: jest.fn(),
-        threads: fakeThreads()
+        threads
     };
 
     return mockShell;
@@ -200,9 +218,27 @@ function fakeThreads(): Record<string, unknown> {
         // The open thread as the drawer draws it, its root taken from the conversation that holds it.
         openThread: jest.fn(async (channelId: string, rootId: number) => {
             const root = timelineOf(channelId).messages.find(m => m.id === rootId) ?? storedMessage(rootId);
-            state.thread = { channelId, rootId, root, replies: [], following: false, readCursor: null, hasMore: false, isLoading: false, error: null };
+            const replies = (mockThreadPages?.newest ?? []).map(id => storedMessage(id, { parent_id: rootId }));
+            const hasMore = (mockThreadPages?.older.length ?? 0) > 0;
+            state.thread = { channelId, rootId, root, replies, following: false, readCursor: null, hasMore, isLoading: false, error: null, olderError: null };
         }),
-        loadOlderReplies: jest.fn(async () => undefined),
+        // Each older page waits for the test to answer it, then goes in above what is held, as
+        // useThreads' loadOlderReplies does.
+        loadOlderReplies: jest.fn(() => {
+            const thread = state.thread as { rootId: number, replies: TimelineMessage[], hasMore: boolean } | null;
+            if (!mockThreadPages || !thread) {
+                return Promise.resolve();
+            }
+
+            return new Promise<void>(resolve => {
+                mockOlderAnswers.push(() => {
+                    const page = mockThreadPages?.older.shift() ?? [];
+                    thread.replies.unshift(...page.map(id => storedMessage(id, { parent_id: thread.rootId })));
+                    thread.hasMore = (mockThreadPages?.older.length ?? 0) > 0;
+                    resolve();
+                });
+            });
+        }),
         seen: jest.fn(),
         closeThread: jest.fn(async () => {
             state.thread = null;
@@ -333,6 +369,8 @@ afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     mockShell = null;
+    mockThreadPages = null;
+    mockOlderAnswers.length = 0;
     mockTimelines.clear();
     resetConfig();
     FakeResizeObserver.all = [];
@@ -1052,5 +1090,217 @@ describe("a named group direct message", () => {
 
         const names = w.findAll("[data-testid='frame-panel'] .chat-grp [data-testid='sender-name']").map(n => n.text());
         expect(names).toContain("Ben Ortiz");
+    });
+});
+
+describe("a push about a thread reply", () => {
+    // The push worker posts to a window of the site through its service worker container, in the
+    // worker's own names and with every value a string, as the push carried it: a tap posts
+    // chat.push.open with the channel, the reply's root and the reply; the ask before a banner
+    // posts chat.push.is-open with the channel and, for a reply, its root, and reads the answer on
+    // the port it hands over. A page opened by a tap with no chat window open carries the same
+    // three in its link, which reach the block through the init box.
+
+    const threadsOf = (): Record<string, jest.Mock> => mockShell!.threads as Record<string, jest.Mock>;
+
+    /** The block's listeners on the page's service worker container. */
+    let workerListeners: Array<(event: MessageEvent) => void> = [];
+
+    let scrolledTo: Element[] = [];
+    const scrollIntoViewBefore = Element.prototype.scrollIntoView;
+
+    beforeEach(() => {
+        workerListeners = [];
+        Object.defineProperty(navigator, "serviceWorker", {
+            configurable: true,
+            value: {
+                addEventListener: (type: string, listener: (event: MessageEvent) => void) => {
+                    if (type === "message") {
+                        workerListeners.push(listener);
+                    }
+                },
+                removeEventListener: (_type: string, listener: (event: MessageEvent) => void) => {
+                    workerListeners = workerListeners.filter(l => l !== listener);
+                }
+            }
+        });
+
+        // jsdom lays nothing out and has no scrollIntoView, so where the block scrolls to is recorded.
+        scrolledTo = [];
+        Element.prototype.scrollIntoView = function (this: Element): void {
+            scrolledTo.push(this);
+        };
+    });
+
+    afterEach(() => {
+        delete (navigator as unknown as Record<string, unknown>).serviceWorker;
+        Element.prototype.scrollIntoView = scrollIntoViewBefore;
+    });
+
+    /** Posts a message from the worker, with a port for an ask's answer. */
+    function fromWorker(data: Record<string, string>): jest.Mock {
+        const port = { postMessage: jest.fn() };
+        for (const listener of workerListeners) {
+            listener({ data, ports: [port] } as unknown as MessageEvent);
+        }
+
+        return port.postMessage;
+    }
+
+    /** The drawer's row of a reply, or null when it is not drawn. */
+    function replyRow(w: VueWrapper, id: number): Element | null {
+        return w.element.querySelector(`[data-testid='frame-panel'] [data-reply-id='${id}']`);
+    }
+
+    function isFlashing(w: VueWrapper, id: number): boolean {
+        return !!replyRow(w, id)?.classList.contains("is-flashing");
+    }
+
+    function flashingRows(w: VueWrapper): Element[] {
+        return Array.from(w.element.querySelectorAll("[data-testid='frame-panel'] .is-flashing"));
+    }
+
+    /** Answers the oldest older-page call the block made. */
+    async function answerOlder(): Promise<void> {
+        const answer = mockOlderAnswers.shift();
+        if (!answer) {
+            throw new Error("no older page asked for");
+        }
+        answer();
+        await settle();
+    }
+
+    test("a tap opens the reply's conversation and the drawer at its root, scrolled to the reply and flashing it", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenCalledWith(team.channel_id);
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+        expect(isFlashing(w, 42)).toBe(true);
+        expect(flashingRows(w)).toHaveLength(1);
+        expect(scrolledTo).toContain(replyRow(w, 42));
+        expect(threadsOf().loadOlderReplies).not.toHaveBeenCalled();
+    });
+
+    test("a reply older than the newest page is found by loading older pages until it appears", async () => {
+        mockThreadPages = { newest: [50, 51], older: [[44, 45], [41, 42, 43]] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(1);
+        expect(flashingRows(w)).toHaveLength(0);
+
+        await answerOlder();
+        await settle();
+
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(2);
+        expect(flashingRows(w)).toHaveLength(0);
+
+        await answerOlder();
+        await settle();
+
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(2);
+        expect(isFlashing(w, 42)).toBe(true);
+        expect(scrolledTo).toContain(replyRow(w, 42));
+    });
+
+    test("a reply not found in two older pages leaves the drawer at its newest, flashing nothing", async () => {
+        mockThreadPages = { newest: [50], older: [[47, 48], [45, 46], [43, 44], [41, 42]] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        await answerOlder();
+        await settle();
+        await answerOlder();
+        await settle();
+        await settle();
+
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(2);
+        expect(mockOlderAnswers).toHaveLength(0);
+        expect(flashingRows(w)).toHaveLength(0);
+        expect(scrolledTo.filter(e => e.hasAttribute("data-reply-id"))).toEqual([]);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+    });
+
+    test("a drawer closed while an older page is on its way asks for no more and flashes nothing", async () => {
+        mockThreadPages = { newest: [50], older: [[44, 45], [41, 42, 43]] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(1);
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+        await settle();
+        await answerOlder();
+        await settle();
+
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(1);
+        expect(flashingRows(w)).toHaveLength(0);
+    });
+
+    test("a tap on a root's push opens its conversation and no thread", async () => {
+        await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id });
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenCalledWith(team.channel_id);
+        expect(threadsOf().openThread).not.toHaveBeenCalled();
+    });
+
+    test("a page opened at a reply's link opens the drawer at its root, scrolled to the reply and flashing it", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        Object.assign(mockConfig, { channelGuid: team.channel_id.toUpperCase(), threadRootId: 40, messageId: 42 });
+        const w = await mountBlock(1200);
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(isFlashing(w, 42)).toBe(true);
+        expect(scrolledTo).toContain(replyRow(w, 42));
+    });
+
+    test("the ask with a root answers open only while that thread's drawer is shown", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        // the conversation itself is on screen throughout
+        mockShell!.isChannelOnScreen = (channelId: string): boolean => channelId === team.channel_id;
+
+        expect(fromWorker({ type: "chat.push.is-open", channel_id: team.channel_id, root_id: "40" })).toHaveBeenCalledWith({ open: false });
+
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        expect(fromWorker({ type: "chat.push.is-open", channel_id: team.channel_id, root_id: "40" })).toHaveBeenCalledWith({ open: true });
+        expect(fromWorker({ type: "chat.push.is-open", channel_id: team.channel_id, root_id: "41" })).toHaveBeenCalledWith({ open: false });
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+        await settle();
+
+        expect(fromWorker({ type: "chat.push.is-open", channel_id: team.channel_id, root_id: "40" })).toHaveBeenCalledWith({ open: false });
+    });
+
+    test("the ask with no root still answers by the conversation on screen", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        mockShell!.isChannelOnScreen = (channelId: string): boolean => channelId === team.channel_id;
+
+        expect(fromWorker({ type: "chat.push.is-open", channel_id: team.channel_id })).toHaveBeenCalledWith({ open: true });
+        expect(fromWorker({ type: "chat.push.is-open", channel_id: dmAnna.channel_id })).toHaveBeenCalledWith({ open: false });
     });
 });

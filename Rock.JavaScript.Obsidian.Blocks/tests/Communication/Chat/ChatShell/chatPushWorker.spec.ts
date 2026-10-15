@@ -218,14 +218,50 @@ describe("the push worker", () => {
         expect(worker.shown).toHaveLength(1);
     });
 
-    test("always shows a thread-only reply, since no thread can be open on screen yet", async () => {
-        const front = chatWindow("https://church.example/chat", true, () => ({ open: true }));
+    test("hides a thread-only reply when a focused window says its thread is open, asking by the reply's root", async () => {
+        const front = chatWindow("https://church.example/chat", true, message => ({ open: message.root_id === "970" }));
+        const worker = loadWorker({ windows: [front] });
+
+        await worker.push(payload({ message_id: "981", parent_id: "970", in_channel: "false", reason: "thread" }));
+
+        expect(front.posted).toEqual([{ type: "chat.push.is-open", channel_id: "6f1c2a9e-0000-4000-8000-000000000001", root_id: "970" }]);
+        expect(worker.shown).toEqual([]);
+    });
+
+    test("shows a thread-only reply when the focused window has its channel open but not its thread", async () => {
+        // only the channel is on screen: a window asked by the root says no
+        const front = chatWindow("https://church.example/chat", true, message => ({ open: message.root_id === undefined }));
         const worker = loadWorker({ windows: [front] });
 
         await worker.push(payload({ parent_id: "970", in_channel: "false", reason: "thread" }));
 
-        expect(front.posted).toEqual([]);
+        expect(front.posted.length).toBeGreaterThan(0);
         expect(worker.shown).toHaveLength(1);
+    });
+
+    test("a thread-only reply's ask that is never answered costs the wait, then the banner shows", async () => {
+        const silent = chatWindow("https://church.example/chat", true, null);
+        const worker = loadWorker({ windows: [silent] });
+
+        const work = worker.push(payload({ parent_id: "970", in_channel: "false", reason: "thread" }));
+        await settle();
+
+        expect(worker.shown).toEqual([]);
+        expect(worker.timers.map(timer => timer.milliseconds)).toEqual([250]);
+
+        worker.timers[0].callback();
+        await work;
+
+        expect(worker.shown).toHaveLength(1);
+    });
+
+    test("hides a reply shown in the channel when only its thread is on screen", async () => {
+        const front = chatWindow("https://church.example/chat", true, message => ({ open: message.root_id === "970" }));
+        const worker = loadWorker({ windows: [front] });
+
+        await worker.push(payload({ parent_id: "970", in_channel: "true", reason: "message" }));
+
+        expect(worker.shown).toEqual([]);
     });
 
     test("hides a reply shown in the channel when that channel is on screen, as it hides a root", async () => {
@@ -301,6 +337,35 @@ describe("the push worker", () => {
         expect(chat.posted).toEqual([{ type: "chat.push.open", channel_id: "6f1c2a9e-0000-4000-8000-000000000001" }]);
         expect(other.focus).not.toHaveBeenCalled();
         expect(worker.opened).toEqual([]);
+    });
+
+    test("a tap on a reply tells the chat window to open the reply's thread at the reply", async () => {
+        const chat = chatWindow("https://church.example/chat", false, null);
+        const worker = loadWorker({ windows: [chat] });
+
+        await worker.fire("notificationclick", { notification: { close: jest.fn(), data: payload({ message_id: "981", parent_id: "970", in_channel: "false", reason: "thread" }).data } });
+
+        expect(chat.focus).toHaveBeenCalled();
+        expect(chat.posted).toEqual([{ type: "chat.push.open", channel_id: "6f1c2a9e-0000-4000-8000-000000000001", root_id: "970", message_id: "981" }]);
+        expect(worker.opened).toEqual([]);
+    });
+
+    test("a tap on a reaction to a reply opens that reply's thread too", async () => {
+        const chat = chatWindow("https://church.example/chat", false, null);
+        const worker = loadWorker({ windows: [chat] });
+        const data = payload({ message_id: "981", parent_id: "970", in_channel: "true", reason: "reaction", tag: "reaction:981", renotify: "true" }).data;
+
+        await worker.fire("notificationclick", { notification: { close: jest.fn(), data } });
+
+        expect(chat.posted).toEqual([{ type: "chat.push.open", channel_id: "6f1c2a9e-0000-4000-8000-000000000001", root_id: "970", message_id: "981" }]);
+    });
+
+    test("a tap on a reply with no chat window open opens the chat page at the reply in its thread", async () => {
+        const worker = loadWorker({ windows: [chatWindow("https://church.example/give", true, null)], page: "/page/412" });
+
+        await worker.fire("notificationclick", { notification: { close: jest.fn(), data: payload({ message_id: "981", parent_id: "970", in_channel: "false", reason: "thread" }).data } });
+
+        expect(worker.opened).toEqual(["/page/412?ChannelGuid=6f1c2a9e-0000-4000-8000-000000000001&ThreadRoot=970&Message=981"]);
     });
 
     test("a chat page off the site is never opened; the tap opens the site's root instead", async () => {

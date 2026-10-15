@@ -124,6 +124,48 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
+        public void BuildInitializationBox_LinkToAReply_CarriesTheChannelTheThreadRootAndTheMessageAsNumbers()
+        {
+            // A tap on a thread reply's push opens the page at that reply in its thread.
+            var session = ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext );
+
+            var box = ChatSessionHelper.BuildInitializationBox( session, "Cedar Hill Church", "6f1c2a9e-0000-4000-8000-000000000001", "970", "981" );
+
+            Assert.AreSame( session, box.Session );
+            Assert.AreEqual( "Cedar Hill Church", box.OrganizationName );
+            Assert.AreEqual( Guid.Parse( "6f1c2a9e-0000-4000-8000-000000000001" ), box.ChannelGuid );
+            Assert.AreEqual( 970L, box.ThreadRootId );
+            Assert.AreEqual( 981L, box.MessageId );
+        }
+
+        [TestMethod]
+        public void BuildInitializationBox_MalformedThreadRootOrMessage_IsDropped()
+        {
+            // A message id is a positive whole number; anything else in the link names no message,
+            // so the page opens the channel alone rather than failing.
+            var session = ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext );
+
+            foreach ( var malformed in new[] { null, "", " ", "abc", "0", "-5", "1.5", "970abc", "99999999999999999999999" } )
+            {
+                var box = ChatSessionHelper.BuildInitializationBox( session, "Cedar Hill Church", "6f1c2a9e-0000-4000-8000-000000000001", malformed, malformed );
+
+                Assert.IsNull( box.ThreadRootId, $"'{malformed}' reached the box as a thread root" );
+                Assert.IsNull( box.MessageId, $"'{malformed}' reached the box as a message" );
+                Assert.AreEqual( Guid.Parse( "6f1c2a9e-0000-4000-8000-000000000001" ), box.ChannelGuid, $"'{malformed}' lost the channel" );
+            }
+        }
+
+        [TestMethod]
+        public void BuildInitializationBox_MalformedChannel_IsDropped()
+        {
+            var session = ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext );
+
+            var box = ChatSessionHelper.BuildInitializationBox( session, "Cedar Hill Church", "not-a-guid", "970", "981" );
+
+            Assert.IsNull( box.ChannelGuid );
+        }
+
+        [TestMethod]
         public void InitializationBox_CarriesNoLayout()
         {
             // The chat draws a channel and a direct message each in its own look, so nothing Rock
