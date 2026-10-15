@@ -32,7 +32,7 @@ import { createPushRegistration, PushDependencies, PushRegistration } from "./co
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
-import { ActionNotice, createMessageActions, MessageActions } from "./composables/useMessageActions.partial";
+import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -584,6 +584,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return false;
     }
 
+    /**
+     * Uses up the quote waiting under a key, for the send about to go. The strip leaves with the
+     * text; the quote stays on the send's row, so every retry of it names the same message.
+     */
+    function takeQuote(key: string): number | undefined {
+        const quoted = messageActions.state.quotes[key];
+        messageActions.cancelQuote(key);
+        return quoted?.id;
+    }
+
     /** Counts a send toward offering notifications, which waits for the person's first send. */
     function notePushSend(): void {
         push?.noteSend();
@@ -900,7 +910,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 await directMessages.sendFirst(body);
             }
             else if (state.activeChannelId && isSendKeyed()) {
-                await sender.send(state.activeChannelId, body);
+                await sender.send(state.activeChannelId, body, undefined, undefined, takeQuote(quoteKey(state.activeChannelId)));
                 notePushSend();
             }
         },
@@ -910,7 +920,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const thread = threads.state.thread;
             const channelId = thread?.rootId === rootId ? thread.channelId : state.activeChannelId;
             if (channelId && isSendKeyed()) {
-                await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel });
+                // the thread's own quote, never the conversation's, which waits for a send there
+                await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel }, takeQuote(quoteKey(channelId, rootId)));
                 notePushSend();
             }
         },

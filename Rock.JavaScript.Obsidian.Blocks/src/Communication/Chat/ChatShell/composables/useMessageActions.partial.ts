@@ -138,6 +138,19 @@ export function canEditMessage(message: TimelineMessage, personAliasGuid: string
 }
 
 /**
+ * The key a quote waits under until the next send there: the conversation's id, or for a
+ * thread its conversation and root, so a thread's quote never leaves with a conversation send.
+ *
+ * @param channelId The conversation.
+ * @param rootId The thread's root, for a quote in its reply composer.
+ *
+ * @returns The key.
+ */
+export function quoteKey(channelId: string, rootId?: number | null): string {
+    return typeof rootId === "number" ? `${channelId}/${rootId}` : channelId;
+}
+
+/**
  * The text a copy writes: what the person reads, so a mention copies as its name rather than its
  * token.
  *

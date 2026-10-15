@@ -79,7 +79,10 @@
                       :isChannel="isChannel"
                       :isPhone="isPhone"
                       :isLocked="isLocked"
-                      @send="onSend" />
+                      :quote="quote"
+                      :isQuoteOwn="isQuoteOwn"
+                      @send="onSend"
+                      @cancelQuote="emit('cancelQuote')" />
         </template>
     </PanelHost>
 </template>
@@ -354,6 +357,18 @@
         sentKeys: {
             type: Object as PropType<ReadonlySet<string>>,
             default: () => new Set<string>()
+        },
+
+        /** The message being quoted into the next reply, drawn in the composer's strip. */
+        quote: {
+            type: Object as PropType<TimelineMessage | null>,
+            default: null
+        },
+
+        /** Whether the quoted message is the reader's own, which the strip calls "yourself". */
+        isQuoteOwn: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -365,7 +380,8 @@
         (e: "seen", messageId: number): void,
         (e: "loadOlder"): void,
         (e: "retry", localId: string): void,
-        (e: "discard", localId: string): void
+        (e: "discard", localId: string): void,
+        (e: "cancelQuote"): void
     }>();
 
     // #region Values

@@ -97,8 +97,12 @@
                           :heldText="draft?.body ?? held?.body ?? ''"
                           :heldBy="draft ?? held"
                           :isTextKeptOnSend="isTextKeptOnSend(draft)"
+                          :quote="conversationQuote"
+                          :isQuoteOwn="isOwnQuote(conversationQuote)"
                           @send="shell.send"
-                          @edit="shell.directMessages.edit" />
+                          @edit="shell.directMessages.edit"
+                          @editLast="onEditLast"
+                          @cancelQuote="onCancelQuote(conversationQuoteKey)" />
             </section>
 
             <!--
@@ -158,6 +162,8 @@
                                   :personName="personName"
                                   :personPhotoUrl="personPhotoUrl"
                                   :organizationName="organizationName"
+                                  :quote="threadQuote"
+                                  :isQuoteOwn="isOwnQuote(threadQuote)"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
@@ -165,7 +171,8 @@
                                   @seen="shell.threads.seen"
                                   @loadOlder="onLoadOlderReplies"
                                   @retry="onRetry"
-                                  @discard="shell.sender.discard" />
+                                  @discard="shell.sender.discard"
+                                  @cancelQuote="onCancelQuote(threadQuoteKey)" />
                 </div>
             </aside>
         </div>
@@ -347,11 +354,12 @@
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
+    import { quoteKey } from "./ChatShell/composables/useMessageActions.partial";
     import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
-    import { FeedLayout } from "./ChatShell/feedLayout.partial";
+    import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
-    import { SidebarRow } from "./ChatShell/types.partial";
+    import { SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
 
     // #region Types
@@ -630,6 +638,16 @@
     /** A closed panel is out of reach everywhere; an open one only while a phone shows another pane. */
     const isPanelHidden = computed((): boolean => !panelKind.value || (isPhone.value && pane.value !== "panel"));
 
+    /** Where the conversation composer's quote waits; a draft has no messages to quote. */
+    const conversationQuoteKey = computed((): string | null => activeChannelId.value && !draft.value ? quoteKey(activeChannelId.value) : null);
+
+    /** Where the open thread's quote waits, apart from its conversation's. */
+    const threadQuoteKey = computed((): string | null => drawnThread.value ? quoteKey(drawnThread.value.channelId, drawnThread.value.rootId) : null);
+
+    const conversationQuote = computed((): TimelineMessage | null => quoteAt(conversationQuoteKey.value));
+
+    const threadQuote = computed((): TimelineMessage | null => quoteAt(threadQuoteKey.value));
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -841,6 +859,19 @@
         }
     }
 
+    /** Up in the empty conversation composer: the newest message the person could edit opens in place. */
+    function onEditLast(): void {
+        if (activeChannelId.value && !draft.value) {
+            shell.value.messageActions.startEditNewest(activeChannelId.value);
+        }
+    }
+
+    function onCancelQuote(key: string | null): void {
+        if (key) {
+            shell.value.messageActions.cancelQuote(key);
+        }
+    }
+
     function onRetry(localId: string): void {
         void shell.value.sender.retry(localId);
     }
@@ -875,6 +906,16 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** The message quoted under a key, if any. */
+    function quoteAt(key: string | null): TimelineMessage | null {
+        return key ? shell.value.messageActions.state.quotes[key] ?? null : null;
+    }
+
+    /** Whether a quote is the person's own, under any of their aliases when the page said so. */
+    function isOwnQuote(quote: TimelineMessage | null): boolean {
+        return !!quote && isOwnMessage(quote, personAliasGuid.value);
+    }
 
     /**
      * Closes the panel column. Focus returns to the header button that opened it, or on a phone

@@ -23,6 +23,7 @@ import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -1185,6 +1186,41 @@ describe("a reply in a thread", () => {
 
         expect(h.sent[0].args.p_parent_id ?? null).toBeNull();
         expect(h.sent[0].args.p_shown_in_channel ?? false).toBe(false);
+    });
+});
+
+// A quote waits under its conversation's key, quoteKey(channelId), or its thread's,
+// quoteKey(channelId, rootId), until the next send there. That send names it to the platform as
+// p_quoted_message_id and uses it up, so the strip leaves as the text does.
+describe("a quoted send", () => {
+    type ReplyingShell = { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> };
+
+    test("carries the conversation's quote and uses it up", async () => {
+        const h = await started();
+        h.shell.messageActions.startQuote(quoteKey(channelA), page(10).messages[0]);
+
+        await h.shell.send("count me in");
+        await h.shell.send("and again");
+        await settle();
+
+        expect(h.sent[0].args.p_quoted_message_id).toBe(10);
+        expect(h.sent[1].args.p_quoted_message_id ?? null).toBeNull();
+        expect(h.shell.messageActions.state.quotes[quoteKey(channelA)]).toBeUndefined();
+    });
+
+    test("a thread's reply carries its thread's quote and leaves the conversation's", async () => {
+        const h = await started();
+        const conversationQuote = page(10).messages[0];
+        const threadQuote = { ...conversationQuote, id: 11 };
+        h.shell.messageActions.startQuote(quoteKey(channelA), conversationQuote);
+        h.shell.messageActions.startQuote(quoteKey(channelA, 10), threadQuote);
+
+        await (h.shell as unknown as ReplyingShell).sendReply(10, "count me in", false);
+        await settle();
+
+        expect(h.sent[0].args).toEqual(expect.objectContaining({ p_parent_id: 10, p_quoted_message_id: 11 }));
+        expect(h.shell.messageActions.state.quotes[quoteKey(channelA, 10)]).toBeUndefined();
+        expect(h.shell.messageActions.state.quotes[quoteKey(channelA)]).toEqual(conversationQuote);
     });
 });
 

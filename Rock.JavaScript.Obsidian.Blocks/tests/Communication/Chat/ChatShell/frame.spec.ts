@@ -186,7 +186,13 @@ function fakeShell(): Record<string, unknown> {
         loadOlder: jest.fn(),
         dismissError: jest.fn(),
         sendReply: jest.fn(),
-        threads
+        threads,
+        // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
+        messageActions: {
+            state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
+            startEditNewest: jest.fn(() => false),
+            cancelQuote: jest.fn()
+        }
     };
 
     return mockShell;
