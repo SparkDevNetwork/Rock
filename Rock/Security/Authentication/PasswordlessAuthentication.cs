@@ -448,10 +448,31 @@ namespace Rock.Security.Authentication
 
             if ( !matchingPeople.Any() )
             {
+                /*
+                    10/15/2026 - MSE
+
+                    The individual entered the correct code, so the mobile
+                    number or email is now verified. The session gets a new
+                    code that is only returned inside the encrypted state of
+                    this response, as the registration code. Account Entry
+                    only accepts a state with a registration code that matches
+                    the session, so the state returned when the code was sent
+                    (before anyone entered it) can no longer be used to
+                    register.
+
+                    Reason: Passwordless state is not proof the code was entered.
+                */
+                var registrationCode = new RemoteAuthenticationSessionService( rockContext ).GenerateUsableCode( state.CodeIssueDate, state.CodeLifetime );
+                remoteAuthenticationSession.Code = registrationCode;
+                rockContext.SaveChanges();
+
+                state.Code = registrationCode;
+                state.RegistrationCode = registrationCode;
+
                 return new OneTimePasscodeAuthenticationResult
                 {
                     IsRegistrationRequired = true,
-                    State = options.State
+                    State = GetEncryptedAuthenticationState( state )
                 };
             }
 
