@@ -60,12 +60,17 @@
     function askIsOpen(windowClient, channelId, rootId) {
         return new Promise(function (resolve) {
             var channel = new MessageChannel();
+
+            // The worker's end is closed once the ask is settled either way, so a worker woken by
+            // many pushes holds no open ports and a late answer goes nowhere.
             var timer = setTimeout(function () {
+                channel.port1.close();
                 resolve(false);
             }, onScreenWaitMs);
 
             channel.port1.onmessage = function (event) {
                 clearTimeout(timer);
+                channel.port1.close();
                 resolve(!!(event.data && event.data.open === true));
             };
 

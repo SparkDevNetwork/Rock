@@ -36,9 +36,12 @@ type FakeWindow = {
 };
 
 /** One end of a fake MessageChannel; posting on one end calls the other's onmessage. */
-type FakePort = { onmessage: ((event: { data: unknown }) => void) | null, other?: FakePort, postMessage: (data: unknown) => void };
+type FakePort = { onmessage: ((event: { data: unknown }) => void) | null, other?: FakePort, postMessage: (data: unknown) => void, close: jest.Mock };
 
 class FakeMessageChannel {
+    /** Every channel the worker made since it was last loaded, so a test can see what it closed. */
+    static made: FakeMessageChannel[] = [];
+
     port1: FakePort;
     port2: FakePort;
 
@@ -46,7 +49,8 @@ class FakeMessageChannel {
         const make = (): FakePort => {
             const port: FakePort = {
                 onmessage: null,
-                postMessage: (data: unknown) => port.other?.onmessage?.({ data })
+                postMessage: (data: unknown) => port.other?.onmessage?.({ data }),
+                close: jest.fn()
             };
             return port;
         };
@@ -54,6 +58,7 @@ class FakeMessageChannel {
         this.port2 = make();
         this.port1.other = this.port2;
         this.port2.other = this.port1;
+        FakeMessageChannel.made.push(this);
     }
 }
 
@@ -84,6 +89,7 @@ function loadWorker(options: { windows?: FakeWindow[], hasBadge?: boolean, page?
     const timers: Array<{ callback: () => void, milliseconds: number }> = [];
     const windows = options.windows ?? [];
     const page = options.page ?? "/chat";
+    FakeMessageChannel.made = [];
 
     const navigator: Record<string, unknown> = {};
     if (options.hasBadge !== false) {
@@ -287,6 +293,30 @@ describe("the push worker", () => {
         await work;
 
         expect(worker.shown).toHaveLength(1);
+    });
+
+    test("closes its end of each ask's channel once the window answers, and once the wait runs out", async () => {
+        const front = chatWindow("https://church.example/chat", true, () => ({ open: false }));
+        const answered = loadWorker({ windows: [front] });
+
+        await answered.push(payload({}));
+
+        expect(FakeMessageChannel.made).toHaveLength(1);
+        expect(FakeMessageChannel.made[0].port1.close).toHaveBeenCalled();
+
+        const silent = chatWindow("https://church.example/chat", true, null);
+        const waited = loadWorker({ windows: [silent] });
+
+        const work = waited.push(payload({}));
+        await settle();
+
+        expect(FakeMessageChannel.made).toHaveLength(1);
+        expect(FakeMessageChannel.made[0].port1.close).not.toHaveBeenCalled();
+
+        waited.timers[0].callback();
+        await work;
+
+        expect(FakeMessageChannel.made[0].port1.close).toHaveBeenCalled();
     });
 
     test("an answer that arrives after the wait changes nothing", async () => {
