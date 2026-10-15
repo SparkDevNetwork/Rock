@@ -2081,6 +2081,22 @@ namespace Rock.Blocks.Communication
                 communication.FromEmail = communication.FromEmail.SanitizeLava();
                 communication.FromName = communication.FromName.SanitizeLava();
                 communication.ReplyToEmail = communication.ReplyToEmail.SanitizeLava();
+
+                /*
+                    10/15/2026 - MSE
+
+                    The SMS and push transports render these fields as Lava too
+                    (PushSound is not shown in the UI but can be posted to the block
+                    action, and PushOpenMessage is rendered when the recipient opens a
+                    Show Details push). Without this, Enable Lava = No only held for
+                    email.
+
+                    Reason: Enable Lava = No must not run Lava (RCVE-2026-2gmq).
+                */
+                communication.SMSMessage = communication.SMSMessage.SanitizeLava();
+                communication.PushTitle = communication.PushTitle.SanitizeLava();
+                communication.PushOpenMessage = communication.PushOpenMessage.SanitizeLava();
+                communication.PushSound = communication.PushSound.SanitizeLava();
             }
 
             return communication;
