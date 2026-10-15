@@ -3306,17 +3306,6 @@ namespace RockWeb.Blocks.Finance
                 return true;
             }
 
-            /*
-                10/15/2026 - CLAUDE
-
-                NMI issues the token as the last path segment of the step 1 form URL and returns the
-                same token as the token-id query parameter after step 2. The NMI ChargeStep3 sends
-                everything after "?token-id=" to the gateway, so that exact value must equal the
-                step 1 token.
-
-                Reason: The step 2 token comes from the browser and must match the token Rock was issued.
-            */
-
             const string tokenIdPrefix = "?token-id=";
 
             var step1Token = step1FormUrl.TrimEnd( '/' ).Split( '/' ).LastOrDefault();
