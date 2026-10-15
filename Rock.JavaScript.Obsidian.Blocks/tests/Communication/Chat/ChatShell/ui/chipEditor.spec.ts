@@ -70,8 +70,12 @@ function caretAt(set: (range: Range) => void): void {
 
 /** Puts the caret at the editor's end. */
 function caretAtEnd(w: VueWrapper): void {
-    caretAt(range => range.selectNodeContents(editor(w)));
-    window.getSelection()!.collapseToEnd();
+    const range = document.createRange();
+    range.selectNodeContents(editor(w));
+    range.collapse(false);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
 }
 
 /** Selects from one point to another. */
