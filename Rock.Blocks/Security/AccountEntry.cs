@@ -485,7 +485,16 @@ namespace Rock.Blocks.Security
 
             using ( var rockContext = new RockContext() )
             {
-                var config = GetInitializationBox( box.State );
+                /*
+                    10/15/2026 - MSE
+
+                    Register only uses the state posted with the request. Without
+                    the empty string fallback, an empty posted state made
+                    GetInitializationBox read the State page parameter instead.
+
+                    Reason: Register must not trust a state from the page URL.
+                */
+                var config = GetInitializationBox( box.State ?? string.Empty );
 
                 /*
                     10/15/2026 - MSE
