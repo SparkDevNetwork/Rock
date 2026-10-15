@@ -27,6 +27,7 @@ namespace Rock.Migrations
         #region Guids
 
         private const string ObsidianBlockTypeGuid = "F1ADF375-7442-4B30-BAC3-C387EA9B6C18";
+        private const string FinishLavaTemplateAttributeGuid = "9F8D74CB-6E0D-47ED-B522-F6A3E3289326";
         private const string ExternalGivingProfilePageGuid = "2072F4BC-53B4-4481-BC15-38F14425C6C9";
         private const string InternalPeoplePageGuid = "D360B64F-1267-4518-95CD-99CD5AB87D88";
         private const string InternalFinancePageGuid = "F1C3BBD3-EE91-4DDD-8880-1542EBCD8041";
@@ -207,6 +208,8 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         public override void Up()
         {
+            DeleteStaleLavaTemplateAttribute();
+
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute(
                 ObsidianBlockTypeGuid,
                 Rock.SystemGuid.FieldType.TEXT,
@@ -249,7 +252,7 @@ mission. We are so grateful for your commitment.</p>
                 "The Lava-enabled HTML displayed after the transaction is saved.",
                 19,
                 InternalFinishLavaTemplate,
-                "9F8D74CB-6E0D-47ED-B522-F6A3E3289326" );
+                FinishLavaTemplateAttributeGuid );
 
             var internalTemplate = InternalFinishLavaTemplate;
             var externalTemplate = InternalFinishLavaTemplate.Replace( InternalSuccessAlert, ExternalSuccessAlert );
@@ -345,6 +348,27 @@ BEGIN
         WHERE [blk].[IsInternal] = 1
             AND NOT EXISTS ( SELECT 1 FROM [AttributeValue] AS [av] WHERE [av].[AttributeId] = @PanelTitleAttributeId AND [av].[EntityId] = [blk].[BlockId] );
     END
+END
+" );
+        }
+
+        /// <summary>
+        /// Deletes the FinishLavaTemplate attribute row if it is not attached to the Obsidian block type. Deleting a block type
+        /// leaves its attributes behind, and AddOrUpdateBlockTypeAttribute would then collide with the orphan's GUID. (Fixes #7106)
+        /// </summary>
+        private void DeleteStaleLavaTemplateAttribute()
+        {
+            Sql( $@"
+DECLARE @BlockEntityTypeId INT = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.BLOCK}' );
+DECLARE @BlockTypeId INT = ( SELECT TOP 1 [Id] FROM [BlockType] WHERE [Guid] = '{ObsidianBlockTypeGuid}' );
+
+IF @BlockEntityTypeId IS NOT NULL AND @BlockTypeId IS NOT NULL
+BEGIN
+    DELETE FROM [Attribute]
+    WHERE [Guid] = '{FinishLavaTemplateAttributeGuid}'
+        AND [EntityTypeId] = @BlockEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [EntityTypeQualifierValue] <> CAST( @BlockTypeId AS NVARCHAR(20) );
 END
 " );
         }
