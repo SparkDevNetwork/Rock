@@ -58,6 +58,42 @@ namespace Rock.Model
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
 
         /// <summary>
+        /// Determines whether a redirect URI may be registered by a dynamic (DCR or CIMD) client. MCP requires redirect
+        /// URIs to use https or localhost (https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#communication-security).
+        /// </summary>
+        /// <param name="redirectUri">The redirect URI to check.</param>
+        /// <returns><c>true</c> if the redirect URI may be registered; otherwise, <c>false</c>.</returns>
+        internal static bool IsAllowedDynamicRedirectUri( string redirectUri )
+        {
+            if ( redirectUri.IsNullOrWhiteSpace() || redirectUri.Any( c => char.IsWhiteSpace( c ) || char.IsControl( c ) ) )
+            {
+                return false;
+            }
+
+            if ( redirectUri.Contains( "," ) )
+            {
+                return false;
+            }
+
+            if ( !Uri.TryCreate( redirectUri, UriKind.Absolute, out var uri ) )
+            {
+                return false;
+            }
+
+            if ( uri.Fragment.IsNotNullOrWhiteSpace() || uri.UserInfo.IsNotNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            if ( uri.Scheme == Uri.UriSchemeHttps )
+            {
+                return true;
+            }
+
+            return uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback;
+        }
+
+        /// <summary>
         /// Gets the by client identifier.
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
@@ -261,6 +297,11 @@ namespace Rock.Model
             }
 
             if ( metadata.RedirectUris == null || metadata.RedirectUris.Count == 0 )
+            {
+                return null;
+            }
+
+            if ( metadata.RedirectUris.Any( redirectUri => !IsAllowedDynamicRedirectUri( redirectUri ) ) )
             {
                 return null;
             }
