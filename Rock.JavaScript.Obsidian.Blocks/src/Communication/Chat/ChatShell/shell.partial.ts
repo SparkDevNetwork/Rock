@@ -153,6 +153,12 @@ export type ShellState = {
 
     /** Whether the "Turn on notifications" button shows. */
     isPushOffered: boolean;
+
+    /**
+     * Whether the pane that draws the open thread is out of view, as when a phone shows its list
+     * in front; written by the frame, which alone knows its panes.
+     */
+    isThreadPaneHidden: boolean;
 };
 
 /** The shell a block holds. */
@@ -301,7 +307,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         banner: null,
         isUpdateRequired: false,
         isComposerOpen: true,
-        isPushOffered: false
+        isPushOffered: false,
+        isThreadPaneHidden: false
     }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
     const publishableKey = options.session.publishableKey ?? "";
@@ -899,9 +906,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         // A reply kept to its thread is seen only in the drawer, so only the open thread counts,
-        // whatever conversation is behind it.
+        // whatever conversation is behind it, and only while its pane is the one in view.
         isThreadOnScreen: (rootId: number): boolean => {
-            return threads.state.thread?.rootId === rootId && options.pageTargets.document.visibilityState === "visible";
+            return threads.state.thread?.rootId === rootId
+                && !state.isThreadPaneHidden
+                && options.pageTargets.document.visibilityState === "visible";
         },
 
         // Mentions, never messages: the icon counts what was meant for the person, as the

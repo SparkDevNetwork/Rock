@@ -793,6 +793,22 @@ describe("what the page tells push", () => {
         expect(shell.isThreadOnScreen(40)).toBe(false);
     });
 
+    test("a thread open behind another pane, as a phone's list over it, is not on screen", async () => {
+        const h = await started();
+        const shell = h.shell as unknown as ThreadScreenShell;
+
+        void h.shell.threads.openThread(channelA, 40);
+        await settle();
+        expect(shell.isThreadOnScreen(40)).toBe(true);
+
+        // the frame says the pane that draws the thread is out of view
+        (h.shell.state as unknown as { isThreadPaneHidden: boolean }).isThreadPaneHidden = true;
+        expect(shell.isThreadOnScreen(40)).toBe(false);
+
+        (h.shell.state as unknown as { isThreadPaneHidden: boolean }).isThreadPaneHidden = false;
+        expect(shell.isThreadOnScreen(40)).toBe(true);
+    });
+
     test("the badge is the sidebar's unread mentions, never its unread messages", async () => {
         const h = build();
         h.bootstrap.value = {
