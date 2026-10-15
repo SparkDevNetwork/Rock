@@ -2,7 +2,7 @@
 // first one asserted here.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -64,6 +64,10 @@ test('the runner it exists for really does exit zero on an empty filter', () => 
   if (built.status !== 0) return;
 
   const repoRoot = join(here, '..', '..');
+  // The workflow runs this file before its build step, and there an unbuilt project prints
+  // nothing and exits zero rather than saying it was not built, so the assembly is looked for.
+  if (!existsSync(join(repoRoot, 'Rock.Tests', 'bin', 'Debug', 'net472', 'Rock.Tests.dll'))) return;
+
   const probe = spawnSync(
     'dotnet',
     ['test', 'Rock.Tests/Rock.Tests.csproj', '--no-build', '--filter', 'FullyQualifiedName~ZzNoSuchTestNamespace'],
