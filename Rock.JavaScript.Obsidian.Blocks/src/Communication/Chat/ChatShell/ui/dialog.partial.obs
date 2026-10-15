@@ -1,0 +1,311 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Transition leave-active-class="is-leaving">
+        <div v-if="isOpen"
+             class="chat-modal"
+             data-testid="dialog-scrim"
+             @mousedown.self="onScrimDown"
+             @click.self="onScrimClick">
+            <div ref="dialogElement"
+                 class="chat-dialog"
+                 :class="{ 'is-wide': isWide }"
+                 role="dialog"
+                 aria-modal="true"
+                 :aria-labelledby="titleId"
+                 data-testid="dialog"
+                 @keydown="onKeydown">
+                <h3 :id="titleId" class="chat-dialog-title">{{ title }}</h3>
+                <p v-if="body" class="chat-dialog-body">{{ body }}</p>
+                <slot />
+                <div v-if="$slots.preview" class="chat-dialog-preview" data-testid="dialog-preview">
+                    <slot name="preview" />
+                </div>
+                <div class="chat-dialog-actions">
+                    <slot name="actions">
+                        <button ref="cancelElement"
+                                type="button"
+                                class="chat-dialog-btn is-line"
+                                data-testid="dialog-cancel"
+                                @click="emit('close')">Cancel</button>
+                        <button v-if="confirmLabel"
+                                type="button"
+                                class="chat-dialog-btn"
+                                :class="isDestructive ? 'is-danger' : 'is-brand'"
+                                data-testid="dialog-confirm"
+                                @click="emit('confirm')">{{ confirmLabel }}</button>
+                    </slot>
+                </div>
+            </div>
+        </div>
+    </Transition>
+</template>
+
+<style scoped>
+/* Over the chat's frame, not the page: the host places the dialog inside the frame. */
+.chat-modal {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: var(--chat-scrim);
+    animation: chat-scrim-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-modal.is-leaving {
+    animation: chat-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+@keyframes chat-scrim-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-scrim-out {
+    to {
+        opacity: 0;
+    }
+}
+
+.chat-dialog {
+    width: min(420px, 100%);
+    padding: 20px 20px 16px;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-dialog);
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-dialog-in var(--chat-d-dialog-in) var(--chat-ease-in);
+}
+
+.chat-dialog.is-wide {
+    width: min(520px, 100%);
+}
+
+@keyframes chat-dialog-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(var(--chat-pop-scale));
+    }
+}
+
+.chat-dialog-title {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+.chat-dialog-body {
+    margin: 0 0 14px;
+    color: var(--chat-muted);
+}
+
+.chat-dialog-preview {
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-dialog-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* The large button: Cancel outlined, the action in its color. */
+.chat-dialog-btn {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    height: 38px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-dialog-btn.is-line {
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+}
+
+.chat-dialog-btn.is-line:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-dialog-btn.is-brand {
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+}
+
+.chat-dialog-btn.is-danger {
+    color: var(--chat-on-danger);
+    background: var(--chat-danger);
+}
+
+.chat-dialog-btn.is-danger:hover {
+    background: var(--chat-danger-hover);
+}
+
+/* Reduced motion: the dialog only fades in, with the scrim. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-dialog {
+        animation-name: chat-scrim-in;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { nextTick, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The dialog's title, which also names it to a screen reader. */
+        title: {
+            type: String,
+            required: true
+        },
+
+        /** One line under the title. */
+        body: {
+            type: String,
+            default: ""
+        },
+
+        /** The action's label; with none, the dialog draws Cancel alone or the actions slot. */
+        confirmLabel: {
+            type: String,
+            default: ""
+        },
+
+        /** Whether the action cannot be undone: it is drawn in danger, and Cancel takes focus first. */
+        isDestructive: {
+            type: Boolean,
+            default: false
+        },
+
+        isWide: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Cancel, Escape or a click on the scrim. */
+        (e: "close"): void;
+        (e: "confirm"): void;
+    }>();
+
+    // #region Values
+
+    const dialogElement = ref<HTMLElement>();
+    const cancelElement = ref<HTMLButtonElement>();
+    const titleId = `chat-dialog-${newGuid()}`;
+
+    /** What had focus when the dialog opened, given it back on close. */
+    let opener: HTMLElement | null = null;
+
+    /** Whether the press that ends in a click began on the scrim, so a drag out of the dialog does not close it. */
+    let isScrimPress = false;
+
+    const focusableSelector = "button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true'], [tabindex='0']";
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            // The dialog's Escape is its own, never also the panel's or the menu's behind it.
+            event.stopPropagation();
+            emit("close");
+        }
+        else if (event.key === "Tab") {
+            trapTab(event);
+        }
+    }
+
+    function onScrimDown(): void {
+        isScrimPress = true;
+    }
+
+    function onScrimClick(): void {
+        if (isScrimPress) {
+            emit("close");
+        }
+        isScrimPress = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Keeps Tab inside the dialog, wrapping from the last control to the first and back. */
+    function trapTab(event: KeyboardEvent): void {
+        const controls = focusables();
+        if (controls.length === 0) {
+            event.preventDefault();
+            return;
+        }
+
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        }
+        else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+
+    function focusables(): HTMLElement[] {
+        return Array.from(dialogElement.value?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    }
+
+    /** A destructive confirm starts on Cancel, so Enter never deletes by accident; any other starts on its first control. */
+    function focusFirst(): void {
+        const marked = dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]");
+        const first = props.isDestructive && cancelElement.value ? cancelElement.value : marked ?? focusables()[0];
+        (first ?? dialogElement.value)?.focus({ preventScroll: true });
+    }
+
+    /** Gives focus back to the opener, when it is still on the page. */
+    function returnFocus(): void {
+        if (opener && opener.isConnected) {
+            opener.focus({ preventScroll: true });
+        }
+        opener = null;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.isOpen, async isOpen => {
+        if (isOpen) {
+            opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            await nextTick();
+            focusFirst();
+        }
+        else {
+            // At once, not after the fade, so a keyboard user is never left on a vanishing control.
+            returnFocus();
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>
