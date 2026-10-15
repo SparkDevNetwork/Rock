@@ -392,7 +392,7 @@
     /** The reply flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
 
-    /** The reply already landed on, so it is scrolled to and flashed only once. */
+    /** The reply already landed on, so it is scrolled to and flashed only once per landing. */
     let landedId: number | null = null;
 
     // #endregion Values
@@ -624,7 +624,15 @@
 
     watch(topElement, observeTop);
 
-    watch(() => props.landOnId, () => void land());
+    // A landing the shell lets go of is done, so the next request for the same reply, a second
+    // push for a reply whose thread is still open, lands on it again.
+    watch(() => props.landOnId, id => {
+        if (id === null) {
+            landedId = null;
+        }
+
+        void land();
+    });
 
     // #endregion Watchers
 

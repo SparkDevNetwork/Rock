@@ -1251,6 +1251,84 @@ describe("a push about a thread reply", () => {
         expect(flashingRows(w)).toHaveLength(0);
     });
 
+    test("a second tap on the same reply while its thread is open scrolls to it and flashes it again", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(isFlashing(w, 42)).toBe(true);
+
+        // the first flash plays out, as a browser ends it
+        replyRow(w, 42)!.dispatchEvent(Object.assign(new Event("animationend", { bubbles: true }), { animationName: "chat-cm-flash" }));
+        await settle();
+        expect(flashingRows(w)).toHaveLength(0);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+
+        expect(isFlashing(w, 42)).toBe(true);
+        expect(scrolledTo.filter(e => e === replyRow(w, 42))).toHaveLength(2);
+    });
+
+    test("a tap on another thread while an older page is on its way lands the new one, and the first asks for no more and flashes nothing", async () => {
+        mockThreadPages = { newest: [50, 62], older: [[44, 45], [41, 42, 43]] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(1);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "60", message_id: "62" });
+        await settle();
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenLastCalledWith(team.channel_id, 60);
+        expect(isFlashing(w, 62)).toBe(true);
+        expect(scrolledTo).toContain(replyRow(w, 62));
+
+        await answerOlder();
+        await settle();
+
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(1);
+        expect(mockOlderAnswers).toHaveLength(0);
+        expect(flashingRows(w).map(row => row.getAttribute("data-reply-id"))).toEqual(["62"]);
+        expect(replyRow(w, 42)).toBeNull();
+    });
+
+    test("tells the shell the thread's pane is out of view while a phone shows the list over an open thread", async () => {
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(390);
+        const paneHidden = (): unknown => (mockShell!.state as Record<string, unknown>).isThreadPaneHidden;
+        await openRow(w, team.channel_id);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        expect(paneHidden()).toBe(false);
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+
+        // a tap for the conversation already open behind the list leaves the list in front
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
+        expect(paneHidden()).toBe(true);
+
+        FakeResizeObserver.resize(1200);
+        await settle();
+        expect(paneHidden()).toBe(false);
+    });
+
     test("a tap on a root's push opens its conversation and no thread", async () => {
         await mountBlock(1200);
 
