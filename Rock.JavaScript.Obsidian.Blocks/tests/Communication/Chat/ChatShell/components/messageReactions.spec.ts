@@ -164,6 +164,20 @@ describe("the add chip", () => {
 });
 
 describe("where the row is drawn", () => {
+    // The message row places the row under its bubble with its own scoped rules, which reach a
+    // child only through a single root element; a fragment root drops them and every attribute.
+    test("is one root element, the row itself, carrying what the message row passes it", () => {
+        wrapper = mount(MessageReactions, {
+            props: { loadReactorNames: async () => null, message: message([heart(1)]) },
+            attrs: { "data-placed": "under-bubble" },
+            attachTo: document.body
+        });
+
+        expect(wrapper.element.nodeType).toBe(Node.ELEMENT_NODE);
+        expect((wrapper.element as HTMLElement).classList.contains("chat-reacts")).toBe(true);
+        expect(wrapper.element.getAttribute("data-placed")).toBe("under-bubble");
+    });
+
     test("the thread pill comes first, before the chips", () => {
         const w = mountRow({ message: message([heart(1)]) }, { default: "<button data-testid='thread-pill'>3 replies</button>" });
 
