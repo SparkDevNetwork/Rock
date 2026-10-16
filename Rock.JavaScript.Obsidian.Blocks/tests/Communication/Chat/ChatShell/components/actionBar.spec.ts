@@ -41,6 +41,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import { isActionCall } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -395,5 +396,26 @@ describe("hover intent", () => {
         jest.advanceTimersByTime(60);
         await settle();
         expect(bar(wrapper).exists()).toBe(true);
+    });
+});
+
+// A listed action may only call a chat action function. One naming anything else is still drawn,
+// so the menu matches what the server listed, but it cannot be chosen, as a block post's button
+// with such a call cannot be pressed.
+describe("a server action whose call is not a chat action", () => {
+    const stray = { id: "stray", label: "Wipe the room", call: "chat_delete_everything" };
+
+    test("is drawn disabled and asks for nothing when chosen", async () => {
+        expect(isActionCall(stray.call)).toBe(false);
+        const w = await shown({ message: message({ actions: [approve, stray] }) });
+        await menuOf(w);
+
+        expect(menuItem("Wipe the room").getAttribute("aria-disabled")).toBe("true");
+        expect(menuItem("Approve").getAttribute("aria-disabled")).toBeNull();
+
+        menuItem("Wipe the room").click();
+        await settle();
+
+        expect(w.emitted("serverAction")).toBeUndefined();
     });
 });

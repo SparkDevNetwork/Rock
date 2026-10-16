@@ -29,7 +29,8 @@
                             :class="{ 'is-danger': item.isDanger }"
                             role="menuitem"
                             tabindex="-1"
-                            @click="choose(item.key)">
+                            :aria-disabled="item.isDisabled || undefined"
+                            @click="choose(item)">
                         <Icon v-if="item.icon" :name="item.icon" />
                         <span class="chat-menu-label">{{ item.label }}</span>
                         <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
@@ -105,6 +106,12 @@
     color: var(--chat-danger-ink);
 }
 
+/* Faded as a block post's button that cannot run is, and with no press to give. */
+.chat-menu-item[aria-disabled="true"] {
+    cursor: default;
+    opacity: .5;
+}
+
 /*
     Enters from just toward its button and a touch small, and leaves the same way, half as far and
     faster; toward the button is up when the menu opens below it and down when it flips above.
@@ -149,6 +156,12 @@
 
         /** Draws a separator above the item, so a group is never left empty by a missing item. */
         isSeparatorBefore?: boolean;
+
+        /**
+         * Drawn but never chosen. Marked rather than disabled, so the arrows still reach it and a
+         * screen reader still reads it out.
+         */
+        isDisabled?: boolean;
     };
 
     // #endregion Types
@@ -288,8 +301,12 @@
         return Array.from(menuElement.value?.querySelectorAll<HTMLElement>("[role='menuitem']") ?? []);
     }
 
-    function choose(key: string): void {
-        emit("select", key);
+    function choose(item: MenuItem): void {
+        if (item.isDisabled) {
+            return;
+        }
+
+        emit("select", item.key);
         close(true);
     }
 

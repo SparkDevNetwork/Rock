@@ -204,7 +204,7 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
-    import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
+    import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
     import { PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -367,8 +367,9 @@
         items.push({ key: "copy", label: "Copy text", icon: "copy" });
 
         // Each by its place in the list, since an action's id is the server's and may be anything.
+        // One whose call is not a chat action is still drawn, as the server listed it, but cannot run.
         (message.actions ?? []).forEach((action, index) => {
-            items.push({ key: `action ${index}`, label: action.label, icon: "bolt", isSeparatorBefore: index === 0 });
+            items.push({ key: `action ${index}`, label: action.label, icon: "bolt", isSeparatorBefore: index === 0, isDisabled: !isActionCall(action.call) });
         });
 
         if (props.isOwn) {
