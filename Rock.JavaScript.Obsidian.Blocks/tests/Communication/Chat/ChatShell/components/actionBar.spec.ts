@@ -418,4 +418,18 @@ describe("a server action whose call is not a chat action", () => {
 
         expect(w.emitted("serverAction")).toBeUndefined();
     });
+
+    test("Enter on it asks for nothing and leaves the menu open, as a click on it does", async () => {
+        const w = await shown({ message: message({ actions: [approve, stray] }) });
+        await menuOf(w);
+
+        const item = menuItem("Wipe the room");
+        item.focus();
+        item.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+        await settle();
+
+        expect(w.emitted("serverAction")).toBeUndefined();
+        expect(document.querySelector("[role='menu']")).not.toBeNull();
+        expect(document.activeElement).toBe(item);
+    });
 });
