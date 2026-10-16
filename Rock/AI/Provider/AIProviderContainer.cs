@@ -249,7 +249,8 @@ namespace Rock.AI.Provider
         /// Determines whether the value has the shape of text encrypted by
         /// <see cref="Rock.Security.Encryption.EncryptString(string)"/>: Base64
         /// of a 4 byte IV length of 16, a 16 byte IV, and one or more 16 byte
-        /// AES blocks.
+        /// AES blocks, followed by a 32 byte HMAC tag and a "V2" footer in
+        /// the v2 format.
         /// </summary>
         /// <param name="value">The value to check.</param>
         /// <returns><c>true</c> if the value looks like Rock ciphertext; otherwise <c>false</c>.</returns>
@@ -274,9 +275,29 @@ namespace Rock.AI.Provider
                 return false;
             }
 
-            return bytes.Length >= headerLength + blockLength
-                && ( bytes.Length - headerLength ) % blockLength == 0
-                && BitConverter.ToInt32( bytes, 0 ) == blockLength;
+            if ( bytes.Length < headerLength + blockLength || BitConverter.ToInt32( bytes, 0 ) != blockLength )
+            {
+                return false;
+            }
+
+            /*
+                10/15/2026 - MSE
+
+                EncryptString now writes the v2 format, which adds a 32 byte
+                HMAC tag and a "V2" footer after the AES blocks. Older values
+                are still in the v1 format, so recognize both.
+
+                Reason: Do not encrypt an already encrypted v2 secret key a
+                second time.
+            */
+            const int v2TrailerLength = 32 + 2;
+
+            var isV2 = bytes.Length >= headerLength + blockLength + v2TrailerLength
+                && bytes[bytes.Length - 2] == ( byte ) 'V'
+                && bytes[bytes.Length - 1] == ( byte ) '2'
+                && ( bytes.Length - headerLength - v2TrailerLength ) % blockLength == 0;
+
+            return isV2 || ( bytes.Length - headerLength ) % blockLength == 0;
         }
     }
 }
