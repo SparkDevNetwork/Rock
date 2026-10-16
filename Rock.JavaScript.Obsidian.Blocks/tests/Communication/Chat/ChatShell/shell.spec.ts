@@ -1288,6 +1288,38 @@ describe("the person's own live copy while the channel's first page loads", () =
     });
 });
 
+// The bootstrap carries the church's favorites; a channel topic carries everyone's reactions.
+describe("reactions", () => {
+    const thumbsUp = { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null };
+
+    test("the bootstrap's reactions are the favorites the bar, the sheet and the picker draw", async () => {
+        const h = build();
+        h.bootstrap.value = { channels: [], reactions: [thumbsUp] };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.reactions.favorites).toEqual([thumbsUp]);
+    });
+
+    test.each(["reaction.added", "reaction.removed"])("%s on a channel topic moves the chip of the message it names", async event => {
+        const h = await started();
+        const held = h.shell.timelines.state(channelA).messages.find(m => m.id === 10);
+        if (held) {
+            held.reactions = [{ code: "pray", count: 2, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }];
+        }
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event,
+            payload: { message_id: 10, channel_id: channelA, code: "pray", person_alias_guid: "a0000001-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands" }
+        });
+
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 10)?.reactions?.[0]?.count).toBe(event === "reaction.added" ? 3 : 1);
+    });
+});
+
 describe("a page's report after the shell stops", () => {
     test("settles no send", async () => {
         const h = await started();

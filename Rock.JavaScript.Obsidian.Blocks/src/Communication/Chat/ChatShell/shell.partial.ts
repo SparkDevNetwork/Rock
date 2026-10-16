@@ -33,6 +33,7 @@ import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, n
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
+import { createReactions, Reactions } from "./composables/useReactions.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -43,7 +44,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MessageCreatedEvent, PeopleSearchAnswer, SendAnswer, SidebarRow, TimelineMessage } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -178,6 +179,9 @@ export type ChatShell = {
 
     /** Editing, deleting, copying and quoting a message, and the actions the server lists on it. */
     messageActions: MessageActions;
+
+    /** Reacting to messages: the toggle, the live events, the catalog, the recents and who reacted. */
+    reactions: Reactions;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -430,6 +434,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         timelines.stop();
         threads.stop();
         messageActions.stop();
+        reactions.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -542,6 +547,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
         writeText: globalThis.navigator?.clipboard ? text => globalThis.navigator.clipboard.writeText(text) : undefined
     });
 
+    // The favorites come with the sidebar, after the reactions are made, so the list is filled in place.
+    const favorites = reactive<ReactionFavorite[]>([]);
+
+    const reactions = createReactions({
+        call,
+        timelines,
+        threads,
+        personAliasGuid,
+        notify: notice => options.notify?.(notice),
+        favorites,
+        churchKey: tenantId,
+        storage: options.storage
+    });
+
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId) => {
             const result = await call("chat_send_message", {
@@ -639,8 +658,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
             throw thrown(result);
         }
 
-        const rows = (result.data as { channels?: SidebarRow[] } | null)?.channels ?? [];
+        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[] } | null;
+        const rows = answer?.channels ?? [];
         channels.setSidebar(rows);
+        if (Array.isArray(answer?.reactions)) {
+            favorites.splice(0, favorites.length, ...answer.reactions);
+        }
         return rows;
     }
 
@@ -748,6 +771,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         directMessages,
         threads,
         messageActions,
+        reactions,
         isNewMessageShown: isNewMessageShown(options.session),
 
         openDirectMessage: async (): Promise<void> => {
@@ -792,6 +816,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                             cancelRecheck();
                             recheckTimer = setTimeout(recheck, Math.random() * channelChangedWaitMs);
                         }
+                        return;
+                    }
+                    // A reaction moves a chip on every copy of its message the client holds,
+                    // the open thread's too, which the reactions find for themselves.
+                    if (event === "reaction.added" || event === "reaction.removed") {
+                        reactions.applyEvent(channelId, event, payload);
                         return;
                     }
                     // A thread's counts move its root wherever it is held, and a reply reaches the
@@ -989,6 +1019,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const threadSaved = threads.closeThread();
             threads.stop();
             messageActions.stop();
+            reactions.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.
