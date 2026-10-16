@@ -291,6 +291,31 @@ namespace Rock.Field.Types
                 : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            var formattedValue = FormatValue( parentControl, value, configurationValues, condensed );
+
+            /*
+                10/16/2026 - MSE
+
+                FormatValue returns the raw file name when condensed because Lava,
+                workflows and other plain text consumers use it. Grids place
+                this value directly in HTML, so it is encoded here instead.
+
+                Reason: The condensed value was rendered as raw HTML.
+            */
+            return condensed
+                ? formattedValue?.EncodeHtml()
+                : formattedValue;
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
+        }
+
 #endif
         #endregion
     }

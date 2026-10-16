@@ -91,7 +91,16 @@ export class VideoFileFieldType extends FieldTypeBase {
 
     public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
-        const html = `<a href="/GetFile.ashx?guid=${fileGuid}">${value}</a>`;
+
+        /*
+            10/16/2026 - MSE
+
+            The file name comes from the upload and this HTML is displayed
+            with v-html, so every value is encoded.
+
+            Reason: The file name was rendered as raw HTML.
+        */
+        const html = `<a href="/GetFile.ashx?guid=${escapeHtml(fileGuid ?? "")}">${escapeHtml(value ?? "")}</a>`;
 
         if (isEscaped) {
             return escapeHtml(html);
