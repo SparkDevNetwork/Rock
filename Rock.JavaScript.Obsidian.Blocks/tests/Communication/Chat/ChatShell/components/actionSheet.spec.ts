@@ -16,8 +16,8 @@
 //
 // The phone's action sheet, mounted: a dialog from the bottom of the chat over a scrim, holding
 // the same choices as a message's bar and menu as large items, and asking for each the way the
-// bar does. It has no reactions. It opens with focus on its first item, and Escape or a tap on
-// the scrim closes it.
+// bar does. Above the items, a row of the church's first six favorites and a plus for the full
+// picker. It opens with focus on its first reaction, and Escape or a tap on the scrim closes it.
 //
 // The component these tests are written to, components/actionSheet.partial.obs:
 //
@@ -25,12 +25,15 @@
 //       isOpen: boolean,
 //       message: TimelineMessage | null,   the message acted on, with the actions the server listed
 //       isOwn: boolean,                    the person's own message, which they may edit and delete
-//       isInThread: boolean                inside the thread drawer, where Reply in thread has no place
+//       isInThread: boolean,               inside the thread drawer, where Reply in thread has no place
+//       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first six are drawn
 //   }
 //   emits: replyInThread(messageId), quote(message), edit(message), copy(message), delete(message),
-//          serverAction(action), close()
+//          serverAction(action), react(message, code), openPicker(message, anchor), close()
 //
-// The scrim is data-testid="action-sheet-scrim", the sheet data-testid="action-sheet".
+// The scrim is data-testid="action-sheet-scrim", the sheet data-testid="action-sheet", its row of
+// reactions data-testid="action-sheet-reactions": each reaction read "React with thumbs up" or
+// "Remove your thumbs up", pressed when the reader's, and the plus read "More reactions".
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ActionSheet from "../../../../../src/Communication/Chat/ChatShell/components/actionSheet.partial.obs";
@@ -66,10 +69,22 @@ const own = (extra: Partial<TimelineMessage> = {}): TimelineMessage => message({
 
 const approve = { id: "approve", label: "Approve request", call: "chat_action_approve" };
 
+/** The church's favorites as the bootstrap carries them, in order; the sheet draws the first six. */
+const favorites = [
+    { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null },
+    { code: "heart", label: "red heart", emoji: "❤️", image_url: null },
+    { code: "joy", label: "face with tears of joy", emoji: "😂", image_url: null },
+    { code: "open_mouth", label: "face with open mouth", emoji: "😮", image_url: null },
+    { code: "cry", label: "crying face", emoji: "😢", image_url: null },
+    { code: "pray", label: "folded hands", emoji: "🙏", image_url: null },
+    { code: "tada", label: "party popper", emoji: "🎉", image_url: null },
+    { code: "raised_hands", label: "raising hands", emoji: "🙌", image_url: null }
+];
+
 let wrapper: VueWrapper | null = null;
 
 async function open(props: Record<string, unknown>): Promise<VueWrapper> {
-    wrapper = mount(ActionSheet, { props: { isOpen: true, isOwn: false, isInThread: false, ...props }, attachTo: document.body });
+    wrapper = mount(ActionSheet, { props: { isOpen: true, isOwn: false, isInThread: false, favorites, ...props }, attachTo: document.body });
     await nextTick();
     await nextTick();
     return wrapper;
@@ -79,16 +94,26 @@ function sheet(w: VueWrapper): ReturnType<VueWrapper["get"]> {
     return w.get("[data-testid='action-sheet']");
 }
 
+/** The sheet's items, below its row of reactions. */
+function items(w: VueWrapper): ReturnType<VueWrapper["findAll"]> {
+    return sheet(w).findAll("button").filter(button => !button.element.closest("[data-testid='action-sheet-reactions']"));
+}
+
 function itemLabels(w: VueWrapper): string[] {
-    return sheet(w).findAll("button").map(button => button.text().trim());
+    return items(w).map(button => button.text().trim());
 }
 
 function item(w: VueWrapper, label: string): ReturnType<VueWrapper["get"]> {
-    const found = sheet(w).findAll("button").find(button => button.text().trim() === label);
+    const found = items(w).find(button => button.text().trim() === label);
     if (!found) {
         throw new Error(`No item ${label}`);
     }
     return found;
+}
+
+/** The row's buttons: the six reactions, then the plus. */
+function reactions(w: VueWrapper): ReturnType<VueWrapper["findAll"]> {
+    return w.get("[data-testid='action-sheet-reactions']").findAll("button");
 }
 
 afterEach(() => {
@@ -123,13 +148,6 @@ describe("the sheet's items", () => {
         expect(itemLabels(w)).toEqual(["Reply in thread", "Quote", "Copy text", "Delete message"]);
     });
 
-    test("draw no reactions", async () => {
-        const w = await open({ message: message() });
-
-        expect(sheet(w).findAll("[aria-label^='React']")).toHaveLength(0);
-        expect(sheet(w).findAll("[aria-label='More reactions']")).toHaveLength(0);
-    });
-
     test("each asks as the bar would, and closes the sheet", async () => {
         const target = own({ actions: [approve] });
         const w = await open({ message: target, isOwn: true });
@@ -149,13 +167,14 @@ describe("the sheet's items", () => {
 });
 
 describe("opening and closing", () => {
-    test("is a modal dialog named Message actions, with focus on its first item", async () => {
+    test("is a modal dialog named Message actions, with focus on its first reaction", async () => {
         const w = await open({ message: message() });
 
         expect(sheet(w).attributes("role")).toBe("dialog");
         expect(sheet(w).attributes("aria-modal")).toBe("true");
         expect(sheet(w).attributes("aria-label")).toBe("Message actions");
-        expect(document.activeElement).toBe(item(w, "Reply in thread").element);
+        expect(document.activeElement).toBe(reactions(w)[0].element);
+        expect(reactions(w)[0].attributes("aria-label")).toBe("React with thumbs up");
     });
 
     test("draws nothing while closed", async () => {
@@ -182,12 +201,55 @@ describe("opening and closing", () => {
         expect(w.emitted("close")).toHaveLength(1);
     });
 
-    test("Tab stays inside the sheet, from its last item back to its first", async () => {
+    test("Tab stays inside the sheet, from its last item back to its first reaction", async () => {
         const w = await open({ message: message() });
         (item(w, "Copy text").element as HTMLElement).focus();
 
         await sheet(w).trigger("keydown", { key: "Tab" });
 
-        expect(document.activeElement).toBe(item(w, "Reply in thread").element);
+        expect(document.activeElement).toBe(reactions(w)[0].element);
+    });
+});
+
+// The phone has no hover bar, so the sheet carries the reactions: the church's first six
+// favorites, each a toggle of the reader's own, and a plus for the full picker.
+describe("the sheet's reactions", () => {
+    const yourPray = { code: "pray", count: 2, mine: true, emoji: "🙏", image_url: null, label: "folded hands" };
+
+    test("are the first six favorites, then a plus for the full picker", async () => {
+        const w = await open({ message: message({ reactions: [yourPray] } as Partial<TimelineMessage>) });
+
+        expect(reactions(w).map(b => b.text().trim()).slice(0, 6)).toEqual(["👍", "❤️", "😂", "😮", "😢", "🙏"]);
+        expect(reactions(w).map(b => b.attributes("aria-label"))).toEqual([
+            "React with thumbs up",
+            "React with red heart",
+            "React with face with tears of joy",
+            "React with face with open mouth",
+            "React with crying face",
+            "Remove your folded hands",
+            "More reactions"
+        ]);
+        expect(reactions(w).slice(0, 6).map(b => b.attributes("aria-pressed"))).toEqual(["false", "false", "false", "false", "false", "true"]);
+    });
+
+    test("a reaction asks to react to the message with it, and closes the sheet", async () => {
+        const target = message();
+        const w = await open({ message: target });
+
+        await reactions(w)[1].trigger("click");
+
+        expect(w.emitted("react")).toEqual([[target, "heart"]]);
+        expect(w.emitted("close")).toHaveLength(1);
+    });
+
+    test("the plus asks for the full picker for the message", async () => {
+        const target = message();
+        const w = await open({ message: target });
+        const plus = reactions(w)[6];
+
+        await plus.trigger("click");
+
+        expect(w.emitted("openPicker")?.[0]?.[0]).toBe(target);
+        expect(w.emitted("react")).toBeUndefined();
     });
 });
