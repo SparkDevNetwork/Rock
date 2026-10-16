@@ -23,14 +23,26 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
+    /*
+        10/15/2026 - MSE
+
+        The generic v1 REST controller (secured only by the controller VIEW
+        rule) still serialized the one-time passcode through $expand, which
+        ignores JSON attributes. Nothing in Rock calls it, so it must not
+        exist for this model.
+
+        Reason: Keep one-time passcodes private.
+    */
     /// <summary>
     /// 
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "RemoteAuthenticationSession" )]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )]
     [DataContract]
     [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "2FDEE857-08BE-47F3-8E86-B2027F545EE8")]
