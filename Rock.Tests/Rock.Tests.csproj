@@ -260,9 +260,13 @@
     <Compile Include="Configuration\RockAppExtensionsTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchRestrictedMemberTests.cs" />
+    <Compile Include="Field\Types\AudioUrlFieldTypeTests.cs" />
     <Compile Include="Field\Types\BooleanFieldTypeTests.cs" />
+    <Compile Include="Field\Types\EmailFieldTypeTests.cs" />
+    <Compile Include="Field\Types\MediaFileMimeTypeTests.cs" />
     <Compile Include="Field\Types\SocialMediaAccountFieldTypeTests.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldTypeTests.cs" />
+    <Compile Include="Field\Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Lava\Filters\ConversionFilterTests.cs" />
     <Compile Include="Lava\Filters\StructuredContentFilterTests.cs" />
     <Compile Include="Lava\LavaTestHelper.cs" />

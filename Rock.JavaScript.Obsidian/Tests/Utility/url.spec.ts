@@ -1,5 +1,5 @@
 import assert = require("assert");
-import { makeUrlRedirectSafe } from "../../Framework/Utility/url";
+import { isUrlSchemeSafe, makeUrlRedirectSafe } from "../../Framework/Utility/url";
 
 describe("makeUrlRedirectSafe Suite", () => {
     it("Rejects invalid URLs", () => {
@@ -88,6 +88,40 @@ describe("makeUrlRedirectSafe Suite", () => {
 
         for (const url of urls) {
             assert.strictEqual(makeUrlRedirectSafe(url), url, url);
+        }
+    });
+});
+
+describe("isUrlSchemeSafe Suite", () => {
+    it("Allows http, https and relative URLs", () => {
+        const urls = [
+            "https://www.rockrms.com",
+            "http://www.rockrms.com/page/12?a=1&b=2",
+            "HTTPS://www.rockrms.com",
+            "/page/12",
+            "www.rockrms.com",
+            "page/12"
+        ];
+
+        for (const url of urls) {
+            assert.strictEqual(isUrlSchemeSafe(url), true, url);
+        }
+    });
+
+    it("Rejects other schemes", () => {
+        const urls = [
+            "javascript:alert('xss')",
+            " JavaScript:alert('xss')",
+            "java\tscript:alert('xss')",
+            "vbscript:msgbox(1)",
+            "data:text/html,<script>alert('xss')</script>",
+            "mailto:ted@rocksolidchurchdemo.com",
+            "ftp://localhost/x",
+            "http://["
+        ];
+
+        for (const url of urls) {
+            assert.strictEqual(isUrlSchemeSafe(url), false, url);
         }
     });
 });
