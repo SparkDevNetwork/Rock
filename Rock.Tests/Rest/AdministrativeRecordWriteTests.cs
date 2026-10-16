@@ -167,7 +167,7 @@ namespace Rock.Tests.Rest
         [TestMethod]
         public void BlocksController_PublicActions_AreUnchanged()
         {
-            var expected = new[] { "BlockAction", "BlockActionAsPost", "Delete", "Move", "Post" }.OrderBy( n => n ).ToArray();
+            var expected = new[] { "BlockAction", "Delete", "Move", "Post" }.OrderBy( n => n ).ToArray();
 
             CollectionAssert.AreEqual( expected, GetDeclaredPublicActionNames( "BlocksController" ) );
         }
