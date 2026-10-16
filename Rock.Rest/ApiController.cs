@@ -286,6 +286,20 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
+            /*
+                10/15/2026 - MSE
+
+                POST always inserts a new record and EF ignores the posted key, so the Id
+                in the body never names the record being saved. CheckCanEdit reloads the
+                stored record by Id, so a non-zero Id would authorize that existing record
+                in place of the posted values. Clearing the Id makes CheckCanEdit authorize
+                the posted values as a new record. We reset it instead of returning 400 so
+                clients that post a copy of an existing record keep working.
+
+                Reason: Authorize the record that will be inserted, not an existing one.
+            */
+            value.Id = 0;
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -1002,6 +1016,25 @@ namespace Rock.Rest
                 service.Add( proxyModel );
                 service.SetValues( ( T ) securedModel, proxyModel );
 
+                /*
+                    10/15/2026 - MSE
+
+                    Some IsAuthorized overrides grant EDIT to the record's author (for example
+                    Note) or to the record itself (Person matches on Guid), and SetValues copied
+                    the posted CreatedByPersonAliasId and Guid onto this copy. A caller could name
+                    themselves as author, or post their own Guid, to skip the check. Clear the
+                    author and Id and give the copy a new Guid so it is checked as a brand new
+                    record. This copy is never saved, so the record being inserted is not affected.
+
+                    Reason: Do not let posted audit values or Guid grant EDIT on a new record.
+                */
+                proxyModel.Id = 0;
+                proxyModel.Guid = Guid.NewGuid();
+                if ( proxyModel is IModel proxyAuditModel )
+                {
+                    proxyAuditModel.CreatedByPersonAliasId = null;
+                }
+
                 if ( proxyModel is ISecured securedProxy )
                 {
                     return securedProxy.IsAuthorized( Rock.Security.Authorization.EDIT, person );
@@ -1041,6 +1074,56 @@ namespace Rock.Rest
 
                 // Must run while this context is open so related records can lazy-load.
                 CheckCanEdit( ( ISecured ) updatedModel );
+
+                /*
+                    10/15/2026 - MSE
+
+                    The copy above keeps the stored Id and author, so IsAuthorized overrides that
+                    grant EDIT to the author (such as Note) still pass after the record is moved
+                    under a parent the person could never add to. A record moved under a different
+                    parent must meet the same bar as creating it there.
+
+                    Reason: Authorize a parent change like a create under the new parent.
+                */
+                if ( GetParentAuthorityKey( updatedModel as ISecured ) != GetStoredParentAuthorityKey( entity.Id )
+                    && !IsAuthorizedForNewModel( ( ISecured ) entity, GetPerson() ) )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a key that identifies the parent authorities of the secured item.
+        /// </summary>
+        /// <param name="secured">The secured item.</param>
+        /// <returns>A string made from the type and identifier of each parent authority.</returns>
+        private static string GetParentAuthorityKey( ISecured secured )
+        {
+            if ( secured == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{secured.ParentAuthority?.TypeId}:{secured.ParentAuthority?.Id}|{secured.ParentAuthorityPre?.TypeId}:{secured.ParentAuthorityPre?.Id}";
+        }
+
+        /// <summary>
+        /// Gets the parent authority key of the model as it is stored in the database.
+        /// The caller's tracked model is not saved yet, so this reads the stored parent
+        /// without touching the tracked model's navigation properties.
+        /// </summary>
+        /// <param name="id">The identifier of the model.</param>
+        /// <returns>The parent authority key of the stored model.</returns>
+        private string GetStoredParentAuthorityKey( int id )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = true;
+
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+
+                return GetParentAuthorityKey( service.Get( id ) as ISecured );
             }
         }
 

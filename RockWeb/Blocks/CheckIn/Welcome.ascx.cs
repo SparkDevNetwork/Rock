@@ -1095,6 +1095,30 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
                 return;
             }
 
+            /*
+                10/15/2026 - MSE
+
+                Count the attempt before the PIN is looked up so that a correct
+                guess made after too many wrong ones is still refused. This uses
+                the same limiter as the next-gen check-in supervisor screens so
+                switching between them does not increase the budget. Attempts
+                that turn out not to be wrong guesses are given back below.
+
+                Reason: Prevent kiosk manager PINs from being guessed by brute force.
+            */
+            var clientIpAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
+
+            if ( !Rock.CheckIn.PinAttemptLimiter.TryReserveAttempt( clientIpAddress ) )
+            {
+                historyLogin.LoginFailureReason = LoginFailureReason.LockedOut;
+                historyLogin.LoginFailureMessage = "Too many failed PIN attempts.";
+                historyLogin.SaveAfterDelay();
+
+                tbPIN.Text = string.Empty;
+                maWarning.Show( "Too many failed PIN attempts. Please wait a few minutes and try again.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                return;
+            }
+
             var rockContext = new Rock.Data.RockContext();
             var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( tbPIN.Text );
@@ -1126,6 +1150,8 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
                         }
                         else
                         {
+                            Rock.CheckIn.PinAttemptLimiter.Reset( clientIpAddress );
+
                             historyLogin.WasLoginSuccessful = true;
                             historyLogin.SaveAfterDelay();
 
@@ -1151,6 +1177,13 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
             {
                 historyLogin.LoginFailureReason = LoginFailureReason.Other;
                 historyLogin.LoginFailureMessage = $"This username is not associated with {pinAuthProviderName}.";
+            }
+
+            // Only wrong guesses count. A PIN that matched a login that is not
+            // confirmed or is locked out gives its attempt back.
+            if ( historyLogin.LoginFailureReason != LoginFailureReason.UserNotFound && historyLogin.LoginFailureReason != LoginFailureReason.Other )
+            {
+                Rock.CheckIn.PinAttemptLimiter.ReleaseAttempt( clientIpAddress );
             }
 
             historyLogin.SaveAfterDelay();

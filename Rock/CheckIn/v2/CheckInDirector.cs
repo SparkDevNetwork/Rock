@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Net;
 using Rock.Observability;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
@@ -636,7 +637,17 @@ namespace Rock.CheckIn.v2
             // A local function to centralize the saving of a history login record.
             void SaveHistoryLoginIfNeeded( LoginFailureReason? reason = null, string message = null )
             {
-                if ( !saveHistoryLogin )
+                /*
+                    10/15/2026 - MSE
+
+                    Failed attempts are always saved so that PIN guessing leaves a
+                    trace in login history. Successful attempts are still only saved
+                    when requested, since the supervisor actions send the PIN again
+                    on every call.
+
+                    Reason: Record every failed check-in PIN attempt.
+                */
+                if ( !saveHistoryLogin && !reason.HasValue )
                 {
                     return;
                 }
@@ -654,6 +665,27 @@ namespace Rock.CheckIn.v2
                 SaveHistoryLoginIfNeeded( LoginFailureReason.Other, $"{pinAuthProviderName} is not active." );
 
                 errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            /*
+                10/15/2026 - MSE
+
+                Count the attempt before the PIN is looked up so that a correct
+                guess made after too many wrong ones is still refused. The check
+                and the count happen in one step so parallel requests cannot go
+                over the limit. Attempts that turn out not to be wrong guesses
+                are given back below.
+
+                Reason: Prevent check-in PINs from being guessed by brute force.
+            */
+            var clientIpAddress = RockRequestContextAccessor.Current?.ClientInformation?.IpAddress ?? string.Empty;
+
+            if ( !PinAttemptLimiter.TryReserveAttempt( clientIpAddress ) )
+            {
+                SaveHistoryLoginIfNeeded( LoginFailureReason.LockedOut, "Too many failed PIN attempts." );
+
+                errorMessage = "Too many failed PIN attempts. Please wait a few minutes and try again.";
                 return false;
             }
 
@@ -696,6 +728,9 @@ namespace Rock.CheckIn.v2
 
             if ( !( userLogin.IsConfirmed ?? true ) )
             {
+                // The PIN matched a real login, so this is not a wrong guess.
+                PinAttemptLimiter.ReleaseAttempt( clientIpAddress );
+
                 SaveHistoryLoginIfNeeded( LoginFailureReason.UserNotConfirmed );
 
                 errorMessage = "Sorry, account needs to be confirmed.";
@@ -703,6 +738,9 @@ namespace Rock.CheckIn.v2
             }
             else if ( userLogin.IsLockedOut ?? false )
             {
+                // The PIN matched a real login, so this is not a wrong guess.
+                PinAttemptLimiter.ReleaseAttempt( clientIpAddress );
+
                 SaveHistoryLoginIfNeeded( LoginFailureReason.LockedOut );
 
                 errorMessage = "Sorry, account is locked-out.";
@@ -710,6 +748,8 @@ namespace Rock.CheckIn.v2
             }
             else
             {
+                PinAttemptLimiter.Reset( clientIpAddress );
+
                 SaveHistoryLoginIfNeeded();
 
                 errorMessage = string.Empty;
