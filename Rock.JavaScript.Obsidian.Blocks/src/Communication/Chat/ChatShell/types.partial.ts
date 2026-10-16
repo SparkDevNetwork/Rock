@@ -112,6 +112,9 @@ export type TimelineMessage = {
 
     /** The actions the server lists on it; empty when it lists none. */
     actions?: MessageAction[];
+
+    /** Its reactions as the server counts them, in the catalog's picker order; empty when none. */
+    reactions?: Reaction[];
     shown_in_channel?: boolean;
     person_alias_guid: string | null;
     sender_nick_name?: string | null;
@@ -160,6 +163,73 @@ export type TimelineMessage = {
      * one. Every copy of a message carries it, so the sender's row and each copy are one message.
      */
     client_key?: string | null;
+};
+
+/**
+ * One emoji's reactions on a message, as a page and the add's and remove's answer carry them. The
+ * glyph comes from the server, so an emoji this client has never seen still draws.
+ */
+export type Reaction = {
+    code: string;
+    count: number;
+
+    /** Whether the reader is among those who reacted with it, under any of their aliases. */
+    mine: boolean;
+    emoji: string | null;
+    image_url: string | null;
+    label: string;
+};
+
+/** The glyph of an emoji, which is all a toggle or a new chip needs of it. */
+export type EmojiGlyph = {
+    code: string;
+    emoji: string | null;
+    image_url: string | null;
+    label: string;
+};
+
+/** One of the church's favorite reactions, as the bootstrap's reactions key lists them in order. */
+export type ReactionFavorite = EmojiGlyph;
+
+/** One emoji the picker offers, as chat_list_emojis returns them in picker order. */
+export type CatalogEmoji = EmojiGlyph & {
+    category: string;
+    keywords: string[];
+};
+
+/** What chat_add_reaction and chat_remove_reaction return: the message's whole list. */
+export type ReactionAnswer = {
+    message_id: number;
+    reactions: Reaction[];
+};
+
+/** One person who reacted, as chat_list_reactors returns them, newest first. */
+export type Reactor = {
+    /** The person's primary alias. */
+    person_alias_guid: string;
+    nick_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+    reacted_at: string;
+
+    /** The alias the reaction was made under, which pages the list. */
+    reactor_person_alias_guid: string;
+};
+
+/** What chat_list_reactors returns. */
+export type ReactorsPage = {
+    reactors: Reactor[];
+    has_more: boolean;
+};
+
+/**
+ * A reaction added or removed, on a channel topic. Its alias is the one the reaction was made
+ * under, which tells the reader's own from everyone else's.
+ */
+export type ReactionEvent = EmojiGlyph & {
+    message_id: number;
+    channel_id: string;
+    person_alias_guid: string;
 };
 
 /** One person who replied in a thread, under their primary alias. */
@@ -343,7 +413,8 @@ export type ChannelTopicEvent =
     | { event: "message.edited", payload: MessageEditedEvent }
     | { event: "message.deleted", payload: MessageDeletedEvent }
     | { event: "message.visibility", payload: MessageVisibilityEvent }
-    | { event: "thread.updated", payload: ThreadUpdatedEvent };
+    | { event: "thread.updated", payload: ThreadUpdatedEvent }
+    | { event: "reaction.added" | "reaction.removed", payload: ReactionEvent };
 
 /** A person's own message that has not been confirmed yet, or whose send failed. */
 export type PendingMessage = {
