@@ -519,3 +519,46 @@ describe("a block post as the root", () => {
         expect(asked?.[0][0].action).toMatchObject({ id: "join", call: "chat_action_join" });
     });
 });
+
+// The root's bar and menu are the conversation's: the person's own root offers Edit, as their own
+// row does there, and someone else's does not. Whether a message is the person's is the server's
+// is_own, which also covers a root sent under another of their aliases.
+describe("the root's menu", () => {
+    /** Rests the pointer on the root until its bar shows. */
+    async function hoverRoot(w: VueWrapper): Promise<void> {
+        await w.get("[data-hot-id='40']").trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 80));
+        await nextTick();
+    }
+
+    /** Opens the root's More menu and reads its item labels, key hints left out. */
+    async function rootMenu(w: VueWrapper): Promise<string[]> {
+        await hoverRoot(w);
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await nextTick();
+        await nextTick();
+
+        return Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).map(item => {
+            const copy = item.cloneNode(true) as HTMLElement;
+            copy.querySelectorAll("kbd").forEach(kbd => kbd.remove());
+            return (copy.textContent ?? "").trim();
+        });
+    }
+
+    test("offers Edit on the person's own root", async () => {
+        const ownRoot = message(40, { person_alias_guid: "a0000009-0000-4000-8000-000000000000", is_own: true, sender_nick_name: "Jordan", sender_last_name: "Ellis", reply_count: 3 });
+        const w = draw({ root: ownRoot });
+        await nextTick();
+
+        expect(await rootMenu(w)).toContain("Edit message");
+    });
+
+    test("leaves Edit off someone else's root", async () => {
+        const w = draw({ root: { ...rootWith(3), is_own: false } });
+        await nextTick();
+
+        const items = await rootMenu(w);
+        expect(items).toContain("Copy text");
+        expect(items).not.toContain("Edit message");
+    });
+});
