@@ -1,0 +1,1041 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!--
+        Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+        a picker drawn inside it; left in place where there is no root, as when a part is drawn alone.
+    -->
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <div ref="pickerElement"
+             class="chat-picker"
+             :class="{ 'is-leaving': isClosing }"
+             role="dialog"
+             :aria-label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
+             tabindex="-1"
+             :style="pickerStyles"
+             @keydown="onKeydown"
+             @focusout="onFocusOut">
+            <div class="chat-picker-head">
+                <label class="chat-picker-search">
+                    <Icon name="search" size="sm" />
+                    <input ref="searchElement"
+                           type="text"
+                           placeholder="Search emoji"
+                           autocomplete="off"
+                           spellcheck="false"
+                           aria-label="Search emoji"
+                           :aria-controls="gridId"
+                           :value="query"
+                           @input="onSearchInput"
+                           @keydown="onSearchKeydown" />
+                </label>
+            </div>
+
+            <div :id="gridId"
+                 ref="bodyElement"
+                 class="chat-picker-body"
+                 role="grid"
+                 aria-label="Emoji"
+                 :aria-busy="source.catalog === null ? 'true' : undefined"
+                 @scroll.passive="onBodyScroll"
+                 @mouseover="onCellHover"
+                 @focusin="onCellHover">
+                <div v-for="section in drawnSections"
+                     :key="section.id"
+                     class="chat-picker-section"
+                     role="rowgroup"
+                     :data-sec="section.id"
+                     :aria-label="section.label">
+                    <div class="chat-picker-label" role="presentation">{{ section.label }}</div>
+                    <div class="chat-picker-grid">
+                        <div v-for="(row, rowIndex) in section.rows" :key="rowIndex" class="chat-picker-row" role="row">
+                            <button v-for="cell in row"
+                                    :key="cell.key"
+                                    type="button"
+                                    role="gridcell"
+                                    :class="{ 'is-first': cell.key === firstResultKey }"
+                                    :tabindex="cell.key === stopKey ? 0 : -1"
+                                    :data-code="cell.item.code"
+                                    :data-key="cell.key"
+                                    :aria-label="cellLabel(cell.item)"
+                                    :aria-pressed="isMine(cell.item) ? 'true' : undefined"
+                                    @click="choose(cell.item)">
+                                <img v-if="!cell.item.emoji && cell.item.image_url" class="chat-picker-glyph" :src="cell.item.image_url" alt="" />
+                                <span v-else class="chat-picker-glyph" aria-hidden="true">{{ cell.item.emoji }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The categories' place while the catalog loads, the favorites above drawn at once. -->
+                <div v-if="source.catalog === null && !isSearching" class="chat-picker-loading" data-sec="loading" aria-hidden="true">
+                    <div class="chat-skeleton chat-picker-loading-label"></div>
+                    <div class="chat-picker-grid">
+                        <div v-for="index in 16" :key="index" class="chat-skeleton chat-picker-loading-cell"></div>
+                    </div>
+                </div>
+
+                <div v-if="isSearching && results.length === 0" class="chat-picker-empty" data-testid="emoji-empty">No emoji match “{{ query.trim() }}”</div>
+            </div>
+
+            <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
+                <button v-for="tab in tabs"
+                        :key="tab.id"
+                        type="button"
+                        role="tab"
+                        :aria-label="tab.label"
+                        :title="tab.label"
+                        :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
+                        :tabindex="tab.id === tabStop ? 0 : -1"
+                        @click="onTabClick(tab.id)">
+                    <Icon v-if="tab.id === recentId" name="clock" size="sm" />
+                    <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
+                </button>
+            </div>
+
+            <div class="chat-picker-foot" data-testid="emoji-preview">
+                <template v-if="preview">
+                    <img v-if="!preview.emoji && preview.image_url" class="chat-picker-prev" :src="preview.image_url" alt="" />
+                    <span v-else class="chat-picker-prev" aria-hidden="true">{{ preview.emoji }}</span>
+                    <span class="chat-picker-name">
+                        {{ capitalized(preview.label) }}{{ isMine(preview) ? " (yours)" : "" }}
+                        <span>:{{ preview.code }}:</span>
+                    </span>
+                </template>
+                <span v-else class="chat-picker-name">
+                    {{ mode === "react" ? "Pick a reaction" : "Pick an emoji" }}
+                    <span>Hover or arrow to preview</span>
+                </span>
+            </div>
+
+            <div class="chat-sr-only" aria-live="polite" data-testid="emoji-live">{{ liveLine }}</div>
+        </div>
+    </Teleport>
+</template>
+
+<style scoped>
+/* Fixed, so the chat's clipped frame cannot cut the picker near its edge. */
+.chat-picker {
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    width: 328px;
+    max-width: calc(100vw - 16px);
+    max-height: 380px;
+    overflow: hidden;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    outline: none;
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-picker-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* Leaves half as far and faster than it came, and takes no press on its way out. */
+.chat-picker.is-leaving {
+    pointer-events: none;
+    animation: chat-picker-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+.chat-picker [hidden] {
+    display: none !important;
+}
+
+.chat-picker-head {
+    flex: none;
+    padding: 10px 10px 4px;
+}
+
+.chat-picker-search {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 34px;
+    padding: 0 10px;
+    margin: 0;
+    font-weight: 400;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: 10px;
+}
+
+/* The composer's own focus ring, so a text box reads the same wherever it is. */
+.chat-picker-search:focus-within {
+    border-color: var(--chat-composer-line);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-picker-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+/* Stops at its own ends, so a scroll past the last row never scrolls the feed under it. */
+.chat-picker-body {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 252px;
+    padding: 0 9px 8px 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-padding-top: 26px;
+    scrollbar-width: thin;
+}
+
+.chat-picker-label {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 8px 4px 4px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 13px;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    background: var(--chat-raised);
+}
+
+.chat-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 36px);
+    gap: 2px;
+}
+
+/* A row is there for a screen reader; the section's grid lays its cells out as one. */
+.chat-picker-row {
+    display: contents;
+}
+
+.chat-picker-grid button {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-md);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-picker-glyph {
+    display: block;
+    transition: transform var(--chat-d-glyph) var(--chat-ease-spring);
+}
+
+img.chat-picker-glyph {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.chat-picker-grid button:hover {
+    background: var(--chat-hover);
+}
+
+.chat-picker-grid button:hover .chat-picker-glyph,
+.chat-picker-grid button:focus-visible .chat-picker-glyph {
+    transform: scale(1.15);
+}
+
+.chat-picker-grid button:active .chat-picker-glyph {
+    transform: scale(.92);
+    transition-duration: var(--chat-d-glyph-press);
+}
+
+/* The keyboard's cell, and the first search result, which Enter takes. */
+.chat-picker-grid button:focus-visible,
+.chat-picker-grid button.is-first {
+    background: var(--chat-hover);
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--chat-brand-ring);
+}
+
+/* The reader's own reaction: choosing it takes it back. */
+.chat-picker-grid button[aria-pressed="true"] {
+    background: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1px var(--chat-brand-line);
+}
+
+.chat-picker-grid button[aria-pressed="true"]:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--chat-brand-ring), inset 0 0 0 1px var(--chat-brand-line);
+}
+
+.chat-picker-loading-label {
+    width: 96px;
+    height: 11px;
+    margin: 9px 4px 6px;
+}
+
+.chat-picker-loading-cell {
+    width: 36px;
+    height: 36px;
+}
+
+.chat-picker-empty {
+    padding: 28px 10px;
+    font-size: 13px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+.chat-picker-tabs {
+    display: flex;
+    flex: none;
+    gap: 2px;
+    align-items: center;
+    justify-content: space-between;
+    height: 36px;
+    padding: 0 8px;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-picker-tabs button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--chat-icon);
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-sm);
+    opacity: .75;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* The category glyphs sit quiet in grey until hovered or chosen, so the row reads as chrome. */
+.chat-picker-tab-glyph {
+    font-size: 16px;
+    line-height: 1;
+    opacity: .62;
+    filter: grayscale(1);
+    transition: filter var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-picker-tabs button:hover,
+.chat-picker-tabs button[aria-selected="true"] {
+    opacity: 1;
+}
+
+.chat-picker-tabs button:hover {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+}
+
+.chat-picker-tabs button:hover .chat-picker-tab-glyph,
+.chat-picker-tabs button[aria-selected="true"] .chat-picker-tab-glyph {
+    opacity: 1;
+    filter: none;
+}
+
+.chat-picker-tabs button[aria-selected="true"] {
+    color: var(--chat-brand-ink);
+}
+
+.chat-picker-tabs button[aria-selected="true"]::after {
+    position: absolute;
+    right: 7px;
+    bottom: -4px;
+    left: 7px;
+    height: 2px;
+    content: "";
+    background: var(--chat-brand);
+    border-radius: 2px;
+}
+
+.chat-picker-tabs button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--chat-brand-ring);
+}
+
+.chat-picker-foot {
+    display: flex;
+    flex: none;
+    gap: 10px;
+    align-items: center;
+    height: 44px;
+    padding: 0 12px;
+    background: var(--chat-sidebar);
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-picker-prev {
+    flex: none;
+    width: 30px;
+    font-size: 28px;
+    line-height: 1;
+    text-align: center;
+}
+
+img.chat-picker-prev {
+    height: 28px;
+    object-fit: contain;
+}
+
+.chat-picker-name {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--chat-text-2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-picker-name span {
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--chat-muted);
+    text-overflow: ellipsis;
+}
+
+/* On a touch screen nothing hovers, so there is nothing to preview. */
+@media (hover: none) {
+    .chat-picker-foot {
+        display: none;
+    }
+}
+
+/* Reduced motion: no glyph scaling. The pop's distance and scale are already off in the tokens. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-picker-glyph {
+        transition: none;
+        transform: none !important;
+    }
+}
+
+/* From just toward what opened it and a touch small; toward is down when the picker sits above. */
+@keyframes chat-picker-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+    }
+}
+
+@keyframes chat-picker-out {
+    to {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import Icon from "../ui/icon.partial.obs";
+    import { overlayHostOf } from "../ui/tooltip.partial";
+
+    // #region Types
+
+    /**
+     * One emoji the picker can draw: a favorite as the bootstrap lists it, or a catalog row with its
+     * category and search words. The glyph is the server's, or an image where the church has its own.
+     */
+    export type PickerEmoji = {
+        code: string;
+        emoji: string | null;
+
+        // The wire's own name, as the bootstrap and the catalog call send it.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        image_url: string | null;
+        label: string;
+        category?: string;
+        keywords?: string[];
+    };
+
+    /** What the picker draws from: favorites at once, the catalog once fetched, recents by code. */
+    export type PickerSource = {
+        favorites: PickerEmoji[];
+
+        /** The church's offered emoji in picker order; null while it is still on its way. */
+        catalog: PickerEmoji[] | null;
+
+        /** Codes, newest first. */
+        recents: string[];
+        churchName: string;
+    };
+
+    /** One drawn cell. The key tells a glyph in two sections apart, as favorites and a category. */
+    type Cell = { key: string, item: PickerEmoji, sectionIndex: number };
+
+    type Section = { id: string, label: string, rows: Cell[][] };
+
+    // #endregion Types
+
+    const props = defineProps({
+        mode: {
+            type: String as PropType<"react" | "insert">,
+            default: "react"
+        },
+
+        source: {
+            type: Object as PropType<PickerSource>,
+            required: true
+        },
+
+        /** The codes the reader reacted with, marked in react mode only. */
+        mine: {
+            type: Array as PropType<string[]>,
+            default: () => []
+        },
+
+        /** What opened the picker: placed beside it, and given focus back on a close by key or choice. */
+        anchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "react", code: string): void;
+        (e: "insert", text: string, code: string): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    /** The categories in the catalog's order, named and marked as the design draws their tabs. */
+    const categories = [
+        { id: "smileys", label: "Smileys", glyph: "😀" },
+        { id: "people", label: "People and gestures", glyph: "👋" },
+        { id: "symbols", label: "Hearts and symbols", glyph: "❤️" },
+        { id: "nature", label: "Nature", glyph: "🌻" },
+        { id: "food", label: "Food and drink", glyph: "🍎" },
+        { id: "activities", label: "Activities and celebrations", glyph: "🎉" },
+        { id: "travel", label: "Travel and places", glyph: "✈️" },
+        { id: "objects", label: "Objects", glyph: "💡" }
+    ];
+
+    const recentId = "recent";
+    const favoritesId = "favorites";
+    const recentLimit = 8;
+    const rowLength = 8;
+
+    /** Names this picker's grid, so its search can say which grid it controls. */
+    const gridId = `chat-picker-grid-${getCurrentInstance()?.uid ?? 0}`;
+
+    const pickerElement = ref<HTMLElement>();
+    const searchElement = ref<HTMLInputElement>();
+    const bodyElement = ref<HTMLElement>();
+
+    const query = ref("");
+
+    /** The grid's one tab stop, by cell key; null means the first cell. */
+    const chosenStop = ref<string | null>(null);
+
+    /** The tab the reader's place is in; the favorites at first, as the design opens on them. */
+    const selectedTab = ref(favoritesId);
+
+    /** The tablist's one tab stop, which follows the selection until the arrows take it. */
+    const tabStop = ref(favoritesId);
+
+    /** The glyph named in the foot: the one hovered or focused, or a search's first result. */
+    const preview = ref<PickerEmoji | null>(null);
+
+    /** Set once the picker is on its way out, so nothing chosen or pressed after counts twice. */
+    const isClosing = ref(false);
+
+    /**
+     * The section a tab press is scrolling to. A smooth scroll passes the sections between, and the
+     * tabs would flicker through them on its way if the scroll were let move them.
+     */
+    let scrollTarget: number | null = null;
+
+    /** The chat's root, which the picker is drawn in; null where it is drawn alone. */
+    const overlayHost = computed(() => overlayHostOf(props.anchor));
+
+    const anchorElement = computed(() => props.anchor ?? undefined);
+
+    // Above what opened it, at the side of the message it belongs to: a bubble of the reader's own
+    // sits on the right, so its picker ends there. Placed by left and top, since a transform here
+    // would override the pop's own and the picker would only fade.
+    const { floatingStyles, placement, x } = useFloating(anchorElement, pickerElement, {
+        placement: props.anchor?.closest(".chat-msg.is-conversational.is-own") ? "top-end" : "top-start",
+        strategy: "fixed",
+        transform: false,
+        middleware: [offset(8), flip(), shift({ padding: 8 })],
+        whileElementsMounted: autoUpdate
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Every emoji the picker knows by code: the catalog's rows, the favorites where it has none. */
+    const byCode = computed((): Map<string, PickerEmoji> => {
+        const map = new Map<string, PickerEmoji>();
+        for (const item of props.source.favorites) {
+            map.set(item.code, item);
+        }
+
+        // The catalog's row wins, since it carries the keywords a favorite is searched by.
+        for (const item of props.source.catalog ?? []) {
+            map.set(item.code, item);
+        }
+
+        return map;
+    });
+
+    /** Every section with all its emoji, before a search narrows them. */
+    const fullSections = computed((): Array<{ id: string, label: string, items: PickerEmoji[] }> => {
+        const list: Array<{ id: string, label: string, items: PickerEmoji[] }> = [];
+
+        // A recent code the picker no longer knows, as one since retired, is left out, not drawn blank.
+        const recents = props.source.recents.slice(0, recentLimit)
+            .map(code => byCode.value.get(code))
+            .filter((item): item is PickerEmoji => !!item);
+        if (recents.length > 0) {
+            list.push({ id: recentId, label: "Recently used", items: recents });
+        }
+
+        list.push({
+            id: favoritesId,
+            label: `${props.source.churchName} favorites`,
+            items: props.source.favorites.map(item => byCode.value.get(item.code) ?? item)
+        });
+
+        const catalog = props.source.catalog;
+        if (catalog) {
+            for (const category of categories) {
+                list.push({ id: category.id, label: category.label, items: catalog.filter(item => item.category === category.id) });
+            }
+        }
+
+        return list;
+    });
+
+    const isSearching = computed(() => terms.value.length > 0);
+
+    /** The search's words, as the person might type a code: colons and underscores read as spaces. */
+    const terms = computed((): string[] => {
+        const text = query.value.toLowerCase().replace(/[:_]/g, " ").trim();
+        return text ? text.split(/\s+/) : [];
+    });
+
+    /** The sections as drawn: whole, or narrowed to matches with each glyph once, in its first section. */
+    const drawnSections = computed((): Section[] => {
+        const seen = new Set<string>();
+        const sections: Section[] = [];
+
+        for (const section of fullSections.value) {
+            let items = section.items;
+            if (isSearching.value) {
+                items = items.filter(item => {
+                    if (seen.has(item.code) || !matches(item)) {
+                        return false;
+                    }
+
+                    seen.add(item.code);
+                    return true;
+                });
+
+                if (items.length === 0) {
+                    continue;
+                }
+            }
+
+            const sectionIndex = sections.length;
+            const rows: Cell[][] = [];
+            for (let i = 0; i < items.length; i += rowLength) {
+                rows.push(items.slice(i, i + rowLength).map(item => ({ key: `${section.id}:${item.code}`, item, sectionIndex })));
+            }
+
+            sections.push({ id: section.id, label: section.label, rows });
+        }
+
+        return sections;
+    });
+
+    /** Every drawn row in order across sections, which is what the arrows move through. */
+    const rows = computed((): Cell[][] => drawnSections.value.flatMap(section => section.rows));
+
+    /** Every drawn cell in order, the same order as they stand in the page. */
+    const results = computed((): Cell[] => rows.value.flat());
+
+    const stopKey = computed((): string | null => {
+        const chosen = chosenStop.value;
+        return chosen && results.value.some(cell => cell.key === chosen) ? chosen : results.value[0]?.key ?? null;
+    });
+
+    /** The first search result, marked as the one Enter takes. */
+    const firstResultKey = computed(() => isSearching.value ? results.value[0]?.key ?? null : null);
+
+    const liveLine = computed((): string => {
+        if (!isSearching.value) {
+            return "";
+        }
+
+        const count = results.value.length;
+        if (count === 0) {
+            return "No emoji match";
+        }
+
+        return `${count} ${count === 1 ? "result" : "results"}`;
+    });
+
+    /** A tab per section: Recently used while there are any, the favorites, and every category. */
+    const tabs = computed((): Array<{ id: string, label: string, glyph: string }> => [
+        ...(fullSections.value[0].id === recentId ? [{ id: recentId, label: "Recently used", glyph: "" }] : []),
+        { id: favoritesId, label: fullSections.value.find(section => section.id === favoritesId)?.label ?? "", glyph: "⭐" },
+        ...categories
+    ]);
+
+    /**
+     * The placement, with the pop grown from what opened it: from its middle along the picker's
+     * nearest edge, and moving toward it, so a picker flipped below grows down from above.
+     */
+    const pickerStyles = computed((): Record<string, string> => {
+        const isAbove = placement.value.startsWith("top");
+        const anchorBox = props.anchor?.getBoundingClientRect();
+        const width = pickerElement.value?.offsetWidth ?? 0;
+        const middle = anchorBox ? anchorBox.left + anchorBox.width / 2 - (x.value ?? 0) : width / 2;
+        return {
+            ...floatingStyles.value,
+            transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
+            "--chat-pop-toward": isAbove ? "1" : "-1"
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSearchInput(event: Event): void {
+        query.value = (event.target as HTMLInputElement).value;
+        chosenStop.value = null;
+        if (bodyElement.value) {
+            bodyElement.value.scrollTop = 0;
+        }
+
+        preview.value = isSearching.value ? results.value[0]?.item ?? null : null;
+    }
+
+    /** Enter takes the first result; Down or Tab enters the grid where its tab stop is. */
+    function onSearchKeydown(event: KeyboardEvent): void {
+        const first = results.value[0];
+        if (event.key === "Enter") {
+            event.preventDefault();
+            if (first) {
+                choose(first.item);
+            }
+        }
+        else if ((event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey)) && first) {
+            event.preventDefault();
+            const stop = isSearching.value ? first : results.value.find(cell => cell.key === stopKey.value);
+            focusCell(stop ?? first);
+        }
+    }
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            event.preventDefault();
+
+            // The picker's own Escape, so a panel under it does not close on the same key.
+            event.stopPropagation();
+            close(true);
+            return;
+        }
+
+        const target = event.target as HTMLElement;
+        if (target.getAttribute("role") === "tab") {
+            onTabKeydown(event, target);
+        }
+        else if (target.getAttribute("role") === "gridcell") {
+            onGridKeydown(event, target);
+        }
+    }
+
+    /** Left, Right, Home and End move between the tabs; choosing one is a press. */
+    function onTabKeydown(event: KeyboardEvent, target: HTMLElement): void {
+        const all = Array.from(pickerElement.value?.querySelectorAll<HTMLElement>("[role='tab']") ?? []);
+        const index = all.indexOf(target);
+        const next = ({ ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: all.length - 1 } as Record<string, number>)[event.key];
+        if (next === undefined || !all[next]) {
+            return;
+        }
+
+        event.preventDefault();
+        tabStop.value = tabs.value[next].id;
+        all[next].focus();
+    }
+
+    /**
+     * The arrows move in two dimensions across section edges, a column kept and a short row's last
+     * cell taken; Home and End go to the ends, Page Up and Down by section, and Up from the top row
+     * back to the search. Typing a letter goes to the search, where the letter lands.
+     */
+    function onGridKeydown(event: KeyboardEvent, target: HTMLElement): void {
+        const all = results.value;
+        const index = all.findIndex(cell => cell.key === target.dataset.key);
+        if (index < 0) {
+            return;
+        }
+
+        const cell = all[index];
+        const rowIndex = rows.value.findIndex(row => row.includes(cell));
+        const column = rows.value[rowIndex].indexOf(cell);
+        const inRow = (row: Cell[] | undefined): Cell | undefined => row?.[Math.min(column, row.length - 1)];
+        const firstOfSection = (sectionIndex: number): Cell | undefined => all.find(c => c.sectionIndex === sectionIndex);
+
+        let next: Cell | undefined;
+        switch (event.key) {
+            case "ArrowRight":
+                next = all[index + 1];
+                break;
+            case "ArrowLeft":
+                next = all[index - 1];
+                break;
+            case "ArrowDown":
+                next = inRow(rows.value[rowIndex + 1]);
+                break;
+            case "ArrowUp":
+                if (rowIndex === 0) {
+                    event.preventDefault();
+                    searchElement.value?.focus();
+                    return;
+                }
+                next = inRow(rows.value[rowIndex - 1]);
+                break;
+            case "Home":
+                next = all[0];
+                break;
+            case "End":
+                next = all[all.length - 1];
+                break;
+            case "PageDown":
+            case "PageUp":
+                next = firstOfSection(cell.sectionIndex + (event.key === "PageDown" ? 1 : -1));
+                break;
+            default:
+                if (event.key.length === 1 && event.key !== " " && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                    searchElement.value?.focus();
+                }
+                return;
+        }
+
+        event.preventDefault();
+        focusCell(next);
+    }
+
+    function onCellHover(event: Event): void {
+        const key = (event.target as HTMLElement).closest?.<HTMLElement>("[role='gridcell']")?.dataset.key;
+        const cell = key ? results.value.find(c => c.key === key) : undefined;
+        if (cell) {
+            preview.value = cell.item;
+        }
+    }
+
+    /** A tab scrolls its section to the top, clearing a search first so every section is there. */
+    async function onTabClick(id: string): Promise<void> {
+        if (query.value) {
+            query.value = "";
+            preview.value = null;
+            await nextTick();
+        }
+
+        selectTab(id);
+        tabStop.value = id;
+        const body = bodyElement.value;
+        const section = body?.querySelector<HTMLElement>(`[data-sec="${id}"]`) ?? body?.querySelector<HTMLElement>("[data-sec='loading']");
+        if (!body || !section) {
+            return;
+        }
+
+        const top = section.offsetTop;
+        scrollTarget = Math.abs(body.scrollTop - top) > 1 ? top : null;
+        if (typeof body.scrollTo === "function") {
+            body.scrollTo({ top, behavior: isReducedMotion() ? "auto" : "smooth" });
+        }
+        else {
+            body.scrollTop = top;
+        }
+    }
+
+    /** The selected tab follows the section at the top as the reader scrolls. */
+    function onBodyScroll(): void {
+        const body = bodyElement.value;
+        if (!body || isSearching.value) {
+            return;
+        }
+
+        const isAtEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 2;
+
+        // A tab's own scroll moves no tab until it arrives, or stops short at the end.
+        if (scrollTarget !== null) {
+            if (Math.abs(body.scrollTop - scrollTarget) > 1 && !isAtEnd) {
+                return;
+            }
+            scrollTarget = null;
+            return;
+        }
+
+        const sections = Array.from(body.querySelectorAll<HTMLElement>("[data-sec]"));
+        if (sections.length === 0) {
+            return;
+        }
+
+        let current = sections[0];
+        if (isAtEnd) {
+            current = sections[sections.length - 1];
+        }
+        else {
+            for (const section of sections) {
+                if (section.offsetTop <= body.scrollTop + 8) {
+                    current = section;
+                }
+            }
+        }
+
+        const id = current.dataset.sec ?? favoritesId;
+
+        // The loading place stands for the categories, so its tab is the first of them.
+        selectTab(id === "loading" ? categories[0].id : id);
+    }
+
+    /** Focus leaving the picker for somewhere else on the page closes it, as Tab past its end does. */
+    function onFocusOut(event: FocusEvent): void {
+        const next = event.relatedTarget as Node | null;
+        if (next && !pickerElement.value?.contains(next) && !props.anchor?.contains(next)) {
+            close(false);
+        }
+    }
+
+    /** A press outside the picker and what opened it closes it, leaving focus where the press put it. */
+    function onDocumentPointerDown(event: Event): void {
+        const target = event.target as Node;
+        if (pickerElement.value?.contains(target) || props.anchor?.contains(target)) {
+            return;
+        }
+
+        close(false);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function matches(item: PickerEmoji): boolean {
+        const words = `${item.label} ${(item.keywords ?? []).join(" ")} ${item.code.replace(/_/g, " ")}`.toLowerCase();
+        return terms.value.every(term => words.includes(term));
+    }
+
+    function isMine(item: PickerEmoji): boolean {
+        return props.mode === "react" && props.mine.includes(item.code);
+    }
+
+    function capitalized(text: string): string {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function cellLabel(item: PickerEmoji): string {
+        return capitalized(item.label) + (isMine(item) ? ", you reacted" : "");
+    }
+
+    /** The drawn button of a cell, found by its place, since the page holds the cells in order. */
+    function cellElement(cell: Cell): HTMLElement | null {
+        const index = results.value.indexOf(cell);
+        return bodyElement.value?.querySelectorAll<HTMLElement>("[role='gridcell']")[index] ?? null;
+    }
+
+    /** Moves the grid's tab stop to a cell and focus with it, scrolled just into view. */
+    function focusCell(cell: Cell | undefined): void {
+        if (!cell) {
+            return;
+        }
+
+        chosenStop.value = cell.key;
+        const element = cellElement(cell);
+        element?.focus({ preventScroll: true });
+        element?.scrollIntoView?.({ block: "nearest" });
+        preview.value = cell.item;
+    }
+
+    function choose(item: PickerEmoji): void {
+        if (isClosing.value) {
+            return;
+        }
+
+        if (props.mode === "react") {
+            emit("react", item.code);
+        }
+        else {
+            // An image emoji has no character to put in the text, so it goes in as the code the
+            // message draws it from.
+            emit("insert", item.emoji ?? `:${item.code}:`, item.code);
+        }
+
+        close(true);
+    }
+
+    /**
+     * Closes, with focus back on what opened it when the close came from the picker itself. The
+     * picker plays its own way out before saying so, since the host removes it on the word and a
+     * removed element cannot animate; where nothing animates, the word goes at once.
+     */
+    async function close(isFocusReturned: boolean): Promise<void> {
+        if (isClosing.value) {
+            return;
+        }
+
+        isClosing.value = true;
+        if (isFocusReturned) {
+            props.anchor?.focus({ preventScroll: true });
+        }
+
+        await nextTick();
+        const animations = pickerElement.value?.getAnimations?.() ?? [];
+        await Promise.allSettled(animations.map(animation => animation.finished));
+        emit("close");
+    }
+
+    function isReducedMotion(): boolean {
+        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    }
+
+    /** Selects a tab without taking its focus away from a tab the arrows are on. */
+    function selectTab(id: string): void {
+        selectedTab.value = id;
+        if (!pickerElement.value?.querySelector("[role='tablist']")?.contains(document.activeElement)) {
+            tabStop.value = id;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    // The search is focused on open, except on a touch screen, where focus would raise the keyboard
+    // over the grid; there the dialog itself takes focus, so Escape and the arrows still reach it.
+    onMounted(async () => {
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+        await nextTick();
+        const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
+        (isTouch ? pickerElement.value : searchElement.value)?.focus({ preventScroll: true });
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
