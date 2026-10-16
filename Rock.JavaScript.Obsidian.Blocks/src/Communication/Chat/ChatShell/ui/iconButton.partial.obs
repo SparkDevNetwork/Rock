@@ -20,7 +20,7 @@
              class="chat-tip"
              role="tooltip"
              :style="floatingStyles">
-            {{ label }}
+            {{ tooltip || label }}
         </div>
     </Teleport>
 </template>
@@ -86,6 +86,16 @@
         label: {
             type: String as PropType<string>,
             required: true
+        },
+
+        /**
+         * A shorter word for the tooltip, where the screen reader's name says more than the eye
+         * needs, as More beside a bar that already shows which message it acts on. The label by
+         * default.
+         */
+        tooltip: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         /** Keeps the tooltip away, such as while the menu this button opened covers it. */

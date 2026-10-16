@@ -115,7 +115,7 @@ function toolLabels(w: VueWrapper): string[] {
 
 /** Opens More and reads the menu in order: each item's label without its key hint, "---" for a separator. */
 async function menuOf(w: VueWrapper): Promise<string[]> {
-    const more = w.get("[data-testid='action-bar'] button[aria-label='More']").element as HTMLElement;
+    const more = w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement;
     more.click();
     await settle();
 
@@ -165,13 +165,24 @@ describe("the bar's tools", () => {
 
         expect(bar(w).attributes("role")).toBe("toolbar");
         expect(bar(w).attributes("aria-label")?.replace(/\s+/g, " ")).toBe("Actions for Anna Reyes's message, 9:02 AM");
-        expect(toolLabels(w)).toEqual(["Reply in thread", "Quote", "More"]);
+        expect(toolLabels(w)).toEqual(["Reply in thread", "Quote", "More actions"]);
+    });
+
+    test("More is read as More actions, and its tooltip says More", async () => {
+        const w = await shown({ message: message() });
+        const more = w.get("[data-testid='action-bar'] button[aria-label='More actions']");
+
+        await more.trigger("mouseenter");
+        jest.advanceTimersByTime(500);
+        await settle();
+
+        expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toEqual(["More"]);
     });
 
     test("leave out Reply in thread inside a thread", async () => {
         const w = await shown({ message: message({ parent_id: 40 }), isInThread: true });
 
-        expect(toolLabels(w)).toEqual(["Quote", "More"]);
+        expect(toolLabels(w)).toEqual(["Quote", "More actions"]);
     });
 
     test("ask to reply in thread with the message's id, and to quote the message", async () => {

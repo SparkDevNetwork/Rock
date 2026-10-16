@@ -24,9 +24,9 @@
                         :tabindex="tabIndexOf('quote')"
                         @click="onQuote" />
             <Menu icon="dots"
-                  label="More"
+                  label="More actions"
                   :items="menuItems"
-                  :anchorAttrs="{ class: 'chat-tool', tabindex: tabIndexOf('more') }"
+                  :anchorAttrs="{ class: 'chat-tool', tabindex: tabIndexOf('more'), tooltip: 'More' }"
                   @select="onMenuSelect"
                   @openChange="onMenuOpenChange" />
         </div>
