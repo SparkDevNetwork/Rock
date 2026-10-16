@@ -286,6 +286,20 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
+            /*
+                10/15/2026 - MSE
+
+                POST always inserts a new record and EF ignores the posted key, so the Id
+                in the body never names the record being saved. CheckCanEdit reloads the
+                stored record by Id, so a non-zero Id would authorize that existing record
+                in place of the posted values. Clearing the Id makes CheckCanEdit authorize
+                the posted values as a new record. We reset it instead of returning 400 so
+                clients that post a copy of an existing record keep working.
+
+                Reason: Authorize the record that will be inserted, not an existing one.
+            */
+            value.Id = 0;
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -1001,6 +1015,25 @@ namespace Rock.Rest
 
                 service.Add( proxyModel );
                 service.SetValues( ( T ) securedModel, proxyModel );
+
+                /*
+                    10/15/2026 - MSE
+
+                    Some IsAuthorized overrides grant EDIT to the record's author (for example
+                    Note) or to the record itself (Person matches on Guid), and SetValues copied
+                    the posted CreatedByPersonAliasId and Guid onto this copy. A caller could name
+                    themselves as author, or post their own Guid, to skip the check. Clear the
+                    author and Id and give the copy a new Guid so it is checked as a brand new
+                    record. This copy is never saved, so the record being inserted is not affected.
+
+                    Reason: Do not let posted audit values or Guid grant EDIT on a new record.
+                */
+                proxyModel.Id = 0;
+                proxyModel.Guid = Guid.NewGuid();
+                if ( proxyModel is IModel proxyAuditModel )
+                {
+                    proxyAuditModel.CreatedByPersonAliasId = null;
+                }
 
                 if ( proxyModel is ISecured securedProxy )
                 {
