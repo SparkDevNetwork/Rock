@@ -54,7 +54,8 @@
                             :isInThread="true"
                             :isFlashing="item.isReply && item.message.id === flashingId"
                             :data-reply-id="item.isReply ? item.message.id : undefined"
-                            @jump="emit('jump', $event)" />
+                            @jump="emit('jump', $event)"
+                            @messageAction="emit('messageAction', $event)" />
 
                 <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
                     <MessageRow v-for="row in item.rows"

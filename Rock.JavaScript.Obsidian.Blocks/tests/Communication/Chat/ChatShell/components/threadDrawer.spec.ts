@@ -492,3 +492,30 @@ describe("editing the person's own reply", () => {
         expect(w.emitted("messageAction")).toEqual([[expect.objectContaining({ kind: "cancelEdit" })]]);
     });
 });
+
+// The root is drawn on its own, outside the replies' groups, and can be a block post: a press on
+// its button must still reach the drawer's owner, or the button stays busy and nothing is run.
+describe("a block post as the root", () => {
+    test("a press on its button reaches the drawer's owner as the message's server action", async () => {
+        const card = message(40, {
+            message_type: "system",
+            body: "Count me in",
+            reply_count: 1,
+            blocks: [{
+                type: "buttons",
+                fallback: { type: "text", text: "Count me in" },
+                buttons: [{ id: "join", label: "Count me in", call: "chat_action_join" }]
+            }]
+        });
+        const drawer = draw({ root: card, replies: replies(1) });
+        await nextTick();
+
+        await drawer.get("[data-testid='block-button']").trigger("click");
+
+        const asked = drawer.emitted("messageAction") as [{ kind: string, message: TimelineMessage, action: { id: string, call: string } }][] | undefined;
+        expect(asked?.length).toBe(1);
+        expect(asked?.[0][0].kind).toBe("server");
+        expect(asked?.[0][0].message.id).toBe(40);
+        expect(asked?.[0][0].action).toMatchObject({ id: "join", call: "chat_action_join" });
+    });
+});
