@@ -272,8 +272,17 @@
         if (key === "reply") {
             emit("replyInThread", message.id);
         }
-        else if (key === "quote" || key === "edit" || key === "copy" || key === "delete") {
-            emit(key, message);
+        else if (key === "quote") {
+            emit("quote", message);
+        }
+        else if (key === "edit") {
+            emit("edit", message);
+        }
+        else if (key === "copy") {
+            emit("copy", message);
+        }
+        else if (key === "delete") {
+            emit("delete", message);
         }
         else {
             const action = (message.actions ?? [])[Number(key.replace("action ", ""))];

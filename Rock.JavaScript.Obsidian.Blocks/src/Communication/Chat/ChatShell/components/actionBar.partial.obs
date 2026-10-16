@@ -384,8 +384,19 @@
             return;
         }
 
-        if (key === "edit" || key === "copy" || key === "delete") {
-            emit(key, message);
+        // Each named on its own, since one emit cannot take a key that may be any of the three.
+        if (key === "edit") {
+            emit("edit", message);
+            return;
+        }
+
+        if (key === "copy") {
+            emit("copy", message);
+            return;
+        }
+
+        if (key === "delete") {
+            emit("delete", message);
             return;
         }
 
