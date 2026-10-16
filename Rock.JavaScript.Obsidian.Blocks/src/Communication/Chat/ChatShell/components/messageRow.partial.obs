@@ -79,7 +79,7 @@
                     <Icon name="alert" size="xs" />
                     <span data-testid="message-state">Not sent.</span>
                     <button type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
-                    <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
+                    <button type="button" class="chat-link-button is-quiet" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
                 <!-- The same pill as a direct message's, under the text at the text column's left edge. -->
@@ -127,7 +127,7 @@
                     <Icon name="alert" size="xs" />
                     <span data-testid="message-state">Not sent.</span>
                     <button type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
-                    <button type="button" class="chat-link-button" data-testid="discard-send" @click="onDiscard">Delete</button>
+                    <button type="button" class="chat-link-button is-quiet" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </template>
                 <template v-else-if="state === 'sending'">
                     <Icon name="clock" size="xs" />
@@ -432,11 +432,18 @@
 
 .chat-link-button {
     padding: 0;
-    font-weight: 600;
+    font-weight: 700;
     color: inherit;
     text-decoration: underline;
+    text-underline-offset: 2px;
     background: none;
     border: 0;
+}
+
+/* Delete is the quieter of a failed send's two links, so Try again reads as the way forward. */
+.chat-link-button.is-quiet {
+    font-weight: 600;
+    color: var(--chat-muted);
 }
 
 .chat-notice {
