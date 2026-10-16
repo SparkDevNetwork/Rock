@@ -567,8 +567,6 @@
     <Compile Include="Controllers\CodeGenerated\GroupMemberHistoricalsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberScheduleTemplatesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupSyncsController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LearningClassActivitiesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LearningClassActivityCompletionsController.CodeGenerated.cs" />

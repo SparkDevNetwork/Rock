@@ -22,14 +22,25 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
+    /*
+        10/15/2026 - MSE
+
+        These are live sign-in codes for phone number lookup, so the generic
+        v1 REST controller (secured only by the controller VIEW rule) must
+        not exist for this model.
+
+        Reason: Keep sign-in verification codes private.
+    */
     /// <summary>
     /// This class represents all of the verification codes that can be used by the phone verification system.
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "IdentityVerificationCode" )]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )]
     [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "3FCB8972-C319-4262-9D6E-3D60E1C4E463")]
     public partial class IdentityVerificationCode : Model<IdentityVerificationCode>
