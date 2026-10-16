@@ -333,6 +333,7 @@
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensionTests.cs" />
     <Compile Include="Utility\RockColorTests.cs" />
+    <Compile Include="Utility\SensitiveAttributeHelperTests.cs" />
     <Compile Include="Utility\RockDateTimeHelperTests.cs" />
     <Compile Include="Utility\RockSerializableListTests.cs" />
     <Compile Include="Utility\RockSerializableDictionaryTests.cs" />

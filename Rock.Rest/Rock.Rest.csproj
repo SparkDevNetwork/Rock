@@ -658,6 +658,8 @@
     <Compile Include="Controllers\CodeGenerated\CommunicationAttachmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CommunicationsController.Partial.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
+    <Compile Include="Controllers\AttributeValueHistoricalsController.Partial.cs" />
+    <Compile Include="Controllers\AttributeValuesController.Partial.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyCurrentsController.CodeGenerated.cs" />

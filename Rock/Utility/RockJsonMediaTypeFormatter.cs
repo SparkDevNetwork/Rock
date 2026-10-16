@@ -374,6 +374,70 @@ namespace Rock.Utility
                     }
                 }
             }
+
+            /*
+                10/15/2026 - MSE
+
+                Component settings (payment gateway credentials, storage provider keys,
+                job and workflow action passwords) are stored as attribute values. Those
+                attributes usually have no security of their own, so VIEW falls through
+                to the global default and every REST reader passes the check above. A
+                sensitive attribute is only kept when the person can edit the attribute
+                or the item that owns the value. Edit on the attribute defaults to Rock
+                Administration, and edit on the item lets an admin delegate a single
+                gateway the same way the Gateway Detail block does.
+
+                Reason: Keep component secrets out of v1 REST responses for people who cannot edit them.
+            */
+            var isHiddenSensitiveAttribute = new Dictionary<int, bool>();
+
+            foreach ( var item in items )
+            {
+                if ( item.Attributes == null )
+                {
+                    continue;
+                }
+
+                var keysToRemove = new List<string>();
+
+                foreach ( var keyValue in item.Attributes )
+                {
+                    var attribute = keyValue.Value;
+
+                    if ( attribute == null )
+                    {
+                        continue;
+                    }
+
+                    if ( !isHiddenSensitiveAttribute.TryGetValue( attribute.Id, out var isHidden ) )
+                    {
+                        isHidden = SensitiveAttributeHelper.IsSensitiveAttribute( attribute )
+                            && !attribute.IsAuthorized( Rock.Security.Authorization.EDIT, person );
+                        isHiddenSensitiveAttribute.Add( attribute.Id, isHidden );
+                    }
+
+                    if ( isHidden )
+                    {
+                        keysToRemove.Add( keyValue.Key );
+                    }
+                }
+
+                if ( !keysToRemove.Any() )
+                {
+                    continue;
+                }
+
+                if ( item is Rock.Security.ISecured securedItem && securedItem.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                {
+                    continue;
+                }
+
+                foreach ( var key in keysToRemove )
+                {
+                    item.Attributes.Remove( key );
+                    item.AttributeValues?.Remove( key );
+                }
+            }
         }
 
         /// <summary>
@@ -403,6 +467,147 @@ namespace Rock.Utility
             {
                 return base.CreateJsonWriter( type, writeStream, effectiveEncoding );
             }
+        }
+    }
+
+    /// <summary>
+    /// Decides which attributes hold secrets that REST readers may only receive
+    /// when they can edit them. Kept apart from <see cref="RockJsonMediaTypeFormatter"/>
+    /// so callers do not need a reference to the Web API formatting assembly.
+    /// </summary>
+    internal static class SensitiveAttributeHelper
+    {
+        /// <summary>
+        /// Determines whether the attribute holds a secret, such as a password
+        /// field or a component setting (gateway credentials, provider keys).
+        /// Readers need EDIT on the attribute, not only VIEW, to receive its values.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns><c>true</c> if the attribute is sensitive; otherwise, <c>false</c>.</returns>
+        internal static bool IsSensitiveAttribute( AttributeCache attribute )
+        {
+            if ( attribute == null )
+            {
+                return false;
+            }
+
+            /*
+                10/15/2026 - MSE
+
+                The component checks fail closed. When the entity type named by the
+                attribute or its qualifier has no cache entry, or its class cannot be
+                loaded (for example a plugin gateway that was uninstalled while its
+                gateway rows and credentials stay in the database) and it is not a
+                model entity, the attribute is treated as a component setting. The
+                entity types are read through EntityTypeCache, so a query runs only
+                on a cache miss.
+
+                Reason: Keep credentials of uninstalled or renamed components out of v1 REST responses.
+            */
+            var isAttributeEntityTypeComponent = attribute.EntityTypeId.HasValue
+                && IsComponentEntityType( EntityTypeCache.Get( attribute.EntityTypeId.Value ) );
+
+            var isQualifierEntityTypeComponent = false;
+
+            if ( IsEntityTypeQualifierColumn( attribute.EntityTypeQualifierColumn ) )
+            {
+                var qualifierEntityTypeId = attribute.EntityTypeQualifierValue.AsIntegerOrNull();
+
+                if ( qualifierEntityTypeId.HasValue )
+                {
+                    isQualifierEntityTypeComponent = IsComponentEntityType( EntityTypeCache.Get( qualifierEntityTypeId.Value ) );
+                }
+            }
+
+            return IsSensitiveAttribute( attribute.ConfigurationValues, isAttributeEntityTypeComponent, attribute.EntityTypeQualifierColumn, isQualifierEntityTypeComponent );
+        }
+
+        /// <summary>
+        /// Determines whether an attribute with the specified details holds a secret.
+        /// An attribute is sensitive when it is a password field, when it belongs to
+        /// a component type (component level settings such as the SMTP password), or
+        /// when it is qualified by a component entity type (component instance settings
+        /// such as financial gateway, asset storage provider and workflow action settings).
+        /// </summary>
+        /// <param name="configurationValues">The attribute configuration values.</param>
+        /// <param name="isAttributeEntityTypeComponent"><c>true</c> if the attribute belongs to a component type (see <see cref="IsComponentEntityType(Func{Type}, bool)"/>).</param>
+        /// <param name="entityTypeQualifierColumn">The attribute entity type qualifier column.</param>
+        /// <param name="isQualifierEntityTypeComponent"><c>true</c> if the qualifier value names a component type (see <see cref="IsComponentEntityType(Func{Type}, bool)"/>).</param>
+        /// <returns><c>true</c> if the attribute is sensitive; otherwise, <c>false</c>.</returns>
+        internal static bool IsSensitiveAttribute( IDictionary<string, string> configurationValues, bool isAttributeEntityTypeComponent, string entityTypeQualifierColumn, bool isQualifierEntityTypeComponent )
+        {
+            // TextField and EncryptedTextField both use this key for password fields.
+            if ( configurationValues != null
+                && configurationValues.TryGetValue( "ispassword", out var isPassword )
+                && isPassword.AsBoolean() )
+            {
+                return true;
+            }
+
+            if ( isAttributeEntityTypeComponent )
+            {
+                return true;
+            }
+
+            return isQualifierEntityTypeComponent && IsEntityTypeQualifierColumn( entityTypeQualifierColumn );
+        }
+
+        /// <summary>
+        /// Determines whether the cached entity type is a component type, failing
+        /// closed when it is missing or its class cannot be loaded.
+        /// </summary>
+        /// <param name="entityTypeCache">The cached entity type, or <c>null</c> when it was not found.</param>
+        /// <returns><c>true</c> if the entity type is, or may be, a component type; otherwise, <c>false</c>.</returns>
+        private static bool IsComponentEntityType( EntityTypeCache entityTypeCache )
+        {
+            if ( entityTypeCache == null )
+            {
+                return true;
+            }
+
+            return IsComponentEntityType( entityTypeCache.GetEntityType, entityTypeCache.IsEntity );
+        }
+
+        /// <summary>
+        /// Determines whether an entity type is a component type. When its class
+        /// cannot be loaded, it is treated as a component unless it is a model entity.
+        /// </summary>
+        /// <param name="getEntityType">Loads the class of the entity type. It may return <c>null</c> or throw when the class cannot be loaded.</param>
+        /// <param name="isEntity"><c>true</c> if the entity type is a model entity.</param>
+        /// <returns><c>true</c> if the entity type is, or may be, a component type; otherwise, <c>false</c>.</returns>
+        internal static bool IsComponentEntityType( Func<Type> getEntityType, bool isEntity )
+        {
+            Type entityType;
+
+            try
+            {
+                entityType = getEntityType();
+            }
+            catch
+            {
+                // Type.GetType can throw (for example FileLoadException or
+                // BadImageFormatException) for a broken plugin assembly.
+                return true;
+            }
+
+            if ( entityType == null )
+            {
+                return !isEntity;
+            }
+
+            return typeof( Rock.Extension.Component ).IsAssignableFrom( entityType );
+        }
+
+        /// <summary>
+        /// Determines whether the qualifier column holds an entity type identifier,
+        /// such as EntityTypeId, ComponentEntityTypeId or StorageEntityTypeId.
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <returns><c>true</c> if the column holds an entity type identifier; otherwise, <c>false</c>.</returns>
+        private static bool IsEntityTypeQualifierColumn( string entityTypeQualifierColumn )
+        {
+            return entityTypeQualifierColumn != null
+                && entityTypeQualifierColumn.EndsWith( "EntityTypeId", StringComparison.OrdinalIgnoreCase );
         }
     }
 }
