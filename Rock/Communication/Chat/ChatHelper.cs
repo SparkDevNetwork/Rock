@@ -4240,8 +4240,9 @@ namespace Rock.Communication.Chat
                         }
                         else
                         {
+                            // The same chat channel key can exist on other channel types, so only look within this group type.
                             group = groupService
-                                .GetChatChannelGroupsQuery()
+                                .GetChatChannelGroupsQuery( groupTypeId.Value )
                                 .FirstOrDefault( g => g.ChatChannelKey == syncCommand.ChatChannelKey );
                         }
 
@@ -4264,7 +4265,7 @@ namespace Rock.Communication.Chat
                         if ( group?.GetIsChatEnabled() == false )
                         {
                             // Only allow sync operations to be performed against chat-enabled Rock groups.
-                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupId.Value} is not chat-enabled." );
+                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {group.Id} is not chat-enabled." );
                             continue;
                         }
 
@@ -4991,8 +4992,19 @@ namespace Rock.Communication.Chat
             }
             else
             {
-                // Try to get the group ID for the chat channel key.
-                groupId = new GroupService( RockContext ).GetChatChannelGroupId( chatChannelKey );
+                // Try to get the group ID for the chat channel key. When the key doesn't embed a Rock group ID, only
+                // look for groups of the chat channel's group type, since the same key can exist on other channel types.
+                groupId = GetGroupId( chatChannelKey );
+
+                var groupTypeId = GetGroupTypeId( chatChannelTypeKey );
+                if ( !groupId.HasValue && groupTypeId.HasValue && chatChannelKey.IsNotNullOrWhiteSpace() )
+                {
+                    groupId = new GroupService( RockContext )
+                        .GetChatChannelGroupsQuery( groupTypeId.Value )
+                        .Where( g => g.ChatChannelKey == chatChannelKey )
+                        .Select( g => ( int? ) g.Id )
+                        .FirstOrDefault();
+                }
 
                 if ( groupId.HasValue )
                 {
