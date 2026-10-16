@@ -12,6 +12,34 @@
              @keydown="onKeydown"
              @focusin="onFocusIn"
              @focusout="onFocusOut">
+            <div class="chat-tools-react" role="group" aria-label="Quick reactions">
+                <button v-for="favorite in quickReactions"
+                        :key="favorite.code"
+                        type="button"
+                        class="chat-tool is-glyph"
+                        :tabindex="tabIndexOf(`react ${favorite.code}`)"
+                        :aria-pressed="isMine(favorite.code) ? 'true' : 'false'"
+                        :aria-label="`${isMine(favorite.code) ? 'Remove your' : 'React with'} ${favorite.label}`"
+                        @mouseenter="onQuickEnter($event, favorite.label)"
+                        @mouseleave="onPointerLeave"
+                        @pointerdown="onPointerDown"
+                        @focus="onQuickFocus($event, favorite.label)"
+                        @blur="onBlur"
+                        @click="onReact(favorite.code)">
+                    <img v-if="!favorite.emoji && favorite.image_url" class="chat-tool-glyph" :src="favorite.image_url" alt="" />
+                    <span v-else class="chat-tool-glyph" aria-hidden="true">{{ favorite.emoji }}</span>
+                </button>
+                <IconButton ref="addTool"
+                            class="chat-tool is-add"
+                            icon="smile-plus"
+                            label="More reactions"
+                            tooltip="Add reaction"
+                            aria-haspopup="dialog"
+                            :isTooltipDisabled="isPickerOpen"
+                            :tabindex="tabIndexOf('add')"
+                            @click="onOpenPicker" />
+            </div>
+            <span v-if="!isNarrow" class="chat-tools-sep" aria-hidden="true" data-testid="action-bar-separator"></span>
             <IconButton v-if="!isInThread"
                         class="chat-tool"
                         icon="thread"
@@ -29,6 +57,11 @@
                   :anchorAttrs="{ class: 'chat-tool', tabindex: tabIndexOf('more'), tooltip: 'More' }"
                   @select="onMenuSelect"
                   @openChange="onMenuOpenChange" />
+
+            <!-- One tip for the quick reactions, moved to whichever the pointer rests on. -->
+            <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+                <div v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</div>
+            </Teleport>
         </div>
     </Transition>
 </template>
@@ -134,6 +167,64 @@
     background: var(--chat-hover);
 }
 
+.chat-tools-react {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.chat-tools :deep(.chat-tool.is-add .chat-ic) {
+    width: 18px;
+    height: 18px;
+}
+
+/* A quick reaction is a wider pill around its glyph, and only the glyph moves: it grows on hover and gives on a press. */
+.chat-tools .chat-tool.is-glyph {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    padding: 0;
+    font-size: 19px;
+    line-height: 1;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-full);
+}
+
+.chat-tool-glyph {
+    display: block;
+    transition: transform var(--chat-d-glyph) var(--chat-ease-spring);
+}
+
+/* A church's image emoji is held to the glyph's box. */
+img.chat-tool-glyph {
+    width: 19px;
+    height: 19px;
+    object-fit: contain;
+}
+
+.chat-tool.is-glyph:hover .chat-tool-glyph {
+    transform: scale(1.15);
+}
+
+.chat-tool.is-glyph:active .chat-tool-glyph {
+    transform: scale(.92);
+    transition-duration: var(--chat-d-glyph-press);
+}
+
+.chat-tools .chat-tool.is-glyph[aria-pressed="true"] {
+    background: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1px var(--chat-brand-line);
+}
+
+.chat-tools-sep {
+    flex: none;
+    width: 1px;
+    height: 16px;
+    margin: 0 4px;
+    background: var(--chat-line);
+}
+
 /*
     The ring hugs the round tool on the bar's own fill. The oldest Safari Rock supports has no
     :focus-visible, so every focus rings there, and a browser that can tell a click's focus apart
@@ -165,6 +256,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .chat-tool-glyph,
+    .chat-tool.is-glyph:hover .chat-tool-glyph,
+    .chat-tool.is-glyph:active .chat-tool-glyph {
+        transition: none;
+        transform: none;
+    }
+
     .chat-tools-enter-active {
         animation: chat-tools-fade-in var(--chat-d-tools-show) linear;
     }
@@ -200,18 +298,19 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
-    import { PendingMessage, TimelineMessage } from "../types.partial";
+    import { PendingMessage, ReactionFavorite, TimelineMessage } from "../types.partial";
 
     // #region Types
 
-    /** The bar's tools, in the order the keyboard walks them. */
-    type Tool = "reply" | "quote" | "more";
+    /** The bar's tools, in the order the keyboard walks them: "react <code>" for a quick reaction. */
+    type Tool = `react ${string}` | "add" | "reply" | "quote" | "more";
 
     // #endregion Types
 
@@ -273,6 +372,18 @@
         senderName: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** The church's favorites, in order; the first three are the quick reactions. */
+        favorites: {
+            type: Array as PropType<ReactionFavorite[]>,
+            default: () => []
+        },
+
+        /** The picker More reactions opened is up for this message, which keeps the bar it is placed on. */
+        isPickerOpen: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -283,6 +394,8 @@
         (e: "copy", message: TimelineMessage): void;
         (e: "delete", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
+        (e: "react", message: TimelineMessage, code: string): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement): void;
         (e: "visibilityChange", isShown: boolean, isHeld: boolean): void;
     }>();
 
@@ -292,7 +405,7 @@
     const fallbackRestMs = 60;
     const fallbackGraceMs = 220;
 
-    /** A column this narrow or less takes the bar a little closer to its edge. */
+    /** A column this narrow or less keeps one quick reaction and takes the bar closer to its edge. */
     const narrowColumnPx = 560;
 
     /** A bubble or row this close to its column's top keeps its bar lower, inside the column. */
@@ -308,8 +421,10 @@
     const isMenuOpen = ref(false);
     const isFocusInside = ref(false);
 
-    /** The tool holding the toolbar's one tab stop. */
-    const activeTool = ref<Tool>(props.isInThread ? "quote" : "reply");
+    /** The tool the arrows last moved to; the first tool holds the tab stop until they move. */
+    const activeTool = ref<Tool | null>(null);
+
+    const addTool = ref<InstanceType<typeof IconButton>>();
 
     const isFlush = ref(false);
     const isLow = ref(false);
@@ -317,6 +432,15 @@
 
     let restTimer: ReturnType<typeof setTimeout> | null = null;
     let graceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** The quick reaction the one tip names, moved to whichever the pointer rests on or a key reaches. */
+    const tipAnchor = ref<HTMLElement>();
+    const tipText = ref("");
+
+    /** The chat's root, which the tip is drawn in; null where the bar is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
+
+    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur } = useTooltip(tipAnchor);
 
     // #endregion Values
 
@@ -334,12 +458,24 @@
         return isLive && !isSystemLine;
     });
 
-    /** A menu or a keyboard's focus inside keeps the bar, wherever the pointer went. */
-    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value);
+    /** A menu, a picker or a keyboard's focus inside keeps the bar, wherever the pointer went. */
+    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value || props.isPickerOpen);
 
     const isDrawn = computed((): boolean => canAct.value && (isHovered.value || isHeld.value));
 
-    const tools = computed((): Tool[] => props.isInThread ? ["quote", "more"] : ["reply", "quote", "more"]);
+    /** The first three favorites, or the first alone where the column is narrow. */
+    const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, isNarrow.value ? 1 : 3));
+
+    const tools = computed((): Tool[] => [
+        ...quickReactions.value.map((favorite): Tool => `react ${favorite.code}`),
+        "add",
+        ...(props.isInThread ? [] : ["reply" as const]),
+        "quote",
+        "more"
+    ]);
+
+    /** The tool holding the toolbar's one tab stop: where the arrows left it, while it is still drawn. */
+    const stopTool = computed((): Tool => activeTool.value && tools.value.includes(activeTool.value) ? activeTool.value : tools.value[0]);
 
     const toolbarLabel = computed((): string => {
         const message = props.message;
@@ -436,6 +572,32 @@
         isMenuOpen.value = isOpen;
     }
 
+    function onReact(code: string): void {
+        hideTip();
+        if (props.message) {
+            emit("react", props.message, code);
+        }
+    }
+
+    function onOpenPicker(): void {
+        const anchor = addTool.value?.buttonElement;
+        if (props.message && anchor) {
+            emit("openPicker", props.message, anchor);
+        }
+    }
+
+    function onQuickEnter(event: MouseEvent, label: string): void {
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipText.value = label;
+        onPointerEnter();
+    }
+
+    function onQuickFocus(event: FocusEvent, label: string): void {
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipText.value = label;
+        onFocus();
+    }
+
     /** The toolbar's arrows: Left and Right step between the tools and wrap, Home and End go to either end. */
     function onKeydown(event: KeyboardEvent): void {
         const elements = toolElements();
@@ -499,12 +661,17 @@
     // #region Functions
 
     function tabIndexOf(tool: Tool): number {
-        return tool === activeTool.value ? 0 : -1;
+        return tool === stopTool.value ? 0 : -1;
+    }
+
+    /** Whether the reader reacted to the message with an emoji, which presses its quick reaction. */
+    function isMine(code: string): boolean {
+        return !!props.message?.reactions?.some(reaction => reaction.code === code && reaction.mine);
     }
 
     /** The tools as drawn, the bar's own buttons only, never an item of the menu inside it. */
     function toolElements(): HTMLElement[] {
-        return Array.from(barElement.value?.querySelectorAll<HTMLElement>(":scope > button") ?? []);
+        return Array.from(barElement.value?.querySelectorAll<HTMLElement>(":scope > .chat-tools-react > button, :scope > button") ?? []);
     }
 
     /**
@@ -539,7 +706,7 @@
      * the feed's edge would cut it; a channel's row also keeps it inside the row under the New
      * divider, off the divider's label.
      */
-    function place(): void {
+    async function place(): Promise<void> {
         const bar = barElement.value;
         const host = bar?.parentElement;
         const scroller = host?.closest<HTMLElement>("[data-chat-scroller]");
@@ -547,9 +714,15 @@
             return;
         }
 
+        // A narrow column drops two quick reactions, so the bar is measured once it has.
+        const isNarrowNow = scroller.getBoundingClientRect().width <= narrowColumnPx;
+        if (isNarrowNow !== isNarrow.value) {
+            isNarrow.value = isNarrowNow;
+            await nextTick();
+        }
+
         const box = scroller.getBoundingClientRect();
         const anchor = host.getBoundingClientRect();
-        isNarrow.value = box.width <= narrowColumnPx;
 
         if (props.isCommunity) {
             const group = host.parentElement;
@@ -605,17 +778,11 @@
         }
     });
 
-    watch(() => props.isInThread, isInThread => {
-        if (isInThread && activeTool.value === "reply") {
-            activeTool.value = "quote";
-        }
-    });
-
     // Placed each time it shows, since the message may have moved since the last.
     watch(isDrawn, async isShown => {
         if (isShown) {
             await nextTick();
-            place();
+            await place();
         }
     });
 
@@ -627,6 +794,10 @@
     // #endregion Watchers
 
     // #region Lifecycle Hooks
+
+    onMounted(() => {
+        tipHost.value = overlayHostOf(hostElement());
+    });
 
     // A bar taken away while up, its message deleted or its row redrawn, tells the feed it went.
     onBeforeUnmount(() => {
