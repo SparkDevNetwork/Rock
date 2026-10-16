@@ -835,6 +835,30 @@ describe("a send that fails", () => {
     });
 });
 
+describe("a block post's buttons", () => {
+    test("a press reaches the feed's owner as the message's server action", async () => {
+        const card = message(7, anna, at(14, 50), {
+            message_type: "system",
+            body: "Count me in",
+            blocks: [{
+                type: "buttons",
+                fallback: { type: "text", text: "Count me in" },
+                buttons: [{ id: "join", label: "Count me in", call: "chat_action_join" }]
+            }]
+        } as Partial<TimelineMessage>);
+        const wrapper = draw({ timeline: timeline([card]), isChannel: true });
+        await nextTick();
+
+        await wrapper.get("[data-testid='block-button']").trigger("click");
+
+        const asked = wrapper.emitted("messageAction") as [{ kind: string, message: TimelineMessage, action: { id: string, call: string } }][] | undefined;
+        expect(asked?.length).toBe(1);
+        expect(asked?.[0][0].kind).toBe("server");
+        expect(asked?.[0][0].message.id).toBe(7);
+        expect(asked?.[0][0].action).toMatchObject({ id: "join", call: "chat_action_join" });
+    });
+});
+
 describe("the history skeleton", () => {
     test("shows only once the first page has taken more than a second, and goes when it lands", async () => {
         const state = timeline([], { isLoaded: false });

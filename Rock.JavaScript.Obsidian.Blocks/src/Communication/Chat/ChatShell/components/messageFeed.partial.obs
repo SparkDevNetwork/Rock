@@ -71,7 +71,8 @@
                                 :isPhone="isPhone"
                                 :isArriving="isRowArriving(item.key, item.message)"
                                 :isFlashing="item.message.id === flashingId"
-                                :data-message-id="item.message.id" />
+                                :data-message-id="item.message.id"
+                                @messageAction="emit('messageAction', $event)" />
 
                     <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
                         <MessageRow v-for="row in item.rows"
