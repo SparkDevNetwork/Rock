@@ -192,6 +192,23 @@ namespace Rock.Tests.Rest
         }
 
         [TestMethod]
+        public void BlocksController_DeleteOverride_KeepsBaseApiId()
+        {
+            var controllerType = GetControllerType( "BlocksController" );
+            var delete = controllerType.GetMethod( "Delete", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly );
+
+            Assert.IsNotNull( delete, "BlocksController does not override Delete." );
+
+            Assert.AreNotEqual( controllerType, delete.GetBaseDefinition().DeclaringType, "BlocksController.Delete must override the base Delete." );
+
+            var baseDelete = controllerType.BaseType.GetMethod( "Delete", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly );
+
+            Assert.IsNotNull( baseDelete );
+            Assert.AreEqual( baseDelete.ToString(), delete.ToString() );
+            Assert.IsNull( delete.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>( false ) );
+        }
+
+        [TestMethod]
         public void AttributeQualifiersController_PublicActions_AreUnchanged()
         {
             CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( "AttributeQualifiersController" ) );

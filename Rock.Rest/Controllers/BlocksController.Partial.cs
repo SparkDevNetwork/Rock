@@ -64,7 +64,8 @@ namespace Rock.Rest.Controllers
         #endregion
 
         /// <summary>
-        /// Deletes the specified Block with extra logic to flush caches.
+        /// Deletes the specified Block with extra logic to flush caches, after checking
+        /// that the person can administrate the block.
         /// </summary>
         /// <param name="id">The identifier.</param>
         [Authenticate, Secured]
@@ -83,6 +84,23 @@ namespace Rock.Rest.Controllers
                 pageId = block.PageId;
                 layoutId = block.LayoutId;
                 siteId = block.SiteId;
+            }
+
+            /*
+                10/16/2026 - MSE
+
+                The base DELETE only requires EDIT on the block. Staff can hold EDIT on blocks
+                that show on every page of a layout or site, such as the person profile blocks,
+                and the Rock UI only shows the delete icon to people who can administrate the
+                block. Require ADMINISTRATE on the stored block before deleting it. This keeps
+                the base signature so the ApiId and any custom REST security do not change.
+
+                Reason: Deleting a block is an administrator setting.
+            */
+            var storedBlock = BlockCache.Get( id );
+            if ( storedBlock == null || !storedBlock.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
 
             base.Delete( id );
