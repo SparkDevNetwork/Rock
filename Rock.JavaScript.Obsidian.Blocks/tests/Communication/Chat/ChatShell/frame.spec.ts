@@ -1658,4 +1658,89 @@ describe("delete confirm", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
         expect(document.activeElement).not.toBe(document.body);
     });
+
+    /**
+     * Opens the confirm on the person's own message 7 by pointer, from its action bar's real More
+     * menu, then moves the pointer off the message onto the dialog, as a mouse does. The bar's
+     * More is still on the page, in its grace, when the dialog closes, and leaves after.
+     */
+    let mouseFocus: jest.SpyInstance | null = null;
+
+    afterEach(() => {
+        mouseFocus?.mockRestore();
+        mouseFocus = null;
+    });
+
+    async function openConfirmByPointer(): Promise<VueWrapper> {
+        const w = await mountBlock(1200, true);
+        await openRow(w, team.channel_id);
+        const target = storedMessage(7, { person_alias_guid: "a0000001-0000-4000-8000-000000000000", is_own: true } as Partial<TimelineMessage>);
+        timelineOf(team.channel_id).messages.push(target);
+        const actions = mockShell!.messageActions as Record<string, unknown>;
+        const state = actions.state as { confirmingDelete: unknown };
+        actions.askDelete = jest.fn((channelId: string, message: TimelineMessage) => {
+            state.confirmingDelete = { channelId, message };
+        });
+        actions.cancelDelete = jest.fn(() => {
+            state.confirmingDelete = null;
+        });
+        actions.confirmDelete = jest.fn(async () => {
+            state.confirmingDelete = null;
+            target.deleted_at = new Date().toISOString();
+            return true;
+        });
+        await settle();
+
+        // A mouse's focus never matches :focus-visible in a browser, so it holds no bar; jsdom
+        // cannot tell, and is told.
+        const matches = Element.prototype.matches;
+        mouseFocus = jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
+
+        // The pointer rests on the message until its bar shows, then picks Delete from More.
+        await w.get("[data-testid='frame-main'] [data-hot-id='7']").trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 80));
+        await settle();
+        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+        const item = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.includes("Delete message"));
+        item!.click();
+        await settle();
+        expect(document.activeElement).toBe(w.get("[data-testid='dialog-cancel']").element);
+
+        // The pointer leaves the message for the dialog; the bar is still up for its grace.
+        await w.get("[data-testid='frame-main'] [data-testid='message-feed']").trigger("pointerleave");
+        await settle();
+        expect(w.find("[data-testid='frame-main'] [data-testid='action-bar']").exists()).toBe(true);
+        return w;
+    }
+
+    /** Lets the bar's grace run out and the bar leave, after the dialog's fade. */
+    async function barLeaves(): Promise<void> {
+        await fadeOut();
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await settle();
+    }
+
+    test("a Cancel click gives focus to the message", async () => {
+        const w = await openConfirmByPointer();
+
+        await w.get("[data-testid='dialog-cancel']").trigger("click");
+        await barLeaves();
+
+        expect(messages().cancelDelete).toHaveBeenCalledTimes(1);
+        expect(w.find("[data-testid='frame-main'] [data-testid='action-bar']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
+    });
+
+    test("a Delete click gives focus to the message's tombstone", async () => {
+        const w = await openConfirmByPointer();
+
+        await w.get("[data-testid='dialog-confirm']").trigger("click");
+        await barLeaves();
+
+        expect(messages().confirmDelete).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
+    });
 });
