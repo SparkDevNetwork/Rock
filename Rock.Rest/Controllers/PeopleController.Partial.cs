@@ -446,6 +446,21 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         public override System.Net.Http.HttpResponseMessage Post( Person person )
         {
+            /*
+                10/15/2026 - MSE
+
+                This always adds a new person, so the posted Id never names the record
+                being saved. CheckCanEdit reloads the stored record by Id, so a non-zero
+                Id (such as the caller's own Person Id) would authorize that existing
+                person in place of the posted values.
+
+                Reason: Authorize the person that will be added, not an existing one.
+            */
+            if ( person != null )
+            {
+                person.Id = 0;
+            }
+
             SetProxyCreation( true );
 
             CheckCanEdit( person );
