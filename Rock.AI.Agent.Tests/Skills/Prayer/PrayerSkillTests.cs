@@ -71,6 +71,49 @@ public class PrayerSkillTests : MockDatabaseTestsBase
         }
     }
 
+    [TestMethod]
+    public void DeletePrayerRequest_WithoutEdit_ReturnsError()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            Assert.IsTrue( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
+    [TestMethod]
+    public void DeletePrayerRequest_WithEdit_DeletesRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            AllowAllUsersEdit( rockContext );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.IsFalse( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
     private static PrayerSkill CreateSkill( RockContext rockContext, Person person )
     {
         var skill = new PrayerSkill( NullLogger<PrayerSkill>.Instance );
