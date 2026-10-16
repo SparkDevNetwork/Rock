@@ -461,3 +461,34 @@ describe("focus on open", () => {
         expect(w.emitted("close")).toHaveLength(1);
     });
 });
+
+// The person's own reply is edited in place in the drawer like any message: Up in the empty reply
+// box asks for the newest of their replies, and the reply open in the editor draws it with any
+// refusal under it, asking the block to save or cancel as a conversation's row does.
+describe("editing the person's own reply", () => {
+    const ownReply = (): TimelineMessage => message(44, { parent_id: 40, person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Ellis", body: "Count me in" });
+
+    test("Up in the empty reply box asks to edit the newest reply", async () => {
+        const w = draw();
+
+        await w.get("[data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
+
+        expect(w.emitted("editLast")).toHaveLength(1);
+    });
+
+    test("the reply open in the editor is drawn in place, with the refusal it met", async () => {
+        const w = draw({
+            replies: [...replies(2), ownReply()],
+            editingId: 44,
+            editError: { code: "rpc.not_editable", severity: "failed", text: "This message can't be edited." }
+        });
+        await nextTick();
+
+        expect(w.findAll("[data-testid='message-editor']")).toHaveLength(1);
+        expect(w.get("[data-testid='edit-error']").text()).toBe("This message can't be edited.");
+
+        await w.get("[data-testid='edit-cancel']").trigger("click");
+
+        expect(w.emitted("messageAction")).toEqual([[expect.objectContaining({ kind: "cancelEdit" })]]);
+    });
+});

@@ -1,0 +1,258 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="rootElement"
+         class="chat-editor"
+         :class="{ 'is-community': isCommunity }"
+         data-testid="message-editor"
+         @keydown="onKeydown">
+        <ChipEditor ref="editor"
+                    class="chat-editor-input"
+                    :text="initialText"
+                    :pieces="initialPieces"
+                    placeholder="Edit message"
+                    data-testid="edit-input"
+                    @send="onSave"
+                    @escape="emit('cancel')" />
+        <div v-if="error" class="chat-editor-error" role="alert" data-testid="edit-error">
+            <Icon name="alert" size="xs" />
+            <span>{{ errorSentence }}</span>
+        </div>
+        <div class="chat-editor-foot" data-testid="message-editor-foot">
+            <span class="chat-editor-hint"><kbd>Esc</kbd> to cancel, <kbd>Enter</kbd> to save</span>
+            <button type="button" class="chat-editor-btn is-ghost" data-testid="edit-cancel" @click="emit('cancel')">Cancel</button>
+            <button type="button"
+                    class="chat-editor-btn is-brand"
+                    data-testid="edit-save"
+                    :disabled="isSaving"
+                    @click="onSave(editor?.getText() ?? '')">Save</button>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/*
+    Takes the bubble's place, wider than most bubbles so a long message has room, ringed in the
+    church color as a focused box is. It keeps clear of the feed's faded foot when brought into
+    view, so its buttons are never under the composer's edge.
+*/
+.chat-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: min(560px, 62vw);
+    max-width: 100%;
+    padding: 8px;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-focus-line);
+    border-radius: var(--chat-r-editor);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+    scroll-margin: 12px 0 var(--chat-feed-bottom-mask, 14px);
+    animation: chat-editor-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* A channel's editor fills the text column, squarer, as the channel's composer is. */
+.chat-editor.is-community {
+    width: 100%;
+    margin: 2px 0;
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-editor .chat-editor-input {
+    min-height: 44px;
+    max-height: 220px;
+    padding: 2px 6px;
+}
+
+.chat-editor .chat-editor-input:empty::before {
+    top: 2px;
+    left: 6px;
+}
+
+.chat-editor-error {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-danger-ink);
+}
+
+.chat-editor-foot {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 0 4px;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+}
+
+.chat-editor-hint {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Rock's theme draws a kbd as a dark key cap; here it is the browser's plain key name. */
+.chat-editor-hint kbd {
+    padding: 0;
+    font-family: monospace;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.chat-editor-btn {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    height: 30px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-editor-btn.is-ghost {
+    color: var(--chat-text-2);
+    background: transparent;
+}
+
+.chat-editor-btn.is-ghost:hover {
+    background: var(--chat-hover);
+}
+
+.chat-editor-btn.is-brand {
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+}
+
+/* Held while the save is out, so a second press does not send the same edit twice. */
+.chat-editor-btn:disabled {
+    cursor: default;
+    opacity: .6;
+}
+
+@keyframes chat-editor-in {
+    from {
+        opacity: 0;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import ChipEditor from "../ui/chipEditor.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import { messageForError } from "../errors.partial";
+    import { ChatError, DisplayPiece, TimelineMessage } from "../types.partial";
+
+    const props = defineProps({
+        /** The message being edited, whose body and pieces the editor opens with. */
+        message: {
+            type: Object as PropType<TimelineMessage>,
+            required: true
+        },
+
+        /** The refusal the last save met, shown under the text the person typed. */
+        error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        isSaving: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Drawn in a channel's flat row, across the text column, rather than in a bubble's place. */
+        isCommunity: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Enter or Save, with the wire text, its mentions written as their tokens. */
+        (e: "save", body: string): void;
+        (e: "cancel"): void;
+    }>();
+
+    // #region Values
+
+    const rootElement = ref<HTMLElement>();
+    const editor = ref<InstanceType<typeof ChipEditor>>();
+
+    /**
+     * What the editor opens with, read once: the same message changed from another device while
+     * the person types here must not reload the box under them.
+     */
+    const initialText = props.message.body ?? "";
+    const initialPieces: DisplayPiece[] | null = props.message.pieces ?? null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const errorSentence = computed((): string => props.error ? messageForError(props.error) : "");
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** A save of the same text, or of nothing, changes nothing, so it only closes the editor. */
+    function onSave(text: string): void {
+        const body = text.trim();
+        if (!body || body === initialText.trim()) {
+            emit("cancel");
+            return;
+        }
+
+        if (!props.isSaving) {
+            emit("save", body);
+        }
+    }
+
+    /** Escape belongs to the editor alone, never also to the panel or the dialog behind it. */
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Puts the caret after the last of the text, where the person most often picks up. */
+    function placeCaretAtEnd(): void {
+        const box = editor.value?.editorElement;
+        if (!box) {
+            return;
+        }
+
+        editor.value?.focus();
+        const range = document.createRange();
+        range.selectNodeContents(box);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        placeCaretAtEnd();
+        const isMotionReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+        rootElement.value?.scrollIntoView?.({ block: "nearest", behavior: isMotionReduced ? "auto" : "smooth" });
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,0 +1,333 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!--
+        Moved out to the chat's root when it has one, so the sheet covers the whole chat from its
+        bottom edge rather than the row that opened it; left in place where there is no root.
+    -->
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <Transition :duration="{ enter: enterMs, leave: leaveMs }" leave-active-class="is-leaving">
+            <div v-if="isOpen && message"
+                 class="chat-sheet-scrim"
+                 data-testid="action-sheet-scrim"
+                 @click.self="emit('close')">
+                <div ref="sheetElement"
+                     class="chat-sheet"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-label="Message actions"
+                     data-testid="action-sheet"
+                     @keydown="onKeydown">
+                    <div class="chat-sheet-grab" aria-hidden="true"></div>
+                    <button v-for="item in items"
+                            :key="item.key"
+                            type="button"
+                            class="chat-sheet-item"
+                            :class="{ 'is-danger': item.isDanger }"
+                            @click="choose(item.key)">
+                        <Icon :name="item.icon" />
+                        <span class="chat-sheet-label">{{ item.label }}</span>
+                    </button>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+</template>
+
+<style scoped>
+/* Over the whole chat, the sheet held to its bottom edge and clipped there as it slides. */
+.chat-sheet-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: var(--chat-scrim);
+    animation: chat-sheet-scrim-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-sheet-scrim.is-leaving {
+    animation: chat-sheet-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+/* Slides up from below the edge, and back down faster as it goes; the safe area keeps it off a phone's home bar. */
+.chat-sheet {
+    width: 100%;
+    padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-sheet-in var(--chat-t-panel) var(--chat-ease-in);
+}
+
+.chat-sheet-scrim.is-leaving .chat-sheet {
+    animation: chat-sheet-out var(--chat-t-base) var(--chat-ease-out) forwards;
+}
+
+.chat-sheet-grab {
+    width: 40px;
+    height: 5px;
+    margin: 2px auto 12px;
+    background: var(--chat-line-strong);
+    border-radius: 3px;
+}
+
+/* The menu's item at a finger's size: 48px tall, 15px text. */
+.chat-sheet-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 15px;
+    color: var(--chat-text);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-item);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-sheet-item:hover,
+.chat-sheet-item:focus-visible {
+    outline: none;
+    background: var(--chat-hover);
+}
+
+.chat-sheet-item :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+.chat-sheet-item.is-danger,
+.chat-sheet-item.is-danger :deep(.chat-ic) {
+    color: var(--chat-danger-ink);
+}
+
+.chat-sheet-label {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+@keyframes chat-sheet-scrim-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-sheet-scrim-out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-sheet-in {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes chat-sheet-out {
+    to {
+        transform: translateY(100%);
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import Icon from "../ui/icon.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
+    import { overlayHostOf } from "../ui/tooltip.partial";
+    import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
+    import { TimelineMessage } from "../types.partial";
+
+    // #region Types
+
+    /** One of the sheet's items: a known action by its name, a server's by its place in the list. */
+    type SheetItem = { key: string, label: string, icon: string, isDanger?: boolean };
+
+    // #endregion Types
+
+    const props = defineProps({
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message acted on, carrying the actions the server listed on it. */
+        message: {
+            type: Object as PropType<TimelineMessage | null>,
+            default: null
+        },
+
+        /** The person's own message, which they may edit and delete. */
+        isOwn: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Inside the thread drawer, where Reply in thread has no place. */
+        isInThread: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "replyInThread", messageId: number): void;
+        (e: "quote", message: TimelineMessage): void;
+        (e: "edit", message: TimelineMessage): void;
+        (e: "copy", message: TimelineMessage): void;
+        (e: "delete", message: TimelineMessage): void;
+        (e: "serverAction", action: MessageAction): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    /** The design's slide up and down, used when the sheet of tokens is not on the page. */
+    const fallbackEnterMs = 300;
+    const fallbackLeaveMs = 180;
+
+    const instance = getCurrentInstance();
+
+    const sheetElement = ref<HTMLElement>();
+
+    /** The chat's root, which the sheet is drawn over; null where the row is drawn alone. */
+    const overlayHost = ref<HTMLElement | null>(null);
+
+    /**
+     * How long the sheet stays while it slides, read from the tokens. The scrim fades out faster
+     * than the sheet slides down, so its own animation would end the leave before the slide does.
+     */
+    const enterMs = ref(fallbackEnterMs);
+    const leaveMs = ref(fallbackLeaveMs);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The bar's and the menu's choices in one list, with no reactions: those are a later surface. */
+    const items = computed((): SheetItem[] => {
+        const message = props.message;
+        const list: SheetItem[] = [];
+        if (!message) {
+            return list;
+        }
+
+        if (!props.isInThread) {
+            list.push({ key: "reply", label: "Reply in thread", icon: "thread" });
+        }
+
+        list.push({ key: "quote", label: "Quote", icon: "reply" });
+
+        if (props.isOwn && isEditableMessage(message)) {
+            list.push({ key: "edit", label: "Edit message", icon: "pencil" });
+        }
+
+        list.push({ key: "copy", label: "Copy text", icon: "copy" });
+
+        // Each by its place in the list, since an action's id is the server's and may be anything.
+        (message.actions ?? []).forEach((action, index) => {
+            list.push({ key: `action ${index}`, label: action.label, icon: "bolt" });
+        });
+
+        if (props.isOwn) {
+            list.push({ key: "delete", label: "Delete message", icon: "trash", isDanger: true });
+        }
+
+        return list;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            // The sheet's Escape is its own, never also the panel's behind it.
+            event.stopPropagation();
+            emit("close");
+        }
+        else if (event.key === "Tab") {
+            trapTab(event);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Runs an item as the bar would and closes the sheet; its handler moves focus where it leads. */
+    function choose(key: string): void {
+        const message = props.message;
+        if (!message) {
+            return;
+        }
+
+        emit("close");
+
+        if (key === "reply") {
+            emit("replyInThread", message.id);
+        }
+        else if (key === "quote" || key === "edit" || key === "copy" || key === "delete") {
+            emit(key, message);
+        }
+        else {
+            const action = (message.actions ?? [])[Number(key.replace("action ", ""))];
+            if (action) {
+                emit("serverAction", action);
+            }
+        }
+    }
+
+    /** Keeps Tab among the sheet's items, wrapping from the last to the first and back. */
+    function trapTab(event: KeyboardEvent): void {
+        const buttons = Array.from(sheetElement.value?.querySelectorAll<HTMLElement>("button") ?? []);
+        if (buttons.length === 0) {
+            return;
+        }
+
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        }
+        else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Opened with focus on its first item, as a dialog takes focus into itself.
+    watch(() => props.isOpen, async isOpen => {
+        if (isOpen) {
+            await nextTick();
+            sheetElement.value?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // The sheet is drawn elsewhere, so the root is found from where the component sits in the row.
+    onMounted(() => {
+        const placeholder = instance?.proxy?.$el as Node | null | undefined;
+        const host = overlayHostOf(placeholder?.parentElement);
+        overlayHost.value = host;
+        if (host) {
+            enterMs.value = tokenDuration(host, "--chat-t-panel", fallbackEnterMs);
+            leaveMs.value = tokenDuration(host, "--chat-t-base", fallbackLeaveMs);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

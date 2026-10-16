@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-msg"
+    <div ref="rowElement"
+         class="chat-msg"
          :class="rootClasses"
          :role="state === 'system' ? 'note' : 'article'"
          :aria-label="ariaLabel"
@@ -10,6 +11,7 @@
          :data-state="state"
          :data-position="position"
          :data-hot-id="isBarOffered ? message?.id : undefined"
+         @click="onRowClick"
          @animationend="onAnimationEnd">
 
         <!-- A system line: quiet, unattributed, centred in bubbles and in the text column in Community. -->
@@ -68,10 +70,16 @@
                     <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                 </div>
-                <div class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
+                <MessageEditor v-if="isEditorShown && message"
+                               :message="message"
+                               :error="editError"
+                               :isSaving="isEditSaving"
+                               isCommunity
+                               v-on="editorHandlers" />
+                <div v-else class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
                     <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
                     <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
-                    <span v-if="isEdited" class="chat-cm-edited" data-testid="message-edited">(edited)</span>
+                    <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
                     <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
                 </div>
@@ -107,7 +115,13 @@
                 </span>
                 <!-- The bubble's box, which its bar is docked to the outer top corner of. -->
                 <div class="chat-bub-anchor">
-                    <div class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading, 'is-flashing': isFlashing }">
+                    <MessageEditor v-if="isEditorShown && message"
+                                   :message="message"
+                                   :error="editError"
+                                   :isSaving="isEditSaving"
+                                   v-on="editorHandlers" />
+                    <div v-else
+                         class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading, 'is-flashing': isFlashing }">
                         <div v-if="isAnnouncement" class="chat-bubble-label">
                             <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                         </div>
@@ -121,7 +135,7 @@
             <div v-if="hasThread && message" class="chat-reacts">
                 <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
             </div>
-            <div v-if="isEditedUnder" class="chat-msg-edited" data-testid="message-edited">Edited</div>
+            <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
             <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
                 <template v-if="state === 'failed'">
                     <Icon name="alert" size="xs" />
@@ -138,12 +152,21 @@
                     <span v-if="state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
                     <template v-else-if="isEdited">
                         <span aria-hidden="true">·</span>
-                        <span class="chat-meta-edited" data-testid="message-edited">Edited</span>
+                        <span class="chat-meta-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</span>
                     </template>
                 </template>
             </div>
             <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
         </template>
+
+        <!-- A phone's actions, from a tap on the message; drawn over the whole chat. -->
+        <ActionSheet v-if="isSheetSurface"
+                     :isOpen="isSheetOpen"
+                     :message="message"
+                     :isOwn="isOwn"
+                     :isInThread="isInThread"
+                     v-on="actionHandlers"
+                     @close="onSheetClose" />
 
         <!-- A failed send is spoken at once, wherever the person is looking. -->
         <span v-if="state === 'failed'" class="chat-sr-only" aria-live="assertive">Your message was not sent. Try again.</span>
@@ -423,7 +446,17 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
+}
+
+/* "Sent" always arrives fresh; "Edited" slides in only for an edit that lands while it is on screen. */
+.chat-meta-sent,
+.is-swapping {
     animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* An inline label takes no transform, so a channel's "(edited)" is a box while it slides. */
+.chat-cm-edited.is-swapping {
+    display: inline-block;
 }
 
 .chat-meta-sent {
@@ -893,14 +926,16 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import ActionBar from "./actionBar.partial.obs";
+    import ActionSheet from "./actionSheet.partial.obs";
     import MessageBody from "./messageBody.partial.obs";
+    import MessageEditor from "./messageEditor.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
     import { MessageAction, MessageActionRequest } from "../composables/useMessageActions.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
-    import { DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -1033,6 +1068,18 @@
         isEditing: {
             type: Boolean,
             default: false
+        },
+
+        /** The refusal the editor's last save met, shown under what the person typed. */
+        editError: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** The editor's save is out, so Save is held. */
+        isEditSaving: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -1053,7 +1100,21 @@
     /** When a pending row was first drawn, the time it shows until the platform gives it one. */
     const drawnAt = new Date();
 
+    const rowElement = ref<HTMLElement>();
+
     const isCrossfading = ref(false);
+
+    /** An edit landed while the row was on screen, so its "Edited" slides in once. */
+    const isEditedNow = ref(false);
+
+    const isSheetOpen = ref(false);
+
+    /**
+     * A screen with no hover, a tablet held in the hand, has no bar to show either, so it acts from
+     * the sheet as a phone does. Read once: a screen does not gain a pointer while chat is open.
+     */
+    const isHoverless = typeof window !== "undefined" && typeof window.matchMedia === "function"
+        && window.matchMedia("(hover: none)").matches;
 
     /**
      * Whether the row rises in, read once as it mounts and never again. The feed's answer changes
@@ -1258,13 +1319,27 @@
         return /\bnamed\b/.test(text) ? "pencil" : "info";
     });
 
+    /** A stored message the person reads as it is, which an action can apply to. */
+    const isActionable = computed((): boolean => state.value === "message" || state.value === "sent" || state.value === "unknown");
+
+    /** A phone, or a screen with no hover, which acts from the sheet instead of the bar. */
+    const isTouchLayout = computed((): boolean => props.isPhone || isHoverless);
+
     /**
      * Whether the row offers a bar at all: a stored message as the person reads it, on a pointer
      * screen. A tombstone, a send on its way or failed, a system line and a block post have none,
      * and a phone acts from a sheet instead.
      */
-    const isBarOffered = computed((): boolean => !!props.message && !props.pending && !props.isPhone
-        && (state.value === "message" || state.value === "sent" || state.value === "unknown"));
+    const isBarOffered = computed((): boolean => !!props.message && !props.pending && !isTouchLayout.value && isActionable.value);
+
+    /** The rows that hold a sheet at all, kept while it slides away whatever the message became. */
+    const isSheetSurface = computed((): boolean => !!props.message && !props.pending && isTouchLayout.value);
+
+    /** Whether a tap opens the sheet now: as the bar would show, never on a previewed room or an open editor. */
+    const isSheetOffered = computed((): boolean => isSheetSurface.value && isActionable.value && !props.isPreviewing && !props.isEditing);
+
+    /** The editor takes the text's place while the message is live; a delete that lands meanwhile shows its tombstone. */
+    const isEditorShown = computed((): boolean => props.isEditing && !!props.message && !props.pending && isActionable.value);
 
     /** The bar's props, the same in both looks, which place it in different spots. */
     const barProps = computed(() => ({
@@ -1315,8 +1390,11 @@
         }
     }
 
-    /** Reply in thread opens the drawer on this root, as its thread pill does; the rest go up as one request. */
-    const barHandlers = {
+    /**
+     * The bar's and the sheet's choices, one set for both. Reply in thread opens the drawer on
+     * this root, as its thread pill does; the rest go up as one request.
+     */
+    const actionHandlers = {
         replyInThread: (messageId: number): void => emit("openThread", messageId),
         quote: (message: TimelineMessage): void => emit("messageAction", { kind: "quote", message }),
         edit: (message: TimelineMessage): void => emit("messageAction", { kind: "edit", message }),
@@ -1326,7 +1404,11 @@
             if (props.message) {
                 emit("messageAction", { kind: "server", message: props.message, action });
             }
-        },
+        }
+    };
+
+    const barHandlers = {
+        ...actionHandlers,
         visibilityChange: (isShown: boolean, isHeld: boolean): void => {
             if (props.message) {
                 emit("barChange", props.message.id, isShown, isHeld);
@@ -1334,10 +1416,46 @@
         }
     };
 
+    /** The editor's save and cancel go up as requests about this message, as the bar's choices do. */
+    const editorHandlers = {
+        save: (body: string): void => {
+            if (props.message) {
+                emit("messageAction", { kind: "saveEdit", message: props.message, body });
+            }
+        },
+        cancel: (): void => {
+            if (props.message) {
+                emit("messageAction", { kind: "cancelEdit", message: props.message });
+            }
+        }
+    };
+
+    /**
+     * A tap on the message opens the sheet on a phone. A tap on something of its own, a link, a
+     * button or the sheet itself where it is drawn in place, does what that thing does instead.
+     */
+    function onRowClick(event: MouseEvent): void {
+        const target = event.target as Element | null;
+        if (!isSheetOffered.value || target?.closest("button, a, input, label, [contenteditable='true'], .chat-sheet-scrim")) {
+            return;
+        }
+
+        isSheetOpen.value = true;
+    }
+
+    /** Focus comes back to the message, unless the choice made moves it on, as a quote or an edit does. */
+    function onSheetClose(): void {
+        isSheetOpen.value = false;
+        rowElement.value?.focus({ preventScroll: true });
+    }
+
     /** The crossfade is a one-off, so the next edit can play it again. */
     function onAnimationEnd(event: AnimationEvent): void {
         if (event.animationName.includes("chat-crossfade")) {
             isCrossfading.value = false;
+        }
+        else if (event.animationName.includes("chat-meta-in")) {
+            isEditedNow.value = false;
         }
     }
 
@@ -1349,6 +1467,7 @@
     watch(() => [props.message?.edited_at, props.message?.deleted_at, props.message?.visibility], (now, before) => {
         if (before && now.some((value, index) => value !== before[index])) {
             isCrossfading.value = true;
+            isEditedNow.value = !!now[0] && now[0] !== before[0];
         }
     });
 

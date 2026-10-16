@@ -78,6 +78,8 @@
                                 :isHotSwapInstant="hot.isSwapInstant.value"
                                 :isPreviewing="isPreviewing"
                                 :isEditing="!!row.message && row.message.id === editingId"
+                                :editError="editError"
+                                :isEditSaving="isEditSaving"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @retry="emit('retry', $event)"
                                 @discard="emit('discard', $event)"
@@ -96,6 +98,7 @@
                       :quote="quote"
                       :isQuoteOwn="isQuoteOwn"
                       @send="onSend"
+                      @editLast="emit('editLast')"
                       @cancelQuote="emit('cancelQuote')" />
         </template>
     </PanelHost>
@@ -397,6 +400,18 @@
         editingId: {
             type: Number as PropType<number | null>,
             default: null
+        },
+
+        /** The refusal the editor's last save met, drawn under it. */
+        editError: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** The editor's save is out. */
+        isEditSaving: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -410,6 +425,7 @@
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
         (e: "cancelQuote"): void,
+        (e: "editLast"): void,
         (e: "messageAction", request: MessageActionRequest): void
     }>();
 

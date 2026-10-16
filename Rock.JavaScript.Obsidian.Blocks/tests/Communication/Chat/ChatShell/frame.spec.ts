@@ -28,6 +28,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import { SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 
 // #region Stand-ins
 
@@ -191,7 +192,9 @@ function fakeShell(): Record<string, unknown> {
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
             startEditNewest: jest.fn(() => false),
-            cancelQuote: jest.fn()
+            cancelQuote: jest.fn(),
+            saveEdit: jest.fn(async () => true),
+            cancelEdit: jest.fn()
         }
     };
 
@@ -1535,5 +1538,43 @@ describe("the toasts", () => {
 
         expect(w.find("[data-testid='frame-panel'] [data-testid='error-toast']").exists()).toBe(false);
         expect(w.find("[data-testid='frame-main'] [data-testid='error-toast']").exists()).toBe(true);
+    });
+});
+
+// An editor closed, saved or cancelled, gives focus back to the composer of the place it was
+// opened in, so the person carries on typing there; Up in the thread's composer edits the newest
+// of their replies in that thread.
+describe("edit in place", () => {
+    const actionsOf = (): Record<string, jest.Mock> => mockShell!.messageActions as Record<string, jest.Mock>;
+
+    test.each([["cancelled", "cancelEdit"], ["saved", "saveEdit"]] as const)("an editor %s gives focus back to the conversation's composer", async (_how, kind) => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const target = storedMessage(7);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", kind === "saveEdit" ? { kind, message: target, body: "fixed" } : { kind, message: target });
+        await settle();
+        await settle();
+
+        if (kind === "saveEdit") {
+            expect(actionsOf().saveEdit).toHaveBeenCalledWith("fixed");
+        }
+        else {
+            expect(actionsOf().cancelEdit).toHaveBeenCalledTimes(1);
+        }
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='composer-input']").element);
+    });
+
+    test("Up in the thread's empty composer edits the newest of the person's replies in that thread", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='frame-panel'] [data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
+
+        expect(actionsOf().startEditNewest).toHaveBeenCalledWith(team.channel_id, 40);
     });
 });

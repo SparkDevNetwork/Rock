@@ -21,6 +21,7 @@
 // the screenshots key on. A mention the server admitted is a chip; anything the server has not
 // admitted, a pending body above all, is plain text and never the raw token.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -77,6 +78,12 @@ type RowProps = {
     isJustSent?: boolean;
     isArriving?: boolean;
     senderNames?: ReadonlyMap<string, string>;
+    isEditing?: boolean;
+    editError?: { code: string, severity: string, text?: string | null } | null;
+    isEditSaving?: boolean;
+    isPhone?: boolean;
+    isPreviewing?: boolean;
+    isInThread?: boolean;
 };
 
 function draw(props: RowProps): VueWrapper {
@@ -598,5 +605,233 @@ describe("a message that quotes another", () => {
         wrapper.findComponent(MessageQuote).vm.$emit("jump", 40);
 
         expect(wrapper.emitted("jump")).toEqual([[40]]);
+    });
+});
+
+// Edit in place, in both looks: the editor takes the text's place, loaded with the body and each
+// admitted mention as a chip, and hands the row's owner a save with the wire text or a cancel.
+// Enter saves and Escape cancels, an Escape kept from the panel behind; a save of the same text
+// is only a cancel. A refusal's sentence stays under the editor with what the person typed.
+describe("edit in place", () => {
+    let mounted: VueWrapper | null = null;
+
+    afterEach(() => {
+        mounted?.unmount();
+        mounted = null;
+        document.body.innerHTML = "";
+    });
+
+    const lineup = ownConfirmed({ body: `Thanks <@${lee}>`, pieces: [{ type: "text", text: "Thanks " }, mentionLee] as TimelineMessage["pieces"] });
+
+    function editing(props: RowProps): VueWrapper {
+        mounted = mount(MessageRow, { props: { personAliasGuid: me, isOwn: true, isEditing: true, position: "single", ...props }, attachTo: document.body });
+        return mounted;
+    }
+
+    function input(w: VueWrapper): HTMLElement {
+        return w.get("[data-testid='edit-input']").element as HTMLElement;
+    }
+
+    async function key(w: VueWrapper, name: string): Promise<KeyboardEvent> {
+        const event = new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true });
+        input(w).dispatchEvent(event);
+        await nextTick();
+        return event;
+    }
+
+    /** Adds text at the box's end, as typing there would. */
+    async function typeAtEnd(w: VueWrapper, text: string): Promise<void> {
+        const box = input(w);
+        box.append(document.createTextNode(text));
+        box.dispatchEvent(new InputEvent("input", { bubbles: true }));
+        await nextTick();
+    }
+
+    function requests(w: VueWrapper): Array<Record<string, unknown>> {
+        return (w.emitted("messageAction") ?? []).map(([request]) => request as Record<string, unknown>);
+    }
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("takes the text's place in %s, loaded with the body and its mention as a chip", async (_kind, isChannel) => {
+        const w = editing({ message: lineup, isChannel });
+        await nextTick();
+
+        expect(w.find("[data-testid='message-editor']").exists()).toBe(true);
+        expect(w.find(".chat-bubble").exists()).toBe(false);
+        expect(w.find(".chat-cm-text").exists()).toBe(false);
+        expect(w.findAll("[data-testid='edit-input'] [data-testid='editor-chip'] .chat-mn-name").map(chip => chip.text())).toEqual(["Lee Leader"]);
+        expect(plain(w.get("[data-testid='message-editor-foot']").text())).toContain("Esc to cancel, Enter to save");
+        expect(w.get("[data-testid='edit-cancel']").text()).toBe("Cancel");
+        expect(w.get("[data-testid='edit-save']").text()).toBe("Save");
+    });
+
+    test("takes focus as it opens", async () => {
+        const w = editing({ message: lineup });
+        await nextTick();
+        await nextTick();
+
+        expect(document.activeElement).toBe(input(w));
+    });
+
+    test("Enter asks to save the wire text, the mention kept as its token", async () => {
+        const w = editing({ message: lineup });
+        await nextTick();
+        await typeAtEnd(w, " again");
+
+        await key(w, "Enter");
+
+        expect(requests(w)).toEqual([{ kind: "saveEdit", message: lineup, body: `Thanks <@${lee}> again` }]);
+    });
+
+    test("Save asks to save the same way", async () => {
+        const w = editing({ message: lineup, isChannel: true });
+        await nextTick();
+        await typeAtEnd(w, "!");
+
+        await w.get("[data-testid='edit-save']").trigger("click");
+
+        expect(requests(w)).toEqual([{ kind: "saveEdit", message: lineup, body: `Thanks <@${lee}>!` }]);
+    });
+
+    test("Escape asks to cancel, and is not heard by the panel behind", async () => {
+        const w = editing({ message: lineup });
+        await nextTick();
+        const behind = jest.fn();
+        document.addEventListener("keydown", behind);
+
+        await key(w, "Escape");
+        document.removeEventListener("keydown", behind);
+
+        expect(requests(w)).toEqual([{ kind: "cancelEdit", message: lineup }]);
+        expect(behind).not.toHaveBeenCalled();
+    });
+
+    test("Cancel asks to cancel", async () => {
+        const w = editing({ message: lineup });
+        await nextTick();
+
+        await w.get("[data-testid='edit-cancel']").trigger("click");
+
+        expect(requests(w)).toEqual([{ kind: "cancelEdit", message: lineup }]);
+    });
+
+    test("saving the text unchanged, or emptied, only cancels", async () => {
+        const w = editing({ message: lineup });
+        await nextTick();
+        await key(w, "Enter");
+
+        input(w).replaceChildren();
+        input(w).dispatchEvent(new InputEvent("input", { bubbles: true }));
+        await nextTick();
+        await key(w, "Enter");
+
+        expect(requests(w)).toEqual([{ kind: "cancelEdit", message: lineup }, { kind: "cancelEdit", message: lineup }]);
+    });
+
+    test("a refusal shows the server's sentence under the editor, which keeps what was typed", async () => {
+        const w = editing({ message: lineup });
+        await nextTick();
+        await typeAtEnd(w, " again");
+        await key(w, "Enter");
+
+        await w.setProps({ editError: { code: "rpc.not_editable", severity: "failed", text: "This message can't be edited." } });
+
+        expect(w.get("[data-testid='edit-error']").text()).toBe("This message can't be edited.");
+        expect(w.get("[data-testid='edit-error']").attributes("role")).toBe("alert");
+        expect(w.find("[data-testid='message-editor']").exists()).toBe(true);
+        expect(input(w).querySelectorAll("[data-testid='editor-chip']")).toHaveLength(1);
+        expect(input(w).textContent?.endsWith(" again")).toBe(true);
+    });
+
+    test("Save is held while the save is out", async () => {
+        const w = editing({ message: lineup, isEditSaving: true });
+        await nextTick();
+
+        expect(w.get("[data-testid='edit-save']").attributes("disabled")).toBeDefined();
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("Edited slides in once the edit is saved in %s, and not on a message edited before it was drawn", async (_kind, isChannel) => {
+        const before = draw({ message: message({ edited_at: nineOhTwo }), isChannel, position: "single" });
+        expect(before.get("[data-testid='message-edited']").classes()).not.toContain("is-swapping");
+
+        const w = draw({ message: message(), isChannel, position: "single" });
+        await w.setProps({ message: message({ edited_at: nineOhTwo, body: "Morning everyone" }) });
+
+        expect(w.get("[data-testid='message-edited']").classes()).toContain("is-swapping");
+    });
+});
+
+// A phone, or a screen with no hover, acts on a message from a sheet a tap on the message opens,
+// in place of the bar. Its items are the bar's and menu's, and each runs the same request.
+describe("the phone's action sheet", () => {
+    let mounted: VueWrapper | null = null;
+
+    afterEach(() => {
+        mounted?.unmount();
+        mounted = null;
+        document.body.innerHTML = "";
+    });
+
+    function onPhone(props: RowProps): VueWrapper {
+        mounted = mount(MessageRow, { props: { personAliasGuid: me, isPhone: true, position: "single", ...props }, attachTo: document.body });
+        return mounted;
+    }
+
+    function sheet(): HTMLElement | null {
+        return document.querySelector<HTMLElement>("[data-testid='action-sheet']");
+    }
+
+    function sheetItem(label: string): HTMLElement {
+        const item = Array.from(sheet()?.querySelectorAll<HTMLElement>("button") ?? []).find(button => button.textContent?.trim() === label);
+        if (!item) {
+            throw new Error(`No sheet item ${label}`);
+        }
+        return item;
+    }
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("opens from a tap on the message in %s", async (_kind, isChannel) => {
+        const w = onPhone({ message: message(), isChannel });
+        expect(sheet()).toBeNull();
+
+        await w.get(".chat-message-body").trigger("click");
+
+        expect(sheet()).not.toBeNull();
+        expect(w.find("[data-testid='action-bar']").exists()).toBe(false);
+    });
+
+    test("a tap on a button in the message does not open it", async () => {
+        const w = onPhone({ message: message({ parent_id: 40, shown_in_channel: true }) });
+
+        await w.get("[data-testid='thread-reply-label']").trigger("click");
+
+        expect(sheet()).toBeNull();
+    });
+
+    test.each([
+        ["on a wide screen", { isPhone: false }],
+        ["on a deleted message", { message: message({ deleted_at: nineOhTwo, body: null }) }],
+        ["on a send still going", { message: null, pending: pendingRow(), isOwn: true }],
+        ["in a room the person is previewing", { isPreviewing: true }],
+        ["on a message open in the editor", { isEditing: true, isOwn: true }]
+    ] as const)("does not open %s", async (_where, extra) => {
+        const w = onPhone({ message: message(), ...extra } as RowProps);
+
+        await w.trigger("click");
+
+        expect(sheet()).toBeNull();
+    });
+
+    test("its Quote asks for the same quote the bar would, and its Reply in thread opens the thread", async () => {
+        const target = message();
+        const w = onPhone({ message: target });
+        await w.trigger("click");
+
+        sheetItem("Quote").click();
+        await nextTick();
+        expect(w.emitted("messageAction")).toEqual([[{ kind: "quote", message: target }]]);
+
+        await w.trigger("click");
+        sheetItem("Reply in thread").click();
+        await nextTick();
+        expect(w.emitted("openThread")).toEqual([[42]]);
     });
 });
