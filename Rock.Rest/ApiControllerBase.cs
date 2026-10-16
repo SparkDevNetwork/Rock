@@ -212,6 +212,19 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Determines whether the person may launch workflows of the workflow type.
+        /// VIEW on the workflow type (or its category) is the launch right, the same
+        /// rule used by the Workflow Entry and Workflow Launch blocks.
+        /// </summary>
+        /// <param name="workflowType">The workflow type to be launched.</param>
+        /// <param name="person">The person launching the workflow, or <c>null</c> for an anonymous caller.</param>
+        /// <returns><c>true</c> if the person may launch the workflow type; otherwise, <c>false</c>.</returns>
+        protected static bool CanLaunchWorkflowType( Rock.Security.ISecured workflowType, Rock.Model.Person person )
+        {
+            return workflowType != null && workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+        }
+
+        /// <summary>
         /// The navigation properties of each entity type that can carry related records, cached
         /// because they are read on every POST.
         /// </summary>

@@ -691,6 +691,32 @@ namespace Rock.Rest
              *
              */
 
+            /*
+                10/16/2026 - MSE
+
+                Launching a workflow needs VIEW on its workflow type, the same rule as the
+                Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                the controller only says the caller may use this endpoint. The check runs
+                before the entity is loaded so an unauthorized call does no work. The caller
+                is recorded as the initiator like every other launch path.
+
+                Reason: Staff could launch any workflow type with chosen values through any v1 controller.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
+            if ( workflowType == null )
+            {
+                // An unknown workflow type launches nothing, the same as before.
+                return;
+            }
+
+            var person = GetPerson();
+            if ( !CanLaunchWorkflowType( workflowType, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var initiatorPersonAliasId = person?.PrimaryAliasId;
+
             T entity = null;
             if ( id > 0 )
             {
@@ -699,7 +725,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, null );
+                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, initiatorPersonAliasId );
             }
             else
             {
@@ -709,6 +735,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
                 transaction.Enqueue();
             }
         }
@@ -735,6 +762,32 @@ namespace Rock.Rest
              *
              */
 
+            /*
+                10/16/2026 - MSE
+
+                Launching a workflow needs VIEW on its workflow type, the same rule as the
+                Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                the controller only says the caller may use this endpoint. The check runs
+                before the entity is loaded so an unauthorized call does no work. The caller
+                is recorded as the initiator like every other launch path.
+
+                Reason: Staff could launch any workflow type with chosen values through any v1 controller.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
+            if ( workflowType == null )
+            {
+                // An unknown workflow type launches nothing, the same as before.
+                return;
+            }
+
+            var person = GetPerson();
+            if ( !CanLaunchWorkflowType( workflowType, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var initiatorPersonAliasId = person?.PrimaryAliasId;
+
             T entity = null;
             if ( id > 0 )
             {
@@ -743,7 +796,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, null );
+                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, initiatorPersonAliasId );
             }
             else
             {
@@ -753,6 +806,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
                 transaction.Enqueue();
             }
         }
