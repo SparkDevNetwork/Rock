@@ -444,6 +444,7 @@ img.chat-picker-prev {
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import Icon from "../ui/icon.partial.obs";
     import { overlayHostOf } from "../ui/tooltip.partial";
+    import { CatalogEmoji, EmojiGlyph } from "../types.partial";
 
     // #region Types
 
@@ -451,17 +452,7 @@ img.chat-picker-prev {
      * One emoji the picker can draw: a favorite as the bootstrap lists it, or a catalog row with its
      * category and search words. The glyph is the server's, or an image where the church has its own.
      */
-    export type PickerEmoji = {
-        code: string;
-        emoji: string | null;
-
-        // The wire's own name, as the bootstrap and the catalog call send it.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        image_url: string | null;
-        label: string;
-        category?: string;
-        keywords?: string[];
-    };
+    export type PickerEmoji = EmojiGlyph & Partial<Pick<CatalogEmoji, "category" | "keywords">>;
 
     /** What the picker draws from: favorites at once, the catalog once fetched, recents by code. */
     export type PickerSource = {

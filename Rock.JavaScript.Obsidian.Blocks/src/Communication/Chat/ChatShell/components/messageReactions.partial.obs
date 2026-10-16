@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <!-- The row under a message: the thread pill first, then the chips, then the add chip. -->
-    <div v-if="isRowDrawn"
+    <div v-if="isRowDrawn()"
          class="chat-reacts"
          :class="{ 'is-community': isCommunity }"
          data-testid="message-reactions">
@@ -208,29 +208,13 @@
     import { ComponentPublicInstance, computed, PropType, ref, useSlots, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
     import { useTooltip } from "../ui/tooltip.partial";
-    import { TimelineMessage } from "../types.partial";
-
-    // #region Types
-
-    /** One emoji's reactions on a message, as a page and the toggle's answer carry them. */
-    type ChipReaction = {
-        code: string;
-        count: number;
-        mine: boolean;
-        emoji: string | null;
-
-        // The wire's own name, as the server writes it.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        image_url: string | null;
-        label: string;
-    };
-
-    // #endregion Types
+    import { reactorLine } from "../composables/useReactions.partial";
+    import { Reaction, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
         /** The message, which carries its reactions in the order they are drawn. */
         message: {
-            type: Object as PropType<TimelineMessage & { reactions?: ChipReaction[] }>,
+            type: Object as PropType<TimelineMessage>,
             required: true
         },
 
@@ -254,7 +238,7 @@
 
         /** Who reacted with one emoji, "You" for the reader; null when they cannot be had. */
         loadReactorNames: {
-            type: Function as PropType<(reaction: ChipReaction) => Promise<string[] | null>>,
+            type: Function as PropType<(reaction: Reaction) => Promise<string[] | null>>,
             required: true
         }
     });
@@ -299,36 +283,15 @@
 
     const isChipsDrawn = computed((): boolean => props.message.message_type !== "system" && !isTomb.value);
 
-    const reactions = computed((): ChipReaction[] => props.message.reactions ?? []);
+    const reactions = computed((): Reaction[] => props.message.reactions ?? []);
 
     // The add chip only follows chips; a message with none is reacted to from its action bar.
     const isAddDrawn = computed((): boolean => !props.isPreviewing && !props.isPhone && reactions.value.length > 0);
 
-    /** A thread pill alone keeps the row, so a tombstone's thread can still be opened. */
-    const isRowDrawn = computed((): boolean => !!slots.default || (isChipsDrawn.value && reactions.value.length > 0));
+    const tipReaction = computed((): Reaction | null => reactions.value.find(reaction => reaction.code === tipCode.value) ?? null);
 
-    const tipReaction = computed((): ChipReaction | null => reactions.value.find(reaction => reaction.code === tipCode.value) ?? null);
-
-    const tipText = computed((): string => {
-        const reaction = tipReaction.value;
-
-        if (!reaction) {
-            return "";
-        }
-
-        const glyph = reaction.emoji ?? `:${reaction.code}:`;
-        const names = tipNames.value;
-
-        if (!names || names.length === 0) {
-            return `${reaction.count} ${reaction.count === 1 ? "person" : "people"} reacted with ${glyph}`;
-        }
-
-        // The names are the newest few; the chip's own count says how many more there are.
-        const shown = names.slice(0, 3);
-        const more = reaction.count - shown.length;
-
-        return `${more > 0 ? `${shown.join(", ")} and ${more} more` : joinNames(shown)} reacted with ${glyph}`;
-    });
+    // The names are the newest few; the chip's own count says how many more there are.
+    const tipText = computed((): string => tipReaction.value ? reactorLine(tipReaction.value, tipNames.value?.slice(0, 3) ?? null) : "");
 
     // #endregion Computed Values
 
@@ -375,16 +338,19 @@
 
     // #region Functions
 
-    /** Names joined as people say them: "A", "A and B", "A, B and C". */
-    function joinNames(names: string[]): string {
-        return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+    /**
+     * A thread pill alone keeps the row, so a tombstone's thread can still be opened. Read on each
+     * draw rather than held, since whether the row is handed a pill is not something Vue tracks.
+     */
+    function isRowDrawn(): boolean {
+        return !!slots.default || (isChipsDrawn.value && reactions.value.length > 0);
     }
 
     /**
      * The chip in one sentence, since the glyph and count are drawn for the eye. A person who
      * cannot press is not told what a press would do.
      */
-    function chipLabel(reaction: ChipReaction): string {
+    function chipLabel(reaction: Reaction): string {
         const base = `${reaction.label}, ${reaction.count}`;
 
         if (props.isPreviewing) {

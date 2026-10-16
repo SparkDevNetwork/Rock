@@ -42,6 +42,7 @@
 //   Reactions = {
 //       state: { catalog: CatalogEmoji[] | null, recents: string[] },   recents are codes, newest first
 //       toggle(channelId: string, messageId: number, emoji: { code, emoji, image_url, label }): Promise<void>,
+//       toggleCode(channelId: string, messageId: number, code: string): Promise<void>,   the glyph from the chip, the catalog or the favorites
 //       applyEvent(channelId: string, event: "reaction.added" | "reaction.removed", payload): void,
 //       loadCatalog(): Promise<CatalogEmoji[] | null>,     one call for the page; null when it failed
 //       recordRecent(code: string): void,
@@ -301,6 +302,47 @@ describe("a toggle", () => {
 
 // The reader's own reaction comes back to them twice: in the add's answer and as the event every
 // viewer of the room hears. Whichever arrives first, the chip counts the reaction once.
+// The bar, the sheet and the picker know only the code they were pressed with; the glyph a new
+// chip draws comes from the message's own chip, the catalog once fetched, or the favorites.
+describe("a toggle by code", () => {
+    function heldChips(timelines: ReturnType<typeof createTimelines>): ReactionRow[] {
+        const held = timelines.state(channel).messages.find(m => m.id === 42) as unknown as { reactions?: ReactionRow[] };
+        return (held.reactions ?? []).map(r => ({ ...r }));
+    }
+
+    test("on a favorite the message has none of draws its chip with the favorite's glyph and label", async () => {
+        const answer = deferred<CallResult>();
+        const { reactions, timelines, calls } = await setup([message(42)], [answer]);
+
+        const toggling = reactions.toggleCode(channel, 42, "pray");
+
+        expect(calls).toEqual([{ name: "chat_add_reaction", args: { p_message_id: 42, p_reaction: "pray" } }]);
+        expect(heldChips(timelines)).toEqual([rx("pray", 1, true)]);
+        answer.resolve(ok({ message_id: 42, reactions: [rx("pray", 1, true)] }));
+        await toggling;
+    });
+
+    test("on an emoji only the catalog holds takes the catalog's glyph", async () => {
+        const answer = deferred<CallResult>();
+        const { reactions, timelines } = await setup([message(42)], [ok({ emojis: catalog }), answer]);
+        await reactions.loadCatalog();
+
+        const toggling = reactions.toggleCode(channel, 42, "grinning");
+
+        expect(heldChips(timelines)).toEqual([rx("grinning", 1, true)]);
+        answer.resolve(ok({ message_id: 42, reactions: [rx("grinning", 1, true)] }));
+        await toggling;
+    });
+
+    test("on the reader's own chip removes it", async () => {
+        const { reactions, calls } = await setup([message(42, [rx("heart", 3, true)])], [ok({ message_id: 42, reactions: [rx("heart", 2)] })]);
+
+        await reactions.toggleCode(channel, 42, "heart");
+
+        expect(calls).toEqual([{ name: "chat_remove_reaction", args: { p_message_id: 42, p_reaction: "heart" } }]);
+    });
+});
+
 describe("the reader's own reaction and its echo", () => {
     test.each([["the answer before the echo", "answer-first"], ["the echo before the answer", "echo-first"]] as const)(
         "count it once: %s",

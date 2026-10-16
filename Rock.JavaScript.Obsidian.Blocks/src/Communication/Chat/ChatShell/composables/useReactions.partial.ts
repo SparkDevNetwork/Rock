@@ -88,6 +88,12 @@ export type Reactions = {
     /** Adds the reader's reaction with an emoji, or removes it when it is already theirs. */
     toggle: (channelId: string, messageId: number, emoji: EmojiGlyph) => Promise<void>;
 
+    /**
+     * The toggle for a press that knows only the code, as the bar, the sheet and the picker do;
+     * the glyph comes from the message's own chip, the catalog, or the favorites.
+     */
+    toggleCode: (channelId: string, messageId: number, code: string) => Promise<void>;
+
     /** Applies a reaction event a channel topic carried. */
     applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
 
@@ -102,6 +108,16 @@ export type Reactions = {
 
     /** Ends the reactions for good. */
     stop: () => void;
+};
+
+/**
+ * What a message row reads of the reactions: the favorites its bar and sheet draw, who reacted
+ * for a chip's tooltip, and what the open picker is placed beside, so the bar holding it stays.
+ */
+export type ReactionHost = {
+    favorites: ReactionFavorite[];
+    reactorNames: Reactions["reactorNames"];
+    pickerAnchor: HTMLElement | null;
 };
 
 /** How many recently used emoji the picker shows. */
@@ -289,10 +305,63 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         return after < 0 ? reactions.length : after;
     }
 
+    /** The glyph of a code: the message's own chip first, then the catalog, then the favorites. */
+    function glyphOf(channelId: string, messageId: number, code: string): EmojiGlyph {
+        const known = copiesOf(channelId, messageId)[0]?.reactions?.find(reaction => reaction.code === code)
+            ?? state.catalog?.find(emoji => emoji.code === code)
+            ?? dependencies.favorites.find(favorite => favorite.code === code);
+
+        // An unknown code still toggles; the answer brings the server's glyph for it.
+        return known
+            ? { code, emoji: known.emoji, image_url: known.image_url, label: known.label }
+            : { code, emoji: null, image_url: null, label: code };
+    }
+
     /** Lays the server's list over every copy, each copy its own chips so no two share one. */
     function applyAnswer(channelId: string, messageId: number, reactions: Reaction[]): void {
         for (const copy of copiesOf(channelId, messageId)) {
             copy.reactions = reactions.map(reaction => ({ ...reaction }));
+        }
+    }
+
+    /** Adds or removes the reader's reaction with an emoji, drawn at once and replaced by the answer. */
+    async function toggle(channelId: string, messageId: number, emoji: EmojiGlyph): Promise<void> {
+        if (isStopped) {
+            return;
+        }
+
+        const copies = copiesOf(channelId, messageId);
+        const isMine = copies[0]?.reactions?.find(reaction => reaction.code === emoji.code)?.mine ?? false;
+        const turn = ++toggleTurn;
+        toggleTurns.set(messageId, turn);
+
+        // Drawn at once, the mark and the count together, before the platform answers.
+        copies.forEach(copy => setOwnReaction(copy, emoji, !isMine, placeOf));
+
+        const result = await dependencies.call(isMine ? "chat_remove_reaction" : "chat_add_reaction", { p_message_id: messageId, p_reaction: emoji.code });
+        if (isStopped) {
+            return;
+        }
+
+        const isNewest = toggleTurns.get(messageId) === turn;
+        if (isNewest) {
+            toggleTurns.delete(messageId);
+        }
+
+        if (!result.ok) {
+            dependencies.notify({ code: result.error.code, text: messageForError(result.error), icon: "alert" });
+
+            // Only the press is taken back, so a reaction someone else made meanwhile stays.
+            // A newer press of the same message answers for the chips itself.
+            if (isNewest) {
+                copiesOf(channelId, messageId).forEach(copy => setOwnReaction(copy, emoji, isMine, placeOf));
+            }
+            return;
+        }
+
+        const answer = result.data as Partial<ReactionAnswer> | null;
+        if (isNewest && Array.isArray(answer?.reactions)) {
+            applyAnswer(channelId, messageId, answer.reactions);
         }
     }
 
@@ -301,45 +370,9 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
         favorites: dependencies.favorites,
 
-        toggle: async (channelId: string, messageId: number, emoji: EmojiGlyph): Promise<void> => {
-            if (isStopped) {
-                return;
-            }
+        toggle,
 
-            const copies = copiesOf(channelId, messageId);
-            const isMine = copies[0]?.reactions?.find(reaction => reaction.code === emoji.code)?.mine ?? false;
-            const turn = ++toggleTurn;
-            toggleTurns.set(messageId, turn);
-
-            // Drawn at once, the mark and the count together, before the platform answers.
-            copies.forEach(copy => setOwnReaction(copy, emoji, !isMine, placeOf));
-
-            const result = await dependencies.call(isMine ? "chat_remove_reaction" : "chat_add_reaction", { p_message_id: messageId, p_reaction: emoji.code });
-            if (isStopped) {
-                return;
-            }
-
-            const isNewest = toggleTurns.get(messageId) === turn;
-            if (isNewest) {
-                toggleTurns.delete(messageId);
-            }
-
-            if (!result.ok) {
-                dependencies.notify({ code: result.error.code, text: messageForError(result.error), icon: "alert" });
-
-                // Only the press is taken back, so a reaction someone else made meanwhile stays.
-                // A newer press of the same message answers for the chips itself.
-                if (isNewest) {
-                    copiesOf(channelId, messageId).forEach(copy => setOwnReaction(copy, emoji, isMine, placeOf));
-                }
-                return;
-            }
-
-            const answer = result.data as Partial<ReactionAnswer> | null;
-            if (isNewest && Array.isArray(answer?.reactions)) {
-                applyAnswer(channelId, messageId, answer.reactions);
-            }
-        },
+        toggleCode: (channelId: string, messageId: number, code: string): Promise<void> => toggle(channelId, messageId, glyphOf(channelId, messageId, code)),
 
         applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown): void => {
             if (isStopped) {
