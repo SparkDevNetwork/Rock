@@ -675,8 +675,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
         if (state.activeChannelId) {
             timelines.leave(state.activeChannelId);
         }
-        state.activeChannelId = null;
-        channels.setActive(null);
+        showChannel(null);
+    }
+
+    /**
+     * Puts a channel on screen, or none. Every switch passes through here, so a message's editor
+     * and delete confirm close with the conversation they were opened in, and an edit's answer
+     * still out lands nowhere.
+     */
+    function showChannel(channelId: string | null): void {
+        if (state.activeChannelId !== channelId) {
+            messageActions.switchConversation(channelId);
+        }
+        state.activeChannelId = channelId;
+        channels.setActive(channelId);
     }
 
     /** Counts opens, so an open that a later one has replaced stops touching anything. */
@@ -698,8 +710,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             timelines.leave(state.activeChannelId);
         }
 
-        state.activeChannelId = channelId;
-        channels.setActive(channelId);
+        showChannel(channelId);
 
         const outcome = await openChannel({
             join: id => hub?.openChannel(id),
@@ -723,8 +734,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         }
 
         if (outcome !== "opened") {
-            state.activeChannelId = null;
-            channels.setActive(null);
+            showChannel(null);
         }
 
         return outcome;

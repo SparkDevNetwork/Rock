@@ -1313,3 +1313,36 @@ describe("a page's report after the shell stops", () => {
         expect(h.shell.sender.pending(channelA).map(r => r.status)).toEqual(["sending"]);
     });
 });
+
+// The editor and the delete confirm belong to the conversation they were opened in: a switch to
+// another, or to a new direct message's draft, closes both, and an edit's answer still out when
+// the person left has nothing left to touch.
+describe("a conversation switch with a message's editor or delete confirm open", () => {
+    test.each([
+        ["opening another channel", (h: ReturnType<typeof build>) => void h.shell.selectChannel(channelB)],
+        ["opening a new direct message's draft", (h: ReturnType<typeof build>) => {
+            h.shell.directMessages.choose({ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null });
+            void h.shell.openDirectMessage();
+        }]
+    ])("%s closes the editor, drops the edit's late answer and closes the delete confirm", async (_what, leave) => {
+        const h = await started();
+        const message = h.shell.timelines.state(channelA).messages[0];
+
+        h.shell.messageActions.startEdit(channelA, message.id);
+        const saving = h.shell.messageActions.saveEdit("changed");
+        await settle();
+        const edit = h.saves.find(s => s.channelId === undefined && s.messageId === message.id);
+        expect(edit).toBeDefined();
+        h.shell.messageActions.askDelete(channelA, message);
+
+        leave(h);
+        await settle();
+
+        expect(h.shell.messageActions.state.editing).toBeNull();
+        expect(h.shell.messageActions.state.confirmingDelete).toBeNull();
+
+        edit?.answer.resolve(fakeResponse(403, { code: "42501", message: "authz.not_author" }));
+        expect(await saving).toBe(false);
+        expect(h.shell.messageActions.state.editing).toBeNull();
+    });
+});
