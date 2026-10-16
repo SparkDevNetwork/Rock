@@ -20,7 +20,7 @@
                  class="chat-menu"
                  role="menu"
                  :aria-label="label"
-                 :style="floatingStyles"
+                 :style="menuStyles"
                  @keydown="onKeydown">
                 <template v-for="item in items" :key="item.key">
                     <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
@@ -105,7 +105,10 @@
     color: var(--chat-danger-ink);
 }
 
-/* Enters from just toward its button and a touch small; leaves faster than it came. */
+/*
+    Enters from just toward its button and a touch small, and leaves the same way, half as far and
+    faster; toward the button is up when the menu opens below it and down when it flips above.
+*/
 .chat-pop-enter-active {
     transition: opacity var(--chat-t-base) var(--chat-ease-in), transform var(--chat-t-base) var(--chat-ease-in);
 }
@@ -116,17 +119,17 @@
 
 .chat-pop-enter-from {
     opacity: 0;
-    transform: translateY(calc(-1 * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
 }
 
 .chat-pop-leave-to {
     opacity: 0;
-    transform: translateY(calc(-1 * var(--chat-rise) * .3));
+    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
 }
 </style>
 
 <script setup lang="ts">
-    import { nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
@@ -194,7 +197,7 @@
     // Below its button by default, above when it would leave the window, kept 8px inside it.
     // Placed by left and top, since a transform here would override the pop motion's own and the
     // menu would only fade in and out.
-    const { floatingStyles } = useFloating(anchorElement, menuElement, {
+    const { floatingStyles, placement, x } = useFloating(anchorElement, menuElement, {
         placement: "bottom-end",
         strategy: "fixed",
         transform: false,
@@ -203,6 +206,27 @@
     });
 
     // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The placement, with the pop motion grown from the button: from the button's middle along the
+     * menu's edge nearest it, and moving toward it, so a menu flipped above its button grows up
+     * from below rather than down from a corner it does not touch.
+     */
+    const menuStyles = computed((): Record<string, string> => {
+        const isAbove = placement.value.startsWith("top");
+        const button = anchorElement.value?.getBoundingClientRect();
+        const width = menuElement.value?.offsetWidth ?? 0;
+        const middle = button ? button.left + button.width / 2 - (x.value ?? 0) : width / 2;
+        return {
+            ...floatingStyles.value,
+            transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
+            "--chat-pop-toward": isAbove ? "1" : "-1"
+        };
+    });
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 
