@@ -92,10 +92,16 @@ namespace Rock.Blocks.Engagement
         {
             var box = new DetailBlockBox<ConnectionOpportunityBag, ConnectionOpportunityDetailOptionsBag>();
 
-            SetBoxInitialEntityState( box );
+            var initialEntity = SetBoxInitialEntityState( box );
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
+
+            // Only show the Delete button to people the Delete action will allow.
+            box.Options.IsDeleteVisible = box.IsEditable
+                && initialEntity != null
+                && initialEntity.Id != 0
+                && IsAuthorizedToDelete( initialEntity );
 
             return box;
         }
@@ -440,14 +446,15 @@ namespace Rock.Blocks.Engagement
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<ConnectionOpportunityBag, ConnectionOpportunityDetailOptionsBag> box )
+        /// <returns>The initial entity that was loaded, or <c>null</c> if it was not found.</returns>
+        private ConnectionOpportunity SetBoxInitialEntityState( DetailBlockBox<ConnectionOpportunityBag, ConnectionOpportunityDetailOptionsBag> box )
         {
             var entity = GetInitialEntity();
 
             if ( entity == null )
             {
                 box.ErrorMessage = $"The {ConnectionOpportunity.FriendlyTypeName} was not found.";
-                return;
+                return null;
             }
 
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
@@ -483,6 +490,8 @@ namespace Rock.Blocks.Engagement
             }
 
             PrepareDetailBox( box, entity );
+
+            return entity;
         }
 
         /// <summary>
@@ -905,6 +914,44 @@ namespace Rock.Blocks.Engagement
             return true;
         }
 
+        /// <summary>
+        /// Determines whether the current person is authorized to delete the
+        /// specified connection opportunity. This matches the rule used by the
+        /// Connection Opportunity List block.
+        /// </summary>
+        /// <param name="entity">The connection opportunity being deleted.</param>
+        /// <returns><c>true</c> if the current person is authorized to delete the opportunity; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToDelete( ConnectionOpportunity entity )
+        {
+            /*
+                10/16/2026 - MSE
+
+                Editing is allowed with only VIEW on the opportunity to match the
+                WebForms block, but deleting is not. Delete requires block EDIT, EDIT
+                on the opportunity's own connection type, or EDIT on the opportunity,
+                the same as the Connection Opportunity List block. The connection type
+                comes from the opportunity, not from the page parameter, because the
+                page parameter is supplied by the client.
+
+                Reason: Prevent people with only VIEW from deleting opportunities.
+            */
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            var connectionType = ConnectionTypeCache.Get( entity.ConnectionTypeId );
+
+            if ( connectionType?.IsAuthorized( Authorization.EDIT, currentPerson ) == true )
+            {
+                return true;
+            }
+
+            return entity.IsAuthorized( Authorization.EDIT, currentPerson );
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -964,6 +1011,23 @@ namespace Rock.Blocks.Engagement
             }
 
             var isNew = entity.Id == 0;
+
+            /*
+                10/16/2026 - MSE
+
+                The connection request attributes may only reference attributes that
+                are new or already belong to this opportunity. The attribute Guids come
+                from the browser, and Helper.SaveAttributeEdits() would otherwise load
+                any attribute by Guid and move it under this opportunity. This must run
+                before the transaction because the request attributes are saved after
+                it commits.
+
+                Reason: Prevent taking over unrelated attributes through a tampered Save.
+            */
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionRequestAttributes, new ConnectionRequest().TypeId, "ConnectionOpportunityId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
 
             RockContext.WrapTransaction( () =>
             {
@@ -1236,6 +1300,17 @@ namespace Rock.Blocks.Engagement
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            // An empty key creates a new, unsaved entity; there is nothing to delete.
+            if ( entity.Id == 0 )
+            {
+                return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            if ( !IsAuthorizedToDelete( entity ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {ConnectionOpportunity.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

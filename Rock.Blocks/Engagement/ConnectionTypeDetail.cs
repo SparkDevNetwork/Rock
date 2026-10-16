@@ -1432,6 +1432,28 @@ namespace Rock.Blocks.Engagement
 
             var isNew = entity.Id == 0;
 
+            /*
+                10/16/2026 - MSE
+
+                Each attribute list may only reference attributes that are new or
+                already belong to this connection type, using the same entity type
+                and qualifier that SaveEntityAttributes() saves them with. The
+                attribute Guids come from the browser, and Helper.SaveAttributeEdits()
+                would otherwise load any attribute by Guid and move it under this
+                connection type, letting a later save delete it with all its values.
+
+                Reason: Prevent taking over unrelated attributes through a tampered Save.
+            */
+            var attributeQualifierValue = isNew ? null : entity.Id.ToString();
+            var areConnectionTypeAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionTypeAttributes, new ConnectionType().TypeId, "Id", attributeQualifierValue, RockContext );
+            var areConnectionOpportunityAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionOpportunityAttributes, new ConnectionOpportunity().TypeId, "ConnectionTypeId", attributeQualifierValue, RockContext );
+            var areConnectionRequestAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionRequestAttributes, new ConnectionRequest().TypeId, "ConnectionTypeId", attributeQualifierValue, RockContext );
+
+            if ( !areConnectionTypeAttributeEditsAllowed || !areConnectionOpportunityAttributeEditsAllowed || !areConnectionRequestAttributeEditsAllowed )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 // ShouldRecalculateRequestDueAndDueSoonDates is [NotMapped], so EF won't
