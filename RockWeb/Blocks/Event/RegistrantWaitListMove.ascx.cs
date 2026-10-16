@@ -143,6 +143,18 @@ namespace RockWeb.Blocks.Event
 
                         ceEmailMessage.Text = _template.WaitListTransitionEmailTemplate;
 
+                        /*
+                            10/16/2026 - MSE
+
+                            The preview holds the email merged with registrant data, which an anonymous
+                            registrant can fill with HTML. The ifEmailPreview iframe in the markup has
+                            sandbox="allow-popups allow-popups-to-escape-sandbox" so that HTML cannot run
+                            script in Rock's origin. Never add allow-scripts: a same-origin frame that may
+                            run script can remove its own sandbox. The old IE javascript: src fallback was
+                            removed because every supported browser uses srcdoc.
+
+                            Reason: Stop stored XSS through the wait list transition email preview.
+                        */
                         using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
                         {
                             tbFromSubject.Text = _template.WaitListTransitionSubject.ResolveMergeFields( mergeObjects );
@@ -150,9 +162,6 @@ namespace RockWeb.Blocks.Event
                             tbFromEmail.Text = _template.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
                             ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
                         }
-
-                        // needed to work in IE
-                        ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
                     }
                 }
                 else
@@ -198,9 +207,6 @@ namespace RockWeb.Blocks.Event
                     {
                         ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
                     }
-
-                    // needed to work in IE
-                    ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
                 }
             }
             else

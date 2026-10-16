@@ -368,7 +368,6 @@
         <script>
             Sys.Application.add_load(function () {
                 loadCharts();
-                refreshMessageContent();
                 $('.js-date-rollover').tooltip();
 
                 <%-- Hook the bootstrap tab change event to force the charts on a previously inactive tab to reload.
@@ -381,12 +380,6 @@
             <%-- Clear modal when canceled --%>
             function clearActiveDialog() {
                 $('#<%=hfActiveDialog.ClientID %>').val('');
-            }
-
-            <%-- Load the Message Content --%>
-            function refreshMessageContent() {
-                var scriptText = $('#load-email-body').html();
-                eval(scriptText);
             }
 
             <%-- Set the iframe height for styled scrolling on load --%>

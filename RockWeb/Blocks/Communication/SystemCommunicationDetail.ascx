@@ -97,7 +97,7 @@
                                         <div class="row">
                                             <div class="col-md-9">
                                                 <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">
-                                                    <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe inset-0 w-100 js-emailpreview-iframe email-wrapper" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
+                                                    <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe inset-0 w-100 js-emailpreview-iframe email-wrapper" runat="server" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">

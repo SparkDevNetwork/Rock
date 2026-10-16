@@ -2025,20 +2025,27 @@ namespace RockWeb.Blocks.Communication
                     sb.Append( "</ul></div></div>" );
                 }
 
+                /*
+                    10/16/2026 - MSE
+
+                    The message HTML can hold data from untrusted people (for example a registrant name
+                    merged into a confirmation email). It used to sit raw inside a script element in this
+                    page and was written into an unsandboxed iframe, so a closing script tag in the
+                    message injected HTML into this page and any script in the message ran in Rock's
+                    origin. The message is now HTML encoded into the srcdoc attribute (EncodeHtml also
+                    encodes the single quote) and the iframe is sandboxed without allow-scripts.
+                    allow-same-origin is only there so resizeIframe can read the frame height. Never add
+                    allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+                    Reason: Stop stored XSS through the communication message preview.
+                */
                 sb.AppendLine( string.Format( @"
             <div class='bg-gray-100 flex-fill position-relative mb-3 mb-sm-0 styled-scroll border border-panel' style='min-height:400px'>
             <div class='position-absolute w-100 h-100 inset-0 overflow-auto'>
-            <iframe id='js-email-body-iframe' class='w-100 bg-white' scrolling='yes' onload='resizeIframe(this)'></iframe>
+            <iframe id='js-email-body-iframe' class='w-100 bg-white' scrolling='yes' sandbox='allow-same-origin allow-popups allow-popups-to-escape-sandbox' onload='resizeIframe(this)' srcdoc='{0}'></iframe>
             </div>
             </div>
-            <script id='email-body' type='text/template'>{0}</script>
-            <script id='load-email-body' type='text/javascript'>
-                var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
-                doc.open();
-                doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
-                doc.close();
-            </script>
-        ", communication.Message ) );
+        ", communication.Message.EncodeHtml() ) );
 
 
                 sb.AppendLine( "</div>" );
