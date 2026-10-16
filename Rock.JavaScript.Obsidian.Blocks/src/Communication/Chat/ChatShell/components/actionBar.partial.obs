@@ -1,20 +1,203 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span></span>
+    <Transition name="chat-tools">
+        <div v-if="isDrawn"
+             ref="barElement"
+             class="chat-tools"
+             :class="placementClasses"
+             role="toolbar"
+             aria-orientation="horizontal"
+             :aria-label="toolbarLabel"
+             data-testid="action-bar"
+             @keydown="onKeydown"
+             @focusin="onFocusIn"
+             @focusout="onFocusOut">
+            <IconButton v-if="!isInThread"
+                        class="chat-tool"
+                        icon="thread"
+                        label="Reply in thread"
+                        :tabindex="tabIndexOf('reply')"
+                        @click="onReplyInThread" />
+            <IconButton class="chat-tool"
+                        icon="reply"
+                        label="Quote"
+                        :tabindex="tabIndexOf('quote')"
+                        @click="onQuote" />
+            <Menu icon="dots"
+                  label="More"
+                  :items="menuItems"
+                  :anchorAttrs="{ class: 'chat-tool', tabindex: tabIndexOf('more') }"
+                  @select="onMenuSelect"
+                  @openChange="onMenuOpenChange" />
+        </div>
+    </Transition>
 </template>
 
+<style scoped>
+/*
+    Docked at the bubble's outer top corner: another person's bar starts 44px in from the bubble's
+    right edge, the reader's own ends 44px in from its left, each moved to the bubble's own edge
+    when the column has no room, and dropped lower when the bubble is near the column's top.
+*/
+.chat-tools {
+    position: absolute;
+    top: -24px;
+    z-index: 6;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    height: 34px;
+    padding: 3px;
+    white-space: nowrap;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-bar);
+}
+
+.chat-tools:not(.is-own) {
+    right: auto;
+    left: max(0px, calc(100% - 44px));
+}
+
+.chat-tools.is-own {
+    right: max(0px, calc(100% - 44px));
+    left: auto;
+}
+
+.chat-tools.is-flush:not(.is-own) {
+    right: 0;
+    left: auto;
+}
+
+.chat-tools.is-flush.is-own {
+    right: auto;
+    left: 0;
+}
+
+.chat-tools.is-low {
+    top: -6px;
+}
+
+/* Community docks it on the row's top right, inside the row near the top or under the New divider. */
+.chat-tools.is-community,
+.chat-tools.is-community.is-own {
+    top: -18px;
+    right: 14px;
+    left: auto;
+}
+
+.chat-tools.is-community.is-low {
+    top: 0;
+}
+
+.chat-tools.is-community.is-in-thread {
+    right: 10px;
+}
+
+.chat-tools.is-community.is-narrow {
+    right: 8px;
+}
+
+/* Pads the bar's hit area, so the pointer moving onto it from the message never falls into a gap. */
+.chat-tools::before {
+    position: absolute;
+    inset: -6px -6px -14px;
+    content: "";
+    border-radius: inherit;
+}
+
+.chat-tools :deep(.chat-tool) {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    color: var(--chat-icon);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-tools :deep(.chat-tool .chat-ic) {
+    width: 16px;
+    height: 16px;
+}
+
+.chat-tools :deep(.chat-tool:hover) {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+}
+
+.chat-tools :deep(.chat-tool:active) {
+    background: var(--chat-press);
+}
+
+/* More keeps its plain look while its menu is open; the bar staying put already says which it is. */
+.chat-tools :deep(.chat-tool[aria-expanded="true"]) {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+}
+
+/*
+    The ring hugs the round tool on the bar's own fill. The oldest Safari Rock supports has no
+    :focus-visible, so every focus rings there, and a browser that can tell a click's focus apart
+    takes the ring back from it.
+*/
+.chat-tools :deep(.chat-tool:focus) {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--chat-raised), 0 0 0 4px var(--chat-brand-ring);
+}
+
+@supports selector(:focus-visible) {
+    .chat-tools :deep(.chat-tool:focus:not(:focus-visible)) {
+        box-shadow: none;
+    }
+}
+
+/* Shows by fading in and rising 3px home; hides by fading out faster, out of the pointer's way. */
+.chat-tools-enter-active {
+    transition: opacity var(--chat-d-tools-show) linear, transform var(--chat-d-tools-move) var(--chat-ease-in);
+}
+
+.chat-tools-leave-active {
+    pointer-events: none;
+    transition: opacity var(--chat-d-tools-hide) linear, transform var(--chat-d-tools-move) var(--chat-ease-in);
+}
+
+.chat-tools-enter-from,
+.chat-tools-leave-to {
+    opacity: 0;
+    transform: translateY(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-tools-enter-from,
+    .chat-tools-leave-to {
+        transform: none;
+    }
+}
+</style>
+
 <script setup lang="ts">
-    // A message's action bar. An empty stand-in with the planned props and no behaviour yet, so
-    // the tests written against it fail on what they assert.
-    import { PropType } from "vue";
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
+    import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
+    import { timeLabel } from "../feedLayout.partial";
     import { PendingMessage, TimelineMessage } from "../types.partial";
 
-    defineProps({
+    // #region Types
+
+    /** The bar's tools, in the order the keyboard walks them. */
+    type Tool = "reply" | "quote" | "more";
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The stored message, carrying the actions the server listed on it. */
         message: {
             type: Object as PropType<TimelineMessage | null>,
             default: null
         },
 
+        /** The person's own row still sending, or failed, which no action applies to yet. */
         pending: {
             type: Object as PropType<PendingMessage | null>,
             default: null
@@ -25,24 +208,396 @@
             default: false
         },
 
+        /** Inside the thread drawer, where Reply in thread has no place. */
         isInThread: {
             type: Boolean,
             default: false
         },
 
+        /** A room the person has not joined, where they may read but not act. */
         isPreviewing: {
             type: Boolean,
             default: false
         },
 
+        /** The message is open in the editor, which takes the bar's place. */
         isEditing: {
             type: Boolean,
             default: false
         },
 
+        /** The pointer is over the message or its bar, as the feed's one hot message. */
         isPointerInside: {
             type: Boolean,
             default: false
+        },
+
+        /** The pointer moved here straight from another bar, so this one shows, and that one hides, at once. */
+        isSwapInstant: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Drawn on a channel's flat row, at its top right, rather than on a bubble's corner. */
+        isCommunity: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The name the row shows for the sender, which the toolbar's name reads. */
+        senderName: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
+
+    const emit = defineEmits<{
+        (e: "replyInThread", messageId: number): void;
+        (e: "quote", message: TimelineMessage): void;
+        (e: "edit", message: TimelineMessage): void;
+        (e: "copy", message: TimelineMessage): void;
+        (e: "delete", message: TimelineMessage): void;
+        (e: "serverAction", action: MessageAction): void;
+        (e: "visibilityChange", isShown: boolean, isHeld: boolean): void;
+    }>();
+
+    // #region Values
+
+    /** The design's hover rest and grace, used when the sheet is not on the page. */
+    const fallbackRestMs = 60;
+    const fallbackGraceMs = 220;
+
+    /** A column this narrow or less takes the bar a little closer to its edge. */
+    const narrowColumnPx = 560;
+
+    /** A bubble or row this close to its column's top keeps its bar lower, inside the column. */
+    const nearTopPx = 30;
+
+    const instance = getCurrentInstance();
+
+    const barElement = ref<HTMLElement>();
+
+    /** The hover intent's verdict: shown once the pointer rested, hidden once its grace ran out. */
+    const isHovered = ref(false);
+
+    const isMenuOpen = ref(false);
+    const isFocusInside = ref(false);
+
+    /** The tool holding the toolbar's one tab stop. */
+    const activeTool = ref<Tool>(props.isInThread ? "quote" : "reply");
+
+    const isFlush = ref(false);
+    const isLow = ref(false);
+    const isNarrow = ref(false);
+
+    let restTimer: ReturnType<typeof setTimeout> | null = null;
+    let graceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether anything can be done to the message: stored, live, shown, not a system line, and the person may act here. */
+    const canAct = computed((): boolean => {
+        const message = props.message;
+        if (!message || props.pending || props.isEditing || props.isPreviewing) {
+            return false;
+        }
+
+        const isLive = !message.deleted_at && (message.visibility ?? "visible") === "visible";
+        const isSystemLine = message.message_type === "system" && !(message.blocks && message.blocks.length > 0);
+        return isLive && !isSystemLine;
+    });
+
+    /** A menu or a keyboard's focus inside keeps the bar, wherever the pointer went. */
+    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value);
+
+    const isDrawn = computed((): boolean => canAct.value && (isHovered.value || isHeld.value));
+
+    const tools = computed((): Tool[] => props.isInThread ? ["quote", "more"] : ["reply", "quote", "more"]);
+
+    const toolbarLabel = computed((): string => {
+        const message = props.message;
+        if (!message) {
+            return "";
+        }
+
+        const name = props.senderName || [message.sender_nick_name, message.sender_last_name].filter(part => !!part).join(" ") || "Someone";
+        const whose = props.isOwn ? "your" : `${name}'s`;
+        return `Actions for ${whose} message, ${timeLabel(new Date(message.created_at))}`;
+    });
+
+    /** Edit for the person's own message, Copy, the server's actions as a group, then Delete for their own. */
+    const menuItems = computed((): MenuItem[] => {
+        const message = props.message;
+        const items: MenuItem[] = [];
+        if (!message) {
+            return items;
+        }
+
+        if (props.isOwn && isEditableMessage(message)) {
+            items.push({ key: "edit", label: "Edit message", icon: "pencil", hint: "Up" });
+        }
+
+        items.push({ key: "copy", label: "Copy text", icon: "copy" });
+
+        // Each by its place in the list, since an action's id is the server's and may be anything.
+        (message.actions ?? []).forEach((action, index) => {
+            items.push({ key: `action ${index}`, label: action.label, icon: "bolt", isSeparatorBefore: index === 0 });
+        });
+
+        if (props.isOwn) {
+            items.push({ key: "delete", label: "Delete message", icon: "trash", isDanger: true, isSeparatorBefore: true });
+        }
+
+        return items;
+    });
+
+    const placementClasses = computed((): Record<string, boolean> => ({
+        "is-own": props.isOwn,
+        "is-community": props.isCommunity,
+        "is-in-thread": props.isInThread,
+        "is-flush": isFlush.value,
+        "is-low": isLow.value,
+        "is-narrow": isNarrow.value
+    }));
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onReplyInThread(): void {
+        if (props.message) {
+            emit("replyInThread", props.message.id);
+        }
+    }
+
+    function onQuote(): void {
+        if (props.message) {
+            emit("quote", props.message);
+        }
+    }
+
+    function onMenuSelect(key: string): void {
+        const message = props.message;
+        if (!message) {
+            return;
+        }
+
+        if (key === "edit" || key === "copy" || key === "delete") {
+            emit(key, message);
+            return;
+        }
+
+        const action = (message.actions ?? [])[Number(key.replace("action ", ""))];
+        if (action) {
+            emit("serverAction", action);
+        }
+    }
+
+    function onMenuOpenChange(isOpen: boolean): void {
+        isMenuOpen.value = isOpen;
+    }
+
+    /** The toolbar's arrows: Left and Right step between the tools and wrap, Home and End go to either end. */
+    function onKeydown(event: KeyboardEvent): void {
+        const elements = toolElements();
+        const index = elements.indexOf(event.target as HTMLElement);
+
+        // A key inside the open menu is the menu's own.
+        if (index < 0) {
+            return;
+        }
+
+        let next: number;
+        if (event.key === "ArrowRight") {
+            next = (index + 1) % elements.length;
+        }
+        else if (event.key === "ArrowLeft") {
+            next = (index - 1 + elements.length) % elements.length;
+        }
+        else if (event.key === "Home") {
+            next = 0;
+        }
+        else if (event.key === "End") {
+            next = elements.length - 1;
+        }
+        else {
+            return;
+        }
+
+        event.preventDefault();
+        activeTool.value = tools.value[next];
+        elements[next].focus();
+    }
+
+    /**
+     * Only a keyboard's focus holds the bar: a click leaves focus on the tool it pressed, and a bar
+     * kept for that would stay after the pointer has gone. Told apart by :focus-visible where the
+     * browser can tell; the oldest Safari Rock supports cannot, and holds for every focus.
+     */
+    function onFocusIn(event: FocusEvent): void {
+        const target = event.target as HTMLElement;
+        try {
+            isFocusInside.value = target.matches(":focus-visible");
+        }
+        catch {
+            isFocusInside.value = true;
+        }
+
+        const index = toolElements().indexOf(target);
+        if (index >= 0) {
+            activeTool.value = tools.value[index];
+        }
+    }
+
+    function onFocusOut(event: FocusEvent): void {
+        if (!barElement.value?.contains(event.relatedTarget as Node | null)) {
+            isFocusInside.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function tabIndexOf(tool: Tool): number {
+        return tool === activeTool.value ? 0 : -1;
+    }
+
+    /** The tools as drawn, the bar's own buttons only, never an item of the menu inside it. */
+    function toolElements(): HTMLElement[] {
+        return Array.from(barElement.value?.querySelectorAll<HTMLElement>(":scope > button") ?? []);
+    }
+
+    /**
+     * The element the bar is placed in, for the sheet's timings: the bar itself is not drawn while
+     * hidden, so its place in the page is where the timings are read.
+     */
+    function hostElement(): Element | null {
+        const placeholder = instance?.proxy?.$el as Node | null | undefined;
+        return placeholder?.parentElement ?? null;
+    }
+
+    function hoverMs(token: string, fallbackMs: number): number {
+        const host = hostElement();
+        return host ? tokenDuration(host, token, fallbackMs) : fallbackMs;
+    }
+
+    function clearTimers(): void {
+        if (restTimer) {
+            clearTimeout(restTimer);
+            restTimer = null;
+        }
+
+        if (graceTimer) {
+            clearTimeout(graceTimer);
+            graceTimer = null;
+        }
+    }
+
+    /**
+     * Places the bar for the room around its message. A bubble's bar moves to the bubble's own edge
+     * when the column has no room past it, and both looks drop it lower near the column's top, where
+     * the feed's edge would cut it; a channel's row also keeps it inside the row under the New
+     * divider, off the divider's label.
+     */
+    function place(): void {
+        const bar = barElement.value;
+        const host = bar?.parentElement;
+        const scroller = host?.closest<HTMLElement>("[data-chat-scroller]");
+        if (!bar || !host || !scroller) {
+            return;
+        }
+
+        const box = scroller.getBoundingClientRect();
+        const anchor = host.getBoundingClientRect();
+        isNarrow.value = box.width <= narrowColumnPx;
+
+        if (props.isCommunity) {
+            const group = host.parentElement;
+            const before = group && group.firstElementChild === host ? group.previousElementSibling : null;
+            isFlush.value = false;
+            isLow.value = !!before?.classList.contains("chat-new-divider") || anchor.top - box.top < nearTopPx;
+            return;
+        }
+
+        const room = props.isOwn ? anchor.left + 44 - box.left : box.right - (anchor.right - 44);
+        isFlush.value = room < bar.offsetWidth + 8;
+        isLow.value = anchor.top - box.top < nearTopPx;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // The hover intent. A pointer must rest a moment before the bar shows, so one passing over the
+    // feed does not flicker bars along its path, and may leave for a moment without losing it, so
+    // moving onto the bar never drops it. A move straight from another bar skips both.
+    watch(() => props.isPointerInside, isInside => {
+        clearTimers();
+
+        if (isInside === isHovered.value) {
+            return;
+        }
+
+        if (props.isSwapInstant) {
+            isHovered.value = isInside;
+            return;
+        }
+
+        if (isInside) {
+            restTimer = setTimeout(() => {
+                restTimer = null;
+                isHovered.value = true;
+            }, hoverMs("--chat-d-hover-rest", fallbackRestMs));
+        }
+        else {
+            graceTimer = setTimeout(() => {
+                graceTimer = null;
+                isHovered.value = false;
+            }, hoverMs("--chat-d-hover-grace", fallbackGraceMs));
+        }
+    }, { immediate: true });
+
+    // A message that can no longer be acted on, deleted or opened in the editor, lets go of its hold.
+    watch(canAct, isAble => {
+        if (!isAble) {
+            isMenuOpen.value = false;
+            isFocusInside.value = false;
+        }
+    });
+
+    watch(() => props.isInThread, isInThread => {
+        if (isInThread && activeTool.value === "reply") {
+            activeTool.value = "quote";
+        }
+    });
+
+    // Placed each time it shows, since the message may have moved since the last.
+    watch(isDrawn, async isShown => {
+        if (isShown) {
+            await nextTick();
+            place();
+        }
+    });
+
+    // The feed keeps one bar at a time, so it hears when this one shows and when it holds.
+    watch([isDrawn, isHeld], ([isShown, isHolding]) => {
+        emit("visibilityChange", isShown, isHolding);
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // A bar taken away while up, its message deleted or its row redrawn, tells the feed it went.
+    onBeforeUnmount(() => {
+        clearTimers();
+        if (isDrawn.value || isHeld.value) {
+            emit("visibilityChange", false, false);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

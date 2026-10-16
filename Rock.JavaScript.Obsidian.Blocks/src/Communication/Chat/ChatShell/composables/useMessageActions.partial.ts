@@ -39,6 +39,11 @@ export type ActionNotice = {
     icon: string;
 };
 
+/** What a message's bar or menu asks for, with the message it was asked on. */
+export type MessageActionRequest =
+    | { kind: "quote" | "edit" | "copy" | "delete", message: TimelineMessage }
+    | { kind: "server", message: TimelineMessage, action: MessageAction };
+
 /** What the actions reach outside themselves. */
 export type MessageActionsDependencies = {
     /** The shell's one call path. */
@@ -120,8 +125,23 @@ export type MessageActions = {
 const actionCallPattern = /^chat_action_[a-z0-9_]+$/;
 
 /**
- * Whether the person could edit a message in place: their own, on the timeline, live, shown and
- * not laid out in blocks or a system line, which the database refuses to edit.
+ * Whether a message's sender could edit it: live, shown, and not laid out in blocks or a system
+ * line, which the database refuses to edit. Whose it is, is the caller's to know.
+ *
+ * @param message The message.
+ *
+ * @returns True when its sender may edit it.
+ */
+export function isEditableMessage(message: TimelineMessage): boolean {
+    return !message.deleted_at
+        && (message.visibility ?? "visible") === "visible"
+        && message.message_type !== "system"
+        && !(message.blocks && message.blocks.length > 0);
+}
+
+/**
+ * Whether the person could edit a message in place from the conversation: their own, on the
+ * timeline, and editable.
  *
  * @param message The message.
  * @param personAliasGuid The session's alias.
@@ -129,12 +149,7 @@ const actionCallPattern = /^chat_action_[a-z0-9_]+$/;
  * @returns True when Edit is offered.
  */
 export function canEditMessage(message: TimelineMessage, personAliasGuid: string): boolean {
-    return isOwnMessage(message, personAliasGuid)
-        && isTimelineMessage(message)
-        && !message.deleted_at
-        && (message.visibility ?? "visible") === "visible"
-        && message.message_type !== "system"
-        && !(message.blocks && message.blocks.length > 0);
+    return isOwnMessage(message, personAliasGuid) && isTimelineMessage(message) && isEditableMessage(message);
 }
 
 /**
