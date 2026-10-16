@@ -300,3 +300,115 @@ describe("the composer's quote strip", () => {
         expect(wrapper.emitted("cancelQuote")).toEqual([[]]);
     });
 });
+
+// The emoji button opens the picker in insert mode, anchored on the button: a Unicode emoji goes
+// into the box as its glyph at the caret, an image emoji as its :code: text, which the message
+// draws. The composer takes the picker's data as emojiSource, { favorites, catalog, recents,
+// churchName }, the same the shell hands every picker; it emits emojiPickerOpen() as the picker
+// opens, so the shell can fetch the catalog, and emojiChosen(code) for the recently used. The
+// button is "Add emoji", data-testid="composer-emoji"; the picker is the emoji picker component.
+describe("the composer's emoji button", () => {
+    const emojiSource = {
+        favorites: [
+            { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null },
+            { code: "pray", label: "folded hands", emoji: "🙏", image_url: null }
+        ],
+        catalog: [
+            { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null, category: "people", keywords: [] },
+            { code: "pray", label: "folded hands", emoji: "🙏", image_url: null, category: "people", keywords: ["pray"] },
+            { code: "cedar_hill", label: "cedar hill", emoji: null, image_url: "https://cdn.example.org/cedar.png", category: "objects", keywords: [] }
+        ],
+        recents: [],
+        churchName: "Cedar Hill"
+    };
+
+    let mounted: VueWrapper | null = null;
+
+    beforeAll(() => {
+        // jsdom has no ResizeObserver, and floating placement keeps the picker beside its anchor with one.
+        if (typeof window.ResizeObserver === "undefined") {
+            window.ResizeObserver = class {
+                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
+                unobserve(): void { /* As above. */ }
+                disconnect(): void { /* As above. */ }
+            } as unknown as typeof ResizeObserver;
+        }
+    });
+
+    afterEach(() => {
+        mounted?.unmount();
+        mounted = null;
+        document.body.replaceChildren();
+    });
+
+    async function settle(): Promise<void> {
+        for (let i = 0; i < 3; i++) {
+            await Promise.resolve();
+            await nextTick();
+        }
+    }
+
+    /** Types the text, then puts the caret after its first characters, as a click there would. */
+    async function typeWithCaret(w: VueWrapper, text: string, caretAt: number): Promise<void> {
+        await type(w, text);
+        const node = editorOf(w).firstChild as Text;
+        const range = document.createRange();
+        range.setStart(node, caretAt);
+        range.collapse(true);
+        const selection = window.getSelection() as Selection;
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.dispatchEvent(new Event("selectionchange"));
+        await nextTick();
+    }
+
+    function pickerCell(code: string): HTMLElement {
+        const cell = document.querySelector<HTMLElement>(`[role='gridcell'][data-code='${code}']`);
+        if (!cell) {
+            throw new Error(`No picker cell ${code}`);
+        }
+        return cell;
+    }
+
+    test("is Add emoji, and opens the picker in insert mode", async () => {
+        mounted = mount(Composer, { props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        const button = mounted.get("[data-testid='composer-emoji']");
+        expect(button.attributes("aria-label")).toBe("Add emoji");
+        expect(document.querySelector("[role='grid']")).toBeNull();
+
+        await button.trigger("click");
+        await settle();
+
+        expect(document.querySelector("[role='grid']")).not.toBeNull();
+        expect(mounted.emitted("emojiPickerOpen")).toEqual([[]]);
+        expect(document.querySelector("[role='gridcell'][aria-pressed='true']")).toBeNull();
+    });
+
+    test("puts the chosen emoji's glyph in the box at the caret, and leaves the person typing", async () => {
+        mounted = mount(Composer, { props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        await typeWithCaret(mounted, "Hi there", 2);
+
+        await mounted.get("[data-testid='composer-emoji']").trigger("click");
+        await settle();
+        pickerCell("pray").click();
+        await settle();
+
+        expect(boxText(mounted)).toBe("Hi🙏 there");
+        expect(mounted.emitted("emojiChosen")).toEqual([["pray"]]);
+        expect(document.querySelector("[role='grid']")).toBeNull();
+        expect(document.activeElement).toBe(editorOf(mounted));
+    });
+
+    test("puts an image emoji in the box as its code", async () => {
+        mounted = mount(Composer, { props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        await typeWithCaret(mounted, "Welcome ", 8);
+
+        await mounted.get("[data-testid='composer-emoji']").trigger("click");
+        await settle();
+        pickerCell("cedar_hill").click();
+        await settle();
+
+        expect(boxText(mounted)).toBe("Welcome :cedar_hill:");
+        expect(mounted.emitted("emojiChosen")).toEqual([["cedar_hill"]]);
+    });
+});
