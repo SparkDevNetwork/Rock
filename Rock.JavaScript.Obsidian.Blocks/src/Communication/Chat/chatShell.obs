@@ -77,6 +77,7 @@
                              :editingId="editingIdIn(activeChannelId)"
                              :editError="editErrorIn(activeChannelId)"
                              :isEditSaving="isEditSavingIn(activeChannelId)"
+                             :landOnId="landingMessageId"
                              @seen="shell.seen"
                              @markRead="shell.markRead"
                              @firstShown="shell.firstMessageShown"
@@ -84,6 +85,7 @@
                              @discard="shell.sender.discard"
                              @loadOlder="shell.loadOlder"
                              @openThread="onOpenThread"
+                             @jump="onJump($event, false)"
                              @messageAction="onMessageAction($event, null)" />
                 <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
                     {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
@@ -186,6 +188,7 @@
                                   @discard="shell.sender.discard"
                                   @cancelQuote="onCancelQuote(threadQuoteKey)"
                                   @editLast="onEditLastReply"
+                                  @jump="onJump($event, true)"
                                   @messageAction="onMessageAction($event, drawnThread.rootId)" />
                 </div>
             </aside>
@@ -405,6 +408,9 @@
     /** A reply to open its thread at: from a push's tap, or from a link to it. */
     type ReplyLanding = { channelId: string, rootId: number, messageId: number | null };
 
+    /** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
+    type LandingCheck = "held" | "more" | "stop";
+
     // #endregion Types
 
     const config = useConfigurationValues<ChatShellInitializationBox>();
@@ -491,6 +497,9 @@
 
     /** The reply the drawer scrolls to and flashes once it holds it, or null. */
     const landingReplyId = ref<number | null>(null);
+
+    /** The message the feed scrolls to and flashes once its timeline holds it, or null. */
+    const landingMessageId = ref<number | null>(null);
 
     /**
      * The reply a link to this page named, until the first conversation opens: its thread opens
@@ -928,6 +937,9 @@
     function onMessageAction(request: MessageActionRequest, rootId: number | null): void {
         const channelId = rootId === null ? activeChannelId.value : drawnThread.value?.channelId ?? null;
         if (!channelId) {
+            if (request.kind === "server") {
+                request.onSettled?.();
+            }
             return;
         }
 
@@ -966,7 +978,7 @@
                 break;
 
             case "server":
-                void actions.runAction(channelId, request.message.id, request.action);
+                void actions.runAction(channelId, request.message.id, request.action).finally(() => request.onSettled?.());
                 break;
         }
     }
@@ -1118,24 +1130,80 @@
         await opened;
 
         const threads = shell.value.threads;
-        for (let olderPages = 0; ; olderPages++) {
+        await loadUntilHeld(() => {
             const thread = threads.state.thread;
             if (thisOpen !== threadOpenCount || !thread || thread.rootId !== landing.rootId || landing.messageId === null) {
-                return;
+                return "stop";
             }
 
             if (thread.replies.some(reply => reply.id === landing.messageId)) {
                 landingReplyId.value = landing.messageId;
-                return;
+                return "held";
             }
 
             // A failed page is shown in the drawer; trying again here would only repeat it.
-            if (olderPages >= maxLandingOlderPages || !thread.hasMore || thread.error || thread.olderError) {
-                return;
+            return !thread.hasMore || thread.error || thread.olderError ? "stop" : "more";
+        }, () => threads.loadOlderReplies());
+    }
+
+    /**
+     * Looks for a landing's message, fetching at most a few older pages while the check says one
+     * may hold it. The check lands the message itself once it is held, in the same step that
+     * found the view unchanged, so a view replaced meanwhile is never landed in.
+     */
+    async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<void> {
+        for (let olderPages = 0; check() === "more" && olderPages < maxLandingOlderPages; olderPages++) {
+            await loadOlder();
+        }
+    }
+
+    /**
+     * A quote asked to jump to the message it quotes. In a thread, a reply the drawer holds is
+     * landed on there; anything else is in the conversation, which a phone brings back to the
+     * front. The original is usually recent, so the timeline nearly always holds it; when not, a
+     * few older pages are fetched, as for a reply a push opened, and past them the jump does nothing.
+     */
+    async function onJump(messageId: number, isFromThread: boolean): Promise<void> {
+        const thread = shell.value.threads.state.thread;
+        if (isFromThread && thread?.replies.some(reply => reply.id === messageId)) {
+            // Let go first, so a second jump to the reply the drawer last landed on lands again.
+            landingReplyId.value = null;
+            await nextTick();
+            landingReplyId.value = messageId;
+            return;
+        }
+
+        const channelId = activeChannelId.value;
+        if (!channelId) {
+            return;
+        }
+
+        if (isFromThread && isPhone.value) {
+            closeThreadDrawer();
+        }
+
+        landingMessageId.value = null;
+        await nextTick();
+
+        let oldestSeen: number | undefined;
+        await loadUntilHeld(() => {
+            const timeline = shell.value.timelines.state(channelId);
+            const oldest = timeline.messages[0]?.id;
+            if (activeChannelId.value !== channelId || oldest === undefined) {
+                return "stop";
             }
 
-            await threads.loadOlderReplies();
-        }
+            if (timeline.messages.some(message => message.id === messageId)) {
+                landingMessageId.value = messageId;
+                return "held";
+            }
+
+            // An older page that failed or was dropped moved nothing, and one past the original
+            // without it means the conversation does not show it, as a reply kept to its thread.
+            const isStuck = oldest === oldestSeen || oldest < messageId;
+            oldestSeen = oldest;
+            return isStuck || !timeline.hasMore ? "stop" : "more";
+        }, () => shell.value.loadOlder());
     }
 
     /**

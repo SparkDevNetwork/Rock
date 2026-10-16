@@ -22,6 +22,7 @@
              data-chat-scroller
              :data-loaded="timeline.isLoaded ? 'true' : 'false'"
              @scroll="onScroll"
+             @animationend="onAnimationEnd"
              @pointerover="hot.onPointerOver"
              @pointerleave="hot.onPointerLeave"
              @pointermove="hot.onPointerMove"
@@ -69,6 +70,7 @@
                                 :isChannel="isChannel"
                                 :isPhone="isPhone"
                                 :isArriving="isRowArriving(item.key, item.message)"
+                                :isFlashing="item.message.id === flashingId"
                                 :data-message-id="item.message.id" />
 
                     <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
@@ -87,6 +89,7 @@
                                     :isDirectMessage="isDirectMessage"
                                     :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                     :isArriving="isRowArriving(row.key, row.message)"
+                                    :isFlashing="!!row.message && row.message.id === flashingId"
                                     :senderNames="senderNames"
                                     :isHot="!!row.message && row.message.id === hot.hotId.value"
                                     :isHotSwapInstant="hot.isSwapInstant.value"
@@ -98,6 +101,7 @@
                                     @retry="emit('retry', $event)"
                                     @discard="emit('discard', $event)"
                                     @openThread="emit('openThread', $event)"
+                                    @jump="emit('jump', $event)"
                                     @messageAction="emit('messageAction', $event)"
                                     @barChange="hot.onBarChange" />
                     </div>
@@ -609,6 +613,12 @@
         isEditSaving: {
             type: Boolean,
             default: false
+        },
+
+        /** The message a quote's jump asked for, once the timeline holds it; scrolled to and flashed. */
+        landOnId: {
+            type: Number as PropType<number | null>,
+            default: null
         }
     });
 
@@ -620,6 +630,7 @@
         (e: "loadOlder"): void,
         (e: "markRead", messageId: number): void,
         (e: "openThread", rootId: number): void,
+        (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void
     }>();
 
@@ -667,6 +678,9 @@
     let newestSeenInTimeline: number | null = null;
 
     const announcement = ref("");
+
+    /** The message flashing now, cleared once its flash ends so a row drawn again does not replay it. */
+    const flashingId = ref<number | null>(null);
 
     /** Whether the feed plays the switch's entrance, read as it mounts so no later change replays it. */
     const isEnteringDrawn = props.isEntering;
@@ -775,6 +789,13 @@
         feed.value.scrollTo?.({ top: Math.max(0, top), behavior: scrollBehavior() });
     }
 
+    /** A row's flash plays once: the flash goes from the row as it ends. */
+    function onAnimationEnd(event: AnimationEvent): void {
+        if (flashingId.value !== null && event.animationName.includes("flash")) {
+            flashingId.value = null;
+        }
+    }
+
     function onJump(event: Event): void {
         if (feed.value) {
             feed.value.scrollTo?.({ top: feed.value.scrollHeight, behavior: scrollBehavior() });
@@ -792,6 +813,27 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Brings a jumped-to message to the middle of the feed, flashes it and gives it focus, so a
+     * keyboard carries on from the original. The flash is let go first, so a second jump to the
+     * message still flashing plays it again.
+     */
+    async function land(id: number): Promise<void> {
+        flashingId.value = null;
+        await nextTick();
+        flashingId.value = id;
+        await nextTick();
+
+        const row = feed.value?.querySelector<HTMLElement>(`[data-message-id='${id}']`);
+        if (!row) {
+            flashingId.value = null;
+            return;
+        }
+
+        row.scrollIntoView?.({ block: "center", behavior: scrollBehavior() });
+        row.focus({ preventScroll: true });
+    }
 
     /** Whether the person is at, or near, the bottom of the feed. */
     function isNearBottom(): boolean {
@@ -940,6 +982,12 @@
         if (failed > previous) {
             await nextTick();
             scrollToBottom();
+        }
+    });
+
+    watch(() => props.landOnId, id => {
+        if (id !== null) {
+            void land(id);
         }
     });
 

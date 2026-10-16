@@ -53,7 +53,8 @@
                             :isPhone="isPhone"
                             :isInThread="true"
                             :isFlashing="item.isReply && item.message.id === flashingId"
-                            :data-reply-id="item.isReply ? item.message.id : undefined" />
+                            :data-reply-id="item.isReply ? item.message.id : undefined"
+                            @jump="emit('jump', $event)" />
 
                 <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
                     <MessageRow v-for="row in item.rows"
@@ -83,6 +84,7 @@
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @retry="emit('retry', $event)"
                                 @discard="emit('discard', $event)"
+                                @jump="emit('jump', $event)"
                                 @messageAction="emit('messageAction', $event)"
                                 @barChange="hot.onBarChange" />
                 </div>
@@ -426,6 +428,7 @@
         (e: "discard", localId: string): void,
         (e: "cancelQuote"): void,
         (e: "editLast"): void,
+        (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void
     }>();
 

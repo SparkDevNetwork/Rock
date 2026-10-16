@@ -35,7 +35,7 @@
                         <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                     </div>
                     <div class="chat-card" data-testid="block-card">
-                        <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" />
+                        <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :runAction="runBlockAction" />
                     </div>
                 </div>
             </template>
@@ -46,7 +46,7 @@
                     <span class="chat-card-time" data-testid="message-time">{{ time }}</span>
                 </div>
                 <div class="chat-card-body">
-                    <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" />
+                    <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :runAction="runBlockAction" />
                 </div>
             </div>
         </template>
@@ -60,6 +60,7 @@
                     @click="onOpenRepliedThread">
                 <Icon name="thread" size="xs" />Replied to a thread
             </button>
+            <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" isCommunity @jump="emit('jump', $event)" />
             <div class="chat-cm-gutter">
                 <span v-if="isHead" class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
                 <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
@@ -109,6 +110,8 @@
                     @click="onOpenRepliedThread">
                 <Icon name="thread" size="xs" />Replied to a thread
             </button>
+            <!-- The ghost of the message quoted, the bubble overlapping its foot. -->
+            <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" @jump="emit('jump', $event)" />
             <div class="chat-msg-line">
                 <span v-if="!isOwn" class="chat-msg-face">
                     <Avatar v-if="isLastOfGroup" :people="[face]" :size="34" />
@@ -306,6 +309,18 @@
     position: absolute;
     bottom: 0;
     left: 0;
+}
+
+/* A quoted message's bubble comes up over the ghost's foot by 4px, drawn above it. */
+.chat-quote + .chat-msg-line {
+    position: relative;
+    z-index: 1;
+    margin-top: -4px;
+}
+
+.chat-msg[data-position="middle"] > .chat-quote,
+.chat-msg[data-position="last"] > .chat-quote {
+    margin-top: 6px;
 }
 
 /* Holds the bubble and its bar; the zero minimum lets both shrink to the line beside the face. */
@@ -929,6 +944,7 @@
     import ActionSheet from "./actionSheet.partial.obs";
     import MessageBody from "./messageBody.partial.obs";
     import MessageEditor from "./messageEditor.partial.obs";
+    import MessageQuote from "./messageQuote.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -1087,6 +1103,7 @@
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
         (e: "openThread", rootId: number): void,
+        (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void,
         (e: "barChange", messageId: number, isShown: boolean, isHeld: boolean): void
     }>();
@@ -1299,6 +1316,10 @@
     /** A reply also sent to the conversation, which says so above it and opens its thread. */
     const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);
 
+    /** A message that quotes another draws the quote above it, unless it is a tombstone itself. */
+    const isQuoteShown = computed((): boolean => !!props.message?.quoted_message_id && !isTomb.value
+        && state.value !== "system" && state.value !== "card");
+
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 
     /** A system line's icon: in Community's gutter, by what it says happened; in bubbles, always the quiet info mark. */
@@ -1406,6 +1427,14 @@
             }
         }
     };
+
+    /** A block button's press, its promise settling once the action has answered, so the button stays busy till then. */
+    function runBlockAction(action: MessageAction): Promise<void> {
+        const message = props.message;
+        return message
+            ? new Promise<void>(resolve => emit("messageAction", { kind: "server", message, action, onSettled: resolve }))
+            : Promise.resolve();
+    }
 
     const barHandlers = {
         ...actionHandlers,

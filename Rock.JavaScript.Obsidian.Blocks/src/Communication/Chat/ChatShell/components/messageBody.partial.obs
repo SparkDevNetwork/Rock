@@ -6,6 +6,18 @@
             <div v-else-if="row.kind === 'image'" class="chat-block-image" data-testid="block-image">
                 <img :src="row.url" :alt="row.alt" />
             </div>
+            <div v-else-if="row.kind === 'buttons'" class="chat-block-buttons" data-testid="block-buttons">
+                <button v-for="(button, buttonIndex) in row.buttons"
+                        :key="buttonIndex"
+                        type="button"
+                        class="chat-block-button"
+                        data-testid="block-button"
+                        :disabled="!button.isRunnable || busyKeys.has(`${rowIndex}:${buttonIndex}`) || undefined"
+                        :aria-busy="busyKeys.has(`${rowIndex}:${buttonIndex}`) ? 'true' : undefined"
+                        @click="onButton(`${rowIndex}:${buttonIndex}`, button)">
+                    <span v-if="busyKeys.has(`${rowIndex}:${buttonIndex}`)" class="chat-spinner" aria-hidden="true"></span>{{ button.label }}
+                </button>
+            </div>
             <div v-else :class="row.cssClass" :data-testid="row.testId">
                 <template v-for="(piece, pieceIndex) in row.pieces" :key="pieceIndex">
                     <a v-if="piece.kind === 'link'" class="chat-lnk" :href="piece.url" target="_blank" rel="noopener noreferrer nofollow">{{ piece.text }}</a>
@@ -65,12 +77,57 @@
     max-width: 100%;
     border-radius: 6px;
 }
+
+/* A block's buttons: a wrapping row of small outlined buttons under the block before it. */
+.chat-block-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    white-space: normal;
+}
+
+.chat-block-buttons:not(:first-child) {
+    margin-top: 8px;
+}
+
+.chat-block-button {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    height: 28px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-block-button:hover:not(:disabled) {
+    border-color: var(--chat-icon);
+}
+
+/* Busy keeps its label beside the spinner at full strength; only a button that cannot run fades. */
+.chat-block-button:disabled:not([aria-busy]) {
+    opacity: .5;
+    filter: saturate(.6);
+}
+
+.chat-block-button .chat-spinner {
+    width: 12px;
+    height: 12px;
+}
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, ref } from "vue";
     import Icon from "../ui/icon.partial.obs";
     import { avatarHue } from "../ui/brand.partial";
+    import { isActionCall } from "../composables/useMessageActions.partial";
+    import { MessageAction } from "../types.partial";
 
     // #region Types
 
@@ -91,10 +148,14 @@
         hue?: string;
     };
 
+    /** A block's button, and whether the client may call the action it names. */
+    type DrawnButton = MessageAction & { isRunnable: boolean };
+
     /** One line of the body: the body's own pieces, or one block. */
     type DrawnRow = {
-        kind: "pieces" | "divider" | "image";
+        kind: "pieces" | "divider" | "image" | "buttons";
         pieces?: DrawnPiece[];
+        buttons?: DrawnButton[];
         cssClass?: string;
         testId?: string;
         url?: string;
@@ -126,8 +187,21 @@
         personAliasGuid: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** Runs a block button's action and shows its sentence, settling once the call has answered. */
+        runAction: {
+            type: Function as PropType<(button: MessageAction) => Promise<void>>,
+            default: null
         }
     });
+
+    // #region Values
+
+    /** The buttons whose action is out, by block and button index, each held until it answers. */
+    const busyKeys = ref(new Set<string>());
+
+    // #endregion Values
 
     // #region Computed Values
 
@@ -145,6 +219,27 @@
     });
 
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Runs a button's action once at a time: a second press while it is out does nothing. */
+    async function onButton(key: string, button: DrawnButton): Promise<void> {
+        if (!button.isRunnable || !props.runAction || busyKeys.value.has(key)) {
+            return;
+        }
+
+        busyKeys.value = new Set([...busyKeys.value, key]);
+        try {
+            await props.runAction({ id: button.id, label: button.label, call: button.call });
+        }
+        finally {
+            const next = new Set(busyKeys.value);
+            next.delete(key);
+            busyKeys.value = next;
+        }
+    }
+
+    // #endregion Event Handlers
 
     // #region Functions
 
@@ -278,6 +373,18 @@
 
         if (block.type === "image" && isSecureAddress(block.url)) {
             return { kind: "image", url: block.url, alt: textOf(block.alt) };
+        }
+
+        // A button names the action it runs; one naming a function the client may not call is
+        // drawn, so the block reads as sent, but never pressable.
+        if (block.type === "buttons" && Array.isArray(block.buttons) && block.buttons.length > 0) {
+            return {
+                kind: "buttons",
+                buttons: block.buttons.map(value => {
+                    const button = asRecord(value) ?? {};
+                    return { id: textOf(button.id), label: textOf(button.label), call: textOf(button.call), isRunnable: isActionCall(button.call) };
+                })
+            };
         }
 
         return {

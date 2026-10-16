@@ -45,6 +45,8 @@
     --chat-pill-bg: #ECECED;
     /* The threads list's tab track, text at 6 percent over the surface. */
     --chat-tab-track: #EFEFEF;
+    /* A quote's ghost is edged by the line in light; in dark its fill alone sets it apart. */
+    --chat-quote-hairline: var(--chat-line);
 
     /* Status colors. The soft fills are written out, since the browsers Rock supports cannot mix them. */
     --chat-danger: var(--base-danger, #D70015);
@@ -257,6 +259,7 @@
     --chat-scrim: rgba(0, 0, 0, .55);
     --chat-pill-bg: #1D2127;
     --chat-tab-track: #1B1F25;
+    --chat-quote-hairline: transparent;
     --chat-danger-ink: #FF7A85;
     --chat-danger-soft: #310E17;
     --chat-warning-ink: #FFB547;
@@ -326,6 +329,7 @@
         --chat-scrim: rgba(0, 0, 0, .55);
         --chat-pill-bg: #1D2127;
         --chat-tab-track: #1B1F25;
+        --chat-quote-hairline: transparent;
         --chat-danger-ink: #FF7A85;
         --chat-danger-soft: #310E17;
         --chat-warning-ink: #FFB547;

@@ -1,33 +1,352 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span></span>
+    <!-- A channel: one reply line above the head, joined to the face below by a spine. -->
+    <div v-if="isCommunity" class="chat-quote-row is-community" :class="{ 'is-gone': isGone }" data-testid="message-quote">
+        <span class="chat-quote-spine" data-testid="quote-spine" aria-hidden="true"></span>
+        <span v-if="isGone" class="chat-quote-line is-gone">
+            <span class="chat-sr-only">{{ label }}. </span>
+            <Icon :name="goneIcon" size="xs" />
+            <span class="chat-quote-text" data-testid="quote-body">{{ goneText }}</span>
+        </span>
+        <button v-else type="button" class="chat-quote-line" :aria-label="`${label}: ${preview}. Jump to the original`" @click="onJump">
+            <Avatar :people="[{ name: quotedName, photoUrl: quoted?.sender_avatar_url ?? null }]" :size="16" />
+            <b data-testid="quote-name">{{ isQuoteOfReader ? "You" : quotedName }}</b>
+            <span class="chat-quote-text" data-testid="quote-body">{{ preview }}</span>
+        </button>
+    </div>
+
+    <!-- A direct message: a quiet ghost of the original, its fill matching whose bubble it came from. -->
+    <span v-else-if="isGone" class="chat-quote is-gone" :class="{ 'is-own': isOwn }" data-testid="message-quote">
+        <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" />{{ label }}</span>
+        <span class="chat-quote-body" data-testid="quote-body"><Icon :name="goneIcon" size="xs" />{{ goneText }}</span>
+    </span>
+    <button v-else
+            type="button"
+            class="chat-quote"
+            :class="{ 'is-own': isOwn, 'is-self': isQuoteOfReader }"
+            data-testid="message-quote"
+            :aria-label="`Jump to ${isQuoteOfReader ? 'your message' : `${quotedName}'s message`}: ${preview}`"
+            @click="onJump">
+        <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" />{{ label }}</span>
+        <span class="chat-quote-body" data-testid="quote-body">{{ preview }}</span>
+    </button>
 </template>
 
+<style scoped>
+/* The ghost: a label over two lines of the original, on the side of the message it sits above. */
+.chat-quote {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: flex-start;
+    min-width: 0;
+    max-width: min(100%, 360px);
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    white-space: normal;
+    cursor: pointer;
+    background: none;
+    border: 0;
+}
+
+/* Another person's ghost starts at their bubble, past the face beside it. */
+.chat-quote:not(.is-own) {
+    margin-left: 42px;
+}
+
+.chat-quote.is-own {
+    align-items: flex-end;
+    align-self: flex-end;
+}
+
+.chat-quote-label {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0 12px 3px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--chat-muted);
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-quote-label :deep(.chat-ic) {
+    width: 12px;
+    height: 12px;
+    color: var(--chat-icon);
+}
+
+/*
+    The fill is the bubble's (or the own tint) laid at part strength over the surface. The browsers
+    the chat supports cannot mix colors, so the mix is a layer at that opacity over a surface base,
+    and the hover's deepening another layer above it, both under the text.
+*/
+.chat-quote-body {
+    --chat-quote-fill: var(--chat-bubble);
+    --chat-quote-strength: .7;
+    position: relative;
+    z-index: 0;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    padding: 6px 12px 10px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--chat-muted);
+    overflow-wrap: anywhere;
+    background: var(--chat-surface);
+    border-radius: var(--chat-r-quote-ghost);
+    box-shadow: inset 0 0 0 1px var(--chat-quote-hairline);
+    transition: transform var(--chat-t-fast) var(--chat-ease-in);
+}
+
+.chat-quote-body::before,
+.chat-quote-body::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    content: "";
+    border-radius: inherit;
+}
+
+.chat-quote-body::before {
+    background: var(--chat-quote-fill);
+    opacity: var(--chat-quote-strength);
+}
+
+.chat-quote-body::after {
+    background: var(--chat-hover);
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-quote.is-self .chat-quote-body {
+    --chat-quote-fill: var(--chat-brand-tint);
+    --chat-quote-strength: .6;
+}
+
+button.chat-quote:hover .chat-quote-label {
+    color: var(--chat-text-2);
+}
+
+button.chat-quote:hover .chat-quote-body::after {
+    opacity: 1;
+}
+
+button.chat-quote:active .chat-quote-body {
+    transform: scale(.99);
+}
+
+.chat-quote:focus-visible {
+    outline: none;
+}
+
+.chat-quote:focus-visible .chat-quote-body {
+    box-shadow: 0 0 0 2px var(--chat-brand-ring);
+}
+
+/* An original that is gone: no fill, a dashed outline, and the sentence saying so. */
+.chat-quote.is-gone {
+    cursor: default;
+}
+
+.chat-quote.is-gone .chat-quote-body {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    font-style: italic;
+    background: none;
+    outline: 1px dashed var(--chat-line-strong);
+    outline-offset: -1px;
+    box-shadow: none;
+}
+
+.chat-quote.is-gone .chat-quote-body::before,
+.chat-quote.is-gone .chat-quote-body::after {
+    content: none;
+}
+
+/* The reply line spans the row's grid, its spine in the gutter and the line in the text column. */
+.chat-quote-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: var(--chat-cm-gut) minmax(0, 1fr);
+    column-gap: var(--chat-cm-gap);
+    height: 22px;
+    margin-bottom: 1px;
+}
+
+.chat-quote-spine {
+    position: relative;
+}
+
+/* From the middle of the face below, up and across into the gap, its corner rounded. */
+.chat-quote-spine::before {
+    position: absolute;
+    top: 11px;
+    right: calc(4px - var(--chat-cm-gap));
+    bottom: -5px;
+    left: calc(50% - 1px);
+    content: "";
+    border-top: 2px solid var(--chat-line-strong);
+    border-left: 2px solid var(--chat-line-strong);
+    border-top-left-radius: 7px;
+}
+
+.chat-quote-line {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+    max-width: 100%;
+    height: 22px;
+    padding: 0 4px 0 0;
+    font: inherit;
+    font-size: 13px;
+    color: var(--chat-muted);
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-quote-line b {
+    flex: none;
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+.chat-quote-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-quote-line:hover .chat-quote-text,
+.chat-quote-line:hover b {
+    color: var(--chat-text);
+}
+
+.chat-quote-line.is-gone {
+    font-style: italic;
+    cursor: default;
+}
+
+.chat-quote-line.is-gone :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+</style>
+
 <script setup lang="ts">
-    // A message's quote. An empty stand-in with the planned props and no behaviour yet, so the
-    // tests written against it fail on what they assert.
-    import { PropType } from "vue";
+    import { computed, PropType } from "vue";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
     import { TimelineMessage } from "../types.partial";
 
-    defineProps({
+    const props = defineProps({
+        /** The quoting message, which carries the original it quotes. */
         message: {
             type: Object as PropType<TimelineMessage>,
             required: true
         },
 
+        /** The quoting message is the reader's, so the ghost sits on their side. */
         isOwn: {
             type: Boolean,
             default: false
         },
 
+        /** The reader's alias, to know a quote of their own message. */
         personAliasGuid: {
             type: String,
             default: ""
         },
 
+        /** A channel's reply line rather than a direct message's ghost. */
         isCommunity: {
             type: Boolean,
             default: false
         }
     });
+
+    const emit = defineEmits<{
+        (e: "jump", quotedMessageId: number): void
+    }>();
+
+    // #region Computed Values
+
+    const quoted = computed(() => props.message.quoted ?? null);
+
+    /**
+     * An original deleted or hidden since says so and offers no jump. One the platform no longer
+     * sends at all is taken as deleted, the likelier of the two.
+     */
+    const isGone = computed((): boolean => {
+        const original = quoted.value;
+        return !original || !!original.deleted_at || (original.visibility ?? "visible") !== "visible";
+    });
+
+    const isHidden = computed((): boolean => !!quoted.value && !quoted.value.deleted_at && (quoted.value.visibility ?? "visible") !== "visible");
+
+    const goneIcon = computed((): string => isHidden.value ? "eye-off" : "trash");
+
+    const goneText = computed((): string => isHidden.value ? "Original message is unavailable." : "Original message was deleted.");
+
+    /** Aliases are compared in lower case, since the platform and Rock write guids in either. */
+    const isQuoteOfReader = computed((): boolean => !!quoted.value && !!props.personAliasGuid
+        && (quoted.value.person_alias_guid ?? "").toLowerCase() === props.personAliasGuid.toLowerCase());
+
+    const quotedName = computed((): string => [quoted.value?.sender_nick_name, quoted.value?.sender_last_name].filter(part => !!part).join(" ") || "Someone");
+
+    /** Who quoted whom, from the reader's side: "You replied to Anna", "Replied to you" and so on. */
+    const label = computed((): string => {
+        const original = quoted.value;
+        if (!original) {
+            return "Replied to a message";
+        }
+
+        const firstName = original.sender_nick_name || quotedName.value;
+        if (props.isOwn) {
+            return isQuoteOfReader.value ? "You replied to yourself" : `You replied to ${firstName}`;
+        }
+
+        if (isQuoteOfReader.value) {
+            return "Replied to you";
+        }
+
+        const isSameSender = (original.person_alias_guid ?? "").toLowerCase() === (props.message.person_alias_guid ?? "").toLowerCase();
+        return isSameSender ? "Replied to their message" : `Replied to ${firstName}`;
+    });
+
+    /** The original as one run of text, a mention as the name the body draws, never its token. */
+    const preview = computed((): string => {
+        const original = quoted.value;
+        if (!original) {
+            return "";
+        }
+
+        const text = original.pieces?.length ? original.pieces.map(piece => piece.text).join("") : original.body ?? "";
+        return text.replace(/\s+/g, " ").trim();
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onJump(): void {
+        if (quoted.value && !isGone.value) {
+            emit("jump", quoted.value.id);
+        }
+    }
+
+    // #endregion Event Handlers
 </script>

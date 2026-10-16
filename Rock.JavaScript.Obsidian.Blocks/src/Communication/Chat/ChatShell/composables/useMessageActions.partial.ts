@@ -40,11 +40,14 @@ export type ActionNotice = {
     icon: string;
 };
 
-/** What a message's bar, menu, sheet or editor asks for, with the message it was asked on. */
+/**
+ * What a message's bar, menu, sheet, editor or block button asks for, with the message it was
+ * asked on. A block's button passes onSettled, so it stays busy until its action has answered.
+ */
 export type MessageActionRequest =
     | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit", message: TimelineMessage }
     | { kind: "saveEdit", message: TimelineMessage, body: string }
-    | { kind: "server", message: TimelineMessage, action: MessageAction };
+    | { kind: "server", message: TimelineMessage, action: MessageAction, onSettled?: () => void };
 
 /** What the actions reach outside themselves. */
 export type MessageActionsDependencies = {
@@ -134,6 +137,18 @@ export type MessageActions = {
  * without this a message could make the client call any function the platform exposes to it.
  */
 const actionCallPattern = /^chat_action_[a-z0-9_]+$/;
+
+/**
+ * Whether a server-listed action names a function the client may call. A block's button that
+ * fails this is drawn but cannot be pressed, as the actions refuse to call it.
+ *
+ * @param call The function the action names.
+ *
+ * @returns True when the client may call it.
+ */
+export function isActionCall(call: unknown): call is string {
+    return typeof call === "string" && actionCallPattern.test(call);
+}
 
 /**
  * Whether a message's sender could edit it: live, shown, and not laid out in blocks or a system
@@ -338,7 +353,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
         },
 
         runAction: async (_channelId: string, messageId: number, action: MessageAction): Promise<void> => {
-            if (isStopped || !actionCallPattern.test(action.call)) {
+            if (isStopped || !isActionCall(action.call)) {
                 return;
             }
 
