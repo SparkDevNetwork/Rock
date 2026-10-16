@@ -27,8 +27,9 @@ import { reactive } from "vue";
 import { messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
-import { ChatError, MessageAction, TimelineMessage } from "../types.partial";
-import { isTimelineMessage, Timelines } from "./useHistory.partial";
+import { ChatError, DisplayPiece, MessageAction, TimelineMessage } from "../types.partial";
+import { Timelines } from "./useHistory.partial";
+import { Threads } from "./useThreads.partial";
 
 export type { MessageAction } from "../types.partial";
 
@@ -39,9 +40,10 @@ export type ActionNotice = {
     icon: string;
 };
 
-/** What a message's bar or menu asks for, with the message it was asked on. */
+/** What a message's bar, menu, sheet or editor asks for, with the message it was asked on. */
 export type MessageActionRequest =
-    | { kind: "quote" | "edit" | "copy" | "delete", message: TimelineMessage }
+    | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit", message: TimelineMessage }
+    | { kind: "saveEdit", message: TimelineMessage, body: string }
     | { kind: "server", message: TimelineMessage, action: MessageAction };
 
 /** What the actions reach outside themselves. */
@@ -60,6 +62,12 @@ export type MessageActionsDependencies = {
 
     /** Writes to the clipboard; absent where there is none. */
     writeText?: (text: string) => Promise<void>;
+
+    /**
+     * The open thread. A reply shown only in its thread is on no timeline, so an answer is laid
+     * over the thread's copy too, and Up in the thread's composer looks among its replies.
+     */
+    threads?: Pick<Threads, "state" | "applyEvent">;
 };
 
 /** What the actions hold. */
@@ -81,8 +89,11 @@ export type MessageActions = {
     /** Opens the editor on a message. */
     startEdit: (channelId: string, messageId: number) => void;
 
-    /** Opens the editor on the newest message the person could edit; false when there is none. */
-    startEditNewest: (channelId: string) => boolean;
+    /**
+     * Opens the editor on the newest message the person could edit, in the conversation or, with
+     * its root, in the open thread; false when there is none.
+     */
+    startEditNewest: (channelId: string, rootId?: number | null) => boolean;
 
     /** Closes the editor without saving. */
     cancelEdit: () => void;
@@ -140,8 +151,8 @@ export function isEditableMessage(message: TimelineMessage): boolean {
 }
 
 /**
- * Whether the person could edit a message in place from the conversation: their own, on the
- * timeline, and editable.
+ * Whether the person could edit a message in place: their own and editable, a reply shown only in
+ * its thread included, which the drawer edits like any other.
  *
  * @param message The message.
  * @param personAliasGuid The session's alias.
@@ -149,7 +160,7 @@ export function isEditableMessage(message: TimelineMessage): boolean {
  * @returns True when Edit is offered.
  */
 export function canEditMessage(message: TimelineMessage, personAliasGuid: string): boolean {
-    return isOwnMessage(message, personAliasGuid) && isTimelineMessage(message) && isEditableMessage(message);
+    return isOwnMessage(message, personAliasGuid) && isEditableMessage(message);
 }
 
 /**
@@ -198,6 +209,12 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
         dependencies.notify({ code: error.code, text: messageForError(error), icon: "alert" });
     }
 
+    /** Lays an answer over every copy the client holds: the timeline's, and the open thread's. */
+    function applyAnswer(channelId: string, event: string, payload: Record<string, unknown>): void {
+        dependencies.timelines.applyEvent(channelId, event, payload);
+        dependencies.threads?.applyEvent(channelId, event, payload);
+    }
+
     /** Opens the editor on a message, overtaking any save still out. */
     function startEdit(channelId: string, messageId: number): void {
         if (isStopped) {
@@ -213,12 +230,21 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
 
         startEdit,
 
-        startEditNewest: (channelId: string): boolean => {
+        startEditNewest: (channelId: string, rootId?: number | null): boolean => {
             if (isStopped) {
                 return false;
             }
 
-            const messages = dependencies.timelines.state(channelId).messages;
+            // A thread's composer edits among the replies of its own thread, open in the drawer.
+            let messages: TimelineMessage[];
+            if (typeof rootId === "number") {
+                const thread = dependencies.threads?.state.thread;
+                messages = thread && thread.channelId === channelId && thread.rootId === rootId ? thread.replies : [];
+            }
+            else {
+                messages = dependencies.timelines.state(channelId).messages;
+            }
+
             for (let i = messages.length - 1; i >= 0; i--) {
                 if (canEditMessage(messages[i], dependencies.personAliasGuid)) {
                     startEdit(channelId, messages[i].id);
@@ -256,14 +282,14 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
                 return false;
             }
 
-            // Laid over the message as its live edit would be; the live copy follows with the
-            // pieces the server built, which the answer does not carry.
-            const answer = (result.data ?? {}) as { edited_at?: string | null };
-            dependencies.timelines.applyEvent(editing.channelId, "message.edited", {
+            // Laid over the message as its live edit would be, with the pieces the server built, so
+            // a mention typed in the editor is drawn as a name at once and never as its token.
+            const answer = (result.data ?? {}) as { edited_at?: string | null, pieces?: DisplayPiece[] | null };
+            applyAnswer(editing.channelId, "message.edited", {
                 id: editing.messageId,
                 channel_id: editing.channelId,
                 body,
-                pieces: null,
+                pieces: answer.pieces ?? null,
                 edited_at: answer.edited_at ?? new Date().toISOString()
             });
             state.editing = null;
@@ -302,7 +328,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             }
 
             const answer = (result.data ?? {}) as { deleted_at?: string };
-            dependencies.timelines.applyEvent(confirming.channelId, "message.deleted", {
+            applyAnswer(confirming.channelId, "message.deleted", {
                 id: confirming.message.id,
                 channel_id: confirming.channelId,
                 deleted_at: answer.deleted_at ?? new Date().toISOString()

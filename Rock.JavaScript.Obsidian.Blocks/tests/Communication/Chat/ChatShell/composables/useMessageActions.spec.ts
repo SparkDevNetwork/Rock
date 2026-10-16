@@ -29,7 +29,8 @@
 //       timelines: Pick<Timelines, "state" | "applyEvent">,  where an answer is laid over the message
 //       personAliasGuid: string,                the session's alias, for a live message's own check
 //       notify: (notice: ToastNotice) => void,  a toast: { code, text, icon }
-//       writeText?: (text: string) => Promise<void>   the clipboard; absent where there is none
+//       writeText?: (text: string) => Promise<void>,  the clipboard; absent where there is none
+//       threads?: Pick<Threads, "state" | "applyEvent">  the open thread, whose replies an answer also reaches
 //   }): MessageActions
 //
 //   MessageActions = {
@@ -39,7 +40,7 @@
 //           quotes: Record<string, TimelineMessage>   the message being quoted, by conversation or thread key
 //       },
 //       startEdit(channelId: string, messageId: number): void,
-//       startEditNewest(channelId: string): boolean,   Up in an empty composer
+//       startEditNewest(channelId: string, rootId?: number): boolean,   Up in an empty composer, a thread's with its root
 //       cancelEdit(): void,
 //       saveEdit(body: string): Promise<boolean>,
 //       askDelete(channelId: string, message: TimelineMessage): void,   opens the confirm, calls nothing
@@ -53,10 +54,10 @@
 //       stop(): void
 //   }
 //
-// An edit answers { id, edited_at }, a delete { id, deleted_at }, as chat_edit_message and
+// An edit answers { id, edited_at, pieces }, a delete { id, deleted_at }, as chat_edit_message and
 // chat_delete_message do; a server action answers { notice }, the sentence the person is shown.
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
-import { createMessageActions } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
+import { canEditMessage, createMessageActions } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -125,7 +126,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * The actions over real timelines holding the given messages in the open channel, a call path
  * answering each call with the next answer, a deferred one when the test resolves it by hand.
  */
-async function setup(messages: TimelineMessage[], answers: Array<CallResult | Deferred<CallResult>> = [], options: { writeText?: (text: string) => Promise<void> } = {}): Promise<{
+async function setup(messages: TimelineMessage[], answers: Array<CallResult | Deferred<CallResult>> = [], options: { writeText?: (text: string) => Promise<void>, threads?: unknown } = {}): Promise<{
     actions: ReturnType<typeof createMessageActions>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -478,5 +479,83 @@ describe("after stop", () => {
         await actions.runAction(channel, 42, { id: "approve", label: "Approve", call: "chat_action_approve" });
 
         expect(calls).toEqual([]);
+    });
+});
+
+// The edit's answer carries the pieces the server built for the new body, so a mention typed in
+// the editor is drawn as the person's name at once, never as its raw token until the live copy.
+describe("the edit's answer", () => {
+    test("lays the server's pieces over the message with the new body", async () => {
+        const lee = "a0000007-0000-4000-8000-000000000000";
+        const pieces = [{ type: "text", text: "Thanks " }, { type: "mention", text: "@Lee Leader", person_alias_guid: lee }];
+        const { actions, timelines } = await setup([own(42, { body: "Thanks" })], [ok({ id: 42, edited_at: "2026-10-15T09:05:00Z", pieces })]);
+
+        actions.startEdit(channel, 42);
+        expect(await actions.saveEdit(`Thanks <@${lee}>`)).toBe(true);
+
+        expect(held(timelines, 42).body).toBe(`Thanks <@${lee}>`);
+        expect(held(timelines, 42).pieces).toEqual(pieces);
+    });
+});
+
+// A reply shown only in its thread is the person's own message like any other, edited in the
+// drawer: Up in the thread's composer opens the newest of their replies there, and an edit's or a
+// delete's answer reaches the reply the open thread holds, which no timeline does.
+describe("a reply in the open thread", () => {
+    const root = 40;
+
+    function reply(id: number, extra: Record<string, unknown> = {}): TimelineMessage {
+        return own(id, { parent_id: root, shown_in_channel: false, body: `reply ${id}`, ...extra });
+    }
+
+    function fakeThreads(replies: TimelineMessage[]): { state: { thread: Record<string, unknown> }, applyEvent: jest.Mock } {
+        return {
+            state: { thread: { channelId: channel, rootId: root, root: message(root), replies } },
+            applyEvent: jest.fn()
+        };
+    }
+
+    test("Up in the thread's composer opens the newest of the person's own replies there", async () => {
+        const threads = fakeThreads([reply(41), reply(42), message(43, { parent_id: root }), reply(44, { deleted_at: "2026-10-15T09:01:00Z", body: null })]);
+        const { actions } = await setup([own(10)], [], { threads });
+
+        expect(actions.startEditNewest(channel, root)).toBe(true);
+
+        expect(actions.state.editing).toEqual(expect.objectContaining({ channelId: channel, messageId: 42 }));
+    });
+
+    test("Up in the thread's composer opens nothing for another thread than the one open", async () => {
+        const threads = fakeThreads([reply(41)]);
+        const { actions } = await setup([own(10)], [], { threads });
+
+        expect(actions.startEditNewest(channel, 99)).toBe(false);
+        expect(actions.state.editing).toBeNull();
+    });
+
+    test("an edit's answer reaches the reply in the open thread, with its pieces", async () => {
+        const threads = fakeThreads([reply(42)]);
+        const pieces = [{ type: "text", text: "fixed" }];
+        const { actions } = await setup([own(10)], [ok({ id: 42, edited_at: "2026-10-15T09:05:00Z", pieces })], { threads });
+
+        actions.startEdit(channel, 42);
+        expect(await actions.saveEdit("fixed")).toBe(true);
+
+        expect(threads.applyEvent).toHaveBeenCalledWith(channel, "message.edited", expect.objectContaining({ id: 42, body: "fixed", pieces, edited_at: "2026-10-15T09:05:00Z" }));
+    });
+
+    test("a delete's answer reaches the reply in the open thread", async () => {
+        const target = reply(42);
+        const threads = fakeThreads([target]);
+        const { actions } = await setup([own(10)], [ok({ id: 42, deleted_at: "2026-10-15T09:07:00Z" })], { threads });
+
+        actions.askDelete(channel, target);
+        expect(await actions.confirmDelete()).toBe(true);
+
+        expect(threads.applyEvent).toHaveBeenCalledWith(channel, "message.deleted", expect.objectContaining({ id: 42, deleted_at: "2026-10-15T09:07:00Z" }));
+    });
+
+    test("the person's own reply shown only in its thread may be edited", () => {
+        expect(canEditMessage(reply(42), me)).toBe(true);
+        expect(canEditMessage(message(43, { parent_id: root }), me)).toBe(false);
     });
 });

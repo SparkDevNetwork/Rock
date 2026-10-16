@@ -535,6 +535,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const messageActions = createMessageActions({
         call,
         timelines,
+        threads,
         personAliasGuid,
         notify: notice => options.notify?.(notice),
         // the clipboard is only there on a secure page; without it copy says it isn't available
