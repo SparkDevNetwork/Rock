@@ -106,6 +106,9 @@
                           @edit="shell.directMessages.edit"
                           @editLast="onEditLast"
                           @cancelQuote="onCancelQuote(conversationQuoteKey)" />
+
+                <!-- Centred over the conversation it reports on, so a panel open beside it never pulls a toast off it. -->
+                <ErrorToast v-if="!isPhone" :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
             </section>
 
             <!--
@@ -205,7 +208,8 @@
                              @unchoose="shell.directMessages.unchoose"
                              @open="onOpenDirectMessage" />
 
-        <ErrorToast :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
+        <!-- A phone shows one pane at a time, so its toasts sit over the whole block; so do those of a block with no frame. -->
+        <ErrorToast v-if="isPhone || isPromptShown || isRefused" :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
     </div>
 </template>
 
