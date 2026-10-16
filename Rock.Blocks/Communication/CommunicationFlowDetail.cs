@@ -222,6 +222,11 @@ namespace Rock.Blocks.Communication
 
             var currentPerson = GetCurrentPerson();
 
+            if ( !CanEditPageFlow( currentPerson ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( CommunicationFlow.FriendlyTypeName ) );
+            }
+
             if ( SaveCommunicationTemplate( this.RockContext, currentPerson, bag, out var communicationTemplate, out var errorResult ) )
             {
                 // Return the saved communication back to the caller.
@@ -2022,11 +2027,6 @@ namespace Rock.Blocks.Communication
             if ( flow == null )
             {
                 return false;
-            }
-
-            if ( flow.Id == 0 )
-            {
-                return true;
             }
 
             return flow.IsAuthorized( Authorization.EDIT, currentPerson );
