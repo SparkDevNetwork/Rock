@@ -5615,10 +5615,26 @@ namespace Rock.Communication.Chat
                     // Assign the group type to the message event.
                     messageEvent.ChannelType = groupType;
 
-                    // Try to find a group match.
+                    /*
+                        10/15/2026 - MSE
+
+                        The chat channel key comes from the external chat system and is chosen by whoever created the
+                        channel. Only match a group of this chat channel's group type, and only when the channel is
+                        exactly the one Rock uses for that group.
+
+                        Reason: Prevent a look-alike chat channel from triggering automations for another Rock group.
+                    */
                     var group = groupService
-                        .GetChatChannelGroupsQuery()
+                        .GetChatChannelGroupsQuery( groupTypeId.Value )
                         .FirstOrDefault( g => g.ChatChannelKey == messageEvent.ChatChannelKey );
+
+                    if ( group != null
+                        && !IsChatChannelForGroup( group.Id, group.GroupTypeId, group.ChatChannelKey, messageEvent.ChatChannelTypeKey, messageEvent.ChatChannelKey ) )
+                    {
+                        structuredLog = "{GroupId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Chat channel does not match Rock group with ID {structuredLog}.", group.Id );
+                        continue;
+                    }
 
                     if ( group?.GetIsChatEnabled() == false )
                     {
