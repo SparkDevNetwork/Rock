@@ -299,6 +299,7 @@
     <Compile Include="Security\PasswordlessAuthenticationStateTests.cs" />
     <Compile Include="Security\SecurityGrantTests.cs" />
     <Compile Include="Security\PersonTokenScopeTests.cs" />
+    <Compile Include="Security\SecretBearingModelTests.cs" />
     <Compile Include="Security\StringValueValidatorTests.cs" />
     <Compile Include="Slingshot\PersonCsvMapperTest.cs" />
     <Compile Include="Slingshot\PersonPhoneCsvMapperTest.cs" />
