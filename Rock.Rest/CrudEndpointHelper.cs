@@ -52,6 +52,19 @@ namespace Rock.Rest
         private readonly ApiControllerBase _controller;
 
         /// <summary>
+        /// The audit properties that are set by Rock. Only callers that have
+        /// security ignored (EXECUTE_UNRESTRICTED_WRITE) may write them.
+        /// </summary>
+        private static readonly HashSet<string> ProtectedAuditProperties = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            nameof( IModel.CreatedByPersonAliasId ),
+            nameof( IModel.ModifiedByPersonAliasId ),
+            nameof( IModel.CreatedDateTime ),
+            nameof( IModel.ModifiedDateTime ),
+            nameof( IModel.ModifiedAuditValuesAlreadyUpdated )
+        };
+
+        /// <summary>
         /// A value indicating whether security is ignored. When security is
         /// not ignored the entity will be checked for either VIEW or EDIT
         /// permissions depending on the operation.
@@ -208,7 +221,31 @@ namespace Rock.Rest
                         return isSystemResult;
                     }
 
+                    /*
+                        10/15/2026 - MSE
+
+                        SetValues copies every posted value, including the audit columns and the
+                        ModifiedAuditValuesAlreadyUpdated flag. A restricted caller could name
+                        themselves as author (which some IsAuthorized overrides, such as Note, treat
+                        as EDIT permission), back date the record, or keep a forged modified by
+                        person. Restore the stored created values and clear the flag so Rock stamps
+                        the modified values on save. We restore instead of rejecting so clients that
+                        echo the whole record keep working.
+
+                        Reason: Restricted callers must not write audit columns.
+                    */
+                    var storedModel = !IsSecurityIgnored ? targetEntity as IModel : null;
+                    var storedCreatedByPersonAliasId = storedModel?.CreatedByPersonAliasId;
+                    var storedCreatedDateTime = storedModel?.CreatedDateTime;
+
                     service.SetValues( entity, targetEntity );
+
+                    if ( storedModel != null )
+                    {
+                        storedModel.CreatedByPersonAliasId = storedCreatedByPersonAliasId;
+                        storedModel.CreatedDateTime = storedCreatedDateTime;
+                        storedModel.ModifiedAuditValuesAlreadyUpdated = false;
+                    }
 
                     // The check above authorized the record as it is stored. Authorize it again with the
                     // posted values applied, since they may change who is allowed to edit it.
@@ -338,6 +375,20 @@ namespace Rock.Rest
                         }
                         else if ( property.Name == "IsSystem" )
                         {
+                            return BadRequest( $"Modifying property '{propKey}' is not permitted." );
+                        }
+                        else if ( !IsSecurityIgnored && ProtectedAuditProperties.Contains( property.Name ) )
+                        {
+                            /*
+                                10/15/2026 - MSE
+
+                                The audit columns are set by Rock. A restricted caller could otherwise
+                                name themselves as author (which some IsAuthorized overrides, such as
+                                Note, treat as EDIT permission), back date the record, or forge the
+                                modified by person.
+
+                                Reason: Restricted callers must not write audit columns.
+                            */
                             return BadRequest( $"Modifying property '{propKey}' is not permitted." );
                         }
 
@@ -736,6 +787,8 @@ namespace Rock.Rest
 
         /// <summary>
         /// Checks that the current person can still EDIT the entity after the caller's values have been applied.
+        /// If the values move the entity under a different parent authority, the person must also be able to
+        /// EDIT it as a new record under that parent, the same rule a create applies.
         /// </summary>
         /// <param name="entity">The tracked entity with the caller's values applied.</param>
         /// <param name="errorResult">The error result if <c>false</c> is returned; otherwise <c>null</c>.</param>
@@ -768,7 +821,94 @@ namespace Rock.Rest
                 service.SetValues( entity, updatedEntity );
 
                 // Must run while this context is open so related records can lazy-load.
-                return CheckAuthorized( Security.Authorization.EDIT, updatedEntity, out errorResult );
+                if ( !CheckAuthorized( Security.Authorization.EDIT, updatedEntity, out errorResult ) )
+                {
+                    return false;
+                }
+
+                /*
+                    10/15/2026 - MSE
+
+                    The copy above keeps the stored Id and author, so IsAuthorized overrides that
+                    grant EDIT to the author (such as Note) still pass after the record is moved
+                    under a parent the person could never add to. A record moved under a different
+                    parent must meet the same bar as creating it there.
+
+                    Reason: Authorize a parent change like a create under the new parent.
+                */
+                if ( GetParentAuthorityKey( updatedEntity as ISecured ) == GetStoredParentAuthorityKey( entity.Id ) )
+                {
+                    return true;
+                }
+
+                return CheckAuthorizedAsNewRecord( entity, out errorResult );
+            }
+        }
+
+        /// <summary>
+        /// Gets a key that identifies the parent authorities of the secured item.
+        /// </summary>
+        /// <param name="secured">The secured item.</param>
+        /// <returns>A string made from the type and identifier of each parent authority.</returns>
+        private static string GetParentAuthorityKey( ISecured secured )
+        {
+            if ( secured == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{secured.ParentAuthority?.TypeId}:{secured.ParentAuthority?.Id}|{secured.ParentAuthorityPre?.TypeId}:{secured.ParentAuthorityPre?.Id}";
+        }
+
+        /// <summary>
+        /// Gets the parent authority key of the entity as it is stored in the database.
+        /// The caller's tracked entity is not saved yet, so this reads the stored parent
+        /// without touching the tracked entity's navigation properties.
+        /// </summary>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <returns>The parent authority key of the stored entity.</returns>
+        private string GetStoredParentAuthorityKey( int id )
+        {
+            using ( var storedContext = new RockContext() )
+            {
+                storedContext.Configuration.ProxyCreationEnabled = true;
+
+                var storedService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), storedContext );
+
+                return GetParentAuthorityKey( storedService.Get( id ) as ISecured );
+            }
+        }
+
+        /// <summary>
+        /// Checks that the current person could EDIT the entity's values as a new record.
+        /// A proxy copy with no Id, no author and a new Guid is built in a separate context
+        /// that is never saved, so parent authorities lazy-load from the new foreign keys and
+        /// author or Guid based permissions do not apply.
+        /// </summary>
+        /// <param name="entity">The tracked entity with the caller's values applied.</param>
+        /// <param name="errorResult">The error result if <c>false</c> is returned; otherwise <c>null</c>.</param>
+        /// <returns><c>true</c> if the person is authorized, <c>false</c> otherwise.</returns>
+        private bool CheckAuthorizedAsNewRecord( TEntity entity, out IActionResult errorResult )
+        {
+            using ( var newContext = new RockContext() )
+            {
+                newContext.Configuration.ProxyCreationEnabled = true;
+
+                var newService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), newContext );
+                var asNew = newContext.Set<TEntity>().Create();
+
+                newService.Add( asNew );
+                newService.SetValues( entity, asNew );
+
+                // Clear these before any navigation property is read.
+                asNew.Id = 0;
+                asNew.Guid = Guid.NewGuid();
+                if ( asNew is IModel asNewModel )
+                {
+                    asNewModel.CreatedByPersonAliasId = null;
+                }
+
+                return CheckAuthorized( Security.Authorization.EDIT, asNew, out errorResult );
             }
         }
 
