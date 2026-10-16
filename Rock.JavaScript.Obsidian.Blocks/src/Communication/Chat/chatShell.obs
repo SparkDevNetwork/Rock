@@ -224,15 +224,18 @@
 <style scoped>
 /*
     Fills the Full Worksurface zone it is placed in, flush, with no card around it. The height is
-    the one that layout gives its zone, the window less Rock's header, 36px and any context slicer,
-    written out because Rock wraps a block in a container of its own that a percentage cannot
-    reach through.
+    the room that page leaves under Rock's header, written out because Rock wraps a block in a
+    container of its own that a percentage cannot reach through. The layout's own panel height
+    takes 36px for the rest and is 29px too tall in the RockNextGen theme, which scrolls the page:
+    the work surface pads 16px above and below, the empty Feature zone's grid column stands 1px
+    tall, and the main content area the layout means to hide is shown by the theme's more specific
+    rule with a 16px margin above and below. Both spacings are the theme's medium spacing.
 */
 .chat-shell {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--top-header-height, 80px) - 36px - var(--context-slicer-height, 0px));
+    height: calc(100vh - var(--top-header-height, 80px) - 4 * var(--spacing-medium, 16px) - 1px - var(--context-slicer-height, 0px));
 }
 
 .chat-frame {
