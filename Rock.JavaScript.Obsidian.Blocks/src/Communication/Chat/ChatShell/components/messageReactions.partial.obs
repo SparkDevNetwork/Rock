@@ -1,0 +1,457 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- The row under a message: the thread pill first, then the chips, then the add chip. -->
+    <div v-if="isRowDrawn"
+         class="chat-reacts"
+         :class="{ 'is-community': isCommunity }"
+         data-testid="message-reactions">
+        <slot />
+        <template v-if="isChipsDrawn">
+            <button v-for="reaction in reactions"
+                    :key="reaction.code"
+                    type="button"
+                    class="chat-rx"
+                    :class="{ 'is-popping': popping.has(reaction.code) }"
+                    data-testid="reaction-chip"
+                    :data-code="reaction.code"
+                    :aria-pressed="reaction.mine ? 'true' : 'false'"
+                    :aria-label="chipLabel(reaction)"
+                    :disabled="isPreviewing"
+                    @mouseenter="onChipEnter($event, reaction.code)"
+                    @mouseleave="onPointerLeave"
+                    @pointerdown="onPointerDown"
+                    @focus="onChipFocus($event, reaction.code)"
+                    @blur="onBlur"
+                    @click="onChipClick(reaction.code)"
+                    @animationend.self="onPopEnd(reaction.code)">
+                <img v-if="reaction.image_url" class="chat-rx-e is-image" :src="reaction.image_url" alt="" />
+                <span v-else class="chat-rx-e" aria-hidden="true">{{ reaction.emoji }}</span>
+                <!-- Keyed by the count, so each change remounts it and the roll plays again. -->
+                <span :key="reaction.count"
+                      class="chat-rx-n"
+                      :class="{ 'is-rolling': rolling.has(reaction.code) }"
+                      data-testid="reaction-count"
+                      aria-hidden="true"
+                      @animationend="onRollEnd(reaction.code)">{{ reaction.count }}</span>
+                <!-- Inside the chip, so the chip stays one element; fixed, so it is placed against the window. -->
+                <span v-if="isTipShown && tipCode === reaction.code"
+                      :ref="setTipElement"
+                      class="chat-tip"
+                      role="tooltip"
+                      :style="floatingStyles">{{ tipText }}</span>
+            </button>
+            <button v-if="isAddDrawn"
+                    ref="addElement"
+                    type="button"
+                    class="chat-rx is-add"
+                    data-testid="reaction-add"
+                    aria-label="Add reaction"
+                    aria-haspopup="dialog"
+                    @click="onAddClick">
+                <Icon name="smile-plus" size="sm" />
+            </button>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+/*
+    The row's place under the bubble, its overlap and its mirroring for the reader's own are the
+    message row's, which knows the bubble; this part draws what sits in the row.
+*/
+.chat-rx {
+    position: relative;
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    height: 26px;
+    margin: 0;
+    padding: 0 8px 0 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--chat-text-2);
+    cursor: pointer;
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+    box-shadow: 0 0 0 2px var(--chat-surface);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
+}
+
+.chat-rx:hover {
+    border-color: var(--chat-line-strong);
+    transform: translateY(-1px);
+}
+
+.chat-rx[aria-pressed="true"] {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-color: var(--chat-reaction-mine-line);
+}
+
+/* A person previewing the room sees who reacted but cannot press, so nothing answers the pointer. */
+.chat-rx:disabled {
+    cursor: default;
+}
+
+.chat-rx:disabled:hover {
+    border-color: var(--chat-line);
+    transform: none;
+}
+
+.chat-rx:disabled[aria-pressed="true"]:hover {
+    border-color: var(--chat-reaction-mine-line);
+}
+
+.chat-rx-e {
+    font-size: 15px;
+    line-height: 1;
+}
+
+/* A church's image emoji is held to the glyph's box, so a chip is the same height either way. */
+.chat-rx-e.is-image {
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+}
+
+.chat-rx-n {
+    display: inline-block;
+    min-width: 1ch;
+}
+
+/* Your new reaction pops from small, springing past full size, the one place a chip moves on its own. */
+.chat-rx.is-popping {
+    animation: chat-rx-pop var(--chat-d-rx-pop) var(--chat-ease-spring);
+}
+
+@keyframes chat-rx-pop {
+    from {
+        opacity: .2;
+        transform: scale(var(--chat-react-from));
+    }
+}
+
+/* Your reaction joining others' rolls the count up into place. */
+.chat-rx-n.is-rolling {
+    animation: chat-rx-roll var(--chat-d-roll) var(--chat-ease-in);
+}
+
+@keyframes chat-rx-roll {
+    from {
+        opacity: 0;
+        transform: translateY(70%);
+    }
+}
+
+/*
+    The add chip sits out of flow beside the last chip, so showing it moves nothing. It shows while
+    the message is hovered or holds focus, and for the reader's own it sits on the mirrored side.
+*/
+.chat-rx.is-add {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 4px);
+    padding: 0 7px;
+    color: var(--chat-icon);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
+}
+
+.is-own .chat-rx.is-add {
+    right: calc(100% + 4px);
+    left: auto;
+}
+
+.chat-msg:hover .chat-rx.is-add,
+.chat-msg:focus-within .chat-rx.is-add,
+.chat-rx.is-add:focus {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.chat-rx.is-add:hover {
+    color: var(--chat-text);
+}
+
+/* A channel's flat look: a smaller chip with no ring, the add chip in the row's flow. */
+.is-community .chat-rx {
+    height: 24px;
+    box-shadow: none;
+}
+
+.is-community .chat-rx.is-add {
+    position: static;
+}
+
+/* Reduced motion: no lift, the pop held at full size by the sheet so it is a short fade, the roll a fade. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-rx:hover {
+        transform: none;
+    }
+
+    .chat-rx.is-popping {
+        animation-duration: var(--chat-t-fast);
+    }
+
+    .chat-rx-n.is-rolling {
+        animation-name: chat-crossfade;
+        animation-duration: var(--chat-t-fast);
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { ComponentPublicInstance, computed, PropType, ref, useSlots, watch } from "vue";
+    import Icon from "../ui/icon.partial.obs";
+    import { useTooltip } from "../ui/tooltip.partial";
+    import { TimelineMessage } from "../types.partial";
+
+    // #region Types
+
+    /** One emoji's reactions on a message, as a page and the toggle's answer carry them. */
+    type ChipReaction = {
+        code: string;
+        count: number;
+        mine: boolean;
+        emoji: string | null;
+
+        // The wire's own name, as the server writes it.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        image_url: string | null;
+        label: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The message, which carries its reactions in the order they are drawn. */
+        message: {
+            type: Object as PropType<TimelineMessage & { reactions?: ChipReaction[] }>,
+            required: true
+        },
+
+        /** A room the person has not joined: the chips are drawn but cannot be pressed. */
+        isPreviewing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A channel's flat look. */
+        isCommunity: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A phone, where the action sheet reacts and there is no add chip. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Who reacted with one emoji, "You" for the reader; null when they cannot be had. */
+        loadReactorNames: {
+            type: Function as PropType<(reaction: ChipReaction) => Promise<string[] | null>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "toggle", code: string): void,
+        (e: "openPicker", anchor: HTMLElement): void
+    }>();
+
+    const slots = useSlots();
+
+    // #region Values
+
+    const addElement = ref<HTMLButtonElement>();
+
+    /** The chip the tip belongs to: one tip for the row, moved to whichever chip the pointer rests on. */
+    const tipAnchor = ref<HTMLElement>();
+    const tipCode = ref<string | null>(null);
+
+    /** Who reacted with the tip's emoji, once they arrive; null shows the count line meanwhile. */
+    const tipNames = ref<string[] | null>(null);
+
+    /** Counts each request, so names that arrive after the tip moved on are dropped. */
+    let namesRequest = 0;
+
+    // Chips animate only on a change seen here, never as a page draws them.
+    const popping = ref(new Set<string>());
+    const rolling = ref(new Set<string>());
+
+    // A reaction tip shows sooner than the rest, as people skim a row of them.
+    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur } =
+        useTooltip(tipAnchor, () => false, { token: "--chat-d-tip-delay-rx", fallbackMs: 350 });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** A tombstone, whether deleted or withheld, has nothing to react to. */
+    const isTomb = computed((): boolean => !!props.message.deleted_at
+        || props.message.visibility === "hidden"
+        || props.message.visibility === "removed");
+
+    const isChipsDrawn = computed((): boolean => props.message.message_type !== "system" && !isTomb.value);
+
+    const reactions = computed((): ChipReaction[] => props.message.reactions ?? []);
+
+    // The add chip only follows chips; a message with none is reacted to from its action bar.
+    const isAddDrawn = computed((): boolean => !props.isPreviewing && !props.isPhone && reactions.value.length > 0);
+
+    /** A thread pill alone keeps the row, so a tombstone's thread can still be opened. */
+    const isRowDrawn = computed((): boolean => !!slots.default || (isChipsDrawn.value && reactions.value.length > 0));
+
+    const tipReaction = computed((): ChipReaction | null => reactions.value.find(reaction => reaction.code === tipCode.value) ?? null);
+
+    const tipText = computed((): string => {
+        const reaction = tipReaction.value;
+
+        if (!reaction) {
+            return "";
+        }
+
+        const glyph = reaction.emoji ?? `:${reaction.code}:`;
+        const names = tipNames.value;
+
+        if (!names || names.length === 0) {
+            return `${reaction.count} ${reaction.count === 1 ? "person" : "people"} reacted with ${glyph}`;
+        }
+
+        // The names are the newest few; the chip's own count says how many more there are.
+        const shown = names.slice(0, 3);
+        const more = reaction.count - shown.length;
+
+        return `${more > 0 ? `${shown.join(", ")} and ${more} more` : joinNames(shown)} reacted with ${glyph}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onChipEnter(event: MouseEvent, code: string): void {
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipCode.value = code;
+        onPointerEnter();
+    }
+
+    function onChipFocus(event: FocusEvent, code: string): void {
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipCode.value = code;
+        onFocus();
+    }
+
+    function onChipClick(code: string): void {
+        hideTip();
+
+        // A disabled chip takes no click in a browser; this holds when one is sent anyway.
+        if (props.isPreviewing) {
+            return;
+        }
+
+        emit("toggle", code);
+    }
+
+    function onAddClick(): void {
+        if (addElement.value) {
+            emit("openPicker", addElement.value);
+        }
+    }
+
+    function onPopEnd(code: string): void {
+        popping.value = withoutCode(popping.value, code);
+    }
+
+    function onRollEnd(code: string): void {
+        rolling.value = withoutCode(rolling.value, code);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Names joined as people say them: "A", "A and B", "A, B and C". */
+    function joinNames(names: string[]): string {
+        return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+    }
+
+    /**
+     * The chip in one sentence, since the glyph and count are drawn for the eye. A person who
+     * cannot press is not told what a press would do.
+     */
+    function chipLabel(reaction: ChipReaction): string {
+        const base = `${reaction.label}, ${reaction.count}`;
+
+        if (props.isPreviewing) {
+            return base;
+        }
+
+        return reaction.mine ? `${base}, including you. Remove yours` : `${base}. Add yours`;
+    }
+
+    function withoutCode(set: Set<string>, code: string): Set<string> {
+        const next = new Set(set);
+        next.delete(code);
+        return next;
+    }
+
+    /** A ref by name inside a list collects an array; the placement needs the one tip drawn. */
+    function setTipElement(element: Element | ComponentPublicInstance | null): void {
+        tipElement.value = element instanceof HTMLElement ? element : undefined;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    /*
+        Names are asked for only once the tip is shown, so a pointer passing over a row asks for
+        nothing; the store behind the call holds them per chip, so a second rest costs no call.
+    */
+    watch(isTipShown, shown => {
+        const reaction = tipReaction.value;
+        const request = ++namesRequest;
+        tipNames.value = null;
+
+        if (!shown || !reaction) {
+            return;
+        }
+
+        props.loadReactorNames(reaction)
+            .then(names => {
+                if (request === namesRequest) {
+                    tipNames.value = names;
+                }
+            })
+            .catch(() => {
+                // The count line stays, which is still true.
+            });
+    });
+
+    /*
+        Only the reader's own change moves a chip, as the design draws it: a chip the reader just
+        added pops in, and the reader joining others rolls the count. Others' changes and the
+        reader taking one away change the number in place.
+    */
+    watch(reactions, (next, previous) => {
+        const before = new Map(previous.map(reaction => [reaction.code, reaction]));
+
+        for (const reaction of next) {
+            const old = before.get(reaction.code);
+
+            if (!old && reaction.mine) {
+                popping.value = new Set(popping.value).add(reaction.code);
+            }
+            else if (old && reaction.mine && !old.mine && reaction.count > old.count) {
+                rolling.value = new Set(rolling.value).add(reaction.code);
+            }
+        }
+    });
+
+    // #endregion Watchers
+</script>
