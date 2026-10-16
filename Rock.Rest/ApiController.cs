@@ -287,6 +287,8 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
+            CheckNoUntrackedRelatedEntities( value );
+
             /*
                 10/15/2026 - MSE
 
@@ -435,6 +437,24 @@ namespace Rock.Rest
                     var property = type.GetProperty( key, BindingFlags.Public | BindingFlags.Instance );
                     var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
                     var currentValue = values[key];
+
+                    /*
+                        10/15/2026 - MSE
+
+                        Setting a navigation property changes the related record only when the
+                        changes are saved, after the permission checks below have run on the
+                        stored foreign key values. Related records are changed by their foreign
+                        key properties instead.
+
+                        Reason: Do not let PATCH change related records around the permission checks.
+                    */
+                    if ( IsNavigationProperty( property ) )
+                    {
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.BadRequest,
+                            string.Format( "Cannot write {0}", key ) );
+                        throw new HttpResponseException( response );
+                    }
 
                     if ( property != null )
                     {
@@ -1126,6 +1146,51 @@ namespace Rock.Rest
 
                 return GetParentAuthorityKey( service.Get( id ) as ISecured );
             }
+        }
+
+        /// <summary>
+        /// Checks that the posted model does not carry related records that would be
+        /// inserted along with it.
+        /// </summary>
+        /// <param name="value">The posted model that is about to be added.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected void CheckNoUntrackedRelatedEntities( T value )
+        {
+            /*
+                10/15/2026 - MSE
+
+                Adding the posted model also inserts every related record it carries (such as
+                a note's ChildNotes or a group member's Person), and only the posted model itself
+                is authorized. A caller could nest a record they are not allowed to add (such as
+                a note in a restricted note type) inside one they are. Related records must be
+                posted on their own so they get their own permission check. We return 400
+                instead of dropping them so a client never loses data without knowing it.
+                Records already loaded by this request (such as the categories the Attributes
+                controller loads) are not inserted, so they are allowed.
+
+                Reason: Authorize every record a POST inserts.
+            */
+            var propertyName = GetUntrackedRelatedEntityPropertyName( value, Service.Context, IsRelatedEntityCollectionAllowed );
+
+            if ( propertyName != null )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Format( "Related records in {0} cannot be saved with this record. Save them separately.", propertyName ) );
+                throw new HttpResponseException( response );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the related records in the named collection property may be
+        /// inserted along with a posted model. Only allow a collection whose records take
+        /// their permissions from the posted model, since they are not checked on their own.
+        /// </summary>
+        /// <param name="propertyName">The name of the collection property.</param>
+        /// <returns><c>true</c> if the related records may be inserted with the posted model; otherwise <c>false</c>.</returns>
+        protected virtual bool IsRelatedEntityCollectionAllowed( string propertyName )
+        {
+            return false;
         }
 
         /// <summary>

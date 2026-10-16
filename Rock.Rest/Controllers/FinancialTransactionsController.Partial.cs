@@ -177,6 +177,21 @@ namespace Rock.Rest.Controllers
             return base.Post( value );
         }
 
+        /// <inheritdoc/>
+        protected override bool IsRelatedEntityCollectionAllowed( string propertyName )
+        {
+            /*
+                10/15/2026 - MSE
+
+                The Check Scanner posts a new transaction with its TransactionDetails in one
+                request. A detail takes its permissions from its transaction, which the POST
+                has already authorized, so these may still be inserted with the transaction.
+
+                Reason: Keep Check Scanner uploads working.
+            */
+            return propertyName == nameof( FinancialTransaction.TransactionDetails );
+        }
+
         /// <summary>
         /// Returns true if a transaction with the same MICR track data is already in the database
         /// </summary>
