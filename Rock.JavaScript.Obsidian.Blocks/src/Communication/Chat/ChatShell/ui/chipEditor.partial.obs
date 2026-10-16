@@ -232,8 +232,20 @@
         lastRange = null;
     }
 
+    /**
+     * Focuses the box with the caret where it last was. A browser may put the caret at the start
+     * when focus comes back from a picker, and typing must carry on where the person left off.
+     */
     function focus(): void {
-        editorElement.value?.focus({ preventScroll: true });
+        const element = editorElement.value;
+        if (!element) {
+            return;
+        }
+
+        element.focus({ preventScroll: true });
+        if (lastRange && element.contains(lastRange.startContainer)) {
+            placeCaret(element, lastRange.cloneRange());
+        }
     }
 
     /**

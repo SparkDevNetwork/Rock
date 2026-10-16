@@ -17,7 +17,18 @@
             </div>
 
             <form class="chat-composer-box" @submit.prevent="onSubmit">
-                <ChipEditor v-model:text="text"
+                <IconButton ref="emojiButton"
+                            icon="smile"
+                            label="Add emoji"
+                            tooltip="Emoji"
+                            aria-haspopup="dialog"
+                            :aria-expanded="isEmojiOpen ? 'true' : 'false'"
+                            :isTooltipDisabled="isEmojiOpen"
+                            :disabled="isDisabled"
+                            data-testid="composer-emoji"
+                            @click="onEmojiClick" />
+                <ChipEditor ref="editor"
+                            v-model:text="text"
                             class="chat-composer-input"
                             :placeholder="placeholder"
                             :isDisabled="isDisabled"
@@ -40,6 +51,14 @@
                 </label>
                 <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
             </div>
+
+            <!-- The picker in insert mode, mounted only while open, so it fetches and focuses as it opens. -->
+            <EmojiPicker v-if="isEmojiOpen && emojiSource"
+                         mode="insert"
+                         :source="emojiSource"
+                         :anchor="emojiAnchor"
+                         @insert="onEmojiInsert"
+                         @close="onEmojiClose" />
         </template>
     </div>
 </template>
@@ -238,6 +257,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
     import { canMakeSendKey, textAfterSend } from "../composables/useSend.partial";
     import { TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
@@ -325,6 +345,12 @@
         isQuoteOwn: {
             type: Boolean,
             default: false
+        },
+
+        /** What the emoji picker draws: the favorites, the catalog once fetched, the recents and the church's name. */
+        emojiSource: {
+            type: Object as PropType<PickerSource | null>,
+            default: null
         }
     });
 
@@ -334,7 +360,11 @@
         (e: "edit", body: string): void;
         /** Up in an empty box: the person asks to edit their newest message. */
         (e: "editLast"): void;
-        (e: "cancelQuote"): void
+        (e: "cancelQuote"): void;
+        /** The picker opened, so the shell can fetch the catalog it draws. */
+        (e: "emojiPickerOpen"): void;
+        /** An emoji went into the box, for the recently used. */
+        (e: "emojiChosen", code: string): void
     }>();
 
     // #region Values
@@ -344,6 +374,11 @@
 
     /** A thread reply's choice to show it in the conversation too, cleared with each send. */
     const isAlsoSent = ref(false);
+
+    const editor = ref<InstanceType<typeof ChipEditor>>();
+    const emojiButton = ref<InstanceType<typeof IconButton>>();
+
+    const isEmojiOpen = ref(false);
 
     // #endregion Values
 
@@ -383,6 +418,9 @@
     /** Whether there is something to send, which turns the send button to the church's fill. */
     const isReady = computed((): boolean => text.value.trim() !== "");
 
+    /** The emoji button, which the picker is placed above and hands focus back to. */
+    const emojiAnchor = computed((): HTMLElement | null => emojiButton.value?.buttonElement ?? null);
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -405,6 +443,37 @@
         }
         text.value = textAfterSend(text.value, props.isTextKeptOnSend || !canMakeSendKey());
         isAlsoSent.value = false;
+    }
+
+    /** The emoji button opens the picker, or closes it when it is already open. */
+    function onEmojiClick(): void {
+        if (isEmojiOpen.value || !props.emojiSource) {
+            isEmojiOpen.value = false;
+            return;
+        }
+
+        isEmojiOpen.value = true;
+        emit("emojiPickerOpen");
+    }
+
+    /**
+     * Puts the chosen emoji in the box where the person was typing. The editor kept that caret
+     * when the picker took focus, so the emoji lands there and not at the end.
+     */
+    function onEmojiInsert(insertText: string, code: string): void {
+        editor.value?.insertText(insertText);
+        emit("emojiChosen", code);
+    }
+
+    /**
+     * The picker went. Closed by a choice or by Escape, it handed focus back to the button, and
+     * the person carries on typing in the box; closed by a press elsewhere, focus stays there.
+     */
+    function onEmojiClose(): void {
+        isEmojiOpen.value = false;
+        if (emojiAnchor.value && document.activeElement === emojiAnchor.value) {
+            editor.value?.focus();
+        }
     }
 
     // #endregion Event Handlers
