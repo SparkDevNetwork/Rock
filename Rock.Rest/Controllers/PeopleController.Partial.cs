@@ -461,6 +461,9 @@ namespace Rock.Rest.Controllers
                 person.Id = 0;
             }
 
+            // Related records (such as logins) would be inserted with the person without their own check.
+            CheckNoUntrackedRelatedEntities( person );
+
             SetProxyCreation( true );
 
             CheckCanEdit( person );
@@ -501,6 +504,24 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "5280CFDB-C02E-44AD-822D-53472D004EB6" )]
         public System.Net.Http.HttpResponseMessage AddNewPersonToFamily( Person person, int familyId, int groupRoleId )
         {
+            /*
+                10/15/2026 - MSE
+
+                The posted person is always inserted as a new record, even with a non-zero
+                Id, because it is added to the context through the new group member. Like
+                Post, clear the Id so CheckCanEdit authorizes the person being added and
+                not the existing record with that Id.
+
+                Reason: Authorize the person that will be added, not an existing one.
+            */
+            if ( person != null )
+            {
+                person.Id = 0;
+            }
+
+            // Related records (such as logins) would be inserted with the person without their own check.
+            CheckNoUntrackedRelatedEntities( person );
+
             SetProxyCreation( true );
 
             CheckCanEdit( person );
@@ -517,6 +538,23 @@ namespace Rock.Rest.Controllers
             PersonService.AddPersonToFamily( person, person.Id == 0, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        /// <inheritdoc/>
+        protected override bool IsRelatedEntityCollectionAllowed( string propertyName )
+        {
+            /*
+                10/15/2026 - MSE
+
+                Integrations often add a new person with their phone numbers in one request.
+                A phone number posted this way can only belong to the new person, which the
+                POST has already authorized, and Rock lets anyone who can edit a person edit
+                their phone numbers. The phone numbers' own related records are still
+                rejected. Logins (Users) stay rejected because they grant access.
+
+                Reason: Keep adding a person with phone numbers working.
+            */
+            return propertyName == nameof( Person.PhoneNumbers );
         }
 
         /// <summary>
