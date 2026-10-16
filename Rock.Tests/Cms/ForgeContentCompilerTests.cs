@@ -16,10 +16,13 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -372,6 +375,37 @@ const label = ref(""hello"");
             Assert.IsFalse( result.CompiledContent.Contains( "skeleton-block" ), "The placeholder HTML must not be compiled into the component." );
         }
 
+        [TestMethod]
+        public void CompileSource_AfterCompile_LeavesNoBrowserProcessRunning()
+        {
+            // Regression: the compile browser used to be a long-lived static that
+            // nothing closed, so every app domain left a Chrome running that held
+            // App_Data\ChromeEngine open and broke deploys. Each compile must now
+            // release its own browser. Processes already running from the engine
+            // before the compile are ignored so an unrelated Chrome cannot fail this.
+            var browserPath = GetBrowserPathOrInconclusive();
+            var compiler = new ForgeContentCompiler( GetBundlePathOrInconclusive(), browserPath );
+            var engineDirectory = Path.GetDirectoryName( browserPath );
+            var existingProcessIds = GetEngineProcessIds( engineDirectory );
+
+            var result = compiler.CompileSource( ValidSource );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+
+            // Child processes (GPU, renderers) can take a moment to exit after the
+            // browser process does, so allow a short grace period.
+            var leftoverProcessIds = GetEngineProcessIds( engineDirectory ).Except( existingProcessIds ).ToList();
+            var deadline = DateTime.UtcNow.AddSeconds( 10 );
+
+            while ( leftoverProcessIds.Any() && DateTime.UtcNow < deadline )
+            {
+                Thread.Sleep( 250 );
+                leftoverProcessIds = GetEngineProcessIds( engineDirectory ).Except( existingProcessIds ).ToList();
+            }
+
+            Assert.AreEqual( 0, leftoverProcessIds.Count, "Chrome processes were left running from the engine path: " + string.Join( ", ", leftoverProcessIds ) );
+        }
+
         #endregion CompileSource
 
         #region GetPlaceholderHtml
@@ -477,6 +511,42 @@ const label = ref(""hello"");
             builder.AppendLine( "</script>" );
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Gets the ids of the running chrome.exe processes launched from the
+        /// given engine directory.
+        /// </summary>
+        /// <param name="engineDirectory">The directory holding the Chromium executable.</param>
+        /// <returns>The ids of the matching processes.</returns>
+        private static List<int> GetEngineProcessIds( string engineDirectory )
+        {
+            var processIds = new List<int>();
+
+            foreach ( var process in Process.GetProcessesByName( "chrome" ) )
+            {
+                try
+                {
+                    var fileName = process.MainModule?.FileName;
+
+                    if ( fileName != null && fileName.StartsWith( engineDirectory, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        processIds.Add( process.Id );
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignored: the process exited while being read, or
+                    // belongs to another user and cannot be inspected, so it is not
+                    // one this test launched.
+                }
+                finally
+                {
+                    process.Dispose();
+                }
+            }
+
+            return processIds;
         }
 
         /// <summary>
