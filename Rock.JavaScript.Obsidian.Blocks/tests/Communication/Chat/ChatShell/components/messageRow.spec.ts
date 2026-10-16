@@ -84,6 +84,7 @@ type RowProps = {
     isPhone?: boolean;
     isPreviewing?: boolean;
     isInThread?: boolean;
+    reactionHost?: unknown;
 };
 
 function draw(props: RowProps): VueWrapper {
@@ -833,5 +834,68 @@ describe("the phone's action sheet", () => {
         sheetItem("Reply in thread").click();
         await nextTick();
         expect(w.emitted("openThread")).toEqual([[42]]);
+    });
+
+    test("its plus asks for the picker placed on the message, since the sheet closes under it", async () => {
+        const target = message();
+        const w = onPhone({ message: target, reactionHost: host([]) });
+        await w.trigger("click");
+
+        sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
+        await nextTick();
+
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement }];
+        expect(request.kind).toBe("openPicker");
+        expect(request.anchor).toBe(w.get(".chat-bubble").element);
+    });
+});
+
+/** What the shell hands every row of the reactions: the favorites, who reacted, the picker's message. */
+function host(favorites: unknown[], reactorNames: jest.Mock = jest.fn(async () => null)): Record<string, unknown> {
+    return { favorites, reactorNames, pickerAnchor: null };
+}
+
+const heart = { code: "heart", count: 3, mine: true, emoji: "❤️", image_url: null, label: "red heart" };
+
+// The reactions row under a message, in both looks: the chips the message carries, a press asking
+// the shell to toggle the reader's reaction, and the names the shell holds behind each tooltip.
+describe("the reactions row", () => {
+    test.each([["a direct message", false], ["a channel", true]] as const)("draws the message's chips in %s, and a press asks to react", async (_kind, isChannel) => {
+        const target = message({ reactions: [heart] } as Partial<TimelineMessage>);
+        const w = draw({ message: target, isChannel, reactionHost: host([]) });
+
+        const chip = w.get("[data-testid='reaction-chip']");
+        expect(chip.attributes("aria-label")).toBe("red heart, 3, including you. Remove yours");
+
+        await chip.trigger("click");
+        expect(w.emitted("messageAction")).toEqual([[{ kind: "react", message: target, code: "heart" }]]);
+    });
+
+    test("tucks into the bubble, which grows its foot to make room", () => {
+        const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), reactionHost: host([]) });
+
+        expect(root(w).classList.contains("has-reactions")).toBe(true);
+    });
+
+    test("draws nothing for a message with no reactions and no thread", () => {
+        const w = draw({ message: message(), reactionHost: host([]) });
+
+        expect(w.find("[data-testid='message-reactions']").exists()).toBe(false);
+        expect(root(w).classList.contains("has-reactions")).toBe(false);
+    });
+
+    test("is drawn but not pressable for a person previewing the room", () => {
+        const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), isPreviewing: true, reactionHost: host([]) });
+
+        expect(w.get("[data-testid='reaction-chip']").attributes("disabled")).toBeDefined();
+    });
+
+    test("asks the shell who reacted for this message", async () => {
+        const reactorNames = jest.fn(async () => ["Anna Reyes"]);
+        const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), reactionHost: host([], reactorNames) });
+        const loader = (w.findComponent({ name: "messageReactions.partial" }).props() as { loadReactorNames: (reaction: unknown) => Promise<unknown> }).loadReactorNames;
+
+        await expect(loader(heart)).resolves.toEqual(["Anna Reyes"]);
+        expect(reactorNames).toHaveBeenCalledWith(42, heart);
     });
 });

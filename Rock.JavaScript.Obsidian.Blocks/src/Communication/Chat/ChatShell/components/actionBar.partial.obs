@@ -380,10 +380,13 @@ img.chat-tool-glyph {
             default: () => []
         },
 
-        /** The picker More reactions opened is up for this message, which keeps the bar it is placed on. */
-        isPickerOpen: {
-            type: Boolean,
-            default: false
+        /**
+         * What the open picker is placed beside. While that is this bar's More reactions, the bar
+         * stays; another copy of the same message, in the thread beside it, does not.
+         */
+        pickerAnchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
         }
     });
 
@@ -458,8 +461,11 @@ img.chat-tool-glyph {
         return isLive && !isSystemLine;
     });
 
+    /** The picker is up beside this bar's More reactions. */
+    const isPickerOpen = computed((): boolean => !!props.pickerAnchor && !!barElement.value?.contains(props.pickerAnchor));
+
     /** A menu, a picker or a keyboard's focus inside keeps the bar, wherever the pointer went. */
-    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value || props.isPickerOpen);
+    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value || isPickerOpen.value);
 
     const isDrawn = computed((): boolean => canAct.value && (isHovered.value || isHeld.value));
 

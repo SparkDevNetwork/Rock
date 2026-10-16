@@ -53,6 +53,7 @@
                             :isPhone="isPhone"
                             :isInThread="true"
                             :isFlashing="item.isReply && item.message.id === flashingId"
+                            :reactionHost="reactionHost"
                             :data-reply-id="item.isReply ? item.message.id : undefined"
                             @jump="emit('jump', $event)"
                             @messageAction="emit('messageAction', $event)" />
@@ -82,6 +83,7 @@
                                 :isEditing="!!row.message && row.message.id === editingId"
                                 :editError="editError"
                                 :isEditSaving="isEditSaving"
+                                :reactionHost="reactionHost"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @retry="emit('retry', $event)"
                                 @discard="emit('discard', $event)"
@@ -100,9 +102,12 @@
                       :isLocked="isLocked"
                       :quote="quote"
                       :isQuoteOwn="isQuoteOwn"
+                      :emojiSource="emojiSource"
                       @send="onSend"
                       @editLast="emit('editLast')"
-                      @cancelQuote="emit('cancelQuote')" />
+                      @cancelQuote="emit('cancelQuote')"
+                      @emojiPickerOpen="emit('emojiPickerOpen')"
+                      @emojiChosen="emit('emojiChosen', $event)" />
         </template>
     </PanelHost>
 </template>
@@ -241,11 +246,13 @@
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Composer from "./composer.partial.obs";
+    import { PickerSource } from "./emojiPicker.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import { useHotMessage } from "../composables/useHotMessage.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
+    import { ReactionHost } from "../composables/useReactions.partial";
     import { useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
@@ -415,6 +422,18 @@
         isEditSaving: {
             type: Boolean,
             default: false
+        },
+
+        /** The favorites each row's bar and sheet draw, who reacted, and the message the picker is open on. */
+        reactionHost: {
+            type: Object as PropType<ReactionHost | null>,
+            default: null
+        },
+
+        /** What the reply composer's emoji picker draws. */
+        emojiSource: {
+            type: Object as PropType<PickerSource | null>,
+            default: null
         }
     });
 
@@ -430,7 +449,9 @@
         (e: "cancelQuote"): void,
         (e: "editLast"): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void
+        (e: "messageAction", request: MessageActionRequest): void,
+        (e: "emojiPickerOpen"): void,
+        (e: "emojiChosen", code: string): void
     }>();
 
     // #region Values

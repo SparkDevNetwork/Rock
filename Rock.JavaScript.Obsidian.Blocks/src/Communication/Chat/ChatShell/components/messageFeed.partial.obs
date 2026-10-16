@@ -71,6 +71,7 @@
                                 :isPhone="isPhone"
                                 :isArriving="isRowArriving(item.key, item.message)"
                                 :isFlashing="item.message.id === flashingId"
+                                :reactionHost="reactionHost"
                                 :data-message-id="item.message.id"
                                 @messageAction="emit('messageAction', $event)" />
 
@@ -98,6 +99,7 @@
                                     :isEditing="!!row.message && row.message.id === editingId"
                                     :editError="editError"
                                     :isEditSaving="isEditSaving"
+                                    :reactionHost="reactionHost"
                                     :data-message-id="row.message?.id"
                                     @retry="emit('retry', $event)"
                                     @discard="emit('discard', $event)"
@@ -526,6 +528,7 @@
     import { TimelineState } from "../composables/useHistory.partial";
     import { useHotMessage } from "../composables/useHotMessage.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
+    import { ReactionHost } from "../composables/useReactions.partial";
     import { useSentHold } from "../composables/useSend.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
     import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
@@ -619,6 +622,12 @@
         /** The message a quote's jump asked for, once the timeline holds it; scrolled to and flashed. */
         landOnId: {
             type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The favorites each row's bar and sheet draw, who reacted, and the message the picker is open on. */
+        reactionHost: {
+            type: Object as PropType<ReactionHost | null>,
             default: null
         }
     });

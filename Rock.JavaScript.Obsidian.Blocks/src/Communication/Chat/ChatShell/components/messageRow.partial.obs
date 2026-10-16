@@ -91,10 +91,12 @@
                     <button type="button" class="chat-link-button is-quiet" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
-                <!-- The same pill as a direct message's, under the text at the text column's left edge. -->
-                <div v-if="hasThread && message" class="chat-reacts">
-                    <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
-                </div>
+                <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
+                <MessageReactions v-if="message && (hasThread || hasReactions)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
+                    <template v-if="hasThread" #default>
+                        <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
+                    </template>
+                </MessageReactions>
             </div>
             <!-- Docked on the row's top right, so it is placed against the row itself. -->
             <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
@@ -134,10 +136,12 @@
                     <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
                 </div>
             </div>
-            <!-- The row reactions will share, the thread pill first at the bubble's aligned edge. -->
-            <div v-if="hasThread && message" class="chat-reacts">
-                <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
-            </div>
+            <!-- The reactions row, tucked into the bubble's foot, the thread pill first at its aligned edge. -->
+            <MessageReactions v-if="message && (hasThread || hasReactions)" v-bind="reactionsProps" v-on="reactionsHandlers">
+                <template v-if="hasThread" #default>
+                    <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
+                </template>
+            </MessageReactions>
             <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
             <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
                 <template v-if="state === 'failed'">
@@ -168,6 +172,7 @@
                      :message="message"
                      :isOwn="isOwn"
                      :isInThread="isInThread"
+                     :favorites="reactionHost?.favorites ?? []"
                      v-on="actionHandlers"
                      @close="onSheetClose" />
 
@@ -522,7 +527,8 @@
     padding: 0 10px 0 0;
 }
 
-.has-thread.is-conversational .chat-bubble:not(.is-jumbo) {
+.has-thread.is-conversational .chat-bubble:not(.is-jumbo),
+.has-reactions.is-conversational .chat-bubble:not(.is-jumbo) {
     padding-bottom: 10px;
 }
 
@@ -945,13 +951,15 @@
     import MessageBody from "./messageBody.partial.obs";
     import MessageEditor from "./messageEditor.partial.obs";
     import MessageQuote from "./messageQuote.partial.obs";
+    import MessageReactions from "./messageReactions.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
     import { MessageAction, MessageActionRequest } from "../composables/useMessageActions.partial";
+    import { ReactionHost } from "../composables/useReactions.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
-    import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChatError, DisplayPiece, PendingMessage, Reaction, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -1096,6 +1104,12 @@
         isEditSaving: {
             type: Boolean,
             default: false
+        },
+
+        /** The favorites the bar and the sheet draw, who reacted, and the message the picker is open on. */
+        reactionHost: {
+            type: Object as PropType<ReactionHost | null>,
+            default: null
         }
     });
 
@@ -1313,6 +1327,10 @@
             && state.value !== "system" && state.value !== "card";
     });
 
+    /** Chips to draw under the message: a live message with reactions, never a system line, a card or a tombstone. */
+    const hasReactions = computed((): boolean => !!props.message && (props.message.reactions?.length ?? 0) > 0
+        && !isTomb.value && state.value !== "system" && state.value !== "card");
+
     /** A reply also sent to the conversation, which says so above it and opens its thread. */
     const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);
 
@@ -1372,7 +1390,17 @@
         isPointerInside: props.isHot,
         isSwapInstant: props.isHotSwapInstant,
         isCommunity: layout.value === "community",
-        senderName: displayName.value
+        senderName: displayName.value,
+        favorites: props.reactionHost?.favorites ?? [],
+        pickerAnchor: props.reactionHost?.pickerAnchor ?? null
+    }));
+
+    /** The reactions row's props; a previewer sees the chips but cannot press them, and a touch screen has no add chip. */
+    const reactionsProps = computed(() => ({
+        message: props.message as TimelineMessage,
+        isPreviewing: props.isPreviewing,
+        isPhone: isTouchLayout.value,
+        loadReactorNames
     }));
 
     const rootClasses = computed((): Record<string, boolean> => ({
@@ -1386,7 +1414,8 @@
         "is-mention-me": layout.value === "community" && isMentionOfReader.value,
         "is-arriving": isArrivalDrawn,
         "is-flashing": props.isFlashing,
-        "has-thread": hasThread.value
+        "has-thread": hasThread.value,
+        "has-reactions": hasReactions.value
     }));
 
     // #endregion Computed Values
@@ -1425,8 +1454,43 @@
             if (props.message) {
                 emit("messageAction", { kind: "server", message: props.message, action });
             }
+        },
+        react: (message: TimelineMessage, code: string): void => emit("messageAction", { kind: "react", message, code }),
+        openPicker: (message: TimelineMessage, anchor: HTMLElement): void => emit("messageAction", { kind: "openPicker", message, anchor: pickerAnchor(anchor) })
+    };
+
+    /** A chip toggles the reader's reaction; the add chip opens the picker beside itself. */
+    const reactionsHandlers = {
+        toggle: (code: string): void => {
+            if (props.message) {
+                emit("messageAction", { kind: "react", message: props.message, code });
+            }
+        },
+        openPicker: (anchor: HTMLElement): void => {
+            if (props.message) {
+                emit("messageAction", { kind: "openPicker", message: props.message, anchor });
+            }
         }
     };
+
+    /** Who reacted with a chip's emoji, asked of the reactions the shell holds. */
+    function loadReactorNames(reaction: Reaction): Promise<string[] | null> {
+        return props.message && props.reactionHost ? props.reactionHost.reactorNames(props.message.id, reaction) : Promise.resolve(null);
+    }
+
+    /**
+     * Where the picker is placed. The sheet's plus closes with the sheet, so a picker asked for
+     * from it is placed on the message, as the bar's own button would be.
+     */
+    function pickerAnchor(anchor: HTMLElement): HTMLElement {
+        const row = rowElement.value;
+        const isInSheet = !!anchor.closest(".chat-sheet");
+        if (!row || (row.contains(anchor) && !isInSheet)) {
+            return anchor;
+        }
+
+        return row.querySelector<HTMLElement>(".chat-bubble, .chat-cm-text") ?? row;
+    }
 
     /** A block button's press, its promise settling once the action has answered, so the button stays busy till then. */
     function runBlockAction(action: MessageAction): Promise<void> {

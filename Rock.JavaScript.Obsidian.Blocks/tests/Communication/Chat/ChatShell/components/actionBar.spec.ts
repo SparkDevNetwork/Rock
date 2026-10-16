@@ -34,6 +34,7 @@
 //       isEditing: boolean,                the message is open in the editor
 //       isPointerInside: boolean           the pointer is over the message or its bar
 //       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first three are quick
+//       pickerAnchor: HTMLElement | null   what the open picker is placed beside; the bar holding it stays
 //   }
 //   emits: replyInThread(messageId), quote(message), edit(message), copy(message),
 //          delete(message), serverAction(action), react(message, code), openPicker(message, anchor)
@@ -110,6 +111,7 @@ type BarProps = {
     isEditing?: boolean;
     isPointerInside?: boolean;
     favorites?: unknown[];
+    pickerAnchor?: HTMLElement | null;
 };
 
 let wrapper: VueWrapper | null = null;
@@ -511,6 +513,30 @@ describe("the bar's quick reactions", () => {
 
         await add.trigger("click");
         expect(w.emitted("openPicker")).toEqual([[target, add.element]]);
+    });
+
+    test("the bar stays while the picker its More reactions opened is up, and goes once it closes", async () => {
+        const w = await shown({ message: message() });
+        const add = w.get("[data-testid='action-bar'] button[aria-label='More reactions']").element as HTMLElement;
+
+        await w.setProps({ pickerAnchor: add, isPointerInside: false });
+        jest.advanceTimersByTime(500);
+        await settle();
+        expect(bar(w).exists()).toBe(true);
+
+        await w.setProps({ pickerAnchor: null });
+        await settle();
+        expect(bar(w).exists()).toBe(false);
+    });
+
+    test("a picker placed beside something else does not hold the bar", async () => {
+        const w = await shown({ message: message() });
+
+        await w.setProps({ pickerAnchor: document.createElement("button"), isPointerInside: false });
+        jest.advanceTimersByTime(500);
+        await settle();
+
+        expect(bar(w).exists()).toBe(false);
     });
 
     test("are set apart from the tools by a separator", async () => {
