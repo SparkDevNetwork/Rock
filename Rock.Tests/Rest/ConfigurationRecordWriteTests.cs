@@ -145,6 +145,18 @@ namespace Rock.Tests.Rest
             AssertDeclaresProtectedOverride( "GroupMemberWorkflowTriggersController", "CheckCanEdit", typeof( GroupMemberWorkflowTrigger ) );
         }
 
+        [TestMethod]
+        public void PersonAliasController_OverridesCheckCanEdit()
+        {
+            AssertDeclaresProtectedOverride( "PersonAliasController", "CheckCanEdit", typeof( PersonAlias ) );
+        }
+
+        [TestMethod]
+        public void EntityTypesController_OverridesCheckCanEdit()
+        {
+            AssertDeclaresProtectedOverride( "EntityTypesController", "CheckCanEdit", typeof( EntityType ) );
+        }
+
         #endregion
 
         #region Action Methods
@@ -165,6 +177,18 @@ namespace Rock.Tests.Rest
         public void GroupMemberWorkflowTriggersController_PublicActions_AreUnchanged()
         {
             CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( GetControllerType( "GroupMemberWorkflowTriggersController" ) ) );
+        }
+
+        [TestMethod]
+        public void PersonAliasController_PublicActions_AreUnchanged()
+        {
+            CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( GetControllerType( "PersonAliasController" ) ) );
+        }
+
+        [TestMethod]
+        public void EntityTypesController_PublicActions_AreUnchanged()
+        {
+            CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( GetControllerType( "EntityTypesController" ) ) );
         }
 
         #endregion

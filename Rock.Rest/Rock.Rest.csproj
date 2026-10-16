@@ -834,6 +834,7 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowTriggersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\ConnectionRequestsController.Partial.cs" />
+    <Compile Include="Controllers\EntityTypesController.Partial.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
     <Compile Include="Controllers\FileBrowserController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
@@ -854,6 +855,7 @@
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
     <Compile Include="Controllers\PersistedDatasetsController.Partial.cs" />
+    <Compile Include="Controllers\PersonAliasController.Partial.cs" />
     <Compile Include="Controllers\BadgesController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
