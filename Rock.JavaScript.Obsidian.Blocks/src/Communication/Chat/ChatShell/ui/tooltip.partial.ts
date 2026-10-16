@@ -33,6 +33,19 @@ export type ChatTooltip = {
     onBlur: () => void;
 };
 
+/**
+ * The chat's root an element sits in, where a tip or a menu is drawn so the feed's faded edges
+ * neither fade nor cut it: a mask paints over everything inside its element, a fixed child too.
+ * Null outside a chat root, as when a part is drawn alone, which then draws in place.
+ *
+ * @param element The anchor.
+ *
+ * @returns The root, or null.
+ */
+export function overlayHostOf(element: Element | null | undefined): HTMLElement | null {
+    return element?.closest<HTMLElement>(".chat-shell") ?? null;
+}
+
 /** The design's tip delay, used when the sheet is not on the page. */
 const fallbackTipDelayMs = 500;
 

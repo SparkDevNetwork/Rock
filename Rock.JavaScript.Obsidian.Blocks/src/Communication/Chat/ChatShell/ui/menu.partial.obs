@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <IconButton ref="anchor"
+                v-bind="anchorAttrs"
                 :icon="icon"
                 :label="label"
                 aria-haspopup="menu"
@@ -8,27 +9,35 @@
                 :isTooltipDisabled="isOpen"
                 @click="onAnchorClick" />
 
-    <Transition name="chat-pop">
-        <div v-if="isOpen"
-             ref="menuElement"
-             class="chat-menu"
-             role="menu"
-             :aria-label="label"
-             :style="floatingStyles"
-             @keydown="onKeydown">
-            <button v-for="item in items"
-                    :key="item.key"
-                    type="button"
-                    class="chat-menu-item"
-                    :class="{ 'is-danger': item.isDanger }"
-                    role="menuitem"
-                    tabindex="-1"
-                    @click="choose(item.key)">
-                <Icon v-if="item.icon" :name="item.icon" />
-                <span>{{ item.label }}</span>
-            </button>
-        </div>
-    </Transition>
+    <!--
+        Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+        a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
+    -->
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <Transition name="chat-pop">
+            <div v-if="isOpen"
+                 ref="menuElement"
+                 class="chat-menu"
+                 role="menu"
+                 :aria-label="label"
+                 :style="floatingStyles"
+                 @keydown="onKeydown">
+                <template v-for="item in items" :key="item.key">
+                    <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
+                    <button type="button"
+                            class="chat-menu-item"
+                            :class="{ 'is-danger': item.isDanger }"
+                            role="menuitem"
+                            tabindex="-1"
+                            @click="choose(item.key)">
+                        <Icon v-if="item.icon" :name="item.icon" />
+                        <span class="chat-menu-label">{{ item.label }}</span>
+                        <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
+                    </button>
+                </template>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <style scoped>
@@ -63,6 +72,28 @@
     color: var(--chat-icon);
 }
 
+.chat-menu-label {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-menu-hint {
+    padding: 0;
+    font: inherit;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+    background: none;
+    box-shadow: none;
+}
+
+.chat-menu-sep {
+    flex: none;
+    height: 1px;
+    margin: 5px 6px;
+    background: var(--chat-line);
+}
+
 .chat-menu-item:hover,
 .chat-menu-item:focus {
     background: var(--chat-hover);
@@ -95,10 +126,11 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
+    import { overlayHostOf } from "./tooltip.partial";
 
     // #region Types
 
@@ -108,6 +140,12 @@
         label: string;
         icon?: string;
         isDanger?: boolean;
+
+        /** A key that does the same from elsewhere, drawn at the item's end, such as Up for Edit. */
+        hint?: string;
+
+        /** Draws a separator above the item, so a group is never left empty by a missing item. */
+        isSeparatorBefore?: boolean;
     };
 
     // #endregion Types
@@ -129,11 +167,18 @@
         items: {
             type: Array as PropType<MenuItem[]>,
             required: true
+        },
+
+        /** Attributes for the button, such as a toolbar's class and its roving tab stop. */
+        anchorAttrs: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: () => ({})
         }
     });
 
     const emit = defineEmits<{
         (e: "select", key: string): void;
+        (e: "openChange", isOpen: boolean): void;
     }>();
 
     // #region Values
@@ -142,6 +187,9 @@
     const anchorElement = ref<HTMLElement>();
     const menuElement = ref<HTMLElement>();
     const isOpen = ref(false);
+
+    /** The chat's root, which the open menu is drawn in; null where the menu is drawn alone. */
+    const overlayHost = ref<HTMLElement | null>(null);
 
     // Below its button by default, above when it would leave the window, kept 8px inside it.
     // Placed by left and top, since a transform here would override the pop motion's own and the
@@ -234,6 +282,7 @@
 
     // The outside press is listened for only while open, so a closed menu costs the page nothing.
     watch(isOpen, open => {
+        emit("openChange", open);
         if (open) {
             document.addEventListener("pointerdown", onDocumentPointerDown, true);
         }
@@ -245,6 +294,10 @@
     // #endregion Watchers
 
     // #region Lifecycle Hooks
+
+    onMounted(() => {
+        overlayHost.value = overlayHostOf(anchor.value?.buttonElement);
+    });
 
     onBeforeUnmount(() => {
         document.removeEventListener("pointerdown", onDocumentPointerDown, true);

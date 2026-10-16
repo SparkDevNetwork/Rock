@@ -14,13 +14,15 @@
         <Icon :name="icon" :size="iconSize" />
     </button>
 
-    <div v-if="isTipShown"
-         ref="tipElement"
-         class="chat-tip"
-         role="tooltip"
-         :style="floatingStyles">
-        {{ label }}
-    </div>
+    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+        <div v-if="isTipShown"
+             ref="tipElement"
+             class="chat-tip"
+             role="tooltip"
+             :style="floatingStyles">
+            {{ label }}
+        </div>
+    </Teleport>
 </template>
 
 <style scoped>
@@ -61,9 +63,9 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { onMounted, PropType, ref } from "vue";
     import Icon from "./icon.partial.obs";
-    import { useTooltip } from "./tooltip.partial";
+    import { overlayHostOf, useTooltip } from "./tooltip.partial";
 
     defineOptions({ inheritAttrs: false });
 
@@ -103,6 +105,9 @@
 
     const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerDown, onFocus, onBlur } = useTooltip(buttonElement, () => props.isTooltipDisabled);
 
+    /** The chat's root, which the tip is drawn in; null where the button is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
+
     // #endregion Values
 
     // #region Event Handlers
@@ -122,6 +127,14 @@
     }
 
     // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        tipHost.value = overlayHostOf(buttonElement.value);
+    });
+
+    // #endregion Lifecycle Hooks
 
     defineExpose({ buttonElement, focus });
 </script>
