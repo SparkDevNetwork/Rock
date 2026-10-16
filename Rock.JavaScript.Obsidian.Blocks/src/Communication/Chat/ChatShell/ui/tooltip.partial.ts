@@ -49,6 +49,14 @@ export function overlayHostOf(element: Element | null | undefined): HTMLElement 
 /** The design's tip delay, used when the sheet is not on the page. */
 const fallbackTipDelayMs = 500;
 
+/** Where a tip's rest time is read: a timing token in the sheet, and the value when the sheet is absent. */
+export type TooltipDelay = {
+    token: string;
+    fallbackMs: number;
+};
+
+const defaultTipDelay: TooltipDelay = { token: "--chat-d-tip-delay", fallbackMs: fallbackTipDelayMs };
+
 /**
  * The chat's tooltip for one anchor. The caller draws the tip, class chat-tip, role tooltip, at
  * the floating styles while it is shown, and binds the anchor's handlers. A tip shows once the
@@ -56,8 +64,9 @@ const fallbackTipDelayMs = 500;
  *
  * @param anchor The element the tip belongs to.
  * @param isDisabled Whether the tip is kept away for now, such as while a menu covers it.
+ * @param delay The rest time's token, for a tip that shows sooner than the rest, as on a reaction.
  */
-export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () => boolean = () => false): ChatTooltip {
+export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () => boolean = () => false, delay: TooltipDelay = defaultTipDelay): ChatTooltip {
     const tipElement = ref<HTMLElement>();
     const isTipShown = ref(false);
 
@@ -81,10 +90,10 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
         }
 
         window.clearTimeout(tipTimer);
-        const delay = anchor.value ? tokenDuration(anchor.value, "--chat-d-tip-delay", fallbackTipDelayMs) : fallbackTipDelayMs;
+        const restMs = anchor.value ? tokenDuration(anchor.value, delay.token, delay.fallbackMs) : delay.fallbackMs;
         tipTimer = window.setTimeout(() => {
             isTipShown.value = true;
-        }, delay);
+        }, restMs);
     }
 
     function hideTip(): void {
