@@ -195,6 +195,15 @@ function fakeShell(): Record<string, unknown> {
             cancelQuote: jest.fn(),
             saveEdit: jest.fn(async () => true),
             cancelEdit: jest.fn()
+        },
+        // the reactions the rows, the composers and the picker read, as useReactions holds them
+        reactions: {
+            state: reactive({ catalog: null as unknown[] | null, recents: [] as string[] }),
+            favorites: [{ code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null }, { code: "pray", label: "folded hands", emoji: "🙏", image_url: null }],
+            toggleCode: jest.fn(async () => undefined),
+            loadCatalog: jest.fn(async () => null),
+            recordRecent: jest.fn(),
+            reactorNames: jest.fn(async () => null)
         }
     };
 
@@ -1580,6 +1589,46 @@ describe("edit in place", () => {
         await w.get("[data-testid='frame-panel'] [data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
 
         expect(actionsOf().startEditNewest).toHaveBeenCalledWith(team.channel_id, 40);
+    });
+});
+
+// A reaction asked for anywhere in the block reaches the shell's reactions with the conversation
+// it was asked in, and the picker opens beside what asked for it, one at a time.
+describe("reactions", () => {
+    const reactionsOf = (): Record<string, jest.Mock> => mockShell!.reactions as Record<string, jest.Mock>;
+
+    test("a press of a message's reaction toggles it in the open conversation", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "react", message: storedMessage(7), code: "pray" });
+        await settle();
+
+        expect(reactionsOf().toggleCode).toHaveBeenCalledWith(team.channel_id, 7, "pray");
+    });
+
+    test("the picker opens beside what asked for it, fetches the catalog, and a choice reacts, is kept as recent and closes", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = document.createElement("button");
+        shellRoot(w).append(anchor);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor });
+        await settle();
+
+        expect(reactionsOf().loadCatalog).toHaveBeenCalledTimes(1);
+        expect(anchor.getAttribute("aria-expanded")).toBe("true");
+        const cell = document.querySelector<HTMLElement>("[role='dialog'][aria-label='Add reaction'] [role='gridcell'][data-code='pray']");
+        expect(cell).not.toBeNull();
+
+        cell?.click();
+        await settle();
+        await settle();
+
+        expect(reactionsOf().toggleCode).toHaveBeenCalledWith(team.channel_id, 7, "pray");
+        expect(reactionsOf().recordRecent).toHaveBeenCalledWith("pray");
+        expect(document.querySelector("[role='dialog'][aria-label='Add reaction']")).toBeNull();
+        expect(anchor.getAttribute("aria-expanded")).toBe("false");
     });
 });
 

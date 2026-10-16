@@ -78,6 +78,7 @@
                              :editError="editErrorIn(activeChannelId)"
                              :isEditSaving="isEditSavingIn(activeChannelId)"
                              :landOnId="landingMessageId"
+                             :reactionHost="reactionHost"
                              @seen="shell.seen"
                              @markRead="shell.markRead"
                              @firstShown="shell.firstMessageShown"
@@ -106,10 +107,13 @@
                           :isTextKeptOnSend="isTextKeptOnSend(draft)"
                           :quote="conversationQuote"
                           :isQuoteOwn="isOwnQuote(conversationQuote)"
+                          :emojiSource="emojiSource"
                           @send="shell.send"
                           @edit="shell.directMessages.edit"
                           @editLast="onEditLast"
-                          @cancelQuote="onCancelQuote(conversationQuoteKey)" />
+                          @cancelQuote="onCancelQuote(conversationQuoteKey)"
+                          @emojiPickerOpen="onEmojiPickerOpen"
+                          @emojiChosen="onEmojiChosen" />
 
                 <!-- Centred over the conversation it reports on, so a panel open beside it never pulls a toast off it. -->
                 <ErrorToast v-if="!isPhone" :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
@@ -178,6 +182,8 @@
                                   :editingId="editingIdIn(drawnThread.channelId)"
                                   :editError="editErrorIn(drawnThread.channelId)"
                                   :isEditSaving="isEditSavingIn(drawnThread.channelId)"
+                                  :reactionHost="reactionHost"
+                                  :emojiSource="emojiSource"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
@@ -189,7 +195,9 @@
                                   @cancelQuote="onCancelQuote(threadQuoteKey)"
                                   @editLast="onEditLastReply"
                                   @jump="onJump($event, true)"
-                                  @messageAction="onMessageAction($event, drawnThread.rootId)" />
+                                  @messageAction="onMessageAction($event, drawnThread.rootId)"
+                                  @emojiPickerOpen="onEmojiPickerOpen"
+                                  @emojiChosen="onEmojiChosen" />
                 </div>
             </aside>
 
@@ -206,6 +214,16 @@
                                  :personAliasGuid="personAliasGuid" />
                 </template>
             </Dialog>
+
+            <!-- The reaction picker, one at a time, placed beside what opened it and drawn in the chat's root. -->
+            <EmojiPicker v-if="reactionPicker"
+                         :key="reactionPicker.key"
+                         mode="react"
+                         :source="emojiSource"
+                         :mine="pickerMine"
+                         :anchor="reactionPicker.anchor"
+                         @react="onPickerReact"
+                         @close="closeReactionPicker" />
         </div>
 
         <DirectMessagePicker v-model="isPickerShown"
@@ -367,7 +385,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, StyleValue, watch, watchEffect } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, StyleValue, watch, watchEffect } from "vue";
     import { createClient } from "@Obsidian/Libs/supabase";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -385,12 +403,14 @@
     import Composer from "./ChatShell/components/composer.partial.obs";
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
+    import EmojiPicker, { PickerSource } from "./ChatShell/components/emojiPicker.partial.obs";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
+    import { ReactionHost } from "./ChatShell/composables/useReactions.partial";
     import { ReplyLanding, useJump } from "./ChatShell/composables/useJump.partial";
     import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
@@ -401,6 +421,9 @@
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
+
+    /** The reaction picker while it is open: the message it reacts to and what it is placed beside. */
+    type ReactionPicker = { key: number, channelId: string, message: TimelineMessage, anchor: HTMLElement };
 
     /** What the panel column can hold: the threads list, or one thread in its drawer. */
     type PanelKind = "threads" | "thread";
@@ -513,11 +536,42 @@
      */
     const isFeedEntering = ref(false);
 
+    /** The reaction picker while it is open; each opening is drawn afresh, so it is placed and pops in again. */
+    const reactionPicker = shallowRef<ReactionPicker | null>(null);
+    let reactionPickerCount = 0;
+
+    /**
+     * What every message row reads of the reactions. Built once and read through, so a row follows
+     * the shell a birthdate replaces and the picker opening, without every row being handed anew.
+     */
+    const reactionHost = reactive<ReactionHost>({
+        get favorites() {
+            return shell.value.reactions.favorites;
+        },
+        reactorNames: (messageId, reaction) => shell.value.reactions.reactorNames(messageId, reaction),
+        get pickerAnchor() {
+            return reactionPicker.value?.anchor ?? null;
+        }
+    });
+
     // #endregion Values
 
     // #region Computed Values
 
     const activeChannelId = computed((): string | null => shell.value.state.activeChannelId);
+
+    /** What every emoji picker draws: the favorites at once, the catalog once fetched, the recents, the church's name. */
+    const emojiSource = computed((): PickerSource => ({
+        favorites: shell.value.reactions.favorites,
+        catalog: shell.value.reactions.state.catalog,
+        recents: shell.value.reactions.state.recents,
+        churchName: organizationName
+    }));
+
+    /** The emoji the reader reacted to the picker's message with, which the picker marks as theirs. */
+    const pickerMine = computed((): string[] => (reactionPicker.value?.message.reactions ?? [])
+        .filter(reaction => reaction.mine)
+        .map(reaction => reaction.code));
 
     // Created here rather than with the values, since it reads the open conversation above.
     const { landingReplyId, landingMessageId, landOnReply, onJump } = useJump({
@@ -979,7 +1033,35 @@
             case "server":
                 void actions.runAction(channelId, request.message.id, request.action).finally(() => request.onSettled?.());
                 break;
+
+            case "react":
+                void shell.value.reactions.toggleCode(channelId, request.message.id, request.code);
+                break;
+
+            case "openPicker":
+                openReactionPicker(channelId, request.message, request.anchor);
+                break;
         }
+    }
+
+    /** A choice in the reaction picker toggles the reader's reaction and is kept as recently used. */
+    function onPickerReact(code: string): void {
+        const picker = reactionPicker.value;
+        if (!picker) {
+            return;
+        }
+
+        shell.value.reactions.recordRecent(code);
+        void shell.value.reactions.toggleCode(picker.channelId, picker.message.id, code);
+    }
+
+    /** A composer's picker opened: its categories are fetched once for the page. */
+    function onEmojiPickerOpen(): void {
+        void shell.value.reactions.loadCatalog();
+    }
+
+    function onEmojiChosen(code: string): void {
+        shell.value.reactions.recordRecent(code);
     }
 
     function onCancelDelete(): void {
@@ -1028,6 +1110,22 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Opens the reaction picker for a message, closing any other first, and fetches the catalog it
+     * draws. The message is held as the page holds it, so its marks follow while the picker is up.
+     */
+    function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement): void {
+        closeReactionPicker();
+        anchor.setAttribute("aria-expanded", "true");
+        reactionPicker.value = { key: ++reactionPickerCount, channelId, message: reactive(message) as TimelineMessage, anchor };
+        void shell.value.reactions.loadCatalog();
+    }
+
+    function closeReactionPicker(): void {
+        reactionPicker.value?.anchor.setAttribute("aria-expanded", "false");
+        reactionPicker.value = null;
+    }
 
     /** The message open in the editor when it belongs to a conversation, else null. */
     function editingIdIn(channelId: string | null): number | null {
@@ -1402,6 +1500,11 @@
                 void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus());
             }
         }
+    });
+
+    // A picker belongs to a message on screen, so another conversation or a draft closes it.
+    watch([activeChannelId, draft], () => {
+        closeReactionPicker();
     });
 
     // The threads list follows the open conversation; a draft has no threads, so it closes.
