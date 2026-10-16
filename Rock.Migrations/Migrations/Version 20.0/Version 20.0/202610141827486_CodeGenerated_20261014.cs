@@ -88,6 +88,8 @@ namespace Rock.Migrations
             //   Category: Group
             //   Attribute: Distance Calculation
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "3C9A5E71-8B24-4D0E-A6F1-9E7C2B4A0D53", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Distance Calculation", "DistanceCalculation", "Distance Calculation", @"How far each group is from the visitor, how the visitor shares where they are, and how the distance is measured. Each mode adds to the one before it: My Current Location shares the visitor's location through the browser and measures a direct line, Address or Zip Code adds an address box (which requires geocoding), and Driving Distance adds drive time and driving miles (which calls a routing provider). None offers no location search.", 70, @"StraightLineCurrentLocation", "B5DBCF4B-00A2-4839-B404-E5086064DE0D" );
+
+            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -154,6 +156,17 @@ namespace Rock.Migrations
             //   Category: CRM > Person Detail
             //   Attribute: Bottom Left Badges
             RockMigrationHelper.DeleteAttribute("A606899D-753F-408E-A3C7-35B92CC503F7");
+        }
+
+        /// <summary>
+        /// Cleanups the migration history records except the last one.
+        /// </summary>
+        private void CleanupMigrationHistory()
+        {
+            Sql( @"
+UPDATE [dbo].[__MigrationHistory]
+SET [Model] = 0x
+WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
         }
     }
 }
