@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-// A message's action bar, mounted: Reply in thread, Quote and More, docked on the message the
-// pointer rests on. It waits a moment before it shows, so a pointer passing over the feed does not
+// A message's action bar, mounted: three quick reactions and Add reaction, then Reply in thread,
+// Quote and More, docked on the message the pointer rests on. It waits a moment before it shows, so a pointer passing over the feed does not
 // flicker bars along its path, and lingers a moment after the pointer leaves, so moving onto the
-// bar does not lose it. It is one stop for the keyboard, the arrows moving between its tools. More
+// bar does not lose it. It is one stop for the keyboard, on the first quick reaction, the arrows
+// moving between its tools. The quick reactions are the church's first three favorites, pressed
+// when the reader reacted with one; in a narrow column only the first stays. More
 // opens the message's menu: Edit (the person's own message, never a block post), Copy, the actions
 // the server listed, then Delete (their own). A message nothing can be done to draws no bar.
 //
@@ -31,12 +33,16 @@
 //       isPreviewing: boolean,             a room the person has not joined
 //       isEditing: boolean,                the message is open in the editor
 //       isPointerInside: boolean           the pointer is over the message or its bar
+//       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first three are quick
 //   }
 //   emits: replyInThread(messageId), quote(message), edit(message), copy(message),
-//          delete(message), serverAction(action)
+//          delete(message), serverAction(action), react(message, code), openPicker(message, anchor)
 //
 // The bar is the element marked data-testid="action-bar", with role="toolbar"; it is in the page
-// only while it shows.
+// only while it shows. A quick reaction is read "React with thumbs up" or "Remove your thumbs up";
+// Add reaction is read "More reactions" and opens the picker; the separator between the reactions
+// and the tools is data-testid="action-bar-separator". The column is the nearest element marked
+// data-chat-scroller, narrow at 560px wide or less.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
@@ -51,6 +57,20 @@ const anna = "a0000002-0000-4000-8000-000000000000";
 const nineOhTwo = new Date(2026, 9, 15, 9, 2).toISOString();
 
 const approve = { id: "approve", label: "Approve", call: "chat_action_approve" };
+
+/** The church's favorites as the bootstrap carries them, in order; the bar draws the first three. */
+const favorites = [
+    { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null },
+    { code: "heart", label: "red heart", emoji: "❤️", image_url: null },
+    { code: "joy", label: "face with tears of joy", emoji: "😂", image_url: null },
+    { code: "open_mouth", label: "face with open mouth", emoji: "😮", image_url: null },
+    { code: "cry", label: "crying face", emoji: "😢", image_url: null },
+    { code: "pray", label: "folded hands", emoji: "🙏", image_url: null },
+    { code: "tada", label: "party popper", emoji: "🎉", image_url: null }
+];
+
+/** The bar's quick reactions and its Add reaction, as the toolbar reads them. */
+const reactionLabels = ["React with thumbs up", "React with red heart", "React with face with tears of joy", "More reactions"];
 
 /** A stored message as a page carries it, Anna's unless told otherwise. */
 function message(extra: Record<string, unknown> = {}): TimelineMessage {
@@ -89,6 +109,7 @@ type BarProps = {
     isPreviewing?: boolean;
     isEditing?: boolean;
     isPointerInside?: boolean;
+    favorites?: unknown[];
 };
 
 let wrapper: VueWrapper | null = null;
@@ -100,7 +121,7 @@ async function settle(): Promise<void> {
 
 /** Mounts the bar with the pointer on its message and lets the rest pass, so it shows if it may. */
 async function shown(props: BarProps): Promise<VueWrapper> {
-    wrapper = mount(ActionBar, { props: { message: null, pending: null, isPointerInside: true, ...props }, attachTo: document.body });
+    wrapper = mount(ActionBar, { props: { message: null, pending: null, isPointerInside: true, favorites, ...props }, attachTo: document.body });
     jest.advanceTimersByTime(60);
     await settle();
     return wrapper;
@@ -161,12 +182,12 @@ afterEach(() => {
 });
 
 describe("the bar's tools", () => {
-    test("are Reply in thread, Quote and More, in a toolbar named for the message", async () => {
+    test("are the quick reactions and Add reaction, then Reply in thread, Quote and More, in a toolbar named for the message", async () => {
         const w = await shown({ message: message() });
 
         expect(bar(w).attributes("role")).toBe("toolbar");
         expect(bar(w).attributes("aria-label")?.replace(/\s+/g, " ")).toBe("Actions for Anna Reyes's message, 9:02 AM");
-        expect(toolLabels(w)).toEqual(["Reply in thread", "Quote", "More actions"]);
+        expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
     });
 
     test("More is read as More actions, and its tooltip says More", async () => {
@@ -183,7 +204,7 @@ describe("the bar's tools", () => {
     test("leave out Reply in thread inside a thread", async () => {
         const w = await shown({ message: message({ parent_id: 40 }), isInThread: true });
 
-        expect(toolLabels(w)).toEqual(["Quote", "More actions"]);
+        expect(toolLabels(w)).toEqual([...reactionLabels, "Quote", "More actions"]);
     });
 
     test("ask to reply in thread with the message's id, and to quote the message", async () => {
@@ -307,35 +328,48 @@ describe("the bar's keyboard", () => {
         return w.get("[data-testid='action-bar']").findAll("button").map(b => b.element as HTMLElement);
     }
 
-    test("is one tab stop, the first tool", async () => {
+    test("is one tab stop, the first quick reaction", async () => {
         const w = await shown({ message: message() });
 
-        expect(tools(w).map(t => t.getAttribute("tabindex"))).toEqual(["0", "-1", "-1"]);
+        expect(tools(w)[0].getAttribute("aria-label")).toBe("React with thumbs up");
+        expect(tools(w).map(t => t.getAttribute("tabindex"))).toEqual(["0", "-1", "-1", "-1", "-1", "-1", "-1"]);
     });
 
     test("Right moves to the next tool and takes the tab stop with it; Left moves back", async () => {
         const w = await shown({ message: message() });
-        const [reply, quote] = tools(w);
-        reply.focus();
+        const [thumbsUp, heart] = tools(w);
+        thumbsUp.focus();
 
-        reply.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+        thumbsUp.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
         await settle();
 
-        expect(document.activeElement).toBe(quote);
-        expect(tools(w).map(t => t.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
+        expect(document.activeElement).toBe(heart);
+        expect(tools(w).map(t => t.getAttribute("tabindex"))).toEqual(["-1", "0", "-1", "-1", "-1", "-1", "-1"]);
 
-        quote.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+        heart.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
         await settle();
 
-        expect(document.activeElement).toBe(reply);
+        expect(document.activeElement).toBe(thumbsUp);
+    });
+
+    test("Right moves from Add reaction across the separator to the tools", async () => {
+        const w = await shown({ message: message() });
+        const all = tools(w);
+        all[3].focus();
+
+        all[3].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+        await settle();
+
+        expect(document.activeElement).toBe(all[4]);
+        expect(all[4].getAttribute("aria-label")).toBe("Reply in thread");
     });
 
     test("Right on the last tool wraps to the first", async () => {
         const w = await shown({ message: message() });
         const all = tools(w);
-        all[2].focus();
+        all[all.length - 1].focus();
 
-        all[2].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+        all[all.length - 1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
         await settle();
 
         expect(document.activeElement).toBe(all[0]);
@@ -431,5 +465,90 @@ describe("a server action whose call is not a chat action", () => {
         expect(w.emitted("serverAction")).toBeUndefined();
         expect(document.querySelector("[role='menu']")).not.toBeNull();
         expect(document.activeElement).toBe(item);
+    });
+});
+
+// The church's first three favorites, each a toggle of the reader's reaction to the message.
+describe("the bar's quick reactions", () => {
+    const yourHeart = { code: "heart", count: 3, mine: true, emoji: "❤️", image_url: null, label: "red heart" };
+    const othersJoy = { code: "joy", count: 1, mine: false, emoji: "😂", image_url: null, label: "face with tears of joy" };
+
+    function quick(w: VueWrapper): HTMLElement[] {
+        return w.get("[data-testid='action-bar']").findAll("button")
+            .map(b => b.element as HTMLElement)
+            .filter(b => /^(React with|Remove your) /.test(b.getAttribute("aria-label") ?? ""));
+    }
+
+    test("are the first three favorites, the reader's own pressed and read as a removal", async () => {
+        const w = await shown({ message: message({ reactions: [othersJoy, yourHeart] }) });
+
+        expect(quick(w).map(b => b.textContent?.trim())).toEqual(["👍", "❤️", "😂"]);
+        expect(quick(w).map(b => b.getAttribute("aria-label"))).toEqual(["React with thumbs up", "Remove your red heart", "React with face with tears of joy"]);
+        expect(quick(w).map(b => b.getAttribute("aria-pressed"))).toEqual(["false", "true", "false"]);
+    });
+
+    test("a press asks to react to the message with that emoji", async () => {
+        const target = message({ reactions: [yourHeart] });
+        const w = await shown({ message: target });
+
+        quick(w)[0].click();
+        quick(w)[1].click();
+        await settle();
+
+        expect(w.emitted("react")).toEqual([[target, "thumbsup"], [target, "heart"]]);
+    });
+
+    test("Add reaction opens the picker from itself, its tooltip saying Add reaction", async () => {
+        const target = message();
+        const w = await shown({ message: target });
+        const add = w.get("[data-testid='action-bar'] button[aria-label='More reactions']");
+
+        expect(add.attributes("aria-haspopup")).toBe("dialog");
+        await add.trigger("mouseenter");
+        jest.advanceTimersByTime(500);
+        await settle();
+        expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toEqual(["Add reaction"]);
+
+        await add.trigger("click");
+        expect(w.emitted("openPicker")).toEqual([[target, add.element]]);
+    });
+
+    test("are set apart from the tools by a separator", async () => {
+        const w = await shown({ message: message() });
+
+        expect(w.find("[data-testid='action-bar-separator']").exists()).toBe(true);
+    });
+});
+
+// The thread drawer, or a feed squeezed by a panel: the bar keeps one quick reaction and drops
+// the separator, so it fits the narrower column.
+describe("the bar in a narrow column", () => {
+    async function shownIn(columnWidth: number): Promise<VueWrapper> {
+        const scroller = document.createElement("div");
+        scroller.setAttribute("data-chat-scroller", "");
+        scroller.getBoundingClientRect = () => ({ x: 0, y: 0, top: 0, left: 0, right: columnWidth, bottom: 600, width: columnWidth, height: 600, toJSON: () => ({}) }) as DOMRect;
+        const host = document.createElement("div");
+        scroller.append(host);
+        document.body.append(scroller);
+
+        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isPointerInside: true, favorites }, attachTo: host });
+        jest.advanceTimersByTime(60);
+        await settle();
+        await settle();
+        return wrapper;
+    }
+
+    test("of 560px or less keeps only the first quick reaction and no separator", async () => {
+        const w = await shownIn(560);
+
+        expect(toolLabels(w)).toEqual(["React with thumbs up", "More reactions", "Reply in thread", "Quote", "More actions"]);
+        expect(w.find("[data-testid='action-bar-separator']").exists()).toBe(false);
+    });
+
+    test("wider than 560px keeps all three", async () => {
+        const w = await shownIn(561);
+
+        expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
+        expect(w.find("[data-testid='action-bar-separator']").exists()).toBe(true);
     });
 });
