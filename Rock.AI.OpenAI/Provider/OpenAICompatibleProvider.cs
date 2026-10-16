@@ -46,11 +46,12 @@ namespace Rock.AI.OpenAI.Provider
         Description = "The URL of the API service.",
         IsRequired = true,
         Order = 0 )]
-    [TextField(
+    [EncryptedTextField(
         "Secret Key",
         Key = AttributeKey.SecretKey,
         Description = "The secret key for the API Service.",
         IsRequired = true,
+        IsPassword = true,
         Order = 1 )]
     [TextField(
         "Organization",
@@ -151,7 +152,18 @@ namespace Rock.AI.OpenAI.Provider
         /// <returns></returns>
         private OpenAIApi GetAIApi( AIProvider provider )
         {
-            var key = GetAttributeValue( provider, AttributeKey.SecretKey );
+            /*
+                10/15/2026 - MSE
+
+                The secret key is stored encrypted. A value saved before the
+                key became an encrypted field is plain text until start-up
+                encrypts it, so fall back to the stored value when it does
+                not decrypt.
+
+                Reason: Keep AI provider secret keys encrypted at rest.
+            */
+            var storedKey = GetAttributeValue( provider, AttributeKey.SecretKey );
+            var key = Rock.Security.Encryption.DecryptString( storedKey ) ?? storedKey;
             var organization = GetAttributeValue( provider, AttributeKey.Organization );
             var host = GetAttributeValue( provider, AttributeKey.ApiUrlKey );
 

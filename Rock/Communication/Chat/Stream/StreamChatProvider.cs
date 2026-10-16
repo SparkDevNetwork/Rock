@@ -111,6 +111,7 @@ namespace Rock.Communication.Chat
             public const string ChannelLastReadAt = "channel_last_read_at";
             public const string ChannelRole = "channel_role";
             public const string ChannelType = "channel_type";
+            public const string Cid = "cid";
             public const string Disabled = "disabled";
             public const string Ext = "ext";
             public const string Id = "id";
@@ -4048,7 +4049,7 @@ namespace Rock.Communication.Chat
             channelSyncCommand.GroupId = chatGroupIdentifiers.GroupId;
 
             // Ensure the payload contains a channel type.
-            var channelType = json[WebhookJsonProperty.ChannelType]?.ToString();
+            var channelType = chatGroupIdentifiers.ChannelTypeKey;
             if ( channelType.IsNullOrWhiteSpace() )
             {
                 throw new ChatWebhookParseException( $"{PayloadPropMissingMsgPrefix} '{WebhookJsonProperty.ChannelType}'." );
@@ -4144,6 +4145,7 @@ namespace Rock.Communication.Chat
         {
             var syncCommand = new SyncChatChannelMemberToRockCommand( chatSyncType )
             {
+                ChatChannelTypeKey = chatGroupIdentifiers.ChannelTypeKey,
                 ChatChannelKey = chatGroupIdentifiers.ChannelKey,
                 GroupId = chatGroupIdentifiers.GroupId
             };
@@ -4217,9 +4219,12 @@ namespace Rock.Communication.Chat
             {
                 ChannelIdProperty = WebhookJsonProperty.Id,
                 ChannelIdPath = $"{WebhookJsonProperty.Mute}.{WebhookJsonProperty.Channel}.{WebhookJsonProperty.Id}",
+                ChannelTypeProperty = WebhookJsonProperty.Type,
+                ChannelTypePath = $"{WebhookJsonProperty.Mute}.{WebhookJsonProperty.Channel}.{WebhookJsonProperty.Type}",
             };
 
             var chatGroupIdentifiers = TryGetChatGroupIdentifiers( muteChannelJson, config );
+            syncCommand.ChatChannelTypeKey = chatGroupIdentifiers.ChannelTypeKey;
             syncCommand.ChatChannelKey = chatGroupIdentifiers.ChannelKey;
             syncCommand.GroupId = chatGroupIdentifiers.GroupId;
 
@@ -4244,6 +4249,7 @@ namespace Rock.Communication.Chat
 
             var syncCommand = new SyncChatBannedStatusToRockCommand( chatSyncType )
             {
+                ChatChannelTypeKey = chatGroupIdentifiers.ChannelTypeKey,
                 ChatChannelKey = chatGroupIdentifiers.ChannelKey,
                 GroupId = chatGroupIdentifiers.GroupId
             };
@@ -4333,7 +4339,7 @@ namespace Rock.Communication.Chat
         /// <param name="config">The optional configuration object for how to parse <see cref="Group"/> identifiers.</param>
         /// <returns>A <see cref="ChatGroupIdentifiers"/>.</returns>
         /// <exception cref="ChatWebhookParseException">If unable to parse the identifiers.</exception>
-        private ChatGroupIdentifiers TryGetChatGroupIdentifiers( JObject json, TryGetChatGroupIdentifiersConfig config = null )
+        internal static ChatGroupIdentifiers TryGetChatGroupIdentifiers( JObject json, TryGetChatGroupIdentifiersConfig config = null )
         {
             var chatGroupIdentifiers = new ChatGroupIdentifiers();
 
@@ -4357,6 +4363,31 @@ namespace Rock.Communication.Chat
             // Assign the channel key.
             chatGroupIdentifiers.ChannelKey = channelId;
 
+            /*
+                10/15/2026 - MSE
+
+                A Stream channel is uniquely identified by its type and ID together, and any chat user who creates a
+                channel chooses its ID. Read the channel type next to the ID so ChatHelper can confirm the channel is
+                exactly the one Rock uses for the group before syncing anything to it.
+
+                Reason: Prevent a channel of another type with a look-alike ID from targeting a Rock group.
+            */
+            var channelType = json[config.ChannelTypeProperty]?.ToString();
+            if ( channelType.IsNullOrWhiteSpace() )
+            {
+                // Fall back to the type part of the Stream-issued "type:id" channel cid, but only when its id part is
+                // this same channel ID. Never guess a type otherwise.
+                channelType = GetChannelTypeFromCid( json[config.ChannelCidProperty]?.ToString(), channelId );
+            }
+
+            if ( channelType.IsNullOrWhiteSpace() && config.ShouldThrowIfMissing )
+            {
+                throw new ChatWebhookParseException( $"{PayloadPropMissingMsgPrefix} '{config.ChannelTypePath}'." );
+            }
+
+            // Assign the channel type key.
+            chatGroupIdentifiers.ChannelTypeKey = channelType;
+
             // Does the channel ID contain an embedded Rock group ID?
             var groupId = ChatHelper.GetGroupId( channelId );
             if ( groupId.HasValue )
@@ -4366,6 +4397,37 @@ namespace Rock.Communication.Chat
             }
 
             return chatGroupIdentifiers;
+        }
+
+        /// <summary>
+        /// Gets the channel type from a Stream channel cid in the form "type:id", if the cid's id part exactly matches
+        /// the provided channel ID.
+        /// </summary>
+        /// <param name="cid">The Stream channel cid.</param>
+        /// <param name="channelId">The channel ID that the cid must refer to.</param>
+        /// <returns>The channel type or <see langword="null"/> if the cid is missing, malformed or for another channel.</returns>
+        private static string GetChannelTypeFromCid( string cid, string channelId )
+        {
+            if ( cid.IsNullOrWhiteSpace() || channelId.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var separatorIndex = cid.IndexOf( ':' );
+            if ( separatorIndex <= 0 )
+            {
+                return null;
+            }
+
+            var channelType = cid.Substring( 0, separatorIndex );
+            var cidChannelId = cid.Substring( separatorIndex + 1 );
+
+            if ( channelType.IsNullOrWhiteSpace() || !string.Equals( cidChannelId, channelId, StringComparison.Ordinal ) )
+            {
+                return null;
+            }
+
+            return channelType;
         }
 
         #endregion Converters: From Stream Webhook Payload To Rock Sync Commands
@@ -4525,7 +4587,7 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// A configuration object for how to parse <see cref="Group"/> identifiers from a Stream webhook payload.
         /// </summary>
-        private class TryGetChatGroupIdentifiersConfig
+        internal class TryGetChatGroupIdentifiersConfig
         {
             /// <summary>
             /// Gets or sets the name of the channel ID property within the root of the provided <see cref="JObject"/>.
@@ -4541,6 +4603,27 @@ namespace Rock.Communication.Chat
             public string ChannelIdPath { get; set; } = WebhookJsonProperty.ChannelId;
 
             /// <summary>
+            /// Gets or sets the name of the channel type property within the root of the provided <see cref="JObject"/>.
+            /// </summary>
+            public string ChannelTypeProperty { get; set; } = WebhookJsonProperty.ChannelType;
+
+            /// <summary>
+            /// Gets or sets the full, top-down path to the channel type property within the Stream webhook payload.
+            /// </summary>
+            /// <remarks>
+            /// This will only be used when reporting exceptions, if a channel type property is not found at <see cref="ChannelTypeProperty"/>.
+            /// </remarks>
+            public string ChannelTypePath { get; set; } = WebhookJsonProperty.ChannelType;
+
+            /// <summary>
+            /// Gets or sets the name of the channel cid ("type:id") property within the root of the provided <see cref="JObject"/>.
+            /// </summary>
+            /// <remarks>
+            /// This will only be used to get the channel type if a channel type property is not found at <see cref="ChannelTypeProperty"/>.
+            /// </remarks>
+            public string ChannelCidProperty { get; set; } = WebhookJsonProperty.Cid;
+
+            /// <summary>
             /// Gets or sets whether to throw an exception if the identifiers are missing.
             /// </summary>
             public bool ShouldThrowIfMissing { get; set; } = true;
@@ -4549,7 +4632,7 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Represents a <see cref="Group"/>'s identifiers parsed from a Stream webhook payload.
         /// </summary>
-        private class ChatGroupIdentifiers
+        internal class ChatGroupIdentifiers
         {
             /// <summary>
             /// Gets or sets the <see cref="ChatChannel.Key"/>.
@@ -4558,6 +4641,11 @@ namespace Rock.Communication.Chat
             /// This will be defined for all channels - created within both Rock and Stream.
             /// </remarks>
             public string ChannelKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="ChatChannelType.Key"/>.
+            /// </summary>
+            public string ChannelTypeKey { get; set; }
 
             /// <summary>
             /// Gets or sets the <see cref="Group"/> identifier.
