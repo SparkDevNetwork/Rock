@@ -21,6 +21,7 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -45,8 +46,19 @@ internal sealed partial class PersonSkill
         var phoneTypeValueId = IdHasher.Instance.GetId( phoneTypeValueIdKey );
         var phoneTypeValue = DefinedValueCache.Get( phoneTypeValueId ?? 0 );
 
+        /*
+            10/16/2026 - MSE
+
+            The value must belong to the Person Phone Type defined type. Any
+            other defined value would otherwise be saved as the type of a new
+            phone number, so treat it like an unknown phone type.
+
+            Reason: Prevent saving a phone number with a non phone type.
+        */
+        var personPhoneTypeId = DefinedTypeCache.GetId( SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() );
+
         // Check for valid phone type
-        if ( !phoneTypeValueId.HasValue || phoneTypeValue == null )
+        if ( !phoneTypeValueId.HasValue || phoneTypeValue == null || phoneTypeValue.DefinedTypeId != personPhoneTypeId )
         {
             var phoneTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE ).DefinedValues
                 .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
@@ -69,14 +81,33 @@ internal sealed partial class PersonSkill
             return Error( "No person could be found with the provided personIdKey." );
         }
 
+        /*
+            10/16/2026 - MSE
+
+            Loading the person does not check any security. Changing a person's
+            phone number must require EDIT on them, as the other agent write
+            tools do. A person can still edit themselves because
+            Person.IsAuthorized() allows that.
+
+            Reason: Prevent changing a person without EDIT permission.
+        */
+        if ( !person.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+        {
+            return Error( "You are not authorized to edit this person." );
+        }
+
         // Save the phone number
         var personPhoneService = new PhoneNumberService( rockContext );
         var personPhone = personPhoneService.Queryable().Where( ph => ph.PersonId == person.Id && ph.NumberTypeValueId == phoneTypeValueId ).FirstOrDefault();
 
         if ( personPhone == null )
         {
-            personPhone.PersonId = person.Id;
-            personPhone.NumberTypeValueId = phoneTypeValueId;
+            personPhone = new PhoneNumber
+            {
+                PersonId = person.Id,
+                NumberTypeValueId = phoneTypeValueId
+            };
+
             personPhoneService.Add( personPhone );
         }
 
