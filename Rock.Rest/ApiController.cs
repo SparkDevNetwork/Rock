@@ -1114,6 +1114,41 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Checks that the current person can administrate the REST controller that
+        /// serves this request. Use it for records that are not secured themselves but
+        /// hold administrator settings.
+        /// </summary>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected void CheckCanAdministrateController()
+        {
+            /*
+                10/16/2026 - MSE
+
+                Records that are not ISecured have no record security, so the only gate on a
+                v1 write is the REST controller rule, and staff hold EDIT on every controller
+                through the seeded entity type rule. Controllers for administrator settings
+                call this to require ADMINISTRATE on the controller, which by default only
+                Rock Administration holds. An unknown controller falls back to a new
+                RestController the same way SecuredAttribute does.
+
+                This must stay protected. Web API treats public methods as actions, so a
+                public method would add an endpoint and new RestAction rows.
+
+                Reason: Staff must not change administrator settings through v1 REST.
+            */
+            ISecured controller = RestControllerCache.Get( GetType().FullName );
+            if ( controller == null )
+            {
+                controller = new RestController();
+            }
+
+            if ( !controller.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+        }
+
+        /// <summary>
         /// Gets a key that identifies the parent authorities of the secured item.
         /// </summary>
         /// <param name="secured">The secured item.</param>

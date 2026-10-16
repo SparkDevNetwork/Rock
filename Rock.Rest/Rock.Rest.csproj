@@ -842,6 +842,7 @@
     <Compile Include="Controllers\FinancialTransactionsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\GroupMembersController.Partial.cs" />
+    <Compile Include="Controllers\GroupMemberWorkflowTriggersController.Partial.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
     <Compile Include="Controllers\GroupSyncsController.Partial.cs" />
     <Compile Include="Controllers\HtmlContentsController.Partial.cs" />
@@ -852,6 +853,7 @@
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
+    <Compile Include="Controllers\PersistedDatasetsController.Partial.cs" />
     <Compile Include="Controllers\BadgesController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
@@ -860,6 +862,7 @@
     <Compile Include="Controllers\UtilityController.cs" />
     <Compile Include="Controllers\WorkflowActionTypesController.Partial.cs" />
     <Compile Include="Controllers\WorkflowsController.Partial.cs" />
+    <Compile Include="Controllers\WorkflowTriggersController.Partial.cs" />
     <Compile Include="EnableCorsFromOriginAttribute.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
