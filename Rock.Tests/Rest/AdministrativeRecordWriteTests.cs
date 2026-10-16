@@ -167,9 +167,28 @@ namespace Rock.Tests.Rest
         [TestMethod]
         public void BlocksController_PublicActions_AreUnchanged()
         {
-            var expected = new[] { "BlockAction", "BlockActionAsPost", "Delete", "Move" }.OrderBy( n => n ).ToArray();
+            var expected = new[] { "BlockAction", "BlockActionAsPost", "Delete", "Move", "Post" }.OrderBy( n => n ).ToArray();
 
             CollectionAssert.AreEqual( expected, GetDeclaredPublicActionNames( "BlocksController" ) );
+        }
+
+        [TestMethod]
+        public void BlocksController_PostOverride_KeepsBaseApiId()
+        {
+            var controllerType = GetControllerType( "BlocksController" );
+            var post = controllerType.GetMethod( "Post", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly );
+
+            Assert.IsNotNull( post, "BlocksController does not override Post." );
+
+            Assert.AreNotEqual( controllerType, post.GetBaseDefinition().DeclaringType, "BlocksController.Post must override the base Post." );
+
+            // The ApiId of a REST action is built from MethodInfo.ToString(), so the
+            // override must match the base action for stored REST security to stay attached.
+            var basePost = controllerType.BaseType.GetMethod( "Post", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly );
+
+            Assert.IsNotNull( basePost );
+            Assert.AreEqual( basePost.ToString(), post.ToString() );
+            Assert.IsNull( post.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>( false ) );
         }
 
         [TestMethod]

@@ -17,6 +17,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -85,6 +86,36 @@ namespace Rock.Rest.Controllers
             }
 
             base.Delete( id );
+        }
+
+        /// <summary>
+        /// Adds a new Block after checking that the person can administrate the page, layout or site it is placed on.
+        /// </summary>
+        /// <param name="value">The block.</param>
+        /// <returns>The response with the new block identifier.</returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured]
+        public override HttpResponseMessage Post( [FromBody] Block value )
+        {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
+            /*
+                10/16/2026 - MSE
+
+                The base POST only requires EDIT on the new block, which it inherits from the
+                page, layout or site it is placed on. A new block's Pre and Post HTML are rendered
+                as Lava with all commands enabled, and the Rock UI only lets people who can
+                administrate a page add blocks to it. This override keeps the base signature so
+                the ApiId and any custom REST security on this action do not change.
+
+                Reason: Adding a block is an administrator setting.
+            */
+            CheckCanPlaceBlock( value.PageId, value.LayoutId, value.SiteId, GetPerson() );
+
+            return base.Post( value );
         }
 
         /// <summary>
