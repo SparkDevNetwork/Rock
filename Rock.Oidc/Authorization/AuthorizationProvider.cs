@@ -305,8 +305,7 @@ namespace Rock.Oidc.Authorization
 
             if ( context.RedirectUri.IsNotNullOrWhiteSpace() )
             {
-                // Verify that the redirect URI is one of the URIs registered for
-                // this client application.
+                // Verify that the redirect URI is one of the URIs registered for this client application.
                 if ( !AuthClientService.IsRedirectUriAllowed( authClient, context.RedirectUri ) )
                 {
                     context.Reject(
@@ -320,6 +319,15 @@ namespace Rock.Oidc.Authorization
             }
             else
             {
+                if ( !AuthClientService.AreRedirectUrisSafe( authClient ) )
+                {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified 'redirect_uri' is invalid." );
+
+                    return;
+                }
+
                 context.Validate( authClient.RedirectUri );
             }
         }

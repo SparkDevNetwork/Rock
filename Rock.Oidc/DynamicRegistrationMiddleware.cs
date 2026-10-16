@@ -116,18 +116,26 @@ namespace Rock.Oidc
                 var json = Encoding.UTF8.GetString( context.Request.Body.ReadBytesToEnd() );
                 var request = json.FromJsonOrThrow<RegisterRequest>();
 
+                var hasInvalidRedirectUris = request?.redirect_uris == null
+                    || request.redirect_uris.Count == 0
+                    || request.redirect_uris.Any( redirectUri => !AuthClientService.IsSafeDynamicRedirectUri( redirectUri ) );
+
+                if ( hasInvalidRedirectUris )
+                {
+                    // Error code from RFC 7591 section 3.2.2.
+                    context.Response.StatusCode = 400;
+                    context.Response.ContentType = "application/json";
+                    context.Response.Write( new
+                    {
+                        error = "invalid_redirect_uri",
+                        error_description = "One or more redirect URIs are not allowed."
+                    }.ToJson() );
+
+                    return;
+                }
+
                 var clientId = $"dcr.{Guid.NewGuid()}";
                 var clientSecret = Guid.NewGuid().ToString();
-
-                var validScopes = AuthClientService.AllowedDynamicScopes;
-                var allowedScopes = new List<string>();
-
-                if ( request.scope.IsNotNullOrWhiteSpace() )
-                {
-                    allowedScopes = request.scope.SplitDelimitedValues( " " )
-                        .Where( s => validScopes.Contains( s ) )
-                        .ToList();
-                }
 
                 var entityTypeName = EntityTypeCache.Get<Rock.Security.Authentication.Database>().Name;
                 var databaseAuth = AuthenticationContainer.GetComponent( entityTypeName ) as Rock.Security.Authentication.Database;
@@ -137,9 +145,10 @@ namespace Rock.Oidc
                 {
                     var authClient = new AuthClient
                     {
-                        AllowUserApiAccess = true,
+                        AllowUserApiAccess = false,
                         AllowedClaims = "[]",
-                        AllowedScopes = allowedScopes.ToJson(),
+                        AllowedScopes = AuthClientService.AllowedDynamicScopes.ToJson(),
+                        ScopeApprovalExpiration = 365,
                         IsActive = true,
                         Name = request.client_name,
                         ClientId = clientId,

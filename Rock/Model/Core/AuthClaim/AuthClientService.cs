@@ -48,6 +48,13 @@ namespace Rock.Model
         };
 
         /// <summary>
+        /// Matches an http URI whose host is <c>localhost</c>, <c>127.x.x.x</c> or <c>[::1]</c>, with an optional port.
+        /// </summary>
+        private static readonly Regex LoopbackHttpRegex = new Regex(
+            @"^http://(?:localhost|127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|\[::1\])(?::[0-9]+)?(?=[/?]|$)",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
+
+        /// <summary>
         /// Matches the port of an http or https loopback URI (<c>localhost</c>, <c>127.x.x.x</c> or <c>[::1]</c>),
         /// so it can be removed. Only a port directly after a loopback host at the start of the URI matches.
         /// The port must be followed by "/", "?" or the end; redirect URIs can't have a fragment
@@ -56,6 +63,120 @@ namespace Rock.Model
         private static readonly Regex LoopbackPortRegex = new Regex(
             @"^(?<origin>https?://(?:localhost|127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|\[::1\])):[0-9]+(?=[/?]|$)",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
+
+        /// <summary>
+        /// Determines whether a redirect URI is safe for a client.
+        /// </summary>
+        /// <param name="redirectUri">The redirect URI to check.</param>
+        /// <returns><c>true</c> if the redirect URI is safe to use; otherwise, <c>false</c>.</returns>
+        internal static bool IsSafeRedirectUri( string redirectUri )
+        {
+            if ( !TryParseRedirectUri( redirectUri, out var uri ) )
+            {
+                return false;
+            }
+
+            // Any successfully-parsed redirect URI with an http or https scheme is allowed, including loopback
+            // addresses (RFC 8252 section 7.3: https://www.rfc-editor.org/rfc/rfc8252#section-7.3).
+            if ( uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp )
+            {
+                return true;
+            }
+
+            // Otherwise, it must be a private-use app scheme in reverse domain form, such as "com.example.app"
+            // (RFC 8252 section 7.1: https://www.rfc-editor.org/rfc/rfc8252#section-7.1),
+            // (RFC 8252 section 8.4: https://www.rfc-editor.org/rfc/rfc8252#section-8.4).
+            return uri.Scheme.Contains( "." );
+        }
+
+        /// <summary>
+        /// Determines whether a redirect URI may be registered by a dynamic (DCR or CIMD) client.
+        /// MCP requires redirect URIs to use https or localhost/any loopback address:
+        /// (https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#communication-security).
+        /// </summary>
+        /// <param name="redirectUri">The redirect URI to check.</param>
+        /// <returns><c>true</c> if the redirect URI is safe to use; otherwise, <c>false</c>.</returns>
+        internal static bool IsSafeDynamicRedirectUri( string redirectUri )
+        {
+            if ( !TryParseRedirectUri( redirectUri, out var uri ) )
+            {
+                return false;
+            }
+
+            // Any successfully-parsed redirect URI with an https scheme is allowed, including loopback
+            // addresses (RFC 8252 section 7.3: https://www.rfc-editor.org/rfc/rfc8252#section-7.3).
+            if ( uri.Scheme == Uri.UriSchemeHttps )
+            {
+                return true;
+            }
+
+            // Otherwise, it must be an http loopback address. "Uri.IsLoopback" isn't used here because it also
+            // accepts the host "loopback", which only some operating systems resolve to the local machine.
+            return LoopbackHttpRegex.IsMatch( redirectUri );
+        }
+
+        /// <summary>
+        /// Parses a redirect URI that
+        /// is absolute (RFC 6749 section 3.1.2: https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2),
+        /// has no fragment (RFC 6749 section 3.1.2: https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2),
+        /// has no user info (deprecated in RFC 3986 section 3.2.1: https://www.rfc-editor.org/rfc/rfc3986#section-3.2.1),
+        /// has no whitespace or control characters (RFC 3986 section 2: https://www.rfc-editor.org/rfc/rfc3986#section-2),
+        /// and has no commas (to prevent injection attacks).
+        /// </summary>
+        /// <param name="redirectUri">The redirect URI to parse.</param>
+        /// <param name="uri">On <c>true</c> return, contains the parsed URI.</param>
+        /// <returns><c>true</c> if the redirect URI could be parsed; otherwise, <c>false</c>.</returns>
+        private static bool TryParseRedirectUri( string redirectUri, out Uri uri )
+        {
+            uri = null;
+
+            if ( redirectUri.IsNullOrWhiteSpace() || redirectUri.Any( c => char.IsWhiteSpace( c ) || char.IsControl( c ) ) )
+            {
+                return false;
+            }
+
+            // A client's redirect URIs are stored in AuthClient.RedirectUri as one comma-separated string. However,
+            // this method is validating a single URI. If it contains a comma, it can later be read back as two URIs,
+            // and the second one never passed this check (e.g., "https://a.example/x,javascript:alert(1)").
+            if ( redirectUri.Contains( "," ) )
+            {
+                return false;
+            }
+
+            if ( !Uri.TryCreate( redirectUri, UriKind.Absolute, out uri ) )
+            {
+                return false;
+            }
+
+            return uri.Fragment.IsNullOrWhiteSpace() && uri.UserInfo.IsNullOrWhiteSpace();
+        }
+
+        /// <summary>
+        /// Determines whether every redirect URI stored on a client is safe to use.
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> whose comma-separated redirect URIs are checked.</param>
+        /// <returns><c>true</c> if the client has at least one redirect URI and all of them are safe to use; otherwise, <c>false</c>.</returns>
+        internal static bool AreRedirectUrisSafe( AuthClient authClient )
+        {
+            var redirectUris = GetRedirectUris( authClient );
+
+            return redirectUris.Count > 0 && redirectUris.All( IsSafeRedirectUri );
+        }
+
+        /// <summary>
+        /// Gets the redirect URIs stored on a client.
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> whose comma-separated redirect URIs are returned.</param>
+        /// <returns>The client's redirect URIs.</returns>
+        private static List<string> GetRedirectUris( AuthClient authClient )
+        {
+            var redirectUris = authClient?.RedirectUri?.SplitDelimitedValues( "," ) ?? new string[0];
+
+            return redirectUris
+                .Select( redirectUri => redirectUri.Trim() )
+                .Where( redirectUri => redirectUri.Length > 0 )
+                .ToList();
+        }
 
         /// <summary>
         /// Gets the by client identifier.
@@ -223,7 +344,13 @@ namespace Rock.Model
                 return false;
             }
 
-            var registeredRedirectUris = authClient.RedirectUri.SplitDelimitedValues( "," );
+            // Also refuses values saved before redirect URIs were checked when the client was registered or edited.
+            if ( !IsSafeRedirectUri( redirectUri ) )
+            {
+                return false;
+            }
+
+            var registeredRedirectUris = GetRedirectUris( authClient );
 
             if ( registeredRedirectUris.Contains( redirectUri, StringComparer.Ordinal ) )
             {
@@ -261,6 +388,11 @@ namespace Rock.Model
             }
 
             if ( metadata.RedirectUris == null || metadata.RedirectUris.Count == 0 )
+            {
+                return null;
+            }
+
+            if ( metadata.RedirectUris.Any( redirectUri => !IsSafeDynamicRedirectUri( redirectUri ) ) )
             {
                 return null;
             }
