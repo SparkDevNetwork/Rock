@@ -73,13 +73,16 @@
                              :isDirectMessage="isActiveDirectMessage"
                              :isPhone="isPhone"
                              :isEntering="isFeedEntering"
+                             :isPreviewing="!!activeRow && !activeRow.is_member"
+                             :editingId="editingIdIn(activeChannelId)"
                              @seen="shell.seen"
                              @markRead="shell.markRead"
                              @firstShown="shell.firstMessageShown"
                              @retry="onRetry"
                              @discard="shell.sender.discard"
                              @loadOlder="shell.loadOlder"
-                             @openThread="onOpenThread" />
+                             @openThread="onOpenThread"
+                             @messageAction="onMessageAction($event, null)" />
                 <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
                     {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
                     <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
@@ -164,6 +167,8 @@
                                   :organizationName="organizationName"
                                   :quote="threadQuote"
                                   :isQuoteOwn="isOwnQuote(threadQuote)"
+                                  :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
+                                  :editingId="editingIdIn(drawnThread.channelId)"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
@@ -172,9 +177,24 @@
                                   @loadOlder="onLoadOlderReplies"
                                   @retry="onRetry"
                                   @discard="shell.sender.discard"
-                                  @cancelQuote="onCancelQuote(threadQuoteKey)" />
+                                  @cancelQuote="onCancelQuote(threadQuoteKey)"
+                                  @messageAction="onMessageAction($event, drawnThread.rootId)" />
                 </div>
             </aside>
+
+            <Dialog :isOpen="!!confirmingDelete"
+                    title="Delete this message?"
+                    :body="deleteBody"
+                    confirmLabel="Delete"
+                    isDestructive
+                    @close="onCancelDelete"
+                    @confirm="onConfirmDelete">
+                <template v-if="confirmingDelete" #preview>
+                    <MessageBody :text="confirmingDelete.message.body ?? ''"
+                                 :pieces="confirmingDelete.message.pieces ?? null"
+                                 :personAliasGuid="personAliasGuid" />
+                </template>
+            </Dialog>
         </div>
 
         <DirectMessagePicker v-model="isPickerShown"
@@ -351,16 +371,18 @@
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
     import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
+    import MessageBody from "./ChatShell/components/messageBody.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
-    import { quoteKey } from "./ChatShell/composables/useMessageActions.partial";
+    import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
     import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
     import { SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
+    import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
 
@@ -648,6 +670,16 @@
 
     const threadQuote = computed((): TimelineMessage | null => quoteAt(threadQuoteKey.value));
 
+    /** The message the delete confirm is open for, or null. */
+    const confirmingDelete = computed((): MessageActionsState["confirmingDelete"] => shell.value.messageActions.state.confirmingDelete);
+
+    /** Where the deleted message is removed from: a channel by its name, written with no "#", or this conversation. */
+    const deleteBody = computed((): string => {
+        const channelId = confirmingDelete.value?.channelId;
+        const where = channelId && roomKinds.value[channelId] === "channel" ? roomTitles.value[channelId] : "this conversation";
+        return `It will be removed for everyone in ${where}. You can't undo this.`;
+    });
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -872,6 +904,56 @@
         }
     }
 
+    /**
+     * A message's bar or menu asked for an action, in the conversation or, with its root, the open
+     * thread. A quote waits in the composer of the place it was asked in, which takes focus.
+     */
+    function onMessageAction(request: MessageActionRequest, rootId: number | null): void {
+        const channelId = rootId === null ? activeChannelId.value : drawnThread.value?.channelId ?? null;
+        if (!channelId) {
+            return;
+        }
+
+        const actions = shell.value.messageActions;
+        switch (request.kind) {
+            case "quote":
+                actions.startQuote(quoteKey(channelId, rootId), request.message);
+                void nextTick(() => {
+                    const place = rootId === null ? rootElement.value?.querySelector("[data-testid='frame-main']") : panelElement.value;
+                    place?.querySelector<HTMLElement>("[data-testid='composer-input']")?.focus();
+                });
+                break;
+
+            case "edit":
+                actions.startEdit(channelId, request.message.id);
+                break;
+
+            case "copy":
+                void actions.copy(request.message);
+                break;
+
+            case "delete":
+                actions.askDelete(channelId, request.message);
+                break;
+
+            case "server":
+                void actions.runAction(channelId, request.message.id, request.action);
+                break;
+        }
+    }
+
+    function onCancelDelete(): void {
+        const messageId = confirmingDelete.value?.message.id ?? null;
+        shell.value.messageActions.cancelDelete();
+        refocusMessage(messageId);
+    }
+
+    function onConfirmDelete(): void {
+        const messageId = confirmingDelete.value?.message.id ?? null;
+        void shell.value.messageActions.confirmDelete();
+        refocusMessage(messageId);
+    }
+
     function onRetry(localId: string): void {
         void shell.value.sender.retry(localId);
     }
@@ -906,6 +988,33 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** The message open in the editor when it belongs to a conversation, else null. */
+    function editingIdIn(channelId: string | null): number | null {
+        const editing = shell.value.messageActions.state.editing;
+        return editing && editing.channelId === channelId ? editing.messageId : null;
+    }
+
+    /** Whether the person is reading a channel they have not joined, where they cannot act on its messages. */
+    function isPreviewingRoom(channelId: string): boolean {
+        const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
+        return !!row && !row.is_member;
+    }
+
+    /**
+     * The dialog gives focus back to the More button that opened it, but that button left with its
+     * bar once focus moved into the dialog, so focus goes to the message itself instead.
+     */
+    function refocusMessage(messageId: number | null): void {
+        void nextTick(() => {
+            const root = rootElement.value;
+            if (messageId === null || !root || root.contains(document.activeElement)) {
+                return;
+            }
+
+            root.querySelector<HTMLElement>(`[data-message-id='${messageId}'], [data-reply-id='${messageId}']`)?.focus({ preventScroll: true });
+        });
+    }
 
     /** The message quoted under a key, if any. */
     function quoteAt(key: string | null): TimelineMessage | null {
