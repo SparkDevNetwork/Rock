@@ -3318,6 +3318,7 @@
     <Compile Include="CheckIn\KioskLocationAttendance.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
+    <Compile Include="CheckIn\PinAttemptLimiter.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\Email.cs" />
     <Compile Include="Communication\CommunicationDetails.cs" />
