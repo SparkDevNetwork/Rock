@@ -1074,6 +1074,56 @@ namespace Rock.Rest
 
                 // Must run while this context is open so related records can lazy-load.
                 CheckCanEdit( ( ISecured ) updatedModel );
+
+                /*
+                    10/15/2026 - MSE
+
+                    The copy above keeps the stored Id and author, so IsAuthorized overrides that
+                    grant EDIT to the author (such as Note) still pass after the record is moved
+                    under a parent the person could never add to. A record moved under a different
+                    parent must meet the same bar as creating it there.
+
+                    Reason: Authorize a parent change like a create under the new parent.
+                */
+                if ( GetParentAuthorityKey( updatedModel as ISecured ) != GetStoredParentAuthorityKey( entity.Id )
+                    && !IsAuthorizedForNewModel( ( ISecured ) entity, GetPerson() ) )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a key that identifies the parent authorities of the secured item.
+        /// </summary>
+        /// <param name="secured">The secured item.</param>
+        /// <returns>A string made from the type and identifier of each parent authority.</returns>
+        private static string GetParentAuthorityKey( ISecured secured )
+        {
+            if ( secured == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{secured.ParentAuthority?.TypeId}:{secured.ParentAuthority?.Id}|{secured.ParentAuthorityPre?.TypeId}:{secured.ParentAuthorityPre?.Id}";
+        }
+
+        /// <summary>
+        /// Gets the parent authority key of the model as it is stored in the database.
+        /// The caller's tracked model is not saved yet, so this reads the stored parent
+        /// without touching the tracked model's navigation properties.
+        /// </summary>
+        /// <param name="id">The identifier of the model.</param>
+        /// <returns>The parent authority key of the stored model.</returns>
+        private string GetStoredParentAuthorityKey( int id )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = true;
+
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+
+                return GetParentAuthorityKey( service.Get( id ) as ISecured );
             }
         }
 
