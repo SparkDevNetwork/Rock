@@ -898,6 +898,20 @@ namespace Rock.Workflow.Action
             rockContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Rounds an amount to the decimal places of the organization's currency.
+        /// </summary>
+        /// <param name="amount">The amount to round.</param>
+        /// <returns>The rounded amount.</returns>
+        private static decimal RoundToCurrency( decimal amount )
+        {
+            // StartAction and UpdateAction both round through here so the amount the browser
+            // charges matches the amount the mismatch check expects, avoiding false mismatch errors.
+            var currencyInfo = new Rock.Utility.RockCurrencyCodeInfo();
+
+            return decimal.Round( amount, currencyInfo.DecimalPlaces, MidpointRounding.AwayFromZero );
+        }
+
         #endregion
 
         #region IInteractiveAction
@@ -940,7 +954,9 @@ namespace Rock.Workflow.Action
                     },
                     ComponentData = new Dictionary<string, string>
                     {
-                        [ComponentDataKey.Amount] = configuration.Amount?.ToString(),
+                        [ComponentDataKey.Amount] = configuration.Amount.HasValue
+                            ? RoundToCurrency( configuration.Amount.Value ).ToString()
+                            : null,
                         [ComponentDataKey.Campus] = configuration.AuthorizedPersonAlias?.Person?.PrimaryCampus?.Guid.ToString()
                     }
                 }
@@ -959,9 +975,20 @@ namespace Rock.Workflow.Action
                 return errorResult;
             }
 
+            // The component only shows the amount box when no positive amount
+            // is configured, so a configured amount always wins over the posted one.
+            var roundedConfiguredAmount = configuration.Amount.HasValue ? RoundToCurrency( configuration.Amount.Value ) : 0;
+            var configuredAmount = roundedConfiguredAmount > 0 ? roundedConfiguredAmount : ( decimal? ) null;
+            var amount = configuredAmount ?? RoundToCurrency( componentData.GetValueOrNull( ComponentDataKey.Amount ).AsDecimal() );
+
+            if ( amount <= 0 )
+            {
+                return CreateErrorResult( "Please enter an amount greater than zero." );
+            }
+
             var paymentData = new PaymentData
             {
-                Amount = componentData.GetValueOrNull( ComponentDataKey.Amount ).AsDecimal(),
+                Amount = amount,
                 CampusGuid = componentData.GetValueOrNull( ComponentDataKey.Campus ).AsGuidOrNull(),
                 SaveAccount = componentData.GetValueOrNull( ComponentDataKey.SaveAccount ).AsBoolean(),
                 SaveAccountName = componentData.GetValueOrNull( ComponentDataKey.SaveAccountName ),
@@ -975,6 +1002,23 @@ namespace Rock.Workflow.Action
             try
             {
                 var transactionDetail = CreateFinancialTransaction( configuration, paymentData, rockContext, requestContext );
+
+                /*
+                    10/16/26 - JMH
+
+                    A hosted gateway can charge the token before this action runs,
+                    so the charged amount can differ from the configured fee.
+                    The transaction is already saved and its Guid is logged for staff,
+                    but Result Transaction stays unset so nothing reads the fee as paid.
+
+                    Reason: Don't mark a fixed fee as paid when a different amount was charged.
+                */
+                if ( configuredAmount.HasValue && transactionDetail.Amount != configuredAmount.Value )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Workflow Payment Entry amount mismatch on action {action.Id}: expected {configuredAmount.Value}, transaction {transactionDetail.Transaction?.Guid} has {transactionDetail.Amount}." ) );
+
+                    return CreateErrorResult( "The amount paid does not match the amount due. Please contact us for assistance." );
+                }
 
                 if ( configuration.ResultTransactionAttribute.HasValue )
                 {
