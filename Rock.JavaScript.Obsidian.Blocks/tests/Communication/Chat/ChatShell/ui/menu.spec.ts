@@ -170,8 +170,9 @@ describe("the menu", () => {
     });
 });
 
-// How a focused item looks. jsdom computes no styles, so this reads the menu's own rules: it shows
-// the item never hides the chat's focus ring, not that a browser draws it; a browser check proves that.
+// How a focused item looks. jsdom computes no styles, so these read the menu's own rules: they show
+// the item never hides the chat's focus ring and is tinted only under a keyboard's focus or the
+// pointer, not that a browser draws either; a browser check proves that.
 describe("the menu's focused item", () => {
     const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/menu.partial.obs"), "utf8");
     const styles = (/<style[^>]*>([\s\S]*?)<\/style>/.exec(source)?.[1] ?? "").replace(/\/\*[\s\S]*?\*\//g, "");
@@ -183,5 +184,12 @@ describe("the menu's focused item", () => {
 
     test("keeps the chat's focus ring: no rule takes the outline away", () => {
         expect(itemRules.filter(rule => /outline\s*:\s*(none|0)/.test(rule.body)).map(rule => rule.selector)).toEqual([]);
+    });
+
+    test("is tinted under the keyboard's focus and the pointer, not under any focus", () => {
+        const tinted = itemRules.filter(rule => /background\s*:\s*var\(--chat-hover\)/.test(rule.body)).flatMap(rule => rule.selector.split(",").map(part => part.trim()));
+
+        expect(tinted).toEqual(expect.arrayContaining([".chat-menu-item:hover", ".chat-menu-item:focus-visible"]));
+        expect(tinted.filter(selector => /:focus(?!-visible)/.test(selector))).toEqual([]);
     });
 });

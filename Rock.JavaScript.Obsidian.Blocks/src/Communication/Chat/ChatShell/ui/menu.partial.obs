@@ -95,9 +95,17 @@
     background: var(--chat-line);
 }
 
-/* No outline of its own: a focused item takes the chat's focus ring, as every control does. */
-.chat-menu-item:hover,
-.chat-menu-item:focus {
+/*
+    No outline of its own: a focused item takes the chat's focus ring, as every control does. The
+    tint follows the keyboard's focus, not any focus, so a menu opened by a click shows no item
+    picked out before the pointer or a key moves. Two rules, since a browser with no :focus-visible
+    drops any rule that names it, and the hover would go with it.
+*/
+.chat-menu-item:hover {
+    background: var(--chat-hover);
+}
+
+.chat-menu-item:focus-visible {
     background: var(--chat-hover);
 }
 
