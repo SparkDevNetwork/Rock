@@ -124,9 +124,42 @@ namespace Rock.Rest
                         service.Add( entity );
                     }
 
+                    /*
+                        10/15/2026 - MSE
+
+                        Some IsAuthorized overrides grant EDIT to the record's author (for example
+                        Note). The entity here is the row that will be saved and holds the posted
+                        Id and audit values, so a caller could name themselves as author to skip
+                        the parent check. Clear the Id and audit values for the check, then put the
+                        posted audit values back so the saved row is the same as before this change.
+                        The Guid is not changed because this is the saved row and clients may post it.
+
+                        Reason: Do not let posted audit values grant EDIT on a new record.
+                    */
+                    entity.Id = 0;
+
+                    var auditModel = entity as IModel;
+                    var postedCreatedByPersonAliasId = auditModel?.CreatedByPersonAliasId;
+                    var postedModifiedByPersonAliasId = auditModel?.ModifiedByPersonAliasId;
+                    var postedModifiedAuditValuesAlreadyUpdated = auditModel?.ModifiedAuditValuesAlreadyUpdated ?? false;
+
+                    if ( auditModel != null )
+                    {
+                        auditModel.CreatedByPersonAliasId = null;
+                        auditModel.ModifiedByPersonAliasId = null;
+                        auditModel.ModifiedAuditValuesAlreadyUpdated = false;
+                    }
+
                     if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
                     {
                         return authorizationResult;
+                    }
+
+                    if ( auditModel != null )
+                    {
+                        auditModel.CreatedByPersonAliasId = postedCreatedByPersonAliasId;
+                        auditModel.ModifiedByPersonAliasId = postedModifiedByPersonAliasId;
+                        auditModel.ModifiedAuditValuesAlreadyUpdated = postedModifiedAuditValuesAlreadyUpdated;
                     }
 
                     if ( CheckIsSystem( entity, out var isSystemResult ) )
