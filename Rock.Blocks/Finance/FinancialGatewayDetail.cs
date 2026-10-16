@@ -229,7 +229,21 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true, attributeFilter: IsAttributeIncluded );
+            /*
+                10/15/2026 - MSE
+
+                Gateway attributes hold the payment processor credentials (for example
+                the NMI Security Key and the PayFlow Pro password). Those attributes have
+                no security of their own, so VIEW on them falls through to the global
+                default. The view panel never shows them, so they are only sent to
+                people who can edit the gateway.
+
+                Reason: Keep gateway credentials away from people who can only view the gateway.
+            */
+            if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true, attributeFilter: IsAttributeIncluded );
+            }
 
             return bag;
         }
