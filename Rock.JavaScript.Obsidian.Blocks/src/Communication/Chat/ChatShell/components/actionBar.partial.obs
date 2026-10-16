@@ -150,26 +150,51 @@
     }
 }
 
-/* Shows by fading in and rising 3px home; hides by fading out faster, out of the pointer's way. */
+/*
+    Shows by fading in and rising 3px home; hides by fading out faster, out of the pointer's way.
+    Animations rather than transitions, so each starts the moment the rest or the grace runs out:
+    a transition waits two frames for its starting class to be swapped, and the bar came late.
+*/
 .chat-tools-enter-active {
-    transition: opacity var(--chat-d-tools-show) linear, transform var(--chat-d-tools-move) var(--chat-ease-in);
+    animation: chat-tools-fade-in var(--chat-d-tools-show) linear, chat-tools-rise-in var(--chat-d-tools-move) var(--chat-ease-in);
 }
 
 .chat-tools-leave-active {
     pointer-events: none;
-    transition: opacity var(--chat-d-tools-hide) linear, transform var(--chat-d-tools-move) var(--chat-ease-in);
-}
-
-.chat-tools-enter-from,
-.chat-tools-leave-to {
-    opacity: 0;
-    transform: translateY(3px);
+    animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards, chat-tools-sink-out var(--chat-d-tools-move) var(--chat-ease-in) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .chat-tools-enter-from,
-    .chat-tools-leave-to {
-        transform: none;
+    .chat-tools-enter-active {
+        animation: chat-tools-fade-in var(--chat-d-tools-show) linear;
+    }
+
+    .chat-tools-leave-active {
+        animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards;
+    }
+}
+
+@keyframes chat-tools-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-tools-rise-in {
+    from {
+        transform: translateY(3px);
+    }
+}
+
+@keyframes chat-tools-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-tools-sink-out {
+    to {
+        transform: translateY(3px);
     }
 }
 </style>
