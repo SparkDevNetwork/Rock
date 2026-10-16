@@ -385,45 +385,40 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, StyleValue, watch, watchEffect } from "vue";
-    import { createClient } from "@Obsidian/Libs/supabase";
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, StyleValue, watch, watchEffect } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ChatBirthdateResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatBirthdateResultBag";
-    import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
-    import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMembershipResultBag";
     import { ChatShellInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellInitializationBox";
     import { ChatShellSessionBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellSessionBag";
     import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
     import { birthdateOutcome, isBirthdatePromptShown } from "./ChatShell/birthdate.partial";
+    import { createBrowserShellBuilder } from "./ChatShell/browserShell.partial";
     import BirthdatePrompt from "./ChatShell/components/birthdatePrompt.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
-    import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
-    import EmojiPicker, { PickerSource } from "./ChatShell/components/emojiPicker.partial.obs";
+    import { DirectMessageDraft, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
+    import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
-    import { ReactionHost } from "./ChatShell/composables/useReactions.partial";
+    import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { ReplyLanding, useJump } from "./ChatShell/composables/useJump.partial";
     import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
-    import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
+    import { refusalMessage } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
     import { ChatError, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
-
-    /** The reaction picker while it is open: the message it reacts to and what it is placed beside. */
-    type ReactionPicker = { key: number, channelId: string, message: TimelineMessage, anchor: HTMLElement };
 
     /** What the panel column can hold: the threads list, or one thread in its drawer. */
     type PanelKind = "threads" | "thread";
@@ -446,6 +441,16 @@
     const personPhotoUrl = ref(config.session?.personPhotoUrl ?? null);
 
     const organizationName = config.organizationName ?? "";
+
+    const buildShell = createBrowserShellBuilder({
+        linkedChannelId: config.channelGuid ?? null,
+        areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
+        // one toast per code, the newest kept, so a second copy or delete restarts its toast
+        notify: notice => {
+            notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
+        },
+        invokeBlockAction
+    });
 
     // Replaced, not reloaded, when a birthdate lets the person in: the save answers with the
     // session a fresh page load would have had.
@@ -525,53 +530,20 @@
     // supports has no container queries and a narrow zone of a wide window is still narrow.
     let resizeObserver: ResizeObserver | null = null;
 
-    /** The cookie Rock reads at sign-out to take this browser out of push. */
-    const pushCookieName = "rock_chat_push";
-
-    let firebaseAppInstance: unknown = null;
-
     /**
      * Whether the open conversation replaced another, so its feed rises into view. The first one
      * the page draws, or one a New message draft becomes, is simply there.
      */
     const isFeedEntering = ref(false);
 
-    /** The reaction picker while it is open; each opening is drawn afresh, so it is placed and pops in again. */
-    const reactionPicker = shallowRef<ReactionPicker | null>(null);
-    let reactionPickerCount = 0;
-
-    /**
-     * What every message row reads of the reactions. Built once and read through, so a row follows
-     * the shell a birthdate replaces and the picker opening, without every row being handed anew.
-     */
-    const reactionHost = reactive<ReactionHost>({
-        get favorites() {
-            return shell.value.reactions.favorites;
-        },
-        reactorNames: (messageId, reaction) => shell.value.reactions.reactorNames(messageId, reaction),
-        get pickerAnchor() {
-            return reactionPicker.value?.anchor ?? null;
-        }
-    });
+    /** The one reaction picker open at a time, and what every message row and emoji picker reads of the reactions. */
+    const { reactionPicker, reactionHost, emojiSource, pickerMine, openReactionPicker, closeReactionPicker, onPickerReact } = useReactionPicker(shell, organizationName);
 
     // #endregion Values
 
     // #region Computed Values
 
     const activeChannelId = computed((): string | null => shell.value.state.activeChannelId);
-
-    /** What every emoji picker draws: the favorites at once, the catalog once fetched, the recents, the church's name. */
-    const emojiSource = computed((): PickerSource => ({
-        favorites: shell.value.reactions.favorites,
-        catalog: shell.value.reactions.state.catalog,
-        recents: shell.value.reactions.state.recents,
-        churchName: organizationName
-    }));
-
-    /** The emoji the reader reacted to the picker's message with, which the picker marks as theirs. */
-    const pickerMine = computed((): string[] => (reactionPicker.value?.message.reactions ?? [])
-        .filter(reaction => reaction.mine)
-        .map(reaction => reaction.code));
 
     // Created here rather than with the values, since it reads the open conversation above.
     const { landingReplyId, landingMessageId, landOnReply, onJump } = useJump({
@@ -1044,17 +1016,6 @@
         }
     }
 
-    /** A choice in the reaction picker toggles the reader's reaction and is kept as recently used. */
-    function onPickerReact(code: string): void {
-        const picker = reactionPicker.value;
-        if (!picker) {
-            return;
-        }
-
-        shell.value.reactions.recordRecent(code);
-        void shell.value.reactions.toggleCode(picker.channelId, picker.message.id, code);
-    }
-
     /** A composer's picker opened: its categories are fetched once for the page. */
     function onEmojiPickerOpen(): void {
         void shell.value.reactions.loadCatalog();
@@ -1110,22 +1071,6 @@
     // #endregion Event Handlers
 
     // #region Functions
-
-    /**
-     * Opens the reaction picker for a message, closing any other first, and fetches the catalog it
-     * draws. The message is held as the page holds it, so its marks follow while the picker is up.
-     */
-    function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement): void {
-        closeReactionPicker();
-        anchor.setAttribute("aria-expanded", "true");
-        reactionPicker.value = { key: ++reactionPickerCount, channelId, message: reactive(message) as TimelineMessage, anchor };
-        void shell.value.reactions.loadCatalog();
-    }
-
-    function closeReactionPicker(): void {
-        reactionPicker.value?.anchor.setAttribute("aria-expanded", "false");
-        reactionPicker.value = null;
-    }
 
     /** The message open in the editor when it belongs to a conversation, else null. */
     function editingIdIn(channelId: string | null): number | null {
@@ -1279,99 +1224,6 @@
         }, panelSlideMs());
     }
 
-    /** Builds the shell for a session, as the page load described it or a birthdate save did. */
-    function buildShell(session: ShellOptions["session"]): ReturnType<typeof createChatShell> {
-        return createChatShell({
-            session,
-            linkedChannelId: config.channelGuid ?? null,
-            // one toast per code, the newest kept, so a second copy or delete restarts its toast
-            notify: notice => {
-                notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
-            },
-            areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
-            mintChurchToken: async () => {
-                const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
-                return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
-            },
-            startDirectMessage: async personAliasGuids => {
-                const result = await invokeBlockAction<DoorResult>("StartDirectMessage", { personAliasGuids });
-                if (result.isSuccess && result.data) {
-                    return result.data;
-                }
-
-                // Rock did not answer with a door result at all, so there is no sentence of its
-                // own to show and the draft stays for the person to try again.
-                return {
-                    code: "door.unavailable",
-                    channelGuid: null,
-                    isPending: false,
-                    message: result.errorMessage ?? "The conversation could not be started. Try again.",
-                    personAliasGuid: null
-                };
-            },
-            joinChannel: async channelId => {
-                const result = await invokeBlockAction<ChatMembershipResultBag>("JoinChannel", { channelGuid: channelId });
-                if (result.isSuccess && result.data) {
-                    return result.data;
-                }
-
-                // Rock did not answer with a door result, so the message fails and can be sent again.
-                return { code: "door.unavailable", message: result.errorMessage ?? null, isPending: false };
-            },
-            createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
-            fetch: (url, init) => window.fetch(url, init),
-            storage: safeLocalStorage(),
-            pageTargets: { document, window },
-            push: browserPush(),
-            mark: name => {
-                try {
-                    performance.mark(name);
-                }
-                catch {
-                    // Intentionally ignored: timing marks are for measurement only.
-                }
-            }
-        });
-    }
-
-    /** This browser's web push, or undefined where it has none. */
-    function browserPush(): ShellOptions["push"] {
-        if (!("serviceWorker" in navigator) || !("Notification" in window) || !("PushManager" in window)) {
-            return undefined;
-        }
-
-        return {
-            pagePath: window.location.pathname,
-            permission: () => Notification.permission,
-            requestPermission: () => Notification.requestPermission(),
-            // Its own folder as its scope, so it never takes the site root from a worker a
-            // church's theme registers there.
-            registerWorker: pagePath => navigator.serviceWorker.register(
-                `/Scripts/Rock/Chat/chatPushWorker.js?page=${encodeURIComponent(pagePath)}`,
-                { scope: "/Scripts/Rock/Chat/" }),
-            getToken: async (web, vapidKey, registration) => {
-                const firebase = await import("@Obsidian/Libs/firebase");
-                return firebase.getToken(firebase.getMessaging(firebaseApp(firebase, web)), {
-                    vapidKey,
-                    serviceWorkerRegistration: registration as ServiceWorkerRegistration
-                });
-            },
-            writeCookie: token => {
-                const secure = window.location.protocol === "https:" ? "; Secure" : "";
-                // a year, a choice: the block writes it again on every load while push is on
-                document.cookie = token
-                    ? `${pushCookieName}=${encodeURIComponent(token)}; path=/; max-age=31536000; SameSite=Lax${secure}`
-                    : `${pushCookieName}=; path=/; max-age=0; SameSite=Lax${secure}`;
-            }
-        };
-    }
-
-    /** The block's one Firebase app, made on the first token and reused for every later one. */
-    function firebaseApp(firebase: typeof import("@Obsidian/Libs/firebase"), web: Record<string, unknown>): ReturnType<typeof firebase.initializeApp> {
-        firebaseAppInstance ??= firebase.initializeApp(web, "rock-chat");
-        return firebaseAppInstance as ReturnType<typeof firebase.initializeApp>;
-    }
-
     /** The person's name as the chat shows it, from the session Rock opened. */
     function fullName(session: ChatShellSessionBag | null | undefined): string {
         return [session?.personNickName, session?.personLastName].filter(part => !!part).join(" ");
@@ -1395,16 +1247,6 @@
         }
 
         return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
-    }
-
-    /** The browser's local storage, or null where the browser blocks it. */
-    function safeLocalStorage(): Storage | null {
-        try {
-            return window.localStorage;
-        }
-        catch {
-            return null;
-        }
     }
 
     // #endregion Functions
