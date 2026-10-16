@@ -96,6 +96,24 @@ namespace Rock.Rest
                     return BadRequest( "Item to be created cannot be null." );
                 }
 
+                /*
+                    10/15/2026 - MSE
+
+                    Adding the entity also inserts every related record it carries, and only the
+                    entity itself is authorized. The v2 formatter drops IEntity navigation
+                    properties but keeps related records of mapped types that are not IEntity
+                    (such as GroupLocationScheduleConfigs). It is also chosen by the request
+                    path, so a site in a virtual directory reads the body with the v1
+                    formatter, which keeps them all.
+
+                    Reason: Authorize every record a POST inserts.
+                */
+                var relatedPropertyName = ApiControllerBase.GetUntrackedRelatedEntityPropertyName( entity, null, null );
+                if ( relatedPropertyName != null )
+                {
+                    return BadRequest( $"Related records in '{relatedPropertyName}' cannot be saved with this item. Save them separately." );
+                }
+
                 if ( !entity.IsValid )
                 {
                     var errorMessage = entity.ValidationResults.Select( r => r.ErrorMessage ).JoinStrings( ", " );
@@ -390,6 +408,12 @@ namespace Rock.Rest
                                 Reason: Restricted callers must not write audit columns.
                             */
                             return BadRequest( $"Modifying property '{propKey}' is not permitted." );
+                        }
+                        else if ( ApiControllerBase.IsNavigationProperty( property ) )
+                        {
+                            // Related records are changed by their foreign key properties, so the
+                            // permission check below sees the change. See ApiController.Patch.
+                            return BadRequest( $"Cannot write '{property.Name}'" );
                         }
 
                         var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
