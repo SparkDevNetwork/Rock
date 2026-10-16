@@ -327,6 +327,8 @@
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensionsTests.cs" />
     <Compile Include="Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Communication\EmailAddressFieldValidatorTests.cs" />
+    <Compile Include="Communication\Chat\ChatHelperTests.cs" />
+    <Compile Include="Communication\Chat\StreamChatProviderTests.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensionTests.cs" />
     <Compile Include="Utility\RockColorTests.cs" />
