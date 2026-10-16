@@ -28,6 +28,8 @@ using Newtonsoft.Json.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -98,6 +100,11 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "74A94F70-73F0-41FD-AB4A-6104C971CEC2" )]
         public void Move( int id, Block block )
         {
+            if ( block == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
             var person = GetPerson();
 
             SetProxyCreation( true );
@@ -110,6 +117,23 @@ namespace Rock.Rest.Controllers
             }
 
             CheckCanEdit( model, person );
+
+            /*
+                10/16/2026 - MSE
+
+                Moving a block always places it under a zone, page, layout or site. The Rock UI
+                only shows the move icon to people who can administrate the block and its page,
+                so EDIT on the block is not enough here. The person must also be able to
+                administrate the page, layout or site the block is moved to.
+
+                Reason: Moving a block is an administrator setting.
+            */
+            if ( !model.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            CheckCanPlaceBlock( block.PageId, block.LayoutId, block.SiteId, person );
 
             model.Zone = block.Zone;
             model.PageId = block.PageId;
@@ -126,6 +150,100 @@ namespace Rock.Rest.Controllers
             {
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void CheckCanEditAfterUpdate( Block entity )
+        {
+            base.CheckCanEditAfterUpdate( entity );
+
+            /*
+                10/16/2026 - MSE
+
+                A block's Pre and Post HTML are rendered as Lava with all commands enabled, and
+                its zone, page, layout and site decide where it shows. The Rock UI only lets
+                people who can administrate the block change these, but v1 PUT and PATCH only
+                required EDIT. Require ADMINISTRATE on the stored block for every update, and
+                ADMINISTRATE on the new page, layout or site when the block is moved.
+
+                Reason: Block settings are administrator settings.
+            */
+            var person = GetPerson();
+            var storedBlock = BlockCache.Get( entity.Id );
+            if ( storedBlock == null || !storedBlock.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var entry = Service.Context.Entry( entity );
+            if ( entry.Property( b => b.PageId ).OriginalValue != entity.PageId
+                || entry.Property( b => b.LayoutId ).OriginalValue != entity.LayoutId
+                || entry.Property( b => b.SiteId ).OriginalValue != entity.SiteId )
+            {
+                CheckCanPlaceBlock( entity.PageId, entity.LayoutId, entity.SiteId, person );
+            }
+        }
+
+        /// <summary>
+        /// Checks that the person can place a block on the specified page, layout or site.
+        /// </summary>
+        /// <param name="pageId">The page identifier the block will be placed on.</param>
+        /// <param name="layoutId">The layout identifier the block will be placed on.</param>
+        /// <param name="siteId">The site identifier the block will be placed on.</param>
+        /// <param name="person">The person placing the block.</param>
+        /// <exception cref="HttpResponseException"></exception>
+        private void CheckCanPlaceBlock( int? pageId, int? layoutId, int? siteId, Person person )
+        {
+            /*
+                10/16/2026 - MSE
+
+                A block without a page, layout or site, or with more than one, has no single
+                parent to authorize against and would fall back to the global default. A block
+                may only be placed where the person can administrate, which matches the page
+                ADMINISTRATE the Rock UI requires to add or move blocks.
+
+                Reason: Authorize the destination of a block like the Rock UI does.
+            */
+            if ( !HasSingleBlockParent( pageId, layoutId, siteId ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
+            ISecured destination;
+            if ( pageId.HasValue )
+            {
+                destination = PageCache.Get( pageId.Value );
+            }
+            else if ( layoutId.HasValue )
+            {
+                destination = LayoutCache.Get( layoutId.Value );
+            }
+            else
+            {
+                destination = SiteCache.Get( siteId.Value );
+            }
+
+            if ( destination == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
+            if ( !destination.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether exactly one of the page, layout or site identifiers has a value.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <param name="layoutId">The layout identifier.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns><c>true</c> if exactly one identifier has a value; otherwise <c>false</c>.</returns>
+        internal static bool HasSingleBlockParent( int? pageId, int? layoutId, int? siteId )
+        {
+            return ( pageId.HasValue ? 1 : 0 ) + ( layoutId.HasValue ? 1 : 0 ) + ( siteId.HasValue ? 1 : 0 ) == 1;
         }
 
         /// <summary>
