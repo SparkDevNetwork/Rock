@@ -272,6 +272,25 @@ namespace Rock.WebStartup
             RegisterHttpModules();
             ShowDebugTimingMessage( "Register HTTP Modules" );
 
+            /*
+                10/15/2026 - MSE
+
+                Load the AI provider container so its component attributes
+                are updated and any plain text secret keys are encrypted.
+
+                Reason: Keep AI provider secret keys encrypted at rest.
+            */
+            try
+            {
+                LogStartupMessage( "Loading AI Providers" );
+                _ = Rock.AI.Provider.AIProviderContainer.Instance;
+                ShowDebugTimingMessage( "Load AI Providers" );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
             // Initialize the Lava engine.
             LogStartupMessage( "Initializing Lava Engine" );
             InitializeLava();
