@@ -1,10 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- The row under a message: the thread pill first, then the chips, then the add chip. -->
     <div v-if="isRowDrawn()"
          class="chat-reacts"
          :class="{ 'is-community': isCommunity }"
          data-testid="message-reactions">
+        <!--
+            The row under a message: the thread pill first, then the chips, then the add chip.
+            Kept inside the row, since a comment beside it would make a fragment root and the
+            message row's placement rules reach a child only through its single root element.
+        -->
         <slot />
         <template v-if="isChipsDrawn">
             <button v-for="reaction in reactions"
