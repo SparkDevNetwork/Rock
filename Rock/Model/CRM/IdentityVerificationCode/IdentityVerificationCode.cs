@@ -52,8 +52,20 @@ namespace Rock.Model
         /// <value>
         /// The code.
         /// </value>
+        /*
+            10/15/2026 - MSE
+
+            The code is a live sign-in secret that must only reach the
+            individual it was sent to, so it is never serialized, rendered
+            by Lava or shown in reporting. Server code reads the property
+            directly.
+
+            Reason: Keep sign-in verification codes private.
+        */
         [Required]
-        [DataMember( IsRequired = true )]
+        [IgnoreDataMember]
+        [Newtonsoft.Json.JsonIgnore]
+        [HideFromReporting]
         [MaxLength( 6 )]
         [Index( IsUnique = true )]
         [StringValidation( StringValidationProfile.PlainText )]
