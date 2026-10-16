@@ -18,6 +18,21 @@
                      data-testid="action-sheet"
                      @keydown="onKeydown">
                     <div class="chat-sheet-grab" aria-hidden="true"></div>
+                    <!-- The phone has no hover bar, so the sheet carries the quick reactions, first, at a finger's size. -->
+                    <div class="chat-sheet-react" data-testid="action-sheet-reactions">
+                        <button v-for="favorite in quickReactions"
+                                :key="favorite.code"
+                                type="button"
+                                :aria-pressed="isMine(favorite.code) ? 'true' : 'false'"
+                                :aria-label="`${isMine(favorite.code) ? 'Remove your' : 'React with'} ${favorite.label}`"
+                                @click="onReact(favorite.code)">
+                            <img v-if="!favorite.emoji && favorite.image_url" class="chat-sheet-glyph" :src="favorite.image_url" alt="" />
+                            <span v-else class="chat-sheet-glyph" aria-hidden="true">{{ favorite.emoji }}</span>
+                        </button>
+                        <button type="button" class="is-more" aria-label="More reactions" aria-haspopup="dialog" @click="onMoreReactions">
+                            <Icon name="plus" />
+                        </button>
+                    </div>
                     <button v-for="item in items"
                             :key="item.key"
                             type="button"
@@ -70,6 +85,45 @@
     margin: 2px auto 12px;
     background: var(--chat-line-strong);
     border-radius: 3px;
+}
+
+/* Six reactions spread across the sheet as 44px circles, over a rule that sets them apart from the items. */
+.chat-sheet-react {
+    display: flex;
+    gap: 4px;
+    justify-content: space-between;
+    padding: 0 2px 10px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-sheet-react button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: 24px;
+    line-height: 1;
+    background: var(--chat-sidebar);
+    border: 0;
+    border-radius: 50%;
+}
+
+.chat-sheet-react button[aria-pressed="true"] {
+    background: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1.5px var(--chat-reaction-mine-line);
+}
+
+.chat-sheet-react button.is-more {
+    color: var(--chat-icon);
+}
+
+/* A church's image emoji is held to the glyph's box. */
+img.chat-sheet-glyph {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
 }
 
 /* The menu's item at a finger's size: 48px tall, 15px text. */
@@ -136,12 +190,12 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref, toRaw, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
-    import { TimelineMessage } from "../types.partial";
+    import { ReactionFavorite, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -172,6 +226,12 @@
         isInThread: {
             type: Boolean,
             default: false
+        },
+
+        /** The church's favorites, in order; the first six are drawn. */
+        favorites: {
+            type: Array as PropType<ReactionFavorite[]>,
+            default: () => []
         }
     });
 
@@ -182,6 +242,8 @@
         (e: "copy", message: TimelineMessage): void;
         (e: "delete", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
+        (e: "react", message: TimelineMessage, code: string): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement): void;
         (e: "close"): void;
     }>();
 
@@ -209,7 +271,10 @@
 
     // #region Computed Values
 
-    /** The bar's and the menu's choices in one list, with no reactions: those are a later surface. */
+    /** The first six favorites, the quick reactions a phone's sheet has room for. */
+    const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, 6));
+
+    /** The bar's and the menu's choices in one list, under the row of reactions. */
     const items = computed((): SheetItem[] => {
         const message = props.message;
         const list: SheetItem[] = [];
@@ -256,9 +321,41 @@
         }
     }
 
+    /** A reaction toggles the reader's own and closes the sheet, as the prototype does. */
+    function onReact(code: string): void {
+        const message = props.message;
+        if (!message) {
+            return;
+        }
+
+        emit("close");
+        emit("react", message, code);
+    }
+
+    /**
+     * The plus asks for the full picker. The sheet closes under it, so the row places the picker
+     * on the message rather than on this button.
+     */
+    function onMoreReactions(event: MouseEvent): void {
+        const message = props.message;
+        const anchor = event.currentTarget as HTMLElement;
+        if (!message) {
+            return;
+        }
+
+        // The message itself, not the props' view of it, so the host finds the very message it holds.
+        emit("close");
+        emit("openPicker", toRaw(message), anchor);
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Whether the reader reacted with an emoji, which presses its reaction. */
+    function isMine(code: string): boolean {
+        return !!props.message?.reactions?.some(reaction => reaction.code === code && reaction.mine);
+    }
 
     /** Runs an item as the bar would and closes the sheet; its handler moves focus where it leads. */
     function choose(key: string): void {
@@ -315,7 +412,7 @@
 
     // #region Watchers
 
-    // Opened with focus on its first item, as a dialog takes focus into itself.
+    // Opened with focus on its first reaction, as a dialog takes focus into itself.
     watch(() => props.isOpen, async isOpen => {
         if (isOpen) {
             await nextTick();
