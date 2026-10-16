@@ -337,10 +337,14 @@ async function settle(): Promise<void> {
     await Promise.resolve();
 }
 
-async function mountBlock(width: number): Promise<VueWrapper> {
+/**
+ * Mounts the block. A test about what happens while a part fades out keeps Vue's real Transition,
+ * which holds a leaving element on the page until the frames after its fade, as a browser does.
+ */
+async function mountBlock(width: number, isTransitionKept = false): Promise<VueWrapper> {
     blockWidth = width;
     const ChatShell = (await import("../../../../src/Communication/Chat/chatShell.obs")).default;
-    wrapper = mount(ChatShell, { attachTo: document.body });
+    wrapper = mount(ChatShell, { attachTo: document.body, global: isTransitionKept ? { stubs: { transition: false } } : {} });
     await settle();
     return wrapper;
 }
@@ -1576,5 +1580,82 @@ describe("edit in place", () => {
         await w.get("[data-testid='frame-panel'] [data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
 
         expect(actionsOf().startEditNewest).toHaveBeenCalledWith(team.channel_id, 40);
+    });
+});
+
+// The delete confirm, however it closes, gives focus to the message it was opened for, the
+// tombstone after a delete, since the More button that opened it left with its bar. The dialog
+// fades out, so its buttons are still on the page while focus is put back.
+describe("delete confirm", () => {
+    const messages = (): Record<string, jest.Mock> => mockShell!.messageActions as Record<string, jest.Mock>;
+
+    /** Opens the confirm on message 7 from a button that then leaves, as the action bar's More does. */
+    async function openConfirm(): Promise<{ w: VueWrapper, row: Element }> {
+        const w = await mountBlock(1200, true);
+        await openRow(w, team.channel_id);
+        const target = storedMessage(7);
+        timelineOf(team.channel_id).messages.push(target);
+        const actions = mockShell!.messageActions as Record<string, unknown>;
+        const state = actions.state as { confirmingDelete: unknown };
+        actions.cancelDelete = jest.fn(() => {
+            state.confirmingDelete = null;
+        });
+        actions.confirmDelete = jest.fn(async () => {
+            state.confirmingDelete = null;
+            target.deleted_at = new Date().toISOString();
+            return true;
+        });
+        await settle();
+
+        const more = document.createElement("button");
+        shellRoot(w).appendChild(more);
+        more.focus();
+        state.confirmingDelete = { channelId: team.channel_id, message: target };
+        await settle();
+        more.remove();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='dialog-cancel']").element);
+        return { w, row: w.get("[data-testid='frame-main'] [data-message-id='7']").element };
+    }
+
+    /** Lets the dialog's fade finish and the frames after it run, as a browser would. */
+    async function fadeOut(): Promise<void> {
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 50));
+        await settle();
+    }
+
+    test("Escape gives focus to the message", async () => {
+        const { w, row } = await openConfirm();
+
+        await w.get("[data-testid='dialog']").trigger("keydown", { key: "Escape" });
+        await fadeOut();
+
+        expect(messages().cancelDelete).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(row);
+    });
+
+    test("Cancel gives focus to the message", async () => {
+        const { w, row } = await openConfirm();
+
+        await w.get("[data-testid='dialog-cancel']").trigger("click");
+        await fadeOut();
+
+        expect(messages().cancelDelete).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(row);
+    });
+
+    test("Delete pressed from the keyboard gives focus to the message's tombstone", async () => {
+        const { w } = await openConfirm();
+        const confirm = w.get("[data-testid='dialog-confirm']").element as HTMLElement;
+        confirm.focus();
+
+        // A key on a focused button reaches it as a click.
+        await w.get("[data-testid='dialog-confirm']").trigger("click");
+        await fadeOut();
+
+        expect(messages().confirmDelete).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
+        expect(document.activeElement).not.toBe(document.body);
     });
 });

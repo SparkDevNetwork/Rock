@@ -1063,12 +1063,16 @@
 
     /**
      * The dialog gives focus back to the More button that opened it, but that button left with its
-     * bar once focus moved into the dialog, so focus goes to the message itself instead.
+     * bar once focus moved into the dialog, so focus goes to the message itself instead. Focus still
+     * on the dialog's own buttons is not kept: the dialog stays on the page while it fades out, and
+     * its leaving would drop focus to the page.
      */
     function refocusMessage(messageId: number | null): void {
         void nextTick(() => {
             const root = rootElement.value;
-            if (messageId === null || !root || root.contains(document.activeElement)) {
+            const active = document.activeElement;
+            const isFocusKept = !!active && root?.contains(active) && !active.closest("[role='dialog']");
+            if (messageId === null || !root || isFocusKept) {
                 return;
             }
 
