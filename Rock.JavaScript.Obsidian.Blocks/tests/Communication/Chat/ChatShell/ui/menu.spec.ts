@@ -18,6 +18,8 @@
 // able to open it, move through it and leave it without losing their place, so focus goes to the
 // first item on open, the arrows cycle, and Escape closes it and puts focus back on the button
 // that opened it. The button says whether its menu is open, which is how a screen reader knows.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import Menu from "../../../../../src/Communication/Chat/ChatShell/ui/menu.partial.obs";
@@ -165,5 +167,21 @@ describe("the menu", () => {
 
         expect(wrapper!.emitted("select")).toEqual([["leave"]]);
         expect(menu()).toBeNull();
+    });
+});
+
+// How a focused item looks. jsdom computes no styles, so this reads the menu's own rules: it shows
+// the item never hides the chat's focus ring, not that a browser draws it; a browser check proves that.
+describe("the menu's focused item", () => {
+    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/menu.partial.obs"), "utf8");
+    const styles = (/<style[^>]*>([\s\S]*?)<\/style>/.exec(source)?.[1] ?? "").replace(/\/\*[\s\S]*?\*\//g, "");
+
+    /** Each rule that names a menu item, as its selector and its declarations. */
+    const itemRules = Array.from(styles.matchAll(/([^{}]+)\{([^{}]*)\}/g))
+        .map(m => ({ selector: m[1].trim().replace(/\s+/g, " "), body: m[2] }))
+        .filter(rule => rule.selector.includes(".chat-menu-item"));
+
+    test("keeps the chat's focus ring: no rule takes the outline away", () => {
+        expect(itemRules.filter(rule => /outline\s*:\s*(none|0)/.test(rule.body)).map(rule => rule.selector)).toEqual([]);
     });
 });

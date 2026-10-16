@@ -95,10 +95,10 @@
     background: var(--chat-line);
 }
 
+/* No outline of its own: a focused item takes the chat's focus ring, as every control does. */
 .chat-menu-item:hover,
 .chat-menu-item:focus {
     background: var(--chat-hover);
-    outline: none;
 }
 
 .chat-menu-item.is-danger,
