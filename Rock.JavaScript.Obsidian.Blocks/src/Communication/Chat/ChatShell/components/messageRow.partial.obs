@@ -9,6 +9,7 @@
          :data-status="pending ? pending.status : undefined"
          :data-state="state"
          :data-position="position"
+         :data-hot-id="isBarOffered ? message?.id : undefined"
          @animationend="onAnimationEnd">
 
         <!-- A system line: quiet, unattributed, centred in bubbles and in the text column in Community. -->
@@ -86,6 +87,8 @@
                     <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
                 </div>
             </div>
+            <!-- Docked on the row's top right, so it is placed against the row itself. -->
+            <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
         </template>
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
@@ -102,12 +105,16 @@
                 <span v-if="!isOwn" class="chat-msg-face">
                     <Avatar v-if="isLastOfGroup" :people="[face]" :size="34" />
                 </span>
-                <div class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading, 'is-flashing': isFlashing }">
-                    <div v-if="isAnnouncement" class="chat-bubble-label">
-                        <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                <!-- The bubble's box, which its bar is docked to the outer top corner of. -->
+                <div class="chat-bub-anchor">
+                    <div class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading, 'is-flashing': isFlashing }">
+                        <div v-if="isAnnouncement" class="chat-bubble-label">
+                            <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                        </div>
+                        <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
+                        <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
                     </div>
-                    <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                    <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
+                    <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
                 </div>
             </div>
             <!-- The row reactions will share, the thread pill first at the bubble's aligned edge. -->
@@ -276,6 +283,14 @@
     position: absolute;
     bottom: 0;
     left: 0;
+}
+
+/* Holds the bubble and its bar; the zero minimum lets both shrink to the line beside the face. */
+.chat-bub-anchor {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* The zero minimum lets the bubble shrink to the line beside the face rather than push past it. */
@@ -870,11 +885,13 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import ActionBar from "./actionBar.partial.obs";
     import MessageBody from "./messageBody.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
+    import { MessageAction, MessageActionRequest } from "../composables/useMessageActions.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
     import { DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -985,13 +1002,39 @@
         isInThread: {
             type: Boolean,
             default: false
+        },
+
+        /** The pointer is over this message, the column's one hot message, so its bar may show. */
+        isHot: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The pointer came straight from another message's bar, so this one shows without the rest. */
+        isHotSwapInstant: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A room the person has not joined, where its messages draw no bar. */
+        isPreviewing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message is open in the editor, which takes its bar's place. */
+        isEditing: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
-        (e: "openThread", rootId: number): void
+        (e: "openThread", rootId: number): void,
+        (e: "messageAction", request: MessageActionRequest): void,
+        (e: "barChange", messageId: number, isShown: boolean, isHeld: boolean): void
     }>();
 
     // #region Values
@@ -1208,6 +1251,27 @@
         return /\bnamed\b/.test(text) ? "pencil" : "info";
     });
 
+    /**
+     * Whether the row offers a bar at all: a stored message as the person reads it, on a pointer
+     * screen. A tombstone, a send on its way or failed, a system line and a block post have none,
+     * and a phone acts from a sheet instead.
+     */
+    const isBarOffered = computed((): boolean => !!props.message && !props.pending && !props.isPhone
+        && (state.value === "message" || state.value === "sent" || state.value === "unknown"));
+
+    /** The bar's props, the same in both looks, which place it in different spots. */
+    const barProps = computed(() => ({
+        message: props.message,
+        isOwn: props.isOwn,
+        isInThread: props.isInThread,
+        isPreviewing: props.isPreviewing,
+        isEditing: props.isEditing,
+        isPointerInside: props.isHot,
+        isSwapInstant: props.isHotSwapInstant,
+        isCommunity: layout.value === "community",
+        senderName: displayName.value
+    }));
+
     const rootClasses = computed((): Record<string, boolean> => ({
         [`is-${layout.value}`]: true,
         [`is-${state.value}`]: true,
@@ -1243,6 +1307,25 @@
             emit("openThread", props.message.parent_id);
         }
     }
+
+    /** Reply in thread opens the drawer on this root, as its thread pill does; the rest go up as one request. */
+    const barHandlers = {
+        replyInThread: (messageId: number): void => emit("openThread", messageId),
+        quote: (message: TimelineMessage): void => emit("messageAction", { kind: "quote", message }),
+        edit: (message: TimelineMessage): void => emit("messageAction", { kind: "edit", message }),
+        copy: (message: TimelineMessage): void => emit("messageAction", { kind: "copy", message }),
+        delete: (message: TimelineMessage): void => emit("messageAction", { kind: "delete", message }),
+        serverAction: (action: MessageAction): void => {
+            if (props.message) {
+                emit("messageAction", { kind: "server", message: props.message, action });
+            }
+        },
+        visibilityChange: (isShown: boolean, isHeld: boolean): void => {
+            if (props.message) {
+                emit("barChange", props.message.id, isShown, isHeld);
+            }
+        }
+    };
 
     /** The crossfade is a one-off, so the next edit can play it again. */
     function onAnimationEnd(event: AnimationEvent): void {

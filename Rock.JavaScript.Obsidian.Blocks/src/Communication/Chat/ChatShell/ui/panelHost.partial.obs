@@ -28,7 +28,7 @@
 
         <slot name="top" />
 
-        <div class="chat-panel-body">
+        <div class="chat-panel-body" data-chat-scroller>
             <slot />
         </div>
 

@@ -15,7 +15,18 @@
             <button type="button" class="chat-ghost-button" data-testid="mark-read" @click="onMarkRead">Mark as read</button>
         </div>
 
-        <div ref="feed" class="chat-feed" :class="{ 'is-entering': isEnteringDrawn }" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'" @scroll="onScroll">
+        <div ref="feed"
+             class="chat-feed"
+             :class="{ 'is-entering': isEnteringDrawn }"
+             data-testid="message-feed"
+             data-chat-scroller
+             :data-loaded="timeline.isLoaded ? 'true' : 'false'"
+             @scroll="onScroll"
+             @pointerover="hot.onPointerOver"
+             @pointerleave="hot.onPointerLeave"
+             @pointermove="hot.onPointerMove"
+             @focusin="hot.onFocusIn"
+             @focusout="hot.onFocusOut">
             <!-- Rows of the look the conversation will draw, so nothing jumps when the page lands. -->
             <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
                 <template v-if="layout === 'community'">
@@ -77,10 +88,16 @@
                                     :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                     :isArriving="isRowArriving(row.key, row.message)"
                                     :senderNames="senderNames"
+                                    :isHot="!!row.message && row.message.id === hot.hotId.value"
+                                    :isHotSwapInstant="hot.isSwapInstant.value"
+                                    :isPreviewing="isPreviewing"
+                                    :isEditing="!!row.message && row.message.id === editingId"
                                     :data-message-id="row.message?.id"
                                     @retry="emit('retry', $event)"
                                     @discard="emit('discard', $event)"
-                                    @openThread="emit('openThread', $event)" />
+                                    @openThread="emit('openThread', $event)"
+                                    @messageAction="emit('messageAction', $event)"
+                                    @barChange="hot.onBarChange" />
                     </div>
                 </template>
             </section>
@@ -500,6 +517,8 @@
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
+    import { useHotMessage } from "../composables/useHotMessage.partial";
+    import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { useSentHold } from "../composables/useSend.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
     import { PendingMessage, TimelineMessage } from "../types.partial";
@@ -564,6 +583,18 @@
         sentKeys: {
             type: Object as PropType<ReadonlySet<string>>,
             default: () => new Set<string>()
+        },
+
+        /** A room the person has not joined, where they may read but not act on a message. */
+        isPreviewing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message open in the editor, which draws no bar, or null. */
+        editingId: {
+            type: Number as PropType<number | null>,
+            default: null
         }
     });
 
@@ -574,12 +605,16 @@
         (e: "discard", localId: string): void,
         (e: "loadOlder"): void,
         (e: "markRead", messageId: number): void,
-        (e: "openThread", rootId: number): void
+        (e: "openThread", rootId: number): void,
+        (e: "messageAction", request: MessageActionRequest): void
     }>();
 
     // #region Values
 
     const feed = ref<HTMLElement | null>(null);
+
+    /** The one message whose action bar may show, the one the pointer is over. */
+    const hot = useHotMessage();
     let observer: IntersectionObserver | null = null;
     let dividerObserver: IntersectionObserver | null = null;
     let dividerElement: Element | null = null;
@@ -697,6 +732,7 @@
     // #region Event Handlers
 
     function onScroll(): void {
+        hot.onScroll();
         isScrolledUp.value = !isNearBottom();
         if (!isScrolledUp.value) {
             newCount.value = 0;

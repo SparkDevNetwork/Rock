@@ -19,7 +19,15 @@
             </button>
         </template>
 
-        <div ref="bodyElement" class="chat-th-body" :class="{ 'is-community': isChannel, 'is-phone': isPhone }" @animationend="onAnimationEnd">
+        <div ref="bodyElement"
+             class="chat-th-body"
+             :class="{ 'is-community': isChannel, 'is-phone': isPhone }"
+             @animationend="onAnimationEnd"
+             @pointerover="hot.onPointerOver"
+             @pointerleave="hot.onPointerLeave"
+             @pointermove="hot.onPointerMove"
+             @focusin="hot.onFocusIn"
+             @focusout="hot.onFocusOut">
             <div v-if="hasMore" ref="topElement" class="chat-th-topmark" aria-hidden="true"></div>
 
             <div v-if="error || olderError" class="chat-th-err" role="status" data-testid="thread-error">
@@ -66,9 +74,15 @@
                                 :senderNames="senderNames"
                                 :isInThread="true"
                                 :isFlashing="item.isReply && !!row.message && row.message.id === flashingId"
+                                :isHot="!!row.message && row.message.id === hot.hotId.value"
+                                :isHotSwapInstant="hot.isSwapInstant.value"
+                                :isPreviewing="isPreviewing"
+                                :isEditing="!!row.message && row.message.id === editingId"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @retry="emit('retry', $event)"
-                                @discard="emit('discard', $event)" />
+                                @discard="emit('discard', $event)"
+                                @messageAction="emit('messageAction', $event)"
+                                @barChange="hot.onBarChange" />
                 </div>
             </template>
         </div>
@@ -224,6 +238,8 @@
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import { useHotMessage } from "../composables/useHotMessage.partial";
+    import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
@@ -369,6 +385,18 @@
         isQuoteOwn: {
             type: Boolean,
             default: false
+        },
+
+        /** A room the person has not joined, where they may read but not act on a message. */
+        isPreviewing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message open in the editor, which draws no bar, or null. */
+        editingId: {
+            type: Number as PropType<number | null>,
+            default: null
         }
     });
 
@@ -381,13 +409,20 @@
         (e: "loadOlder"): void,
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
-        (e: "cancelQuote"): void
+        (e: "cancelQuote"): void,
+        (e: "messageAction", request: MessageActionRequest): void
     }>();
 
     // #region Values
 
     /** The design's wait before the composer takes focus, so the panel has started to open. */
     const focusDelayMs = 60;
+
+    /** The one reply whose action bar may show, the one the pointer is over. */
+    const hot = useHotMessage();
+
+    /** The panel host's scroller as it was when the drawer opened, which its scroll is heard on. */
+    let scrollElement: HTMLElement | null = null;
 
     const bodyElement = ref<HTMLElement | null>(null);
     const topElement = ref<HTMLElement | null>(null);
@@ -668,6 +703,10 @@
         observeTop();
         void place();
 
+        // A scroll does not bubble, and the scroller is the panel host's, outside this body.
+        scrollElement = scroller();
+        scrollElement?.addEventListener("scroll", hot.onScroll, { passive: true });
+
         // A phone never focuses the composer on its own, since the keyboard would rise over the
         // thread; its back chevron takes focus instead, because the pane that opened the drawer
         // has slid out of reach and would leave focus nowhere.
@@ -679,6 +718,7 @@
     });
 
     onBeforeUnmount(() => {
+        scrollElement?.removeEventListener("scroll", hot.onScroll);
         rowObserver?.disconnect();
         topObserver?.disconnect();
         if (focusTimer) {
