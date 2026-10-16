@@ -561,4 +561,29 @@ describe("the root's menu", () => {
         expect(items).toContain("Copy text");
         expect(items).not.toContain("Edit message");
     });
+
+    test("its Quote asks the drawer's owner to quote the root, as a conversation row's does", async () => {
+        const root = rootWith(3);
+        const w = draw({ root });
+        await nextTick();
+        await hoverRoot(w);
+
+        (w.get("[data-testid='action-bar'] button[aria-label='Quote']").element as HTMLElement).click();
+        await nextTick();
+
+        expect(w.emitted("messageAction")).toEqual([[{ kind: "quote", message: root }]]);
+    });
+
+    test("its Copy text asks the drawer's owner to copy the root, as a conversation row's does", async () => {
+        const root = rootWith(3);
+        const w = draw({ root });
+        await nextTick();
+        await rootMenu(w);
+
+        const copy = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(item => (item.textContent ?? "").includes("Copy text"));
+        copy?.click();
+        await nextTick();
+
+        expect(w.emitted("messageAction")).toEqual([[{ kind: "copy", message: root }]]);
+    });
 });
