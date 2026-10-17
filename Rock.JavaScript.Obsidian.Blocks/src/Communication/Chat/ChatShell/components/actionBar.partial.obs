@@ -242,6 +242,21 @@ img.chat-tool-glyph {
 }
 
 /*
+    A pressed quick reaction draws its ring with the same shadow the focus ring uses, so the two
+    are drawn together, the focus ring outside the pressed one, and a click's focus keeps only the
+    pressed ring.
+*/
+.chat-tools .chat-tool.is-glyph[aria-pressed="true"]:focus {
+    box-shadow: inset 0 0 0 1px var(--chat-brand-line), 0 0 0 2px var(--chat-raised), 0 0 0 4px var(--chat-brand-ring);
+}
+
+@supports selector(:focus-visible) {
+    .chat-tools .chat-tool.is-glyph[aria-pressed="true"]:focus:not(:focus-visible) {
+        box-shadow: inset 0 0 0 1px var(--chat-brand-line);
+    }
+}
+
+/*
     Shows by fading in and rising 3px home; hides by fading out faster, out of the pointer's way.
     Animations rather than transitions, so each starts the moment the rest or the grace runs out:
     a transition waits two frames for its starting class to be swapped, and the bar came late.
