@@ -243,6 +243,7 @@ afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     document.body.replaceChildren();
+    jest.useRealTimers();
 });
 
 // #endregion Helpers
@@ -489,6 +490,161 @@ describe("the tabs", () => {
 
         await press(all[all.length - 1], "Home");
         expect(document.activeElement).toBe(all[0]);
+    });
+
+    // jsdom lays nothing out, so each section is given a place 100px below the one before, in a
+    // body 200px high, as a browser would measure them.
+    function layOut(): HTMLElement {
+        const body = document.querySelector<HTMLElement>("[role='grid']") as HTMLElement;
+        Array.from(body.querySelectorAll<HTMLElement>("[data-sec]")).forEach((section, index) => {
+            Object.defineProperty(section, "offsetTop", { configurable: true, get: () => index * 100 });
+        });
+        Object.defineProperty(body, "clientHeight", { configurable: true, value: 200 });
+        Object.defineProperty(body, "scrollHeight", { configurable: true, value: 2000 });
+        return body;
+    }
+
+    async function scrollBody(body: HTMLElement, top: number): Promise<void> {
+        body.scrollTop = top;
+        body.dispatchEvent(new Event("scroll"));
+        await settle();
+    }
+
+    function selectedTab(): string | null {
+        return tabs().find(t => t.getAttribute("aria-selected") === "true")?.getAttribute("aria-label") ?? null;
+    }
+
+    test("follow the scroll: the section at the top, and the last at the end", async () => {
+        await open();
+        const body = layOut();
+
+        await scrollBody(body, 300);
+        expect(selectedTab()).toBe("Hearts and symbols");
+
+        await scrollBody(body, 108);
+        expect(selectedTab()).toBe("Smileys");
+
+        await scrollBody(body, 1800);
+        expect(selectedTab()).toBe("Objects");
+
+        await scrollBody(body, 0);
+        expect(selectedTab()).toBe("Cedar Hill favorites");
+    });
+
+    test("a tab chosen stays selected while its smooth scroll passes the sections between, then the tabs follow again", async () => {
+        jest.useFakeTimers();
+        await open();
+        const body = layOut();
+        body.scrollTo = jest.fn() as unknown as typeof body.scrollTo;
+        const nature = tabs().find(t => t.getAttribute("aria-label") === "Nature") as HTMLElement;
+
+        nature.click();
+        await settle();
+        await scrollBody(body, 100);
+        await scrollBody(body, 300);
+        expect(selectedTab()).toBe("Nature");
+
+        // The reader takes the scroll over before it arrives; once the hold is up the tabs follow them.
+        jest.advanceTimersByTime(450);
+        await scrollBody(body, 100);
+        expect(selectedTab()).toBe("Smileys");
+        jest.useRealTimers();
+    });
+
+    test("once a search is cleared, select the section the grid is back at", async () => {
+        await open();
+        const body = layOut();
+        await scrollBody(body, 300);
+        expect(selectedTab()).toBe("Hearts and symbols");
+
+        await typeSearch("c");
+        await typeSearch("");
+
+        expect(body.scrollTop).toBe(0);
+        expect(selectedTab()).toBe("Cedar Hill favorites");
+    });
+});
+
+describe("where it is placed", () => {
+    /** Opens the picker beside an anchor at a given box, in a window 1000 by 800. */
+    async function openAt(box: { left: number, top: number, width: number, height: number }, isOwn = false): Promise<HTMLElement> {
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1000 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
+        const row = document.createElement("div");
+        row.className = isOwn ? "chat-msg is-conversational is-own" : "chat-msg is-conversational";
+        anchor = document.createElement("button");
+        anchor.getBoundingClientRect = () => ({ ...box, x: box.left, y: box.top, right: box.left + box.width, bottom: box.top + box.height, toJSON: () => box }) as DOMRect;
+        row.append(anchor);
+        document.body.append(row);
+
+        const sized = jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-picker") ? 328 : 0;
+        });
+        const tall = jest.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) {
+            return this.classList.contains("chat-picker") ? 380 : 0;
+        });
+
+        wrapper = mount(EmojiPicker, {
+            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: [], anchor },
+            attachTo: document.body
+        });
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+        sized.mockRestore();
+        tall.mockRestore();
+
+        return document.querySelector<HTMLElement>(".chat-picker") as HTMLElement;
+    }
+
+    test("starts at another's message's anchor, and with no room there keeps that alignment and shifts inside the window", async () => {
+        const picker = await openAt({ left: 900, top: 500, width: 28, height: 28 });
+
+        expect(picker.style.left).toBe(`${1000 - 328 - 8}px`);
+        expect(picker.style.top).toBe(`${500 - 8 - 380}px`);
+    });
+
+    test("ends at the reader's own message's anchor, and with no room there keeps that alignment and shifts inside the window", async () => {
+        const picker = await openAt({ left: 20, top: 500, width: 28, height: 28 }, true);
+
+        expect(picker.style.left).toBe("8px");
+    });
+
+    test("with room, starts at the anchor's left edge", async () => {
+        const picker = await openAt({ left: 300, top: 500, width: 28, height: 28 });
+
+        expect(picker.style.left).toBe("300px");
+    });
+});
+
+describe("closing", () => {
+    test("closes once what opened it leaves the page, as when its row or drawer goes", async () => {
+        const w = await open();
+
+        anchor.remove();
+        await settle();
+
+        expect(w.emitted("close")).toHaveLength(1);
+    });
+
+    test("does not wait on a way out that a hidden tab never plays, closing after its length", async () => {
+        // jsdom plays no animations; this one never finishes, as in a tab the browser has hidden.
+        const prototype = HTMLElement.prototype as unknown as { getAnimations?: () => unknown[] };
+        prototype.getAnimations = () => [{ finished: new Promise(() => undefined) }];
+        try {
+            const w = await open();
+
+            await press(search(), "Escape");
+            expect(w.emitted("close")).toBeUndefined();
+
+            await new Promise(resolve => setTimeout(resolve, 200));
+            await settle();
+
+            expect(w.emitted("close")).toHaveLength(1);
+        }
+        finally {
+            delete prototype.getAnimations;
+        }
     });
 });
 

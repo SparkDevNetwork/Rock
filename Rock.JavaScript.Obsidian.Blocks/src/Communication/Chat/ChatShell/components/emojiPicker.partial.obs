@@ -443,6 +443,7 @@ img.chat-picker-prev {
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import Icon from "../ui/icon.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { CatalogEmoji, EmojiGlyph } from "../types.partial";
 
@@ -522,6 +523,12 @@ img.chat-picker-prev {
     const recentLimit = 8;
     const rowLength = 8;
 
+    /** How long a tab's own scroll holds the tabs still, as the design's picker holds them. */
+    const tabLockMs = 450;
+
+    /** The way out's length when the sheet is not on the page, the design's popover close. */
+    const fallbackOutMs = 130;
+
     /** Names this picker's grid, so its search can say which grid it controls. */
     const gridId = `chat-picker-grid-${getCurrentInstance()?.uid ?? 0}`;
 
@@ -547,10 +554,16 @@ img.chat-picker-prev {
     const isClosing = ref(false);
 
     /**
-     * The section a tab press is scrolling to. A smooth scroll passes the sections between, and the
-     * tabs would flicker through them on its way if the scroll were let move them.
+     * Set while a tab press's smooth scroll runs. It passes the sections between on its way, and
+     * the tabs would flicker through them if the scroll were let move them. Held for a time rather
+     * than until the scroll arrives, since a reader who takes the scroll over before it arrives
+     * must find the tabs following them again.
      */
-    let scrollTarget: number | null = null;
+    let isTabLocked = false;
+    let tabLockTimer: number | undefined;
+
+    /** Watches for what opened the picker leaving the page, which nothing else would tell it. */
+    let anchorObserver: MutationObserver | null = null;
 
     /** The chat's root, which the picker is drawn in; null where it is drawn alone. */
     const overlayHost = computed(() => overlayHostOf(props.anchor));
@@ -560,11 +573,16 @@ img.chat-picker-prev {
     // Above what opened it, at the side of the message it belongs to: a bubble of the reader's own
     // sits on the right, so its picker ends there. Placed by left and top, since a transform here
     // would override the pop's own and the picker would only fade.
+    //
+    // Only the side flips, below when there is no room above. The alignment is kept and the picker
+    // is slid along inside the window instead, 8px clear of its edge, as the design places every
+    // popover: flipping the alignment would throw a picker near the window's edge to the far side
+    // of its anchor, away from the message it belongs to.
     const { floatingStyles, placement, x } = useFloating(anchorElement, pickerElement, {
         placement: props.anchor?.closest(".chat-msg.is-conversational.is-own") ? "top-end" : "top-start",
         strategy: "fixed",
         transform: false,
-        middleware: [offset(8), flip(), shift({ padding: 8 })],
+        middleware: [offset(8), flip({ crossAxis: false, flipAlignment: false }), shift({ padding: 8 })],
         whileElementsMounted: autoUpdate
     });
 
@@ -631,6 +649,8 @@ img.chat-picker-prev {
         for (const section of fullSections.value) {
             let items = section.items;
             if (isSearching.value) {
+                // A glyph is kept only in the first section that holds it, so a search lists each
+                // emoji once and the arrows never pass the same glyph twice.
                 items = items.filter(item => {
                     if (seen.has(item.code) || !matches(item)) {
                         return false;
@@ -640,11 +660,14 @@ img.chat-picker-prev {
                     return true;
                 });
 
+                // A section the search empties goes with its label, so no heading stands over nothing.
                 if (items.length === 0) {
                     continue;
                 }
             }
 
+            // Rows are cut here rather than left to the grid's wrapping, since the arrows move by
+            // row and column and the page lays nothing out that script could read cheaply.
             const sectionIndex = sections.length;
             const rows: Cell[][] = [];
             for (let i = 0; i < items.length; i += rowLength) {
@@ -663,6 +686,10 @@ img.chat-picker-prev {
     /** Every drawn cell in order, the same order as they stand in the page. */
     const results = computed((): Cell[] => rows.value.flat());
 
+    /**
+     * The grid's one tab stop: the cell the arrows last left it on while that cell is still drawn,
+     * else the first, so a search that takes the cell away never leaves the grid unreachable.
+     */
     const stopKey = computed((): string | null => {
         const chosen = chosenStop.value;
         return chosen && results.value.some(cell => cell.key === chosen) ? chosen : results.value[0]?.key ?? null;
@@ -699,6 +726,9 @@ img.chat-picker-prev {
         const isAbove = placement.value.startsWith("top");
         const anchorBox = props.anchor?.getBoundingClientRect();
         const width = pickerElement.value?.offsetWidth ?? 0;
+
+        // Measured from where the picker landed, after any slide along the window, so the pop
+        // still grows out of the anchor; clamped to the picker, as an anchor can sit past its end.
         const middle = anchorBox ? anchorBox.left + anchorBox.width / 2 - (x.value ?? 0) : width / 2;
         return {
             ...floatingStyles.value,
@@ -718,6 +748,12 @@ img.chat-picker-prev {
             bodyElement.value.scrollTop = 0;
         }
 
+        // Back at the top with every section drawn, where the first section is; a scroll event
+        // cannot say so, since a body already at the top fires none.
+        if (!isSearching.value) {
+            selectTab(fullSections.value[0].id);
+        }
+
         preview.value = isSearching.value ? results.value[0]?.item ?? null : null;
     }
 
@@ -732,6 +768,9 @@ img.chat-picker-prev {
         }
         else if ((event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey)) && first) {
             event.preventDefault();
+
+            // While searching, the first result, which Enter would take; otherwise the cell the
+            // reader last left the grid on, so Tab back in returns them to their place.
             const stop = isSearching.value ? first : results.value.find(cell => cell.key === stopKey.value);
             focusCell(stop ?? first);
         }
@@ -747,6 +786,8 @@ img.chat-picker-prev {
             return;
         }
 
+        // One handler for the dialog, sent on by the role of what has focus, since the tabs and the
+        // grid move by different keys and the search has its own.
         const target = event.target as HTMLElement;
         if (target.getAttribute("role") === "tab") {
             onTabKeydown(event, target);
@@ -765,6 +806,8 @@ img.chat-picker-prev {
             return;
         }
 
+        // Focus moves without choosing, so passing over the tabs scrolls nothing; Enter or Space
+        // presses the tab, which chooses it.
         event.preventDefault();
         tabStop.value = tabs.value[next].id;
         all[next].focus();
@@ -785,11 +828,16 @@ img.chat-picker-prev {
         const cell = all[index];
         const rowIndex = rows.value.findIndex(row => row.includes(cell));
         const column = rows.value[rowIndex].indexOf(cell);
+
+        // Up and Down keep the column; a section's short last row gives its last cell instead, so
+        // Down from a far column still moves a row rather than skipping the short one.
         const inRow = (row: Cell[] | undefined): Cell | undefined => row?.[Math.min(column, row.length - 1)];
         const firstOfSection = (sectionIndex: number): Cell | undefined => all.find(c => c.sectionIndex === sectionIndex);
 
         let next: Cell | undefined;
         switch (event.key) {
+            // Left and Right run through the cells in reading order, off one section's end and
+            // into the next, since the rows hold no gap between sections.
             case "ArrowRight":
                 next = all[index + 1];
                 break;
@@ -813,21 +861,26 @@ img.chat-picker-prev {
             case "End":
                 next = all[all.length - 1];
                 break;
+            // Past the first or last section there is nowhere to go, and focus stays where it is.
             case "PageDown":
             case "PageUp":
                 next = firstOfSection(cell.sectionIndex + (event.key === "PageDown" ? 1 : -1));
                 break;
             default:
+                // Focus moves before the key's own default runs, so the letter is typed into the
+                // search. Space presses the cell, and a key held with a modifier is a shortcut.
                 if (event.key.length === 1 && event.key !== " " && !event.ctrlKey && !event.metaKey && !event.altKey) {
                     searchElement.value?.focus();
                 }
                 return;
         }
 
+        // The arrows would scroll the body as well; the move scrolls only as far as the cell needs.
         event.preventDefault();
         focusCell(next);
     }
 
+    /** One listener on the grid for hover and focus alike, rather than one per cell of hundreds. */
     function onCellHover(event: Event): void {
         const key = (event.target as HTMLElement).closest?.<HTMLElement>("[role='gridcell']")?.dataset.key;
         const cell = key ? results.value.find(c => c.key === key) : undefined;
@@ -838,6 +891,8 @@ img.chat-picker-prev {
 
     /** A tab scrolls its section to the top, clearing a search first so every section is there. */
     async function onTabClick(id: string): Promise<void> {
+        // A search drops the sections that hold no match, so the section is only there to scroll
+        // to once the search is cleared and the grid drawn whole again.
         if (query.value) {
             query.value = "";
             preview.value = null;
@@ -847,44 +902,53 @@ img.chat-picker-prev {
         selectTab(id);
         tabStop.value = id;
         const body = bodyElement.value;
+
+        // A category's section is not there until the catalog arrives; its loading place stands in.
         const section = body?.querySelector<HTMLElement>(`[data-sec="${id}"]`) ?? body?.querySelector<HTMLElement>("[data-sec='loading']");
         if (!body || !section) {
             return;
         }
 
+        const isSmooth = !isReducedMotion();
         const top = section.offsetTop;
-        scrollTarget = Math.abs(body.scrollTop - top) > 1 ? top : null;
         if (typeof body.scrollTo === "function") {
-            body.scrollTo({ top, behavior: isReducedMotion() ? "auto" : "smooth" });
+            body.scrollTo({ top, behavior: isSmooth ? "smooth" : "auto" });
         }
         else {
             body.scrollTop = top;
         }
+
+        // The tab chosen is selected at once and held while the scroll passes the sections between.
+        window.clearTimeout(tabLockTimer);
+        isTabLocked = isSmooth;
+        if (isSmooth) {
+            tabLockTimer = window.setTimeout(() => {
+                isTabLocked = false;
+            }, tabLockMs);
+        }
     }
 
-    /** The selected tab follows the section at the top as the reader scrolls. */
+    /**
+     * The selected tab follows the section at the top as the reader scrolls: the last section that
+     * starts at or above the top, with 8px of give for a label just under it. A last section too
+     * short to reach the top is still selected once the body is scrolled to its end.
+     */
     function onBodyScroll(): void {
         const body = bodyElement.value;
-        if (!body || isSearching.value) {
+        if (!body || isSearching.value || isTabLocked) {
             return;
         }
 
         const isAtEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 2;
-
-        // A tab's own scroll moves no tab until it arrives, or stops short at the end.
-        if (scrollTarget !== null) {
-            if (Math.abs(body.scrollTop - scrollTarget) > 1 && !isAtEnd) {
-                return;
-            }
-            scrollTarget = null;
-            return;
-        }
 
         const sections = Array.from(body.querySelectorAll<HTMLElement>("[data-sec]"));
         if (sections.length === 0) {
             return;
         }
 
+        // Read from the drawn sections on each scroll rather than kept, since the catalog arriving
+        // or a search clearing redraws them; a section's offset is read against the body it
+        // scrolls in, as the tab press scrolls it.
         let current = sections[0];
         if (isAtEnd) {
             current = sections[sections.length - 1];
@@ -905,6 +969,8 @@ img.chat-picker-prev {
 
     /** Focus leaving the picker for somewhere else on the page closes it, as Tab past its end does. */
     function onFocusOut(event: FocusEvent): void {
+        // No next element means focus went nowhere on the page, as when the window lost it, and
+        // the reader comes back to the picker they left.
         const next = event.relatedTarget as Node | null;
         if (next && !pickerElement.value?.contains(next) && !props.anchor?.contains(next)) {
             close(false);
@@ -913,6 +979,7 @@ img.chat-picker-prev {
 
     /** A press outside the picker and what opened it closes it, leaving focus where the press put it. */
     function onDocumentPointerDown(event: Event): void {
+        // A press on what opened the picker is left to that control, which closes it by its click.
         const target = event.target as Node;
         if (pickerElement.value?.contains(target) || props.anchor?.contains(target)) {
             return;
@@ -925,12 +992,17 @@ img.chat-picker-prev {
 
     // #region Functions
 
+    /**
+     * Whether every word typed is found in the emoji's name, its keywords or its code. A word may
+     * match within another, so "pra" finds folded hands by its keyword pray while it is typed.
+     */
     function matches(item: PickerEmoji): boolean {
         const words = `${item.label} ${(item.keywords ?? []).join(" ")} ${item.code.replace(/_/g, " ")}`.toLowerCase();
         return terms.value.every(term => words.includes(term));
     }
 
     function isMine(item: PickerEmoji): boolean {
+        // Inserting into a message marks nothing, since the reader's reactions are no part of it.
         return props.mode === "react" && props.mine.includes(item.code);
     }
 
@@ -956,6 +1028,9 @@ img.chat-picker-prev {
 
         chosenStop.value = cell.key;
         const element = cellElement(cell);
+
+        // Focus alone would scroll the cell to wherever the browser likes, a sticky label over it;
+        // nearest moves the body only as far as the cell needs.
         element?.focus({ preventScroll: true });
         element?.scrollIntoView?.({ block: "nearest" });
         preview.value = cell.item;
@@ -981,7 +1056,9 @@ img.chat-picker-prev {
     /**
      * Closes, with focus back on what opened it when the close came from the picker itself. The
      * picker plays its own way out before saying so, since the host removes it on the word and a
-     * removed element cannot animate; where nothing animates, the word goes at once.
+     * removed element cannot animate; where nothing animates, the word goes at once. A browser
+     * holds an animation in a hidden tab until the tab is shown again, so the word also goes once
+     * the way out's length has passed, whichever comes first.
      */
     async function close(isFocusReturned: boolean): Promise<void> {
         if (isClosing.value) {
@@ -994,8 +1071,29 @@ img.chat-picker-prev {
         }
 
         await nextTick();
-        const animations = pickerElement.value?.getAnimations?.() ?? [];
-        await Promise.allSettled(animations.map(animation => animation.finished));
+        const picker = pickerElement.value;
+        const animations = picker?.getAnimations?.() ?? [];
+        if (picker && animations.length > 0) {
+            const outMs = tokenDuration(picker, "--chat-t-fast", fallbackOutMs);
+            await Promise.race([
+                Promise.allSettled(animations.map(animation => animation.finished)),
+                new Promise(resolve => window.setTimeout(resolve, outMs))
+            ]);
+        }
+
+        emit("close");
+    }
+
+    /**
+     * Closes at once when what opened it has left the page, as when its row is redrawn or its
+     * drawer goes: placed beside a detached element the picker would float at the window's corner.
+     */
+    function onAnchorGone(): void {
+        if (isClosing.value || props.anchor?.isConnected !== false) {
+            return;
+        }
+
+        isClosing.value = true;
         emit("close");
     }
 
@@ -1019,6 +1117,13 @@ img.chat-picker-prev {
     // over the grid; there the dialog itself takes focus, so Escape and the arrows still reach it.
     onMounted(async () => {
         document.addEventListener("pointerdown", onDocumentPointerDown, true);
+
+        // Only a removal anywhere on the page can take the anchor away, so that is all it watches.
+        if (props.anchor && typeof MutationObserver !== "undefined") {
+            anchorObserver = new MutationObserver(onAnchorGone);
+            anchorObserver.observe(document.body, { childList: true, subtree: true });
+        }
+
         await nextTick();
         const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
         (isTouch ? pickerElement.value : searchElement.value)?.focus({ preventScroll: true });
@@ -1026,6 +1131,8 @@ img.chat-picker-prev {
 
     onBeforeUnmount(() => {
         document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        anchorObserver?.disconnect();
+        window.clearTimeout(tabLockTimer);
     });
 
     // #endregion Lifecycle Hooks
