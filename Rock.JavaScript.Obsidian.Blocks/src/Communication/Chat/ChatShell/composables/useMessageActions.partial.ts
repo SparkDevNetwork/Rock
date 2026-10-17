@@ -50,7 +50,7 @@ export type MessageActionRequest =
     | { kind: "saveEdit", message: TimelineMessage, body: string }
     | { kind: "server", message: TimelineMessage, action: MessageAction, onSettled?: () => void }
     | { kind: "react", message: TimelineMessage, code: string }
-    | { kind: "openPicker", message: TimelineMessage, anchor: HTMLElement };
+    | { kind: "openPicker", message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement };
 
 /** What the actions reach outside themselves. */
 export type MessageActionsDependencies = {

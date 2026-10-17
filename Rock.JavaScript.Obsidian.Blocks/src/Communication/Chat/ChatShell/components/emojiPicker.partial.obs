@@ -491,8 +491,18 @@ img.chat-picker-prev {
             default: () => []
         },
 
-        /** What opened the picker: placed beside it, and given focus back on a close by key or choice. */
+        /** What the picker is placed beside, and what opened it unless an opener is given. */
         anchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        /**
+         * What opened the picker when it is not what the picker is placed beside, as a message's
+         * add chip that a choice can take away: given focus back on a close by key or choice, or
+         * the message's row once it has gone.
+         */
+        opener: {
             type: Object as PropType<HTMLElement | null>,
             default: null
         }
@@ -972,7 +982,7 @@ img.chat-picker-prev {
         // No next element means focus went nowhere on the page, as when the window lost it, and
         // the reader comes back to the picker they left.
         const next = event.relatedTarget as Node | null;
-        if (next && !pickerElement.value?.contains(next) && !props.anchor?.contains(next)) {
+        if (next && !pickerElement.value?.contains(next) && !isOfOpener(next)) {
             close(false);
         }
     }
@@ -981,7 +991,7 @@ img.chat-picker-prev {
     function onDocumentPointerDown(event: Event): void {
         // A press on what opened the picker is left to that control, which closes it by its click.
         const target = event.target as Node;
-        if (pickerElement.value?.contains(target) || props.anchor?.contains(target)) {
+        if (pickerElement.value?.contains(target) || isOfOpener(target)) {
             return;
         }
 
@@ -1067,10 +1077,16 @@ img.chat-picker-prev {
 
         isClosing.value = true;
         if (isFocusReturned) {
-            props.anchor?.focus({ preventScroll: true });
+            returnFocus();
         }
 
         await nextTick();
+
+        // A choice can take the opener away as the page redraws, and the focus it held with it.
+        if (isFocusReturned && props.opener?.isConnected === false) {
+            returnFocus();
+        }
+
         const picker = pickerElement.value;
         const animations = picker?.getAnimations?.() ?? [];
         if (picker && animations.length > 0) {
@@ -1084,8 +1100,20 @@ img.chat-picker-prev {
         emit("close");
     }
 
+    /** Whether a node is what the picker is placed beside or what opened it. */
+    function isOfOpener(node: Node): boolean {
+        return !!props.anchor?.contains(node) || !!props.opener?.contains(node);
+    }
+
+    /** Gives focus back to what opened the picker, or to its message's row once that has gone. */
+    function returnFocus(): void {
+        const opener = props.opener ?? props.anchor;
+        const target = opener?.isConnected === false ? props.anchor?.closest<HTMLElement>(".chat-msg") : opener;
+        target?.focus({ preventScroll: true });
+    }
+
     /**
-     * Closes at once when what opened it has left the page, as when its row is redrawn or its
+     * Closes at once when what it is placed beside has left the page, as when its row is redrawn or its
      * drawer goes: placed beside a detached element the picker would float at the window's corner.
      */
     function onAnchorGone(): void {

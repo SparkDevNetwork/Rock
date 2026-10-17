@@ -26,8 +26,11 @@ import { ChatShell } from "../shell.partial";
 import { TimelineMessage } from "../types.partial";
 import { ReactionHost } from "./useReactions.partial";
 
-/** The reaction picker while it is open: the message it reacts to, by id, and what it is placed beside. */
-export type ReactionPicker = { key: number, channelId: string, messageId: number, anchor: HTMLElement };
+/**
+ * The reaction picker while it is open: the message it reacts to, by id, what it is placed beside,
+ * and the control that opened it, which is the anchor unless that control can leave with a choice.
+ */
+export type ReactionPicker = { key: number, channelId: string, messageId: number, anchor: HTMLElement, opener: HTMLElement };
 
 /** The open picker, what the rows and every emoji picker read, and the ways to open, close and choose. */
 export type ReactionPickerHost = {
@@ -47,7 +50,7 @@ export type ReactionPickerHost = {
     pickerMine: ComputedRef<string[]>;
 
     /** Opens the picker for a message; asked again by what opened it, it closes instead. */
-    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement) => void;
+    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement) => void;
 
     closeReactionPicker: () => void;
 
@@ -113,20 +116,20 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
      * Opens the reaction picker for a message, closing any other first, and fetches the catalog it
      * draws. The control that opened the picker toggles it, as a press on More reactions does again.
      */
-    function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement): void {
-        const isSameAnchor = reactionPicker.value?.anchor === anchor;
+    function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement, opener: HTMLElement = anchor): void {
+        const isSameOpener = reactionPicker.value?.opener === opener;
         closeReactionPicker();
-        if (isSameAnchor) {
+        if (isSameOpener) {
             return;
         }
 
-        anchor.setAttribute("aria-expanded", "true");
-        reactionPicker.value = { key: ++reactionPickerCount, channelId, messageId: message.id, anchor };
+        opener.setAttribute("aria-expanded", "true");
+        reactionPicker.value = { key: ++reactionPickerCount, channelId, messageId: message.id, anchor, opener };
         void shell.value.reactions.loadCatalog();
     }
 
     function closeReactionPicker(): void {
-        reactionPicker.value?.anchor.setAttribute("aria-expanded", "false");
+        reactionPicker.value?.opener.setAttribute("aria-expanded", "false");
         reactionPicker.value = null;
     }
 

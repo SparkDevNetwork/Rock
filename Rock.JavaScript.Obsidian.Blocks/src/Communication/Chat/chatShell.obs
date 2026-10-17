@@ -222,6 +222,7 @@
                          :source="emojiSource"
                          :mine="pickerMine"
                          :anchor="reactionPicker.anchor"
+                         :opener="reactionPicker.opener"
                          @react="onPickerReact"
                          @close="closeReactionPicker" />
         </div>
@@ -1011,7 +1012,7 @@
                 break;
 
             case "openPicker":
-                openReactionPicker(channelId, request.message, request.anchor);
+                openReactionPicker(channelId, request.message, request.anchor, request.opener);
                 break;
         }
     }

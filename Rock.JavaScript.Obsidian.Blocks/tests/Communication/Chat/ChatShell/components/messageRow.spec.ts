@@ -871,6 +871,19 @@ describe("the reactions row", () => {
         expect(w.emitted("messageAction")).toEqual([[{ kind: "react", message: target, code: "heart" }]]);
     });
 
+    // The add chip goes with the last chip a choice in the picker takes away, so the picker is
+    // placed on what stays, and the add chip is only where focus comes back to.
+    test.each([["a direct message", false, ".chat-bubble"], ["a channel", true, ".chat-cm-text"]] as const)("its add chip asks for the picker placed on the message in %s, focus coming back to the add chip", async (_kind, isChannel, bubble) => {
+        const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), isChannel, reactionHost: host([]) });
+
+        await w.get("[data-testid='reaction-add']").trigger("click");
+
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement }];
+        expect(request.kind).toBe("openPicker");
+        expect(request.anchor).toBe(w.get(bubble).element);
+        expect(request.opener).toBe(w.get("[data-testid='reaction-add']").element);
+    });
+
     test("tucks into the bubble, which grows its foot to make room", () => {
         const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), reactionHost: host([]) });
 

@@ -1651,6 +1651,27 @@ describe("reactions", () => {
         expect(anchor.getAttribute("aria-expanded")).toBe("false");
     });
 
+    test("asked for by an add chip and placed on its message, marks the add chip open and closes when the add chip asks again", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const bubble = document.createElement("div");
+        const opener = document.createElement("button");
+        shellRoot(w).append(bubble, opener);
+        const feed = w.findComponent(MessageFeedComponent);
+
+        feed.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor: bubble, opener });
+        await settle();
+        expect(pickerOf()).not.toBeNull();
+        expect(opener.getAttribute("aria-expanded")).toBe("true");
+        expect(bubble.hasAttribute("aria-expanded")).toBe(false);
+
+        feed.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor: bubble, opener });
+        await settle();
+
+        expect(pickerOf()).toBeNull();
+        expect(opener.getAttribute("aria-expanded")).toBe("false");
+    });
+
     test("marks the reader's reactions as the page holds the message now, after a page replaced it", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);

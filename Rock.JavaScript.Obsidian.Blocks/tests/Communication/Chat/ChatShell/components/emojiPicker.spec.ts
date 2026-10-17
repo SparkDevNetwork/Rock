@@ -32,7 +32,8 @@
 //           churchName: string
 //       },
 //       mine: string[],                    the codes the reader reacted with; marked in react mode only
-//       anchor: HTMLElement | null         what opened it, where focus returns
+//       anchor: HTMLElement | null         what it is placed beside; what opened it unless opener is given
+//       opener: HTMLElement | null         what opened it, where focus returns; its row once it has gone
 //   }
 //   emits: react(code), insert(text, code), close()
 //
@@ -625,6 +626,65 @@ describe("closing", () => {
         await settle();
 
         expect(w.emitted("close")).toHaveLength(1);
+    });
+
+    // Opened from a message's add chip, the picker is placed on the message's bubble, since a
+    // choice that takes the message's last chip away takes the add chip with it.
+    test("placed on a message's bubble and opened from its add chip, stays when the add chip goes, and gives focus to the row once it has", async () => {
+        const row = document.createElement("div");
+        row.className = "chat-msg is-conversational";
+        row.tabIndex = -1;
+        const bubble = document.createElement("div");
+        bubble.className = "chat-bubble";
+        const add = document.createElement("button");
+        add.textContent = "Add reaction";
+        row.append(bubble, add);
+        document.body.append(row);
+        add.focus();
+
+        const w = mount(EmojiPicker, {
+            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: [], anchor: bubble, opener: add },
+            attachTo: document.body
+        });
+        wrapper = w;
+        await settle();
+
+        add.remove();
+        await settle();
+        expect(w.emitted("close")).toBeUndefined();
+
+        await press(search(), "Escape");
+
+        expect(w.emitted("close")).toHaveLength(1);
+        expect(document.activeElement).toBe(row);
+    });
+
+    test("a choice that takes its add chip away as the page redraws gives focus to the message's row", async () => {
+        const row = document.createElement("div");
+        row.className = "chat-msg is-conversational";
+        row.tabIndex = -1;
+        const bubble = document.createElement("div");
+        bubble.className = "chat-bubble";
+        const add = document.createElement("button");
+        add.textContent = "Add reaction";
+        row.append(bubble, add);
+        document.body.append(row);
+        add.focus();
+
+        const w = mount(EmojiPicker, {
+            // The toggle takes the last chip back at once, and the row is redrawn without it, add
+            // chip and all, before the next tick.
+            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: ["grinning"], anchor: bubble, opener: add, onReact: () => queueMicrotask(() => add.remove()) },
+            attachTo: document.body
+        });
+        wrapper = w;
+        await settle();
+
+        cellAt("Smileys", 0, 0).click();
+        await settle();
+
+        expect(w.emitted("react")).toEqual([["grinning"]]);
+        expect(document.activeElement).toBe(row);
     });
 
     test("does not wait on a way out that a hidden tab never plays, closing after its length", async () => {

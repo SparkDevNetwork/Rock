@@ -1465,16 +1465,19 @@
         openPicker: (message: TimelineMessage, anchor: HTMLElement): void => emit("messageAction", { kind: "openPicker", message, anchor: pickerAnchor(anchor) })
     };
 
-    /** A chip toggles the reader's reaction; the add chip opens the picker beside itself. */
+    /**
+     * A chip toggles the reader's reaction. The add chip opens the picker on the message, since a
+     * choice that takes the last chip away takes the add chip with it; focus comes back to it.
+     */
     const reactionsHandlers = {
         toggle: (code: string): void => {
             if (props.message) {
                 emit("messageAction", { kind: "react", message: props.message, code });
             }
         },
-        openPicker: (anchor: HTMLElement): void => {
+        openPicker: (opener: HTMLElement): void => {
             if (props.message) {
-                emit("messageAction", { kind: "openPicker", message: props.message, anchor });
+                emit("messageAction", { kind: "openPicker", message: props.message, anchor: messageAnchor() ?? opener, opener });
             }
         }
     };
@@ -1495,7 +1498,12 @@
             return anchor;
         }
 
-        return row.querySelector<HTMLElement>(".chat-bubble, .chat-cm-text") ?? row;
+        return messageAnchor() ?? row;
+    }
+
+    /** The message's own text, which a picker asked for by a control that can go is placed on. */
+    function messageAnchor(): HTMLElement | null {
+        return rowElement.value?.querySelector<HTMLElement>(".chat-bubble, .chat-cm-text") ?? rowElement.value ?? null;
     }
 
     /** A block button's press, its promise settling once the action has answered, so the button stays busy till then. */
