@@ -45,7 +45,24 @@ namespace Rock.Rest.Controllers
 
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
+                /*
+                    10/16/2026 - MSE
+
+                    Launching a workflow needs VIEW on its workflow type, the same rule as the
+                    Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                    the controller only says the caller may use this endpoint. The caller is
+                    recorded as the initiator like every other launch path.
+
+                    Reason: Staff could run any workflow type with chosen values through this endpoint.
+                */
+                var person = GetPerson();
+                if ( !CanLaunchWorkflowType( workflowType, person ) )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+
                 var workflow = Rock.Model.Workflow.Activate( workflowType, "Workflow From REST" );
+                workflow.InitiatorPersonAliasId = person?.PrimaryAliasId;
 
                 // set workflow attributes from querystring
                 foreach ( var parm in Request.GetQueryStrings() )
