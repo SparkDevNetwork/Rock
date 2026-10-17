@@ -293,6 +293,7 @@
     <Compile Include="Lava\RenderTests.cs" />
     <Compile Include="Lava\Tags\IfTagTests.cs" />
     <Compile Include="Lava\Tags\StylesheetLessCompilerTests.cs" />
+    <Compile Include="Lms\AssessmentComponentTests.cs" />
     <Compile Include="Model\ConnectionRequestTest.cs" />
     <Compile Include="Model\EntityExtensionMethodTests.cs" />
     <Compile Include="Model\PersonTest.cs" />

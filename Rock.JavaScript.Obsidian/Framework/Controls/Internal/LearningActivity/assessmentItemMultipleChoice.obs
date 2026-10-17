@@ -51,7 +51,7 @@
             </div>
 
             <div class="summary-answers-list">
-                <div v-html="html" v-for="html in summaryAnswers" class="answer-row"></div>
+                <div v-for="answer in summaryAnswers" class="answer-row"><div :class="answer.cssClass">{{ answer.text }}</div></div>
             </div>
         </div>
     </div>
@@ -100,25 +100,34 @@
         return { value: a, text: a } as ListItemBag;
     }));
 
-    const summaryAnswers = computed(() => answers.value.map(a => {
+    /*
+        10/16/2026 - MSE
+
+        Answer text is shown on the facilitator's Summary screen and can come from a
+        stored completion that a student submitted. Return the text and the CSS class
+        separately so the template renders the answer as text instead of HTML.
+
+        Reason: Prevent stored answer text from rendering as HTML for facilitators.
+    */
+    const summaryAnswers = computed((): { text: string, cssClass: string }[] => answers.value.map(a => {
         let cssClass = "";
 
         if (a === response.value) {
             // If this was the response of the individual.
-            cssClass = `class="label label-default selected-response"`;
+            cssClass = "label label-default selected-response";
         }
         else {
             // Only add the success style if the individual didn't choose the correct answer.
             if (a === correctAnswer.value) {
                 // If this was not the response of the individual and was correct.
-                cssClass = `class="label label-success"`;
+                cssClass = "label label-success";
             }
             else {
-                cssClass = `class="ml-2"`;
+                cssClass = "ml-2";
             }
         }
 
-        return `<div ${cssClass}>${a}</div>`;
+        return { text: a, cssClass };
     }));
 
     const correctnessLabel = ref(

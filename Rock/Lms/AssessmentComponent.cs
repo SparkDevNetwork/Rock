@@ -165,20 +165,39 @@ namespace Rock.Lms
                 var completedItems = completionData.GetValueOrNull( CompletionKey.CompletedItems ).FromJsonOrNull<List<AssessmentItem>>()
                     ?? new List<AssessmentItem>();
 
-                // Restore the correct value when this is coming from the student
-                // so we can properly display it on the summary screen later. But
-                // only restore the answer if it hasn't already been set, otherwise
-                // the facilitator might change the answer after it was responded to
-                // and skew the results.
-                foreach ( var item in completedItems )
+                /*
+                    10/16/2026 - MSE
+
+                    The completed items are posted by the student, so everything except the
+                    responses could be changed (question, answers, correct answer, or short
+                    answer items left out to skip grading). Rebuild the stored items from the
+                    configured items, which are a fresh copy deserialized above, and copy only
+                    the student's response. This also stores the correct answer at the time of
+                    completion so the summary screen shows it later even if the facilitator
+                    changes the configuration.
+
+                    Reason: Prevent a student from storing assessment content that staff later see.
+                */
+                var activityPoints = completion?.LearningClassActivity?.Points ?? 0;
+
+                foreach ( var item in items )
                 {
-                    if ( item.CorrectAnswer == null )
+                    var completedItem = completedItems.FirstOrDefault( i => i.UniqueId == item.UniqueId );
+                    var hasResponse = item.Type == AssessmentItemType.MultipleChoice
+                        || item.Type == AssessmentItemType.ShortAnswer;
+
+                    item.Response = hasResponse ? completedItem?.Response : null;
+                    item.PointsEarned = null;
+                    item.HasBeenGraded = null;
+
+                    if ( item.Type == AssessmentItemType.ShortAnswer && !item.PointsPossible.HasValue )
                     {
-                        item.CorrectAnswer = items.FirstOrDefault( i => i.UniqueId == item.UniqueId )?.CorrectAnswer;
+                        item.PointsPossible = activityPoints * ( item.QuestionWeight ?? 0 ) / 100;
                     }
                 }
 
-                completionData[CompletionKey.CompletedItems] = completedItems.ToCamelCaseJson( false, false );
+                completionData[CompletionKey.CompletedItems] = items.ToCamelCaseJson( false, false );
+                completionData[CompletionKey.MultipleChoiceWeight] = componentData.GetValueOrNull( SettingKey.MultipleChoiceWeight ) ?? "100";
             }
 
             return completionData;

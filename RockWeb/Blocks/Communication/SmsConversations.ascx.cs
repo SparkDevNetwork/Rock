@@ -484,7 +484,16 @@ namespace RockWeb.Blocks.Communication
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
                     mergeFields.Add( "Person", recipientPerson );
 
-                    html = lava.ResolveMergeFields( mergeFields );
+                    /*
+                        10/16/2026 - MSE
+
+                        The person's name and other values in the template can be set by anonymous
+                        visitors and the result is rendered as HTML. Encode every {{ }} output value
+                        as HTML while keeping the template's own markup.
+
+                        Reason: Prevent stored person text from rendering as HTML in the conversation header.
+                    */
+                    html = lava.ResolveMergeFields( mergeFields, true );
                 }
             }
 
