@@ -92,7 +92,7 @@
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
                 <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
-                <MessageReactions v-if="message && (hasThread || hasReactions)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
+                <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
                     <template v-if="hasThread" #default>
                         <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
                     </template>
@@ -137,7 +137,7 @@
                 </div>
             </div>
             <!-- The reactions row, tucked into the bubble's foot, the thread pill first at its aligned edge. -->
-            <MessageReactions v-if="message && (hasThread || hasReactions)" v-bind="reactionsProps" v-on="reactionsHandlers">
+            <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" v-on="reactionsHandlers">
                 <template v-if="hasThread" #default>
                     <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
                 </template>
@@ -1327,9 +1327,15 @@
             && state.value !== "system" && state.value !== "card";
     });
 
-    /** Chips to draw under the message: a live message with reactions, never a system line, a card or a tombstone. */
-    const hasReactions = computed((): boolean => !!props.message && (props.message.reactions?.length ?? 0) > 0
-        && !isTomb.value && state.value !== "system" && state.value !== "card");
+    /**
+     * A message that can carry chips: a live one, never a system line, a card or a tombstone. Its
+     * reactions part is mounted before the first chip, so the reader's first reaction, added in
+     * place, is seen arriving and pops rather than being drawn as a page draws one.
+     */
+    const isReactable = computed((): boolean => !!props.message && !isTomb.value && state.value !== "system" && state.value !== "card");
+
+    /** Chips to draw under the message. */
+    const hasReactions = computed((): boolean => isReactable.value && (props.message?.reactions?.length ?? 0) > 0);
 
     /** A reply also sent to the conversation, which says so above it and opens its thread. */
     const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);

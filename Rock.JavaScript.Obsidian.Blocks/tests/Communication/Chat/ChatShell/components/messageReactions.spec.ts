@@ -33,10 +33,10 @@
 //   emits: toggle(code: string), openPicker(anchor: HTMLElement)
 //   marks: the row data-testid="message-reactions"; each chip data-testid="reaction-chip" with
 //          data-code, aria-pressed and its count in data-testid="reaction-count"; the add chip
-//          data-testid="reaction-add", "Add reaction". A chip's tooltip, role="tooltip" inside it,
+//          data-testid="reaction-add", "Add reaction". A chip's tooltip, role="tooltip" in the row,
 //          shows after the pointer has rested 350ms.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, reactive } from "vue";
 import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -223,17 +223,17 @@ describe("a chip's tooltip", () => {
         await chip.trigger("mouseenter");
         jest.advanceTimersByTime(349);
         await settle();
-        expect(chip.find("[role='tooltip']").exists()).toBe(false);
+        expect(w.find("[role='tooltip']").exists()).toBe(false);
 
         jest.advanceTimersByTime(1);
         await settle();
-        expect(chip.get("[role='tooltip']").text()).toBe("3 people reacted with 🙏");
+        expect(w.get("[role='tooltip']").text()).toBe("3 people reacted with 🙏");
         expect(loadReactorNames).toHaveBeenCalledWith(expect.objectContaining({ code: "pray", count: 3 }));
 
         answer(["Anna Reyes", "David Okafor"]);
         await settle();
 
-        expect(chip.get("[role='tooltip']").text()).toBe("Anna Reyes, David Okafor and 1 more reacted with 🙏");
+        expect(w.get("[role='tooltip']").text()).toBe("Anna Reyes, David Okafor and 1 more reacted with 🙏");
     });
 
     test("names the reader You", async () => {
@@ -245,7 +245,7 @@ describe("a chip's tooltip", () => {
         jest.advanceTimersByTime(350);
         await settle();
 
-        expect(chip.get("[role='tooltip']").text()).toBe("You and Anna Reyes reacted with ❤️");
+        expect(w.get("[role='tooltip']").text()).toBe("You and Anna Reyes reacted with ❤️");
     });
 
     test("a pointer passing over in less than 350ms asks for no names", async () => {
@@ -261,6 +261,128 @@ describe("a chip's tooltip", () => {
         await settle();
 
         expect(loadReactorNames).not.toHaveBeenCalled();
-        expect(chip.find("[role='tooltip']").exists()).toBe(false);
+        expect(w.find("[role='tooltip']").exists()).toBe(false);
+    });
+});
+
+// The page changes a message's reactions in place, as the reactions do on a press, an answer or a
+// live event, so the row tells a change apart by the values it last drew, never by the objects.
+describe("the reader's own change", () => {
+    test("pops a chip the reader just added beside others' chips, and only that chip", async () => {
+        const held = reactive(message([heart(2)]));
+        const w = mountRow({ message: held });
+
+        held.reactions!.push(pray(1, true));
+        await settle();
+
+        const added = chips(w).find(c => c.attributes("data-code") === "pray");
+        expect(added?.classes()).toContain("is-popping");
+        expect(chips(w).find(c => c.attributes("data-code") === "heart")?.classes()).not.toContain("is-popping");
+    });
+
+    test("pops the first chip of a message that had none", async () => {
+        const held = reactive(message([]));
+        const w = mountRow({ message: held });
+
+        held.reactions!.push(thumbsup(1, true));
+        await settle();
+
+        expect(chips(w)[0].classes()).toContain("is-popping");
+    });
+
+    test("rolls the count when the reader joins others' reaction, and pops nothing", async () => {
+        const held = reactive(message([pray(1)]));
+        const w = mountRow({ message: held });
+
+        held.reactions![0].count++;
+        held.reactions![0].mine = true;
+        await settle();
+
+        expect(chips(w)[0].get("[data-testid='reaction-count']").classes()).toContain("is-rolling");
+        expect(chips(w)[0].classes()).not.toContain("is-popping");
+    });
+
+    test("others' changes move nothing", async () => {
+        const held = reactive(message([pray(1)]));
+        const w = mountRow({ message: held });
+
+        held.reactions![0].count++;
+        held.reactions!.push(heart(1));
+        await settle();
+
+        expect(w.findAll(".is-popping")).toHaveLength(0);
+        expect(w.findAll(".is-rolling")).toHaveLength(0);
+    });
+});
+
+// One tip for the row, moved between chips: drawn outside the chip, since a lifted chip would
+// hold a fixed tip to its own box, and always naming the chip it now belongs to.
+describe("the one tip", () => {
+    test("is not drawn inside the chip, and in the chat's root when there is one", async () => {
+        jest.useFakeTimers();
+        const root = document.createElement("div");
+        root.className = "chat-shell";
+        document.body.append(root);
+        wrapper = mount(MessageReactions, { props: { loadReactorNames: async () => null, message: message([pray(3)]) }, attachTo: root });
+        const chip = chips(wrapper)[0];
+
+        await chip.trigger("mouseenter");
+        jest.advanceTimersByTime(350);
+        await settle();
+
+        const tip = document.querySelector("[role='tooltip']");
+        expect(tip?.textContent).toBe("3 people reacted with 🙏");
+        expect(chip.element.contains(tip)).toBe(false);
+        expect(tip?.parentElement).toBe(root);
+    });
+
+    test("moved from a focused chip to a hovered one names the second chip's reactors", async () => {
+        jest.useFakeTimers();
+        const loadReactorNames = jest.fn(async (reaction: { code: string }) => reaction.code === "pray" ? ["Anna Reyes"] : ["David Okafor"]);
+        const w = mountRow({ message: message([pray(1), heart(1)]), loadReactorNames });
+
+        await chips(w)[0].trigger("focus");
+        jest.advanceTimersByTime(350);
+        await settle();
+        expect(document.querySelector("[role='tooltip']")?.textContent).toBe("Anna Reyes reacted with 🙏");
+
+        await chips(w)[1].trigger("mouseenter");
+        jest.advanceTimersByTime(350);
+        await settle();
+
+        expect(loadReactorNames).toHaveBeenLastCalledWith(expect.objectContaining({ code: "heart" }));
+        expect(document.querySelector("[role='tooltip']")?.textContent).toBe("David Okafor reacted with ❤️");
+    });
+
+    test("moved by the keyboard from a hovered chip to the next names the next chip's reactors", async () => {
+        jest.useFakeTimers();
+        const loadReactorNames = jest.fn(async (reaction: { code: string }) => reaction.code === "pray" ? ["Anna Reyes"] : ["David Okafor"]);
+        const w = mountRow({ message: message([pray(1), heart(1)]), loadReactorNames });
+
+        await chips(w)[0].trigger("mouseenter");
+        jest.advanceTimersByTime(350);
+        await settle();
+
+        await chips(w)[1].trigger("focus");
+        jest.advanceTimersByTime(350);
+        await settle();
+
+        expect(document.querySelector("[role='tooltip']")?.textContent).toBe("David Okafor reacted with ❤️");
+    });
+
+    test("goes when its chip is taken away while it shows", async () => {
+        jest.useFakeTimers();
+        const held = reactive(message([pray(1), heart(1)]));
+        const w = mountRow({ message: held, loadReactorNames: async () => ["Anna Reyes"] });
+
+        await chips(w)[0].trigger("mouseenter");
+        jest.advanceTimersByTime(350);
+        await settle();
+        expect(document.querySelector("[role='tooltip']")).not.toBeNull();
+
+        held.reactions!.splice(0, 1);
+        await settle();
+
+        expect(document.querySelector("[role='tooltip']")).toBeNull();
     });
 });

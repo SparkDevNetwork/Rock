@@ -21,7 +21,7 @@
 // the screenshots key on. A mention the server admitted is a chip; anything the server has not
 // admitted, a pending body above all, is plain text and never the raw token.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, reactive } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -897,5 +897,18 @@ describe("the reactions row", () => {
 
         await expect(loader(heart)).resolves.toEqual(["Anna Reyes"]);
         expect(reactorNames).toHaveBeenCalledWith(42, heart);
+    });
+
+    // The page adds a message's first reaction in place, so the row must already hold its
+    // reactions part to see the reader's chip arrive, rather than mount with it as a page draws one.
+    test.each([["a direct message", false], ["a channel", true]] as const)("pops the reader's first reaction on a message in %s", async (_kind, isChannel) => {
+        const target = reactive(message({ reactions: [] } as Partial<TimelineMessage>));
+        const w = draw({ message: target, isChannel, reactionHost: host([]) });
+
+        target.reactions!.push({ ...heart, count: 1 });
+        await nextTick();
+        await nextTick();
+
+        expect(w.get("[data-testid='reaction-chip']").classes()).toContain("is-popping");
     });
 });

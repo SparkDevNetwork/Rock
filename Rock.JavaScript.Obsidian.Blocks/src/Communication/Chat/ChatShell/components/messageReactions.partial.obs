@@ -37,12 +37,6 @@
                       data-testid="reaction-count"
                       aria-hidden="true"
                       @animationend="onRollEnd(reaction.code)">{{ reaction.count }}</span>
-                <!-- Inside the chip, so the chip stays one element; fixed, so it is placed against the window. -->
-                <span v-if="isTipShown && tipCode === reaction.code"
-                      :ref="setTipElement"
-                      class="chat-tip"
-                      role="tooltip"
-                      :style="floatingStyles">{{ tipText }}</span>
             </button>
             <button v-if="isAddDrawn"
                     ref="addElement"
@@ -54,6 +48,18 @@
                     @click="onAddClick">
                 <Icon name="smile-plus" size="sm" />
             </button>
+            <!--
+                Out of the chips, since a chip lifted on hover is a transformed box and would hold a
+                fixed tip to its own width; drawn in the chat's root, where the feed's faded edges
+                cannot fade or cut it, and in the row where there is no root.
+            -->
+            <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+                <span v-if="isTipShown && tipReaction"
+                      ref="tipElement"
+                      class="chat-tip"
+                      role="tooltip"
+                      :style="floatingStyles">{{ tipText }}</span>
+            </Teleport>
         </template>
     </div>
 </template>
@@ -209,9 +215,9 @@
 </style>
 
 <script setup lang="ts">
-    import { ComponentPublicInstance, computed, PropType, ref, useSlots, watch } from "vue";
+    import { computed, PropType, ref, useSlots, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
-    import { useTooltip } from "../ui/tooltip.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { reactorLine } from "../composables/useReactions.partial";
     import { Reaction, TimelineMessage } from "../types.partial";
 
@@ -261,6 +267,9 @@
     /** The chip the tip belongs to: one tip for the row, moved to whichever chip the pointer rests on. */
     const tipAnchor = ref<HTMLElement>();
     const tipCode = ref<string | null>(null);
+
+    /** The chat's root, which the tip is drawn in; null where the row is drawn alone. */
+    const tipHost = computed(() => overlayHostOf(tipAnchor.value));
 
     /** Who reacted with the tip's emoji, once they arrive; null shows the count line meanwhile. */
     const tipNames = ref<string[] | null>(null);
@@ -370,11 +379,6 @@
         return next;
     }
 
-    /** A ref by name inside a list collects an array; the placement needs the one tip drawn. */
-    function setTipElement(element: Element | ComponentPublicInstance | null): void {
-        tipElement.value = element instanceof HTMLElement ? element : undefined;
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -382,13 +386,23 @@
     /*
         Names are asked for only once the tip is shown, so a pointer passing over a row asks for
         nothing; the store behind the call holds them per chip, so a second rest costs no call.
+        The one tip moves between chips without hiding, by the pointer or by Tab, so the names
+        follow the chip it shows on and what that chip carries, not only whether it shows.
     */
-    watch(isTipShown, shown => {
+    const tipSubject = computed((): string | null => isTipShown.value && tipReaction.value
+        ? `${tipReaction.value.code}:${tipReaction.value.count}:${tipReaction.value.mine}`
+        : null);
+
+    watch(tipSubject, subject => {
         const reaction = tipReaction.value;
         const request = ++namesRequest;
         tipNames.value = null;
 
-        if (!shown || !reaction) {
+        if (!subject || !reaction) {
+            // A chip taken away under its tip leaves nothing to name, so the tip goes with it.
+            if (isTipShown.value) {
+                hideTip();
+            }
             return;
         }
 
@@ -408,7 +422,9 @@
         added pops in, and the reader joining others rolls the count. Others' changes and the
         reader taking one away change the number in place.
     */
-    watch(reactions, (next, previous) => {
+    watch(() => reactions.value.map(({ code, count, mine }) => ({ code, count, mine })), (next, previous) => {
+        // Compared with the values last drawn: the page changes a chip in place, so the chip
+        // itself already holds its new count and mark by the time this runs.
         const before = new Map(previous.map(reaction => [reaction.code, reaction]));
 
         for (const reaction of next) {
