@@ -119,7 +119,26 @@ namespace Rock.Web.UI
                 return;
             }
 
-            byte[] bytes = Convert.FromBase64String( viewState );
+            /*
+                10/16/26 - CLAUDE
+
+                The __CVIEWSTATE value is supplied by the client, so it may not be
+                valid base64. Treat a malformed value the same as one that fails to
+                decrypt so it doesn't surface as an unhandled server exception.
+
+                Reason: Reject malformed view state gracefully instead of throwing.
+            */
+            byte[] bytes;
+            try
+            {
+                bytes = Convert.FromBase64String( viewState );
+            }
+            catch ( FormatException formatException )
+            {
+                RockLogger.LoggerFactory.CreateLogger<RockHiddenFieldPageStatePersister>()
+                    .LogError( formatException, "Failed decoding the encrypted View state Props" );
+                return;
+            }
 
             // decrypt viewstate
             try
