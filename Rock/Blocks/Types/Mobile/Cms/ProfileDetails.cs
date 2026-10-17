@@ -337,6 +337,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return ActionNotFound();
                 }
 
+                /*
+                    10/16/2026 - MSE
+
+                    Only the person themselves, or someone allowed to edit people through this
+                    block, may load a person's profile. This is the same rule UpdatePersonProfile
+                    already applies when saving, so a person with only View permission on the block
+                    can no longer read another person's contact details by Guid.
+
+                    Reason: Prevent loading another person's profile details by Guid.
+                */
+                if ( RequestContext.CurrentPerson?.Guid != personGuid && !IsAuthorizedToEditPerson( person ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
+                }
 
                 return ActionOk( MobileHelper.GetMobilePerson( person, site ) );
             }
