@@ -1630,6 +1630,71 @@ describe("reactions", () => {
         expect(document.querySelector("[role='dialog'][aria-label='Add reaction']")).toBeNull();
         expect(anchor.getAttribute("aria-expanded")).toBe("false");
     });
+
+    const pickerOf = (): Element | null => document.querySelector("[role='dialog'][aria-label='Add reaction']");
+
+    test("asked for again by what opened it, closes", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = document.createElement("button");
+        shellRoot(w).append(anchor);
+        const feed = w.findComponent(MessageFeedComponent);
+
+        feed.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor });
+        await settle();
+        expect(pickerOf()).not.toBeNull();
+
+        feed.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor });
+        await settle();
+
+        expect(pickerOf()).toBeNull();
+        expect(anchor.getAttribute("aria-expanded")).toBe("false");
+    });
+
+    test("marks the reader's reactions as the page holds the message now, after a page replaced it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const timeline = timelineOf(team.channel_id);
+        timeline.messages.push(storedMessage(7));
+        await settle();
+        const anchor = document.createElement("button");
+        shellRoot(w).append(anchor);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: timeline.messages[0], anchor });
+        await settle();
+        expect(document.querySelector("[role='gridcell'][data-code='pray']")?.getAttribute("aria-pressed")).not.toBe("true");
+
+        // A page merge puts a new object in the message's place, carrying the reader's reaction.
+        timeline.messages.splice(0, 1, storedMessage(7, { reactions: [{ code: "pray", count: 1, mine: true, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>));
+        await settle();
+
+        expect(document.querySelector("[role='gridcell'][data-code='pray']")?.getAttribute("aria-pressed")).toBe("true");
+    });
+
+    test("closes with the thread drawer it was opened in", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        const anchor = document.createElement("button");
+        w.get("[data-testid='frame-panel']").element.append(anchor);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(40), anchor });
+        await settle();
+        expect(pickerOf()).not.toBeNull();
+
+        // Focus back on what opened it, as after a quick look, so only the drawer's closing can close the picker.
+        anchor.focus();
+        await settle();
+        expect(pickerOf()).not.toBeNull();
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+        await settle();
+
+        expect(pickerOf()).toBeNull();
+    });
 });
 
 // The delete confirm, however it closes, gives focus to the message it was opened for, the

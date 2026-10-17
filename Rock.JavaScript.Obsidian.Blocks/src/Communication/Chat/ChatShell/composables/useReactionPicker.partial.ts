@@ -26,8 +26,8 @@ import { ChatShell } from "../shell.partial";
 import { TimelineMessage } from "../types.partial";
 import { ReactionHost } from "./useReactions.partial";
 
-/** The reaction picker while it is open: the message it reacts to and what it is placed beside. */
-export type ReactionPicker = { key: number, channelId: string, message: TimelineMessage, anchor: HTMLElement };
+/** The reaction picker while it is open: the message it reacts to, by id, and what it is placed beside. */
+export type ReactionPicker = { key: number, channelId: string, messageId: number, anchor: HTMLElement };
 
 /** The open picker, what the rows and every emoji picker read, and the ways to open, close and choose. */
 export type ReactionPickerHost = {
@@ -46,6 +46,7 @@ export type ReactionPickerHost = {
     /** The emoji the reader reacted to the picker's message with, which the picker marks as theirs. */
     pickerMine: ComputedRef<string[]>;
 
+    /** Opens the picker for a message; asked again by what opened it, it closes instead. */
     openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement) => void;
 
     closeReactionPicker: () => void;
@@ -82,18 +83,45 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
         churchName
     }));
 
-    const pickerMine = computed((): string[] => (reactionPicker.value?.message.reactions ?? [])
-        .filter(reaction => reaction.mine)
-        .map(reaction => reaction.code));
+    // Read through the page on every change rather than from the message the picker opened on,
+    // since a page merge puts a new object in that message's place while the picker is up.
+    const pickerMine = computed((): string[] => {
+        const picker = reactionPicker.value;
+        const message = picker ? heldMessage(picker.channelId, picker.messageId) : null;
+        return (message?.reactions ?? []).filter(reaction => reaction.mine).map(reaction => reaction.code);
+    });
+
+    /**
+     * The message as the client holds it now: on its conversation's timeline, else in the open
+     * thread, where a reply shown only in its thread is the one copy there is.
+     */
+    function heldMessage(channelId: string, messageId: number): TimelineMessage | null {
+        const onTimeline = shell.value.timelines.state(channelId).messages.find(message => message.id === messageId);
+        if (onTimeline) {
+            return onTimeline;
+        }
+
+        const thread = shell.value.threads.state.thread;
+        if (!thread || thread.channelId !== channelId) {
+            return null;
+        }
+
+        return thread.root?.id === messageId ? thread.root : thread.replies.find(message => message.id === messageId) ?? null;
+    }
 
     /**
      * Opens the reaction picker for a message, closing any other first, and fetches the catalog it
-     * draws. The message is held as the page holds it, so its marks follow while the picker is up.
+     * draws. The control that opened the picker toggles it, as a press on More reactions does again.
      */
     function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement): void {
+        const isSameAnchor = reactionPicker.value?.anchor === anchor;
         closeReactionPicker();
+        if (isSameAnchor) {
+            return;
+        }
+
         anchor.setAttribute("aria-expanded", "true");
-        reactionPicker.value = { key: ++reactionPickerCount, channelId, message: reactive(message) as TimelineMessage, anchor };
+        reactionPicker.value = { key: ++reactionPickerCount, channelId, messageId: message.id, anchor };
         void shell.value.reactions.loadCatalog();
     }
 
@@ -110,7 +138,7 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
         }
 
         shell.value.reactions.recordRecent(code);
-        void shell.value.reactions.toggleCode(picker.channelId, picker.message.id, code);
+        void shell.value.reactions.toggleCode(picker.channelId, picker.messageId, code);
     }
 
     return { reactionPicker, reactionHost, emojiSource, pickerMine, openReactionPicker, closeReactionPicker, onPickerReact };

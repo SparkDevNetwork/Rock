@@ -1349,6 +1349,15 @@
         closeReactionPicker();
     });
 
+    // The panel column keeps drawing a closing drawer while it narrows, so a picker opened from
+    // the drawer would float over it, beside a message going away; the drawer's closing closes it.
+    watch(panelKind, () => {
+        const anchor = reactionPicker.value?.anchor;
+        if (anchor && panelElement.value?.contains(anchor)) {
+            closeReactionPicker();
+        }
+    });
+
     // The threads list follows the open conversation; a draft has no threads, so it closes.
     watch(activeChannelId, channelId => {
         if (panelKind.value !== "threads") {
