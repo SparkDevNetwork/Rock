@@ -1335,6 +1335,40 @@ describe("reactions", () => {
 
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 10)?.reactions?.map(r => [r.code, r.count])).toEqual([["pray", 1]]);
     });
+
+    // The open thread has a page of its own, so its copies do not wait for the conversation's.
+    test.each([
+        ["root", 10],
+        ["reply", 11]
+    ])("one on the open thread's %s while the conversation's first page is on its way moves the thread's chip at once, and once", async (_what, messageId) => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        const opening = h.shell.threads.openThread(channelA, 10);
+        await settle();
+        const root = { id: 10, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "m10", created_at: "2026-09-23T10:00:00Z" };
+        const reply = { id: 11, parent_id: 10, shown_in_channel: false, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "m11", created_at: "2026-09-23T10:01:00Z" };
+        h.saves[h.saves.length - 1].answer.resolve(fakeResponse(200, { root, messages: [reply], read_cursor: null, unread_count: 0, following: true, has_more: false }));
+        await opening;
+        const threadChips = (): unknown => {
+            const thread = h.shell.threads.state.thread;
+            const copy = messageId === 10 ? thread?.root : thread?.replies.find(r => r.id === messageId);
+            return copy?.reactions?.map(r => [r.code, r.count]);
+        };
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "reaction.added",
+            payload: { message_id: messageId, channel_id: channelA, code: "pray", person_alias_guid: "a0000002-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands" }
+        });
+        expect(threadChips()).toEqual([["pray", 1]]);
+
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(threadChips()).toEqual([["pray", 1]]);
+    });
 });
 
 describe("a page's report after the shell stops", () => {

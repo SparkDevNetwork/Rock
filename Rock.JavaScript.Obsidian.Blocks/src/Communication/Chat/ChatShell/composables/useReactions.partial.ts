@@ -22,7 +22,8 @@
 // and as the event every viewer hears, so an event under the reader's alias moves the chip only
 // when it would change their mark; whichever arrives first, the reaction counts once. Every change
 // to the conversation's copy is recorded with the timelines, so a page read before it does not
-// take it back, and the open thread's copies change once its page is in. Once the reactions are
+// take it back, and the open thread's copies change once its own page is in, never waiting for
+// the conversation's. Once the reactions are
 // stopped nothing new is called and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
@@ -96,8 +97,17 @@ export type Reactions = {
      */
     toggleCode: (channelId: string, messageId: number, code: string) => Promise<void>;
 
-    /** Applies a reaction event a channel topic carried. */
+    /**
+     * Applies a reaction event a channel topic carried to the conversation's copy of its message,
+     * once the conversation's timeline lets it through.
+     */
     applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
+
+    /**
+     * Applies a reaction event a channel topic carried to the open thread's copies of its message
+     * as it arrives: the thread has a page of its own, so they never wait for the conversation's.
+     */
+    applyThreadEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
 
     /** The catalog, fetched once for the page; null when the fetch failed, to be asked again. */
     loadCatalog: () => Promise<CatalogEmoji[] | null>;
@@ -329,23 +339,78 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     }
 
     /**
-     * Changes every copy of a message: the conversation's at once, its reactions then recorded so
-     * a page read before the change does not take it back, and the open thread's once its page is
-     * in. A copy both hold is changed once.
+     * Changes the conversation's copy of a message at once, its reactions then recorded so a page
+     * read before the change does not take it back.
      */
-    function change(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
+    function changeTimeline(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
         const onTimeline = timelineCopy(channelId, messageId);
         if (onTimeline) {
             apply(onTimeline);
             dependencies.timelines.recordReactions(messageId, onTimeline.reactions ?? []);
         }
+    }
 
+    /**
+     * Changes the open thread's copies of a message once its page is in, leaving one the
+     * conversation also holds to the conversation's change, so it is changed once.
+     */
+    function changeThread(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
         dependencies.threads?.whenLoaded(channelId, () => {
             if (isStopped) {
                 return;
             }
+            const onTimeline = timelineCopy(channelId, messageId);
             threadCopies(channelId, messageId).filter(copy => copy !== onTimeline).forEach(apply);
         });
+    }
+
+    /** Changes every copy of a message: the conversation's at once and the open thread's once its page is in. */
+    function change(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
+        changeTimeline(channelId, messageId, apply);
+        changeThread(channelId, messageId, apply);
+    }
+
+    /**
+     * What a reaction event does to a copy of its message, by who reacted; null for a payload
+     * that names no message or emoji.
+     */
+    function eventChange(event: "reaction.added" | "reaction.removed", payload: unknown): { messageId: number, apply: (copy: TimelineMessage) => void } | null {
+        const reaction = payload as Partial<ReactionEvent> | null;
+        if (typeof reaction?.message_id !== "number" || typeof reaction.code !== "string") {
+            return null;
+        }
+
+        const isAdded = event === "reaction.added";
+        const emoji: EmojiGlyph = { code: reaction.code, emoji: reaction.emoji ?? null, image_url: reaction.image_url ?? null, label: reaction.label ?? reaction.code };
+        const isReaders = reaction.person_alias_guid === dependencies.personAliasGuid;
+
+        return {
+            messageId: reaction.message_id,
+            apply: copy => {
+                // The reader's own moves only a mark it would change: their toggle already drew
+                // it, and another device of theirs has not.
+                if (isReaders) {
+                    setOwnReaction(copy, emoji, isAdded, placeOf);
+                    return;
+                }
+
+                const chip = copy.reactions?.find(existing => existing.code === emoji.code);
+                if (isAdded) {
+                    if (chip) {
+                        chip.count++;
+                    }
+                    else {
+                        addChip(copy, emoji, false, placeOf);
+                    }
+                }
+                else if (chip) {
+                    chip.count--;
+                    if (chip.count <= 0) {
+                        copy.reactions!.splice(copy.reactions!.indexOf(chip), 1);
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -469,43 +534,17 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         toggleCode: (channelId: string, messageId: number, code: string): Promise<void> => toggle(channelId, messageId, glyphOf(channelId, messageId, code)),
 
         applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown): void => {
-            if (isStopped) {
-                return;
+            const moved = isStopped ? null : eventChange(event, payload);
+            if (moved) {
+                changeTimeline(channelId, moved.messageId, moved.apply);
             }
+        },
 
-            const reaction = payload as Partial<ReactionEvent> | null;
-            if (typeof reaction?.message_id !== "number" || typeof reaction.code !== "string") {
-                return;
+        applyThreadEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown): void => {
+            const moved = isStopped ? null : eventChange(event, payload);
+            if (moved) {
+                changeThread(channelId, moved.messageId, moved.apply);
             }
-
-            const isAdded = event === "reaction.added";
-            const emoji: EmojiGlyph = { code: reaction.code, emoji: reaction.emoji ?? null, image_url: reaction.image_url ?? null, label: reaction.label ?? reaction.code };
-            const isReaders = reaction.person_alias_guid === dependencies.personAliasGuid;
-
-            change(channelId, reaction.message_id, copy => {
-                // The reader's own moves only a mark it would change: their toggle already drew
-                // it, and another device of theirs has not.
-                if (isReaders) {
-                    setOwnReaction(copy, emoji, isAdded, placeOf);
-                    return;
-                }
-
-                const chip = copy.reactions?.find(existing => existing.code === emoji.code);
-                if (isAdded) {
-                    if (chip) {
-                        chip.count++;
-                    }
-                    else {
-                        addChip(copy, emoji, false, placeOf);
-                    }
-                }
-                else if (chip) {
-                    chip.count--;
-                    if (chip.count <= 0) {
-                        copy.reactions!.splice(copy.reactions!.indexOf(chip), 1);
-                    }
-                }
-            });
         },
 
         loadCatalog: (): Promise<CatalogEmoji[] | null> => {

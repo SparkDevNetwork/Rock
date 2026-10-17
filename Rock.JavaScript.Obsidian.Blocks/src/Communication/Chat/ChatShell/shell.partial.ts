@@ -525,9 +525,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
         // whichever copy of the person's send lands first, from a page, live or its answer, settles it
         onLanded: message => sender.landed(message),
-        // A reaction moves a chip on every copy of its message the client holds, the open
-        // thread's too, which the reactions find for themselves; the timeline holds it, like any
-        // other change, until the channel's first page is in.
+        // A reaction moves the conversation's copy of its message when the timeline lets it
+        // through, held like any other change until the channel's first page is in; the open
+        // thread's copies are moved as the event arrives.
         applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload)
     });
 
@@ -827,7 +827,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // timeline then records with the counts so a page read earlier cannot undo them.
                     // The person's own new message goes straight in: it carries its send's key, so
                     // it takes the place of the row still sending rather than standing beside it.
+                    // A reaction reaches the open thread's copies at once, by the thread's own page;
+                    // only the conversation's copy waits for the conversation's.
                     threads.applyEvent(channelId, event, payload);
+                    if (event === "reaction.added" || event === "reaction.removed") {
+                        reactions.applyThreadEvent(channelId, event, payload);
+                    }
                     timelines.applyEvent(channelId, event, payload);
 
                     // Any copy settles the send, after the views have taken theirs: a reply shown

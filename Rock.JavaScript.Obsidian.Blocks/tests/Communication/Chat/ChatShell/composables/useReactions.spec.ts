@@ -71,12 +71,16 @@ const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
 const david = "a0000003-0000-4000-8000-000000000000";
 
-type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
+type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void, reject: (error: Error) => void };
 
 function deferred<T>(): Deferred<T> {
     let resolve!: (value: T) => void;
-    const promise = new Promise<T>(r => resolve = r);
-    return { promise, resolve };
+    let reject!: (error: Error) => void;
+    const promise = new Promise<T>((r, j) => {
+        resolve = r;
+        reject = j;
+    });
+    return { promise, resolve, reject };
 }
 
 type ReactionRow = { code: string, count: number, mine: boolean, emoji: string | null, image_url: string | null, label: string };
@@ -734,14 +738,16 @@ describe("a page read before a reaction", () => {
         threads: ReturnType<typeof createThreads>,
         pages: Array<Deferred<HistoryPage>>,
         threadPage: Deferred<CallResult>,
-        answers: Array<CallResult | Deferred<CallResult>>
+        answers: Array<CallResult | Deferred<CallResult>>,
+        deliver: (event: "reaction.added" | "reaction.removed", payload: unknown) => void
     };
 
     const pageOf = (messages: TimelineMessage[]): HistoryPage => ({ messages, read_cursor: null, unread_count: 0, has_more: false });
 
     /**
-     * The reactions over real timelines and threads whose every page is answered by hand, with the
-     * reaction events reaching the reactions through the timelines, as the shell routes them.
+     * The reactions over real timelines and threads whose every page is answered by hand, with a
+     * reaction event routed as the shell routes it: to the open thread's copies at once, and to the
+     * conversation's through the timelines.
      */
     function paged(): Paged {
         const pages: Array<Deferred<HistoryPage>> = [];
@@ -771,7 +777,12 @@ describe("a page read before a reaction", () => {
             storage: null
         } as never);
 
-        return { reactions, timelines, threads, pages, threadPage, answers };
+        const deliver = (event: "reaction.added" | "reaction.removed", payload: unknown): void => {
+            reactions?.applyThreadEvent(channel, event, payload);
+            timelines.applyEvent(channel, event, payload);
+        };
+
+        return { reactions, timelines, threads, pages, threadPage, answers, deliver };
     }
 
     async function loaded(messages: TimelineMessage[]): Promise<Paged> {
@@ -802,7 +813,7 @@ describe("a page read before a reaction", () => {
         const p = await loaded([message(42, [rx("heart", 4)])]);
 
         const reloading = p.timelines.loadNewest(channel);
-        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna));
         p.pages[1].resolve(pageOf([message(42, [rx("heart", 4)])]));
         await reloading;
 
@@ -818,7 +829,7 @@ describe("a page read before a reaction", () => {
 
         const rejoining = p.timelines.onJoined(channel);
         await flush();
-        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna));
         p.pages[2].resolve(pageOf([message(42, [rx("heart", 4)])]));
         await rejoining;
 
@@ -829,7 +840,7 @@ describe("a page read before a reaction", () => {
         const p = paged();
 
         const loading = p.timelines.loadNewest(channel);
-        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna));
         p.pages[0].resolve(pageOf([message(42, [rx("heart", 4)])]));
         await loading;
 
@@ -839,7 +850,7 @@ describe("a page read before a reaction", () => {
     test("a reaction held before the channel's first page was read is not counted again by it", async () => {
         const p = paged();
 
-        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna));
         const loading = p.timelines.loadNewest(channel);
         p.pages[0].resolve(pageOf([message(42, [rx("heart", 5)])]));
         await loading;
@@ -864,11 +875,30 @@ describe("a page read before a reaction", () => {
         const p = await loaded([message(42)]);
 
         const opening = p.threads.openThread(channel, 42);
-        p.timelines.applyEvent(channel, "reaction.added", added("pray", anna, 43));
+        p.deliver("reaction.added", added("pray", anna, 43));
         p.threadPage.resolve(ok({ root: message(42), messages: [message(43, [], { parent_id: 42, shown_in_channel: false })], read_cursor: null, following: false, has_more: false }));
         await opening;
 
         expect(threadChips(p.threads.state.thread?.replies.find(r => r.id === 43))).toEqual([{ code: "pray", count: 1, mine: false }]);
+    });
+
+    test("after the conversation's first page failed and a retry read it, the open thread's root moves once", async () => {
+        const p = paged();
+        const opening = p.threads.openThread(channel, 42);
+        p.threadPage.resolve(ok({ root: message(42, [rx("heart", 4)]), messages: [], read_cursor: null, following: false, has_more: false }));
+        await opening;
+
+        const failing = p.timelines.loadNewest(channel);
+        p.deliver("reaction.added", added("heart", anna));
+        p.pages[0].reject(new Error("offline"));
+        await expect(failing).rejects.toThrow("offline");
+
+        const retrying = p.timelines.loadNewest(channel);
+        p.pages[1].resolve(pageOf([message(42, [rx("heart", 5)])]));
+        await retrying;
+
+        expect(threadChips(p.threads.state.thread?.root)).toEqual([{ code: "heart", count: 5, mine: false }]);
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: false }]);
     });
 });
 

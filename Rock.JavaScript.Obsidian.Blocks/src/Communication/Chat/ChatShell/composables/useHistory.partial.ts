@@ -216,9 +216,9 @@ export type TimelineDependencies = {
     onLanded?: (message: TimelineMessage) => void;
 
     /**
-     * Moves the chips a reaction event names, wherever its message is held. The reactions own
-     * that arithmetic; the timelines decide when it runs, held like every other change until the
-     * channel's first page is in.
+     * Moves the chips a reaction event names on the conversation's copy of its message. The
+     * reactions own that arithmetic; the timelines decide when it runs, held like every other
+     * change until the channel's first page is in.
      */
     applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
 };
