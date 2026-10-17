@@ -13,7 +13,7 @@
 
         <SectionHeader title="Filters" />
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Link Name"

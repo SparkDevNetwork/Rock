@@ -329,6 +329,7 @@
     <Compile Include="Model\PageContextTests.cs" />
     <Compile Include="Model\PageRouteTests.cs" />
     <Compile Include="Model\PageTests.cs" />
+    <Compile Include="Model\PersonalLinkServiceTests.cs" />
     <Compile Include="Model\BinaryFileTypeTests.cs" />
     <Compile Include="Model\ModelAuditHtmlTests.cs" />
     <Compile Include="Reporting\ValueFilterTests.cs" />
