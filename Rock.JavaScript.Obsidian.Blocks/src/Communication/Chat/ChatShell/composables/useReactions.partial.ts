@@ -20,8 +20,10 @@
 // A toggle is drawn at once and then replaced by the platform's answer, which is the message's
 // whole list as the server counts it. The reader's own reaction reaches them twice, in that answer
 // and as the event every viewer hears, so an event under the reader's alias moves the chip only
-// when it would change their mark; whichever arrives first, the reaction counts once. Once the
-// reactions are stopped nothing new is called and no answer still on its way reaches the screen.
+// when it would change their mark; whichever arrives first, the reaction counts once. Every change
+// to the conversation's copy is recorded with the timelines, so a page read before it does not
+// take it back, and the open thread's copies change once its page is in. Once the reactions are
+// stopped nothing new is called and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { messageForError } from "../errors.partial";
@@ -44,14 +46,14 @@ export type ReactionsDependencies = {
     /** The shell's one call path. */
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
 
-    /** The conversations' messages, whose reactions change in place. */
-    timelines: Pick<Timelines, "state">;
+    /** The conversations' messages, whose reactions change in place and are recorded as they do. */
+    timelines: Pick<Timelines, "state" | "recordReactions">;
 
     /**
      * The open thread. A reply shown only in its thread is on no timeline, and the drawer's root
      * is a copy of its own, so both change too.
      */
-    threads?: Pick<Threads, "state">;
+    threads?: Pick<Threads, "state" | "whenLoaded">;
 
     /** The session's alias: an event under it is the reader's own. */
     personAliasGuid: string;
@@ -103,7 +105,10 @@ export type Reactions = {
     /** Records an emoji the person reacted with or inserted. */
     recordRecent: (code: string) => void;
 
-    /** The first names of who reacted with a chip, "You" for the reader; null when not known. */
+    /**
+     * The full names of the others who reacted with a chip, newest first: never the reader, whose
+     * own mark the chip carries, nor a person the platform cannot name. Null when not known.
+     */
     reactorNames: (messageId: number, reaction: Reaction) => Promise<string[] | null>;
 
     /** Ends the reactions for good. */
@@ -127,11 +132,11 @@ const recentLimit = 8;
 const reactorLimit = 3;
 
 /**
- * The tooltip line of a chip: the names of who reacted and how many more, or before the names
- * arrive, or without them, the count alone.
+ * The tooltip line of a chip: "You" first when the reader reacted, then the names of the others
+ * and how many more; before the names arrive, or with none to show, the count alone.
  *
  * @param reaction The chip.
- * @param names Who reacted, as reactorNames answers; null while unknown.
+ * @param names The others who reacted, as reactorNames answers; null while unknown.
  *
  * @returns The line.
  */
@@ -139,12 +144,16 @@ export function reactorLine(reaction: Reaction, names: string[] | null): string 
     // An image emoji has no glyph to put in a sentence, so it is named by the code a person types.
     const glyph = reaction.emoji ?? `:${reaction.code}:`;
 
-    if (!names || names.length === 0) {
+    // The reader leads whether or not they were among the newest few the names were read from,
+    // so the line still names no more people than the limit.
+    const others = names?.slice(0, reaction.mine ? reactorLimit - 1 : reactorLimit) ?? [];
+    if (!names || (!reaction.mine && others.length === 0)) {
         return `${reaction.count} ${reaction.count === 1 ? "person" : "people"} reacted with ${glyph}`;
     }
 
-    const rest = reaction.count - names.length;
-    const parts = rest > 0 ? [...names, `${rest} more`] : names;
+    const named = reaction.mine ? ["You", ...others] : others;
+    const rest = reaction.count - named.length;
+    const parts = rest > 0 ? [...named, `${rest} more`] : named;
     const who = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 
     return `${who} reacted with ${glyph}`;
@@ -211,6 +220,37 @@ function setOwnReaction(message: TimelineMessage, emoji: EmojiGlyph, isMine: boo
 }
 
 /**
+ * Lays one emoji's chip as an answer counts it over a copy of a message, leaving its other chips:
+ * the chip replaced, put in place, or taken away when the answer has none of that emoji.
+ *
+ * @param message The copy.
+ * @param code The emoji.
+ * @param chip The answer's chip of it, if any.
+ * @param place Where a new chip goes among the rest.
+ */
+function layChip(message: TimelineMessage, code: string, chip: Reaction | undefined, place: (reactions: Reaction[], code: string) => number): void {
+    const reactions = message.reactions ?? [];
+    const index = reactions.findIndex(reaction => reaction.code === code);
+
+    if (!chip) {
+        if (index >= 0) {
+            reactions.splice(index, 1);
+        }
+        return;
+    }
+
+    if (index >= 0) {
+        reactions.splice(index, 1, { ...chip });
+    }
+    else if (!message.reactions) {
+        message.reactions = [{ ...chip }];
+    }
+    else {
+        reactions.splice(place(reactions, code), 0, { ...chip });
+    }
+}
+
+/**
  * Draws a chip of one reaction on a copy of a message that has none of that emoji.
  *
  * @param message The copy.
@@ -249,40 +289,63 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     // The one fetch of the catalog still out, which every open while it is out shares.
     let catalogLoad: Promise<CatalogEmoji[] | null> | null = null;
 
-    // Each toggle of a message takes the next number; its answer counts only while its number is
-    // still the newest for that message, so a late answer never undoes a press made since.
-    const toggleTurns = new Map<number, number>();
+    // Each press takes the next number, kept by message and emoji; its answer counts only while
+    // its number is still the newest for that emoji, so a late answer never undoes a press of it
+    // made since, and a press of another emoji is neither overtaken nor taken back by it. With
+    // each, whether the reader's reaction is there as the server last answered, which a refused
+    // newest press puts back.
+    const presses = new Map<string, { turn: number, out: number, confirmed: boolean }>();
     let toggleTurn = 0;
+
+    // The presses of each message still out, and whether two were ever out at once. Crossing
+    // answers can come back in either order and each lists the message as the server counted it
+    // then, so while presses cross an answer speaks only for its own emoji.
+    const outstanding = new Map<number, { count: number, isCrossed: boolean }>();
 
     // The names asked for per message and emoji, held while the chip's count and mark are the
     // ones they were asked for.
     const names = new Map<string, { count: number, mine: boolean, names: Promise<string[] | null> }>();
 
-    /**
-     * Every copy of a message the client holds: the conversation's, and the open thread's root
-     * or reply. A copy held twice is changed once.
-     */
-    function copiesOf(channelId: string, messageId: number): TimelineMessage[] {
-        const copies = new Set<TimelineMessage>();
+    /** The conversation's copy of a message, if its timeline holds it. */
+    function timelineCopy(channelId: string, messageId: number): TimelineMessage | undefined {
+        return dependencies.timelines.state(channelId).messages.find(message => message.id === messageId);
+    }
 
-        const onTimeline = dependencies.timelines.state(channelId).messages.find(message => message.id === messageId);
-        if (onTimeline) {
-            copies.add(onTimeline);
-        }
-
+    /** The open thread's copies of a message: its root, or a reply it holds. */
+    function threadCopies(channelId: string, messageId: number): TimelineMessage[] {
         const thread = dependencies.threads?.state.thread;
-        if (thread && thread.channelId === channelId) {
-            if (thread.root?.id === messageId) {
-                copies.add(thread.root);
-            }
-
-            const reply = thread.replies.find(message => message.id === messageId);
-            if (reply) {
-                copies.add(reply);
-            }
+        if (!thread || thread.channelId !== channelId) {
+            return [];
         }
 
-        return [...copies];
+        return [thread.root, thread.replies.find(message => message.id === messageId)]
+            .filter((copy): copy is TimelineMessage => !!copy && copy.id === messageId);
+    }
+
+    /** Every copy of a message the client holds now, the conversation's first, each once. */
+    function copiesOf(channelId: string, messageId: number): TimelineMessage[] {
+        return [...new Set([timelineCopy(channelId, messageId), ...threadCopies(channelId, messageId)])]
+            .filter((copy): copy is TimelineMessage => !!copy);
+    }
+
+    /**
+     * Changes every copy of a message: the conversation's at once, its reactions then recorded so
+     * a page read before the change does not take it back, and the open thread's once its page is
+     * in. A copy both hold is changed once.
+     */
+    function change(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
+        const onTimeline = timelineCopy(channelId, messageId);
+        if (onTimeline) {
+            apply(onTimeline);
+            dependencies.timelines.recordReactions(messageId, onTimeline.reactions ?? []);
+        }
+
+        dependencies.threads?.whenLoaded(channelId, () => {
+            if (isStopped) {
+                return;
+            }
+            threadCopies(channelId, messageId).filter(copy => copy !== onTimeline).forEach(apply);
+        });
     }
 
     /**
@@ -317,10 +380,24 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
             : { code, emoji: null, image_url: null, label: code };
     }
 
-    /** Lays the server's list over every copy, each copy its own chips so no two share one. */
-    function applyAnswer(channelId: string, messageId: number, reactions: Reaction[]): void {
-        for (const copy of copiesOf(channelId, messageId)) {
-            copy.reactions = reactions.map(reaction => ({ ...reaction }));
+    /**
+     * Lays an answer over every copy, each copy its own chips so no two share one: the whole list,
+     * or while presses of the message cross, only the pressed emoji's chip.
+     */
+    function applyAnswer(channelId: string, messageId: number, code: string, reactions: Reaction[], isWhole: boolean): void {
+        const chip = reactions.find(reaction => reaction.code === code);
+        const apply = isWhole
+            ? (copy: TimelineMessage): void => {
+                copy.reactions = reactions.map(reaction => ({ ...reaction }));
+            }
+            : (copy: TimelineMessage): void => layChip(copy, code, chip, placeOf);
+
+        change(channelId, messageId, apply);
+
+        // A message the conversation is still reloading is not held yet, but its next page may
+        // have been read before this answer, so the answer is recorded all the same.
+        if (isWhole && !timelineCopy(channelId, messageId)) {
+            dependencies.timelines.recordReactions(messageId, reactions);
         }
     }
 
@@ -330,38 +407,55 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
             return;
         }
 
-        const copies = copiesOf(channelId, messageId);
-        const isMine = copies[0]?.reactions?.find(reaction => reaction.code === emoji.code)?.mine ?? false;
+        const isMine = copiesOf(channelId, messageId)[0]?.reactions?.find(reaction => reaction.code === emoji.code)?.mine ?? false;
         const turn = ++toggleTurn;
-        toggleTurns.set(messageId, turn);
+        const key = `${messageId}/${emoji.code}`;
+        const press = presses.get(key) ?? { turn, out: 0, confirmed: isMine };
+        press.turn = turn;
+        press.out++;
+        presses.set(key, press);
+        const pending = outstanding.get(messageId) ?? { count: 0, isCrossed: false };
+        pending.isCrossed ||= pending.count > 0;
+        pending.count++;
+        outstanding.set(messageId, pending);
 
         // Drawn at once, the mark and the count together, before the platform answers.
-        copies.forEach(copy => setOwnReaction(copy, emoji, !isMine, placeOf));
+        change(channelId, messageId, copy => setOwnReaction(copy, emoji, !isMine, placeOf));
 
         const result = await dependencies.call(isMine ? "chat_remove_reaction" : "chat_add_reaction", { p_message_id: messageId, p_reaction: emoji.code });
         if (isStopped) {
             return;
         }
 
-        const isNewest = toggleTurns.get(messageId) === turn;
-        if (isNewest) {
-            toggleTurns.delete(messageId);
+        const isNewest = press.turn === turn;
+        if (result.ok) {
+            press.confirmed = !isMine;
+        }
+        press.out -= 1;
+        if (press.out === 0) {
+            presses.delete(key);
+        }
+        const isWhole = !pending.isCrossed;
+        pending.count -= 1;
+        if (pending.count === 0) {
+            outstanding.delete(messageId);
         }
 
         if (!result.ok) {
             dependencies.notify({ code: result.error.code, text: messageForError(result.error), icon: "alert" });
 
-            // Only the press is taken back, so a reaction someone else made meanwhile stays.
-            // A newer press of the same message answers for the chips itself.
+            // Only the press is taken back, to where the server last left the reader's reaction,
+            // so a reaction someone else made meanwhile stays. A newer press of the same emoji
+            // answers for its chip itself.
             if (isNewest) {
-                copiesOf(channelId, messageId).forEach(copy => setOwnReaction(copy, emoji, isMine, placeOf));
+                change(channelId, messageId, copy => setOwnReaction(copy, emoji, press.confirmed, placeOf));
             }
             return;
         }
 
         const answer = result.data as Partial<ReactionAnswer> | null;
         if (isNewest && Array.isArray(answer?.reactions)) {
-            applyAnswer(channelId, messageId, answer.reactions);
+            applyAnswer(channelId, messageId, emoji.code, answer.reactions, isWhole);
         }
     }
 
@@ -388,12 +482,12 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
             const emoji: EmojiGlyph = { code: reaction.code, emoji: reaction.emoji ?? null, image_url: reaction.image_url ?? null, label: reaction.label ?? reaction.code };
             const isReaders = reaction.person_alias_guid === dependencies.personAliasGuid;
 
-            for (const copy of copiesOf(channelId, reaction.message_id)) {
+            change(channelId, reaction.message_id, copy => {
                 // The reader's own moves only a mark it would change: their toggle already drew
                 // it, and another device of theirs has not.
                 if (isReaders) {
                     setOwnReaction(copy, emoji, isAdded, placeOf);
-                    continue;
+                    return;
                 }
 
                 const chip = copy.reactions?.find(existing => existing.code === emoji.code);
@@ -411,7 +505,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
                         copy.reactions!.splice(copy.reactions!.indexOf(chip), 1);
                     }
                 }
-            }
+            });
         },
 
         loadCatalog: (): Promise<CatalogEmoji[] | null> => {
@@ -494,9 +588,11 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
                 }
 
                 // The reader may have reacted under an alias other than the session's primary one.
-                return page.reactors.map(reactor => reactor.person_alias_guid === dependencies.personAliasGuid || reactor.reactor_person_alias_guid === dependencies.personAliasGuid
-                    ? "You"
-                    : [reactor.nick_name, reactor.last_name].filter(part => !!part).join(" "));
+                // Someone the platform cannot name, gone or never synced, is counted, not drawn blank.
+                return page.reactors
+                    .filter(reactor => reactor.person_alias_guid !== dependencies.personAliasGuid && reactor.reactor_person_alias_guid !== dependencies.personAliasGuid)
+                    .map(reactor => [reactor.nick_name, reactor.last_name].filter(part => !!part).join(" "))
+                    .filter(name => name.length > 0);
             })();
 
             names.set(key, entry);

@@ -167,6 +167,13 @@ export type Threads = {
     /** The person's own reply was confirmed: it goes into the open thread at once, and the thread is followed. */
     upsertReply: (channelId: string, message: TimelineMessage) => void;
 
+    /**
+     * Runs a change to the open thread's messages: at once when its page is in, or once it lands
+     * when it is still on its way, so a page read before the change does not undo it. Nothing runs
+     * when no thread of the channel is open.
+     */
+    whenLoaded: (channelId: string, change: () => void) => void;
+
     /** Stops for good: nothing more is fetched and no answer reaches the screen. */
     stop: () => void;
 };
@@ -238,6 +245,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // The newest thread.updated for the open thread while its root is still on its way, laid over
     // the root the page brings: the page may have been read before the reply it reports.
     let pendingRootUpdate: ThreadUpdatedEvent | null = null;
+
+    // Changes to the open thread's messages made while its page is on its way, run once it lands.
+    let whileLoading: Array<() => void> = [];
 
     /** The root the conversation's timeline holds, if any. */
     function timelineRoot(channelId: string, rootId: number): TimelineMessage | undefined {
@@ -359,6 +369,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         newestSeen = null;
         lastSaved = null;
         pendingRootUpdate = null;
+        whileLoading = [];
         dependencies.timelines.keepThreadRead(null);
 
         if (isStopped || !thread || messageId === null || (saved !== null && messageId <= saved)) {
@@ -612,6 +623,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             newestSeen = null;
             lastSaved = null;
             pendingRootUpdate = null;
+            whileLoading = [];
 
             // Opening the thread is reading it, so its mark goes from the conversation and the list
             // at once rather than at the next save, and stays gone from a conversation whose
@@ -632,6 +644,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
             const thread = state.thread;
             thread.isLoading = false;
+            const changes = whileLoading;
+            whileLoading = [];
             if (!result.ok) {
                 thread.error = result.error;
                 return;
@@ -659,6 +673,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             thread.error = null;
             newestSeen = thread.readCursor;
             lastSaved = thread.readCursor;
+            changes.forEach(change => change());
         },
 
         loadOlderReplies: async (): Promise<void> => {
@@ -778,10 +793,23 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             }
         },
 
+        whenLoaded: (channelId: string, change: () => void): void => {
+            const thread = state.thread;
+            if (isStopped || !thread || thread.channelId !== channelId) {
+                return;
+            }
+            if (thread.isLoading) {
+                whileLoading.push(change);
+                return;
+            }
+            change();
+        },
+
         stop: (): void => {
             isStopped = true;
             listFetch++;
             threadOpen++;
+            whileLoading = [];
         }
     };
 }

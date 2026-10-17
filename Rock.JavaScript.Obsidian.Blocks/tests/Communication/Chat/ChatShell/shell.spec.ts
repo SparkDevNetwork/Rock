@@ -1318,6 +1318,23 @@ describe("reactions", () => {
 
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 10)?.reactions?.[0]?.count).toBe(event === "reaction.added" ? 3 : 1);
     });
+
+    // Reactions take the timeline's hold, as every other change to a message does.
+    test("one arriving while the channel's first page is on its way is applied once the page lands", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "reaction.added",
+            payload: { message_id: 10, channel_id: channelA, code: "pray", person_alias_guid: "a0000002-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands" }
+        });
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 10)?.reactions?.map(r => [r.code, r.count])).toEqual([["pray", 1]]);
+    });
 });
 
 describe("a page's report after the shell stops", () => {

@@ -31,7 +31,7 @@
 import { reactive } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
-import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
+import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
 
 /** How many messages the first page of a channel holds. */
 export const firstPageSize = 50;
@@ -214,6 +214,13 @@ export type TimelineDependencies = {
      * place, so the sender can let that send's row go at the first of them.
      */
     onLanded?: (message: TimelineMessage) => void;
+
+    /**
+     * Moves the chips a reaction event names, wherever its message is held. The reactions own
+     * that arithmetic; the timelines decide when it runs, held like every other change until the
+     * channel's first page is in.
+     */
+    applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
 };
 
 /** The timelines a shell holds. */
@@ -236,6 +243,12 @@ export type Timelines = {
     /** Puts one message in place by id, a person's own confirmed send for one. */
     upsert: (channelId: string, message: TimelineMessage) => void;
 
+    /**
+     * Records a message's reactions as they now stand after a live change, held or not, so a page
+     * read before the change does not take it back.
+     */
+    recordReactions: (messageId: number, reactions: Reaction[]) => void;
+
     /** The root whose thread is open on screen, which every page shows read while it stays open; null once none is. */
     keepThreadRead: (rootId: number | null) => void;
 
@@ -252,6 +265,11 @@ export type Timelines = {
  */
 export function isTimelineMessage(message: Pick<TimelineMessage, "parent_id" | "shown_in_channel">): boolean {
     return message.parent_id === null || message.parent_id === undefined || message.shown_in_channel === true;
+}
+
+/** Whether a live event is a reaction, which moves a count rather than setting a value. */
+function isReactionEvent(event: string): event is "reaction.added" | "reaction.removed" {
+    return event === "reaction.added" || event === "reaction.removed";
 }
 
 /** Whether a live payload carries the message id every event is keyed by. */
@@ -371,7 +389,7 @@ type ChannelSync = {
 export function createTimelines(dependencies: TimelineDependencies): Timelines {
     const states = new Map<string, TimelineState>();
     const syncs = new Map<string, ChannelSync>();
-    const held = new Map<string, Array<{ event: string, payload: unknown }>>();
+    const held = new Map<string, Array<{ event: string, payload: unknown, heldAt: number }>>();
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
     const random = dependencies.random ?? Math.random;
 
@@ -458,6 +476,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             let incoming: TimelineMessage = message;
             if (change && change.seq > readAt) {
                 incoming = { ...message, ...change.fields };
+                // each copy its own chips, so a later change to this one moves no record
+                if (change.fields.reactions) {
+                    incoming.reactions = change.fields.reactions.map(reaction => ({ ...reaction }));
+                }
                 if (change.fields.deleted_at === undefined && message.deleted_at) {
                     incoming.deleted_at = message.deleted_at;
                 }
@@ -520,6 +542,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
     /** Applies one live event to a loaded timeline. A live event never moves where catch-up resumes. */
     function apply(channelId: string, event: string, payload: unknown): void {
+        if (isReactionEvent(event)) {
+            dependencies.applyReaction?.(channelId, event, payload);
+            return;
+        }
         if (event === "thread.updated") {
             if (payload && typeof (payload as Partial<ThreadUpdatedEvent>).root_id === "number") {
                 applyThreadCounts(channelId, payload as ThreadUpdatedEvent);
@@ -792,7 +818,12 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
                     const waiting = held.get(channelId) ?? [];
                     held.delete(channelId);
-                    for (const { event, payload } of waiting) {
+                    for (const { event, payload, heldAt } of waiting) {
+                        // A reaction moves a count by one, so one that arrived before this page was
+                        // read is already in it; anything else sets a value and is safe to lay again.
+                        if (isReactionEvent(event) && heldAt < answer.readAt) {
+                            continue;
+                        }
                         apply(channelId, event, payload);
                     }
                 }
@@ -860,7 +891,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         applyEvent: (channelId: string, event: string, payload: unknown): void => {
             if (!state(channelId).isLoaded) {
                 const waiting = held.get(channelId) ?? [];
-                waiting.push({ event, payload });
+                waiting.push({ event, payload, heldAt: ++seq });
                 held.set(channelId, waiting);
                 return;
             }
@@ -871,6 +902,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         upsert: (channelId: string, message: TimelineMessage): void => {
             upsert(channelId, message);
             recordLive(message.id, {});
+        },
+
+        recordReactions: (messageId: number, reactions: Reaction[]): void => {
+            recordLive(messageId, { reactions: reactions.map(reaction => ({ ...reaction })) });
         },
 
         keepThreadRead: (rootId: number | null): void => {

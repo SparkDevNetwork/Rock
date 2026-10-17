@@ -59,8 +59,9 @@
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
 import { createReactions, reactorLine } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
-import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
 
@@ -279,7 +280,7 @@ describe("a toggle", () => {
 
     test("reaches the copy of the message the open thread holds as well", async () => {
         const root = message(42, [rx("heart", 4)]);
-        const threads = { state: { thread: { channelId: channel, rootId: 42, root: message(42, [rx("heart", 4)]), replies: [message(43, [], { parent_id: 42 })] } } };
+        const threads = { whenLoaded: (_channelId: string, change: () => void) => change(), state: { thread: { channelId: channel, rootId: 42, root: message(42, [rx("heart", 4)]), replies: [message(43, [], { parent_id: 42 })] } } };
         const { reactions } = await setup([root], [ok({ message_id: 42, reactions: [rx("heart", 5, true)] })], { threads });
 
         await reactions.toggle(channel, 42, glyph("heart"));
@@ -290,7 +291,7 @@ describe("a toggle", () => {
 
     test("on a reply held only in the open thread reacts to that reply", async () => {
         const reply = message(43, [], { parent_id: 42, shown_in_channel: false });
-        const threads = { state: { thread: { channelId: channel, rootId: 42, root: message(42), replies: [reply] } } };
+        const threads = { whenLoaded: (_channelId: string, change: () => void) => change(), state: { thread: { channelId: channel, rootId: 42, root: message(42), replies: [reply] } } };
         const { reactions, calls } = await setup([message(42)], [ok({ message_id: 43, reactions: [rx("pray", 1, true)] })], { threads });
 
         await reactions.toggle(channel, 43, glyph("pray"));
@@ -573,7 +574,7 @@ describe("who reacted", () => {
         person_alias_guid: alias, nick_name: nick, last_name: last, avatar_url: null, reacted_at: "2026-10-16T09:01:00Z", reactor_person_alias_guid: alias
     });
 
-    test("asks chat_list_reactors for the first three, and names the reader You", async () => {
+    test("asks chat_list_reactors for the first three, and leaves the reader out of the names, whose mark the line reads", async () => {
         const { reactions, calls } = await setup([message(42, [rx("pray", 3, true)])], [
             ok({ reactors: [reactor(anna, "Anna", "Reyes"), reactor(me, "Jordan", "Ellis"), reactor(david, "David", "Okafor")], has_more: false })
         ]);
@@ -581,7 +582,15 @@ describe("who reacted", () => {
         const names = await reactions.reactorNames(42, rx("pray", 3, true) as never);
 
         expect(calls).toEqual([{ name: "chat_list_reactors", args: { p_message_id: 42, p_reaction: "pray", p_after_at: null, p_after_alias: null, p_limit: 3 } }]);
-        expect(names).toEqual(["Anna Reyes", "You", "David Okafor"]);
+        expect(names).toEqual(["Anna Reyes", "David Okafor"]);
+    });
+
+    // A person who left or was never synced comes back with no name; they are counted, not drawn blank.
+    test("leaves out a reactor the platform cannot name", async () => {
+        const nameless = { ...reactor(david, "", ""), nick_name: null, last_name: null };
+        const { reactions } = await setup([message(42, [rx("tada", 47)])], [ok({ reactors: [nameless, reactor(anna, "Anna", "Reyes"), { ...nameless, person_alias_guid: "a0000009-0000-4000-8000-000000000000" }], has_more: true })]);
+
+        expect(await reactions.reactorNames(42, rx("tada", 47) as never)).toEqual(["Anna Reyes"]);
     });
 
     test("are asked for once per chip until its count or the reader's mark changes", async () => {
@@ -610,21 +619,256 @@ describe("who reacted", () => {
 });
 
 describe("the tooltip's line", () => {
-    const pray = (count: number): never => rx("pray", count) as never;
+    const pray = (count: number, mine = false): never => rx("pray", count, mine) as never;
 
     test.each([
         [["Anna Reyes"], 1, "Anna Reyes reacted with 🙏"],
         [["Anna Reyes", "David Okafor"], 2, "Anna Reyes and David Okafor reacted with 🙏"],
-        [["Anna Reyes", "David Okafor", "You"], 3, "Anna Reyes, David Okafor and You reacted with 🙏"],
         [["Anna Reyes", "David Okafor"], 3, "Anna Reyes, David Okafor and 1 more reacted with 🙏"],
         [["Anna Reyes", "David Okafor", "Cara Lin"], 7, "Anna Reyes, David Okafor, Cara Lin and 4 more reacted with 🙏"]
     ] as Array<[string[], number, string]>)("names %j of %d", (names, count, line) => {
         expect(reactorLine(pray(count), names)).toBe(line);
     });
 
+    // The reader leads, whether or not they are among the newest three the names were read from.
+    test.each([
+        [[], 1, "You reacted with 🙏"],
+        [["Priya Shah"], 2, "You and Priya Shah reacted with 🙏"],
+        [["Priya Shah", "Marcus Reed"], 3, "You, Priya Shah and Marcus Reed reacted with 🙏"],
+        [["Priya Shah"], 3, "You, Priya Shah and 1 more reacted with 🙏"],
+        [["Priya Shah", "Marcus Reed", "Cara Lin"], 7, "You, Priya Shah, Marcus Reed and 4 more reacted with 🙏"],
+        [[], 3, "You and 2 more reacted with 🙏"]
+    ] as Array<[string[], number, string]>)("on the reader's own chip leads with You: %j of %d", (names, count, line) => {
+        expect(reactorLine(pray(count, true), names)).toBe(line);
+    });
+
     test("before the names arrive, or without them, reads the count", () => {
         expect(reactorLine(pray(1), null)).toBe("1 person reacted with 🙏");
         expect(reactorLine(pray(3), null)).toBe("3 people reacted with 🙏");
+        expect(reactorLine(pray(47), [])).toBe("47 people reacted with 🙏");
+    });
+});
+
+// A person can press again before the first answer is back, and answers can come back in either
+// order. A press is answered for by its own emoji: a newer press of the same emoji overtakes it,
+// a press of another emoji does not, and a refusal takes back only its own emoji's press.
+describe("presses whose answers cross", () => {
+    test("two quick toggles of one emoji, the first answer late: the second press stands", async () => {
+        const first = deferred<CallResult>();
+        const second = deferred<CallResult>();
+        const { reactions, timelines } = await setup([message(42, [rx("heart", 4)])], [first, second]);
+
+        const adding = reactions.toggle(channel, 42, glyph("heart"));
+        const removing = reactions.toggle(channel, 42, glyph("heart"));
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+
+        second.resolve(ok({ message_id: 42, reactions: [rx("heart", 4)] }));
+        await removing;
+        first.resolve(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
+        await adding;
+
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+    });
+
+    test("two emoji on one message, answered out of order: neither answer wipes the other press", async () => {
+        const thumbs = deferred<CallResult>();
+        const heart = deferred<CallResult>();
+        const { reactions, timelines } = await setup([message(42)], [thumbs, heart]);
+
+        const pressingThumbs = reactions.toggle(channel, 42, glyph("thumbsup"));
+        const pressingHeart = reactions.toggle(channel, 42, glyph("heart"));
+
+        // the heart's answer was counted before the thumbs up reached the server
+        heart.resolve(ok({ message_id: 42, reactions: [rx("heart", 1, true)] }));
+        await pressingHeart;
+        expect(chipsOf(timelines)).toEqual([{ code: "thumbsup", count: 1, mine: true }, { code: "heart", count: 1, mine: true }]);
+
+        // and the thumbs up's was counted before the heart reached it
+        thumbs.resolve(ok({ message_id: 42, reactions: [rx("thumbsup", 1, true)] }));
+        await pressingThumbs;
+        expect(chipsOf(timelines)).toEqual([{ code: "thumbsup", count: 1, mine: true }, { code: "heart", count: 1, mine: true }]);
+    });
+
+    test.each([["the newest refused first", "newest-first"], ["the oldest refused first", "oldest-first"]] as const)(
+        "two emoji both refused, %s: each press is taken back",
+        async (_order, order) => {
+            const thumbs = deferred<CallResult>();
+            const heart = deferred<CallResult>();
+            const { reactions, timelines } = await setup([message(42, [rx("pray", 1)])], [thumbs, heart]);
+
+            const pressingThumbs = reactions.toggle(channel, 42, glyph("thumbsup"));
+            const pressingHeart = reactions.toggle(channel, 42, glyph("heart"));
+            const [firstOut, secondOut] = order === "newest-first" ? [heart, thumbs] : [thumbs, heart];
+            firstOut.resolve(refused("rpc.message_hidden", "This message is hidden."));
+            secondOut.resolve(refused("rpc.message_hidden", "This message is hidden."));
+            await pressingThumbs;
+            await pressingHeart;
+
+            expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 1, mine: false }]);
+        }
+    );
+
+    test("one emoji pressed twice and both refused: the chip is back as it was before either", async () => {
+        const first = deferred<CallResult>();
+        const second = deferred<CallResult>();
+        const { reactions, timelines } = await setup([message(42, [rx("heart", 4)])], [first, second]);
+
+        const adding = reactions.toggle(channel, 42, glyph("heart"));
+        const removing = reactions.toggle(channel, 42, glyph("heart"));
+        second.resolve(refused("rpc.message_hidden", "This message is hidden."));
+        first.resolve(refused("rpc.message_hidden", "This message is hidden."));
+        await removing;
+        await adding;
+
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+    });
+});
+
+// A page can be read before a reaction and land after it: a reload, a catch-up after a rejoin,
+// the channel's first page, or an open thread's. What the reaction changed is laid over that page
+// rather than undone by it, and a reaction a page read after it already counts is not counted again.
+describe("a page read before a reaction", () => {
+    type Paged = {
+        reactions: ReturnType<typeof createReactions>,
+        timelines: ReturnType<typeof createTimelines>,
+        threads: ReturnType<typeof createThreads>,
+        pages: Array<Deferred<HistoryPage>>,
+        threadPage: Deferred<CallResult>,
+        answers: Array<CallResult | Deferred<CallResult>>
+    };
+
+    const pageOf = (messages: TimelineMessage[]): HistoryPage => ({ messages, read_cursor: null, unread_count: 0, has_more: false });
+
+    /**
+     * The reactions over real timelines and threads whose every page is answered by hand, with the
+     * reaction events reaching the reactions through the timelines, as the shell routes them.
+     */
+    function paged(): Paged {
+        const pages: Array<Deferred<HistoryPage>> = [];
+        const threadPage = deferred<CallResult>();
+        const answers: Array<CallResult | Deferred<CallResult>> = [];
+        let reactions: ReturnType<typeof createReactions> | null = null;
+        const timelines = createTimelines({
+            fetchPage: () => {
+                const page = deferred<HistoryPage>();
+                pages.push(page);
+                return page.promise;
+            },
+            applyReaction: (channelId: string, event: string, payload: unknown) => reactions?.applyEvent(channelId, event as "reaction.added", payload)
+        } as never);
+        const threads = createThreads({ call: () => threadPage.promise, timelines, personAliasGuid: me });
+        reactions = createReactions({
+            call: () => {
+                const answer = answers.shift() ?? ok({});
+                return "promise" in answer ? answer.promise : Promise.resolve(answer);
+            },
+            timelines,
+            threads,
+            personAliasGuid: me,
+            notify: jest.fn(),
+            favorites,
+            churchKey: church,
+            storage: null
+        } as never);
+
+        return { reactions, timelines, threads, pages, threadPage, answers };
+    }
+
+    async function loaded(messages: TimelineMessage[]): Promise<Paged> {
+        const p = paged();
+        const loading = p.timelines.loadNewest(channel);
+        p.pages[0].resolve(pageOf(messages));
+        await loading;
+        return p;
+    }
+
+    function threadChips(held: TimelineMessage | null | undefined): Array<{ code: string, count: number, mine: boolean }> {
+        return ((held as unknown as { reactions?: ReactionRow[] } | null)?.reactions ?? []).map(r => ({ code: r.code, count: r.count, mine: r.mine }));
+    }
+
+    test("a toggle's answer is not undone by a newest page read before it", async () => {
+        const p = await loaded([message(42, [rx("heart", 4)])]);
+        p.answers.push(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
+
+        const reloading = p.timelines.loadNewest(channel);
+        await p.reactions.toggle(channel, 42, glyph("heart"));
+        p.pages[1].resolve(pageOf([message(42, [rx("heart", 4)])]));
+        await reloading;
+
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
+    });
+
+    test("another person's reaction is not undone by a newest page read before it", async () => {
+        const p = await loaded([message(42, [rx("heart", 4)])]);
+
+        const reloading = p.timelines.loadNewest(channel);
+        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.pages[1].resolve(pageOf([message(42, [rx("heart", 4)])]));
+        await reloading;
+
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: false }]);
+    });
+
+    test("nor by a catch-up page read before it, after a rejoin", async () => {
+        const p = await loaded([message(42, [rx("heart", 4)])]);
+        const joining = p.timelines.onJoined(channel);
+        await flush();
+        p.pages[1].resolve(pageOf([]));
+        await joining;
+
+        const rejoining = p.timelines.onJoined(channel);
+        await flush();
+        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.pages[2].resolve(pageOf([message(42, [rx("heart", 4)])]));
+        await rejoining;
+
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: false }]);
+    });
+
+    test("a reaction arriving while the channel's first page is on its way is applied once it lands", async () => {
+        const p = paged();
+
+        const loading = p.timelines.loadNewest(channel);
+        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        p.pages[0].resolve(pageOf([message(42, [rx("heart", 4)])]));
+        await loading;
+
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: false }]);
+    });
+
+    test("a reaction held before the channel's first page was read is not counted again by it", async () => {
+        const p = paged();
+
+        p.timelines.applyEvent(channel, "reaction.added", added("heart", anna));
+        const loading = p.timelines.loadNewest(channel);
+        p.pages[0].resolve(pageOf([message(42, [rx("heart", 5)])]));
+        await loading;
+
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: false }]);
+    });
+
+    test("a toggle's answer on a root reaches the open thread's root, whose page was read before it", async () => {
+        const p = await loaded([message(42, [rx("heart", 4)])]);
+        p.answers.push(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
+
+        const opening = p.threads.openThread(channel, 42);
+        await p.reactions.toggle(channel, 42, glyph("heart"));
+        p.threadPage.resolve(ok({ root: message(42, [rx("heart", 4)]), messages: [], read_cursor: null, following: false, has_more: false }));
+        await opening;
+
+        expect(threadChips(p.threads.state.thread?.root)).toEqual([{ code: "heart", count: 5, mine: true }]);
+        expect(chipsOf(p.timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
+    });
+
+    test("a reaction to a reply only the thread holds, arriving while its page is on its way, is applied once it lands", async () => {
+        const p = await loaded([message(42)]);
+
+        const opening = p.threads.openThread(channel, 42);
+        p.timelines.applyEvent(channel, "reaction.added", added("pray", anna, 43));
+        p.threadPage.resolve(ok({ root: message(42), messages: [message(43, [], { parent_id: 42, shown_in_channel: false })], read_cursor: null, following: false, has_more: false }));
+        await opening;
+
+        expect(threadChips(p.threads.state.thread?.replies.find(r => r.id === 43))).toEqual([{ code: "pray", count: 1, mine: false }]);
     });
 });
 

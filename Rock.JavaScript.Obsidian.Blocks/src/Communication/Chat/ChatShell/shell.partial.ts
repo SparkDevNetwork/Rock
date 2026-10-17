@@ -524,7 +524,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
         // whichever copy of the person's send lands first, from a page, live or its answer, settles it
-        onLanded: message => sender.landed(message)
+        onLanded: message => sender.landed(message),
+        // A reaction moves a chip on every copy of its message the client holds, the open
+        // thread's too, which the reactions find for themselves; the timeline holds it, like any
+        // other change, until the channel's first page is in.
+        applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload)
     });
 
     const channels = createChannelStore({ reloadSidebar: () => void loadSidebar() });
@@ -816,12 +820,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
                             cancelRecheck();
                             recheckTimer = setTimeout(recheck, Math.random() * channelChangedWaitMs);
                         }
-                        return;
-                    }
-                    // A reaction moves a chip on every copy of its message the client holds,
-                    // the open thread's too, which the reactions find for themselves.
-                    if (event === "reaction.added" || event === "reaction.removed") {
-                        reactions.applyEvent(channelId, event, payload);
                         return;
                     }
                     // A thread's counts move its root wherever it is held, and a reply reaches the

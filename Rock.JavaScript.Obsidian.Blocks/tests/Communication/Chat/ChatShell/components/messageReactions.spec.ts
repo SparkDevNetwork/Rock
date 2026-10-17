@@ -236,9 +236,9 @@ describe("a chip's tooltip", () => {
         expect(w.get("[role='tooltip']").text()).toBe("Anna Reyes, David Okafor and 1 more reacted with 🙏");
     });
 
-    test("names the reader You", async () => {
+    test("leads with You on the reader's own chip, the reader not among the names", async () => {
         jest.useFakeTimers();
-        const w = mountRow({ message: message([heart(2, true)]), loadReactorNames: async () => ["You", "Anna Reyes"] });
+        const w = mountRow({ message: message([heart(2, true)]), loadReactorNames: async () => ["Anna Reyes"] });
         const chip = chips(w)[0];
 
         await chip.trigger("mouseenter");
