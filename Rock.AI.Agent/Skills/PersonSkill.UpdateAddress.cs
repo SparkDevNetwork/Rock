@@ -22,6 +22,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -71,6 +72,23 @@ internal sealed partial class PersonSkill
         }
 
         var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
+
+        /*
+            10/16/2026 - MSE
+
+            Loading the person only checks VIEW, which everyone has on people
+            by default. Changing a person's address must require EDIT on them,
+            as the other agent write tools do. A person can still edit
+            themselves because Person.IsAuthorized() allows that. The check is
+            here and not in the shared AddOrUpdateAddress() helper because the
+            Attendee skill uses that helper with its own family rules.
+
+            Reason: Prevent changing a person without EDIT permission.
+        */
+        if ( person != null && !person.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+        {
+            helper.AddError( "You are not authorized to edit this person." );
+        }
 
         if ( helper.HasErrors )
         {

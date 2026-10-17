@@ -526,6 +526,7 @@ namespace Rock.Rest.Controllers
             SetProxyCreation( true );
 
             CheckCanEdit( person );
+            CheckCanAddToFamily( familyId, groupRoleId );
 
             if ( !person.IsValid )
             {
@@ -577,6 +578,7 @@ namespace Rock.Rest.Controllers
             System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
             var person = this.Get( personId );
             CheckCanEdit( person );
+            CheckCanAddToFamily( familyId, groupRoleId );
 
             PersonService.AddPersonToFamily( person, false, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
@@ -586,6 +588,61 @@ namespace Rock.Rest.Controllers
             }
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        /// <summary>
+        /// Ensures the family identifier is a family group, the role is a family role
+        /// and the current person can edit the family group or every person in it.
+        /// </summary>
+        /// <param name="familyId">The family identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        private void CheckCanAddToFamily( int familyId, int groupRoleId )
+        {
+            /*
+                10/16/2026 - MSE
+
+                These endpoints passed any group Id and role Id to AddPersonToFamily, which adds
+                a member to any group. A caller could add themselves to a security role such as
+                Rock Administration. Only allow family groups and family roles. Rock does not
+                grant EDIT on family groups to staff by default (the Edit Family block does not
+                require it either), so also allow anyone who can edit every person already in
+                the family.
+
+                Reason: Only add people to families the caller can edit.
+            */
+            var rockContext = ( RockContext ) Service.Context;
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType( rockContext );
+            var family = new GroupService( rockContext ).Get( familyId );
+
+            if ( family == null || familyGroupType == null || family.GroupTypeId != familyGroupType.Id || family.IsSecurityRoleOrSecurityGroupType() )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Family not found." );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            if ( !familyGroupType.Roles.Any( r => r.Id == groupRoleId ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The role is not a family role." );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var currentPerson = GetPerson();
+            if ( family.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+            {
+                return;
+            }
+
+            // Include deceased and archived members so no member is skipped.
+            var members = new GroupMemberService( rockContext ).Queryable( true, true )
+                .Where( m => m.GroupId == family.Id )
+                .Select( m => m.Person )
+                .ToList();
+
+            if ( members.Any( p => !p.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
         }
 
         /// <summary>

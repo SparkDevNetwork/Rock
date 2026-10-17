@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -44,6 +45,21 @@ internal sealed partial class PrayerSkill
         if ( helper.HasErrors )
         {
             return helper.ErrorResult;
+        }
+
+        /*
+            10/16/2026 - MSE
+
+            The request is loaded without any security check, so without this
+            any person who can use this skill could delete any prayer request.
+            Deleting must require EDIT on the request, which matches the other
+            agent delete tools.
+
+            Reason: Prevent deleting prayer requests without EDIT permission.
+        */
+        if ( !existingPrayerRequest.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+        {
+            return Error( "You are not authorized to delete this prayer request." );
         }
 
         prayerRequestService.Delete( existingPrayerRequest );

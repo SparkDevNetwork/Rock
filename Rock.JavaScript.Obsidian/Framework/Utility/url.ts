@@ -36,6 +36,25 @@ export function isUrl(val: unknown): boolean {
 }
 
 /**
+ * Checks if the URL uses a safe scheme. The URL is resolved the same way
+ * the browser resolves an href, so relative URLs are allowed.
+ *
+ * @param url The URL to be checked.
+ *
+ * @returns true if the URL uses the http or https scheme; otherwise false.
+ */
+export function isUrlSchemeSafe(url: string): boolean {
+    try {
+        const u = new URL(url, document.baseURI);
+
+        return u.protocol === "http:" || u.protocol === "https:";
+    }
+    catch {
+        return false;
+    }
+}
+
+/**
  * Make the URL safe to use for redirects.
  *
  * - A URL on this site is returned unchanged.

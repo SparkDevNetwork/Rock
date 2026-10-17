@@ -35,6 +35,7 @@
                     </div>
                     <iframe v-if="isPreviewMode"
                             :srcdoc="previewHtml"
+                            sandbox="allow-popups allow-popups-to-escape-sandbox"
                             class="email-preview-frame" />
                     <CodeEditor v-else
                                 v-model="messageBody"
@@ -144,6 +145,18 @@
     const fromEmail = ref(config.fromEmail ?? "");
     const subject = ref(config.subject ?? "");
     const messageBody = ref(config.messageBody ?? "");
+
+    /*
+        10/16/2026 - MSE
+
+        The email preview iframe in the template holds the email merged with registrant data,
+        which an anonymous registrant can fill with HTML. It is sandboxed with
+        "allow-popups allow-popups-to-escape-sandbox" so that HTML cannot run script in Rock's
+        origin; nothing reads the frame and its height is fixed, so no other token is needed.
+        Never add allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+        Reason: Stop stored XSS through the payment reminder email preview.
+    */
     const previewHtml = ref(config.previewHtml ?? "");
 
     const isPreviewMode = ref(true);
