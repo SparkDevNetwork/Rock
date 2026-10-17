@@ -70,7 +70,7 @@ namespace Rock.Field.Types
             var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
             if ( shouldAlwaysShowCondensed )
             {
-                return privateValue;
+                return privateValue.EncodeHtml();
             }
 
             // Try to create a valid absolute Uri.
@@ -90,15 +90,32 @@ namespace Rock.Field.Types
                 }
             }
 
-            // If we have a valid Uri create a link, otherwise just display the unformatted value.
+            /*
+                10/16/2026 - MSE
+
+                The stored value can come from public forms (such as Workflow
+                Entry) that do not check its format, so it must be encoded
+                before it is placed in HTML. Only http and https links (or
+                relative links) become an href. Anything else, such as the
+                javascript scheme, is shown as plain encoded text.
+
+                Reason: Stored values were rendered as raw HTML.
+            */
+
+            // If we have a valid, safe Uri create a link, otherwise just display the encoded value.
             if ( uri != null )
             {
-                return string.Format( "<a href='{0}'>{1}</a>",
-                    uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString,
-                    privateValue );
+                var safeUrl = SocialMediaAccountFieldType.GetSafeUrl( uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString );
+
+                if ( safeUrl.IsNotNullOrWhiteSpace() )
+                {
+                    return string.Format( "<a href='{0}'>{1}</a>",
+                        safeUrl.EncodeHtml(),
+                        privateValue.EncodeHtml() );
+                }
             }
 
-            return privateValue;
+            return privateValue.EncodeHtml();
         }
 
         #endregion
@@ -265,6 +282,33 @@ namespace Rock.Field.Types
             return !showCondensed
                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            var formattedValue = FormatValue( parentControl, value, configurationValues, condensed );
+
+            /*
+                10/16/2026 - MSE
+
+                FormatValue returns the raw URL when condensed (or when Should
+                Always Show Condensed is set) because Lava, workflows and other
+                plain text consumers use it. Grids and attribute displays place
+                this value directly in HTML, so it is encoded here instead.
+
+                Reason: The condensed value was rendered as raw HTML.
+            */
+            return condensed || shouldAlwaysShowCondensed
+                ? formattedValue?.EncodeHtml()
+                : formattedValue;
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
         }
 
 

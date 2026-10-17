@@ -39,7 +39,7 @@
                                 <div class="col-md-12">
                                     <label>Message</label>
                                     <Rock:Toggle ID="tglEmailBodyView" runat="server" CssClass="pull-right" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OnText="Preview" OffText="Source" Checked="true" OnCheckedChanged="tglEmailBodyView_CheckedChanged" />
-                                    <iframe id="ifEmailPreview" runat="server" style="width: 100%; height: 400px; background-color: #fff;" />
+                                    <iframe id="ifEmailPreview" runat="server" sandbox="allow-popups allow-popups-to-escape-sandbox" style="width: 100%; height: 400px; background-color: #fff;" />
                                     <Rock:CodeEditor ID="ceEmailMessage" runat="server" EditorHeight="400" Visible="false" />
                                 </div>
                             </div>

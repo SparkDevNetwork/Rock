@@ -238,7 +238,23 @@
     // Set to null to clear the attachment uploader.
     const currentAttachment = ref<ListItemBag | null | undefined>();
     const areMoreOptionsShown = ref<boolean>(!!props.replyToEmail || !!props.ccEmails || !!props.bccEmails);
-    const messageIFrameElement = ref<HTMLIFrameElement>(document.createElement("iframe"));
+    /*
+        10/16/2026 - MSE
+
+        The hidden message frame holds stored message HTML, so it is sandboxed before srcdoc is
+        ever set. allow-same-origin is only there so processMessage and onFormSubmitted can read
+        and update #preheader-text. Never add allow-scripts: a same-origin frame that may run
+        script can remove its own sandbox.
+
+        Reason: Stop stored XSS through the wizard email settings step.
+    */
+    function createMessageIFrame(): HTMLIFrameElement {
+        const iframe = document.createElement("iframe");
+        iframe.setAttribute("sandbox", "allow-same-origin allow-popups allow-popups-to-escape-sandbox");
+        return iframe;
+    }
+
+    const messageIFrameElement = ref<HTMLIFrameElement>(createMessageIFrame());
     const emailPreviewElement = ref<HTMLElement | null | undefined>();
     const emailPreviewText = ref<string>("");
 
