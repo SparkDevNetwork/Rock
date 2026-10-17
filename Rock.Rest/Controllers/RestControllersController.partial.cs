@@ -131,5 +131,27 @@ namespace Rock.Rest.Controllers
                 return controllerNames;
             }
         }
+
+        /// <inheritdoc/>
+        protected override void CheckCanEdit( RestController entity )
+        {
+            base.CheckCanEdit( entity );
+
+            /*
+                10/16/2026 - MSE
+
+                RestController rows anchor v1 REST security, so creating, renaming or deleting
+                one changes which rules secure an endpoint. Staff hold EDIT on every controller
+                through the seeded entity type rule, so require ADMINISTRATE on the controller.
+                For PUT, PATCH and DELETE the entity is the stored row; for POST it is the new
+                row, which resolves ADMINISTRATE from the RestController entity type.
+
+                Reason: REST security records are administrator settings.
+            */
+            if ( entity == null || !entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+        }
     }
 }

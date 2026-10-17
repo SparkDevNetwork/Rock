@@ -691,6 +691,32 @@ namespace Rock.Rest
              *
              */
 
+            /*
+                10/16/2026 - MSE
+
+                Launching a workflow needs VIEW on its workflow type, the same rule as the
+                Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                the controller only says the caller may use this endpoint. The check runs
+                before the entity is loaded so an unauthorized call does no work. The caller
+                is recorded as the initiator like every other launch path.
+
+                Reason: Staff could launch any workflow type with chosen values through any v1 controller.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
+            if ( workflowType == null )
+            {
+                // An unknown workflow type launches nothing, the same as before.
+                return;
+            }
+
+            var person = GetPerson();
+            if ( !CanLaunchWorkflowType( workflowType, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var initiatorPersonAliasId = person?.PrimaryAliasId;
+
             T entity = null;
             if ( id > 0 )
             {
@@ -699,7 +725,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, null );
+                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, initiatorPersonAliasId );
             }
             else
             {
@@ -709,6 +735,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
                 transaction.Enqueue();
             }
         }
@@ -735,6 +762,32 @@ namespace Rock.Rest
              *
              */
 
+            /*
+                10/16/2026 - MSE
+
+                Launching a workflow needs VIEW on its workflow type, the same rule as the
+                Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                the controller only says the caller may use this endpoint. The check runs
+                before the entity is loaded so an unauthorized call does no work. The caller
+                is recorded as the initiator like every other launch path.
+
+                Reason: Staff could launch any workflow type with chosen values through any v1 controller.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
+            if ( workflowType == null )
+            {
+                // An unknown workflow type launches nothing, the same as before.
+                return;
+            }
+
+            var person = GetPerson();
+            if ( !CanLaunchWorkflowType( workflowType, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var initiatorPersonAliasId = person?.PrimaryAliasId;
+
             T entity = null;
             if ( id > 0 )
             {
@@ -743,7 +796,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, null );
+                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, initiatorPersonAliasId );
             }
             else
             {
@@ -753,6 +806,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
                 transaction.Enqueue();
             }
         }
@@ -1110,6 +1164,41 @@ namespace Rock.Rest
                 {
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Checks that the current person can administrate the REST controller that
+        /// serves this request. Use it for records that are not secured themselves but
+        /// hold administrator settings.
+        /// </summary>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected void CheckCanAdministrateController()
+        {
+            /*
+                10/16/2026 - MSE
+
+                Records that are not ISecured have no record security, so the only gate on a
+                v1 write is the REST controller rule, and staff hold EDIT on every controller
+                through the seeded entity type rule. Controllers for administrator settings
+                call this to require ADMINISTRATE on the controller, which by default only
+                Rock Administration holds. An unknown controller falls back to a new
+                RestController the same way SecuredAttribute does.
+
+                This must stay protected. Web API treats public methods as actions, so a
+                public method would add an endpoint and new RestAction rows.
+
+                Reason: Staff must not change administrator settings through v1 REST.
+            */
+            ISecured controller = RestControllerCache.Get( GetType().FullName );
+            if ( controller == null )
+            {
+                controller = new RestController();
+            }
+
+            if ( !controller.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
         }
 

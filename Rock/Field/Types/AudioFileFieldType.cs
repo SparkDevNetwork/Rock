@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.RegularExpressions;
 #if WEBFORMS
 using System.Web.UI;
 #endif
@@ -41,6 +42,12 @@ namespace Rock.Field.Types
     {
         private const string FILE_PATH = "filePath";
         private const string MIME_TYPE = "mimeType";
+
+        /// <summary>
+        /// Matches a plain audio MIME type, such as audio/mpeg, with no
+        /// parameters or other characters.
+        /// </summary>
+        private static readonly Regex AudioMimeTypePattern = new Regex( @"^audio/[a-z0-9][a-z0-9.+-]{0,126}\z", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant );
 
         #region Formatting
 
@@ -85,7 +92,17 @@ namespace Rock.Field.Types
 </script>
 ";
 
-                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.MimeType );
+                        /*
+                            10/16/2026 - MSE
+
+                            The stored MimeType comes from the Content-Type
+                            the client sent with the upload. Only a plain
+                            audio type is placed in the type attribute, and
+                            it is encoded, so the value can't end the attribute.
+
+                            Reason: The stored MimeType was rendered as raw HTML.
+                        */
+                        var html = string.Format( htmlFormat, filePath.EncodeHtml(), GetSafeAudioMimeType( binaryFileInfo.MimeType ).EncodeHtml() );
                         return html;
                     }
                 }
@@ -106,6 +123,16 @@ namespace Rock.Field.Types
             }
 
             return $"<a href=\"{FileUrlHelper.GetFileUrl( binaryFileGuid.Value )}\">{GetFileName( privateValue ).EncodeHtml()}</a>";
+        }
+
+        /// <summary>
+        /// Gets the MIME type if it is a plain audio type, such as audio/mpeg.
+        /// </summary>
+        /// <param name="mimeType">The stored MIME type of the file.</param>
+        /// <returns>The MIME type, or an empty string if it is not a plain audio type.</returns>
+        internal static string GetSafeAudioMimeType( string mimeType )
+        {
+            return mimeType != null && AudioMimeTypePattern.IsMatch( mimeType ) ? mimeType : string.Empty;
         }
 
         /// <summary>
