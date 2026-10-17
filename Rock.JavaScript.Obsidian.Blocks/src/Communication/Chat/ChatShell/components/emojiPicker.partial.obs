@@ -536,8 +536,14 @@ img.chat-picker-prev {
     /** How long a tab's own scroll holds the tabs still, as the design's picker holds them. */
     const tabLockMs = 450;
 
-    /** The way out's length when the sheet is not on the page, the design's popover close. */
-    const fallbackOutMs = 130;
+    /** The way out's length when the sheet is not on the page, the sheet's own fast motion. */
+    const fallbackOutMs = 120;
+
+    /**
+     * How long past the way out's length a close still waits on it: the animation starts a frame
+     * after the close is asked for, so at its length it is still playing.
+     */
+    const outGraceMs = 50;
 
     /** Names this picker's grid, so its search can say which grid it controls. */
     const gridId = `chat-picker-grid-${getCurrentInstance()?.uid ?? 0}`;
@@ -1090,7 +1096,7 @@ img.chat-picker-prev {
         const picker = pickerElement.value;
         const animations = picker?.getAnimations?.() ?? [];
         if (picker && animations.length > 0) {
-            const outMs = tokenDuration(picker, "--chat-t-fast", fallbackOutMs);
+            const outMs = tokenDuration(picker, "--chat-t-fast", fallbackOutMs) + outGraceMs;
             await Promise.race([
                 Promise.allSettled(animations.map(animation => animation.finished)),
                 new Promise(resolve => window.setTimeout(resolve, outMs))

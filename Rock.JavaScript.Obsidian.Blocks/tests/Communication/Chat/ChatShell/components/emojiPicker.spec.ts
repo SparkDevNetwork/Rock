@@ -687,6 +687,28 @@ describe("closing", () => {
         expect(document.activeElement).toBe(row);
     });
 
+    // The way out starts a frame after the close is asked for, so it is still playing when its
+    // length has passed; the close waits a little past it before giving up on it.
+    test("waits on a way out still playing at its length, and closes by 50ms past it at the latest", async () => {
+        const prototype = HTMLElement.prototype as unknown as { getAnimations?: () => unknown[] };
+        prototype.getAnimations = () => [{ finished: new Promise(() => undefined) }];
+        try {
+            const w = await open();
+            document.querySelector<HTMLElement>(".chat-picker")?.style.setProperty("--chat-t-fast", "120ms");
+            jest.useFakeTimers();
+
+            await press(search(), "Escape");
+            await jest.advanceTimersByTimeAsync(120);
+            expect(w.emitted("close")).toBeUndefined();
+
+            await jest.advanceTimersByTimeAsync(50);
+            expect(w.emitted("close")).toHaveLength(1);
+        }
+        finally {
+            delete prototype.getAnimations;
+        }
+    });
+
     test("does not wait on a way out that a hidden tab never plays, closing after its length", async () => {
         // jsdom plays no animations; this one never finishes, as in a tab the browser has hidden.
         const prototype = HTMLElement.prototype as unknown as { getAnimations?: () => unknown[] };
