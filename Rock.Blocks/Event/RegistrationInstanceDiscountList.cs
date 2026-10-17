@@ -240,6 +240,21 @@ namespace Rock.Blocks.Event
                             .Get( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds );
                     }
                 }
+
+                /*
+                    10/16/2026 - MSE
+
+                    The instance comes from the page parameter, so a person could swap in
+                    the IdKey of an instance they are not allowed to see and get its
+                    discount rows, totals and codes. VIEW on the instance falls back to
+                    the template and its category.
+
+                    Reason: Registration instance lists skipped VIEW on the instance.
+                */
+                if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    _registrationInstance = null;
+                }
             }
 
             return _registrationInstance;
