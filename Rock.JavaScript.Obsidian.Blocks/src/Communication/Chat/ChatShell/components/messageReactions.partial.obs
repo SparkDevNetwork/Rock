@@ -197,7 +197,7 @@
     position: static;
 }
 
-/* Reduced motion: no lift, the pop held at full size by the sheet so it is a short fade, the roll a fade. */
+/* Reduced motion: no lift, the pop held at full size by the sheet so it is a short fade, the roll a fade over its own time. */
 @media (prefers-reduced-motion: reduce) {
     .chat-rx:hover {
         transform: none;
@@ -208,8 +208,14 @@
     }
 
     .chat-rx-n.is-rolling {
-        animation-name: chat-crossfade;
-        animation-duration: var(--chat-t-fast);
+        animation-name: chat-rx-roll-fade;
+    }
+}
+
+/* The roll with its movement taken out, over its own time, for reduced motion. */
+@keyframes chat-rx-roll-fade {
+    from {
+        opacity: 0;
     }
 }
 </style>

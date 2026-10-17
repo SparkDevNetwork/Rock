@@ -634,6 +634,25 @@ describe("the components' own styles", () => {
         expect(declarationOf(feedPath, ".chat-feed.is-entering", "animation", isReducedMotion)).toBe("none");
     });
 
+    // A count joining others' rolls up 70% of its height as it fades in, over the roll's own
+    // time on the entrance curve. Under reduced motion the same time and curve play as a fade
+    // alone, under a name that still reads as the roll, so nothing moves and its length holds.
+    test("a reaction count rolls up as it fades in, and only fades under reduced motion over the same time", () => {
+        const reactionsPath = resolve(components, "messageReactions.partial.obs");
+        const animation = declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation");
+        expect(animation).toContain(normalize("var(--chat-d-roll) var(--chat-ease-in)"));
+        const frames = normalize(keyframesBody(reactionsPath, animation.split(/\s|var\(/)[0]) ?? "");
+        expect(frames).toContain("opacity:0");
+        expect(frames).toContain(normalize("transform: translateY(70%)"));
+
+        const reducedName = declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation-name", isReducedMotion);
+        expect(reducedName).toMatch(/roll/);
+        expect(declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation-duration", isReducedMotion)).toBe("");
+        const reducedFrames = normalize(keyframesBody(reactionsPath, reducedName) ?? "");
+        expect(reducedFrames).toContain("opacity:0");
+        expect(reducedFrames).not.toContain("transform");
+    });
+
     test("a block image keeps its 16 to 7 shape in a browser without aspect-ratio, by a padding box", () => {
         const row = readSheet(rowPath);
         const fallback = row.rules.filter(r => r.media.includes("@supportsnot(aspect-ratio"));
