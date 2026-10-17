@@ -1466,8 +1466,9 @@
     };
 
     /**
-     * A chip toggles the reader's reaction. The add chip opens the picker on the message, since a
-     * choice that takes the last chip away takes the add chip with it; focus comes back to it.
+     * A chip toggles the reader's reaction. The add chip opens the picker on the message, its bubble
+     * or a channel's row, since a choice that takes the last chip away takes the add chip with it;
+     * focus comes back to it.
      */
     const reactionsHandlers = {
         toggle: (code: string): void => {
@@ -1501,9 +1502,12 @@
         return messageAnchor() ?? row;
     }
 
-    /** The message's own text, which a picker asked for by a control that can go is placed on. */
+    /**
+     * The message a picker asked for by a control that can go is placed on: its bubble, or the
+     * whole row in a channel, which draws no bubble, so the picker clears the name and the text.
+     */
     function messageAnchor(): HTMLElement | null {
-        return rowElement.value?.querySelector<HTMLElement>(".chat-bubble, .chat-cm-text") ?? rowElement.value ?? null;
+        return rowElement.value?.querySelector<HTMLElement>(".chat-bubble") ?? rowElement.value ?? null;
     }
 
     /** A block button's press, its promise settling once the action has answered, so the button stays busy till then. */

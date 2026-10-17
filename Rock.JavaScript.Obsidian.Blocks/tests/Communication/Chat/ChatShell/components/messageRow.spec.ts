@@ -836,9 +836,11 @@ describe("the phone's action sheet", () => {
         expect(w.emitted("openThread")).toEqual([[42]]);
     });
 
-    test("its plus asks for the picker placed on the message, since the sheet closes under it", async () => {
+    // A bubble is the message in a direct message; a channel's message has no bubble, so the
+    // picker is placed on its whole row.
+    test.each([["a direct message", false], ["a channel", true]] as const)("its plus asks for the picker placed on the message in %s, since the sheet closes under it", async (_kind, isChannel) => {
         const target = message();
-        const w = onPhone({ message: target, reactionHost: host([]) });
+        const w = onPhone({ message: target, isChannel, reactionHost: host([]) });
         await w.trigger("click");
 
         sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
@@ -846,7 +848,7 @@ describe("the phone's action sheet", () => {
 
         const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement }];
         expect(request.kind).toBe("openPicker");
-        expect(request.anchor).toBe(w.get(".chat-bubble").element);
+        expect(request.anchor).toBe(isChannel ? root(w) : w.get(".chat-bubble").element);
     });
 });
 
@@ -872,15 +874,16 @@ describe("the reactions row", () => {
     });
 
     // The add chip goes with the last chip a choice in the picker takes away, so the picker is
-    // placed on what stays, and the add chip is only where focus comes back to.
-    test.each([["a direct message", false, ".chat-bubble"], ["a channel", true, ".chat-cm-text"]] as const)("its add chip asks for the picker placed on the message in %s, focus coming back to the add chip", async (_kind, isChannel, bubble) => {
+    // placed on what stays, the bubble or a channel's whole row, and the add chip is only where
+    // focus comes back to.
+    test.each([["a direct message", false, ".chat-bubble"], ["a channel", true, null]] as const)("its add chip asks for the picker placed on the message in %s, focus coming back to the add chip", async (_kind, isChannel, bubble) => {
         const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), isChannel, reactionHost: host([]) });
 
         await w.get("[data-testid='reaction-add']").trigger("click");
 
         const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement }];
         expect(request.kind).toBe("openPicker");
-        expect(request.anchor).toBe(w.get(bubble).element);
+        expect(request.anchor).toBe(bubble ? w.get(bubble).element : root(w));
         expect(request.opener).toBe(w.get("[data-testid='reaction-add']").element);
     });
 
