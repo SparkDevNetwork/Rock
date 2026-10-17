@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -43,6 +44,12 @@ namespace Rock.Field.Types
         private const string MIME_TYPE = "mimeType";
         private const string FILE_NAME = "fileName";
         private const string FILE_GUID = "fileGuid";
+
+        /// <summary>
+        /// Matches a plain video MIME type, such as video/mp4, with no
+        /// parameters or other characters.
+        /// </summary>
+        private static readonly Regex VideoMimeTypePattern = new Regex( @"^video/[a-z0-9][a-z0-9.+-]{0,126}\z", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant );
 
         #region Formatting
 
@@ -176,11 +183,31 @@ namespace Rock.Field.Types
     Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                    return string.Format( htmlFormat, filePath, binaryFileInfo.MimeType );
+                    /*
+                        10/16/2026 - MSE
+
+                        The stored MimeType comes from the Content-Type the
+                        client sent with the upload. Only a plain video type
+                        is placed in the type attribute, and it is encoded,
+                        so the value can't end the attribute.
+
+                        Reason: The stored MimeType was rendered as raw HTML.
+                    */
+                    return string.Format( htmlFormat, filePath.EncodeHtml(), GetSafeVideoMimeType( binaryFileInfo.MimeType ).EncodeHtml() );
                 }
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the MIME type if it is a plain video type, such as video/mp4.
+        /// </summary>
+        /// <param name="mimeType">The stored MIME type of the file.</param>
+        /// <returns>The MIME type, or an empty string if it is not a plain video type.</returns>
+        internal static string GetSafeVideoMimeType( string mimeType )
+        {
+            return mimeType != null && VideoMimeTypePattern.IsMatch( mimeType ) ? mimeType : string.Empty;
         }
 
         /// <inheritdoc/>
@@ -269,6 +296,31 @@ namespace Rock.Field.Types
             return !condensed
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            var formattedValue = FormatValue( parentControl, value, configurationValues, condensed );
+
+            /*
+                10/16/2026 - MSE
+
+                FormatValue returns the raw file name when condensed because Lava,
+                workflows and other plain text consumers use it. Grids place
+                this value directly in HTML, so it is encoded here instead.
+
+                Reason: The condensed value was rendered as raw HTML.
+            */
+            return condensed
+                ? formattedValue?.EncodeHtml()
+                : formattedValue;
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
         }
 
 #endif
