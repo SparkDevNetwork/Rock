@@ -18,6 +18,8 @@ using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.AI.Agent.Tests.Skills.Note;
 
+using Person = Rock.Model.Person;
+
 [TestClass]
 public class NoteSkillTests : MockDatabaseTestsBase
 {

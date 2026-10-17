@@ -20,6 +20,8 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Tests.Skills.Prayer;
 
+using Person = Rock.Model.Person;
+
 [TestClass]
 public class PrayerSkillTests : MockDatabaseTestsBase
 {
