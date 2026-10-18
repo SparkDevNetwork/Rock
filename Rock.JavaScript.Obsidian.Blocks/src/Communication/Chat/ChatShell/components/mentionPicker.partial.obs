@@ -1,0 +1,44 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div></div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { MentionPerson } from "../types.partial";
+
+    // #region Types
+
+    /** What a composer hands its picker: whether people are listed here, the people found, and the @all row. */
+    export type MentionPickerSource = {
+        canMention: boolean;
+        people: MentionPerson[];
+        isAllOffered: boolean;
+    };
+
+    // #endregion Types
+
+    defineProps({
+        /** The editor the picker lists for: its keys and its combobox attributes. */
+        target: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        people: {
+            type: Array as PropType<MentionPerson[]>,
+            default: () => []
+        },
+
+        isAllOffered: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        /** A row was chosen: its token and the name its chip shows. */
+        (e: "choose", token: string, name: string): void;
+        (e: "close"): void;
+    }>();
+</script>

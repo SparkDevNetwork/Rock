@@ -47,6 +47,8 @@ function row(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
         read_cursor: 10,
         is_unread: false,
         mention_count: 0,
+        all_mention_count: 0,
+        can_mention: true,
         dm_names: null,
         dm_other_count: null,
         ...extra
@@ -135,6 +137,47 @@ describe("createChannelStore", () => {
         s.applyMarkRead(two, { read_cursor: 11, last_message_id: 11 });
 
         expect(s.rows.find(r => r.channel_id === two)?.is_unread).toBe(false);
+    });
+
+    test("a mention by name in the conversation adds one to the row's mentions", () => {
+        const { store: s } = store();
+
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 11, parent_id: null, in_channel: true, all: false });
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 12, parent_id: null, in_channel: true, all: false });
+
+        const mentioned = s.rows.find(r => r.channel_id === two);
+        expect(mentioned?.mention_count).toBe(2);
+        expect(mentioned?.all_mention_count).toBe(0);
+    });
+
+    test("an @all mention adds one to the row's @all mentions, never its mentions by name", () => {
+        const { store: s } = store();
+
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 11, parent_id: null, in_channel: true, all: true });
+
+        const mentioned = s.rows.find(r => r.channel_id === two);
+        expect(mentioned?.all_mention_count).toBe(1);
+        expect(mentioned?.mention_count).toBe(0);
+    });
+
+    test("a mention in the conversation on screen moves nothing, but one in another conversation does", () => {
+        const { store: s } = store();
+        s.setActive(one);
+
+        s.applyPersonalEvent("channel.mention", { channel_id: one, message_id: 11, parent_id: null, in_channel: true, all: false });
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 11, parent_id: null, in_channel: true, all: false });
+
+        expect(s.rows.find(r => r.channel_id === one)?.mention_count).toBe(0);
+        expect(s.rows.find(r => r.channel_id === two)?.mention_count).toBe(1);
+    });
+
+    test("a mention kept to a thread moves nothing in the sidebar, which counts the conversation's", () => {
+        const { store: s } = store();
+
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 11, parent_id: 5, in_channel: false, all: false });
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 12, parent_id: 5, in_channel: true, all: false });
+
+        expect(s.rows.find(r => r.channel_id === two)?.mention_count).toBe(1);
     });
 
     test("a fresh sidebar replaces the rows", () => {

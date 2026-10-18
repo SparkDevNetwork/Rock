@@ -1,0 +1,91 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div></div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ChatError, MentionRow } from "../types.partial";
+
+    type RoomKind = "channel" | "person" | "group";
+
+    defineProps({
+        rows: {
+            type: Array as PropType<MentionRow[]>,
+            required: true
+        },
+
+        hasMore: {
+            type: Boolean,
+            default: false
+        },
+
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        isRefreshing: {
+            type: Boolean,
+            default: false
+        },
+
+        isLoadingOlder: {
+            type: Boolean,
+            default: false
+        },
+
+        error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        olderError: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        newIds: {
+            type: Array as PropType<number[]>,
+            default: () => []
+        },
+
+        currentId: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        roomTitles: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        roomKinds: {
+            type: Object as PropType<Record<string, RoomKind>>,
+            default: () => ({})
+        },
+
+        publicRooms: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
+        },
+
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        personAliasGuid: {
+            type: String,
+            default: ""
+        }
+    });
+
+    defineEmits<{
+        (e: "jump", messageId: number, channelId: string): void;
+        (e: "openThread", rootId: number, channelId: string, messageId: number): void;
+        (e: "refresh"): void;
+        (e: "loadOlder"): void;
+        (e: "close"): void;
+    }>();
+</script>

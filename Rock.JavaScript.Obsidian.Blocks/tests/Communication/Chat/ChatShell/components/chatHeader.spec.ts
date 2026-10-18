@@ -219,6 +219,73 @@ describe("the header on a phone", () => {
     });
 });
 
+describe("the Mentions button", () => {
+    test("sits beside Threads on a desktop, labelled Mentions, and opens the inbox", async () => {
+        const w = mountHeader({ isThreadsOffered: true, isMentionsOffered: true });
+
+        const buttons = w.findAll(".chat-header-actions button");
+        const threadsAt = buttons.findIndex(b => b.attributes("data-testid") === "header-threads");
+        const mentions = w.get("[data-testid='header-mentions']");
+        expect(buttons.findIndex(b => b.element === mentions.element)).toBe(threadsAt + 1);
+        expect(mentions.attributes("aria-label")).toBe("Mentions");
+        expect(hasIcon(w, mentions, "at")).toBe(true);
+        expect(mentions.attributes("aria-expanded")).toBe("false");
+        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(false);
+
+        await mentions.trigger("click");
+        expect(w.emitted("mentions")).toHaveLength(1);
+    });
+
+    test("shows as expanded while the inbox is open", () => {
+        const w = mountHeader({ isMentionsOffered: true, isMentionsOpen: true });
+
+        expect(w.get("[data-testid='header-mentions']").attributes("aria-expanded")).toBe("true");
+    });
+
+    test("carries the dot and says so while a mention is new", () => {
+        const w = mountHeader({ isMentionsOffered: true, hasMentionDot: true });
+
+        const mentions = w.get("[data-testid='header-mentions']");
+        expect(mentions.attributes("aria-label")).toBe("Mentions, new mentions");
+        const dot = mentions.get("[data-testid='header-mentions-dot']");
+        expect(dot.attributes("aria-hidden")).toBe("true");
+    });
+
+    test("is not drawn unless offered", async () => {
+        const w = mountHeader({ isThreadsOffered: true });
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
+
+        await w.setProps({ isMentionsOffered: true });
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(true);
+    });
+
+    test("moves into the phone's overflow menu, first, the menu button carrying the dot", async () => {
+        const w = mountHeader({ isPhone: true, isThreadsOffered: true, isMentionsOffered: true, hasMentionDot: true });
+
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
+
+        const more = w.get("[data-testid='header-more'] button");
+        expect(more.attributes("aria-label")).toBe("More, new mentions");
+        expect(w.find("[data-testid='header-more-dot']").exists()).toBe(true);
+
+        await more.trigger("click");
+        await settle();
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
+        expect(items.map(i => i.textContent?.trim())).toEqual(["Mentions", "Threads"]);
+
+        items[0].click();
+        await settle();
+        expect(w.emitted("mentions")).toHaveLength(1);
+    });
+
+    test("leaves the phone's menu button plain with no new mention", () => {
+        const w = mountHeader({ isPhone: true, isMentionsOffered: true });
+
+        expect(w.get("[data-testid='header-more'] button").attributes("aria-label")).toBe("More");
+        expect(w.find("[data-testid='header-more-dot']").exists()).toBe(false);
+    });
+});
+
 describe("the end of an outage", () => {
     test("is told once the connection is back and the catch-up after it is done, so the shell can say it", async () => {
         const w = mountHeader({ connection: lostConnection });

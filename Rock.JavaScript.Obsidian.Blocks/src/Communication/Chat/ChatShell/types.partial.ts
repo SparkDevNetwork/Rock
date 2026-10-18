@@ -43,6 +43,15 @@ export type SidebarRow = {
     read_cursor: number | null;
     is_unread: boolean;
     mention_count: number;
+
+    /**
+     * Messages above the reader's place that name everyone with @all, not their own and not
+     * already counted by name. The sidebar's badge adds it to mention_count; the app's icon does not.
+     */
+    all_mention_count: number;
+
+    /** Whether the @ picker lists people here: the reader may see the roster, or leads the room. */
+    can_mention: boolean;
     dm_names: string[] | null;
     dm_other_count: number | null;
 };
@@ -324,6 +333,57 @@ export type PeopleSearchAnswer = {
 /** What chat_find_dm returns: the conversation those people already share, or null. */
 export type FindDmAnswer = {
     channel_id: string | null;
+};
+
+/** One person chat_search_mentionable answers. It carries no photo; the picker draws initials. */
+export type MentionPerson = {
+    person_alias_guid: string;
+    nick_name: string;
+    last_name: string;
+};
+
+/** What chat_search_mentionable returns. */
+export type MentionSearchAnswer = {
+    people: MentionPerson[];
+};
+
+/**
+ * One row of the mentions inbox, as chat_list_mentions returns it: the message in the shape a
+ * page of history carries, its conversation, and for a reply the root it answers.
+ */
+export type MentionRow = {
+    channel_id: string;
+    parent_id: number | null;
+    message: TimelineMessage;
+};
+
+/** What chat_list_mentions returns, newest first. */
+export type MentionListPage = {
+    mentions: MentionRow[];
+    has_more: boolean;
+};
+
+/**
+ * One of the newest mentions of the reader by name still unread where it lives, as the
+ * bootstrap's me.unread_mentions lists them, newest first.
+ */
+export type UnreadMention = {
+    channel_id: string;
+    parent_id: number | null;
+    message_id: number;
+    created_at: string;
+
+    /** Whether the message is shown in the conversation, rather than only in its thread. */
+    in_channel: boolean;
+};
+
+/** The person was named in a message, on their personal topic: by name, or with @all. */
+export type ChannelMentionEvent = {
+    channel_id: string;
+    message_id: number;
+    parent_id: number | null;
+    in_channel: boolean;
+    all: boolean;
 };
 
 /** A new message on a channel topic. */

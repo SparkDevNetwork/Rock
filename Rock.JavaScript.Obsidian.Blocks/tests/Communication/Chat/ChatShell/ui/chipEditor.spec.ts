@@ -257,3 +257,49 @@ describe("the keys", () => {
         expect(await sent(w)).toBe("ab");
     });
 });
+
+describe("inserting a mention", () => {
+    /** The editor's own insertMention, as a picker calls it. */
+    function insertMention(w: VueWrapper, token: string, name: string): void {
+        (w.vm as unknown as { insertMention: (token: string, name: string) => void }).insertMention(token, name);
+    }
+
+    test("replaces the @ and the query before the caret with the chip and a space", async () => {
+        const w = draw("Hi @an", null);
+        caretAtEnd(w);
+
+        insertMention(w, `<@${anna}>`, "Anna Reyes");
+        await nextTick();
+
+        expect(chips(w)).toHaveLength(1);
+        expect(chips(w)[0].textContent).toContain("Anna Reyes");
+        expect(editor(w).textContent).not.toContain("@an");
+        expect(await sent(w)).toBe(`Hi <@${anna}> `);
+    });
+
+    test("replaces a bare @, and keeps the text after the caret", async () => {
+        const w = draw("see @ soon", null);
+        const text = editor(w).firstChild as Text;
+        caretAt(range => range.setStart(text, "see @".length));
+
+        insertMention(w, "<@all>", "@all");
+        await nextTick();
+
+        expect(chips(w)).toHaveLength(1);
+        expect(chips(w)[0].classList.contains("is-all")).toBe(true);
+        expect(await sent(w)).toBe("see <@all>  soon");
+    });
+
+    test("leaves the caret after the space, so typing carries on there", async () => {
+        const w = draw("@lee", null);
+        caretAtEnd(w);
+
+        insertMention(w, `<@${lee}>`, "Lee Leader");
+        await nextTick();
+        const selection = window.getSelection()!;
+        const typed = document.createTextNode("thanks");
+        selection.getRangeAt(0).insertNode(typed);
+
+        expect(await sent(w)).toBe(`<@${lee}> thanks`);
+    });
+});

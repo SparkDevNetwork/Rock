@@ -844,6 +844,25 @@ describe("what the page tells push", () => {
 
         expect(h.shell.mentionBadge()).toBe(3);
     });
+
+    // A mention push's badge counts mentions by name, so the icon does too, or the two would
+    // disagree; @all raises only the sidebar's own badge.
+    test("the badge leaves out the @all mentions the sidebar's rows count", async () => {
+        const h = build();
+        h.bootstrap.value = {
+            channels: [
+                { channel_id: channelA, name: "General", unread_count: 40, mention_count: 2, all_mention_count: 4 },
+                { channel_id: "another-channel", name: "Youth", unread_count: 7, mention_count: 0, all_mention_count: 1 }
+            ]
+        };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.mentionBadge()).toBe(2);
+    });
 });
 
 describe("a direct message's first message", () => {

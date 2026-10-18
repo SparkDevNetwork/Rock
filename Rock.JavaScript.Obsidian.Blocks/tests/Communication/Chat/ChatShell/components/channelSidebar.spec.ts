@@ -59,6 +59,8 @@ function row(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRo
         read_cursor: 10,
         is_unread: false,
         mention_count: 0,
+        all_mention_count: 0,
+        can_mention: true,
         dm_names: null,
         dm_other_count: null,
         ...overrides
@@ -391,6 +393,28 @@ describe("a row's look, by the room's kind", () => {
         expect(r.get("[data-testid='row-name']").text()).toBe("Worship Team");
         expect(r.find("[data-testid='row-preview']").exists()).toBe(false);
         expect(r.find("[data-testid='row-time']").exists()).toBe(false);
+    });
+});
+
+describe("a channel's @ badge with @all", () => {
+    test("counts the mentions by name and the @all mentions together", () => {
+        const w = mountSidebar({ rows: [{ ...youth, mention_count: 2, all_mention_count: 1 }] });
+
+        expect(rowOf(w, youth.channel_id).get("[data-testid='row-mention-badge']").text()).toContain("3");
+        expect(rowOf(w, youth.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", 3 mentions, unread");
+    });
+
+    test("shows for @all alone", () => {
+        const w = mountSidebar({ rows: [{ ...team, is_unread: true, mention_count: 0, all_mention_count: 2 }] });
+
+        expect(rowOf(w, team.channel_id).get("[data-testid='row-mention-badge']").text()).toContain("2");
+        expect(rowOf(w, team.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", 2 mentions, unread");
+    });
+
+    test("reads 99+ when the two together pass 99", () => {
+        const w = mountSidebar({ rows: [{ ...youth, mention_count: 60, all_mention_count: 40 }] });
+
+        expect(rowOf(w, youth.channel_id).get("[data-testid='row-mention-badge']").text()).toContain("99+");
     });
 });
 

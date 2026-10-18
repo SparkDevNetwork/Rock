@@ -64,6 +64,8 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
         read_cursor: null,
         is_unread: false,
         mention_count: 0,
+        all_mention_count: 0,
+        can_mention: true,
         dm_names: null,
         dm_other_count: null,
         ...overrides

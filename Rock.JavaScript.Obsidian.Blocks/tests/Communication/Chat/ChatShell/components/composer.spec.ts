@@ -412,3 +412,65 @@ describe("the composer's emoji button", () => {
         expect(mounted.emitted("emojiChosen")).toEqual([["cedar_hill"]]);
     });
 });
+
+describe("the composer's @ picker", () => {
+    const anna = "a0000002-0000-4000-8000-000000000000";
+    const mentionSource = { canMention: true, people: [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes" }], isAllOffered: false };
+
+    let mounted: VueWrapper | null = null;
+
+    beforeAll(() => {
+        if (typeof window.ResizeObserver === "undefined") {
+            window.ResizeObserver = class {
+                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
+                unobserve(): void { /* As above. */ }
+                disconnect(): void { /* As above. */ }
+            } as unknown as typeof ResizeObserver;
+        }
+    });
+
+    afterEach(() => {
+        mounted?.unmount();
+        mounted = null;
+        document.body.replaceChildren();
+    });
+
+    /** Types the text with the caret at its end, as a person typing leaves it. */
+    async function typeToEnd(w: VueWrapper, text: string): Promise<void> {
+        const editor = editorOf(w);
+        const node = document.createTextNode(text);
+        editor.replaceChildren(node);
+        const range = document.createRange();
+        range.setStart(node, text.length);
+        range.collapse(true);
+        const selection = window.getSelection() as Selection;
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editor.dispatchEvent(new Event("input", { bubbles: true }));
+        await nextTick();
+        await nextTick();
+    }
+
+    test("appears above the box once @ is typed, and tells the shell the query", async () => {
+        mounted = mount(Composer, { props: { title: "young-adults", isChannel: true, mentionSource } as Record<string, unknown>, attachTo: document.body });
+
+        await typeToEnd(mounted, "Hi @an");
+
+        expect(document.querySelector("[data-testid='mention-picker']")).not.toBeNull();
+        expect(mounted.emitted("mentionQuery")?.slice(-1)).toEqual([["an"]]);
+    });
+
+    test("takes Enter while open: the chip goes in and nothing is sent", async () => {
+        mounted = mount(Composer, { props: { title: "young-adults", isChannel: true, mentionSource } as Record<string, unknown>, attachTo: document.body });
+        await typeToEnd(mounted, "Hi @an");
+        expect(document.querySelector("[data-testid='mention-picker']")).not.toBeNull();
+
+        await mounted.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
+        await nextTick();
+
+        expect(mounted.emitted("send")).toBeUndefined();
+        expect(boxText(mounted)).toBe(`Hi <@${anna}> `);
+        expect(document.querySelector("[data-testid='mention-picker']")).toBeNull();
+        expect(mounted.emitted("mentionQuery")?.slice(-1)).toEqual([[null]]);
+    });
+});
