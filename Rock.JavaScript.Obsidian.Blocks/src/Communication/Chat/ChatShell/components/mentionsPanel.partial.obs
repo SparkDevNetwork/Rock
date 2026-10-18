@@ -177,8 +177,13 @@
     box-decoration-break: clone;
 }
 
+/*
+    A flex box as wide as its content rather than an inline one: alone on its line, an inline box
+    would sit on the line's own strut and stand clear of the row's foot by a fraction of a pixel.
+*/
 .chat-ls-inthread {
-    display: inline-flex;
+    display: flex;
+    width: fit-content;
     gap: 5px;
     align-items: center;
     height: 22px;

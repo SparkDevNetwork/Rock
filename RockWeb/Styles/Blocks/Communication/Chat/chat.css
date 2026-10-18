@@ -826,7 +826,8 @@
     text-overflow: ellipsis;
 }
 
-.chat-shell .chat-ls-sub .chat-ic {
+/* Under the head as well, so it outranks the icon's own smallest size, drawn 1px larger. */
+.chat-shell .chat-ls-head .chat-ls-sub .chat-ic {
     flex: none;
     align-self: center;
     width: 12px;
