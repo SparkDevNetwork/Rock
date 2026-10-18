@@ -263,7 +263,7 @@
                             {% if CurrentPerson.Id == historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId %}
                                 <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">You</a>
                             {% else %}
-                                <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonName }}</a>
+                                <a href="/person/{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonId }}">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].CreatedByPersonName | Escape }}</a>
                             {% endif %}
                         {%- endif -%}
                             {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
@@ -293,7 +293,7 @@
                                         {%- assign showSummaryEntity = true -%}
                                     {%- endif -%}
                                 {%- when 'ADD' -%}
-                                    created a {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }} called <a href="#">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].HistoryList[0].NewValue }}</a>
+                                    created a {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }} called <a href="#">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].HistoryList[0].NewValue | Escape }}</a>
                                     {%- assign showHistoryDetails = true %}
                                     {% comment %} When doing an 'ADD' summary, first history record is the same as the summary, so we can skip it {% endcomment %}
                                     {%- assign historySkipOffset = 2 %}
@@ -315,7 +315,7 @@
                                 {% comment %} Shows a list of added/removed group members {% endcomment %}
                                 {%- if showSummaryEntity -%}
                                     {%- if historySummary.EntityTypeName == 'Group Member' -%}{%- assign parsedGroupMemberHistoryPage = GroupMemberHistoryPage | Replace:'{GroupMemberId}',historySummary.EntityId -%}
-                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ parsedGroupMemberHistoryPage }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString }}</a></span>
+                                        <span class='historysummary-entity' title='{{ historySummary.CreatedDateTime }}'><a href="{{ parsedGroupMemberHistoryPage }}">{{ historySummary.Entity | Default:historySummary.ValueName | ToString | Escape }}</a></span>
                                     {% endif -%}
                                 {%- endif -%}
                                 {% comment %} showHistoryDetails for complex sets of changes {% endcomment %}
@@ -332,7 +332,7 @@
                                                         {%- if CurrentPerson.Id == history.CreatedByPersonId -%}
                                                             <a href="/person/{{ history.CreatedByPersonId }}">You</a>
                                                         {%- else -%}
-                                                            <a href="/person/{{ history.CreatedByPersonId }}">{{ history.CreatedByPersonName }}</a>
+                                                            <a href="/person/{{ history.CreatedByPersonId }}">{{ history.CreatedByPersonName | Escape }}</a>
                                                         {%- endif -%}
                                                     {%- endif -%}
                                                 {%- endif -%}
@@ -347,7 +347,7 @@
                                                                     {% if historySummary.Entity.Guid != PrimaryEntity.Guid %}
                                                                         {%- assign timelineOtherEntity = historySummary.Entity | ToString -%}
                                                                         {%- assign parsedGroupMemberHistoryPage = GroupMemberHistoryPage | Replace:'{GroupMemberId}',historySummary.EntityId -%}
-                                                                        <a href='{{ parsedGroupMemberHistoryPage }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
+                                                                        <a href='{{ parsedGroupMemberHistoryPage }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive | Escape }}</a>
                                                                     {% else %}
                                                                         the
                                                                     {% endif %}
@@ -373,12 +373,12 @@
                                                 {%- assign historyEntity = historySummary.EntityId -%}
 
                                                 {%- capture timelineAction -%}
-                                                    {%- assign historyValueName = history.ValueName | Downcase | Replace:'location location','location' -%}
+                                                    {%- assign historyValueName = history.ValueName | Downcase | Replace:'location location','location' | Escape -%}
                                                     {%- if sameValues and historyValueName == prevHistoryValueName -%}
                                                         <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and </span> 
                                                         {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
-                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>
+                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines | Escape }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' | Escape }}</a></span>
                                                         {%- else -%}
                                                             removed the <span class='history-valuename'>{{ historyValueName }}</span>
                                                         {%- endif -%}
@@ -386,7 +386,7 @@
                                                         {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
                                                             <span class='history-valuename'>{{ historyValueName }}</span> to
-                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>
+                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines | Escape }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' | Escape }}</a></span>
                                                         {%- else -%}
                                                             removed the <span class='history-valuename'>{{ historyValueName }}</span>
                                                         {%- endif -%}
