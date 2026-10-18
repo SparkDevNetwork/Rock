@@ -26,8 +26,10 @@
 //          pending: PendingMessage[] (default []), isFollowing: boolean, conversationTitle: string,
 //          isChannel: boolean, isDirectMessage: boolean, isPhone: boolean, isFromList: boolean,
 //          personAliasGuid: string (required)
+//          mentionSource: MentionPickerSource | null (the reply composer's @ picker; null offers none)
 //   emits: close, back, follow(isFollowing: boolean), send(body: string, isShownInChannel: boolean),
-//          seen(messageId: number), loadOlder, retry(localId: string), discard(localId: string)
+//          seen(messageId: number), loadOlder, retry(localId: string), discard(localId: string),
+//          mentionQuery(query: string | null) (the reply composer's @ query, for the search)
 //   marks: thread-divider, thread-follow (aria-pressed), and the composer's composer-input and
 //          composer-also (the foot's label around its checkbox).
 //
@@ -412,6 +414,36 @@ describe("the reply composer", () => {
         await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
 
         expect(w.emitted("send")).toEqual([["Count me in", true]]);
+    });
+});
+
+describe("the reply composer's @ picker", () => {
+    test("opens on @ from the drawer's mention source, tells the drawer's owner the query, and takes Enter for the chip", async () => {
+        const mentionSource = { canMention: true, people: [{ person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor" }], isAllOffered: false };
+        const w = draw({ mentionSource });
+
+        // Typed as a browser leaves it, the caret after the query.
+        const editor = w.get("[data-testid='composer-input']").element as HTMLElement;
+        const text = document.createTextNode("Thanks @be");
+        editor.replaceChildren(text);
+        const range = document.createRange();
+        range.setStart(text, text.data.length);
+        range.collapse(true);
+        window.getSelection()?.removeAllRanges();
+        window.getSelection()?.addRange(range);
+        editor.dispatchEvent(new Event("input", { bubbles: true }));
+        await nextTick();
+        await nextTick();
+
+        expect(document.querySelector("[data-testid='mention-picker']")).not.toBeNull();
+        expect(w.emitted("mentionQuery")?.slice(-1)).toEqual([["be"]]);
+
+        await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
+        await nextTick();
+
+        expect(w.emitted("send")).toBeUndefined();
+        expect(editor.querySelectorAll("[data-testid='editor-chip']")).toHaveLength(1);
+        expect(document.querySelector("[data-testid='mention-picker']")).toBeNull();
     });
 });
 
