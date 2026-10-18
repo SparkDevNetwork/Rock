@@ -136,6 +136,66 @@ namespace Rock.Model
         #region Helpers
 
         /// <summary>
+        /// The URL schemes a personal link may use. Relative URLs (no scheme) are also allowed.
+        /// </summary>
+        private static readonly HashSet<string> _allowedUrlSchemes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            Uri.UriSchemeHttp,
+            Uri.UriSchemeHttps,
+            Uri.UriSchemeMailto,
+            "tel"
+        };
+
+        /// <summary>
+        /// Determines whether the URL is safe to save as a personal link. Relative
+        /// URLs are allowed, and absolute URLs must use the http, https, mailto or
+        /// tel scheme.
+        /// </summary>
+        /// <remarks>
+        /// Browsers remove tab, CR and LF characters anywhere in a URL and trim
+        /// leading control characters and spaces before reading the scheme, so
+        /// the value is normalized the same way first. Otherwise a value such as
+        /// "java&lt;TAB&gt;script:" would look relative here but run as script in the browser.
+        /// </remarks>
+        /// <param name="url">The URL to check.</param>
+        /// <returns><c>true</c> if the URL is relative or uses an allowed scheme; otherwise <c>false</c>.</returns>
+        public static bool IsUrlSchemeAllowed( string url )
+        {
+            /*
+                10/16/2026 - MSE
+
+                Personal links in shared sections are shown to every internal user in
+                the header bookmark menu, so a stored javascript (or other script) URL
+                would run in the session of whoever clicks it. Only allow relative URLs
+                and a short list of safe schemes, reading the scheme the way a browser does.
+
+                Reason: Prevent stored script links in personal links.
+            */
+            if ( url.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var normalized = new string( url.Where( c => c != '\t' && c != '\n' && c != '\r' ).ToArray() )
+                .TrimStart( Enumerable.Range( 0, 0x21 ).Select( i => ( char ) i ).ToArray() );
+
+            if ( normalized.Length == 0 )
+            {
+                return false;
+            }
+
+            var delimiterIndex = normalized.IndexOfAny( new[] { ':', '/', '?', '#' } );
+
+            if ( delimiterIndex <= 0 || normalized[delimiterIndex] != ':' )
+            {
+                // No scheme, so this is a relative URL.
+                return true;
+            }
+
+            return _allowedUrlSchemes.Contains( normalized.Substring( 0, delimiterIndex ) );
+        }
+
+        /// <summary>
         /// Gets the personal links modification hash.
         /// </summary>
         /// <param name="currentPerson">The current person.</param>

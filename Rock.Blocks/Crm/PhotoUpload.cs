@@ -162,6 +162,43 @@ namespace Rock.Blocks.Crm
             groupMember.GroupMemberStatus = GroupMemberStatus.Pending;
         }
 
+        /// <summary>
+        /// Determines whether the binary file may be set as the profile photo of the person. The person's
+        /// current photo is always allowed. Any other file must be a Person Image that was uploaded by the
+        /// current person (or by an unknown person) and is still temporary.
+        /// </summary>
+        /// <param name="binaryFileService">The binary file service.</param>
+        /// <param name="photo">The binary file sent by the client.</param>
+        /// <param name="currentPhotoId">The identifier of the person's current photo.</param>
+        /// <returns><c>true</c> if the binary file may be used as the profile photo; otherwise <c>false</c>.</returns>
+        private bool IsPhotoAllowedForPerson( BinaryFileService binaryFileService, Rock.Model.BinaryFile photo, int? currentPhotoId )
+        {
+            if ( photo.Id == currentPhotoId )
+            {
+                return true;
+            }
+
+            /*
+                10/16/2026 - MSE
+
+                A new profile photo must be a temporary Person Image file uploaded by the current person (or
+                by an unknown person). The ImageEditor uploads Person Image files as temporary, so the
+                uploaded file check covers the shipped client. The check is against the current person, not
+                the person being updated, because a parent uploads photos for family members. There is
+                intentionally no fallback for permanent files created by the current person, since that
+                would let a caller attach files they created elsewhere. A later photo change through the
+                profile photo API (PersonService.UpdatePersonProfilePhoto) marks the replaced photo
+                temporary, so cleanup would then delete a file still used by something else.
+
+                Reason: Prevent attaching files that are not newly uploaded Person Images as a profile photo.
+            */
+            var personImageFileTypeId = Rock.Web.Cache.BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+            return personImageFileTypeId.HasValue
+                && photo.BinaryFileTypeId == personImageFileTypeId.Value
+                && binaryFileService.IsUploadedBinaryFileAllowedForPerson( photo.Id, currentPhotoId, RequestContext.CurrentPerson );
+        }
+
         #endregion
 
         #region Block Actions
@@ -193,19 +230,15 @@ namespace Rock.Blocks.Crm
             }
 
             var binaryFileService = new BinaryFileService( RockContext );
+            var photo = binaryFileService.Get( photoGuid );
 
-            // Only accept the person's current photo or a new upload by the current person.
-            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( photoGuid, person.Photo?.Guid, RequestContext.CurrentPerson ) )
+            // A missing file and a refused file get the same response so a caller cannot learn which files exist.
+            if ( photo == null || !IsPhotoAllowedForPerson( binaryFileService, photo, person.PhotoId ) )
             {
                 return ActionBadRequest( "Profile photo not found." );
             }
 
-            person.PhotoId = binaryFileService.GetId( photoGuid );
-
-            if ( person.PhotoId == null )
-            {
-                return ActionBadRequest( "Profile photo not found." );
-            }
+            person.PhotoId = photo.Id;
 
             AddOrUpdatePersonInPhotoRequestGroup( person );
             RockContext.SaveChanges();

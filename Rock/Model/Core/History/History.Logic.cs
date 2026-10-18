@@ -55,6 +55,27 @@ namespace Rock.Model
             get
             {
                 HistoryVerb? historyVerb = this.Verb.ConvertToEnumOrNull<HistoryVerb>();
+
+                /*
+                    10/16/2026 - MSE
+
+                    Every stored value placed in this summary is encoded, because the
+                    History Log blocks and Lava output SummaryHtml as HTML and these values
+                    can be typed by people (for example a first name from the Account Entry
+                    block). The old and new values of attribute value history are the one
+                    exception: they hold the field type's formatted value (links, images,
+                    social media icons), so they are rebuilt from a short allowlist of
+                    elements and attributes instead (see GetSafeHistoryValue).
+                    Null, empty and equality checks below still use the raw values.
+
+                    Reason: Stored values were rendered as markup in staff sessions.
+                */
+                var isAttributeValueHistory = IsAttributeValueHistory();
+                var valueName = this.ValueName.EncodeHtml();
+                var oldValue = GetSafeHistoryValue( this.OldValue, isAttributeValueHistory );
+                var newValue = GetSafeHistoryValue( this.NewValue, isAttributeValueHistory );
+                var relatedData = this.RelatedData.EncodeHtml();
+                var changeType = this.ChangeType.EncodeHtml();
                 if ( !string.IsNullOrEmpty( this.ChangeType ) )
                 {
                     if ( historyVerb.HasValue )
@@ -65,14 +86,14 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
+                                        return $"Added <span class='field-name'>{valueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
-                                        StringBuilder addSummary = new StringBuilder( $"Added <span class='field-name'>{this.ValueName}</span>" );
+                                        StringBuilder addSummary = new StringBuilder( $"Added <span class='field-name'>{valueName}</span>" );
                                         if ( !string.IsNullOrEmpty( this.NewValue ) )
                                         {
-                                            addSummary.Append( $" value of <span class='field-value'>{this.NewValue}</span>" );
+                                            addSummary.Append( $" value of <span class='field-value'>{newValue}</span>" );
                                         }
 
                                         addSummary.Append( "." );
@@ -84,32 +105,32 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
+                                        return $"Modified <span class='field-name'>{valueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
                                         string summaryVerb = "Modified";
-                                        string summaryValue = ChangeType;
+                                        string summaryValue = changeType;
 
                                         if ( this.OldValue == null && this.NewValue != null )
                                         {
                                             // pre-V8 when a property was modified from null, it would get summarized as 'Added ..."
                                             summaryVerb = "Added";
-                                            summaryValue = $"value of <span class='field-value'>{this.NewValue}</span>";
+                                            summaryValue = $"value of <span class='field-value'>{newValue}</span>";
                                         }
                                         else if ( this.OldValue != null && this.NewValue == null )
                                         {
                                             // pre-V8 when a property was modified to null, it would get summarized as 'Deleted ..."
                                             summaryVerb = "Deleted";
-                                            summaryValue = $"value of <span class='field-value'>{this.OldValue}</span>";
+                                            summaryValue = $"value of <span class='field-value'>{oldValue}</span>";
                                         }
                                         else if ( this.OldValue != this.NewValue )
                                         {
                                             summaryVerb = "Modified";
-                                            summaryValue = $"value from <span class='field-value'>{this.OldValue}</span> to <span class='field-value'>{this.NewValue}</span>";
+                                            summaryValue = $"value from <span class='field-value'>{oldValue}</span> to <span class='field-value'>{newValue}</span>";
                                         }
 
-                                        string modifySummary = $"{summaryVerb} <span class='field-name'>{this.ValueName}</span> {summaryValue}";
+                                        string modifySummary = $"{summaryVerb} <span class='field-name'>{valueName}</span> {summaryValue}";
 
                                         return modifySummary;
                                     }
@@ -119,15 +140,15 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Deleted <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Deleted <span class='field-name'>{valueName}</span> value (Sensitive attribute values are not logged in history).";
                                     }
                                     else
                                     {
-                                        StringBuilder deleteSummary = new StringBuilder( $"Deleted <span class='field-name'>{this.ValueName}</span>" );
+                                        StringBuilder deleteSummary = new StringBuilder( $"Deleted <span class='field-name'>{valueName}</span>" );
 
                                         if ( !string.IsNullOrEmpty( this.OldValue ) )
                                         {
-                                            deleteSummary.Append( $" value of <span class='field-value'>{this.OldValue}</span>" );
+                                            deleteSummary.Append( $" value of <span class='field-value'>{oldValue}</span>" );
                                         }
 
                                         deleteSummary.Append( "." );
@@ -138,29 +159,29 @@ namespace Rock.Model
 
                             case HistoryVerb.Process:
                                 {
-                                    return $"Processed refund for {this.ValueName}";
+                                    return $"Processed refund for {valueName}";
                                 }
 
                             case HistoryVerb.Matched:
                             case HistoryVerb.Unmatched:
                                 {
-                                    return $"{historyVerb.Value.ConvertToString( false )} {this.ValueName}";
+                                    return $"{historyVerb.Value.ConvertToString( false )} {valueName}";
                                 }
 
                             case HistoryVerb.Registered:
                                 {
-                                    return $"Registered {this.ValueName} for";
+                                    return $"Registered {valueName} for";
                                 }
 
                             case HistoryVerb.Login:
                                 {
                                     StringBuilder loginSummaryBuilder = new StringBuilder();
-                                    loginSummaryBuilder.Append( $"User logged in with <span class='field-name'>{this.ValueName}</span> username" );
+                                    loginSummaryBuilder.Append( $"User logged in with <span class='field-name'>{valueName}</span> username" );
 
                                     // if Related Data has data, it could be additional info about the HostAddress the person logged in from and the URL of the page when they logged in
                                     if ( !string.IsNullOrEmpty( this.RelatedData ) )
                                     {
-                                        loginSummaryBuilder.Append( $", {this.RelatedData}" );
+                                        loginSummaryBuilder.Append( $", {relatedData}" );
                                     }
 
                                     var loginSummary = loginSummaryBuilder.ToString();
@@ -169,27 +190,27 @@ namespace Rock.Model
 
                             case HistoryVerb.Merge:
                                 {
-                                    return $"Merged <span class='field-value'>{this.ValueName}</span> with this record.";
+                                    return $"Merged <span class='field-value'>{valueName}</span> with this record.";
                                 }
 
                             case HistoryVerb.AddedToGroup:
                                 {
-                                    return $"Added to {this.ValueName}.";
+                                    return $"Added to {valueName}.";
                                 }
 
                             case HistoryVerb.RemovedFromGroup:
                                 {
-                                    return $"Removed from {this.ValueName}.";
+                                    return $"Removed from {valueName}.";
                                 }
 
                             case HistoryVerb.Sent:
                                 {
-                                    var sentSummaryBuilder = new StringBuilder( $"Sent {this.ValueName}" );
+                                    var sentSummaryBuilder = new StringBuilder( $"Sent {valueName}" );
 
                                     // if RelatedData is not NULL is is most likely message.FromName. NOTE: if it is string.Empty, still append the field-value span so that it renders like pre-v8
                                     if ( this.RelatedData != null )
                                     {
-                                        sentSummaryBuilder.Append( $" <span class='field-value'>{this.RelatedData}</span>." );
+                                        sentSummaryBuilder.Append( $" <span class='field-value'>{relatedData}</span>." );
                                     }
 
                                     var sentSummary = sentSummaryBuilder.ToString();
@@ -206,11 +227,11 @@ namespace Rock.Model
                                         var person = new PersonService( new RockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
-                                            strBuilder.Append( $" for {person.FullName}" );
+                                            strBuilder.Append( $" for {person.FullName.EncodeHtml()}" );
                                         }
                                     }
 
-                                    strBuilder.Append( $" for the {this.ValueName} opportunity" );
+                                    strBuilder.Append( $" for the {valueName} opportunity" );
 
                                     var connectionRequestSummary = strBuilder.ToString();
                                     return connectionRequestSummary;
@@ -225,11 +246,11 @@ namespace Rock.Model
                                         var person = new PersonService( new RockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
-                                            strBuilder.Append( $"{person.NickName}'s " );
+                                            strBuilder.Append( $"{person.NickName.EncodeHtml()}'s " );
                                         }
                                     }
 
-                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was connected." );
+                                    strBuilder.Append( $"connection request for the {valueName} opportunity was connected." );
 
                                     var connectionRequestSummary = strBuilder.ToString();
                                     return connectionRequestSummary;
@@ -245,11 +266,11 @@ namespace Rock.Model
                                         var person = new PersonService( new RockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
-                                            strBuilder.Append( $"{person.NickName}'s " );
+                                            strBuilder.Append( $"{person.NickName.EncodeHtml()}'s " );
                                         }
                                     }
 
-                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was changed" );
+                                    strBuilder.Append( $"connection request for the {valueName} opportunity was changed" );
 
                                     var createdByPersonAlias = CreatedByPersonAlias;
                                     if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
@@ -259,7 +280,7 @@ namespace Rock.Model
 
                                     if ( createdByPersonAlias != null )
                                     {
-                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName}." );
+                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName.EncodeHtml()}." );
                                     }
 
                                     var connectionRequestSummary = strBuilder.ToString();
@@ -276,11 +297,11 @@ namespace Rock.Model
                                         var person = new PersonService( new RockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
-                                            strBuilder.Append( $"{person.NickName}'s " );
+                                            strBuilder.Append( $"{person.NickName.EncodeHtml()}'s " );
                                         }
                                     }
 
-                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was changed" );
+                                    strBuilder.Append( $"connection request for the {valueName} opportunity was changed" );
 
                                     var createdByPersonAlias = CreatedByPersonAlias;
                                     if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
@@ -290,7 +311,7 @@ namespace Rock.Model
 
                                     if ( createdByPersonAlias != null )
                                     {
-                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName}." );
+                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName.EncodeHtml()}." );
                                     }
 
                                     var connectionRequestSummary = strBuilder.ToString();
@@ -306,11 +327,11 @@ namespace Rock.Model
                                         var person = new PersonService( new RockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
-                                            strBuilder.Append( $"{person.NickName}'s " );
+                                            strBuilder.Append( $"{person.NickName.EncodeHtml()}'s " );
                                         }
                                     }
 
-                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was deleted" );
+                                    strBuilder.Append( $"connection request for the {valueName} opportunity was deleted" );
 
                                     var createdByPersonAlias = CreatedByPersonAlias;
                                     if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
@@ -320,7 +341,7 @@ namespace Rock.Model
 
                                     if ( createdByPersonAlias != null )
                                     {
-                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName}." );
+                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName.EncodeHtml()}." );
                                     }
 
                                     var connectionRequestSummary = strBuilder.ToString();
@@ -332,12 +353,12 @@ namespace Rock.Model
                                     var strBuilder = new StringBuilder();
                                     strBuilder.Append( "Added" );
 
-                                    strBuilder.Append( $" {this.ValueName} on {this.CreatedDateTime.ToShortDateString() }" );
+                                    strBuilder.Append( $" {valueName} on {this.CreatedDateTime.ToShortDateString() }" );
 
                                     // If RelatedData is not NULL it is most likely message.FromName. NOTE: If it is string.Empty, still append the field-value span so that it renders like pre-v8.
                                     if ( this.RelatedData != null )
                                     {
-                                        strBuilder.Append( $" at {this.RelatedData}." );
+                                        strBuilder.Append( $" at {relatedData}." );
                                     }
 
                                     var stepSummary = strBuilder.ToString();
@@ -355,24 +376,24 @@ namespace Rock.Model
                     var stringBuilder = new StringBuilder();
 
                     // Start with whatever custom verb was used. For example 'WATCHED' => 'Watched'
-                    stringBuilder.Append( this.Verb.FixCase() );
+                    stringBuilder.Append( this.Verb.FixCase().EncodeHtml() );
 
                     // include the value name (For example 'First Name') that was affected
                     if ( !string.IsNullOrEmpty( this.ValueName ) )
                     {
-                        stringBuilder.Append( $" <span class='field-name'>{this.ValueName}</span>." );
+                        stringBuilder.Append( $" <span class='field-name'>{valueName}</span>." );
                     }
 
                     if ( this.IsSensitive != true )
                     {
                         if ( !string.IsNullOrEmpty( this.OldValue ) )
                         {
-                            stringBuilder.Append( $" Old value of <span class='field-name'>{this.OldValue}</span>. " );
+                            stringBuilder.Append( $" Old value of <span class='field-name'>{oldValue}</span>. " );
                         }
 
                         if ( !string.IsNullOrEmpty( this.NewValue ) )
                         {
-                            stringBuilder.Append( $" New value of <span class='field-name'>{this.NewValue}</span>. " );
+                            stringBuilder.Append( $" New value of <span class='field-name'>{newValue}</span>. " );
                         }
                     }
 
@@ -386,6 +407,447 @@ namespace Rock.Model
                 return null;
             }
         }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Determines whether this history entry records a change to an attribute value.
+        /// Attribute value history is written with the <see cref="Rock.Model.Attribute"/>
+        /// entity type as the related entity type (see AttributeValue and AttributeMatrixItem),
+        /// and some jobs write it with the <see cref="HistoryChangeType.Attribute"/> change type.
+        /// </summary>
+        /// <returns><c>true</c> if this entry records an attribute value change; otherwise <c>false</c>.</returns>
+        private bool IsAttributeValueHistory()
+        {
+            if ( this.ChangeType == HistoryChangeType.Attribute.ConvertToString() )
+            {
+                return true;
+            }
+
+            return this.RelatedEntityTypeId.HasValue
+                && this.RelatedEntityTypeId == EntityTypeCache.GetId<Rock.Model.Attribute>();
+        }
+
+        /// <summary>
+        /// Gets an old or new value that is safe to place in <see cref="SummaryHtml"/>.
+        /// Attribute values are rebuilt from an allowlist so their formatted links,
+        /// images and icons are kept, all other values are HTML encoded.
+        /// </summary>
+        /// <param name="value">The stored value.</param>
+        /// <param name="isAttributeValue">if set to <c>true</c> the value is a formatted attribute value.</param>
+        /// <returns>The value made safe for HTML output.</returns>
+        private static string GetSafeHistoryValue( string value, bool isAttributeValue )
+        {
+            if ( !isAttributeValue || string.IsNullOrWhiteSpace( value ) )
+            {
+                return value.EncodeHtml();
+            }
+
+            /*
+                10/16/2026 - MSE
+
+                Attribute value history stores the field type's formatted value, and for
+                text field types that is whatever the person typed. The value is parsed
+                and brand new markup is written from it: text is decoded and encoded
+                again, and only a, img, i, span, br, strong, em and b are written, with
+                only the href, src, alt and class attributes (plus target="_blank" with
+                rel="noopener noreferrer" on links that had it). Class names are limited
+                to icon, label, badge and text classes so a value cannot use page level
+                classes such as a full page modal backdrop. Links must be http, https,
+                mailto, tel or relative and images http, https or relative, checked after
+                removing every character below U+0021 (browsers ignore tabs and line
+                breaks in URLs). Other elements are dropped but their text is kept (a
+                line break is written between paragraphs, divs and list items), and
+                script, style and similar elements are dropped with their content. No
+                source markup is ever copied through, so parser quirks (unclosed tags,
+                form feeds, odd comments) cannot carry markup into the page. A tag the
+                parser could not read as a normal tag (a stray less-than sign, an
+                unclosed last tag, a form feed separator), deep nesting or any error
+                makes the whole value fall back to plain encoding. Values longer than
+                4,000 characters are encoded without parsing, because parsing time
+                grows much faster than the length and this runs on every page view.
+
+                Reason: Attribute history values are shown as HTML in staff sessions.
+            */
+            if ( value.Length > MaxSafeHtmlLength )
+            {
+                return value.EncodeHtml();
+            }
+
+            try
+            {
+                var htmlDocument = new HtmlAgilityPack.HtmlDocument();
+                htmlDocument.LoadHtml( value );
+
+                if ( htmlDocument.DocumentNode == null )
+                {
+                    return value.EncodeHtml();
+                }
+
+                var safeHtml = new StringBuilder();
+                AppendSafeHtmlChildren( htmlDocument.DocumentNode, safeHtml, 0 );
+
+                return safeHtml.ToString();
+            }
+            catch
+            {
+                return value.EncodeHtml();
+            }
+        }
+
+        /// <summary>
+        /// Writes safe markup for the child nodes of the specified node.
+        /// </summary>
+        /// <param name="node">The node whose children are written.</param>
+        /// <param name="safeHtml">The builder that receives the safe markup.</param>
+        /// <param name="depth">The current element depth.</param>
+        private static void AppendSafeHtmlChildren( HtmlAgilityPack.HtmlNode node, StringBuilder safeHtml, int depth )
+        {
+            if ( depth > MaxSafeHtmlDepth )
+            {
+                throw new InvalidOperationException( "The value is nested too deeply." );
+            }
+
+            var previousWasBlock = false;
+
+            foreach ( var childNode in node.ChildNodes )
+            {
+                if ( childNode.NodeType == HtmlAgilityPack.HtmlNodeType.Text )
+                {
+                    var text = HtmlAgilityPack.HtmlEntity.DeEntitize( ( ( HtmlAgilityPack.HtmlTextNode ) childNode ).Text );
+                    safeHtml.Append( text.EncodeHtml() );
+
+                    if ( !string.IsNullOrWhiteSpace( text ) )
+                    {
+                        previousWasBlock = false;
+                    }
+                }
+                else if ( childNode.NodeType == HtmlAgilityPack.HtmlNodeType.Element )
+                {
+                    // Keep paragraphs, divs and list items on separate lines.
+                    var isBlock = SafeHtmlBlockElements.Contains( ( childNode.Name ?? string.Empty ).ToLowerInvariant() );
+                    if ( isBlock && previousWasBlock )
+                    {
+                        safeHtml.Append( "<br>" );
+                    }
+
+                    AppendSafeHtmlElement( childNode, safeHtml, depth + 1 );
+                    previousWasBlock = isBlock;
+                }
+
+                // Comments, the doctype and anything else are dropped.
+            }
+        }
+
+        /// <summary>
+        /// Writes safe markup for the specified element and its children.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <param name="safeHtml">The builder that receives the safe markup.</param>
+        /// <param name="depth">The current element depth.</param>
+        private static void AppendSafeHtmlElement( HtmlAgilityPack.HtmlNode element, StringBuilder safeHtml, int depth )
+        {
+            var elementName = ( element.Name ?? string.Empty ).ToLowerInvariant();
+
+            // HtmlAgilityPack turns a stray less-than sign, an unclosed last tag or a
+            // tag that uses a form feed as a separator into an element with an odd
+            // name. Treat the whole value as text in that case.
+            if ( !IsPlainHtmlElementName( elementName ) )
+            {
+                throw new InvalidOperationException( "The value contains a tag that could not be read." );
+            }
+
+            if ( SafeHtmlDroppedElements.Contains( elementName ) )
+            {
+                return;
+            }
+
+            switch ( elementName )
+            {
+                case "a":
+                    {
+                        var href = GetSafeHistoryUrl( element.GetAttributeValue( "href", null ), true );
+
+                        if ( href == null )
+                        {
+                            safeHtml.Append( "<a>" );
+                        }
+                        else
+                        {
+                            var target = element.GetAttributeValue( "target", null );
+                            var opensNewWindow = target != null
+                                && HtmlAgilityPack.HtmlEntity.DeEntitize( target ).Trim().Equals( "_blank", StringComparison.OrdinalIgnoreCase );
+
+                            safeHtml.Append( opensNewWindow
+                                ? $"<a href=\"{href.EncodeHtml()}\" target=\"_blank\" rel=\"noopener noreferrer\">"
+                                : $"<a href=\"{href.EncodeHtml()}\">" );
+                        }
+
+                        AppendSafeHtmlChildren( element, safeHtml, depth );
+                        safeHtml.Append( "</a>" );
+
+                        return;
+                    }
+
+                case "img":
+                    {
+                        var src = GetSafeHistoryUrl( element.GetAttributeValue( "src", null ), false );
+
+                        if ( src != null )
+                        {
+                            safeHtml.Append( $"<img src=\"{src.EncodeHtml()}\"" );
+
+                            var alt = element.GetAttributeValue( "alt", null );
+                            if ( alt != null )
+                            {
+                                safeHtml.Append( $" alt=\"{HtmlAgilityPack.HtmlEntity.DeEntitize( alt ).EncodeHtml()}\"" );
+                            }
+
+                            safeHtml.Append( ">" );
+                        }
+
+                        AppendSafeHtmlChildren( element, safeHtml, depth );
+
+                        return;
+                    }
+
+                case "br":
+                    {
+                        safeHtml.Append( "<br>" );
+                        AppendSafeHtmlChildren( element, safeHtml, depth );
+
+                        return;
+                    }
+
+                case "i":
+                case "span":
+                    {
+                        var cssClass = GetSafeHistoryCssClass( element.GetAttributeValue( "class", null ) );
+
+                        safeHtml.Append( cssClass != null
+                            ? $"<{elementName} class=\"{cssClass.EncodeHtml()}\">"
+                            : $"<{elementName}>" );
+                        AppendSafeHtmlChildren( element, safeHtml, depth );
+                        safeHtml.Append( $"</{elementName}>" );
+
+                        return;
+                    }
+
+                case "b":
+                case "strong":
+                case "em":
+                    {
+                        safeHtml.Append( $"<{elementName}>" );
+                        AppendSafeHtmlChildren( element, safeHtml, depth );
+                        safeHtml.Append( $"</{elementName}>" );
+
+                        return;
+                    }
+
+                default:
+                    {
+                        // Not on the allowlist: drop the tag but keep its content.
+                        AppendSafeHtmlChildren( element, safeHtml, depth );
+
+                        return;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the element name is a plain HTML tag name: a letter
+        /// followed by letters, digits, hyphens, underscores or colons (for example
+        /// the o:p element in values pasted from Word).
+        /// </summary>
+        /// <param name="elementName">The lower case element name.</param>
+        /// <returns><c>true</c> if the name is a plain tag name; otherwise <c>false</c>.</returns>
+        private static bool IsPlainHtmlElementName( string elementName )
+        {
+            if ( string.IsNullOrEmpty( elementName ) || elementName[0] < 'a' || elementName[0] > 'z' )
+            {
+                return false;
+            }
+
+            foreach ( var c in elementName )
+            {
+                if ( !( ( c >= 'a' && c <= 'z' ) || ( c >= '0' && c <= '9' ) || c == '-' || c == '_' || c == ':' ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets a URL that is safe to write into an href or src attribute, or
+        /// <c>null</c> if the URL uses a scheme that is not allowed.
+        /// </summary>
+        /// <param name="url">The raw attribute value.</param>
+        /// <param name="allowMailAndPhone">if set to <c>true</c> mailto and tel links are allowed.</param>
+        /// <returns>The normalized URL (not yet attribute encoded), or <c>null</c>.</returns>
+        private static string GetSafeHistoryUrl( string url, bool allowMailAndPhone )
+        {
+            if ( url == null )
+            {
+                return null;
+            }
+
+            // Browsers ignore tabs, line breaks and leading control characters in
+            // URLs, so remove every character below U+0021 before reading the scheme.
+            var decodedUrl = HtmlAgilityPack.HtmlEntity.DeEntitize( url ) ?? string.Empty;
+            var normalizedUrl = new StringBuilder( decodedUrl.Length );
+
+            foreach ( var c in decodedUrl )
+            {
+                if ( c > ' ' )
+                {
+                    normalizedUrl.Append( c );
+                }
+            }
+
+            var safeUrl = normalizedUrl.ToString();
+            if ( safeUrl.Length == 0 )
+            {
+                return null;
+            }
+
+            var colonIndex = safeUrl.IndexOf( ':' );
+            var delimiterIndex = safeUrl.IndexOfAny( new[] { '/', '?', '#' } );
+
+            if ( colonIndex < 0 || ( delimiterIndex >= 0 && delimiterIndex < colonIndex ) )
+            {
+                // No scheme, so this is a relative URL.
+                return safeUrl;
+            }
+
+            var scheme = safeUrl.Substring( 0, colonIndex ).ToLowerInvariant();
+
+            if ( scheme == "http" || scheme == "https" )
+            {
+                return safeUrl;
+            }
+
+            if ( allowMailAndPhone && ( scheme == "mailto" || scheme == "tel" ) )
+            {
+                return safeUrl;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the class names from a class attribute that may be written into
+        /// <see cref="SummaryHtml"/>: fa, fab, fas, far, label, badge and the fa-,
+        /// label-, badge- and text- classes. Other class names are dropped.
+        /// </summary>
+        /// <param name="cssClass">The raw class attribute value.</param>
+        /// <returns>The allowed class names separated by spaces, or <c>null</c> if none are allowed.</returns>
+        private static string GetSafeHistoryCssClass( string cssClass )
+        {
+            if ( cssClass == null )
+            {
+                return null;
+            }
+
+            var safeClasses = new List<string>();
+            var classNames = HtmlAgilityPack.HtmlEntity.DeEntitize( cssClass )
+                .Split( new[] { ' ', '\t', '\r', '\n', '\f' }, StringSplitOptions.RemoveEmptyEntries );
+
+            foreach ( var className in classNames )
+            {
+                if ( !IsPlainCssClassName( className ) )
+                {
+                    continue;
+                }
+
+                var isAllowed = SafeHtmlClassNames.Contains( className )
+                    || className.StartsWith( "fa-", StringComparison.Ordinal )
+                    || className.StartsWith( "label-", StringComparison.Ordinal )
+                    || className.StartsWith( "badge-", StringComparison.Ordinal )
+                    || className.StartsWith( "text-", StringComparison.Ordinal );
+
+                if ( isAllowed )
+                {
+                    safeClasses.Add( className );
+                }
+            }
+
+            return safeClasses.Count > 0 ? string.Join( " ", safeClasses ) : null;
+        }
+
+        /// <summary>
+        /// Determines whether the class name only uses lower case letters, digits and hyphens.
+        /// </summary>
+        /// <param name="className">The class name.</param>
+        /// <returns><c>true</c> if the class name is plain; otherwise <c>false</c>.</returns>
+        private static bool IsPlainCssClassName( string className )
+        {
+            foreach ( var c in className )
+            {
+                if ( !( ( c >= 'a' && c <= 'z' ) || ( c >= '0' && c <= '9' ) || c == '-' ) )
+                {
+                    return false;
+                }
+            }
+
+            return className.Length > 0;
+        }
+
+        /// <summary>
+        /// The longest attribute value rebuilt by <see cref="GetSafeHistoryValue"/>.
+        /// Longer values are encoded without being parsed.
+        /// </summary>
+        private const int MaxSafeHtmlLength = 4000;
+
+        /// <summary>
+        /// The deepest element nesting rebuilt by <see cref="GetSafeHistoryValue"/>.
+        /// Deeper values are encoded instead.
+        /// </summary>
+        private const int MaxSafeHtmlDepth = 100;
+
+        /// <summary>
+        /// The class names (other than the allowed prefixes) that <see cref="GetSafeHistoryValue"/> keeps.
+        /// </summary>
+        private static readonly HashSet<string> SafeHtmlClassNames = new HashSet<string>
+        {
+            "fa",
+            "fab",
+            "fas",
+            "far",
+            "label",
+            "badge"
+        };
+
+        /// <summary>
+        /// Block elements that <see cref="GetSafeHistoryValue"/> separates with a line break.
+        /// </summary>
+        private static readonly HashSet<string> SafeHtmlBlockElements = new HashSet<string>
+        {
+            "p",
+            "div",
+            "li"
+        };
+
+        /// <summary>
+        /// Elements that <see cref="GetSafeHistoryValue"/> drops together with their content.
+        /// </summary>
+        private static readonly HashSet<string> SafeHtmlDroppedElements = new HashSet<string>
+        {
+            "script",
+            "style",
+            "template",
+            "textarea",
+            "iframe",
+            "object",
+            "embed",
+            "noscript",
+            "xmp",
+            "plaintext",
+            "title"
+        };
 
         #endregion
 
