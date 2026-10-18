@@ -147,10 +147,71 @@ namespace Rock.Lms
         /// <inheritdoc/>
         public override Dictionary<string, string> GetCompletionValues( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
-            // Note: We don't strip the correct from students here because
-            // they have already answered the questions. The answers are now
-            // included so we can display the result data to them.
-            return completionData;
+            // Note: The correct answers are included for students because
+            // they have already answered the questions, so we can display
+            // the result data to them. They are only included when the
+            // activity shows results on completion, and missed answers only
+            // when it also shows missed questions on results.
+            if ( presentation != PresentedFor.Student || completionData == null )
+            {
+                return completionData;
+            }
+
+            var showResults = componentData?.GetValueOrNull( SettingKey.ShowResultsOnCompletion ).AsBoolean() == true;
+            var showMissedQuestions = componentData?.GetValueOrNull( SettingKey.ShowMissedQuestionsOnResults ).AsBoolean() == true;
+
+            if ( showResults && showMissedQuestions )
+            {
+                return completionData;
+            }
+
+            var completedItems = completionData.GetValueOrNull( CompletionKey.CompletedItems ).FromJsonOrNull<List<AssessmentItem>>();
+
+            if ( completedItems == null )
+            {
+                return completionData;
+            }
+
+            /*
+                10/18/2026 - MSE
+
+                The student only sees the results when the activity is set to show results
+                on completion, and only sees the correct answer of a missed question when it
+                is also set to show missed questions on results. When results are not shown,
+                remove the correct answer from every multiple choice item. When results are
+                shown without missed questions, remove it from each missed multiple choice
+                item. This keeps the answer key out of the browser. A correctly answered item
+                keeps its correct answer because it equals the student's own response, which
+                keeps the results summary count right. A missed item with a blank response
+                ("" from the client) gets a null correct answer, and one with no response
+                gets an empty correct answer, so a blank answer never matches in the
+                client's strict comparison and is never shown as correct.
+
+                Reason: Prevent a student from reading the assessment's answer key.
+            */
+            foreach ( var item in completedItems )
+            {
+                if ( item.Type != AssessmentItemType.MultipleChoice )
+                {
+                    continue;
+                }
+
+                var isCorrect = item.CorrectAnswer.ToStringSafe().Equals( item.Response ?? string.Empty, StringComparison.OrdinalIgnoreCase );
+
+                if ( !showResults )
+                {
+                    item.CorrectAnswer = null;
+                }
+                else if ( !isCorrect )
+                {
+                    item.CorrectAnswer = item.Response == null ? string.Empty : null;
+                }
+            }
+
+            return new Dictionary<string, string>( completionData )
+            {
+                [CompletionKey.CompletedItems] = completedItems.ToCamelCaseJson( false, false )
+            };
         }
 
         /// <inheritdoc/>
@@ -160,6 +221,25 @@ namespace Rock.Lms
 
             if ( presentation == PresentedFor.Student )
             {
+                /*
+                    10/18/2026 - MSE
+
+                    The block lets the student call CompleteActivity again until a facilitator
+                    grades the completion, and an assessment with only multiple choice items is
+                    never graded. Once the student has submitted, the stored items are the record
+                    of that attempt, so ignore the new responses and return the stored data. The
+                    points are then recomputed from the stored responses and stay the same. A
+                    retake deletes the completion, so it starts again with no stored items.
+
+                    Reason: Prevent a student from resubmitting an assessment to change the score.
+                */
+                var storedData = completion?.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>();
+
+                if ( storedData?.GetValueOrNull( CompletionKey.CompletedItems ).IsNotNullOrWhiteSpace() == true )
+                {
+                    return storedData;
+                }
+
                 var items = componentData.GetValueOrNull( SettingKey.Items ).FromJsonOrNull<List<AssessmentItem>>()
                     ?? new List<AssessmentItem>();
                 var completedItems = completionData.GetValueOrNull( CompletionKey.CompletedItems ).FromJsonOrNull<List<AssessmentItem>>()
