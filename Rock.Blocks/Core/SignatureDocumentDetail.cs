@@ -187,7 +187,17 @@ namespace Rock.Blocks.Core
                 SignedByPersonAlias = entity.SignedByPersonAlias.ToListItemBag(),
                 SignedByPersonAliasId = entity.SignedByPersonAliasId,
                 SignedClientIp = entity.SignedClientIp,
-                SignedClientUserAgent = entity.GetFormattedUserAgent().ConvertCrLfToHtmlBr(),
+
+                /*
+                    10/16/2026 - MSE
+
+                    The user agent comes from the signer's request and is shown as HTML by the
+                    view panel. Encode it before converting the line breaks to br tags. The IP
+                    address is escaped by the view panel instead.
+
+                    Reason: Prevent a signer's user agent from rendering as HTML for staff.
+                */
+                SignedClientUserAgent = entity.GetFormattedUserAgent().EncodeHtml().ConvertCrLfToHtmlBr(),
                 SignedDateTime = entity.SignedDateTime,
                 SignedDocumentText = entity.SignedDocumentText,
                 SignedName = entity.SignedName,
