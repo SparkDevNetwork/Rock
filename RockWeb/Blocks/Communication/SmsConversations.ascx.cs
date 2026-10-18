@@ -483,7 +483,16 @@ namespace RockWeb.Blocks.Communication
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
                     mergeFields.Add( "Person", recipientPerson );
 
-                    html = lava.ResolveMergeFields( mergeFields );
+                    /*
+                        10/16/2026 - MSE
+
+                        The person's name and other values in the template can be set by anonymous
+                        visitors and the result is rendered as HTML. Encode every {{ }} output value
+                        as HTML while keeping the template's own markup.
+
+                        Reason: Prevent stored person text from rendering as HTML in the conversation header.
+                    */
+                    html = lava.ResolveMergeFields( mergeFields, true );
                 }
             }
 
@@ -595,7 +604,14 @@ namespace RockWeb.Blocks.Communication
                     }
                     else
                     {
-                        literal.Text = message;
+                        /*
+                            10/16/2026 - MSE
+
+                            The message is plain SMS text and the Literal renders HTML, so encode it.
+
+                            Reason: Prevent SMS text from rendering as HTML in the conversation list.
+                        */
+                        literal.Text = message.EncodeHtml();
                     }
 
                     break;
@@ -814,7 +830,15 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                litMessagePart.Text = messagePart;
+                /*
+                    10/16/2026 - MSE
+
+                    The latest message can be an inbound SMS from anyone who texts the church
+                    and the Literal renders HTML, so encode it.
+
+                    Reason: Prevent inbound SMS text from rendering as HTML in the conversation list.
+                */
+                litMessagePart.Text = messagePart.EncodeHtml();
             }
 
             var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
@@ -882,17 +906,25 @@ namespace RockWeb.Blocks.Communication
             hfRecipientPersonAliasId.Value = responseListItem.RecipientPersonAliasId.ToString();
             hfConversationKey.Value = responseListItem.ConversationKey;
             hfPhoneNumber.Value = responseListItem.ContactKey;
+            /*
+                10/16/2026 - MSE
+
+                The name can be set by anonymous visitors and the message can be an inbound SMS
+                from anyone who texts the church. The Label and Literal render HTML, so encode both.
+
+                Reason: Prevent names and inbound SMS text from rendering as HTML in the conversation list.
+            */
             if ( responseListItem.IsNamelessPerson )
             {
                 lblName.Text = PhoneNumber.FormattedNumber( null, responseListItem.ContactKey );
             }
             else
             {
-                lblName.Text = responseListItem.FullName;
+                lblName.Text = responseListItem.FullName.EncodeHtml();
             }
 
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
-            litMessagePart.Text = responseListItem.SMSMessage;
+            litMessagePart.Text = responseListItem.SMSMessage.EncodeHtml();
 
             if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.HasAttachments( new RockContext() ) )
             {
@@ -931,7 +963,15 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
+                    /*
+                        10/16/2026 - MSE
+
+                        The message can be an inbound SMS from anyone who texts the church and
+                        the Literal renders HTML, so encode it.
+
+                        Reason: Prevent inbound SMS text from rendering as HTML in the conversation.
+                    */
+                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage.EncodeHtml();
                 }
 
                 var rockContext = new RockContext();
@@ -970,7 +1010,14 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 var lSenderName = ( Literal ) e.Item.FindControl( "lSenderName" );
-                lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName;
+                /*
+                    10/16/2026 - MSE
+
+                    The sender name is person text and the Literal renders HTML, so encode it.
+
+                    Reason: Prevent stored names from rendering as HTML in the conversation.
+                */
+                lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName.EncodeHtml();
 
                 var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
                 lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();

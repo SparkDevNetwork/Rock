@@ -117,12 +117,13 @@ namespace Rock.Blocks.Engagement
         private StreakListOptionsBag GetBoxOptions()
         {
             var streakType = GetStreakType();
+            var canView = GetCanView();
 
             var options = new StreakListOptionsBag()
             {
-                StreakTypeName = streakType?.Name,
-                StreakTypeIdKey = streakType?.IdKey,
-                IsBlockVisible = GetCanView()
+                StreakTypeName = canView ? streakType?.Name : null,
+                StreakTypeIdKey = canView ? streakType?.IdKey : null,
+                IsBlockVisible = canView
             };
 
             return options;
@@ -181,7 +182,17 @@ namespace Rock.Blocks.Engagement
         {
             var streakType = GetStreakType();
 
-            if ( streakType != null )
+            /*
+                10/16/2026 - MSE
+
+                The streak type comes from the page parameter, so a person could
+                swap in the IdKey of a streak type they are not allowed to see and
+                get every enrollment for it. Rows are only returned when the person
+                passes the same VIEW check that shows the block.
+
+                Reason: Streak List skipped VIEW on the streak type.
+            */
+            if ( streakType != null && GetCanView() )
             {
                 var query = new StreakService( RockContext ).Queryable()
                     .Include( se => se.PersonAlias.Person )

@@ -517,12 +517,19 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             foreach ( var attribute in authorizedAttributes )
             {
-                var value = attribute.DefaultValue;
+                /*
+                    10/16/2026 - MSE
 
-                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
-                {
-                    value = group.AttributeValues[attribute.Key].ValueFormatted;
-                }
+                    The value is bound with v-html on the family card. Family
+                    attribute values can come from public forms such as Family
+                    Pre-Registration, so use the HTML value. Text and plain Memo
+                    values are encoded. Only field types that format as HTML
+                    (links, memos that allow HTML) keep their markup. It also
+                    falls back to the default value when the group has no value.
+
+                    Reason: Stored text rendered as HTML in the Group Members family card.
+                */
+                var value = group.GetAttributeHtmlValue( attribute.Key );
 
                 if ( value.IsNullOrWhiteSpace() )
                 {

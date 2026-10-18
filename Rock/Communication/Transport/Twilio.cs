@@ -581,9 +581,18 @@ namespace Rock.Communication.Transport
                             }
                         }
 
+                        /*
+                            10/16/2026 - MSE
+
+                            History.SummaryHtml now HTML encodes the stored value name, so this
+                            entry is written as plain text. Markup here would show as literal tags.
+
+                            Reason: History values are encoded when shown.
+                        */
+
                         // Add this to the Person Activity history
                         var historyChanges = new History.HistoryChangeList();
-                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is <em>\"{ex.Message}\"</em> <a href='{ex.MoreInfo}' target='_blank' rel='noopener noreferrer'>More info here</a>" );
+                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is \"{ex.Message}\". More info: {ex.MoreInfo}" );
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), recipient.PersonAlias.Person.Id, historyChanges );
                     }
                 }

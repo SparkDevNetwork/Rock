@@ -139,6 +139,16 @@ namespace Rock.Blocks.CheckIn.Manager
             // issues by rendering the initial HTML server-side.
             var options = GetConfigurationOptionsBag();
 
+            /*
+                10/16/2026 - MSE
+
+                The campus, location and schedule labels are written into raw
+                HTML here. A location label can be a street address that anyone
+                can type on a public form, so encode every label before it is
+                added to the markup.
+
+                Reason: Stored text rendered as HTML in the Check-in Context Setter.
+            */
             var sb = new StringBuilder();
 
             sb.Append( @"
@@ -150,7 +160,7 @@ namespace Rock.Blocks.CheckIn.Manager
     <ul class=""nav navbar-nav contextsetter contextsetter-campus"">
         <li class=""dropdown"">
             <a class=""dropdown-toggle navbar-link"" href=""#"" data-toggle=""dropdown"">
-                {options.SelectedCampus?.Text}
+                {options.SelectedCampus?.Text.EncodeHtml()}
                 <b class=""ti ti-caret-down-filled""></b>
             </a>
         </li>
@@ -164,7 +174,7 @@ namespace Rock.Blocks.CheckIn.Manager
             <div>
                 <div class=""picker picker-obsidian picker-select rollover-container picker-show-clear"">
                     <a class=""picker-label"" href=""#"">
-                        <span class=""selected-names"">{options.SelectedLocation?.Text ?? "Select Location"}</span>
+                        <span class=""selected-names"">{options.SelectedLocation?.Text.EncodeHtml() ?? "Select Location"}</span>
                         <b class=""ti ti-caret-down-filled""></b>
                     </a>
                 </div>
@@ -175,7 +185,7 @@ namespace Rock.Blocks.CheckIn.Manager
     <ul class=""nav navbar-nav contextsetter contextsetter-schedule"">
         <li class=""dropdown"">
             <a class=""dropdown-toggle navbar-link"" href=""#"" data-toggle=""dropdown"">
-                {options.SelectedSchedule?.Text ?? "All Schedules"}
+                {options.SelectedSchedule?.Text.EncodeHtml() ?? "All Schedules"}
                 <b class=""ti ti-caret-down-filled""></b>
             </a>
         </li>

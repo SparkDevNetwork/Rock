@@ -1434,8 +1434,25 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            /*
+                10/16/2026 - MSE
+
+                The instance comes from the page parameter, so a person could swap in
+                the IdKey of an instance they are not allowed to see and get its
+                registrants, placements and form fields, or email its registrars. VIEW
+                on the instance falls back to the template and its category, which is
+                eager loaded because the query is AsNoTracking.
+
+                Reason: Registration instance lists skipped VIEW on the instance.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }
