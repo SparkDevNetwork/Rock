@@ -76,6 +76,18 @@
     import Icon from "./icon.partial.obs";
     import { avatarHue } from "./brand.partial";
 
+    // #region Types
+
+    /** An @ query at the caret: the word typed after the @, and where the @ and the word sit. */
+    type MentionQuery = {
+        query: string;
+        node: Text;
+        start: number;
+        end: number;
+    };
+
+    // #endregion Types
+
     const props = defineProps({
         /** The wire text to load, a mention written as its token, <@guid> or <@all>. */
         text: {
@@ -112,6 +124,8 @@
         (e: "escape"): void;
         /** Up with nothing in the box, which a host may take as a wish to edit. */
         (e: "upWhenEmpty"): void;
+        /** After each change, the @ query at the caret for a mention picker, or null for none. */
+        (e: "mentionQuery", query: string | null): void;
     }>();
 
     // #region Values
@@ -170,6 +184,7 @@
         }
 
         emit("update:text", getText());
+        emit("mentionQuery", mentionQueryAtCaret()?.query ?? null);
     }
 
     /** Paste is plain text only, so markup from a web page never reaches the wire. */
@@ -230,6 +245,8 @@
 
         element.replaceChildren(...nodesFor(text));
         lastRange = null;
+        // A loaded text never leaves the caret in an @ query, so an open picker goes with the old text.
+        emit("mentionQuery", null);
     }
 
     /**
@@ -280,21 +297,95 @@
         changed();
     }
 
-    /** Inserts a mention chip and a space after it at the caret, for a mention picker. */
+    /**
+     * Inserts a mention chip and a space after it for a mention picker, in place of the @ query
+     * at the caret when there is one, else at the caret.
+     */
     function insertMention(token: string, name: string): void {
         const element = editorElement.value;
         if (!element) {
             return;
         }
 
-        const range = caretRange(element);
+        const typed = mentionQueryAtCaret();
+        let range: Range;
+        if (typed) {
+            range = document.createRange();
+            range.setStart(typed.node, typed.start);
+            range.setEnd(typed.node, typed.end);
+        }
+        else {
+            range = caretRange(element);
+        }
+
         range.deleteContents();
         const space = document.createTextNode(" ");
         // Both go in at the range's start, so the chip lands before the space.
         range.insertNode(space);
         range.insertNode(chipFor(token, name));
+
+        // An emptied query's text would sit between the chip and the caret and read as a word start.
+        if (typed && !typed.node.data) {
+            typed.node.remove();
+        }
+
         placeCaretAfter(element, space);
         changed();
+    }
+
+    /**
+     * The @ query the caret ends, where a picker should open: an @ at the start of a line or
+     * after a space, then word characters up to the caret. An @ right after a chip or inside a
+     * word, as in an email address, is no query.
+     */
+    function mentionQueryAtCaret(): MentionQuery | null {
+        const element = editorElement.value;
+        const selection = window.getSelection();
+        if (!element || !selection || selection.rangeCount === 0) {
+            return null;
+        }
+
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed || !element.contains(range.startContainer)) {
+            return null;
+        }
+
+        // A caret placed between nodes, as a click past the end can leave it, is read as the end
+        // of the text before it.
+        let node: Node | null = range.startContainer;
+        let end = range.startOffset;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            node = node.childNodes[end - 1] ?? null;
+            end = node?.nodeType === Node.TEXT_NODE ? (node as Text).data.length : 0;
+        }
+
+        if (!(node instanceof Text)) {
+            return null;
+        }
+
+        const match = node.data.slice(0, end).match(/(^|\s)@(\w*)$/);
+        if (!match) {
+            return null;
+        }
+
+        const start = end - match[2].length - 1;
+        if (start === 0) {
+            // The @ opens its text node, so what comes before it decides: a line break, white
+            // space or the box's start make a word start; a chip does not.
+            let previous = node.previousSibling;
+            while (previous && previous.nodeType === Node.TEXT_NODE && !(previous as Text).data) {
+                previous = previous.previousSibling;
+            }
+
+            const isWordStart = !previous
+                || previous.nodeName === "BR"
+                || (previous.nodeType === Node.TEXT_NODE && /\s$/.test((previous as Text).data));
+            if (!isWordStart) {
+                return null;
+            }
+        }
+
+        return { query: match[2], node, start, end };
     }
 
     /** The live caret when it is in the box, else the last one it had, else the end. */
@@ -410,6 +501,7 @@
     /** Hand-made edits fire no input event, so the host is told here. */
     function changed(): void {
         emit("update:text", getText());
+        emit("mentionQuery", mentionQueryAtCaret()?.query ?? null);
     }
 
     /**
