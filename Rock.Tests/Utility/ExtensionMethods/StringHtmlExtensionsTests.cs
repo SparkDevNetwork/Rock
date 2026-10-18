@@ -351,6 +351,33 @@ namespace Rock.Tests.Utility.ExtensionMethods
             Assert.AreEqual( html, output );
         }
 
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithDeeplyNestedMarkup_ReturnsEncodedInputWithoutStackOverflow()
+        {
+            var html = string.Concat( Enumerable.Repeat( "<div>", 5000 ) ) + "a";
+            string output = null;
+
+            // A small stack, like a web request thread, so an overflow would end the test run.
+            var thread = new System.Threading.Thread( () => output = html.SanitizeHtml( strict: false ), 256 * 1024 );
+            thread.Start();
+            thread.Join();
+
+            Assert.AreEqual( html.EncodeHtml(), output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithNestingAtLimit_ReturnsMarkupUnchanged()
+        {
+            var html = string.Concat( Enumerable.Repeat( "<div>", 255 ) ) + "a" + string.Concat( Enumerable.Repeat( "</div>", 255 ) );
+            string output = null;
+
+            var thread = new System.Threading.Thread( () => output = html.SanitizeHtml( strict: false ), 256 * 1024 );
+            thread.Start();
+            thread.Join();
+
+            Assert.AreEqual( html, output );
+        }
+
         #endregion
 
         #region SanitizeLava

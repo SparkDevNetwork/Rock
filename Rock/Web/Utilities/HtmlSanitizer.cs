@@ -51,6 +51,12 @@ namespace Rock.Web.Utilities
         };
 
         /// <summary>
+        /// The deepest node nesting that will be sanitized. Deeper markup is
+        /// returned HTML encoded instead.
+        /// </summary>
+        private const int MaxNestingDepth = 256;
+
+        /// <summary>
         /// Cleans up an HTML string and removes HTML tags in blacklist
         /// </summary>
         /// <param name="html">The HTML.</param>
@@ -103,6 +109,23 @@ namespace Rock.Web.Utilities
                 var doc = new HtmlDocument();
 
                 doc.LoadHtml( RemoveControlCharacters( html ).Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos />" ).Replace( "&quot;", "<quote />" ) );
+
+                /*
+                    10/18/2026 - MSE
+
+                    Parsing is not recursive, but the sanitize walk was (it is now a
+                    loop) and writing the document back out still is, so a few
+                    kilobytes of nested tags overflowed the stack and ended
+                    the whole process (a StackOverflowException cannot be caught).
+                    The depth is checked without recursion right after parsing and
+                    anything nested deeper than MaxNestingDepth is encoded instead.
+
+                    Reason: Deeply nested markup crashed the process.
+                */
+                if ( IsNestedTooDeeply( doc.DocumentNode ) )
+                {
+                    return HttpUtility.HtmlEncode( html );
+                }
 
                 SanitizeHtmlNode( doc.DocumentNode );
 
@@ -216,7 +239,66 @@ namespace Rock.Web.Utilities
             return true;
         }
 
-        private void SanitizeHtmlNode( HtmlNode node )
+        /// <summary>
+        /// Gets a value indicating whether the node tree is nested deeper than
+        /// <see cref="MaxNestingDepth"/>. The tree is walked without recursion.
+        /// </summary>
+        /// <param name="rootNode">The root node.</param>
+        /// <returns><c>true</c> if the tree is nested too deeply; otherwise <c>false</c>.</returns>
+        private static bool IsNestedTooDeeply( HtmlNode rootNode )
+        {
+            var nodes = new Stack<KeyValuePair<HtmlNode, int>>();
+            nodes.Push( new KeyValuePair<HtmlNode, int>( rootNode, 0 ) );
+
+            while ( nodes.Count > 0 )
+            {
+                var item = nodes.Pop();
+
+                if ( item.Value > MaxNestingDepth )
+                {
+                    return true;
+                }
+
+                foreach ( var childNode in item.Key.ChildNodes )
+                {
+                    nodes.Push( new KeyValuePair<HtmlNode, int>( childNode, item.Value + 1 ) );
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sanitizes the node and all of its descendants. The tree is walked
+        /// without recursion so the nesting depth does not grow the call stack.
+        /// </summary>
+        /// <param name="rootNode">The root node.</param>
+        private void SanitizeHtmlNode( HtmlNode rootNode )
+        {
+            var nodes = new Stack<HtmlNode>();
+            nodes.Push( rootNode );
+
+            while ( nodes.Count > 0 )
+            {
+                var node = nodes.Pop();
+
+                // Look through child nodes of any node that was kept.
+                if ( SanitizeSingleHtmlNode( node ) && node.HasChildNodes )
+                {
+                    for ( int i = node.ChildNodes.Count - 1; i >= 0; i-- )
+                    {
+                        nodes.Push( node.ChildNodes[i] );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sanitizes a single node without looking at its child nodes.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns><c>true</c> if the node was kept; <c>false</c> if it was removed.</returns>
+        private bool SanitizeSingleHtmlNode( HtmlNode node )
         {
             if (node.NodeType == HtmlNodeType.Text)
             {
@@ -229,7 +311,7 @@ namespace Rock.Web.Utilities
                 if ( BlackList.Contains( node.Name ) )
                 {
                     node.Remove();
-                    return;
+                    return false;
                 }
 
                 /*
@@ -245,7 +327,7 @@ namespace Rock.Web.Utilities
                 if ( !IsPlainHtmlElementName( node.Name.ToLowerInvariant() ) )
                 {
                     node.Remove();
-                    return;
+                    return false;
                 }
 
                 // remove CSS Expressions and embedded script links
@@ -300,14 +382,7 @@ namespace Rock.Web.Utilities
                 }
             }
 
-            // Look through child nodes recursively
-            if ( node.HasChildNodes )
-            {
-                for ( int i = node.ChildNodes.Count - 1; i >= 0; i-- )
-                {
-                    SanitizeHtmlNode( node.ChildNodes[i] );
-                }
-            }
+            return true;
         }
 
         private bool HasScriptLinks( string value )
