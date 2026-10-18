@@ -1,11 +1,167 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div></div>
+    <!--
+        Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
+        popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
+    -->
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <div ref="popElement"
+             class="chat-mention-pop"
+             data-testid="mention-picker"
+             :style="popStyles">
+            <template v-if="rows.length > 0">
+                <div v-if="drawnPeople.length > 0" class="chat-mention-head" aria-hidden="true">People in this channel</div>
+                <div :id="listId" role="listbox" aria-label="People to mention">
+                    <button v-for="(row, index) in rows"
+                            :id="`${listId}-${index}`"
+                            :key="row.token"
+                            type="button"
+                            class="chat-mention-item"
+                            :class="{ 'is-active': index === activeIndex }"
+                            role="option"
+                            tabindex="-1"
+                            :aria-selected="index === activeIndex ? 'true' : 'false'"
+                            data-testid="mention-option"
+                            @mousedown.prevent
+                            @click="choose(row)">
+                        <span v-if="row.isAll" class="chat-mention-all" aria-hidden="true">
+                            <span class="chat-mention-all-glyph"><Icon name="users" size="xs" /></span>
+                        </span>
+                        <Avatar v-else :people="[{ name: row.name }]" :size="28" />
+                        <span class="chat-mention-main">
+                            <b>{{ row.isAll ? "@all" : row.name }}</b>
+                            <span v-if="row.isAll">Notify everyone in this channel</span>
+                        </span>
+                    </button>
+                </div>
+            </template>
+
+            <div v-else :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this channel matches.</div>
+        </div>
+    </Teleport>
 </template>
 
+<style scoped>
+/* Fixed, so the chat's clipped frame cannot cut the popover near its edge. */
+.chat-mention-pop {
+    z-index: 1050;
+    width: 300px;
+    max-width: calc(100vw - 16px);
+    padding: 6px;
+    color: var(--chat-text);
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-mention-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* The way out, played by a copy left behind as the picker goes, since a removed element cannot animate. */
+.chat-mention-pop.is-leaving {
+    pointer-events: none;
+    animation: chat-mention-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+.chat-mention-head {
+    padding: 6px 10px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.chat-mention-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 6px 8px;
+    color: var(--chat-text);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-item);
+}
+
+/* Only the active row is tinted; the arrows and the pointer's press both act on it. */
+.chat-mention-item.is-active {
+    background: var(--chat-brand-tint);
+}
+
+.chat-mention-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.chat-mention-main b {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.chat-mention-main span {
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+/* The room's mark, 16px, in the place of a 28px face, so its name lines up with the people's. */
+.chat-mention-all {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+}
+
+.chat-mention-all-glyph {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    color: var(--chat-on-info);
+    background: var(--chat-info);
+    border-radius: 50%;
+}
+
+/* Sized as the @all chip's glyph is, outranking the icon's own scoped size. */
+.chat-mention-all-glyph :deep(.chat-ic) {
+    width: 10px;
+    height: 10px;
+    stroke-width: 2.4;
+}
+
+.chat-mention-empty {
+    padding: 10px;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+/* From just toward the box it sits on and a touch small; toward is down when it sits above. */
+@keyframes chat-mention-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+    }
+}
+
+@keyframes chat-mention-out {
+    to {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
+    }
+}
+</style>
+
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { MentionPerson } from "../types.partial";
+    import Avatar from "../ui/avatar.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
+    import Icon from "../ui/icon.partial.obs";
+    import { overlayHostOf } from "../ui/tooltip.partial";
 
     // #region Types
 
@@ -16,29 +172,250 @@
         isAllOffered: boolean;
     };
 
+    /** One row: the token its chip carries and the name the chip shows. */
+    type PickerRow = {
+        token: string;
+        name: string;
+        isAll: boolean;
+    };
+
     // #endregion Types
 
-    defineProps({
+    const props = defineProps({
         /** The editor the picker lists for: its keys and its combobox attributes. */
         target: {
             type: Object as PropType<HTMLElement | null>,
             default: null
         },
 
+        /** What the picker sits above, aligned to its start: the composer's box, else the editor. */
+        anchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        /** The people the search found; the picker draws the first six, as the design does. */
         people: {
             type: Array as PropType<MentionPerson[]>,
             default: () => []
         },
 
+        /** Whether the @all row leads the list. */
         isAllOffered: {
             type: Boolean,
             default: false
         }
     });
 
-    defineEmits<{
+    const emit = defineEmits<{
         /** A row was chosen: its token and the name its chip shows. */
         (e: "choose", token: string, name: string): void;
+        /** Escape, or a press outside the picker and its editor. */
         (e: "close"): void;
     }>();
+
+    // #region Values
+
+    /** The rows drawn at most, as the design draws them. */
+    const drawnRowLimit = 6;
+
+    /** How long past the way out's own length its copy is kept, should the animation never report its end. */
+    const outGraceMs = 50;
+
+    /** The way out's length where the token sheet is not on the page. */
+    const fallbackOutMs = 120;
+
+    const popElement = ref<HTMLElement>();
+    const activeIndex = ref(0);
+    const listId = `chat-mention-list-${getCurrentInstance()?.uid ?? 0}`;
+
+    /** Set once a row is chosen: the chip replaces the picker at once, with no way out played, as the design does. */
+    let isChosen = false;
+
+    const overlayHost = computed(() => overlayHostOf(props.anchor ?? props.target));
+    const anchorElement = computed(() => props.anchor ?? props.target ?? undefined);
+
+    // Above the box at its start, below only when there is no room above, slid along inside the
+    // window 8px clear of its edge. Placed by left and top, since a transform here would override
+    // the pop's own and the picker would only fade.
+    const { floatingStyles, placement, x } = useFloating(anchorElement, popElement, {
+        placement: "top-start",
+        strategy: "fixed",
+        transform: false,
+        middleware: [offset(8), flip({ crossAxis: false, flipAlignment: false }), shift({ padding: 8 })],
+        whileElementsMounted: autoUpdate
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const drawnPeople = computed((): MentionPerson[] => props.people.slice(0, drawnRowLimit));
+
+    /** @all first where it is offered, then the people found. */
+    const rows = computed((): PickerRow[] => {
+        const people = drawnPeople.value.map(person => ({
+            token: `<@${person.person_alias_guid}>`,
+            name: [person.nick_name, person.last_name].filter(part => !!part).join(" "),
+            isAll: false
+        }));
+
+        return props.isAllOffered ? [{ token: "<@all>", name: "@all", isAll: true }, ...people] : people;
+    });
+
+    /**
+     * The placement, with the pop grown from the box's middle along the picker's nearest edge and
+     * moving toward it, so a picker flipped below grows down from above.
+     */
+    const popStyles = computed((): Record<string, string> => {
+        const isAbove = placement.value.startsWith("top");
+        const anchorBox = anchorElement.value?.getBoundingClientRect();
+        const width = popElement.value?.offsetWidth ?? 0;
+        const middle = anchorBox ? anchorBox.left + anchorBox.width / 2 - (x.value ?? 0) : width / 2;
+        return {
+            ...floatingStyles.value,
+            transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
+            "--chat-pop-toward": isAbove ? "1" : "-1"
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * The picker's keys, read before the editor's own: listened for on the document as it is
+     * captured, so Enter inserts the chip and never reaches the editor as a send.
+     */
+    function onKeydown(event: KeyboardEvent): void {
+        const target = props.target;
+        if (!target || !target.contains(event.target as Node) || event.isComposing) {
+            return;
+        }
+
+        const count = rows.value.length;
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            if (count > 0) {
+                activeIndex.value = (activeIndex.value + (event.key === "ArrowDown" ? 1 : -1) + count) % count;
+            }
+        }
+        else if (event.key === "Enter" || (event.key === "Tab" && count > 0)) {
+            // Enter is held even with nothing to choose, since a send is never what it means here.
+            event.preventDefault();
+            const row = rows.value[activeIndex.value];
+            if (row) {
+                choose(row);
+            }
+        }
+        else if (event.key === "Escape") {
+            event.preventDefault();
+            emit("close");
+        }
+    }
+
+    /** A press outside the picker and its editor closes it, leaving focus where the press put it. */
+    function onDocumentPointerDown(event: Event): void {
+        const target = event.target as Node;
+        if (popElement.value?.contains(target) || props.target?.contains(target)) {
+            return;
+        }
+
+        emit("close");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function choose(row: PickerRow): void {
+        isChosen = true;
+        emit("choose", row.token, row.name);
+    }
+
+    /** Marks the editor as this picker's combobox, pointing at the active row. */
+    function markTarget(): void {
+        const target = props.target;
+        if (!target) {
+            return;
+        }
+
+        target.setAttribute("aria-expanded", "true");
+        target.setAttribute("aria-controls", listId);
+        if (rows.value.length > 0) {
+            target.setAttribute("aria-activedescendant", `${listId}-${activeIndex.value}`);
+        }
+        else {
+            target.removeAttribute("aria-activedescendant");
+        }
+    }
+
+    function unmarkTarget(): void {
+        const target = props.target;
+        target?.setAttribute("aria-expanded", "false");
+        target?.removeAttribute("aria-controls");
+        target?.removeAttribute("aria-activedescendant");
+    }
+
+    /**
+     * Plays the way out on a copy of the picker left in its place, since the host removes the
+     * picker itself on the word. Skipped after a choice, which the chip answers at once, and where
+     * nothing animates.
+     */
+    function playWayOut(): void {
+        const element = popElement.value;
+        const parent = element?.parentElement;
+        if (isChosen || !element || !parent || typeof element.getAnimations !== "function") {
+            return;
+        }
+
+        const copy = element.cloneNode(true) as HTMLElement;
+        copy.classList.add("is-leaving");
+        copy.setAttribute("aria-hidden", "true");
+        copy.removeAttribute("data-testid");
+        copy.querySelectorAll("[id], [data-testid], [role]").forEach(node => {
+            node.removeAttribute("id");
+            node.removeAttribute("data-testid");
+            node.removeAttribute("role");
+        });
+        parent.append(copy);
+
+        const outMs = tokenDuration(copy, "--chat-t-fast", fallbackOutMs) + outGraceMs;
+        const remove = (): void => copy.remove();
+        copy.addEventListener("animationend", remove, { once: true });
+        window.setTimeout(remove, outMs);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // A new answer starts again at its first row, as each keystroke redraws the list.
+    watch(rows, () => {
+        activeIndex.value = 0;
+    });
+
+    watch([activeIndex, rows, () => props.target], async () => {
+        await nextTick();
+        markTarget();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        markTarget();
+        document.addEventListener("keydown", onKeydown, true);
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("keydown", onKeydown, true);
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        unmarkTarget();
+        playWayOut();
+    });
+
+    // #endregion Lifecycle Hooks
 </script>
