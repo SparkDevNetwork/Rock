@@ -16,7 +16,7 @@
                 <IconButton icon="x" icon-size="sm" label="Cancel quote" @click="emit('cancelQuote')" />
             </div>
 
-            <form class="chat-composer-box" @submit.prevent="onSubmit">
+            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit">
                 <IconButton ref="emojiButton"
                             icon="smile"
                             label="Add emoji"
@@ -34,7 +34,8 @@
                             :isDisabled="isDisabled"
                             data-testid="composer-input"
                             @send="onSubmit"
-                            @upWhenEmpty="emit('editLast')" />
+                            @upWhenEmpty="emit('editLast')"
+                            @mentionQuery="onMentionQuery" />
                 <button type="submit"
                         class="chat-composer-send"
                         :class="{ 'is-ready': isReady }"
@@ -59,6 +60,15 @@
                          :anchor="emojiAnchor"
                          @insert="onEmojiInsert"
                          @close="onEmojiClose" />
+
+            <!-- The @ picker, mounted only while the caret ends an @ query, so each opening plays its way in. -->
+            <MentionPicker v-if="isMentionOpen && mentionSource"
+                           :target="editorElement"
+                           :anchor="boxElement ?? null"
+                           :people="mentionSource.canMention ? mentionSource.people : []"
+                           :isAllOffered="mentionSource.isAllOffered"
+                           @choose="onMentionChoose"
+                           @close="isMentionDismissed = true" />
         </template>
     </div>
 </template>
@@ -258,6 +268,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
+    import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { canMakeSendKey, textAfterSend } from "../composables/useSend.partial";
     import { TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
@@ -351,6 +362,15 @@
         emojiSource: {
             type: Object as PropType<PickerSource | null>,
             default: null
+        },
+
+        /**
+         * What the @ picker lists for the query told by mentionQuery. Null, or a source that may
+         * neither list people nor offer @all, offers no picker, and an @ stays the text it is.
+         */
+        mentionSource: {
+            type: Object as PropType<MentionPickerSource | null>,
+            default: null
         }
     });
 
@@ -364,7 +384,9 @@
         /** The picker opened, so the shell can fetch the catalog it draws. */
         (e: "emojiPickerOpen"): void;
         /** An emoji went into the box, for the recently used. */
-        (e: "emojiChosen", code: string): void
+        (e: "emojiChosen", code: string): void;
+        /** The @ query at the caret whenever it changes, for the shell's search; null for none. */
+        (e: "mentionQuery", query: string | null): void
     }>();
 
     // #region Values
@@ -379,6 +401,14 @@
     const emojiButton = ref<InstanceType<typeof IconButton>>();
 
     const isEmojiOpen = ref(false);
+
+    const boxElement = ref<HTMLFormElement>();
+
+    /** The @ query the caret ends, or null when it ends none. */
+    const mentionQuery = ref<string | null>(null);
+
+    /** Escape or a press elsewhere closed the picker; the next change in the box may open it again. */
+    const isMentionDismissed = ref(false);
 
     // #endregion Values
 
@@ -420,6 +450,15 @@
 
     /** The emoji button, which the picker is placed above and hands focus back to. */
     const emojiAnchor = computed((): HTMLElement | null => emojiButton.value?.buttonElement ?? null);
+
+    /** The editor's element, which the @ picker takes as its combobox. */
+    const editorElement = computed((): HTMLElement | null => editor.value?.editorElement ?? null);
+
+    const isMentionOpen = computed((): boolean => {
+        const source = props.mentionSource;
+        const isOffered = !!source && (source.canMention || source.isAllOffered);
+        return isOffered && mentionQuery.value !== null && !isMentionDismissed.value && !props.isDisabled;
+    });
 
     // #endregion Computed Values
 
@@ -474,6 +513,23 @@
         if (emojiAnchor.value && document.activeElement === emojiAnchor.value) {
             editor.value?.focus();
         }
+    }
+
+    /**
+     * The editor's @ query after a change. Each change may reopen a picker the person closed, as
+     * typing on does; the shell hears only a query that differs, so it searches once for each.
+     */
+    function onMentionQuery(query: string | null): void {
+        isMentionDismissed.value = false;
+        if (query !== mentionQuery.value) {
+            mentionQuery.value = query;
+            emit("mentionQuery", query);
+        }
+    }
+
+    /** A row was chosen: its chip and a space replace the @ query, which closes the picker. */
+    function onMentionChoose(token: string, name: string): void {
+        editor.value?.insertMention(token, name);
     }
 
     // #endregion Event Handlers
