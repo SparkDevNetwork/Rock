@@ -286,6 +286,135 @@ namespace Rock.Tests.Utility.ExtensionMethods
             Assert.AreEqual( string.Empty, output );
         }
 
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithUnclosedFinalTag_EncodesTagAsText()
+        {
+            var output = "<p>a</p><img src=x onerror=y".SanitizeHtml( strict: false );
+
+            Assert.AreEqual( "<p>a</p>&lt;img src=x onerror=y", output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithLessThanSignInText_KeepsText()
+        {
+            var output = "<p>Value must be < 10 and > 2</p>".SanitizeHtml( strict: false );
+
+            Assert.AreEqual( "<p>Value must be &lt; 10 and &gt; 2</p>", output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithFormFeedSeparator_RemovesEventHandler()
+        {
+            var output = "<img\fsrc=x\fonerror=y>".SanitizeHtml( strict: false );
+
+            Assert.IsFalse( output.Contains( "onerror" ) );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<a href=\"java\tscript:y\">a</a>" )]
+        [DataRow( "<a href=\"java\nscript:y\">a</a>" )]
+        [DataRow( "<a href=\"jav&#x09;ascript:y\">a</a>" )]
+        [DataRow( "<a href=\"javascript&colon;y\">a</a>" )]
+        public void SanitizeHtml_NotStrict_WithObfuscatedScriptScheme_RemovesHref( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( "<a>a</a>", output );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<base href=\"/x\">" )]
+        [DataRow( "<style>a{}</style>" )]
+        [DataRow( "<title>a</title>" )]
+        [DataRow( "<xmp>a</xmp>" )]
+        [DataRow( "<noscript>a</noscript>" )]
+        [DataRow( "<plaintext>a" )]
+        [DataRow( "<frameset><frame src=\"/x\"></frameset>" )]
+        public void SanitizeHtml_NotStrict_WithBlockedElement_RemovesElement( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( string.Empty, output );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<!>" )]
+        [DataRow( "<!-a->" )]
+        [DataRow( "<!--a--->" )]
+        [DataRow( "<p>a</p><!-- b -->" )]
+        public void SanitizeHtml_NotStrict_WithComment_RemovesCommentWithoutThrowing( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.IsFalse( output.Contains( "<!" ) );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<xmp><!--</xmp><img src=x onerror=y>--></xmp>" )]
+        [DataRow( "<noscript><!--</noscript><img src=x onerror=y>--></noscript>" )]
+        [DataRow( "<noembed><!--</noembed><img src=x onerror=y>--></noembed>" )]
+        [DataRow( "<noframes><!--</noframes><img src=x onerror=y>--></noframes>" )]
+        [DataRow( "<textarea></textarea><!--</textarea><img src=x onerror=y>-->" )]
+        public void SanitizeHtml_NotStrict_WithCommentInRawTextElement_RemovesMarkup( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.IsFalse( output.Contains( "onerror" ) );
+            Assert.IsFalse( output.Contains( "<!" ) );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<button formaction=\"/x\">a</button>", "<button>a</button>" )]
+        [DataRow( "<input form=\"f\" type=\"submit\" />", "<input type=\"submit\" />" )]
+        public void SanitizeHtml_NotStrict_WithFormSubmitAttribute_RemovesAttribute( string html, string expected )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( expected, output );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<a href=\"https://www.rockrms.com/\" target=\"_blank\">Link</a>" )]
+        [DataRow( "<a href=\"mailto:a@b.c\">Mail</a>" )]
+        [DataRow( "<img src=\"/GetImage.ashx?Id=1\" alt=\"Image\" />" )]
+        [DataRow( "<p><strong>b</strong> <em>i</em> <u>u</u></p>\r\n<ul><li>a</li></ul>" )]
+        [DataRow( "<table class=\"table\"><thead><tr><th>H</th></tr></thead><tbody><tr><td>C</td></tr></tbody></table>" )]
+        [DataRow( "<p>a&nbsp;b &quot;c&quot; &#39;d</p>" )]
+        [DataRow( "<pre>a\r\n\tb</pre>" )]
+        public void SanitizeHtml_NotStrict_WithLegitimateMarkup_ReturnsMarkupUnchanged( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( html, output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithDeeplyNestedMarkup_ReturnsEncodedInputWithoutStackOverflow()
+        {
+            var html = string.Concat( Enumerable.Repeat( "<div>", 5000 ) ) + "a";
+            string output = null;
+
+            // A small stack, like a web request thread, so an overflow would end the test run.
+            var thread = new System.Threading.Thread( () => output = html.SanitizeHtml( strict: false ), 256 * 1024 );
+            thread.Start();
+            thread.Join();
+
+            Assert.AreEqual( html.EncodeHtml(), output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithNestingAtLimit_ReturnsMarkupUnchanged()
+        {
+            var html = string.Concat( Enumerable.Repeat( "<div>", 255 ) ) + "a" + string.Concat( Enumerable.Repeat( "</div>", 255 ) );
+            string output = null;
+
+            var thread = new System.Threading.Thread( () => output = html.SanitizeHtml( strict: false ), 256 * 1024 );
+            thread.Start();
+            thread.Join();
+
+            Assert.AreEqual( html, output );
+        }
+
         #endregion
 
         #region SanitizeLava
