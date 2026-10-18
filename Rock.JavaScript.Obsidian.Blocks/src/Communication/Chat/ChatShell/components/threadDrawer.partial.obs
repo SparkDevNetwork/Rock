@@ -103,11 +103,13 @@
                       :quote="quote"
                       :isQuoteOwn="isQuoteOwn"
                       :emojiSource="emojiSource"
+                      :mentionSource="mentionSource"
                       @send="onSend"
                       @editLast="emit('editLast')"
                       @cancelQuote="emit('cancelQuote')"
                       @emojiPickerOpen="emit('emojiPickerOpen')"
-                      @emojiChosen="emit('emojiChosen', $event)" />
+                      @emojiChosen="emit('emojiChosen', $event)"
+                      @mentionQuery="emit('mentionQuery', $event)" />
         </template>
     </PanelHost>
 </template>
@@ -247,6 +249,7 @@
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
+    import { MentionPickerSource } from "./mentionPicker.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
@@ -434,6 +437,12 @@
         emojiSource: {
             type: Object as PropType<PickerSource | null>,
             default: null
+        },
+
+        /** What the reply composer's @ picker lists, the conversation's as the main composer's; null offers none. */
+        mentionSource: {
+            type: Object as PropType<MentionPickerSource | null>,
+            default: null
         }
     });
 
@@ -451,7 +460,9 @@
         (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void,
         (e: "emojiPickerOpen"): void,
-        (e: "emojiChosen", code: string): void
+        (e: "emojiChosen", code: string): void,
+        /** The reply composer's @ query whenever it changes, for the search; null for none. */
+        (e: "mentionQuery", query: string | null): void
     }>();
 
     // #region Values
