@@ -1,91 +1,646 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div></div>
+    <PanelHost title="Mentions"
+               subtitle="Where people @mentioned you"
+               :isPhone="isPhone"
+               @close="emit('close')">
+        <template #actions>
+            <IconButton class="chat-ls-refresh"
+                        icon="refresh"
+                        label="Refresh mentions"
+                        data-testid="mentions-refresh"
+                        :aria-busy="isRefreshing ? 'true' : undefined"
+                        :aria-disabled="isRefreshing ? 'true' : undefined"
+                        @click="onRefresh" />
+        </template>
+
+        <div data-testid="mentions-panel" :aria-busy="isLoading ? 'true' : 'false'">
+            <div v-if="error" class="chat-ls-err" role="status" data-testid="mentions-error">
+                <Icon name="alert" size="sm" />
+                <span>{{ sentenceFor(error, offlineRefresh) }}</span>
+                <button type="button" class="chat-ls-btn" @click="emit('refresh')">Try again</button>
+            </div>
+
+            <template v-if="isLoading">
+                <span class="chat-sr-only">Loading mentions</span>
+                <ul class="chat-ls-list" aria-hidden="true">
+                    <li v-for="(widths, index) in skeletonWidths" :key="index" class="chat-ls-skel" data-testid="mention-skeleton">
+                        <span class="chat-skeleton chat-ls-sk chat-ls-sk-av"></span>
+                        <span class="chat-ls-sk-lines">
+                            <i v-for="(width, line) in widths" :key="line" class="chat-skeleton chat-ls-sk" :style="{ width: `${width}%` }"></i>
+                        </span>
+                    </li>
+                </ul>
+            </template>
+
+            <div v-else-if="rows.length === 0" class="chat-ls-empty" data-testid="mentions-empty">
+                <span class="chat-ls-empty-ic" aria-hidden="true"><Icon name="at" /></span>
+                <b>No mentions yet</b>
+                <span>When someone @mentions you by name, it shows up here so you can jump straight to it.</span>
+            </div>
+
+            <template v-else>
+                <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between mentions.</span>
+                <div ref="listElement" @keydown="onListKeydown">
+                    <section v-for="day in days" :key="day.label" :aria-label="day.label">
+                        <h3 class="chat-ls-day" data-testid="mentions-day">{{ day.label }}</h3>
+                        <ul class="chat-ls-list" :class="{ 'is-phone': isPhone }">
+                            <li v-for="drawn in day.rows"
+                                :key="drawn.messageId"
+                                class="chat-ls-row chat-ls-mn"
+                                :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
+                                :style="{ '--chat-ls-i': drawn.stagger }"
+                                data-testid="mention-row">
+                                <button type="button"
+                                        class="chat-ls-hit"
+                                        data-testid="mention-row-open"
+                                        :data-message-id="drawn.messageId"
+                                        :aria-label="drawn.label"
+                                        :aria-describedby="`${uid}-hint`"
+                                        :aria-current="drawn.isCurrent ? 'true' : undefined"
+                                        :data-autofocus="drawn.isCurrent ? '' : undefined"
+                                        :tabindex="isTabStop(drawn.messageId) ? 0 : -1"
+                                        @focus="roveId = drawn.messageId"
+                                        @click="onOpen(drawn)"></button>
+                                <span v-if="drawn.isNew" class="chat-ls-new" aria-hidden="true" data-testid="mention-row-new"></span>
+
+                                <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
+                                <div class="chat-ls-in" aria-hidden="true" inert>
+                                    <span class="chat-ls-avw">
+                                        <Avatar :people="[drawn.author]" :size="32" />
+                                        <span class="chat-ls-at"><Icon name="at" /></span>
+                                    </span>
+                                    <div class="chat-ls-main">
+                                        <div class="chat-ls-head">
+                                            <b>{{ drawn.who }}</b>
+                                            <span class="chat-ls-sub">
+                                                <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
+                                                <span>{{ drawn.room }}</span>
+                                            </span>
+                                            <time class="chat-ls-t">{{ drawn.time }}</time>
+                                        </div>
+                                        <div class="chat-ls-text">
+                                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" />
+                                        </div>
+                                        <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </section>
+                </div>
+
+                <div v-if="hasMore" class="chat-ls-more">
+                    <div v-if="olderError" class="chat-ls-err" role="status">
+                        <Icon name="alert" size="sm" />
+                        <span data-testid="mentions-older-error">{{ sentenceFor(olderError, offlineOlder) }}</span>
+                    </div>
+                    <button type="button"
+                            class="chat-ls-btn"
+                            data-testid="mentions-more"
+                            :aria-busy="isLoadingOlder ? 'true' : undefined"
+                            :aria-disabled="isLoadingOlder ? 'true' : undefined"
+                            @click="onLoadOlder">
+                        <template v-if="isLoadingOlder"><span class="chat-spinner" aria-hidden="true"></span>Loading</template>
+                        <template v-else>Load older mentions</template>
+                    </button>
+                </div>
+                <div v-else class="chat-ls-more">
+                    <span class="chat-ls-endnote" data-testid="mentions-end"><Icon name="check" size="xs" />That's every mention</span>
+                </div>
+            </template>
+
+            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
+        </div>
+    </PanelHost>
 </template>
 
+<style scoped>
+/* The list's row, the failure strip, the empty state and the skeleton are the sheet's, shared with the threads list; what is here is the inbox's own. */
+
+/* A mention row leaves room on its left for the New dot. */
+.chat-ls-mn .chat-ls-in {
+    padding-left: 18px;
+}
+
+/* Under the list as well, so the row just opened outranks the shared row's hover. */
+.chat-ls-list .chat-ls-row.is-current {
+    background: var(--chat-brand-wash);
+}
+
+.chat-ls-new {
+    position: absolute;
+    top: 23px;
+    left: 6px;
+    z-index: 1;
+    width: 6px;
+    height: 6px;
+    pointer-events: none;
+    background: var(--chat-brand-ink);
+    border-radius: 50%;
+}
+
+.chat-ls-row.is-new .chat-ls-head b {
+    font-weight: 700;
+}
+
+/* The author's face carries the @ in a small brand disc at its corner. */
+.chat-ls-at {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--chat-surface);
+}
+
+.chat-ls-at :deep(.chat-ic) {
+    width: 8px;
+    height: 8px;
+    stroke-width: 2.8;
+}
+
+/* Three lines here rather than the list's two: a mention is read for what it asks of the reader. */
+.chat-ls-row .chat-ls-text {
+    -webkit-line-clamp: 3;
+}
+
+/* A chip is quiet and inline here, as in the threads list, so it never makes its line taller. */
+.chat-ls-text :deep(.chat-mn) {
+    display: inline;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+.chat-ls-inthread {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 22px;
+    padding: 0 9px 0 7px;
+    margin-top: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-ls-inthread :deep(.chat-ic) {
+    width: 13px;
+    height: 13px;
+    color: var(--chat-icon);
+}
+
+/* Day headings stay in view while their rows scroll under them, the rows faintly showing through. */
+.chat-ls-day {
+    position: sticky;
+    top: -4px;
+    z-index: 3;
+    padding: 12px 18px 6px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--chat-muted);
+    letter-spacing: .01em;
+    background: var(--chat-surface);
+    background: color-mix(in srgb, var(--chat-surface) 92%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+.chat-ls-more {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 16px 8px;
+}
+
+.chat-ls-more .chat-ls-err {
+    align-self: stretch;
+    margin: 0;
+}
+
+.chat-ls-more .chat-ls-btn[aria-busy="true"] {
+    color: var(--chat-muted);
+    pointer-events: none;
+}
+
+.chat-ls-endnote {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-ls-endnote :deep(.chat-ic) {
+    width: 13px;
+    height: 13px;
+}
+</style>
+
 <script setup lang="ts">
-    import { PropType } from "vue";
-    import { ChatError, MentionRow } from "../types.partial";
+    import { computed, onMounted, onUpdated, PropType, ref, watch } from "vue";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import PanelHost from "../ui/panelHost.partial.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import MessageBody from "./messageBody.partial.obs";
+    import { messageForError } from "../errors.partial";
+    import { dayLabel, timeLabel } from "../feedLayout.partial";
+    import { messageDisplay } from "../composables/useHistory.partial";
+    import { ChatError, DisplayPiece, MentionRow, MessageBlock, TimelineMessage } from "../types.partial";
+
+    // #region Types
 
     type RoomKind = "channel" | "person" | "group";
 
-    defineProps({
+    /** One row as it is drawn and read. */
+    type DrawnRow = {
+        messageId: number;
+        channelId: string;
+
+        /** The thread a reply lives in, or null for a message in the conversation. */
+        rootId: number | null;
+        who: string;
+        author: AvatarPerson;
+        room: string;
+        roomIcon: string | null;
+        time: string;
+        text: string | null;
+        pieces: DisplayPiece[] | null;
+        blocks: MessageBlock[] | null;
+        isNew: boolean;
+        isCurrent: boolean;
+        stagger: number;
+        label: string;
+    };
+
+    /** The rows of one day, under its heading. */
+    type DrawnDay = {
+        label: string;
+        rows: DrawnRow[];
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The inbox's rows as chat_list_mentions answers them, newest first. */
         rows: {
             type: Array as PropType<MentionRow[]>,
             required: true
         },
 
+        /** Whether older mentions wait after the last row. */
         hasMore: {
             type: Boolean,
             default: false
         },
 
+        /** The first page is on its way with nothing of it on screen yet. */
         isLoading: {
             type: Boolean,
             default: false
         },
 
+        /** The rows on screen are being fetched again. */
         isRefreshing: {
             type: Boolean,
             default: false
         },
 
+        /** An older page is on its way. */
         isLoadingOlder: {
             type: Boolean,
             default: false
         },
 
+        /** Why the last open or refresh failed, or null. */
         error: {
             type: Object as PropType<ChatError | null>,
             default: null
         },
 
+        /** Why the last older page failed, or null. */
         olderError: {
             type: Object as PropType<ChatError | null>,
             default: null
         },
 
+        /** The messages newer than the last visit and not opened here, marked New. */
         newIds: {
             type: Array as PropType<number[]>,
             default: () => []
         },
 
+        /** The message whose row was just opened. */
         currentId: {
             type: Number as PropType<number | null>,
             default: null
         },
 
+        /** Each conversation's title by channel id, as the header shows it. */
         roomTitles: {
             type: Object as PropType<Record<string, string>>,
             default: () => ({})
         },
 
+        /** Each conversation's kind by channel id, for the room's icon; a room missing here draws no icon. */
         roomKinds: {
             type: Object as PropType<Record<string, RoomKind>>,
             default: () => ({})
         },
 
+        /** Whether each channel is open to anyone who may join, which draws a hash rather than a lock. */
         publicRooms: {
             type: Object as PropType<Record<string, boolean>>,
             default: () => ({})
         },
 
+        /** Whether the chat is in its one-pane phone layout. */
         isPhone: {
             type: Boolean,
             default: false
         },
 
+        /** The reader, whose own chip a message body draws as theirs. */
         personAliasGuid: {
             type: String,
             default: ""
         }
     });
 
-    defineEmits<{
+    const emit = defineEmits<{
         (e: "jump", messageId: number, channelId: string): void;
         (e: "openThread", rootId: number, channelId: string, messageId: number): void;
         (e: "refresh"): void;
         (e: "loadOlder"): void;
         (e: "close"): void;
     }>();
+
+    // #region Values
+
+    /** Ties the rows to their hint, unique per panel drawn. */
+    const uid = `chat-ls-${newGuid()}`;
+
+    /** The design staggers the first rows of a fetch only, so a long list does not trickle in. */
+    const maxStaggered = 8;
+
+    const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70], [42, 78, 52]];
+
+    const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
+    const offlineOlder = "Couldn't load older mentions. You're offline.";
+
+    /** The row that holds the list's one tab stop, once one has been focused. */
+    const roveId = ref<number | null>(null);
+
+    /** Where the rows of the latest fetch start, so an older page rises in from its own first row. */
+    const staggerFrom = ref(0);
+
+    const announcement = ref("");
+
+    const listElement = ref<HTMLElement>();
+
+    /** How many rows were drawn when an older page was asked for, until it lands or is dropped. */
+    let olderFrom: number | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const days = computed((): DrawnDay[] => {
+        const now = new Date();
+        const drawn: DrawnDay[] = [];
+        props.rows.forEach((row, index) => {
+            const label = dayOf(row.message.created_at, now);
+            let day = drawn[drawn.length - 1];
+            if (day?.label !== label) {
+                day = { label, rows: [] };
+                drawn.push(day);
+            }
+
+            day.rows.push(drawRow(row, index, now));
+        });
+
+        return drawn;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onRefresh(): void {
+        // a refresh already out answers for this press too
+        if (!props.isRefreshing) {
+            emit("refresh");
+        }
+    }
+
+    function onLoadOlder(): void {
+        if (!props.isLoadingOlder) {
+            emit("loadOlder");
+        }
+    }
+
+    /** A reply opens its thread at the reply; anything else lands on the message in its conversation. */
+    function onOpen(row: DrawnRow): void {
+        if (row.rootId !== null) {
+            emit("openThread", row.rootId, row.channelId, row.messageId);
+        }
+        else {
+            emit("jump", row.messageId, row.channelId);
+        }
+    }
+
+    /** Up, Down, Home and End move between rows, across the day headings. */
+    function onListKeydown(event: KeyboardEvent): void {
+        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+            return;
+        }
+
+        const hits = Array.from(listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-hit") ?? []);
+        const index = hits.indexOf(event.target as HTMLElement);
+        if (index < 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const wanted = event.key === "Home" ? 0 : event.key === "End" ? hits.length - 1 : index + (event.key === "ArrowDown" ? 1 : -1);
+        const next = hits[Math.max(0, Math.min(hits.length - 1, wanted))];
+        next.focus();
+        next.closest(".chat-ls-row")?.scrollIntoView({ block: "nearest" });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** The row last focused holds the tab stop while it is drawn; otherwise the first row. */
+    function isTabStop(messageId: number): boolean {
+        const isRoveShown = roveId.value !== null && props.rows.some(r => r.message.id === roveId.value);
+        return isRoveShown ? roveId.value === messageId : props.rows[0]?.message.id === messageId;
+    }
+
+    /**
+     * A refusal's sentence is the server's; a call that never reached the platform carries none,
+     * and says the person is offline in the words of the place it failed.
+     */
+    function sentenceFor(error: ChatError, offline: string): string {
+        return error.text || error.severity === "session" ? messageForError(error) : offline;
+    }
+
+    function fullName(nickName: string | null | undefined, lastName: string | null | undefined): string {
+        return `${nickName ?? ""} ${lastName ?? ""}`.trim();
+    }
+
+    function dateOf(at: string | null | undefined): Date | null {
+        const date = at ? new Date(at) : null;
+        return date && !isNaN(date.getTime()) ? date : null;
+    }
+
+    /** The heading of the day a mention was made, as the feed's divider names it. */
+    function dayOf(at: string, now: Date): string {
+        const date = dateOf(at);
+        return date ? dayLabel(date, now) : "";
+    }
+
+    /** "9:41 AM" today, else the day, as the label's sentence reads it. */
+    function spokenWhen(at: string, now: Date): string {
+        const date = dateOf(at);
+        if (!date) {
+            return "";
+        }
+
+        const day = dayLabel(date, now);
+        return day === "Today" ? timeLabel(date) : day === "Yesterday" ? "yesterday" : day;
+    }
+
+    /** The message as a sentence: its text, or the sentence shown in its place, ending in a stop. */
+    function spokenText(message: TimelineMessage): string {
+        const display = messageDisplay(message);
+        let text = display.text ?? "";
+        if ((display.kind === "message" || display.kind === "system") && Array.isArray(message.pieces) && message.pieces.length > 0) {
+            text = message.pieces.map(p => p.text).join("");
+        }
+
+        text = text.replace(/\s+/g, " ").trim();
+        return /[.!?…]$/.test(text) ? text : `${text}.`;
+    }
+
+    function drawRow(row: MentionRow, index: number, now: Date): DrawnRow {
+        const message = row.message;
+        const display = messageDisplay(message);
+        const isShown = display.kind === "message" || display.kind === "system";
+        const name = fullName(message.sender_nick_name, message.sender_last_name);
+        const who = name || "Someone";
+        const room = props.roomTitles[row.channel_id] ?? "";
+        const roomKind = props.roomKinds[row.channel_id];
+        const isCurrent = props.currentId === message.id;
+        const isNew = !isCurrent && props.newIds.includes(message.id);
+        const date = dateOf(message.created_at);
+
+        // A two-person conversation is titled by the other person, who wrote the mention, so it is
+        // named as the reader's conversation rather than as "Sam Ortiz in Sam Ortiz".
+        const where = roomKind === "person" ? "your conversation" : room;
+        const thread = row.parent_id !== null ? ", in a thread" : "";
+        const label = `${isNew ? "New. " : ""}${who} in ${where}${thread}, ${spokenWhen(message.created_at, now)}: ${spokenText(message)} ${row.parent_id !== null ? "Open thread" : "Go to message"}`;
+
+        return {
+            messageId: message.id,
+            channelId: row.channel_id,
+            rootId: row.parent_id,
+            who,
+            author: { name: who, photoUrl: message.sender_avatar_url ?? null },
+            room,
+            roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
+            time: date ? timeLabel(date) : "",
+            text: display.text,
+            pieces: isShown ? message.pieces ?? null : null,
+            blocks: isShown ? message.blocks ?? null : null,
+            isNew,
+            isCurrent,
+            stagger: Math.max(0, Math.min(index - staggerFrom.value, maxStaggered)),
+            label
+        };
+    }
+
+    /**
+     * Takes the messages' links out of the tab order. The drawn row is inert, which a browser that
+     * knows inert honours; the oldest Safari Rock supports does not, and would stop on each link.
+     */
+    function quietLinks(): void {
+        listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-in a").forEach(link => {
+            link.tabIndex = -1;
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.isLoadingOlder, isLoadingOlder => {
+        if (isLoadingOlder) {
+            olderFrom = props.rows.length;
+        }
+    });
+
+    // A fresh list rises from its first row, an older page from the first row it added.
+    watch(() => props.rows, rows => {
+        staggerFrom.value = olderFrom !== null && rows.length > olderFrom ? olderFrom : 0;
+    });
+
+    // A screen reader hears what a fetch brought, since the rows change under it without a word.
+    watch(() => props.isLoading, (isLoading, wasLoading) => {
+        if (wasLoading && !isLoading && !props.error) {
+            const count = props.rows.length;
+            announcement.value = `${count} ${count === 1 ? "mention" : "mentions"}`;
+        }
+    });
+
+    watch(() => props.isRefreshing, (isRefreshing, wasRefreshing) => {
+        if (wasRefreshing && !isRefreshing && !props.error) {
+            announcement.value = "Mentions are up to date";
+        }
+    });
+
+    // An older page's first row takes focus, so the keyboard carries on where the list grew.
+    watch(() => props.isLoadingOlder, (isLoadingOlder, wasLoadingOlder) => {
+        const from = olderFrom;
+        if (!wasLoadingOlder || isLoadingOlder || from === null) {
+            return;
+        }
+
+        olderFrom = null;
+        if (props.olderError) {
+            announcement.value = sentenceFor(props.olderError, offlineOlder);
+            return;
+        }
+
+        // A refresh took the page's place, so nothing was added after the rows it asked from.
+        const first = props.rows[from];
+        const added = props.rows.length - from;
+        if (first) {
+            announcement.value = `${added} older ${added === 1 ? "mention" : "mentions"} loaded`;
+            roveId.value = first.message.id;
+            listElement.value?.querySelector<HTMLElement>(`.chat-ls-hit[data-message-id='${first.message.id}']`)?.focus({ preventScroll: true });
+        }
+    }, { flush: "post" });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(quietLinks);
+    onUpdated(quietLinks);
+
+    // #endregion Lifecycle Hooks
 </script>

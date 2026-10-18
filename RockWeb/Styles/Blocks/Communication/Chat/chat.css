@@ -708,3 +708,267 @@
         animation-name: chat-crossfade;
     }
 }
+
+/*
+    A panel's list of rows, shared by the threads list and the mentions inbox: one button under the
+    whole row, what is drawn sitting over it and letting every press through. Under the root, so
+    each rule outranks the base focus and the icon's own scoped size; a list's own states are in
+    its component.
+*/
+.chat-shell .chat-ls-list {
+    padding: 2px 8px 4px;
+    margin: 0;
+    list-style: none;
+}
+
+.chat-shell .chat-ls-list.is-phone {
+    padding-right: 6px;
+    padding-left: 6px;
+}
+
+/* Fetched rows rise in, a little apart, so a fresh list reads as arriving rather than blinking. */
+.chat-shell .chat-ls-row {
+    position: relative;
+    border-radius: var(--chat-r-md);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+    animation: chat-ls-rise var(--chat-t-msg) var(--chat-ease-in) both;
+    animation-delay: calc(var(--chat-ls-i, 0) * var(--chat-d-stagger));
+}
+
+@keyframes chat-ls-rise {
+    from {
+        opacity: 0;
+        transform: translateY(var(--chat-rise));
+    }
+}
+
+.chat-shell .chat-ls-row + .chat-ls-row {
+    margin-top: 1px;
+}
+
+.chat-shell .chat-ls-row:hover {
+    background: var(--chat-hover);
+}
+
+.chat-shell .chat-ls-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: inherit;
+}
+
+.chat-shell .chat-ls-hit:focus-visible {
+    outline-offset: -2px;
+    border-radius: var(--chat-r-md);
+}
+
+.chat-shell .chat-ls-hit:active {
+    background: var(--chat-press);
+}
+
+.chat-shell .chat-ls-in {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 10px 10px 11px;
+    pointer-events: none;
+}
+
+.chat-shell .chat-ls-avw {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    margin-top: 1px;
+}
+
+.chat-shell .chat-ls-main {
+    min-width: 0;
+}
+
+.chat-shell .chat-ls-head {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.chat-shell .chat-ls-head b {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--chat-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-shell .chat-ls-sub {
+    display: inline-flex;
+    flex: 0 1 auto;
+    gap: 2px;
+    align-items: center;
+    min-width: 0;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+}
+
+.chat-shell .chat-ls-sub > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-shell .chat-ls-sub .chat-ic {
+    flex: none;
+    align-self: center;
+    width: 12px;
+    height: 12px;
+}
+
+.chat-shell .chat-ls-t {
+    flex: none;
+    padding-left: 8px;
+    margin-left: auto;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* Two lines of the message, its chips and links drawn as they are in the conversation. */
+.chat-shell .chat-ls-text {
+    display: -webkit-box;
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--chat-text-2);
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+/* Over the list: the failure, beside the rows it could not replace. */
+.chat-shell .chat-ls-err {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 8px 8px 11px;
+    margin: 8px 14px 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-danger-ink);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-md);
+}
+
+.chat-shell .chat-ls-err .chat-ls-btn {
+    flex: none;
+    height: 26px;
+    margin-left: auto;
+    color: var(--chat-text);
+}
+
+.chat-shell .chat-ls-refresh[aria-busy="true"] {
+    color: var(--chat-text);
+    cursor: progress;
+}
+
+.chat-shell .chat-ls-refresh[aria-busy="true"] .chat-ic {
+    animation: chat-spin var(--chat-d-refresh-spin) linear infinite;
+}
+
+/* A small outlined button. */
+.chat-shell .chat-ls-btn {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 28px;
+    padding: 0 11px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-ls-btn:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-shell .chat-ls-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 52px 28px 24px;
+    text-align: center;
+}
+
+.chat-shell .chat-ls-empty-ic {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 6px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: 14px;
+}
+
+.chat-shell .chat-ls-empty-ic .chat-ic {
+    width: 22px;
+    height: 22px;
+}
+
+.chat-shell .chat-ls-empty b {
+    font-size: 14.5px;
+}
+
+.chat-shell .chat-ls-empty > span {
+    max-width: 32ch;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-ls-empty .chat-ls-btn {
+    margin-top: 10px;
+}
+
+.chat-shell .chat-ls-skel {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 11px 10px;
+}
+
+/* The fill and pulse are the sheet's one skeleton, the history's; only the shape is the list's own. */
+.chat-shell .chat-ls-sk {
+    display: block;
+    border-radius: 6px;
+}
+
+.chat-shell .chat-ls-sk-av {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.chat-shell .chat-ls-sk-lines i {
+    height: 9px;
+    margin: 4px 0 9px;
+}
+
+.chat-shell .chat-ls-sk-lines i:last-child {
+    margin-bottom: 0;
+}
