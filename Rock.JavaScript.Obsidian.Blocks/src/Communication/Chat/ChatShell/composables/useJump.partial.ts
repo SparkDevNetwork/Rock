@@ -30,6 +30,9 @@ import { ChatShell } from "../shell.partial";
 /** A reply to open its thread at: from a push's tap, or from a link to it. */
 export type ReplyLanding = { channelId: string, rootId: number, messageId: number | null };
 
+/** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
+export type ThreadOrigin = "threads" | "mentions" | null;
+
 /** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
 export type LandingCheck = "held" | "more" | "stop";
 
@@ -45,7 +48,7 @@ export type JumpDependencies = {
     /** Counts every thread opened or left, so a landing can tell the drawer it started in is gone. */
     threadOpenCount: () => number;
 
-    openThreadDrawer: (channelId: string, rootId: number, isFromList: boolean) => Promise<void>;
+    openThreadDrawer: (channelId: string, rootId: number, origin: ThreadOrigin) => Promise<void>;
 
     closeThreadDrawer: () => void;
 };
@@ -58,7 +61,7 @@ export type Jump = {
     /** The message the feed scrolls to and flashes once its timeline holds it, or null. */
     landingMessageId: Ref<number | null>;
 
-    landOnReply: (landing: ReplyLanding) => Promise<void>;
+    landOnReply: (landing: ReplyLanding, origin?: ThreadOrigin) => Promise<void>;
 
     onJump: (messageId: number, isFromThread: boolean) => Promise<void>;
 };
@@ -97,10 +100,11 @@ export function useJump(dependencies: JumpDependencies): Jump {
      * Opens a thread at a reply. A push or a link is about a recent reply, so the newest page
      * nearly always holds it; when not, a few older pages are fetched before the drawer simply
      * stays at the newest. Each await checks the drawer is still the one this opened, so one
-     * closed or replaced meanwhile asks for nothing more and flashes nothing.
+     * closed or replaced meanwhile asks for nothing more and flashes nothing. A reply opened from
+     * a list keeps the list to go back to.
      */
-    async function landOnReply(landing: ReplyLanding): Promise<void> {
-        const opened = dependencies.openThreadDrawer(landing.channelId, landing.rootId, false);
+    async function landOnReply(landing: ReplyLanding, origin: ThreadOrigin = null): Promise<void> {
+        const opened = dependencies.openThreadDrawer(landing.channelId, landing.rootId, origin);
         const thisOpen = dependencies.threadOpenCount();
         await opened;
 

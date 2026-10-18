@@ -55,7 +55,11 @@
                             :isEmpty="!activeChannelId && !draft"
                             :isThreadsOffered="!!activeChannelId"
                             :isThreadsOpen="panelKind === 'threads'"
-                            @threads="onThreads"
+                            :isMentionsOffered="shell.state.phase === 'ready'"
+                            :isMentionsOpen="panelKind === 'mentions'"
+                            :hasMentionDot="shell.mentions.state.hasDot"
+                            @threads="onListPanel('threads')"
+                            @mentions="onListPanel('mentions')"
                             @turnOnPush="onTurnOnPush"
                             @back="onBack"
                             @backOnline="onBackOnline" />
@@ -108,6 +112,8 @@
                           :quote="conversationQuote"
                           :isQuoteOwn="isOwnQuote(conversationQuote)"
                           :emojiSource="emojiSource"
+                          :mentionSource="mentionSourceFor(activeRow)"
+                          @mentionQuery="onMentionQuery(activeRow, $event)"
                           @send="shell.send"
                           @edit="shell.directMessages.edit"
                           @editLast="onEditLast"
@@ -154,6 +160,19 @@
                                   @loadMore="onThreadsLoadMore"
                                   @close="closePanel" />
 
+                    <MentionsPanel v-else-if="shownPanel === 'mentions'"
+                                   v-bind="shell.mentions.state.inbox"
+                                   :roomTitles="roomTitles"
+                                   :roomKinds="roomKinds"
+                                   :publicRooms="publicRooms"
+                                   :isPhone="isPhone"
+                                   :personAliasGuid="personAliasGuid"
+                                   @jump="onMentionOpen"
+                                   @openThread="(_rootId, _channelId, messageId) => onMentionOpen(messageId)"
+                                   @refresh="shell.mentions.refreshInbox"
+                                   @loadOlder="shell.mentions.loadOlder"
+                                   @close="closePanel" />
+
                     <ThreadDrawer v-else-if="shownPanel === 'thread' && drawnThread"
                                   :key="drawnThread.rootId"
                                   :root="drawnThread.root"
@@ -165,7 +184,8 @@
                                   :isChannel="threadKind === 'channel'"
                                   :isDirectMessage="threadKind === 'person'"
                                   :isPhone="isPhone"
-                                  :isFromList="isThreadFromList"
+                                  :isFromList="threadOrigin !== null"
+                                  :listTitle="threadOrigin === 'mentions' ? 'Mentions' : 'Threads'"
                                   :personAliasGuid="personAliasGuid"
                                   :hasMore="drawnThread.hasMore"
                                   :isLoading="drawnThread.isLoading"
@@ -184,6 +204,8 @@
                                   :isEditSaving="isEditSavingIn(drawnThread.channelId)"
                                   :reactionHost="reactionHost"
                                   :emojiSource="emojiSource"
+                                  :mentionSource="mentionSourceFor(threadRow)"
+                                  @mentionQuery="onMentionQuery(threadRow, $event)"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
@@ -403,6 +425,8 @@
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
     import { DirectMessageDraft, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
+    import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
+    import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
@@ -410,7 +434,7 @@
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
-    import { ReplyLanding, useJump } from "./ChatShell/composables/useJump.partial";
+    import { ReplyLanding, ThreadOrigin, useJump } from "./ChatShell/composables/useJump.partial";
     import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
@@ -421,8 +445,8 @@
 
     // #region Types
 
-    /** What the panel column can hold: the threads list, or one thread in its drawer. */
-    type PanelKind = "threads" | "thread";
+    /** What the panel column can hold: the threads list, the mentions inbox, or one thread in its drawer. */
+    type PanelKind = "threads" | "mentions" | "thread";
 
     /** What the push worker posts to a window of the site, in the worker's own names. */
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -450,7 +474,12 @@
         notify: notice => {
             notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
         },
-        invokeBlockAction
+        invokeBlockAction,
+        // Called only after the frame below is set up, so the landings they reach are there.
+        mentionViews: {
+            land: messageId => landOnMention(messageId),
+            openThread: (channelId, rootId, messageId) => openThreadFromMentions(channelId, rootId, messageId)
+        }
     });
 
     // Replaced, not reloaded, when a birthdate lets the person in: the save answers with the
@@ -507,8 +536,8 @@
      */
     const drawnThread = shallowRef<OpenThreadState | null>(null);
 
-    /** Whether the open thread came from the threads list, so its back chevron and Escape return there. */
-    const isThreadFromList = ref(false);
+    /** The list the open thread came from, which its back chevron and Escape return to, or null. */
+    const threadOrigin = ref<ThreadOrigin>(null);
 
     /** The conversation the open thread belongs to, which the drawer stays open over. */
     let threadChannelId: string | null = null;
@@ -694,6 +723,9 @@
         return isPublic;
     });
 
+    /** The sidebar row of the open thread's conversation, which says whether its composer offers the @ picker. */
+    const threadRow = computed((): SidebarRow | null => drawnThread.value ? shell.value.channels.rows.find(r => r.channel_id === drawnThread.value?.channelId) ?? null : null);
+
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
     const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
 
@@ -786,24 +818,28 @@
         notices.value = notices.value.filter(n => n.code !== notice.code);
     }
 
-    /** The header's Threads opens the open conversation's threads, or closes them when they are open. */
-    async function onThreads(): Promise<void> {
-        if (panelKind.value === "threads") {
+    /**
+     * The header's Threads opens the open conversation's threads, and its Mentions the inbox; each
+     * closes its list when it is the one open.
+     */
+    async function onListPanel(kind: "threads" | "mentions"): Promise<void> {
+        if (panelKind.value === kind) {
             closePanel();
             return;
         }
 
-        if (!activeChannelId.value) {
+        const channelId = activeChannelId.value;
+        if (kind === "threads" && !channelId) {
             return;
         }
 
-        // The column holds one panel at a time, so the list takes an open thread's place.
-        leaveThread();
+        // The column holds one panel at a time, so the list takes an open thread's or list's place.
+        releasePanel();
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
-        panelKind.value = "threads";
-        shownPanel.value = "threads";
-        void shell.value.threads.openList(activeChannelId.value);
+        panelKind.value = kind;
+        shownPanel.value = kind;
+        void (channelId && kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.mentions.openInbox());
 
         // Focus goes to the panel's first control, or its X or back chevron when it has none yet.
         await nextTick();
@@ -851,25 +887,57 @@
         if (channelId !== activeChannelId.value) {
             void shell.value.selectChannel(channelId);
         }
-        void openThreadDrawer(channelId, rootId, true);
+        void openThreadDrawer(channelId, rootId, "threads");
     }
 
     /** A thread pill, or the "Replied to a thread" label over a reply, in the open conversation. */
     function onOpenThread(rootId: number): void {
         if (activeChannelId.value) {
-            void openThreadDrawer(activeChannelId.value, rootId, false);
+            void openThreadDrawer(activeChannelId.value, rootId, null);
         }
     }
 
-    /** Back to the threads list the thread was opened from, with focus on the row that opened it. */
+    /** Back to the list the thread was opened from, with focus on the row that opened it. */
     async function onThreadBack(): Promise<void> {
         const rootId = drawnThread.value?.rootId;
+        const origin = threadOrigin.value ?? "threads";
         leaveThread();
-        panelKind.value = "threads";
-        shownPanel.value = "threads";
+        panelKind.value = origin;
+        shownPanel.value = origin;
 
+        // The inbox marks the row opened as its current one.
         await nextTick();
-        panelElement.value?.querySelector<HTMLElement>(`[data-testid='thread-row-open'][data-root-id='${rootId}']`)?.focus();
+        panelElement.value?.querySelector<HTMLElement>(origin === "threads"
+            ? `[data-testid='thread-row-open'][data-root-id='${rootId}']`
+            : "[data-testid='mention-row-open'][aria-current='true']")?.focus();
+    }
+
+    /**
+     * A row of the mentions inbox: the shell's jump marks it opened and lands on its message, in its
+     * conversation beside the inbox, or in its thread with a way back. A phone shows one pane, so a
+     * channel mention closes the inbox to bring its conversation forward.
+     */
+    function onMentionOpen(messageId: number): void {
+        const row = shell.value.mentions.state.inbox.rows.find(r => r.message.id === messageId);
+        if (!row) {
+            return;
+        }
+
+        void shell.value.mentions.jump(row);
+        if (row.parent_id === null && isPhone.value) {
+            isListChosen.value = false;
+            closePanel();
+        }
+    }
+
+    /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
+    function onMentionQuery(row: SidebarRow | null, query: string | null): void {
+        if (row && query !== null) {
+            shell.value.mentions.search(row, query);
+        }
+        else {
+            shell.value.mentions.closeSearch();
+        }
     }
 
     /** The drawer's toggle: the toast says what changed once the platform took it, as the list's does. */
@@ -1125,6 +1193,43 @@
         });
     }
 
+    /**
+     * What a composer's @ picker lists in a conversation: the people found for the newest query,
+     * and @all where the room's right and the query offer it. A draft has no room yet, so none.
+     */
+    function mentionSourceFor(row: SidebarRow | null): MentionPickerSource | null {
+        const picker = shell.value.mentions.state.picker;
+        return row ? { canMention: row.can_mention, people: picker.people, isAllOffered: picker.isAllOffered } : null;
+    }
+
+    /** Lands on a mention in the open conversation, again even when it was the last landed on. */
+    function landOnMention(messageId: number): void {
+        landingMessageId.value = null;
+        void nextTick(() => {
+            landingMessageId.value = messageId;
+        });
+    }
+
+    /** Opens a mention's thread at the reply over its conversation, with a way back to the inbox. */
+    async function openThreadFromMentions(channelId: string, rootId: number, messageId: number): Promise<void> {
+        if (channelId !== activeChannelId.value) {
+            void shell.value.selectChannel(channelId);
+        }
+        await landOnReply({ channelId, rootId, messageId }, "mentions");
+    }
+
+    /** Lets go of whatever the column holds: an open thread, and the list it was opened from or the list open. */
+    function releasePanel(): void {
+        const list = panelKind.value === "thread" ? threadOrigin.value : panelKind.value;
+        leaveThread();
+        if (list === "threads") {
+            shell.value.threads.closeList();
+        }
+        else if (list === "mentions") {
+            shell.value.mentions.closeInbox();
+        }
+    }
+
     /** The message quoted under a key, if any. */
     function quoteAt(key: string | null): TimelineMessage | null {
         return key ? shell.value.messageActions.state.quotes[key] ?? null : null;
@@ -1145,11 +1250,8 @@
         }
 
         const closed = panelKind.value;
+        releasePanel();
         panelKind.value = null;
-        if (closed === "threads") {
-            shell.value.threads.closeList();
-        }
-
         finishClosing();
 
         void nextTick(() => {
@@ -1168,18 +1270,20 @@
 
     /**
      * Opens a thread in the drawer. One opened from the conversation replaces whatever the column
-     * held; one opened from the list keeps the list to go back to.
+     * held; one opened from a list keeps the list to go back to. Its mentions stop lighting the
+     * header's dot, as the thread is where they are read.
      */
-    async function openThreadDrawer(channelId: string, rootId: number, isFromList: boolean): Promise<void> {
-        if (panelKind.value === "threads" && !isFromList) {
-            shell.value.threads.closeList();
+    async function openThreadDrawer(channelId: string, rootId: number, origin: ThreadOrigin): Promise<void> {
+        if (origin === null && (panelKind.value === "threads" || panelKind.value === "mentions")) {
+            releasePanel();
         }
+        shell.value.mentions.threadOpened(channelId, rootId);
 
         threadOpenCount++;
         landingReplyId.value = null;
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
-        isThreadFromList.value = isFromList;
+        threadOrigin.value = origin;
         threadChannelId = channelId;
         panelKind.value = "thread";
         shownPanel.value = "thread";
@@ -1201,11 +1305,7 @@
      */
     function closeThreadDrawer(): void {
         const rootId = drawnThread.value?.rootId;
-        const wasFromList = isThreadFromList.value;
-        leaveThread();
-        if (wasFromList) {
-            shell.value.threads.closeList();
-        }
+        releasePanel();
         finishClosing();
 
         void nextTick(() => {

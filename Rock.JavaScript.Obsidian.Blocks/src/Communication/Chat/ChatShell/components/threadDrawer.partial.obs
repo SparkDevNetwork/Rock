@@ -3,7 +3,7 @@
     <PanelHost title="Thread"
                :subtitle="conversationTitle || null"
                :isPhone="isPhone"
-               :backLabel="isFromList ? 'Back to Threads' : null"
+               :backLabel="isFromList ? `Back to ${listTitle}` : null"
                closeLabel="Close thread"
                @close="emit('close')"
                @back="emit('back')">
@@ -318,10 +318,16 @@
             default: false
         },
 
-        /** Opened from the threads list, so Escape and the chevron go back to it. */
+        /** Opened from a list, the threads list or the mentions inbox, so Escape and the chevron go back to it. */
         isFromList: {
             type: Boolean,
             default: false
+        },
+
+        /** The title of the list the thread was opened from, which the back chevron names. */
+        listTitle: {
+            type: String,
+            default: "Threads"
         },
 
         personAliasGuid: {

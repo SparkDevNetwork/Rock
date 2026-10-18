@@ -37,6 +37,9 @@ export type BrowserShellOptions = {
 
     /** Calls one of the Chat block's actions in Rock. */
     invokeBlockAction: InvokeBlockActionFunc;
+
+    /** The frame's views a jump from the mentions inbox lands in. */
+    mentionViews: NonNullable<ShellOptions["mentionViews"]>;
 };
 
 /** The cookie Rock reads at sign-out to take this browser out of push. */
@@ -97,6 +100,7 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         session,
         linkedChannelId: options.linkedChannelId,
         notify: options.notify,
+        mentionViews: options.mentionViews,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mintChurchToken: async () => {
             const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");

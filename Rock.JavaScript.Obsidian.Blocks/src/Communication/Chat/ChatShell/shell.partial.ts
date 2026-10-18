@@ -15,7 +15,7 @@
 // </copyright>
 //
 // The shell's wiring: one place that builds the session, the live connection, the timelines,
-// the sender, the read tracker, the threads and the sidebar, and joins them. Each of those is its own tested
+// the sender, the read tracker, the threads, the mentions and the sidebar, and joins them. Each of those is its own tested
 // module; what is here decides only which one hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
@@ -34,6 +34,7 @@ import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceB
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
+import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -44,7 +45,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -108,6 +109,12 @@ export type ShellOptions = {
 
     /** Shows a toast that is not a failure, such as a message deleted or text copied. */
     notify?: (notice: ActionNotice) => void;
+
+    /**
+     * How a jump from the mentions inbox reaches the frame's views, which the shell cannot see:
+     * landing on a message in the open conversation, and opening a thread at a reply.
+     */
+    mentionViews?: Pick<MentionsDependencies, "land" | "openThread">;
 };
 
 /**
@@ -182,6 +189,9 @@ export type ChatShell = {
 
     /** Reacting to messages: the toggle, the live events, the catalog, the recents and who reacted. */
     reactions: Reactions;
+
+    /** The @ picker's search, the mentions inbox and the header's dot. */
+    mentions: Mentions;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -435,6 +445,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         threads.stop();
         messageActions.stop();
         reactions.stop();
+        mentions.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -535,7 +546,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const tracker: ReadTracker = createReadTracker({
         save: createKeepaliveSave({ fetch: options.fetch, projectUrl, publishableKey, currentToken: session.currentToken }),
-        onSaved: (channelId, result) => channels.applyMarkRead(channelId, result)
+        onSaved: (channelId, result) => {
+            channels.applyMarkRead(channelId, result);
+            // a mention at or below the saved cursor has been read where it lives
+            if (result.read_cursor !== null) {
+                mentions.channelRead(channelId, result.read_cursor);
+            }
+        }
     });
 
     // a reply shown only in its thread lands nowhere else, so the open thread settles its send
@@ -563,6 +580,29 @@ export function createChatShell(options: ShellOptions): ChatShell {
         favorites,
         churchKey: tenantId,
         storage: options.storage
+    });
+
+    const mentions = createMentions({
+        call,
+        tenantId,
+        personAliasGuid,
+        // A browser that blocks its storage refuses here, and the mentions only forget the visit.
+        storage: () => {
+            if (!options.storage) {
+                throw new Error("The browser's storage is not available.");
+            }
+
+            return options.storage;
+        },
+        timelines,
+        // A jump opens its conversation as a sidebar row does, and one already open stays as it is.
+        openChannel: async channelId => {
+            directMessages.close();
+            return channelId === state.activeChannelId || await open(channelId) === "opened";
+        },
+        land: messageId => options.mentionViews?.land(messageId),
+        openThread: async (channelId, rootId, messageId) => options.mentionViews?.openThread(channelId, rootId, messageId),
+        toast: notice => options.notify?.(notice)
     });
 
     const sender = createSender({
@@ -662,9 +702,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
             throw thrown(result);
         }
 
-        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[] } | null;
+        // the bootstrap's own key names
+        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], me?: { unread_mentions?: UnreadMention[] } } | null;
         const rows = answer?.channels ?? [];
         channels.setSidebar(rows);
+        // every load restates the unread mentions, so one read elsewhere stops lighting the dot
+        mentions.setUnread(answer?.me?.unread_mentions ?? []);
         if (Array.isArray(answer?.reactions)) {
             favorites.splice(0, favorites.length, ...answer.reactions);
         }
@@ -776,6 +820,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         threads,
         messageActions,
         reactions,
+        mentions,
         isNewMessageShown: isNewMessageShown(options.session),
 
         openDirectMessage: async (): Promise<void> => {
@@ -852,6 +897,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         return;
                     }
                     channels.applyPersonalEvent(event, payload);
+                    mentions.applyPersonalEvent(event, payload);
 
                     // Only the channel on screen is joined, so only a change to it can need a cut.
                     const changed = (payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null)?.channel_id;
@@ -1023,6 +1069,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             threads.stop();
             messageActions.stop();
             reactions.stop();
+            mentions.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.
