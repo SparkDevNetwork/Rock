@@ -1909,6 +1909,17 @@ namespace RockWeb.Blocks.Groups
                 zoomAmount = "null";
             }
 
+            /*
+                10/18/2026 - MSE
+
+                The htmlDecode function in the script below decodes group names for the marker
+                titles. Those names are not encoded, can be set by group editors and are shown to
+                anonymous visitors on this public page, so it must not parse them as HTML. It
+                sets them on a textarea, which only decodes character references and keeps tags
+                as text, instead of a div, which would create elements and run their handlers.
+
+                Reason: Prevent stored XSS through group names in map marker titles.
+            */
             // write script to page
             string mapScriptFormat = @"
 
@@ -2277,9 +2288,9 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function htmlDecode(input) {{
-            var e = document.createElement('div');
-            e.innerHTML = input;
-            return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
+            var e = document.createElement('textarea');
+            e.innerHTML = input == null ? '' : input;
+            return e.value;
         }}
 
         function getNextPolygonColor() {{

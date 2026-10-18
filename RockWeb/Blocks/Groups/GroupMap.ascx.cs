@@ -223,6 +223,17 @@ namespace RockWeb.Blocks.Groups
                             }}
                         </style>";
 
+        /*
+            10/18/2026 - MSE
+
+            The htmlDecode function in the script below decodes group and family names for
+            the marker titles. Those names are not encoded and can be set by anonymous visitors
+            (Family Pre-Registration) or group editors, so it must not parse them as HTML. It
+            sets them on a textarea, which only decodes character references and keeps tags
+            as text, instead of a div, which would create elements and run their handlers.
+
+            Reason: Prevent stored XSS through group and family names in map marker titles.
+        */
         private const string MAP_SCRIPT_FORMAT_NAME = @"
 <script>
 
@@ -592,9 +603,9 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function htmlDecode(input) {{
-            var e = document.createElement('div');
-            e.innerHTML = input;
-            return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
+            var e = document.createElement('textarea');
+            e.innerHTML = input == null ? '' : input;
+            return e.value;
         }}
 
         function getNextPolygonColor() {{
