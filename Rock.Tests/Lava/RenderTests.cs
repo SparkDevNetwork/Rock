@@ -116,15 +116,15 @@ namespace Rock.Tests.Lava
             var mergeValues = new LavaDataDictionary { { "Person", person } };
             var template = @"<b>{{ Person.NickName }} {{ Person.LastName }}</b>";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var options = new LavaRenderOptions
             {
-                var parameters = new LavaRenderParameters
-                {
-                    ShouldEncodeStringsAsXml = true,
-                    Context = LavaRenderContext.FromMergeValues( mergeValues )
-                };
+                MergeFields = mergeValues,
+                ShouldEncodeStringsAsXml = true
+            };
 
-                var output = TestHelper.GetTemplateOutput( engine, template, parameters );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
 
                 Assert.IsTrue( output.StartsWith( "<b>" ) && output.EndsWith( "</b>" ), $"Template markup was not kept: {output}" );
                 Assert.IsFalse( output.Contains( "<img" ), $"Value markup was not encoded: {output}" );
