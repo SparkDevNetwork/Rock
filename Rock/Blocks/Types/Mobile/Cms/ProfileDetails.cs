@@ -517,7 +517,23 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 person = new PersonService( rockContext2 ).Get( person.Id );
 
                 var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
-                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+
+                /*
+                    10/18/2026 - MSE
+
+                    Only return an authentication token when the login being saved is the
+                    current login. UpdatePersonProfile lets someone with Edit on this block
+                    save another person's profile, and returning that person's token would
+                    let the editor sign in as them. Compare logins, not people, so that an
+                    impersonated (rckipid) session can not turn into a full sign in for the
+                    person's real login.
+
+                    Reason: Prevent account takeover through UpdatePersonProfile.
+                */
+                if ( RequestContext.CurrentUser != null && RequestContext.CurrentUser.UserName == user.UserName )
+                {
+                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+                }
 
                 return mobilePerson;
             }

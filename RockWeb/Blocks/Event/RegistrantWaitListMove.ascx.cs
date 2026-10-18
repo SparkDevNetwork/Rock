@@ -234,12 +234,12 @@ namespace RockWeb.Blocks.Event
 
                 StringBuilder recipientText = new StringBuilder();
                 recipientText.Append( string.Format( "{0} {1} <small>({2})</small><br />"
-                    , registrationSummary.Registration.FirstName
-                    , registrationSummary.Registration.LastName
-                    , registrationSummary.Registration.ConfirmationEmail ) );
+                    , registrationSummary.Registration.FirstName.EncodeHtml()
+                    , registrationSummary.Registration.LastName.EncodeHtml()
+                    , registrationSummary.Registration.ConfirmationEmail.EncodeHtml() ) );
 
                 recipientText.Append( string.Format( "<small>Registrants: {0}</small>"
-                    , string.Join( ", ", registrationSummary.Registrants.Select( r => r.Person.FullName ) ) ) );
+                    , string.Join( ", ", registrationSummary.Registrants.Select( r => r.Person.FullName.EncodeHtml() ) ) ) );
 
                 CheckBox cbEmailRecipient = (CheckBox)e.Item.FindControl( "cbEmailRecipient" );
 

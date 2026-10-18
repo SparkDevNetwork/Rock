@@ -250,7 +250,7 @@ namespace Rock.Blocks.Event
                         { PageParameterKey.RegistrationId, registration.Id.ToString() }
                     };
                     string url = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, qryParams );
-                    registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName ) );
+                    registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName.EncodeHtml() ) );
                 }
             }
 
