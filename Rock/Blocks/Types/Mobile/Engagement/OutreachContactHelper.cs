@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -108,6 +110,58 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             }
 
             return new PersonAliasService( rockContext ).GetPersonId( contact.OwnerPersonAliasId ) == person.Id;
+        }
+
+        /// <summary>
+        /// Gets the binary file identified by the guid if it was uploaded by
+        /// the person, so it can be used as a contact photo.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="photoGuid">The binary file unique identifier.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>The <see cref="BinaryFile"/> or <c>null</c> if it was not found or was not uploaded by the person.</returns>
+        public static BinaryFile GetUploadedContactPhoto( RockContext rockContext, Guid photoGuid, Person person )
+        {
+            /*
+                10/18/2026 - MSE
+
+                Contact photos come from the client as a binary file guid. Without
+                this check any signed-in person could attach any file in the system
+                to their own contact, and the Contact Profile block would later
+                delete it when the photo is changed. Mobile uploads are saved as
+                permanent files, so IsTemporary cannot be used to tell a new upload
+                apart from an existing file. Only files the person uploaded are
+                accepted.
+
+                Reason: Prevent attaching and deleting other people's files.
+            */
+            if ( person == null || photoGuid == Guid.Empty )
+            {
+                return null;
+            }
+
+            var photo = new BinaryFileService( rockContext ).Get( photoGuid );
+
+            return IsCreatedBy( rockContext, photo, person ) ? photo : null;
+        }
+
+        /// <summary>
+        /// Determines whether the binary file was uploaded by the person. The
+        /// creator is compared by person so that merged people still match.
+        /// Files with no recorded creator are not accepted.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="binaryFile">The binary file.</param>
+        /// <param name="person">The person.</param>
+        /// <returns><c>true</c> if the binary file was uploaded by the person; otherwise, <c>false</c>.</returns>
+        public static bool IsCreatedBy( RockContext rockContext, BinaryFile binaryFile, Person person )
+        {
+            if ( binaryFile?.CreatedByPersonAliasId == null || person == null )
+            {
+                return false;
+            }
+
+            return new PersonAliasService( rockContext ).GetPersonId( binaryFile.CreatedByPersonAliasId.Value ) == person.Id;
         }
     }
 }

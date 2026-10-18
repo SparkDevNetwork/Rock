@@ -150,24 +150,41 @@ namespace Rock.Blocks.Types.Mobile.Engagement
 
             var binaryFileService = new BinaryFileService( RockContext );
 
-            // If the contact already has a photo, delete it (we don't want to keep old photos lying around).
-            if ( contact.PhotoId.HasValue )
-            {
-                var oldPhoto = binaryFileService.Get( contact.PhotoId.Value );
-                if ( oldPhoto != null )
-                {
-                    binaryFileService.Delete( oldPhoto );
-                }
-            }
-
-            // Get the new photo
-            var newPhoto = binaryFileService.Get( photoGuid );
+            // Get the new photo, it must have been uploaded by the current person.
+            var newPhoto = OutreachContactHelper.GetUploadedContactPhoto( RockContext, photoGuid, RequestContext.CurrentPerson );
             if ( newPhoto == null )
             {
                 return ActionBadRequest( "There was a problem changing profile picture." );
             }
 
+            if ( contact.PhotoId == newPhoto.Id )
+            {
+                return ActionOk();
+            }
+
+            var oldPhotoId = contact.PhotoId;
             contact.PhotoId = newPhoto.Id;
+
+            /*
+                10/18/2026 - MSE
+
+                The old photo is deleted so old photos are not left lying around,
+                but only if the current person uploaded it. A contact saved before
+                this check could point at any file in the system, and that file may
+                be used somewhere else. The new photo is validated first so a bad
+                request never deletes the current photo.
+
+                Reason: Prevent deleting other people's files on photo change.
+            */
+            if ( oldPhotoId.HasValue )
+            {
+                var oldPhoto = binaryFileService.Get( oldPhotoId.Value );
+                if ( oldPhoto != null && OutreachContactHelper.IsCreatedBy( RockContext, oldPhoto, RequestContext.CurrentPerson ) )
+                {
+                    binaryFileService.Delete( oldPhoto );
+                }
+            }
+
             RockContext.SaveChanges();
 
             return ActionOk();
