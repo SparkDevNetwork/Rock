@@ -47,6 +47,8 @@ namespace RockWeb.Blocks.Event
 
         private RegistrationInstance _registrationInstance = null;
 
+        private bool? _canViewRegistrationInstance;
+
         #endregion
 
         #region Properties
@@ -76,6 +78,16 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                pnlSend.Visible = false;
+                pnlComplete.Visible = true;
+                nbResult.NotificationBoxType = NotificationBoxType.Warning;
+                nbResult.Text = "The registration instance could not be found or you are not authorized to view it.";
+                base.OnLoad( e );
+                return;
+            }
+
             if ( !Page.IsPostBack )
             {
                 LoadData();
@@ -108,6 +120,11 @@ namespace RockWeb.Blocks.Event
         /// <exception cref="System.NotImplementedException"></exception>
         private void gRegistrations_GridRebind( object sender, EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                return;
+            }
+
             LoadOutstandingBalances();
         }
 
@@ -118,6 +135,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendReminders_Click( object sender, EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                return;
+            }
+
             var registrationsSelected = new List<int>();
 
             int sendCount = 0;
@@ -219,6 +241,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglEmailBodyView_CheckedChanged( object sender, EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                return;
+            }
+
             if ( tglEmailBodyView.Checked )
             {
                 ceEmailMessage.Visible = false;
@@ -263,6 +290,47 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the current person can view the registration
+        /// instance in the page parameter. The result is cached for the request.
+        /// </summary>
+        /// <returns><c>true</c> if the instance exists and the person can view it.</returns>
+        private bool CanViewRegistrationInstance()
+        {
+            /*
+                10/16/2026 - MSE
+
+                The block loads the instance from the page parameter in several
+                places (LoadData, the balance grid, send and preview), so a person
+                could swap in the Id of an instance they are not allowed to see and
+                get its registrations, balances and preview, or send reminders.
+                Every entry point calls this one cached check. VIEW on the instance
+                falls back to the template and its category, which is eager loaded
+                because the query is AsNoTracking.
+
+                Reason: Send Payment Reminder skipped VIEW on the registration instance.
+            */
+            if ( !_canViewRegistrationInstance.HasValue )
+            {
+                var registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrationInstance = registrationInstanceId.HasValue
+                        ? new RegistrationInstanceService( rockContext ).Queryable()
+                            .Include( r => r.RegistrationTemplate.Category )
+                            .AsNoTracking()
+                            .FirstOrDefault( r => r.Id == registrationInstanceId.Value )
+                        : null;
+
+                    _canViewRegistrationInstance = registrationInstance != null
+                        && registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                }
+            }
+
+            return _canViewRegistrationInstance.Value;
+        }
 
         /// <summary>
         /// Loads the registration.

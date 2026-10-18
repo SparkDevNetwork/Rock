@@ -649,7 +649,11 @@ namespace RockWeb.Blocks.Core
                             ValueName = h.ValueName,
                             OldValue = h.OldValue,
                             RelatedData = h.RelatedData,
-                            EntityTypeId = h.EntityTypeId
+                            EntityTypeId = h.EntityTypeId,
+
+                            // SummaryHtml uses RelatedEntityTypeId to find attribute value history,
+                            // whose formatted values are sanitized instead of encoded.
+                            RelatedEntityTypeId = x.RelatedEntityTypeId
                         } )
                         .Select( h => h.SummaryHtml )
                         .ToList(),
@@ -1006,15 +1010,27 @@ namespace RockWeb.Blocks.Core
 
                 public static string GetFormattedCaption( string caption, int categoryId, int entityId, int? relatedEntityTypeId, int? relatedEntityId )
                 {
+                    /*
+                        10/16/2026 - MSE
+
+                        The caption is often a group or family name that a person can type
+                        (a family name comes from the last name), and the What column shows
+                        it as HTML. It is encoded once here and used in every return path,
+                        the same as the Obsidian History Log block.
+
+                        Reason: Stored captions were rendered as markup in staff sessions.
+                    */
+                    var encodedCaption = caption.EncodeHtml();
+
                     if ( categoryId == 0 )
                     {
-                        return caption;
+                        return encodedCaption;
                     }
 
                     var urlMask = CategoryCache.Get( categoryId ).GetAttributeValue( "UrlMask" );
                     if ( string.IsNullOrWhiteSpace( urlMask ) )
                     {
-                        return caption;
+                        return encodedCaption;
                     }
 
                     string virtualUrl = string.Empty;
@@ -1032,7 +1048,7 @@ namespace RockWeb.Blocks.Core
                         virtualUrl = string.Format( urlMask, p1, p2 );
                     }
 
-                    string formattedCaption = caption;
+                    string formattedCaption = encodedCaption;
                     if ( virtualUrl.IsNotNullOrWhiteSpace() )
                     {
                         string resolvedUrl;
@@ -1046,7 +1062,7 @@ namespace RockWeb.Blocks.Core
                             resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
                         }
 
-                        formattedCaption = string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
+                        formattedCaption = string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, encodedCaption );
                     }
 
                     return formattedCaption;

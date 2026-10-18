@@ -39,6 +39,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { SignatureDocumentBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentBag";
@@ -134,7 +135,15 @@
             }
 
             if (props.modelValue.signedClientIp) {
-                signedOnInformation += "<br/>" + props.modelValue.signedClientIp;
+                /*
+                    10/16/2026 - MSE
+
+                    The signed client IP can come from an unvalidated X-Forwarded-For header
+                    sent by the signer, and this value is shown as HTML. Escape it.
+
+                    Reason: Prevent a signer's IP value from rendering as HTML for staff.
+                */
+                signedOnInformation += "<br/>" + escapeHtml(props.modelValue.signedClientIp);
             }
 
             valueBuilder.addHtmlValue("Signed On", signedOnInformation);

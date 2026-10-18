@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             if ( !Page.IsPostBack )
             {
-                var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+                var workflowType = GetAuthorizedWorkflowType();
                 if ( workflowType != null )
                 {
                     lTitle.Text = $"{workflowType.Name} Form";
@@ -398,13 +398,46 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         #region Methods
 
         /// <summary>
+        /// Gets the Form Builder workflow type from the page parameter if the
+        /// current person is allowed to view (or edit) it.
+        /// </summary>
+        /// <returns>The authorized <see cref="WorkflowTypeCache"/> or <c>null</c>.</returns>
+        private WorkflowTypeCache GetAuthorizedWorkflowType()
+        {
+            /*
+                10/16/2026 - MSE
+
+                The workflow type comes from the page parameter, so a person could
+                swap in the Id of a form they are not allowed to see and get every
+                submission for it. Only Form Builder forms the person can VIEW (or
+                EDIT, which the Add button already uses) are listed. VIEW on the
+                workflow type falls back to its category. Every read path (OnLoad,
+                BindAttributes and BindGrid) uses this method.
+
+                Reason: Form Submission List skipped VIEW on the form.
+            */
+            var workflowType = WorkflowTypeCache.Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+            if ( workflowType == null || !workflowType.IsFormBuilder )
+            {
+                return null;
+            }
+
+            if ( !workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) && !workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return workflowType;
+        }
+
+        /// <summary>
         /// Saves available attributes as <see cref="AvailableAttributes"/> so dynamic rendering of attribute columns on the <see cref="gWorkflows"/> grid
         /// </summary>
         private void BindAttributes()
         {
             var rockContext = new RockContext();
             AvailableAttributes = new List<AttributeCache>();
-            var workflowType = new WorkflowTypeService( rockContext ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+            var workflowType = GetAuthorizedWorkflowType();
 
             if ( workflowType != null )
             {
@@ -473,7 +506,16 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private void BindGrid()
         {
-            var workflowTypeId = PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger();
+            // BindGrid also runs on postback (GridRebind, BlockUpdated, filter)
+            // without the OnLoad check, so the form is checked here too.
+            var workflowType = GetAuthorizedWorkflowType();
+            if ( workflowType == null )
+            {
+                pnlView.Visible = false;
+                return;
+            }
+
+            var workflowTypeId = workflowType.Id;
 
             RockContext rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
