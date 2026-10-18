@@ -31,7 +31,7 @@ import { ChatShell } from "../shell.partial";
 export type ReplyLanding = { channelId: string, rootId: number, messageId: number | null };
 
 /** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
-type LandingCheck = "held" | "more" | "stop";
+export type LandingCheck = "held" | "more" | "stop";
 
 /** What a landing reads from the block's frame. */
 export type JumpDependencies = {
@@ -74,7 +74,7 @@ const maxLandingOlderPages = 2;
  * @param check Looks once and says where the landing stands.
  * @param loadOlder Fetches the next older page.
  */
-async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<void> {
+export async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<void> {
     for (let olderPages = 0; check() === "more" && olderPages < maxLandingOlderPages; olderPages++) {
         await loadOlder();
     }
