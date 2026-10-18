@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -76,6 +77,20 @@ namespace Rock.Blocks.Lms
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The cached learning class activity from the page parameter.
+        /// </summary>
+        private LearningClassActivity _classActivity;
+
+        /// <summary>
+        /// Indicates whether <see cref="_classActivity"/> has been loaded.
+        /// </summary>
+        private bool _isClassActivityLoaded;
+
+        #endregion Fields
+
         #region Methods
 
         /// <inheritdoc/>
@@ -101,11 +116,30 @@ namespace Rock.Blocks.Lms
         private LearningClassActivityCompletionListOptionsBag GetBoxOptions()
         {
             var options = new LearningClassActivityCompletionListOptionsBag();
+            var currentPerson = GetCurrentPerson();
 
-            var learningClass = new LearningClassService( RockContext )
-                .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
+            /*
+                10/18/2026 - MSE
 
-            options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+                The class used for grade rights and the student list must be the
+                class that owns the activity whose completions are listed. The
+                LearningClassId page parameter is not tied to the activity, so a
+                facilitator of one class could pair it with another class's
+                activity to read that class's grades and roster.
+
+                Reason: Prevent viewing grades and students of another class.
+            */
+            var learningClass = GetClassActivity()?.LearningClass;
+
+            if ( learningClass == null || !learningClass.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                options.CanViewGrades = false;
+                options.Students = new List<ListItemBag>();
+
+                return options;
+            }
+
+            options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, currentPerson );
             options.Students = new LearningParticipantService( RockContext ).GetParticipantBags( learningClass.Id )
                 .Where( p => !p.IsFacilitator )
                 .Select( p => new ListItemBag
@@ -140,13 +174,52 @@ namespace Rock.Blocks.Lms
             };
         }
 
+        /// <summary>
+        /// Gets the learning class activity identified by the page parameter,
+        /// including its learning class. The result is cached for the request.
+        /// </summary>
+        /// <returns>The learning class activity or <c>null</c> if not found.</returns>
+        private LearningClassActivity GetClassActivity()
+        {
+            if ( !_isClassActivityLoaded )
+            {
+                var learningClassActivityId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassActivityId );
+
+                // Tracked so the authorization checks can lazy load related data.
+                _classActivity = learningClassActivityId > 0
+                    ? new LearningClassActivityService( RockContext ).Queryable()
+                        .Include( a => a.LearningClass )
+                        .FirstOrDefault( a => a.Id == learningClassActivityId )
+                    : null;
+
+                _isClassActivityLoaded = true;
+            }
+
+            return _classActivity;
+        }
+
         /// <inheritdoc/>
         protected override IQueryable<LearningClassActivityCompletion> GetListQueryable( RockContext rockContext )
         {
-            var learningClassActivityId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassActivityId );
+            var classActivity = GetClassActivity();
+            var qry = new LearningClassActivityCompletionService( rockContext ).Queryable();
 
-            return new LearningClassActivityCompletionService( rockContext ).Queryable()
-                .Where( c => c.LearningClassActivityId == learningClassActivityId );
+            /*
+                10/18/2026 - MSE
+
+                Only return completions when the person can view the activity.
+                Each row is also checked in GetListItems.
+
+                Reason: Explicit activity level check before loading rows.
+            */
+            if ( classActivity == null || !classActivity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return qry.Where( c => false );
+            }
+
+            var learningClassActivityId = classActivity.Id;
+
+            return qry.Where( c => c.LearningClassActivityId == learningClassActivityId );
         }
 
         /// <inheritdoc/>
@@ -167,7 +240,15 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override GridBuilder<LearningClassActivityCompletion> GetGridBuilder()
         {
-            var learningClass = new LearningClassService( RockContext ).Get( PageParameter(PageParameterKey.LearningClassId ) );
+            /*
+                10/18/2026 - MSE
+
+                Grade rights are checked on the class that owns the activity, not
+                the LearningClassId page parameter, which is only used for links.
+
+                Reason: Prevent viewing grades of another class.
+            */
+            var learningClass = GetClassActivity()?.LearningClass;
 
             var canViewGrades = learningClass != null && learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 

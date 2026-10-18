@@ -723,7 +723,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
-                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed;
+                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed.EncodeHtml();
                 }
                 else
                 {
@@ -819,11 +819,11 @@ namespace RockWeb.Blocks.Event
                         string message;
                         if ( document.LastInviteDate.HasValue )
                         {
-                            message = $"A signed {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name} document has not yet been received for {registrant.NickName}. The last request was sent {document.LastInviteDate.Value.ToElapsedString()}.";
+                            message = $"A signed {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name.EncodeHtml()} document has not yet been received for {registrant.NickName.EncodeHtml()}. The last request was sent {document.LastInviteDate.Value.ToElapsedString()}.";
                         }
                         else
                         {
-                            message = $"The required {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name} document has not yet been sent to {registrant.NickName} for signing.";
+                            message = $"The required {registrant.Registration.RegistrationInstance.RegistrationTemplate.Name.EncodeHtml()} document has not yet been sent to {registrant.NickName.EncodeHtml()} for signing.";
                         }
 
                         lSignedDocument.Text = string.Format( SIGNATURE_NOT_SIGNED_INDICATOR, message );
@@ -864,7 +864,7 @@ namespace RockWeb.Blocks.Event
                     var addressField = e.Row.FindControl( "lRegistrantsAddress" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsAddress" ) as Literal;
                     if ( addressField != null )
                     {
-                        addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
+                        addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress.EncodeHtml() : string.Empty;
                     }
                 }
             }

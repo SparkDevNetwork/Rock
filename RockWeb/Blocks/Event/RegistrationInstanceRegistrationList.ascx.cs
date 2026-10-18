@@ -104,6 +104,8 @@ namespace RockWeb.Blocks.Event
 
         private bool _instanceHasCost = false;
 
+        private bool _isExporting = false;
+
         /// <summary>
         /// Gets or sets the available registration attributes where IsGridColumn = true
         /// </summary>
@@ -309,7 +311,7 @@ namespace RockWeb.Blocks.Event
             gRegistrations.ExportTitleName = registrationInstance.Name + " - Registrations";
             gRegistrations.ExportFilename = gRegistrations.ExportFilename ?? registrationInstance.Name + "Registrations";
 
-            BindRegistrationsGrid();
+            BindRegistrationsGrid( ( e as GridRebindEventArgs )?.IsExporting ?? false );
         }
 
         /// <summary>
@@ -322,17 +324,28 @@ namespace RockWeb.Blocks.Event
             var registration = e.Row.DataItem as Registration;
             if ( registration != null )
             {
+                /*
+                    10/18/2026 - MSE
+
+                    Names are HTML encoded for display. The Excel export reads the plain
+                    text of these cells and does not decode it, so leave the names raw
+                    while exporting so they do not export as HTML entities.
+
+                    Reason: Encode registrant names on screen without breaking export.
+                */
+                Func<string, string> encodeName = name => _isExporting ? name : name.EncodeHtml();
+
                 // Set the processor value
                 var lRegisteredBy = e.Row.FindControl( "lRegisteredBy" ) as Literal;
                 if ( lRegisteredBy != null )
                 {
                     if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
                     {
-                        lRegisteredBy.Text = registration.PersonAlias.Person.FullNameReversed;
+                        lRegisteredBy.Text = encodeName( registration.PersonAlias.Person.FullNameReversed );
                     }
                     else
                     {
-                        lRegisteredBy.Text = string.Format( "{0}, {1}", registration.LastName, registration.FirstName );
+                        lRegisteredBy.Text = string.Format( "{0}, {1}", encodeName( registration.LastName ), encodeName( registration.FirstName ) );
                     }
                 }
 
@@ -348,7 +361,7 @@ namespace RockWeb.Blocks.Event
                         .ToList();
 
                     registrantNames = registrants
-                        .Select( r => r.OnWaitList ? r.PersonAlias.Person.NickName + " " + r.PersonAlias.Person.LastName + " <span class='label label-warning'>WL</span>" : r.PersonAlias.Person.NickName + " " + r.PersonAlias.Person.LastName )
+                        .Select( r => r.OnWaitList ? encodeName( r.PersonAlias.Person.NickName + " " + r.PersonAlias.Person.LastName ) + " <span class='label label-warning'>WL</span>" : encodeName( r.PersonAlias.Person.NickName + " " + r.PersonAlias.Person.LastName ) )
                         .ToList()
                         .AsDelimited( "<br/>" );
                 }
@@ -387,7 +400,7 @@ namespace RockWeb.Blocks.Event
                         Reason: https://github.com/SparkDevNetwork/Rock/issues/6826
                     */
                     lDiscount.Visible = !string.IsNullOrEmpty( discountCode );
-                    lDiscount.Text = string.Format( "<span class='label label-default'>{0}</span>", discountCode );
+                    lDiscount.Text = string.Format( "<span class='label label-default'>{0}</span>", encodeName( discountCode ) );
                 }
 
                 var lBalance = e.Row.FindControl( "lBalance" ) as Literal;
@@ -621,8 +634,11 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the registrations grid.
         /// </summary>
-        private void BindRegistrationsGrid()
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        private void BindRegistrationsGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
+
             int? instanceId = this.RegistrationInstanceId;
 
             if ( instanceId.HasValue && instanceId > 0 )
