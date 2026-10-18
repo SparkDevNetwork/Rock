@@ -1004,16 +1004,25 @@ namespace Rock.Blocks.Event
                     out var error,
                     out var warning );
 
-                var registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
+                /*
+                    10/18/2026 - MSE
+
+                    These messages are joined with <br/> and shown as HTML by the block, so
+                    encode the registration name and the gateway error and warning text.
+
+                    Reason: Prevent HTML in a registration name from running in the staff
+                    person's browser.
+                */
+                var registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName.EncodeHtml()} {registration.LastName.EncodeHtml()})";
 
                 if ( !success )
                 {
-                    errors.Add( $"{registrationInfo}: {error ?? "Unknown error"}" );
+                    errors.Add( $"{registrationInfo}: {( error ?? "Unknown error" ).EncodeHtml()}" );
                 }
 
                 if ( warning.IsNotNullOrWhiteSpace() )
                 {
-                    warnings.Add( $"{registrationInfo}: {warning}" );
+                    warnings.Add( $"{registrationInfo}: {warning.EncodeHtml()}" );
                 }
             }
 
