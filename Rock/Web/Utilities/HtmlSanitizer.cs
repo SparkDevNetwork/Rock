@@ -47,7 +47,16 @@ namespace Rock.Web.Utilities
                 { "meta" },
                 { "base" },
                 { "style" },
-                { "title" }
+                { "title" },
+                { "xmp" },
+                { "noscript" },
+                { "noembed" },
+                { "noframes" },
+                { "plaintext" },
+                { "frame" },
+                { "frameset" },
+                { "portal" },
+                { "applet" }
         };
 
         /// <summary>
@@ -108,7 +117,9 @@ namespace Rock.Web.Utilities
             {
                 var doc = new HtmlDocument();
 
-                doc.LoadHtml( RemoveControlCharacters( html ).Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos />" ).Replace( "&quot;", "<quote />" ) );
+                var source = RemoveControlCharacters( html ).Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos />" ).Replace( "&quot;", "<quote />" );
+
+                doc.LoadHtml( source );
 
                 /*
                     10/18/2026 - MSE
@@ -127,7 +138,7 @@ namespace Rock.Web.Utilities
                     return HttpUtility.HtmlEncode( html );
                 }
 
-                SanitizeHtmlNode( doc.DocumentNode );
+                SanitizeHtmlNode( doc.DocumentNode, source );
 
                 //return doc.DocumentNode.WriteTo();
 
@@ -240,6 +251,39 @@ namespace Rock.Web.Utilities
         }
 
         /// <summary>
+        /// Gets the source text of the element's opening tag, from its less than
+        /// sign to the next greater than sign, the next less than sign or the end
+        /// of the input, whichever comes first.
+        /// </summary>
+        /// <param name="node">The element node.</param>
+        /// <param name="source">The source text the document was loaded from.</param>
+        /// <returns>The tag source text.</returns>
+        private static string GetTagSourceText( HtmlNode node, string source )
+        {
+            var start = node.StreamPosition;
+
+            if ( start < 0 || start >= source.Length || source[start] != '<' )
+            {
+                return "<" + node.Name;
+            }
+
+            // Stop at the next tag so its source is not repeated as text.
+            var end = source.IndexOfAny( new[] { '<', '>' }, start + 1 );
+            string text;
+
+            if ( end < 0 )
+            {
+                text = source.Substring( start );
+            }
+            else
+            {
+                text = source.Substring( start, source[end] == '>' ? end - start + 1 : end - start );
+            }
+
+            return text;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the node tree is nested deeper than
         /// <see cref="MaxNestingDepth"/>. The tree is walked without recursion.
         /// </summary>
@@ -273,7 +317,8 @@ namespace Rock.Web.Utilities
         /// without recursion so the nesting depth does not grow the call stack.
         /// </summary>
         /// <param name="rootNode">The root node.</param>
-        private void SanitizeHtmlNode( HtmlNode rootNode )
+        /// <param name="source">The source text the document was loaded from.</param>
+        private void SanitizeHtmlNode( HtmlNode rootNode, string source )
         {
             var nodes = new Stack<HtmlNode>();
             nodes.Push( rootNode );
@@ -283,7 +328,7 @@ namespace Rock.Web.Utilities
                 var node = nodes.Pop();
 
                 // Look through child nodes of any node that was kept.
-                if ( SanitizeSingleHtmlNode( node ) && node.HasChildNodes )
+                if ( SanitizeSingleHtmlNode( node, nodes, source ) && node.HasChildNodes )
                 {
                     for ( int i = node.ChildNodes.Count - 1; i >= 0; i-- )
                     {
@@ -297,12 +342,30 @@ namespace Rock.Web.Utilities
         /// Sanitizes a single node without looking at its child nodes.
         /// </summary>
         /// <param name="node">The node.</param>
-        /// <returns><c>true</c> if the node was kept; <c>false</c> if it was removed.</returns>
-        private bool SanitizeSingleHtmlNode( HtmlNode node )
+        /// <param name="pendingNodes">The nodes still to be sanitized; nodes moved by this method are added to it.</param>
+        /// <param name="source">The source text the document was loaded from.</param>
+        /// <returns><c>true</c> if the node was kept; <c>false</c> if it was removed or replaced.</returns>
+        private bool SanitizeSingleHtmlNode( HtmlNode node, Stack<HtmlNode> pendingNodes, string source )
         {
             if (node.NodeType == HtmlNodeType.Text)
             {
-                
+
+            }
+
+            /*
+                10/18/2026 - MSE
+
+                Comment bodies are written out unescaped. Inside an element the
+                browser reads as raw text (xmp, noscript, textarea and similar) a
+                "comment" can close that element and start live markup the parser
+                never saw as markup. Comments are removed, as strict mode does.
+
+                Reason: Comments inside raw text elements bypassed the sanitizer.
+            */
+            if ( node.NodeType == HtmlNodeType.Comment )
+            {
+                node.Remove();
+                return false;
             }
 
             if ( node.NodeType == HtmlNodeType.Element )
@@ -320,13 +383,28 @@ namespace Rock.Web.Utilities
                     An unclosed final tag or a stray less than sign is parsed as an
                     element whose name holds the raw source text (for example
                     "img src=x onerror=..."), and that text is written back out as is.
-                    Only elements with a plain tag name are kept.
+                    Such an element is replaced by a text node of its tag source,
+                    which the writer encodes so it shows as plain text, and its child
+                    nodes move up to be sanitized as usual (so the sentence
+                    "a < 10 and > 2" keeps its words).
 
                     Reason: Raw tag text bypassed the attribute and blacklist checks.
                 */
                 if ( !IsPlainHtmlElementName( node.Name.ToLowerInvariant() ) )
                 {
-                    node.Remove();
+                    var parentNode = node.ParentNode;
+                    var childNodes = new List<HtmlNode>( node.ChildNodes );
+
+                    node.RemoveAllChildren();
+                    parentNode.InsertBefore( node.OwnerDocument.CreateTextNode( GetTagSourceText( node, source ) ), node );
+
+                    foreach ( var childNode in childNodes )
+                    {
+                        parentNode.InsertBefore( childNode, node );
+                        pendingNodes.Push( childNode );
+                    }
+
+                    parentNode.RemoveChild( node );
                     return false;
                 }
 
@@ -364,6 +442,17 @@ namespace Rock.Web.Utilities
 
                         // remove event handlers
                         if ( attr.StartsWith( "on" ) )
+                            node.Attributes.Remove( currentAttribute );
+
+                        /*
+                            10/18/2026 - MSE
+
+                            These attributes point a button or input at another form or
+                            submit address, which would send the page's form to any site.
+
+                            Reason: Prevent form submission to another site.
+                        */
+                        else if ( attr == "formaction" || attr == "form" || attr == "action" )
                             node.Attributes.Remove( currentAttribute );
 
                         // Remove CSS Expressions

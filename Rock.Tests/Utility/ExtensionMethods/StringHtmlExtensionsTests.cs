@@ -287,11 +287,19 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         [TestMethod]
-        public void SanitizeHtml_NotStrict_WithUnclosedFinalTag_RemovesEventHandler()
+        public void SanitizeHtml_NotStrict_WithUnclosedFinalTag_EncodesTagAsText()
         {
             var output = "<p>a</p><img src=x onerror=y".SanitizeHtml( strict: false );
 
-            Assert.AreEqual( "<p>a</p>", output );
+            Assert.AreEqual( "<p>a</p>&lt;img src=x onerror=y", output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithLessThanSignInText_KeepsText()
+        {
+            var output = "<p>Value must be < 10 and > 2</p>".SanitizeHtml( strict: false );
+
+            Assert.AreEqual( "<p>Value must be &lt; 10 and &gt; 2</p>", output );
         }
 
         [TestMethod]
@@ -318,6 +326,10 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "<base href=\"/x\">" )]
         [DataRow( "<style>a{}</style>" )]
         [DataRow( "<title>a</title>" )]
+        [DataRow( "<xmp>a</xmp>" )]
+        [DataRow( "<noscript>a</noscript>" )]
+        [DataRow( "<plaintext>a" )]
+        [DataRow( "<frameset><frame src=\"/x\"></frameset>" )]
         public void SanitizeHtml_NotStrict_WithBlockedElement_RemovesElement( string html )
         {
             var output = html.SanitizeHtml( strict: false );
@@ -329,11 +341,36 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "<!>" )]
         [DataRow( "<!-a->" )]
         [DataRow( "<!--a--->" )]
-        public void SanitizeHtml_NotStrict_WithMalformedComment_ReturnsEncodedInput( string html )
+        [DataRow( "<p>a</p><!-- b -->" )]
+        public void SanitizeHtml_NotStrict_WithComment_RemovesCommentWithoutThrowing( string html )
         {
             var output = html.SanitizeHtml( strict: false );
 
-            Assert.AreEqual( html.EncodeHtml(), output );
+            Assert.IsFalse( output.Contains( "<!" ) );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<xmp><!--</xmp><img src=x onerror=y>--></xmp>" )]
+        [DataRow( "<noscript><!--</noscript><img src=x onerror=y>--></noscript>" )]
+        [DataRow( "<noembed><!--</noembed><img src=x onerror=y>--></noembed>" )]
+        [DataRow( "<noframes><!--</noframes><img src=x onerror=y>--></noframes>" )]
+        [DataRow( "<textarea></textarea><!--</textarea><img src=x onerror=y>-->" )]
+        public void SanitizeHtml_NotStrict_WithCommentInRawTextElement_RemovesMarkup( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.IsFalse( output.Contains( "onerror" ) );
+            Assert.IsFalse( output.Contains( "<!" ) );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<button formaction=\"/x\">a</button>", "<button>a</button>" )]
+        [DataRow( "<input form=\"f\" type=\"submit\" />", "<input type=\"submit\" />" )]
+        public void SanitizeHtml_NotStrict_WithFormSubmitAttribute_RemovesAttribute( string html, string expected )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( expected, output );
         }
 
         [DataTestMethod]
