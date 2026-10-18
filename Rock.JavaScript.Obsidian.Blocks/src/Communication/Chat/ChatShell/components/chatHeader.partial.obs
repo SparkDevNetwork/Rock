@@ -35,6 +35,17 @@
                         :aria-expanded="isThreadsOpen ? 'true' : 'false'"
                         @click="emit('threads')" />
 
+            <IconButton v-if="isMentionsOffered && !isPhone"
+                        class="chat-header-dotted"
+                        icon="at"
+                        :label="hasMentionDot ? 'Mentions, new mentions' : 'Mentions'"
+                        tooltip="Mentions"
+                        data-testid="header-mentions"
+                        :aria-expanded="isMentionsOpen ? 'true' : 'false'"
+                        @click="emit('mentions')">
+                <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-mentions-dot" aria-hidden="true"></span>
+            </IconButton>
+
             <IconButton v-if="isPushOffered && !isPhone"
                         icon="bell"
                         label="Turn on notifications"
@@ -42,7 +53,9 @@
                         @click="emit('turnOnPush')" />
 
             <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more">
-                <Menu icon="dots" label="More" :items="moreItems" @select="onMoreSelect" />
+                <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" />
+                <!-- Over the menu's button, which draws no mark of its own. -->
+                <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-more-dot" aria-hidden="true"></span>
             </span>
         </div>
     </header>
@@ -181,7 +194,25 @@
 }
 
 .chat-header-more {
+    position: relative;
     display: inline-flex;
+}
+
+.chat-header-actions :deep(.chat-header-dotted) {
+    position: relative;
+}
+
+/* A new mention, over the button's corner, ringed in the bar's color so it reads apart from the icon. */
+.chat-header-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    background: var(--chat-danger);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
 /* The banner opens by its own height, which script measures, since grid rows do not animate in Safari 14. */
@@ -330,7 +361,8 @@
         (e: "turnOnPush"): void,
         (e: "back"): void,
         (e: "backOnline"): void,
-        (e: "threads"): void
+        (e: "threads"): void,
+        (e: "mentions"): void
     }>();
 
     const props = defineProps({
@@ -411,6 +443,24 @@
             default: false
         },
 
+        /** Whether to offer the mentions inbox, which needs the person's chat to be loaded. */
+        isMentionsOffered: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the mentions inbox is open, which its button shows as expanded. */
+        isMentionsOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether a mention by name is newer than the person's last look at the inbox. */
+        hasMentionDot: {
+            type: Boolean,
+            default: false
+        },
+
         /** Whether no conversation or draft is open, which leaves the bar out and keeps only the banners. */
         isEmpty: {
             type: Boolean,
@@ -433,6 +483,10 @@
     /** The phone's overflow menu; empty leaves the button out, since a menu of nothing is a dead end. */
     const moreItems = computed((): MenuItem[] => {
         const items: MenuItem[] = [];
+
+        if (props.isMentionsOffered) {
+            items.push({ key: "mentions", label: "Mentions", icon: "at", hasDot: props.hasMentionDot });
+        }
 
         if (props.isThreadsOffered) {
             items.push({ key: "threads", label: "Threads", icon: "thread" });
@@ -464,6 +518,9 @@
         }
         else if (key === "threads") {
             emit("threads");
+        }
+        else if (key === "mentions") {
+            emit("mentions");
         }
     }
 

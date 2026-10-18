@@ -12,6 +12,8 @@
             @blur="onBlur"
             @click="onClick">
         <Icon :name="icon" :size="iconSize" />
+        <!-- A mark over the icon, such as a header button's dot, placed by the part that draws it. -->
+        <slot></slot>
     </button>
 
     <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
