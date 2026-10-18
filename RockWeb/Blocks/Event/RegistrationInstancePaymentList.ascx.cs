@@ -86,6 +86,8 @@ namespace RockWeb.Blocks.Event
 
         private List<Registration> _paymentRegistrations;
 
+        private bool _isExporting = false;
+
         #endregion
 
         #region Base Control Methods
@@ -203,7 +205,7 @@ namespace RockWeb.Blocks.Event
         protected void gPayments_GridRebind( object sender, EventArgs e )
         {
             ConfigurePaymentsGrid();
-            BindPaymentsGrid();
+            BindPaymentsGrid( ( e as GridRebindEventArgs )?.IsExporting ?? false );
         }
 
         /// <summary>
@@ -223,6 +225,18 @@ namespace RockWeb.Blocks.Event
                 var registrants = new List<string>();
 
                 var registrationIds = transaction.TransactionDetails.Select( d => d.EntityId ).ToList();
+
+                /*
+                    10/18/2026 - MSE
+
+                    Names are HTML encoded for display. The Excel export reads the plain
+                    text of these cells and does not decode it, so leave the names raw
+                    while exporting so they do not export as HTML entities.
+
+                    Reason: Encode registrant names on screen without breaking export.
+                */
+                Func<string, string> encodeName = name => _isExporting ? name : name.EncodeHtml();
+
                 foreach ( var registration in _paymentRegistrations
                     .Where( r => registrationIds.Contains( r.Id ) ) )
                 {
@@ -231,13 +245,13 @@ namespace RockWeb.Blocks.Event
                         var qryParams = new Dictionary<string, string>();
                         qryParams.Add( "RegistrationId", registration.Id.ToString() );
                         string url = LinkedPageUrl( AttributeKey.RegistrationPage, qryParams );
-                        registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName ) );
+                        registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, encodeName( registration.PersonAlias.Person.FullName ) ) );
 
                         foreach ( var registrant in registration.Registrants )
                         {
                             if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                             {
-                                registrants.Add( registrant.PersonAlias.Person.FullName );
+                                registrants.Add( encodeName( registrant.PersonAlias.Person.FullName ) );
                             }
                         }
                     }
@@ -308,8 +322,11 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the payments grid.
         /// </summary>
-        private void BindPaymentsGrid()
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        private void BindPaymentsGrid( bool isExporting = false )
         {
+            _isExporting = isExporting;
+
             int? instanceId = this.RegistrationInstanceId;
 
             if ( instanceId.HasValue )

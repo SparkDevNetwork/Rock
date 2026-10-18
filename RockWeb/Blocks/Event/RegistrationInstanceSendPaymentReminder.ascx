@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationInstanceSendPaymentReminder.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstancePaymentReminder" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -33,7 +34,7 @@
                             <Rock:SelectField />
                             <Rock:RockTemplateField HeaderText="Name" SortExpression="Name">
                                 <ItemTemplate>
-                                    <%# Eval("LastName") %>, <%# Eval("FirstName") %>
+                                    <%# ( Eval( "LastName" ) as string ).EncodeHtml() %>, <%# ( Eval( "FirstName" ) as string ).EncodeHtml() %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockTemplateField HeaderText="Date Registered" SortExpression="CreatedDateTime">
