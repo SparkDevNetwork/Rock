@@ -21,9 +21,12 @@
 // not read, and never again until they read it. A signal for a channel the sidebar does not
 // hold, a hidden channel coming back or one they were just added to, reloads the sidebar, since
 // the signal carries no name to draw a row with.
+//
+// A mention, unlike that signal, arrives for every message that names the person, so the row's
+// @ count keeps rising while they stay behind.
 import { reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
-import { ChannelUnreadEvent, MarkReadResult, SidebarRow } from "../types.partial";
+import { ChannelMentionEvent, ChannelUnreadEvent, MarkReadResult, SidebarRow } from "../types.partial";
 
 /** What the store reaches outside itself. */
 export type ChannelStoreDependencies = {
@@ -94,6 +97,30 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         }
     }
 
+    /** A message named the person, by name or with @all. */
+    function applyMention(payload: unknown): void {
+        const signal = payload as Partial<Record<keyof ChannelMentionEvent, unknown>> | null;
+        // The sidebar counts what the conversation shows; a reply kept to its thread counts in
+        // the thread. The conversation on screen is read as it arrives, so it counts nothing.
+        if (!signal || typeof signal.channel_id !== "string" || signal.in_channel !== true || signal.channel_id === store.activeChannelId) {
+            return;
+        }
+
+        // A room the sidebar does not hold yet comes with channel.unread, whose reload counts it.
+        const row = find(signal.channel_id);
+        if (!row) {
+            return;
+        }
+
+        // Kept apart so the app's icon, which counts mentions by name only, still reads its own.
+        if (signal.all === true) {
+            row.all_mention_count++;
+        }
+        else {
+            row.mention_count++;
+        }
+    }
+
     return Object.assign(store, {
         setSidebar: (rows: SidebarRow[]): void => {
             store.rows = rows;
@@ -106,6 +133,9 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         applyPersonalEvent: (event: string, payload: unknown): void => {
             if (event === "channel.unread") {
                 applyUnread(payload);
+            }
+            else if (event === "channel.mention") {
+                applyMention(payload);
             }
             else if (event === "membership.changed") {
                 dependencies.reloadSidebar();

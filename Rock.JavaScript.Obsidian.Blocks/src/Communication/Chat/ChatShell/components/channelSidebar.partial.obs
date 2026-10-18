@@ -649,10 +649,11 @@
 
     /**
      * The mentions a row counts. Only a channel counts them: a direct message is addressed to the
-     * person, so its bold and its dot already say it.
+     * person, so its bold and its dot already say it. An @all names the reader as surely as their
+     * name does, so the badge counts both; the app's icon counts by name alone.
      */
     function mentionsOf(row: SidebarRow): number {
-        return kindOf(row) !== "channel" || isActive(row) ? 0 : row.mention_count;
+        return kindOf(row) !== "channel" || isActive(row) ? 0 : row.mention_count + row.all_mention_count;
     }
 
     /** The dot marks an unread direct message only; an unread channel is bold alone. */
