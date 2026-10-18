@@ -312,7 +312,8 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
 
         const messageId = row.message.id;
         let oldestSeen: number | undefined;
-        let lastCheck: LandingCheck = "stop";
+        // written inside the check, so it is declared wide rather than narrowed to its first value
+        let lastCheck = "stop" as LandingCheck;
         await loadUntilHeld(() => {
             const timeline = dependencies.timelines.state(row.channel_id);
             const oldest = timeline.messages[0]?.id;
