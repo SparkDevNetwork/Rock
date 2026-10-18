@@ -157,8 +157,25 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
-            return new RegistrationInstanceService( RockContext )
+            var registrationInstance = new RegistrationInstanceService( RockContext )
                 .Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            /*
+                10/16/2026 - MSE
+
+                The instance comes from the page parameter, so a person could swap in
+                the IdKey of an instance they are not allowed to see and get its
+                registrations, balances and preview, or send reminders. VIEW on the
+                instance falls back to the template and its category.
+
+                Reason: Registration instance lists skipped VIEW on the instance.
+            */
+            if ( registrationInstance == null || !registrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return registrationInstance;
         }
 
         /// <summary>
