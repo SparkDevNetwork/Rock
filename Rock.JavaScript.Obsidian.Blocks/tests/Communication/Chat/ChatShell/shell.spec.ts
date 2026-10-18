@@ -18,9 +18,9 @@
 // channels faster than the platform answers: the channel chosen last is the one on screen, its
 // topic is the one joined, it is the one remembered, and what is seen in it is saved against it,
 // however the earlier opens and saves settle.
-import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
-import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { HistoryPage, MentionRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
@@ -72,7 +72,7 @@ type LiveTopic = {
     status: ((status: string, error?: unknown) => void) | null;
 };
 
-function build(options: { startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult> } = {}): {
+function build(options: { startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult>, mentionViews?: ShellOptions["mentionViews"] } = {}): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<Response>[]>,
     saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }>,
@@ -204,6 +204,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
         },
         mark: () => undefined,
         startDirectMessage: options.startDirectMessage,
+        mentionViews: options.mentionViews,
         reloadPage: () => {
             reloads.count++;
         }
@@ -1446,5 +1447,106 @@ describe("a conversation switch with a message's editor or delete confirm open",
         edit?.answer.resolve(fakeResponse(403, { code: "42501", message: "authz.not_author" }));
         expect(await saving).toBe(false);
         expect(h.shell.messageActions.state.editing).toBeNull();
+    });
+});
+
+describe("mentions", () => {
+    // The shell holds the mentions as shell.mentions, built with its own call path, the church and
+    // person, the page's storage and timelines, its open, and the frame's views for landing on a
+    // message and opening a thread, which the shell cannot see and the frame hands in.
+
+    /** One entry of the bootstrap's me.unread_mentions, exactly its keys. */
+    function unread(channelId: string, messageId: number): UnreadMention {
+        return { channel_id: channelId, parent_id: null, message_id: messageId, created_at: "2026-10-18T09:00:00Z", in_channel: true };
+    }
+
+    /** One row of chat_list_mentions, its message as a history page carries it. */
+    function mentionRow(channelId: string, id: number, parentId: number | null = null): MentionRow {
+        return {
+            channel_id: channelId,
+            parent_id: parentId,
+            message: { id, parent_id: parentId, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: `<@${person}> m${id}`, created_at: "2026-10-18T09:00:00Z" } as unknown as TimelineMessage
+        };
+    }
+
+    /** Starts the shell with channel A open, after a bootstrap answering what the test gives it. */
+    async function startedWith(bootstrap: unknown, options: Parameters<typeof build>[0] = {}): Promise<ReturnType<typeof build>> {
+        const h = build(options);
+        h.bootstrap.value = bootstrap;
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        return h;
+    }
+
+    test("the bootstrap's unread mentions light the header's dot", async () => {
+        const h = await startedWith({ channels: [], me: { unread_mentions: [unread(channelB, 50)] } });
+
+        expect(h.shell.mentions.state.hasDot).toBe(true);
+    });
+
+    test("channel.mention on the person's topic reaches the mentions as well as the sidebar", async () => {
+        const h = await started();
+        expect(h.shell.mentions.state.hasDot).toBe(false);
+
+        personal(h, "channel.mention", { channel_id: channelB, message_id: 60, parent_id: null, in_channel: true, all: false });
+
+        expect(h.shell.mentions.state.hasDot).toBe(true);
+    });
+
+    test("a read saved past an unread mention in the conversation takes it off the dot", async () => {
+        const h = await startedWith({ channels: [], me: { unread_mentions: [unread(channelA, 10)] } });
+        expect(h.shell.mentions.state.hasDot).toBe(true);
+
+        h.shell.markRead(10);
+        await settle();
+        const save = h.saves.filter(s => s.channelId === channelA && s.messageId === 10).pop();
+        save?.answer.resolve(fakeResponse(200, { read_cursor: 10, last_message_id: 10 }));
+        await settle();
+
+        expect(save).toBeDefined();
+        expect(h.shell.mentions.state.hasDot).toBe(false);
+    });
+
+    test("opening the inbox keeps the visit in the page's storage, under the church and the person", async () => {
+        const h = await started();
+
+        void h.shell.mentions.openInbox();
+        await settle();
+
+        expect(Number(h.stored[`rock-chat:mentions-visit:${tenant}:${person}`])).toBeGreaterThan(0);
+    });
+
+    test("a jump from the inbox opens the mention's conversation and lands on the message there", async () => {
+        const land = jest.fn();
+        const h = await started({ mentionViews: { land, openThread: jest.fn(async () => undefined) } });
+
+        const jumping = h.shell.mentions.jump(mentionRow(channelB, 20));
+        await settle();
+        answerHistory(h, channelB, 20);
+        await jumping;
+
+        expect(h.shell.state.activeChannelId).toBe(channelB);
+        expect(land).toHaveBeenCalledWith(20);
+    });
+
+    test("a jump to a reply opens its thread at the reply through the frame", async () => {
+        const openThread = jest.fn(async () => undefined);
+        const h = await started({ mentionViews: { land: jest.fn(), openThread } });
+
+        await h.shell.mentions.jump(mentionRow(channelB, 21, 15));
+
+        expect(openThread).toHaveBeenCalledWith(channelB, 15, 21);
+    });
+
+    test("nothing reaches the mentions once the shell stops", async () => {
+        const h = await started();
+
+        await h.shell.stop();
+        h.shell.mentions.search({ channel_id: channelA, can_mention: true, can_mention_all: true }, "a");
+
+        expect(h.shell.mentions.state.picker.query).toBeNull();
     });
 });

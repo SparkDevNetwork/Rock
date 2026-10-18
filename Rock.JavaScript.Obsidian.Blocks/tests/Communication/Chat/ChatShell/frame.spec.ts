@@ -27,8 +27,11 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
-import { SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 
 // #region Stand-ins
 
@@ -83,6 +86,9 @@ const mockOlderAnswers: Array<() => void> = [];
 
 /** The shell the test mounted last, so a test can open a draft on it. */
 let mockShell: Record<string, unknown> | null = null;
+
+/** What the block built its last shell with, which carries the frame's views for a mention's jump. */
+let mockShellOptions: ShellOptions | null = null;
 
 /** Each conversation's timeline as the stand-in holds it, so a test can put messages in one. */
 const mockTimelines = new Map<string, { messages: TimelineMessage[] }>();
@@ -156,6 +162,7 @@ function fakeShell(): Record<string, unknown> {
     });
 
     const threads = fakeThreads();
+    const mentions = fakeMentions(state);
 
     mockShell = {
         state,
@@ -190,6 +197,7 @@ function fakeShell(): Record<string, unknown> {
         dismissError: jest.fn(),
         sendReply: jest.fn(),
         threads,
+        mentions,
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -269,6 +277,46 @@ function fakeThreads(): Record<string, unknown> {
     };
 }
 
+/**
+ * The mentions the shell holds, as useMentions' createMentions answers them, reduced to state the
+ * block reads and calls it makes. A jump marks its row as the one opened and goes where
+ * createMentions' jump goes: a reply's thread through the frame's view, else its conversation,
+ * opened as the shell opens one, and the message landed on through the frame's view.
+ */
+function fakeMentions(shellState: { activeChannelId: string | null }): Record<string, unknown> {
+    const state = reactive({
+        picker: { query: null as string | null, people: [] as unknown[], isAllOffered: false },
+        inbox: { rows: [] as MentionRow[], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [] as number[], currentId: null as number | null },
+        hasDot: false
+    });
+
+    return {
+        state,
+        search: jest.fn(),
+        closeSearch: jest.fn(),
+        openInbox: jest.fn(async () => undefined),
+        refreshInbox: jest.fn(async () => undefined),
+        loadOlder: jest.fn(async () => undefined),
+        closeInbox: jest.fn(),
+        jump: jest.fn(async (row: MentionRow) => {
+            state.inbox.currentId = row.message.id;
+            if (row.parent_id !== null) {
+                await mockShellOptions?.mentionViews?.openThread(row.channel_id, row.parent_id, row.message.id);
+                return;
+            }
+
+            shellState.activeChannelId = row.channel_id;
+            await nextTick();
+            mockShellOptions?.mentionViews?.land(row.message.id);
+        }),
+        setUnread: jest.fn(),
+        applyPersonalEvent: jest.fn(),
+        channelRead: jest.fn(),
+        threadOpened: jest.fn(),
+        stop: jest.fn()
+    };
+}
+
 jest.mock("@Obsidian/Utility/block", () => ({
     useConfigurationValues: () => mockConfig,
     useInvokeBlockAction: () => jest.fn()
@@ -278,7 +326,10 @@ jest.mock("@Obsidian/Libs/supabase", () => ({ createClient: jest.fn() }));
 
 jest.mock("../../../../src/Communication/Chat/ChatShell/shell.partial", () => ({
     ...jest.requireActual("../../../../src/Communication/Chat/ChatShell/shell.partial"),
-    createChatShell: () => fakeShell()
+    createChatShell: (options: ShellOptions) => {
+        mockShellOptions = options;
+        return fakeShell();
+    }
 }));
 
 /** The block's width as the test says it is, read by the ResizeObserver stand-in and by any size read. */
@@ -393,6 +444,7 @@ afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     mockShell = null;
+    mockShellOptions = null;
     mockThreadPages = null;
     mockOlderAnswers.length = 0;
     mockTimelines.clear();
@@ -1053,6 +1105,175 @@ describe("the thread drawer", () => {
 
         expect(w.findAll("[data-testid='frame-main'] [data-testid='pending-row']")).toHaveLength(0);
         expect(w.findAll("[data-testid='frame-panel'] [data-testid='pending-row']")).toHaveLength(1);
+    });
+});
+
+describe("mentions", () => {
+    // The header's Mentions opens the shell's inbox, shell.mentions, in the panel column beside
+    // the conversation, or as the third pane on a phone. A row is opened through the shell's
+    // jump, which lands a channel mention in its conversation through the frame's view and opens a
+    // reply's thread through it, with a way back to the inbox. The composers' @ queries search
+    // the people of the conversation they are in, from the room's sidebar row.
+
+    type MentionsStandIn = Record<string, jest.Mock> & { state: { inbox: { rows: MentionRow[] }, hasDot: boolean, picker: { people: unknown[], isAllOffered: boolean } } };
+
+    const mentionsOf = (): MentionsStandIn => mockShell!.mentions as MentionsStandIn;
+
+    function panelTitle(w: VueWrapper): string {
+        return w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text();
+    }
+
+    function mention(channelId: string, id: number, parentId: number | null = null): MentionRow {
+        return { channel_id: channelId, parent_id: parentId, message: storedMessage(id, { parent_id: parentId }) };
+    }
+
+    async function openInbox(w: VueWrapper, rows: MentionRow[] = []): Promise<void> {
+        mentionsOf().state.inbox.rows = rows;
+        if (w.find("[data-testid='header-mentions']").exists()) {
+            await w.get("[data-testid='header-mentions']").trigger("click");
+        }
+        else {
+            await w.get("[data-testid='header-more'] button").trigger("click");
+            await settle();
+            Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Mentions")!.click();
+        }
+        await settle();
+    }
+
+    test("the header's Mentions opens the inbox beside the conversation and closes it again", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        await openInbox(w);
+
+        expect(mentionsOf().openInbox).toHaveBeenCalledTimes(1);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(panelTitle(w)).toBe("Mentions");
+        expect(w.get("[data-testid='header-mentions']").attributes("aria-expanded")).toBe("true");
+
+        await w.get("[data-testid='header-mentions']").trigger("click");
+        await settle();
+
+        expect(mentionsOf().closeInbox).toHaveBeenCalled();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
+    test("the header's Mentions shows the shell's dot", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(false);
+
+        mentionsOf().state.hasDot = true;
+        await settle();
+
+        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(true);
+    });
+
+    test("the threads list takes the inbox's place, letting the inbox go", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await openInbox(w);
+
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        expect(mentionsOf().closeInbox).toHaveBeenCalled();
+        expect(panelTitle(w)).toBe("Threads");
+    });
+
+    test("a channel mention's row lands on the message in its conversation, the inbox staying beside it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const row = mention(dmAnna.channel_id, 30);
+        await openInbox(w, [row]);
+
+        await w.get("[data-testid='mention-row-open']").trigger("click");
+        await settle();
+
+        expect(mentionsOf().jump).toHaveBeenCalledWith(row);
+        expect((mockShell!.state as { activeChannelId: string }).activeChannelId).toBe(dmAnna.channel_id);
+        expect(w.findComponent(MessageFeedComponent).props("landOnId")).toBe(30);
+        expect(panelTitle(w)).toBe("Mentions");
+    });
+
+    test("on a phone, a channel mention's row closes the inbox and shows the conversation", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await openInbox(w, [mention(dmAnna.channel_id, 30)]);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+
+        await w.get("[data-testid='mention-row-open']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(w.findComponent(MessageFeedComponent).props("landOnId")).toBe(30);
+    });
+
+    test("a reply's row opens its thread with a way back to the inbox and the row", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await openInbox(w, [mention(team.channel_id, 41, 40)]);
+
+        await w.get("[data-testid='mention-row-open']").trigger("click");
+        await settle();
+
+        const threads = mockShell!.threads as Record<string, jest.Mock>;
+        expect(threads.openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(mentionsOf().threadOpened).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(panelTitle(w)).toBe("Thread");
+        const back = w.get("[data-testid='frame-panel'] [data-testid='panel-back']");
+        expect(back.attributes("aria-label")).toBe("Back to Mentions");
+
+        await back.trigger("click");
+        await settle();
+
+        expect(threads.closeThread).toHaveBeenCalledTimes(1);
+        expect(mentionsOf().closeInbox).not.toHaveBeenCalled();
+        expect(panelTitle(w)).toBe("Mentions");
+        expect(document.activeElement).toBe(w.get("[data-testid='mention-row-open']").element);
+    });
+
+    test("a thread opened from the conversation tells the mentions, so its replies stop lighting the dot", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        expect(mentionsOf().threadOpened).toHaveBeenCalledWith(team.channel_id, 40);
+    });
+
+    test("the composer's @ query searches the conversation's people from its row, and its end closes the search", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        mentionsOf().state.picker.isAllOffered = true;
+        await settle();
+
+        const composer = w.findComponent(ComposerComponent);
+        expect(composer.props("mentionSource")).toEqual({ canMention: true, people: [], isAllOffered: true });
+
+        composer.vm.$emit("mentionQuery", "an");
+        expect(mentionsOf().search).toHaveBeenCalledWith(team, "an");
+
+        composer.vm.$emit("mentionQuery", null);
+        expect(mentionsOf().closeSearch).toHaveBeenCalledTimes(1);
+    });
+
+    test("the thread's reply composer searches the people of the thread's conversation", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        const drawer = w.findComponent(ThreadDrawerComponent);
+        expect(drawer.props("mentionSource")).toEqual({ canMention: true, people: [], isAllOffered: false });
+
+        drawer.vm.$emit("mentionQuery", "b");
+        expect(mentionsOf().search).toHaveBeenCalledWith(team, "b");
     });
 });
 
