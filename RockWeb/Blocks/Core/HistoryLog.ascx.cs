@@ -649,7 +649,11 @@ namespace RockWeb.Blocks.Core
                             ValueName = h.ValueName,
                             OldValue = h.OldValue,
                             RelatedData = h.RelatedData,
-                            EntityTypeId = h.EntityTypeId
+                            EntityTypeId = h.EntityTypeId,
+
+                            // SummaryHtml uses RelatedEntityTypeId to find attribute value history,
+                            // whose formatted values are sanitized instead of encoded.
+                            RelatedEntityTypeId = x.RelatedEntityTypeId
                         } )
                         .Select( h => h.SummaryHtml )
                         .ToList(),

@@ -326,6 +326,7 @@
     <Compile Include="Model\StreakTypeServiceTests.cs" />
     <Compile Include="Model\ScheduleCheckInTests.cs" />
     <Compile Include="Model\HtmlContentTests.cs" />
+    <Compile Include="Model\HistorySummaryHtmlTests.cs" />
     <Compile Include="Model\PageContextTests.cs" />
     <Compile Include="Model\PageRouteTests.cs" />
     <Compile Include="Model\PageTests.cs" />
