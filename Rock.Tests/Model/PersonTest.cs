@@ -38,5 +38,20 @@ namespace Rock.Tests.Model
 
             Assert.AreEqual( expectedAge, person.Age );
         }
+
+        [TestMethod]
+        public void GetAnchorTag_WithHtmlInName_EncodesName()
+        {
+            var person = new Person
+            {
+                Id = 1,
+                NickName = "<img src=x onerror=alert(1)>",
+                LastName = "O'Brien & Sons"
+            };
+
+            var anchorTag = person.GetAnchorTag( "/" );
+
+            Assert.AreEqual( "<a class='' href='/Person/1'>&lt;img src=x onerror=alert(1)&gt; O&#39;Brien &amp; Sons</a>", anchorTag );
+        }
     }
 }

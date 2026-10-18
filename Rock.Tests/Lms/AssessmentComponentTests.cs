@@ -39,6 +39,8 @@ namespace Rock.Tests.Lms
         private static readonly Guid ShortAnswerId = new Guid( "1E3D1C0B-3E4F-4B7A-9C11-0A6D0C1A0002" );
         private static readonly Guid SectionId = new Guid( "1E3D1C0B-3E4F-4B7A-9C11-0A6D0C1A0003" );
         private static readonly Guid UnknownId = new Guid( "1E3D1C0B-3E4F-4B7A-9C11-0A6D0C1A0099" );
+        private static readonly Guid SecondMultipleChoiceId = new Guid( "1E3D1C0B-3E4F-4B7A-9C11-0A6D0C1A0004" );
+        private static readonly Guid ThirdMultipleChoiceId = new Guid( "1E3D1C0B-3E4F-4B7A-9C11-0A6D0C1A0005" );
 
         private const string Marker = "<img src=data:, onerror=console.log('T140LMS')>";
 
@@ -114,6 +116,95 @@ namespace Rock.Tests.Lms
                 ["completedItems"] = completedItems.ToString(),
                 ["multipleChoiceWeight"] = "100"
             };
+        }
+
+        /// <summary>
+        /// Gets configured component data with only multiple choice items:
+        /// Red, Blue, Green with Blue correct; One, Two, Three with Three
+        /// correct; Yes, No with Yes correct. The multiple choice weight is
+        /// 60 percent.
+        /// </summary>
+        /// <param name="showMissedQuestions">The "Show Missed Questions On Results" setting value.</param>
+        /// <param name="showResults">The "Show Results On Completion" setting value.</param>
+        private static Dictionary<string, string> GetMultipleChoiceComponentData( string showMissedQuestions = null, string showResults = "True" )
+        {
+            var items = new JArray
+            {
+                new JObject
+                {
+                    ["type"] = 0,
+                    ["uniqueId"] = MultipleChoiceId,
+                    ["order"] = 0,
+                    ["question"] = "Favorite color?",
+                    ["answers"] = new JArray( "Red", "Blue", "Green" ),
+                    ["correctAnswer"] = "Blue"
+                },
+                new JObject
+                {
+                    ["type"] = 0,
+                    ["uniqueId"] = SecondMultipleChoiceId,
+                    ["order"] = 1,
+                    ["question"] = "Favorite number?",
+                    ["answers"] = new JArray( "One", "Two", "Three" ),
+                    ["correctAnswer"] = "Three"
+                },
+                new JObject
+                {
+                    ["type"] = 0,
+                    ["uniqueId"] = ThirdMultipleChoiceId,
+                    ["order"] = 2,
+                    ["question"] = "Ready?",
+                    ["answers"] = new JArray( "Yes", "No" ),
+                    ["correctAnswer"] = "Yes"
+                }
+            };
+
+            var componentData = new Dictionary<string, string>
+            {
+                ["items"] = items.ToString(),
+                ["multipleChoiceWeight"] = "60"
+            };
+
+            if ( showMissedQuestions != null )
+            {
+                componentData["showMissedQuestionsOnResults"] = showMissedQuestions;
+            }
+
+            if ( showResults != null )
+            {
+                componentData["showResultsOnCompletion"] = showResults;
+            }
+
+            return componentData;
+        }
+
+        /// <summary>
+        /// Gets posted multiple choice responses for the items from
+        /// <see cref="GetMultipleChoiceComponentData(string)"/>. A <c>null</c>
+        /// response leaves the item unanswered.
+        /// </summary>
+        private static Dictionary<string, string> GetMultipleChoiceResponses( string color, string number, string ready )
+        {
+            return GetCompletionValues( new JArray
+            {
+                new JObject { ["type"] = 0, ["uniqueId"] = MultipleChoiceId, ["response"] = color },
+                new JObject { ["type"] = 0, ["uniqueId"] = SecondMultipleChoiceId, ["response"] = number },
+                new JObject { ["type"] = 0, ["uniqueId"] = ThirdMultipleChoiceId, ["response"] = ready }
+            } );
+        }
+
+        /// <summary>
+        /// Gets a completion that already stores the given student submission,
+        /// as the block does after the first CompleteActivity call.
+        /// </summary>
+        private static LearningClassActivityCompletion GetSubmittedCompletion( Dictionary<string, string> componentData, Dictionary<string, string> submittedValues )
+        {
+            var completion = GetCompletion();
+            var completionData = CreateComponent().GetCompletionData( completion, submittedValues, componentData, PresentedFor.Student, null, null );
+
+            completion.ActivityComponentCompletionJson = completionData.ToJson();
+
+            return completion;
         }
 
         private static List<JObject> GetStoredItems( Dictionary<string, string> completionData )
@@ -277,6 +368,152 @@ namespace Rock.Tests.Lms
             var result = CreateComponent().GetCompletionData( GetCompletion(), completionValues, componentData, PresentedFor.Student, null, null );
 
             Assert.AreEqual( "100", result["multipleChoiceWeight"] );
+        }
+
+        /// <summary>
+        /// A student who replays the completion after submitting keeps the
+        /// stored responses. The new responses are ignored.
+        /// </summary>
+        [TestMethod]
+        public void GetCompletionData_StudentResubmits_KeepsStoredResponses()
+        {
+            var componentData = GetMultipleChoiceComponentData();
+            var completion = GetSubmittedCompletion( componentData, GetMultipleChoiceResponses( "Red", "One", "No" ) );
+
+            var result = CreateComponent().GetCompletionData( completion, GetMultipleChoiceResponses( "Blue", "Three", "Yes" ), componentData, PresentedFor.Student, null, null );
+            var items = GetStoredItems( result );
+
+            Assert.AreEqual( "Red", GetString( GetItem( items, MultipleChoiceId ), "response" ) );
+            Assert.AreEqual( "One", GetString( GetItem( items, SecondMultipleChoiceId ), "response" ) );
+            Assert.AreEqual( "No", GetString( GetItem( items, ThirdMultipleChoiceId ), "response" ) );
+        }
+
+        /// <summary>
+        /// The points from a replayed completion are the points of the
+        /// original submission.
+        /// </summary>
+        [TestMethod]
+        public void CalculatePointsEarned_StudentResubmits_PointsUnchanged()
+        {
+            var component = CreateComponent();
+            var componentData = GetMultipleChoiceComponentData();
+            var completion = GetSubmittedCompletion( componentData, GetMultipleChoiceResponses( "Red", "One", "No" ) );
+
+            var result = component.GetCompletionData( completion, GetMultipleChoiceResponses( "Blue", "Three", "Yes" ), componentData, PresentedFor.Student, null, null );
+
+            Assert.AreEqual( 0, component.CalculatePointsEarned( completion, result, componentData, 30, null, null ) );
+        }
+
+        /// <summary>
+        /// The first submission stores the posted responses, including when
+        /// the completion was created earlier with no stored items.
+        /// </summary>
+        [TestMethod]
+        [DataRow( null )]
+        [DataRow( "" )]
+        [DataRow( "{}" )]
+        public void GetCompletionData_StudentFirstSubmission_StoresPostedResponses( string storedJson )
+        {
+            var component = CreateComponent();
+            var componentData = GetMultipleChoiceComponentData();
+            var completion = GetCompletion();
+            completion.ActivityComponentCompletionJson = storedJson;
+
+            var result = component.GetCompletionData( completion, GetMultipleChoiceResponses( "Blue", "Three", "No" ), componentData, PresentedFor.Student, null, null );
+            var items = GetStoredItems( result );
+
+            Assert.AreEqual( "Blue", GetString( GetItem( items, MultipleChoiceId ), "response" ) );
+            Assert.AreEqual( "Three", GetString( GetItem( items, SecondMultipleChoiceId ), "response" ) );
+            Assert.AreEqual( 12, component.CalculatePointsEarned( completion, result, componentData, 30, null, null ) );
+        }
+
+        /// <summary>
+        /// When missed questions are not shown, the student does not receive
+        /// the correct answer of a missed or unanswered item. Correctly
+        /// answered items keep it, and no hidden item looks correct to the
+        /// client, which compares the response to the correct answer. The
+        /// client posts a blank response as an empty string.
+        /// </summary>
+        [TestMethod]
+        [DataRow( null, null )]
+        [DataRow( "False", null )]
+        [DataRow( null, "" )]
+        [DataRow( "False", "" )]
+        public void GetCompletionValues_StudentShowMissedOff_HidesMissedCorrectAnswers( string showMissedQuestions, string unansweredResponse )
+        {
+            var componentData = GetMultipleChoiceComponentData( showMissedQuestions );
+            var completion = GetSubmittedCompletion( componentData, GetMultipleChoiceResponses( "Blue", "One", unansweredResponse ) );
+            var completionData = completion.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>();
+
+            var result = CreateComponent().GetCompletionValues( completion, completionData, componentData, PresentedFor.Student, null, null );
+            var items = GetStoredItems( result );
+            var missed = GetItem( items, SecondMultipleChoiceId );
+            var unanswered = GetItem( items, ThirdMultipleChoiceId );
+
+            Assert.AreEqual( "Blue", GetString( GetItem( items, MultipleChoiceId ), "correctAnswer" ) );
+            Assert.IsNull( GetString( missed, "correctAnswer" ) );
+            Assert.AreEqual( "One", GetString( missed, "response" ) );
+            Assert.AreEqual( unansweredResponse, GetString( unanswered, "response" ) );
+            Assert.AreNotEqual( "Yes", GetString( unanswered, "correctAnswer" ) );
+            Assert.AreNotEqual( GetString( unanswered, "response" ), GetString( unanswered, "correctAnswer" ) );
+            Assert.AreEqual( "60", result["multipleChoiceWeight"] );
+        }
+
+        /// <summary>
+        /// When results are not shown on completion, the student does not
+        /// receive any correct answer, even for correct responses or when
+        /// missed questions are set to be shown.
+        /// </summary>
+        [TestMethod]
+        [DataRow( null, "True" )]
+        [DataRow( "False", "True" )]
+        [DataRow( "False", null )]
+        public void GetCompletionValues_StudentShowResultsOff_HidesAllCorrectAnswers( string showResults, string showMissedQuestions )
+        {
+            var componentData = GetMultipleChoiceComponentData( showMissedQuestions, showResults );
+            var completion = GetSubmittedCompletion( componentData, GetMultipleChoiceResponses( "Blue", "One", "" ) );
+            var completionData = completion.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>();
+
+            var items = GetStoredItems( CreateComponent().GetCompletionValues( completion, completionData, componentData, PresentedFor.Student, null, null ) );
+
+            Assert.IsNull( GetString( GetItem( items, MultipleChoiceId ), "correctAnswer" ) );
+            Assert.IsNull( GetString( GetItem( items, SecondMultipleChoiceId ), "correctAnswer" ) );
+            Assert.IsNull( GetString( GetItem( items, ThirdMultipleChoiceId ), "correctAnswer" ) );
+            Assert.AreEqual( "Blue", GetString( GetItem( items, MultipleChoiceId ), "response" ) );
+        }
+
+        /// <summary>
+        /// When missed questions are shown, the student receives every
+        /// correct answer, as configured.
+        /// </summary>
+        [TestMethod]
+        public void GetCompletionValues_StudentShowMissedOn_KeepsCorrectAnswers()
+        {
+            var componentData = GetMultipleChoiceComponentData( "True" );
+            var completion = GetSubmittedCompletion( componentData, GetMultipleChoiceResponses( "Blue", "One", null ) );
+            var completionData = completion.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>();
+
+            var items = GetStoredItems( CreateComponent().GetCompletionValues( completion, completionData, componentData, PresentedFor.Student, null, null ) );
+
+            Assert.AreEqual( "Blue", GetString( GetItem( items, MultipleChoiceId ), "correctAnswer" ) );
+            Assert.AreEqual( "Three", GetString( GetItem( items, SecondMultipleChoiceId ), "correctAnswer" ) );
+            Assert.AreEqual( "Yes", GetString( GetItem( items, ThirdMultipleChoiceId ), "correctAnswer" ) );
+        }
+
+        /// <summary>
+        /// The facilitator always receives every correct answer.
+        /// </summary>
+        [TestMethod]
+        public void GetCompletionValues_Facilitator_KeepsCorrectAnswers()
+        {
+            var componentData = GetMultipleChoiceComponentData();
+            var completion = GetSubmittedCompletion( componentData, GetMultipleChoiceResponses( "Blue", "One", null ) );
+            var completionData = completion.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>();
+
+            var items = GetStoredItems( CreateComponent().GetCompletionValues( completion, completionData, componentData, PresentedFor.Facilitator, null, null ) );
+
+            Assert.AreEqual( "Three", GetString( GetItem( items, SecondMultipleChoiceId ), "correctAnswer" ) );
+            Assert.AreEqual( "Yes", GetString( GetItem( items, ThirdMultipleChoiceId ), "correctAnswer" ) );
         }
     }
 }

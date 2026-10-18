@@ -1099,7 +1099,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetAnchorTag( string rockUrlRoot, string cssClass = "" )
         {
-            return string.Format( "<a class='{0}' href='{1}Person/{2}'>{3}</a>", cssClass, rockUrlRoot, Id, FullName );
+            return string.Format( "<a class='{0}' href='{1}Person/{2}'>{3}</a>", cssClass, rockUrlRoot, Id, FullName.EncodeHtml() );
         }
 
         /// <summary>
