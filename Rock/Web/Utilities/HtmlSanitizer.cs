@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Web;
 using System.Xml;
 
 using HtmlAgilityPack;
@@ -41,7 +44,10 @@ namespace Rock.Web.Utilities
                 { "embed" },
                 { "link" },                
                 { "head" },
-                { "meta" }
+                { "meta" },
+                { "base" },
+                { "style" },
+                { "title" }
         };
 
         /// <summary>
@@ -73,35 +79,141 @@ namespace Rock.Web.Utilities
         /// <returns></returns>
         public string Sanitize( string html )
         {
-            var doc = new HtmlDocument();
-
-            doc.LoadHtml( html.Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos />" ).Replace("&quot;", "<quote />") );
-
-            SanitizeHtmlNode( doc.DocumentNode );
-
-            //return doc.DocumentNode.WriteTo();
-
-            string output = null;
-
-            // Use an XmlTextWriter to create self-closing tags
-            using ( StringWriter sw = new StringWriter() )
+            if ( string.IsNullOrWhiteSpace( html ) )
             {
-                XmlWriter writer = new XmlTextWriter( sw );
-                doc.DocumentNode.WriteTo( writer );
-                output = sw.ToString();
-
-                // strip off XML doc header
-                if ( !string.IsNullOrEmpty( output ) )
-                {
-                    int at = output.IndexOf( "?>" );
-                    output = output.Substring( at + 2 );
-                }
-
-                writer.Close();
+                return html;
             }
-            doc = null;
 
-            return output.Replace( "<nbsp />", "&nbsp;" ).Replace( "<apos />", "&#39;" ).Replace( "<quote />", "&quot;" );
+            /*
+                10/18/2026 - MSE
+
+                The parser keeps the raw source text of a tag it cannot parse
+                strictly, and the XML writer throws on some comment shapes. A form
+                feed between the tag name and its attributes, an unclosed final tag,
+                or a comment like "<!>" could carry event handlers through or fail
+                the request. Control characters are removed before parsing, any
+                parser or writer failure falls back to encoding the whole value so
+                nothing is ever emitted raw, and elements without a plain tag name
+                are dropped in SanitizeHtmlNode.
+
+                Reason: Prevent sanitizer bypasses and exceptions on malformed markup.
+            */
+            try
+            {
+                var doc = new HtmlDocument();
+
+                doc.LoadHtml( RemoveControlCharacters( html ).Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos />" ).Replace( "&quot;", "<quote />" ) );
+
+                SanitizeHtmlNode( doc.DocumentNode );
+
+                //return doc.DocumentNode.WriteTo();
+
+                string output = null;
+
+                // Use an XmlTextWriter to create self-closing tags
+                using ( StringWriter sw = new StringWriter() )
+                {
+                    XmlWriter writer = new XmlTextWriter( sw );
+                    doc.DocumentNode.WriteTo( writer );
+                    output = sw.ToString();
+
+                    // strip off XML doc header
+                    if ( !string.IsNullOrEmpty( output ) )
+                    {
+                        int at = output.IndexOf( "?>" );
+                        output = output.Substring( at + 2 );
+                    }
+
+                    writer.Close();
+                }
+                doc = null;
+
+                return output.Replace( "<nbsp />", "&nbsp;" ).Replace( "<apos />", "&#39;" ).Replace( "<quote />", "&quot;" );
+            }
+            catch ( Exception )
+            {
+                return HttpUtility.HtmlEncode( html );
+            }
+        }
+
+        /// <summary>
+        /// Removes control characters other than tab, carriage return and line
+        /// feed. A form feed is replaced with a space because browsers treat it
+        /// as whitespace, so the markup keeps the meaning a browser would give it.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The value without control characters.</returns>
+        private static string RemoveControlCharacters( string value )
+        {
+            var sb = new StringBuilder( value.Length );
+
+            foreach ( var c in value )
+            {
+                if ( c == '\f' )
+                {
+                    sb.Append( ' ' );
+                }
+                else if ( c == '\t' || c == '\r' || c == '\n' || !char.IsControl( c ) )
+                {
+                    sb.Append( c );
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the attribute value in the form a browser would read it when
+        /// deciding the URL scheme: entities decoded, whitespace and control
+        /// characters removed, and lower case.
+        /// </summary>
+        /// <param name="value">The raw attribute value.</param>
+        /// <returns>The normalized value.</returns>
+        private static string GetNormalizedAttributeValue( string value )
+        {
+            if ( string.IsNullOrEmpty( value ) )
+            {
+                return string.Empty;
+            }
+
+            // Decode twice so an entity that was itself entity encoded is also caught.
+            var decoded = HttpUtility.HtmlDecode( HttpUtility.HtmlDecode( value ) );
+            var sb = new StringBuilder( decoded.Length );
+
+            foreach ( var c in decoded )
+            {
+                if ( !char.IsWhiteSpace( c ) && !char.IsControl( c ) )
+                {
+                    sb.Append( char.ToLowerInvariant( c ) );
+                }
+            }
+
+            // HTML5 named entities that HtmlDecode does not know.
+            return sb.ToString().Replace( "&colon;", ":" ).Replace( "&tab;", string.Empty ).Replace( "&newline;", string.Empty );
+        }
+
+        /// <summary>
+        /// Determines whether the element name is a plain HTML tag name: a letter
+        /// followed by letters, digits, hyphens, underscores or colons.
+        /// </summary>
+        /// <param name="elementName">The lower case element name.</param>
+        /// <returns><c>true</c> if the name is a plain tag name; otherwise <c>false</c>.</returns>
+        private static bool IsPlainHtmlElementName( string elementName )
+        {
+            if ( string.IsNullOrEmpty( elementName ) || elementName[0] < 'a' || elementName[0] > 'z' )
+            {
+                return false;
+            }
+
+            foreach ( var c in elementName )
+            {
+                if ( !( ( c >= 'a' && c <= 'z' ) || ( c >= '0' && c <= '9' ) || c == '-' || c == '_' || c == ':' ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void SanitizeHtmlNode( HtmlNode node )
@@ -115,6 +227,22 @@ namespace Rock.Web.Utilities
             {
                 // check for blacklist items and remove
                 if ( BlackList.Contains( node.Name ) )
+                {
+                    node.Remove();
+                    return;
+                }
+
+                /*
+                    10/18/2026 - MSE
+
+                    An unclosed final tag or a stray less than sign is parsed as an
+                    element whose name holds the raw source text (for example
+                    "img src=x onerror=..."), and that text is written back out as is.
+                    Only elements with a plain tag name are kept.
+
+                    Reason: Raw tag text bypassed the attribute and blacklist checks.
+                */
+                if ( !IsPlainHtmlElementName( node.Name.ToLowerInvariant() ) )
                 {
                     node.Remove();
                     return;
@@ -139,7 +267,18 @@ namespace Rock.Web.Utilities
                         HtmlAttribute currentAttribute = node.Attributes[i];
 
                         var attr = currentAttribute.Name.ToLower();
-                        var val = currentAttribute.Value.ToLower();
+
+                        /*
+                            10/18/2026 - MSE
+
+                            Browsers ignore tabs, new lines and other whitespace inside
+                            a URL scheme and decode entities before reading it, so a
+                            value like "java[tab]script:" still runs. The value is
+                            normalized the same way before the scheme checks.
+
+                            Reason: Obfuscated script schemes passed the substring check.
+                        */
+                        var val = GetNormalizedAttributeValue( currentAttribute.Value );
 
                         // remove event handlers
                         if ( attr.StartsWith( "on" ) )

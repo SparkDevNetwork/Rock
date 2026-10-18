@@ -286,6 +286,71 @@ namespace Rock.Tests.Utility.ExtensionMethods
             Assert.AreEqual( string.Empty, output );
         }
 
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithUnclosedFinalTag_RemovesEventHandler()
+        {
+            var output = "<p>a</p><img src=x onerror=y".SanitizeHtml( strict: false );
+
+            Assert.AreEqual( "<p>a</p>", output );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_NotStrict_WithFormFeedSeparator_RemovesEventHandler()
+        {
+            var output = "<img\fsrc=x\fonerror=y>".SanitizeHtml( strict: false );
+
+            Assert.IsFalse( output.Contains( "onerror" ) );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<a href=\"java\tscript:y\">a</a>" )]
+        [DataRow( "<a href=\"java\nscript:y\">a</a>" )]
+        [DataRow( "<a href=\"jav&#x09;ascript:y\">a</a>" )]
+        [DataRow( "<a href=\"javascript&colon;y\">a</a>" )]
+        public void SanitizeHtml_NotStrict_WithObfuscatedScriptScheme_RemovesHref( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( "<a>a</a>", output );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<base href=\"/x\">" )]
+        [DataRow( "<style>a{}</style>" )]
+        [DataRow( "<title>a</title>" )]
+        public void SanitizeHtml_NotStrict_WithBlockedElement_RemovesElement( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( string.Empty, output );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<!>" )]
+        [DataRow( "<!-a->" )]
+        [DataRow( "<!--a--->" )]
+        public void SanitizeHtml_NotStrict_WithMalformedComment_ReturnsEncodedInput( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( html.EncodeHtml(), output );
+        }
+
+        [DataTestMethod]
+        [DataRow( "<a href=\"https://www.rockrms.com/\" target=\"_blank\">Link</a>" )]
+        [DataRow( "<a href=\"mailto:a@b.c\">Mail</a>" )]
+        [DataRow( "<img src=\"/GetImage.ashx?Id=1\" alt=\"Image\" />" )]
+        [DataRow( "<p><strong>b</strong> <em>i</em> <u>u</u></p>\r\n<ul><li>a</li></ul>" )]
+        [DataRow( "<table class=\"table\"><thead><tr><th>H</th></tr></thead><tbody><tr><td>C</td></tr></tbody></table>" )]
+        [DataRow( "<p>a&nbsp;b &quot;c&quot; &#39;d</p>" )]
+        [DataRow( "<pre>a\r\n\tb</pre>" )]
+        public void SanitizeHtml_NotStrict_WithLegitimateMarkup_ReturnsMarkupUnchanged( string html )
+        {
+            var output = html.SanitizeHtml( strict: false );
+
+            Assert.AreEqual( html, output );
+        }
+
         #endregion
 
         #region SanitizeLava
