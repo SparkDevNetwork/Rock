@@ -80,7 +80,7 @@
                                             <time class="chat-ls-t">{{ drawn.time }}</time>
                                         </div>
                                         <div class="chat-ls-text">
-                                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" />
+                                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" :isConversation="drawn.isConversation" />
                                         </div>
                                         <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
                                     </div>
@@ -284,6 +284,9 @@
         text: string | null;
         pieces: DisplayPiece[] | null;
         blocks: MessageBlock[] | null;
+
+        /** A direct message or group, whose @all chip says "conversation". */
+        isConversation: boolean;
         isNew: boolean;
         isCurrent: boolean;
         stagger: number;
@@ -571,6 +574,7 @@
             text: display.text,
             pieces: isShown ? message.pieces ?? null : null,
             blocks: isShown ? message.blocks ?? null : null,
+            isConversation: roomKind === "person" || roomKind === "group",
             isNew,
             isCurrent,
             stagger: Math.max(0, Math.min(index - staggerFrom.value, maxStaggered)),

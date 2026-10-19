@@ -189,6 +189,12 @@
             default: ""
         },
 
+        /** A direct message or group, whose @all chip says "conversation" rather than "channel". */
+        isConversation: {
+            type: Boolean,
+            default: false
+        },
+
         /** Runs a block button's action and shows its sentence, settling once the call has answered. */
         runAction: {
             type: Function as PropType<(button: MessageAction) => Promise<void>>,
@@ -301,7 +307,7 @@
 
         // The room's chip reads "@all" on screen; a person's chip shows the name, its "@" spoken only.
         if (piece.all === true || (!guid && name.toLowerCase() === "all")) {
-            return { kind: "mention", text, mention: "all", name: "@all", label: "@all, everyone in this channel" };
+            return { kind: "mention", text, mention: "all", name: "@all", label: `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}` };
         }
 
         const isReader = !!guid && guid === props.personAliasGuid.toLowerCase();

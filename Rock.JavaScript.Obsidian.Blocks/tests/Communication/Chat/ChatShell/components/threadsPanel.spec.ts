@@ -294,6 +294,20 @@ describe("a row", () => {
         expect(plain(w.get("[data-testid='thread-row-open']").attributes("aria-label"))).toMatch(/^Priya Shah in Priya, Ben and you: Slides\? 1 reply, /);
     });
 
+    test("draws an @all chip in a group's root as the conversation's, and in a channel's as the channel's", () => {
+        const group = "c0000004-0000-4000-8000-000000000000";
+        const pieces = { body: "<@all> hi", pieces: [{ type: "mention", text: "@all", all: true }, { type: "text", text: " hi" }] };
+        const w = draw({
+            tab: "all",
+            rows: [row(90, { channel_id: group }, pieces), row(40, {}, pieces)],
+            roomTitles: { ...roomTitles, [group]: "Priya, Ben and you" },
+            roomKinds: { [group]: "group", [channel]: "channel" }
+        });
+
+        const chips = w.findAll("[data-testid='piece-mention']");
+        expect(chips.map(chip => chip.attributes("aria-label"))).toEqual(["@all, everyone in this conversation", "@all, everyone in this channel"]);
+    });
+
     test("names the reader's own root You", () => {
         const w = draw({ rows: [row(40, {}, { person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Ellis" })] });
 

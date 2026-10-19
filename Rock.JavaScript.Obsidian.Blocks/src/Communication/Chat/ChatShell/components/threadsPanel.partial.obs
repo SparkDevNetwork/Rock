@@ -101,7 +101,7 @@
                                     <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
                                 </div>
                                 <div class="chat-ls-text">
-                                    <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" />
+                                    <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" :isConversation="drawn.isConversation" />
                                 </div>
                                 <div class="chat-ls-foot">
                                     <span class="chat-ls-faces">
@@ -416,6 +416,9 @@
         /** False where the author already names the conversation, a two-person one's other person. */
         isRoomNamed: boolean;
         roomIcon: string | null;
+
+        /** A direct message or group, whose @all chip says "conversation". */
+        isConversation: boolean;
         text: string | null;
         pieces: DisplayPiece[] | null;
         blocks: MessageBlock[] | null;
@@ -773,6 +776,7 @@
             room,
             isRoomNamed: !isAuthorTheTitle,
             roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
+            isConversation: roomKind === "person" || roomKind === "group",
             text: display.text,
             pieces: isShown ? root.pieces ?? null : null,
             blocks: isShown ? root.blocks ?? null : null,

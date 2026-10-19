@@ -308,6 +308,18 @@ describe("loading, empty and failed", () => {
         expect(w.find("[data-testid='mentions-empty']").exists()).toBe(false);
     });
 
+    test("draws an @all chip in a direct message or group as the conversation's, and in a channel as the channel's", () => {
+        const group = "c0000004-0000-4000-8000-000000000000";
+        const allRow = (id: number, channelId: string): MentionRow => {
+            const base = row(id, { channel_id: channelId });
+            return { ...base, message: { ...base.message, body: "<@all> hi", pieces: [{ type: "mention", text: "@all", all: true }, { type: "text", text: " hi" }] } as unknown as TimelineMessage };
+        };
+        const w = draw({ rows: [allRow(60, group), allRow(50, channel)], roomTitles: { ...roomTitles, [group]: "Priya, Ben and you" }, roomKinds: { ...roomKinds, [group]: "group" } });
+
+        const chips = w.findAll("[data-testid='piece-mention']");
+        expect(chips.map(chip => chip.attributes("aria-label"))).toEqual(["@all, everyone in this conversation", "@all, everyone in this channel"]);
+    });
+
     test.each([
         [[60, 50], "3 mentions, 2 new"],
         [[], "3 mentions"]

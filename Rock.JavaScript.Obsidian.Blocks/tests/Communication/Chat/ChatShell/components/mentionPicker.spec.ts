@@ -275,6 +275,40 @@ describe("the editor as the picker's combobox", () => {
     });
 });
 
+describe("the picker in a direct message or group", () => {
+    test("says conversation where a channel says channel: its heading, the @all row and the empty line", () => {
+        drawPicker({ isConversation: true, isAllOffered: true });
+
+        expect(picker()?.textContent).toContain("People in this conversation");
+        expect(options()[0].textContent).toContain("Notify everyone in this conversation");
+        expect(picker()?.textContent).not.toContain("channel");
+
+        wrapper?.unmount();
+        drawPicker({ isConversation: true, people: [] });
+        expect(picker()?.textContent?.trim()).toBe("No one in this conversation matches.");
+    });
+
+    test("is told so by its composer, which is not a channel's, and the @all chip it inserts says so too", async () => {
+        wrapper = mount(Composer, { props: { mentionSource: { ...people, isAllOffered: true }, isChannel: false }, attachTo: document.body });
+        await typeNodes(wrapper, ["@"]);
+
+        expect(picker()?.textContent).toContain("People in this conversation");
+
+        await press(editorOf(wrapper), "Enter");
+        expect(editorOf(wrapper).querySelector("[data-testid='editor-chip']")?.getAttribute("aria-label")).toBe("@all, everyone in this conversation");
+    });
+
+    test("a channel's composer keeps saying channel", async () => {
+        wrapper = mount(Composer, { props: { mentionSource: { ...people, isAllOffered: true }, isChannel: true }, attachTo: document.body });
+        await typeNodes(wrapper, ["@"]);
+
+        expect(picker()?.textContent).toContain("People in this channel");
+
+        await press(editorOf(wrapper), "Enter");
+        expect(editorOf(wrapper).querySelector("[data-testid='editor-chip']")?.getAttribute("aria-label")).toBe("@all, everyone in this channel");
+    });
+});
+
 describe("the picker's keys, pressed in the editor", () => {
     test("Down and Up move the active row, wrapping at the ends", async () => {
         const { target } = drawPicker();

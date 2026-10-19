@@ -119,6 +119,12 @@
         isDisabled: {
             type: Boolean,
             default: false
+        },
+
+        /** A direct message or group, whose @all chip says "conversation" rather than "channel". */
+        isConversation: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -631,7 +637,7 @@
         const isAll = token.toLowerCase() === "<@all>";
         if (isAll) {
             chip.classList.add("is-all");
-            chip.setAttribute("aria-label", "@all, everyone in this channel");
+            chip.setAttribute("aria-label", `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}`);
             const glyph = document.createElement("span");
             glyph.className = "chat-mn-glyph";
             glyph.setAttribute("aria-hidden", "true");

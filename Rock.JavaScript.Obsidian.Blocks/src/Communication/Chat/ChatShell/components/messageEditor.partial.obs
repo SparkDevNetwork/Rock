@@ -9,6 +9,7 @@
                     class="chat-editor-input"
                     :text="initialText"
                     :pieces="initialPieces"
+                    :isConversation="!isCommunity"
                     placeholder="Edit message"
                     data-testid="edit-input"
                     @send="onSave"

@@ -304,6 +304,17 @@ describe("inserting a mention", () => {
     });
 });
 
+describe("the @all chip's spoken label", () => {
+    test("says channel in a channel and conversation in a direct message or group", () => {
+        const channelBox = draw("<@all> hi", [mentionAll, { type: "text", text: " hi" }]);
+        expect(chips(channelBox)[0].getAttribute("aria-label")).toBe("@all, everyone in this channel");
+        channelBox.unmount();
+
+        wrapper = mount(ChipEditor, { props: { text: "<@all> hi", pieces: [mentionAll, { type: "text", text: " hi" }], isConversation: true }, attachTo: document.body });
+        expect(chips(wrapper)[0].getAttribute("aria-label")).toBe("@all, everyone in this conversation");
+    });
+});
+
 describe("the @ query at the caret", () => {
     test.each([["a letter outside English", "Zoë"], ["a name in another script", "Јован"], ["a digit and an underscore", "lee_2"]])("keeps going through %s, so the picker stays open", async (_what, query) => {
         const w = draw(`Hi @${query}`, null);

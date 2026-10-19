@@ -32,6 +32,7 @@
                             class="chat-composer-input"
                             :placeholder="placeholder"
                             :isDisabled="isDisabled"
+                            :isConversation="!isChannel"
                             data-testid="composer-input"
                             @send="onSubmit"
                             @upWhenEmpty="emit('editLast')"
@@ -67,6 +68,7 @@
                            :anchor="boxElement ?? null"
                            :people="mentionSource.canMention ? mentionSource.people : []"
                            :isAllOffered="mentionSource.isAllOffered"
+                           :isConversation="!isChannel"
                            @choose="onMentionChoose"
                            @close="isMentionDismissed = true" />
         </template>

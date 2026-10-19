@@ -455,13 +455,20 @@ describe("mentions", () => {
 
     test("a mention of someone else is a person chip; of the reader, the you chip; of the room, the @all chip", () => {
         const wrapper = draw({
-            message: message({ body: "x", pieces: [mentionLee, { type: "text", text: " " }, mentionMe, { type: "text", text: " " }, mentionAll] })
+            message: message({ body: "x", pieces: [mentionLee, { type: "text", text: " " }, mentionMe, { type: "text", text: " " }, mentionAll] }),
+            isChannel: true
         });
 
         const chips = wrapper.findAll("[data-testid='piece-mention']");
         expect(chips.map(chip => chip.attributes("data-mention"))).toEqual(["person", "you", "all"]);
         expect(chips[1].attributes("aria-label")).toBe("@Jordan Lee, you");
         expect(chips[2].attributes("aria-label")).toBe("@all, everyone in this channel");
+    });
+
+    test("the @all chip in a direct message or group says conversation, not channel", () => {
+        const wrapper = draw({ message: message({ body: "x", pieces: [mentionAll] }) });
+
+        expect(wrapper.get("[data-testid='piece-mention']").attributes("aria-label")).toBe("@all, everyone in this conversation");
     });
 
     test("the reader's alias guid matches a mention in any letter case", () => {

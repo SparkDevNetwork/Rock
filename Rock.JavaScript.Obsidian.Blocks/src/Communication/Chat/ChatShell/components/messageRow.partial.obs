@@ -131,7 +131,7 @@
                             <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                         </div>
                         <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                        <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
+                        <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" isConversation />
                     </div>
                     <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
                 </div>

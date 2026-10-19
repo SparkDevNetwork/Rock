@@ -10,7 +10,7 @@
              data-testid="mention-picker"
              :style="popStyles">
             <template v-if="rows.length > 0">
-                <div v-if="drawnPeople.length > 0" class="chat-mention-head" aria-hidden="true">People in this channel</div>
+                <div v-if="drawnPeople.length > 0" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
                 <div :id="listId" role="listbox" aria-label="People to mention">
                     <button v-for="(row, index) in rows"
                             :id="`${listId}-${index}`"
@@ -30,13 +30,13 @@
                         <Avatar v-else :people="[{ name: row.name }]" :size="28" />
                         <span class="chat-mention-main">
                             <b>{{ row.isAll ? "@all" : row.name }}</b>
-                            <span v-if="row.isAll">Notify everyone in this channel</span>
+                            <span v-if="row.isAll">Notify everyone in this {{ place }}</span>
                         </span>
                     </button>
                 </div>
             </template>
 
-            <div v-else :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this channel matches.</div>
+            <div v-else :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this {{ place }} matches.</div>
         </div>
     </Teleport>
 </template>
@@ -204,6 +204,12 @@
         isAllOffered: {
             type: Boolean,
             default: false
+        },
+
+        /** A direct message or group, which the picker's words call a conversation rather than a channel. */
+        isConversation: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -251,6 +257,9 @@
     // #region Computed Values
 
     const drawnPeople = computed((): MentionPerson[] => props.people.slice(0, drawnRowLimit));
+
+    /** What the room is called in the picker's words, by its kind. */
+    const place = computed((): string => props.isConversation ? "conversation" : "channel");
 
     /** @all first where it is offered, then the people found. */
     const rows = computed((): PickerRow[] => {
