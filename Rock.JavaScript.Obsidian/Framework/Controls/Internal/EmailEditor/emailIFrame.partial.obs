@@ -1681,7 +1681,12 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                     customComponentElement.replaceWith(helper.migrate(customComponentElement));
                 }
             }
-            draggingElement.value = tempElement.firstElementChild as HTMLElement;
+            draggingElement.value = tempElement.firstElementChild as HTMLElement | null;
+
+            if (!draggingElement.value) {
+                // Nothing could be imported, so there is nothing to drag.
+                return;
+            }
         }
         else {
             draggingElement.value = createComponentElement(iFrameDocument, componentTypeName);

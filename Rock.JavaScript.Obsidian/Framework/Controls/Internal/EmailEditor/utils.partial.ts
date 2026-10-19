@@ -324,6 +324,54 @@ export const horizontalAlignmentConverter: ValueConverter<HorizontalAlignment | 
 // #region Functions
 
 /**
+ * Parses the HTML into a detached element of the inert document and removes
+ * script, active elements and script attributes from it.
+ *
+ * @param inertDocument A document with no browsing context.
+ * @param html The HTML to parse and clean.
+ *
+ * @returns The element that contains the cleaned nodes.
+ */
+function cleanInertHtml(inertDocument: Document, html: string): HTMLDivElement {
+    const container = inertDocument.createElement("div");
+    container.innerHTML = html;
+
+    container
+        .querySelectorAll("script, iframe, frame, frameset, object, embed, base, meta[http-equiv], animate, set, math, svg, mglyph, malignmark, noscript, template, noembed, noframes, xmp, plaintext")
+        .forEach(element => element.remove());
+
+    container.querySelectorAll("*").forEach(element => {
+        for (const attribute of Array.from(element.attributes)) {
+            const name = attribute.name.toLowerCase();
+            // Remove whitespace and control characters, which browsers ignore in URL schemes.
+            // eslint-disable-next-line no-control-regex
+            const value = attribute.value.toLowerCase().replace(/[\s\u0000-\u001f\u007f]/g, "");
+
+            if (name.startsWith("on")
+                || name === "srcdoc"
+                || value.startsWith("javascript:")
+                || value.startsWith("vbscript:")
+                || value.startsWith("data:text/html")) {
+                element.removeAttribute(attribute.name);
+            }
+        }
+    });
+
+    // The parser drops one leading newline in these elements and the
+    // serializer does not add it back, so add it here to let the markup
+    // settle when it is serialized and parsed again.
+    container.querySelectorAll("pre, textarea, listing").forEach(element => {
+        const firstChild = element.firstChild;
+
+        if (firstChild && firstChild.nodeType === Node.TEXT_NODE && firstChild.nodeValue?.startsWith("\n")) {
+            firstChild.nodeValue = `\n${firstChild.nodeValue}`;
+        }
+    });
+
+    return container;
+}
+
+/**
  * Parses HTML in an inert document, removes active content, and imports
  * the remaining nodes into the target document.
  *
@@ -346,46 +394,35 @@ export function importInertHtml(targetDocument: Document, html: string): Documen
         context, so nothing loads or runs while the markup is parsed and
         cleaned there. Only the cleaned nodes are imported into the target.
 
-        Reason: Prevent saved email sections and messages from running script.
-    */
-    /*
-        10/18/2026 - MSE
+        The inert document parses with scripting disabled while the editor
+        parses with scripting enabled, and some markup changes shape when it
+        is serialized and parsed again (namespace confusion with math, svg
+        and mglyph, for example), such as when getHtml writes the editor
+        document again. So elements that parse differently in the two cases
+        (noscript, template, noembed, noframes, xmp, plaintext) and math and
+        svg are removed, and the markup is parsed and cleaned repeatedly
+        until it stops changing. Nothing is imported if it never settles.
 
-        The inert document parses with scripting disabled, while the editor
-        parses with scripting enabled. Elements such as noscript, template,
-        noembed, noframes, xmp and plaintext are parsed differently in the two
-        cases (and template content is skipped by querySelectorAll), so markup
-        hidden inside them could become live after a later serialize and
-        reparse. They never belong in email markup, so they are removed.
-
-        Reason: Close a parser differential in the inert import.
+        Reason: Prevent saved email sections and messages from running script, including through a later serialize and reparse.
     */
     const inertDocument = document.implementation.createHTMLDocument("");
-    const container = inertDocument.createElement("div");
-    container.innerHTML = html;
+    const maximumPasses = 5;
+    let container = cleanInertHtml(inertDocument, html);
+    let isStable = false;
 
-    container
-        .querySelectorAll("script, iframe, frame, frameset, object, embed, base, meta[http-equiv], animate, set, noscript, template, noembed, noframes, xmp, plaintext")
-        .forEach(element => element.remove());
+    for (let pass = 1; pass < maximumPasses && !isStable; pass++) {
+        const serialized = container.innerHTML;
+        const nextContainer = cleanInertHtml(inertDocument, serialized);
 
-    container.querySelectorAll("*").forEach(element => {
-        for (const attribute of Array.from(element.attributes)) {
-            const name = attribute.name.toLowerCase();
-            // Remove whitespace and control characters, which browsers ignore in URL schemes.
-            // eslint-disable-next-line no-control-regex
-            const value = attribute.value.toLowerCase().replace(/[\s\u0000-\u001f\u007f]/g, "");
-
-            if (name.startsWith("on")
-                || name === "srcdoc"
-                || value.startsWith("javascript:")
-                || value.startsWith("vbscript:")
-                || value.startsWith("data:text/html")) {
-                element.removeAttribute(attribute.name);
-            }
-        }
-    });
+        isStable = nextContainer.innerHTML === serialized;
+        container = nextContainer;
+    }
 
     const fragment = targetDocument.createDocumentFragment();
+
+    if (!isStable) {
+        return fragment;
+    }
 
     for (const node of Array.from(container.childNodes)) {
         fragment.appendChild(targetDocument.importNode(node, true));
@@ -2298,6 +2335,16 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                         const borderStyle = oldWrapper.style.borderStyle || "";
                         padding = oldWrapper.style.padding || "";
 
+                        /*
+                            10/18/2026 - MSE
+
+                            Style values read through element.style are not always plain colors
+                            and lengths. A declaration that uses var() keeps its fallback text as
+                            written, quotes and angle brackets included, so the values are escaped
+                            before being placed in the HTML template.
+
+                            Reason: Prevent script injection through component migration.
+                        */
                         // Apply inline styles for full "v0" migration
                         let inlineStyle = "";
                         if (backgroundColor) inlineStyle += `background-color: ${backgroundColor}; `;
@@ -2305,7 +2352,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                         if (borderColor) inlineStyle += `border-color: ${borderColor}; `;
                         if (borderStyle) inlineStyle += `border-style: ${borderStyle}; `;
 
-                        innerStructure += inlineStyle ? ` style="${inlineStyle.trim()}"` : "";
+                        innerStructure += inlineStyle ? ` style="${escapeHtml(inlineStyle.trim())}"` : "";
                     }
 
                     innerStructure += `>
@@ -2314,7 +2361,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
 
                     if (oldWrapper) {
                         // Apply padding style if `.js-component-text-wrapper` existed
-                        innerStructure += padding ? ` style="padding: ${padding};"` : "";
+                        innerStructure += padding ? ` style="padding: ${escapeHtml(padding)};"` : "";
                     }
 
                     innerStructure += `>
@@ -2688,8 +2735,18 @@ export function getCodeComponentHelper(): ComponentMigrationHelper & {
 
                     const margin = (componentElement as HTMLElement).style.margin || "";
 
+                    /*
+                        10/18/2026 - MSE
+
+                        Style values read through element.style are not always plain colors
+                        and lengths. A declaration that uses var() keeps its fallback text as
+                        written, quotes and angle brackets included, so the values are escaped
+                        before being placed in the HTML template.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     newComponentElement.innerHTML = `
-                    <tbody><tr><td${margin ? ` style="padding: ${margin};"` : ""}>
+                    <tbody><tr><td${margin ? ` style="padding: ${escapeHtml(margin)};"` : ""}>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-code" style="border-collapse: separate !important;">
                             <tbody><tr><td style="overflow: hidden;">
                                 <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-code">
@@ -2829,14 +2886,24 @@ export function getDividerComponentHelper(): ComponentMigrationHelper & {
                     const borderColor = isHr ? `${backgroundColor} transparent transparent` : "transparent";
                     const borderStyle = isHr ? "solid none none" : "solid"; // `solid` is optional for div
 
+                    /*
+                        10/18/2026 - MSE
+
+                        Style values read through element.style are not always plain colors
+                        and lengths. A declaration that uses var() keeps its fallback text as
+                        written, quotes and angle brackets included, so the values are escaped
+                        before being placed in the HTML template.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     // Create the new inner structure
                     newRoot.innerHTML = `
-                        <tbody><tr><td ${marginTop || marginBottom ? `style="${marginTop ? `padding-top: ${marginTop};` : ""} ${marginBottom ? `padding-bottom: ${marginBottom};` : ""}"` : ""}>
+                        <tbody><tr><td ${marginTop || marginBottom ? `style="${marginTop ? `padding-top: ${escapeHtml(marginTop)};` : ""} ${marginBottom ? `padding-bottom: ${escapeHtml(marginBottom)};` : ""}"` : ""}>
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
                                 <tbody><tr><td>
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
-                                        <tbody><tr><td style="border-width: ${borderWidth};
-                                                             border-color: ${borderColor};
+                                        <tbody><tr><td style="border-width: ${escapeHtml(borderWidth)};
+                                                             border-color: ${escapeHtml(borderColor)};
                                                              ${isHr ? `border-style: ${borderStyle};` : ""}">
                                         </td></tr></tbody>
                                     </table>
@@ -3405,18 +3472,28 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                     const borderWidth = componentElementStyle.borderWidth || "";
                     const borderColor = componentElementStyle.borderColor || "";
 
+                    /*
+                        10/18/2026 - MSE
+
+                        Style values read through element.style are not always plain colors
+                        and lengths. A declaration that uses var() keeps its fallback text as
+                        written, quotes and angle brackets included, so the values are escaped
+                        before being placed in the HTML template.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     // Create the inner structure.
                     newRoot.innerHTML = `
                         <tbody>
                             <tr><td>
                                 <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
-                                    <tbody><tr><td style="${backgroundColor ? `background-color: ${backgroundColor};` : ""}
-                                                    ${borderRadius ? `border-radius: ${borderRadius};` : ""}
-                                                    ${borderStyle ? `border-style: ${borderStyle};` : ""}
-                                                    ${borderWidth ? `border-width: ${borderWidth};` : ""}
-                                                    ${borderColor ? `border-color: ${borderColor};` : ""}">
+                                    <tbody><tr><td style="${backgroundColor ? `background-color: ${escapeHtml(backgroundColor)};` : ""}
+                                                    ${borderRadius ? `border-radius: ${escapeHtml(borderRadius)};` : ""}
+                                                    ${borderStyle ? `border-style: ${escapeHtml(borderStyle)};` : ""}
+                                                    ${borderWidth ? `border-width: ${escapeHtml(borderWidth)};` : ""}
+                                                    ${borderColor ? `border-color: ${escapeHtml(borderColor)};` : ""}">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
-                                            <tbody><tr><td ${padding ? `style="padding: ${padding};"` : ""}>
+                                            <tbody><tr><td ${padding ? `style="padding: ${escapeHtml(padding)};"` : ""}>
                                                 <table class="row section-row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
                                                     <tbody><tr></tr></tbody>
                                                 </table>
@@ -3469,7 +3546,7 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                             const dropzoneBorderColor = oldColumnElement.style.borderColor || "";
                             const dropzonePadding = oldColumnElement.style.padding || "";
                             const textAlign = oldColumnElement.style.textAlign;
-                            const alignAttribute = oldColumnElement.style.textAlign ? `align="${oldColumnElement.style.textAlign}"` : "";
+                            const alignAttribute = oldColumnElement.style.textAlign ? `align="${escapeHtml(oldColumnElement.style.textAlign)}"` : "";
 
                             // Create new column
                             const newColumn = document.createElement("td");
@@ -3477,18 +3554,28 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                             newColumn.setAttribute("valign", "top");
                             newColumn.setAttribute("width", width);
 
+                            /*
+                                10/18/2026 - MSE
+
+                                Style values read through element.style are not always plain colors
+                                and lengths. A declaration that uses var() keeps its fallback text as
+                                written, quotes and angle brackets included, so the values are escaped
+                                before being placed in the HTML template.
+
+                                Reason: Prevent script injection through component migration.
+                            */
                             // Construct column content
                             newColumn.innerHTML = `
     <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="margin-wrapper" align="center">
         <tbody><tr><td>
             <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper" style="border-collapse: separate !important;">
-                <tbody><tr><td style="${dropzoneBackgroundColor ? `background-color: ${dropzoneBackgroundColor};` : ""}
-                                ${dropzoneBorderRadius ? `border-radius: ${dropzoneBorderRadius};` : ""}
-                                ${dropzoneBorderStyle ? `border-style: ${dropzoneBorderStyle};` : ""}
-                                ${dropzoneBorderWidth ? `border-width: ${dropzoneBorderWidth};` : ""}
-                                ${dropzoneBorderColor ? `border-color: ${dropzoneBorderColor};` : ""}">
+                <tbody><tr><td style="${dropzoneBackgroundColor ? `background-color: ${escapeHtml(dropzoneBackgroundColor)};` : ""}
+                                ${dropzoneBorderRadius ? `border-radius: ${escapeHtml(dropzoneBorderRadius)};` : ""}
+                                ${dropzoneBorderStyle ? `border-style: ${escapeHtml(dropzoneBorderStyle)};` : ""}
+                                ${dropzoneBorderWidth ? `border-width: ${escapeHtml(dropzoneBorderWidth)};` : ""}
+                                ${dropzoneBorderColor ? `border-color: ${escapeHtml(dropzoneBorderColor)};` : ""}">
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
-                        <tbody><tr><td style="${dropzonePadding ? `padding: ${dropzonePadding};` : ""} ${textAlign ? `text-align: ${textAlign};` : ""}" ${alignAttribute}>
+                        <tbody><tr><td style="${dropzonePadding ? `padding: ${escapeHtml(dropzonePadding)};` : ""} ${textAlign ? `text-align: ${escapeHtml(textAlign)};` : ""}" ${alignAttribute}>
                             <div class="dropzone"></div>
                         </td></tr></tbody>
                     </table>

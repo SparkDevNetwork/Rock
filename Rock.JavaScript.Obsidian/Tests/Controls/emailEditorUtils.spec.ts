@@ -1,8 +1,27 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 import {
     getButtonComponentHelper,
     getCodeComponentHelper,
+    getDividerComponentHelper,
     getImageComponentHelper,
     getRsvpComponentHelper,
+    getSectionComponentHelper,
+    getTextComponentHelper,
     getTitleComponentHelper,
     getVideoComponentHelper,
     importInertHtml
@@ -23,6 +42,35 @@ function createComponent(html: string): Element {
     container.innerHTML = html;
 
     return container.firstElementChild as Element;
+}
+
+/**
+ * A style value the way a browser returns it when the declaration uses var():
+ * the fallback text is kept as written, quotes and angle brackets included.
+ * jsdom drops most var() values, so tests return it through a stub. The
+ * custom property name starts with two hyphens, written here as escapes.
+ */
+const cssVarInjectedImage = `var(\u002d\u002da,'"><img src=x onerror=alert(1)>')`;
+
+/**
+ * Makes the element's style return the var() value for the given properties,
+ * the way a browser would for a declaration that uses var().
+ */
+function stubVarStyle(element: Element, properties: string[]): void {
+    const style = (element as HTMLElement).style;
+    const stub = new Proxy(style, {
+        get(target, property) {
+            if (typeof property === "string" && properties.includes(property)) {
+                return cssVarInjectedImage;
+            }
+
+            const value = Reflect.get(target, property, target);
+
+            return typeof value === "function" ? value.bind(target) : value;
+        }
+    });
+
+    Object.defineProperty(element, "style", { value: stub });
 }
 
 /** Imports the HTML and returns it inside a div so it can be queried. */
@@ -113,6 +161,51 @@ describe("importInertHtml", () => {
 
         expect(div.innerHTML).toBe(html);
     });
+
+    it.each([
+        ["form namespace confusion with an SVG animation handler", `<form><math><mtext></form><form><mglyph><style></math><svg><animate onbegin=alert(1) attributeName=x dur=1s>`],
+        ["table namespace confusion with an image handler", `<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>`],
+        ["form namespace confusion with an image handler", `<form><math><mtext></form><form><mglyph><style></math><img src=x onerror=alert(1)>`]
+    ])("stays clean after a serialize and reparse: %s", (_name, html) => {
+        const imported = importIntoDiv(html);
+        const serialized = imported.innerHTML;
+        const activeSelector = "[onbegin], [onerror], animate, set, img, script";
+
+        // Reparse as markup set with innerHTML, the way a section is dropped or reloaded.
+        const fragmentDocument = document.implementation.createHTMLDocument("");
+        const reparsedContainer = fragmentDocument.createElement("div");
+        reparsedContainer.innerHTML = serialized;
+
+        expect(reparsedContainer.querySelector(activeSelector)).toBeNull();
+
+        // Reparse as a whole document, the way the editor's getHtml writes it.
+        const reparsedDocument = document.implementation.createHTMLDocument("");
+        reparsedDocument.open();
+        reparsedDocument.write(`<!DOCTYPE html><html><body>${serialized}</body></html>`);
+        reparsedDocument.close();
+
+        expect(reparsedDocument.querySelector(activeSelector)).toBeNull();
+        expect(imported.querySelector("math, svg, mglyph, malignmark")).toBeNull();
+    });
+
+    it("keeps Lava and table markup stable after a serialize and reparse", () => {
+        const html = `<table role="presentation"><tbody><tr><td><a href="https://example.com/?a=1&amp;b=2">{{ Person.NickName }}</a>{% if Person %}<b>Yes</b>{% endif %}<style>p { color: red; }</style></td></tr></tbody></table>`;
+
+        const serialized = importIntoDiv(html).innerHTML;
+
+        expect(serialized).toBe(html);
+        expect(importIntoDiv(serialized).innerHTML).toBe(html);
+    });
+
+    it.each(["pre", "textarea", "listing"])("keeps %s content with many leading newlines", tagName => {
+        const html = `<${tagName}>\n\n\n\n\n\ncode</${tagName}>`;
+
+        const div = importIntoDiv(html);
+        const serialized = div.innerHTML;
+
+        expect(div.querySelector(tagName)?.textContent).toContain("code");
+        expect(importIntoDiv(serialized).innerHTML).toBe(serialized);
+    });
 });
 
 describe("email editor v0 component migrations", () => {
@@ -187,5 +280,45 @@ describe("email editor v0 component migrations", () => {
         const content = migrated.querySelector(".content-wrapper-for-code");
 
         expect(content?.innerHTML).toBe(`<p title="a < b">{{ Person.NickName }}</p><b>Bold</b>`);
+    });
+    it("text migration keeps var() style values inside the style attribute", () => {
+        const component = createComponent(`<div class="component component-text"><div class="js-component-text-wrapper"><p>Text</p></div></div>`);
+        stubVarStyle(component, ["backgroundColor"]);
+        stubVarStyle(component.querySelector(".js-component-text-wrapper") as Element, ["borderWidth", "borderColor", "borderStyle", "padding"]);
+
+        const migrated = getTextComponentHelper().migrate(component);
+
+        expect(migrated.querySelector("img, [onerror]")).toBeNull();
+        expect(migrated.querySelector("p")?.textContent).toBe("Text");
+    });
+
+    it("code migration keeps a var() margin inside the style attribute", () => {
+        const component = createComponent(`<div class="component component-code"><p>Code</p></div>`);
+        stubVarStyle(component, ["margin"]);
+
+        const migrated = getCodeComponentHelper().migrate(component);
+
+        expect(migrated.querySelector("img, [onerror]")).toBeNull();
+        expect(migrated.querySelector("p")?.textContent).toBe("Code");
+    });
+
+    it("divider migration keeps var() style values inside the style attribute", () => {
+        const component = createComponent(`<div class="component component-divider"><hr></div>`);
+        stubVarStyle(component.querySelector("hr") as Element, ["height", "backgroundColor", "marginTop", "marginBottom"]);
+
+        const migrated = getDividerComponentHelper().migrate(component);
+
+        expect(migrated.querySelector("img, [onerror]")).toBeNull();
+    });
+
+    it("section migration keeps var() style values inside attributes", () => {
+        const component = createComponent(`<div class="component component-section"><div class="dropzone"></div></div>`);
+        stubVarStyle(component, ["backgroundColor", "padding", "borderRadius", "borderStyle", "borderWidth", "borderColor"]);
+        stubVarStyle(component.querySelector(".dropzone") as Element, ["backgroundColor", "borderRadius", "borderStyle", "borderWidth", "borderColor", "padding", "textAlign"]);
+
+        const migrated = getSectionComponentHelper().migrate(component);
+
+        expect(migrated.querySelector("img, [onerror]")).toBeNull();
+        expect(migrated.querySelector(".dropzone")).not.toBeNull();
     });
 });
