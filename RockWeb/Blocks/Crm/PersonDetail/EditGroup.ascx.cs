@@ -2049,7 +2049,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     return string.Empty;
                 }
 
-                return result.ConvertCrLfToHtmlBr();
+                /*
+                    10/18/2026 - MSE
+
+                    The address column writes this value as HTML. Address parts are plain text
+                    that anyone can set (for example through Family Pre-Registration), so the text
+                    is encoded before the line breaks are turned into <br> tags.
+
+                    Reason: Prevent stored XSS through a family address.
+                */
+                return result.EncodeHtml().ConvertCrLfToHtmlBr();
             }
         }
     }

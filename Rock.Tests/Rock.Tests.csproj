@@ -259,6 +259,7 @@
     <Compile Include="Cms\ThemeFieldTests.cs" />
     <Compile Include="Cms\ThemeOverrideBuilderTests.cs" />
     <Compile Include="Configuration\RockAppExtensionsTests.cs" />
+    <Compile Include="Badge\AttendingDurationTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchRestrictedMemberTests.cs" />
     <Compile Include="Core\ElectronicSignature\ElectronicSignatureHelperTests.cs" />
