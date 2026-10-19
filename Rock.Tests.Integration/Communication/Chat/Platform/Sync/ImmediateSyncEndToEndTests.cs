@@ -170,6 +170,49 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void ABanListRemovalClearsTheGloballyBannedFlagOnThePlatform()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var personId = fixture.AddPerson( "Unbanned" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+                var banListGuid = Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid();
+
+                // Enrolled in chat, as every person who has used it is: someone the Ban List alone
+                // brought into chat leaves it with the ban, and no row is pushed for them.
+                fixture.EnsureChatPeopleGroup();
+                fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid(), personId );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, banListGuid, personId );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null && ( bool? ) r["is_globally_banned"] == true ),
+                    "the ban made in Rock never reached the platform, so its removal cannot be told apart from it" );
+
+                // Outside a request too, as a workflow the job engine runs would take it away.
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new GroupMemberService( rockContext );
+                    service.DeleteRange( service.Queryable().Where( m => m.Group.Guid == banListGuid && m.PersonId == personId ).ToList() );
+                    rockContext.SaveChanges();
+                }
+
+                var row = platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null && ( bool? ) r["is_globally_banned"] == false );
+                Assert.IsNotNull( row, "the person taken off the ban list in Rock is still banned on the platform" );
+            }
+        }
+
+        [TestMethod]
         public void APersonsOwnOpenDmSettingSavedThroughTheDoorReachesThePlatform()
         {
             var platform = LocalChatPlatform.FromEnvironment();

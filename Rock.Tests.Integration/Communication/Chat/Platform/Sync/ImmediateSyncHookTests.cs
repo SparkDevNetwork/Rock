@@ -589,6 +589,68 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void TheRemovePersonFromGroupWorkflowActionOnTheBanListPushesTheUnbanFromOutsideARequest()
+        {
+            using ( var scene = new Scene() )
+            {
+                var fixture = scene.Fixture;
+                var personId = fixture.AddPerson( "Unbanned" );
+                var banListGuid = Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid();
+                EnrolInChat( fixture, personId );
+                fixture.AddMember( banListGuid, personId );
+
+                // The ban itself pushes too; only what the workflow sends after it is this test's.
+                var before = scene.WaitForPushes().Count;
+
+                RunGroupMemberAction<RemovePersonFromGroup>( fixture, banListGuid, personId, ( actionType, group, personAttribute, groupAttribute ) =>
+                {
+                    actionType.SetAttributeValue( "Person", personAttribute.ToString() );
+                    actionType.SetAttributeValue( "GroupAndRole", group.GroupType.Guid + "|" + group.Guid );
+                } );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    Assert.IsFalse(
+                        new GroupMemberService( rockContext ).Queryable().Any( m => m.Group.Guid == banListGuid && m.PersonId == personId ),
+                        "the workflow took the person off the ban list" );
+                }
+
+                AssertTheUnbanIsPushed( scene, before, personId );
+            }
+        }
+
+        [TestMethod]
+        public void TheUpdateGroupMemberStatusWorkflowActionSettingABanListMembershipInactivePushesTheUnban()
+        {
+            using ( var scene = new Scene() )
+            {
+                var fixture = scene.Fixture;
+                var personId = fixture.AddPerson( "Lapsed" );
+                var banListGuid = Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid();
+                EnrolInChat( fixture, personId );
+                fixture.AddMember( banListGuid, personId );
+
+                var before = scene.WaitForPushes().Count;
+
+                RunGroupMemberAction<UpdateGroupMemberStatus>( fixture, banListGuid, personId, ( actionType, group, personAttribute, groupAttribute ) =>
+                {
+                    actionType.SetAttributeValue( "Person", personAttribute.ToString() );
+                    actionType.SetAttributeValue( "Group", groupAttribute.ToString() );
+                    actionType.SetAttributeValue( "NewGroupMemberStatus", ( ( int ) GroupMemberStatus.Inactive ).ToString() );
+                } );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var member = new GroupMemberService( rockContext ).Queryable().Single( m => m.Group.Guid == banListGuid && m.PersonId == personId );
+                    Assert.AreEqual( GroupMemberStatus.Inactive, member.GroupMemberStatus,
+                        "the workflow set the ban list membership inactive, which this action reports only in its log" );
+                }
+
+                AssertTheUnbanIsPushed( scene, before, personId );
+            }
+        }
+
         #endregion Paths past the hooks
 
         #region Support
@@ -639,10 +701,57 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Puts a person in the Chat People group, as enrolling them in chat does. Someone the Ban
+        /// List alone brought into chat leaves it with the ban, so the push after an unban carries
+        /// their row only when something else keeps them in chat, as it does every person who has
+        /// used it.
+        /// </summary>
+        private static void EnrolInChat( ChatSyncProjectionFixture fixture, int personId )
+        {
+            fixture.EnsureChatPeopleGroup();
+            fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid(), personId );
+        }
+
+        /// <summary>
+        /// Waits for the pushes begun so far and holds the ones after the first <paramref name="before"/>
+        /// to a single push naming the person no longer banned.
+        /// </summary>
+        private static void AssertTheUnbanIsPushed( Scene scene, int before, int personId )
+        {
+            var pushes = scene.WaitForPushes().Skip( before ).ToList();
+
+            Assert.AreEqual( 1, pushes.Count, "an unban a workflow makes is pushed like a ban, since a person left banned on the platform stays hidden" );
+            AssertIsAPush( pushes[0] );
+
+            var alias = Row( pushes[0].Json, "aliases", scene.Fixture.PrimaryAliasGuid( personId ) );
+            Assert.IsNotNull( alias, "the person's alias row is what carries the unban" );
+            Assert.AreEqual( false, ( bool ) alias[ColumnIndex( "aliases", "is_globally_banned" )] );
+        }
+
+        /// <summary>
         /// Runs a workflow of one Group Member Add action through the workflow engine, as a
         /// workflow the job engine starts would run, and takes the workflow type away after.
         /// </summary>
         private static void RunAddPersonToGroup( ChatSyncProjectionFixture fixture, Guid groupGuid, int personId )
+        {
+            RunGroupMemberAction<AddPersonToGroup>( fixture, groupGuid, personId, ( actionType, group, personAttribute, groupAttribute ) =>
+            {
+                actionType.SetAttributeValue( "Person", personAttribute.ToString() );
+                actionType.SetAttributeValue( "GroupAndRole", group.GroupType.Guid + "|" + group.Guid );
+                actionType.SetAttributeValue( "GroupMemberStatus", ( ( int ) GroupMemberStatus.Active ).ToString() );
+                actionType.SetAttributeValue( "UpdateExisting", "False" );
+            } );
+        }
+
+        /// <summary>
+        /// Runs a workflow of one group member action through the workflow engine, as a workflow
+        /// the job engine starts would run, and takes the workflow type away after. The workflow
+        /// carries the person and the group as its Person and Group attributes, and
+        /// <paramref name="configure"/> sets the action's own settings from the group and the
+        /// Guids of those two attributes.
+        /// </summary>
+        private static void RunGroupMemberAction<TAction>( ChatSyncProjectionFixture fixture, Guid groupGuid, int personId, Action<WorkflowActionType, Rock.Model.Group, Guid, Guid> configure )
+            where TAction : Rock.Workflow.ActionComponent
         {
             int workflowTypeId;
             Guid workflowTypeGuid;
@@ -652,7 +761,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 var workflowType = new WorkflowType
                 {
                     Guid = Guid.NewGuid(),
-                    Name = "Chat ban list add " + Guid.NewGuid().ToString( "N" ).Substring( 0, 8 ),
+                    Name = "Chat ban list " + typeof( TAction ).Name + " " + Guid.NewGuid().ToString( "N" ).Substring( 0, 8 ),
                     IsActive = true,
                     IsPersisted = false,
                     WorkTerm = "Ban",
@@ -678,15 +787,29 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                     ForeignKey = fixture.ForeignKey
                 };
 
-                new AttributeService( rockContext ).Add( personAttribute );
+                var groupAttribute = new Rock.Model.Attribute
+                {
+                    Guid = Guid.NewGuid(),
+                    FieldTypeId = FieldTypeCache.GetId( Rock.SystemGuid.FieldType.GROUP.AsGuid() ).Value,
+                    EntityTypeId = EntityTypeCache.GetId<Rock.Model.Workflow>(),
+                    EntityTypeQualifierColumn = "WorkflowTypeId",
+                    EntityTypeQualifierValue = workflowType.Id.ToString(),
+                    Key = "Group",
+                    Name = "Group",
+                    ForeignKey = fixture.ForeignKey
+                };
+
+                var attributeService = new AttributeService( rockContext );
+                attributeService.Add( personAttribute );
+                attributeService.Add( groupAttribute );
 
                 var activityType = new WorkflowActivityType { Name = "Start", IsActive = true, IsActivatedWithWorkflow = true };
                 workflowType.ActivityTypes.Add( activityType );
 
                 var actionType = new WorkflowActionType
                 {
-                    Name = "Add to the ban list",
-                    EntityTypeId = EntityTypeCache.GetId<AddPersonToGroup>().Value,
+                    Name = typeof( TAction ).Name,
+                    EntityTypeId = EntityTypeCache.GetId<TAction>().Value,
                     IsActionCompletedOnSuccess = true,
                     IsActivityCompletedOnSuccess = true
                 };
@@ -696,19 +819,16 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 // The action's own settings, registered the way Rock registers every action's.
                 Rock.Attribute.Helper.UpdateAttributes(
-                    typeof( AddPersonToGroup ),
+                    typeof( TAction ),
                     EntityTypeCache.GetId<WorkflowActionType>(),
                     "EntityTypeId",
-                    EntityTypeCache.GetId<AddPersonToGroup>().ToString(),
+                    EntityTypeCache.GetId<TAction>().ToString(),
                     rockContext );
 
                 var group = new GroupService( rockContext ).Queryable( "GroupType" ).Single( g => g.Guid == groupGuid );
 
                 actionType.LoadAttributes( rockContext );
-                actionType.SetAttributeValue( "Person", personAttribute.Guid.ToString() );
-                actionType.SetAttributeValue( "GroupAndRole", group.GroupType.Guid + "|" + group.Guid );
-                actionType.SetAttributeValue( "GroupMemberStatus", ( ( int ) GroupMemberStatus.Active ).ToString() );
-                actionType.SetAttributeValue( "UpdateExisting", "False" );
+                configure( actionType, group, personAttribute.Guid, groupAttribute.Guid );
                 actionType.SaveAttributeValues( rockContext );
             }
 
@@ -718,6 +838,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 {
                     var workflow = Rock.Model.Workflow.Activate( WorkflowTypeCache.Get( workflowTypeGuid ), "Ban", rockContext );
                     workflow.SetAttributeValue( "Person", fixture.PrimaryAliasGuid( personId ).ToString() );
+                    workflow.SetAttributeValue( "Group", groupGuid.ToString() );
 
                     var isProcessed = new WorkflowService( rockContext ).Process( workflow, out var messages );
                     Assert.IsTrue( isProcessed, "the workflow ran: " + string.Join( "; ", messages ) );
