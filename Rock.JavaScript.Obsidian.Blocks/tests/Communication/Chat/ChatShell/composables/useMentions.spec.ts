@@ -860,6 +860,56 @@ describe("a jump from the inbox", () => {
         expect(h.mentions.state.inbox.currentId).toBe(55);
     });
 
+    describe("overtaken by the person opening another conversation", () => {
+        /** Holds each older page the jump asks for until the test lets it through. */
+        function holdOlderPages(h: Harness): Array<Deferred<void>> {
+            const held: Array<Deferred<void>> = [];
+            const loadOlder = h.timelines.loadOlder.bind(h.timelines);
+            h.timelines.loadOlder = async (channelId: string): Promise<void> => {
+                const gate = deferred<void>();
+                held.push(gate);
+                await gate.promise;
+                await loadOlder(channelId);
+            };
+            return held;
+        }
+
+        test("never lands in the conversation now on screen, even once the page holding the message comes", async () => {
+            const h = setup();
+            const held = holdOlderPages(h);
+
+            const jumping = h.mentions.jump(mentionRow(85, "2026-10-18T09:00:00Z"));
+            await settle();
+            expect(held).toHaveLength(1);
+
+            h.active.channelId = otherChannel;
+            held[0].resolve();
+            await jumping;
+
+            expect(h.landed).toEqual([]);
+            expect(h.toasts).toEqual([]);
+            expect(held).toHaveLength(1);
+        });
+
+        test("never says a message is too far back over the conversation now on screen", async () => {
+            const h = setup();
+            const held = holdOlderPages(h);
+
+            const jumping = h.mentions.jump(mentionRow(5, "2026-10-18T09:00:00Z"));
+            await settle();
+            held[0].resolve();
+            await settle();
+            expect(held).toHaveLength(2);
+
+            h.active.channelId = otherChannel;
+            held[1].resolve();
+            await jumping;
+
+            expect(h.landed).toEqual([]);
+            expect(h.toasts).toEqual([]);
+        });
+    });
+
     test("marks the row it opened as the current one", async () => {
         const h = setup();
 

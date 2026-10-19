@@ -312,10 +312,12 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
      */
     async function jumpInConversation(row: MentionRow): Promise<void> {
         const isOpen = await dependencies.openChannel(row.channel_id);
-        if (!isOpen || isStopped) {
+        if (!isOpen) {
             return;
         }
 
+        // Opening another conversation meanwhile ends the jump: it must not land or warn there.
+        const isOnScreen = (): boolean => !isStopped && dependencies.activeChannelId() === row.channel_id;
         const messageId = row.message.id;
         let oldestSeen: number | undefined;
         // written inside the check, so it is declared wide rather than narrowed to its first value
@@ -323,7 +325,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         await loadUntilHeld(() => {
             const timeline = dependencies.timelines.state(row.channel_id);
             const oldest = timeline.messages[0]?.id;
-            if (isStopped || oldest === undefined) {
+            if (!isOnScreen() || oldest === undefined) {
                 return lastCheck = "stop";
             }
 
@@ -340,7 +342,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         }, () => dependencies.timelines.loadOlder(row.channel_id));
 
         // Still looking once the pages ran out: the message is older than a jump fetches.
-        if (lastCheck === "more" && !isStopped) {
+        if (lastCheck === "more" && isOnScreen()) {
             dependencies.toast(tooFarBackNotice);
         }
     }
