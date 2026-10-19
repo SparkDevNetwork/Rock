@@ -38,7 +38,7 @@ import {
 import { isElement, isHTMLElement, isHTMLTableElement } from "@Obsidian/Utility/dom";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { Enumerable } from "@Obsidian/Utility/linq";
-import { splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
+import { escapeHtml, splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
 import { isNullish } from "@Obsidian/Utility/util";
 
 // #region Constants
@@ -348,12 +348,24 @@ export function importInertHtml(targetDocument: Document, html: string): Documen
 
         Reason: Prevent saved email sections and messages from running script.
     */
+    /*
+        10/18/2026 - MSE
+
+        The inert document parses with scripting disabled, while the editor
+        parses with scripting enabled. Elements such as noscript, template,
+        noembed, noframes, xmp and plaintext are parsed differently in the two
+        cases (and template content is skipped by querySelectorAll), so markup
+        hidden inside them could become live after a later serialize and
+        reparse. They never belong in email markup, so they are removed.
+
+        Reason: Close a parser differential in the inert import.
+    */
     const inertDocument = document.implementation.createHTMLDocument("");
     const container = inertDocument.createElement("div");
     container.innerHTML = html;
 
     container
-        .querySelectorAll("script, iframe, frame, frameset, object, embed, base, meta[http-equiv], animate, set")
+        .querySelectorAll("script, iframe, frame, frameset, object, embed, base, meta[http-equiv], animate, set, noscript, template, noembed, noframes, xmp, plaintext")
         .forEach(element => element.remove());
 
     container.querySelectorAll("*").forEach(element => {
@@ -1737,6 +1749,16 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
                     if (guid) newComponent.setAttribute("data-image-guid", guid);
                     if (sourceUrl) newComponent.setAttribute("data-image-source-video-url", sourceUrl);
 
+                    /*
+                        10/18/2026 - MSE
+
+                        Values read from the old component (text and attribute values) are
+                        escaped before being placed in the HTML template. Otherwise encoded
+                        text such as &lt;img onerror&#61;...&gt; in saved section markup becomes
+                        a live element when the template is parsed in the host page.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     // Create the v2-alpha structure
                     newComponent.innerHTML =
 `<tbody>
@@ -1750,8 +1772,8 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
                                 <tbody>
                                     <tr>
                                         <td style="line-height: 0;">
-                                            <a href="${href}">
-                                                <img src="${src}" ${dataImgCssWidth ? `data-imgcsswidth="${dataImgCssWidth}"` : ""} style="${style}">
+                                            <a href="${escapeHtml(href)}">
+                                                <img src="${escapeHtml(src)}" ${dataImgCssWidth ? `data-imgcsswidth="${escapeHtml(dataImgCssWidth)}"` : ""} style="${escapeHtml(style)}">
                                             </a>
                                         </td>
                                     </tr>
@@ -2039,8 +2061,18 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                     wrapper.setAttribute("data-state", "component");
                     setComponentVersionNumber(wrapper, version); // Ensure version tracking
 
-                    const wrapperPaddingAttr = simulatedMargin ? ` style="padding: ${simulatedMargin};"` : "";
-                    const innerTdPaddingAttr = contentPadding ? ` style="padding: ${contentPadding};"` : "";
+                    /*
+                        10/18/2026 - MSE
+
+                        Values read from the old component (text and attribute values) are
+                        escaped before being placed in the HTML template. Otherwise encoded
+                        text such as &lt;img onerror&#61;...&gt; in saved section markup becomes
+                        a live element when the template is parsed in the host page.
+
+                        Reason: Prevent script injection through component migration.
+                    */
+                    const wrapperPaddingAttr = simulatedMargin ? ` style="padding: ${escapeHtml(simulatedMargin)};"` : "";
+                    const innerTdPaddingAttr = contentPadding ? ` style="padding: ${escapeHtml(contentPadding)};"` : "";
 
                     wrapper.innerHTML = `
                         <tbody><tr><td${wrapperPaddingAttr}>
@@ -2051,7 +2083,7 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
                                         class="padding-wrapper padding-wrapper-for-title padding-wrapper-for-title-${headingTag}">
                                         <tbody><tr><td${innerTdPaddingAttr}>
-                                            <${headingTag} class="rock-content-editable" style="${cleanStyle.join(" ")}">${headingText}</${headingTag}>
+                                            <${headingTag} class="rock-content-editable" style="${escapeHtml(cleanStyle.join(" "))}">${escapeHtml(headingText)}</${headingTag}>
                                         </td></tr></tbody>
                                     </table>
                                 </td></tr></tbody>
@@ -2477,14 +2509,24 @@ export function getButtonComponentHelper(): ComponentMigrationHelper & {
                     const isFixedWidth = !!widthStyle && /\d+px/.test(widthStyle);
                     const fixedWidthValue = isFixedWidth ? widthStyle : "";
 
+                    /*
+                        10/18/2026 - MSE
+
+                        Values read from the old component (text and attribute values) are
+                        escaped before being placed in the HTML template. Otherwise encoded
+                        text such as &lt;img onerror&#61;...&gt; in saved section markup becomes
+                        a live element when the template is parsed in the host page.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     // Build inner structure
                     outerWrapper.innerHTML = `
-                        <tbody><tr><td class="button-innerwrap" align="${align}" valign="top">
+                        <tbody><tr><td class="button-innerwrap" align="${escapeHtml(align)}" valign="top">
                             <table border="0" cellpadding="0" cellspacing="0" role="presentation" class="border-wrapper border-wrapper-for-button button-shell" style="border-collapse: separate !important;">
                                 <tbody><tr><td class="button-content" align="center" valign="middle" style="overflow: hidden;">
-                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-button" ${backgroundColor ? `bgcolor="${backgroundColor}"` : ""}>
-                                        <tbody><tr><td ${backgroundColor ? `style="background-color: ${backgroundColor};"` : ""}>
-                                            <a class="button-link rock-content-editable" href="${href}" rel="noopener noreferrer" title="${title}" style="display: block; text-align: center;">${text}</a>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-button" ${backgroundColor ? `bgcolor="${escapeHtml(backgroundColor)}"` : ""}>
+                                        <tbody><tr><td ${backgroundColor ? `style="background-color: ${escapeHtml(backgroundColor)};"` : ""}>
+                                            <a class="button-link rock-content-editable" href="${escapeHtml(href)}" rel="noopener noreferrer" title="${escapeHtml(title)}" style="display: block; text-align: center;">${escapeHtml(text)}</a>
                                         </td></tr></tbody>
                                     </table>
                                 </td></tr></tbody>
@@ -2660,8 +2702,17 @@ export function getCodeComponentHelper(): ComponentMigrationHelper & {
                     </td></tr></tbody>
                 `;
 
+                    /*
+                        10/18/2026 - MSE
+
+                        The existing content is copied as nodes instead of being
+                        serialized and parsed again with innerHTML in the host page,
+                        which could turn inert markup into live elements.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     const contentContainer = newComponentElement.querySelector(".rock-content-editable") as HTMLElement;
-                    contentContainer.innerHTML = componentElement.innerHTML;
+                    componentElement.childNodes.forEach(node => contentContainer.appendChild(node.cloneNode(true)));
 
                     return newComponentElement;
                 },
@@ -2935,7 +2986,7 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
                     const declineBgColor = (anchorDecline?.closest("table") as HTMLElement)?.style.backgroundColor || "";
                     const declineDisplay = (anchorDecline?.closest("table") as HTMLElement)?.style.display || "";
 
-                    const fontFamily = acceptStyle?.fontFamily.replace(/"/g, "&quot;") || "";
+                    const fontFamily = escapeHtml(acceptStyle?.fontFamily || "");
                     const fontWeight = acceptStyle?.fontWeight || "";
                     const fontSize = acceptStyle?.fontSize || "";
                     const padding = acceptStyle?.padding || "";
@@ -2944,34 +2995,44 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
                     const acceptColor = acceptStyle?.color || "";
                     const declineColor = declineStyle?.color || "";
 
+                    /*
+                        10/18/2026 - MSE
+
+                        Values read from the old component (text and attribute values) are
+                        escaped before being placed in the HTML template. Otherwise encoded
+                        text such as &lt;img onerror&#61;...&gt; in saved section markup becomes
+                        a live element when the template is parsed in the host page.
+
+                        Reason: Prevent script injection through component migration.
+                    */
                     newComponent.innerHTML = `
                         <table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
                             <tbody>
                                 <tr>
-                                    <td class="rsvp-innerwrap" align="${align}" valign="top" style="padding: 0;">
+                                    <td class="rsvp-innerwrap" align="${escapeHtml(align)}" valign="top" style="padding: 0;">
                                         <table border="0" cellpadding="0" cellspacing="0" role="presentation">
                                             <tbody>
                                                 <tr>
                                                     <td>
                                                         <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation"
-                                                            style="background-color: ${acceptBgColor}; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                            style="background-color: ${escapeHtml(acceptBgColor)}; border-collapse: separate; border-radius: 3px; display: inline-table;">
                                                             <tbody>
                                                                 <tr>
                                                                     <td class="rsvp-accept-content" align="center" valign="middle">
                                                                         <a class="rsvp-accept-link rock-content-editable"
-                                                                           href="${acceptHref}"
-                                                                           title="${acceptText}"
+                                                                           href="${escapeHtml(acceptHref)}"
+                                                                           title="${escapeHtml(acceptText)}"
                                                                            rel="noopener noreferrer"
-                                                                           style="color: ${acceptColor};
+                                                                           style="color: ${escapeHtml(acceptColor)};
                                                                                   display: inline-block;
-                                                                                  font-size: ${fontSize};
-                                                                                  font-weight: ${fontWeight};
+                                                                                  font-size: ${escapeHtml(fontSize)};
+                                                                                  font-weight: ${escapeHtml(fontWeight)};
                                                                                   letter-spacing: normal;
-                                                                                  padding: ${padding};
+                                                                                  padding: ${escapeHtml(padding)};
                                                                                   text-align: center;
                                                                                   text-decoration: none;
                                                                                   border-bottom-width: 0px;
-                                                                                  font-family: ${fontFamily};">${acceptText}</a>
+                                                                                  font-family: ${fontFamily};">${escapeHtml(acceptText)}</a>
                                                                     </td>
                                                                 </tr>
                                                             </tbody>
@@ -2979,24 +3040,24 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
                                                     </td>
                                                     <td style="padding-left: 10px;">
                                                         <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation"
-                                                            style="background-color: ${declineBgColor}; border-collapse: separate; border-radius: 3px; display: ${declineDisplay || "inline-table"};">
+                                                            style="background-color: ${escapeHtml(declineBgColor)}; border-collapse: separate; border-radius: 3px; display: ${escapeHtml(declineDisplay || "inline-table")};">
                                                             <tbody>
                                                                 <tr>
                                                                     <td class="rsvp-decline-content" align="center" valign="middle">
                                                                         <a class="rsvp-decline-link rock-content-editable"
-                                                                           href="${declineHref}"
-                                                                           title="${declineText}"
+                                                                           href="${escapeHtml(declineHref)}"
+                                                                           title="${escapeHtml(declineText)}"
                                                                            rel="noopener noreferrer"
-                                                                           style="color: ${declineColor};
+                                                                           style="color: ${escapeHtml(declineColor)};
                                                                                   display: inline-block;
-                                                                                  font-size: ${fontSize};
-                                                                                  font-weight: ${fontWeight};
+                                                                                  font-size: ${escapeHtml(fontSize)};
+                                                                                  font-weight: ${escapeHtml(fontWeight)};
                                                                                   letter-spacing: normal;
-                                                                                  padding: ${padding};
+                                                                                  padding: ${escapeHtml(padding)};
                                                                                   text-align: center;
                                                                                   text-decoration: none;
                                                                                   border-bottom-width: 0px;
-                                                                                  font-family: ${fontFamily};">${declineText}</a>
+                                                                                  font-family: ${fontFamily};">${escapeHtml(declineText)}</a>
                                                                     </td>
                                                                 </tr>
                                                             </tbody>
@@ -3560,13 +3621,23 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
 
                     const align = (oldComponent as HTMLElement).style.textAlign || "";
 
-                    const tdAlignAttr = align ? ` align="${align}"` : "";
+                    /*
+                        10/18/2026 - MSE
 
-                    const widthAttr = imageWidth ? ` width="${imageWidth}"` : "";
-                    const heightAttr = imageHeight ? ` height="${imageHeight}"` : "";
-                    const heightStyle = imageHeight ? ` height: ${imageHeight};` : "";
+                        Values read from the old component (text and attribute values) are
+                        escaped before being placed in the HTML template. Otherwise encoded
+                        text such as &lt;img onerror&#61;...&gt; in saved section markup becomes
+                        a live element when the template is parsed in the host page.
 
-                    const tdPadding = margin ? ` style="padding: ${margin};"` : "";
+                        Reason: Prevent script injection through component migration.
+                    */
+                    const tdAlignAttr = align ? ` align="${escapeHtml(align)}"` : "";
+
+                    const widthAttr = imageWidth ? ` width="${escapeHtml(imageWidth)}"` : "";
+                    const heightAttr = imageHeight ? ` height="${escapeHtml(imageHeight)}"` : "";
+                    const heightStyle = imageHeight ? ` height: ${escapeHtml(imageHeight)};` : "";
+
+                    const tdPadding = margin ? ` style="padding: ${escapeHtml(margin)};"` : "";
 
                     const wrapper = document.createElement("table");
                     wrapper.setAttribute("border", "0");
@@ -3603,8 +3674,8 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
                                            class="padding-wrapper padding-wrapper-for-image">
                                         <tbody><tr><td${tdAlignAttr} style="line-height: 0;">
                                             ${anchor
-                            ? `<a href="${anchor.getAttribute("href") ?? ""}"><img alt="${alt}" src="${imgSrc}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}></a>`
-                            : `<img alt="${alt}" src="${imgSrc}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}>`}
+                            ? `<a href="${escapeHtml(anchor.getAttribute("href") ?? "")}"><img alt="${escapeHtml(alt)}" src="${escapeHtml(imgSrc)}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}></a>`
+                            : `<img alt="${escapeHtml(alt)}" src="${escapeHtml(imgSrc)}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}>`}
                                         </td></tr></tbody>
                                     </table>
                                 </td></tr></tbody>
