@@ -112,6 +112,12 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             return;
         }
 
+        // An edit naming the person in a message they have already read sends a mention too;
+        // the count is of what they have not read.
+        if (typeof signal.message_id === "number" && row.read_cursor !== null && signal.message_id <= row.read_cursor) {
+            return;
+        }
+
         // Kept apart so the app's icon, which counts mentions by name only, still reads its own.
         if (signal.all === true) {
             row.all_mention_count++;

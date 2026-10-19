@@ -191,6 +191,15 @@ describe("createChannelStore", () => {
         expect(s.rows.find(r => r.channel_id === two)).toEqual(expect.objectContaining({ mention_count: 3, all_mention_count: 2 }));
     });
 
+    test("a mention in a message already read, as an edit naming the person brings, moves nothing", () => {
+        const { store: s } = store();
+
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 10, parent_id: null, in_channel: true, all: false });
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 9, parent_id: null, in_channel: true, all: true });
+
+        expect(s.rows.find(r => r.channel_id === two)).toEqual(expect.objectContaining({ mention_count: 0, all_mention_count: 0 }));
+    });
+
     test("a fresh sidebar replaces the rows", () => {
         const { store: s } = store();
 

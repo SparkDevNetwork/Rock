@@ -600,6 +600,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             directMessages.close();
             return channelId === state.activeChannelId || await open(channelId) === "opened";
         },
+        activeChannelId: () => state.activeChannelId,
+        readCursor: channelId => channels.rows.find(row => row.channel_id === channelId)?.read_cursor ?? null,
         land: messageId => options.mentionViews?.land(messageId),
         openThread: async (channelId, rootId, messageId) => options.mentionViews?.openThread(channelId, rootId, messageId),
         toast: notice => options.notify?.(notice)

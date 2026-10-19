@@ -40,6 +40,8 @@
 //       storage: () => Pick<Storage, "getItem" | "setItem">,   may throw, as may each method
 //       timelines: Pick<Timelines, "state" | "loadOlder">, where a jump looks for its message
 //       openChannel: (channelId) => Promise<boolean>,      puts a conversation on screen
+//       activeChannelId: () => string | null,              the conversation on screen now
+//       readCursor: (channelId) => number | null,          the sidebar row's read position
 //       land: (messageId) => void,                         scrolls to and flashes a held message
 //       openThread: (channelId, rootId, messageId) => Promise<void>,
 //       toast: (notice: { code, text, icon }) => void
@@ -198,7 +200,13 @@ type Harness = {
     opened: string[],
     landed: number[],
     threads: Array<[string, number, number]>,
-    toasts: Array<{ code: string, text: string, icon: string }>
+    toasts: Array<{ code: string, text: string, icon: string }>,
+
+    /** The conversation on screen, which the test can change as the person would. */
+    active: { channelId: string | null },
+
+    /** Each sidebar row's read position, by channel. */
+    readCursors: Map<string, number>
 };
 
 /**
@@ -215,6 +223,8 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
     const landed: number[] = [];
     const threads: Array<[string, number, number]> = [];
     const toasts: Array<{ code: string, text: string, icon: string }> = [];
+    const active: { channelId: string | null } = { channelId: null };
+    const readCursors = new Map<string, number>();
 
     const refusing: Pick<Storage, "getItem" | "setItem"> = {
         getItem: () => {
@@ -245,9 +255,12 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
         timelines,
         openChannel: async channelId => {
             opened.push(channelId);
+            active.channelId = channelId;
             await timelines.loadNewest(channelId);
             return true;
         },
+        activeChannelId: () => active.channelId,
+        readCursor: channelId => readCursors.get(channelId) ?? null,
         land: messageId => {
             landed.push(messageId);
         },
@@ -269,7 +282,9 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
         opened,
         landed,
         threads,
-        toasts
+        toasts,
+        active,
+        readCursors
     };
 }
 
@@ -700,6 +715,25 @@ describe("the header's dot", () => {
         other.mentions.setUnread([]);
         other.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 81, parent_id: 30, in_channel: false, all: false });
         expect(other.mentions.state.hasDot).toBe(true);
+    });
+
+    test("does not rise for a message in the conversation already read, as an edit naming the person brings", () => {
+        const h = setup();
+        h.mentions.setUnread([]);
+        h.readCursors.set(channel, 80);
+
+        h.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 80, parent_id: null, in_channel: true, all: false });
+        expect(h.mentions.state.hasDot).toBe(false);
+
+        // a reply kept to its thread is read in the thread, so the conversation's position says nothing of it
+        h.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 79, parent_id: 30, in_channel: false, all: false });
+        expect(h.mentions.state.hasDot).toBe(true);
+
+        const later = setup();
+        later.mentions.setUnread([]);
+        later.readCursors.set(channel, 80);
+        later.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 81, parent_id: null, in_channel: true, all: false });
+        expect(later.mentions.state.hasDot).toBe(true);
     });
 
     test("does not rise for @all, which the inbox never lists", () => {

@@ -1496,6 +1496,15 @@ describe("mentions", () => {
         expect(h.shell.mentions.state.hasDot).toBe(true);
     });
 
+    test("channel.mention for a message the sidebar row has already read lights nothing", async () => {
+        const h = await startedWith({ channels: [{ channel_id: channelB, name: "Youth", read_cursor: 70, mention_count: 0, all_mention_count: 0 }], me: { unread_mentions: [] } });
+
+        personal(h, "channel.mention", { channel_id: channelB, message_id: 60, parent_id: null, in_channel: true, all: false });
+
+        expect(h.shell.mentions.state.hasDot).toBe(false);
+        expect(h.shell.channels.rows.find(row => row.channel_id === channelB)?.mention_count).toBe(0);
+    });
+
     test("a read saved past an unread mention in the conversation takes it off the dot", async () => {
         const h = await startedWith({ channels: [], me: { unread_mentions: [unread(channelA, 10)] } });
         expect(h.shell.mentions.state.hasDot).toBe(true);

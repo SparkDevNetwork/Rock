@@ -95,6 +95,12 @@ export type MentionsDependencies = {
     /** Opens a conversation; resolves true once it is on screen. */
     openChannel: (channelId: string) => Promise<boolean>;
 
+    /** The conversation on screen now, or null. */
+    activeChannelId: () => string | null;
+
+    /** How far the person has read a conversation, from its sidebar row; null when unknown. */
+    readCursor: (channelId: string) => number | null;
+
     /** Scrolls the open conversation to a message it holds and flashes it. */
     land: (messageId: number) => void;
 
@@ -475,6 +481,13 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             // @all writes no mention the inbox lists, so it raises only the sidebar's count.
             const mention = readMentionEvent(payload);
             if (!mention || mention.all || unread.some(entry => entry.message_id === mention.message_id)) {
+                return;
+            }
+
+            // An edit naming the person in a message of the conversation they have already read
+            // sends a mention too; only a reply kept to its thread is read elsewhere.
+            const readCursor = mention.in_channel ? dependencies.readCursor(mention.channel_id) : null;
+            if (readCursor !== null && mention.message_id <= readCursor) {
                 return;
             }
 
