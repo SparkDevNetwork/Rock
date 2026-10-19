@@ -215,20 +215,27 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             return;
         }
 
+        // The pointer only moves forward here: an answer that comes back after a newer message
+        // reached the row carries the pointer as it stood when the save ran, so the bold is worked
+        // out from the newer of the two.
+        const isAhead = result.last_message_id !== null
+            && (row.last_message_id === null || result.last_message_id > row.last_message_id);
         // A message the reader typed is read already; one the row has not heard of is nobody's
         // it knows of.
-        const isTyped = result.last_message_id === row.last_message_id && isTypedByReader(row);
-        row.read_cursor = result.read_cursor;
-        if (result.last_message_id !== null) {
+        const isTyped = !isAhead && isTypedByReader(row);
+        if (isAhead) {
             row.last_message_id = result.last_message_id;
         }
+        row.read_cursor = result.read_cursor;
+        const saved: MarkReadResult = { read_cursor: result.read_cursor, last_message_id: row.last_message_id };
+
         // A save that comes back after the person has returned to the channel leaves it read:
         // they are looking at it, and their next save settles it.
-        row.is_unread = channelId !== store.activeChannelId && !isTyped && isUnreadAfterSave(result);
+        row.is_unread = channelId !== store.activeChannelId && !isTyped && isUnreadAfterSave(saved);
 
         // A save that reached the newest message read every mention in it; one behind may not
         // have, and the next save settles it.
-        if (!isUnreadAfterSave(result)) {
+        if (!isUnreadAfterSave(saved)) {
             row.mention_count = 0;
             row.all_mention_count = 0;
         }

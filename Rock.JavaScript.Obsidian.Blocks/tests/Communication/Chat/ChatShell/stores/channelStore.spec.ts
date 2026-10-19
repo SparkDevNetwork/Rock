@@ -358,6 +358,24 @@ describe("dm.preview", () => {
         expect(s.rows[0].is_unread).toBe(false);
     });
 
+    test("a save's answer that comes back after a newer message keeps the newer pointer and its bold, on this device and from another", () => {
+        const { store: s } = dmStore([dm(dmOne, { last_message_id: 10, read_cursor: 10 }), dm(dmTwo, { last_message_id: 10, read_cursor: 10 })]);
+
+        // the person saves 11 as they leave; Ben's 12 lands before the save's answer does
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 11));
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 12));
+        s.applyMarkRead(dmOne, { read_cursor: 11, last_message_id: 11 });
+
+        // and the same order on another device, through channel.read
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 11));
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 12));
+        s.applyPersonalEvent("channel.read", { channel_id: dmTwo, read_cursor: 11, last_message_id: 11, id: "5e00000c-0000-4000-8000-000000000000" });
+
+        for (const id of [dmOne, dmTwo]) {
+            expect(s.rows.find(r => r.channel_id === id)).toEqual(expect.objectContaining({ last_message_id: 12, read_cursor: 11, is_unread: true }));
+        }
+    });
+
     test("for a room the sidebar does not hold, reloads only when the signal carries a message", () => {
         const { store: s, reloads } = dmStore([dm(dmOne)]);
 
