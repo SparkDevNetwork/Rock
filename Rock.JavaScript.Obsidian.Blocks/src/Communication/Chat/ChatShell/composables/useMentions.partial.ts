@@ -424,7 +424,9 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
 
         loadOlder: async (): Promise<void> => {
             const last = state.inbox.rows[state.inbox.rows.length - 1];
-            if (isStopped || !last || !state.inbox.hasMore || state.inbox.isLoadingOlder) {
+            // A refresh on its way replaces the rows, so a page after the current last row would land
+            // past a gap; the refreshed rows decide what is older.
+            if (isStopped || !last || !state.inbox.hasMore || state.inbox.isLoadingOlder || state.inbox.isRefreshing) {
                 return;
             }
 

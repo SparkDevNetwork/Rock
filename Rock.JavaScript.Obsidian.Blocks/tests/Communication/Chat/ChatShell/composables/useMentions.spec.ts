@@ -582,6 +582,26 @@ describe("the inbox", () => {
         expect(h.mentions.state.inbox.error?.code).toBe("rpc.transport");
     });
 
+    test("asks for no older mentions while a refresh is on its way, so no old page lands after the refreshed rows", async () => {
+        const h = setup();
+        const refreshed = deferred<CallResult>();
+        const older = deferred<CallResult>();
+        h.answers.chat_list_mentions = [inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z")], true), refreshed, older];
+        await h.mentions.openInbox();
+
+        const refreshing = h.mentions.refreshInbox();
+        const loading = h.mentions.loadOlder();
+        refreshed.resolve(inboxAnswer([mentionRow(70, "2026-10-18T09:40:00Z"), mentionRow(60, "2026-10-18T09:30:00Z")], true));
+        older.resolve(inboxAnswer([mentionRow(40, "2026-10-18T08:00:00Z")], false));
+        await refreshing;
+        await loading;
+
+        expect(h.callsTo("chat_list_mentions")).toHaveLength(2);
+        expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([70, 60]);
+        expect(h.mentions.state.inbox.hasMore).toBe(true);
+        expect(h.mentions.state.inbox.isLoadingOlder).toBe(false);
+    });
+
     test("drops a page on its way once stopped", async () => {
         const h = setup();
         const answer = deferred<CallResult>();
