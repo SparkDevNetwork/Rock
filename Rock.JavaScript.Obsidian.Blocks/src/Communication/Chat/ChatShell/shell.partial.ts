@@ -846,6 +846,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             timelines.leave(state.activeChannelId);
         }
 
+        if (state.activeChannelId !== channelId) {
+            tracker.show(channelId);
+        }
         showChannel(channelId);
 
         const outcome = await openChannel({

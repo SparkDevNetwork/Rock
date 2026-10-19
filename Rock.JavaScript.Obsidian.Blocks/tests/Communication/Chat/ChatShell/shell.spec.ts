@@ -336,6 +336,70 @@ describe("createChatShell", () => {
         expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelB}:20`]);
     });
 
+    test("a message seen while the open's catch-up is still out is saved on leaving", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        // B's topic joins while its first page is read, so the page is followed by a catch-up,
+        // and the page is on screen, its message seen, before that catch-up answers.
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        topicOf(h, channelTopic(tenant, channelB)).status?.("SUBSCRIBED");
+        await settle();
+        answerHistory(h, channelB, 20);
+        await settle();
+        expect(h.history[channelB]?.length).toBe(1);
+        h.shell.seen(20);
+        h.history[channelB]!.shift()!.resolve(fakeResponse(200, { messages: [], read_cursor: 19, unread_count: 0, has_more: false }));
+        await toB;
+        await settle();
+        const before = h.saves.length;
+
+        void h.shell.selectChannel(channelA);
+        await settle();
+
+        expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelB}:20`]);
+    });
+
+    test("a message seen in a channel shown again from what is held is saved on leaving, though its page is still on the way", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelB, 20);
+        await toB;
+        await settle();
+        void h.shell.selectChannel(channelA);
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+
+        // Back on B, its held messages are on screen at once and one is seen before its page answers.
+        const backToB = h.shell.selectChannel(channelB);
+        await settle();
+        h.shell.seen(21);
+        answerHistory(h, channelB, 21);
+        await backToB;
+        await settle();
+        const before = h.saves.length;
+
+        h.fireBlur();
+        await settle();
+
+        expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelB}:21`]);
+    });
+
     test("Mark as read saves the open channel's position at the message named, without waiting for the page to lose focus", async () => {
         const h = build();
         const starting = h.shell.start();

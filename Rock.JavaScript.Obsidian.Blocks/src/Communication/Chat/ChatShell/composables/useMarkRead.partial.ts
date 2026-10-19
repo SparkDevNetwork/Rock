@@ -49,6 +49,9 @@ export type PageEventTargets = {
 
 /** The read tracker a shell holds. */
 export type ReadTracker = {
+    /** A channel was put on screen, before the position the platform holds for it is known. */
+    show: (channelId: string) => void;
+
     /** A channel was opened, with the position the platform holds for it. */
     open: (channelId: string, storedCursor: number | null) => void;
 
@@ -104,11 +107,25 @@ export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTr
         dependencies.onSaved(channelId, result);
     }
 
+    /** The larger of two positions, either of which may be unknown. */
+    const newer = (a: number | null, b: number | null): number | null => a === null ? b : b === null ? a : Math.max(a, b);
+
     return {
-        open: (channelId: string, storedCursor: number | null): void => {
+        // Tracked from the moment it is on screen: held messages, or a page that lands before the
+        // open has finished catching up, are seen before the stored position is known, and the
+        // feed reports a message once, when it comes into view. A save made meanwhile is safe,
+        // since the platform only ever moves a position forward.
+        show: (channelId: string): void => {
             activeChannelId = channelId;
-            lastSaved = storedCursor;
-            newestSeen = storedCursor;
+            newestSeen = null;
+            lastSaved = null;
+        },
+
+        open: (channelId: string, storedCursor: number | null): void => {
+            const isShown = activeChannelId === channelId;
+            activeChannelId = channelId;
+            lastSaved = isShown ? newer(lastSaved, storedCursor) : storedCursor;
+            newestSeen = isShown ? newer(newestSeen, storedCursor) : storedCursor;
         },
 
         seen: (messageId: number): void => {
