@@ -607,7 +607,8 @@
     watch(() => props.isLoading, (isLoading, wasLoading) => {
         if (wasLoading && !isLoading && !props.error) {
             const count = props.rows.length;
-            announcement.value = `${count} ${count === 1 ? "mention" : "mentions"}`;
+            const newCount = props.newIds.length;
+            announcement.value = `${count} ${count === 1 ? "mention" : "mentions"}${newCount > 0 ? `, ${newCount} new` : ""}`;
         }
     });
 

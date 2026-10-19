@@ -308,6 +308,17 @@ describe("loading, empty and failed", () => {
         expect(w.find("[data-testid='mentions-empty']").exists()).toBe(false);
     });
 
+    test.each([
+        [[60, 50], "3 mentions, 2 new"],
+        [[], "3 mentions"]
+    ])("says how many mentions loaded, and how many of them are new (%j)", async (newIds, said) => {
+        const w = draw({ isLoading: true, rows: [] });
+
+        await w.setProps({ isLoading: false, rows: [row(60), row(50), row(40)], newIds });
+
+        expect(w.get("[aria-live='polite']").text()).toBe(said);
+    });
+
     test("says there are no mentions yet, and how they come", () => {
         const w = draw({ rows: [] });
 
