@@ -219,6 +219,22 @@ namespace Rock.Reporting
             return null;
         }
 
+        /// <summary>
+        /// Determines whether the person is allowed to edit a filter that
+        /// currently has this selection. Components whose selection references
+        /// secured data, such as an attribute, should override this and check
+        /// that the person can view that data.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string to check.</param>
+        /// <param name="person">The person that would be editing the filter.</param>
+        /// <returns><c>true</c> if the person may edit a filter with this selection; otherwise <c>false</c>.</returns>
+        [RockInternal( "18.8" )]
+        public virtual bool IsSelectionAuthorizedForEdit( Type entityType, string selection, Person person )
+        {
+            return true;
+        }
+
 #if WEBFORMS
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.

@@ -302,6 +302,26 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            /*
+                10/19/2026 - DSH
+
+                TH173: filter selections the person is not authorized to edit are
+                protected by FilterField, which keeps the selection the server set
+                (in ViewState) and ignores what was posted. Copy relies on the same
+                protection because it opens an unsaved clone in the editor.
+
+                When this block is converted to Obsidian there is no ViewState, so:
+                1. Save must apply the same rule itself. Match each posted filter by
+                   Guid against this data view's own stored filters (never filters of
+                   another data view). Keep the stored selection when the person is
+                   not authorized for it, and reject a posted selection they are not
+                   authorized for, using DataFilterComponent.IsSelectionAuthorizedForEdit.
+                2. Copy should become an eager copy: clone and save the data view on
+                   the server with the selections untouched, then open the new data
+                   view for editing.
+
+                Reason: Keep the TH173 protection when the editor no longer has ViewState.
+            */
             cvSecurityError.IsValid = true;
             var addAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
             var dvCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
@@ -676,6 +696,15 @@ $(document).ready(function() {
             var dataView = dataViewService.Get( dataViewId );
 
             if ( dataView == null || !dataView.IsAuthorized( action, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            // Editing also requires access to everything the data view uses,
+            // including each filter's selection, matching the check ShowDetail
+            // uses to decide whether to show the Edit button.
+            if ( action == Authorization.EDIT
+                && !dataView.IsAuthorizedForAllDataViewComponents( Authorization.EDIT, CurrentPerson, ( RockContext ) dataViewService.Context, out _ ) )
             {
                 return null;
             }

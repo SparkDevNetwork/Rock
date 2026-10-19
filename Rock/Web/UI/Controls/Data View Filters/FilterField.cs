@@ -490,6 +490,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selection of the saved data view filter, in the
+        /// format returned by <see cref="GetSelection"/>. Blocks that let a
+        /// person change a filter for themselves use this to tell whether the
+        /// selection was changed.
+        /// </summary>
+        /// <value>
+        /// The original selection, or <c>null</c> if it was not set.
+        /// </value>
+        [RockInternal( "18.8" )]
+        public string OriginalSelection
+        {
+            get => ViewState[nameof( OriginalSelection )] as string;
+            set => ViewState[nameof( OriginalSelection )] = value;
+        }
+
+        /// <summary>
+        /// The selection most recently set by the server with <see cref="SetSelection(string)"/>.
+        /// </summary>
+        private string ServerSelection
+        {
+            get => ViewState[nameof( ServerSelection )] as string;
+            set => ViewState[nameof( ServerSelection )] = value;
+        }
+
+        /// <summary>
+        /// The filtered entity type and filter component that <see cref="ServerSelection"/>
+        /// belongs to, so it is never applied to a different component.
+        /// </summary>
+        private string ServerSelectionKey
+        {
+            get => ViewState[nameof( ServerSelectionKey )] as string;
+            set => ViewState[nameof( ServerSelectionKey )] = value;
+        }
+
+        /// <summary>
+        /// Gets the key that identifies the filtered entity type and filter component.
+        /// </summary>
+        private string CurrentSelectionKey => $"{FilteredEntityTypeName}|{FilterEntityTypeName}";
+
+        /// <summary>
         /// Sets the selection.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -500,6 +540,9 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
+                ServerSelection = value;
+                ServerSelectionKey = CurrentSelectionKey;
+
                 if ( UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
                 {
                     var requestContext = this.RockBlock()?.RockPage?.RequestContext;
@@ -540,24 +583,60 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
 
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
-            if ( component != null )
+            if ( component == null )
             {
-                if ( UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
-                {
-                    var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                return string.Empty;
+            }
 
-                    using ( var rockContext = new RockContext() )
-                    {
-                        return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
-                    }
-                }
-                else
+            /*
+                10/19/2026 - DSH
+
+                A person may only keep or set a selection they are authorized for.
+                If the selection the server set references data the person cannot
+                view (such as a secured attribute), it is returned unchanged and
+                whatever was posted is ignored, so it can neither be replaced nor
+                silently cleared. If the posted selection references data the person
+                cannot view, the server's selection is kept instead. The server's
+                selection lives in ViewState, which the client cannot change.
+
+                Reason: TH173, a crafted post could filter on a secured attribute.
+            */
+            var person = ( this.Page as RockPage )?.CurrentPerson;
+            var serverSelection = ServerSelectionKey == CurrentSelectionKey ? ServerSelection : null;
+
+            if ( serverSelection != null && !component.IsSelectionAuthorizedForEdit( FilteredEntityType, serverSelection, person ) )
+            {
+                return serverSelection;
+            }
+
+            var selection = GetSelectionFromControls( component );
+
+            if ( !component.IsSelectionAuthorizedForEdit( FilteredEntityType, selection, person ) )
+            {
+                return serverSelection ?? string.Empty;
+            }
+
+            return selection;
+        }
+
+        /// <summary>
+        /// Gets the selection from the posted values of the filter controls.
+        /// </summary>
+        /// <param name="component">The filter component.</param>
+        /// <returns>The selection string.</returns>
+        private string GetSelectionFromControls( DataFilterComponent component )
+        {
+            if ( UseObsidian && filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
+            {
+                var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+
+                using ( var rockContext = new RockContext() )
                 {
-                    return component.GetSelection( FilteredEntityType, filterControls, this.FilterMode );
+                    return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
                 }
             }
 
-            return string.Empty;
+            return component.GetSelection( FilteredEntityType, filterControls, this.FilterMode );
         }
 
         /// <summary>
