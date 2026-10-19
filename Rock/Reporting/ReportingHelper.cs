@@ -493,12 +493,21 @@ namespace Rock.Reporting
             if ( phFilters.Controls.Count > 0 )
             {
                 var dataViewFilter = GetFilterFromControls( phFilters );
-                var dataViewFilterOverrideList = phFilters.ControlsOfTypeRecursive<FilterField>().Select( a => new DataViewFilterOverride
+                var filterFields = phFilters.ControlsOfTypeRecursive<FilterField>().ToList();
+                var dataViewFilterOverrideList = filterFields.Select( a => new DataViewFilterOverride
                 {
                     DataFilterGuid = a.DataViewFilterGuid,
                     IncludeFilter = a.ShowCheckbox ? a.CheckBoxChecked.GetValueOrDefault( true ) : true,
                     Selection = a.GetSelection()
                 } ).ToList();
+
+                // Compare against the original selection the filter control
+                // computed with the same round trip, when it has one, so a
+                // stored selection in another format does not look changed.
+                var originalSelections = filterFields
+                    .Where( a => a.OriginalSelection != null )
+                    .GroupBy( a => a.DataViewFilterGuid )
+                    .ToDictionary( g => g.Key, g => g.First().OriginalSelection );
 
                 List<int> ignoreDataViewPersistedValues = new List<int>();
 
@@ -511,12 +520,14 @@ namespace Rock.Reporting
                         var originalFilter = filters.FirstOrDefault( a => a.Guid == dataViewFilterOverride.DataFilterGuid );
                         if ( originalFilter != null )
                         {
-                            if ( dataViewFilterOverride.IncludeFilter && originalFilter.Selection == dataViewFilterOverride.Selection )
+                            var originalSelection = originalSelections.GetValueOrNull( dataViewFilterOverride.DataFilterGuid ) ?? originalFilter.Selection;
+
+                            if ( dataViewFilterOverride.IncludeFilter && originalSelection == dataViewFilterOverride.Selection )
                             {
                                 // the filter override is the same as the saved dataview, so no need to override it
                                 dataViewFilterOverrideList.Remove( dataViewFilterOverride );
                             }
-                            else if ( originalFilter.Selection != dataViewFilterOverride.Selection )
+                            else if ( originalSelection != dataViewFilterOverride.Selection )
                             {
                                 // if the selection has changed, and it is from a 'other data view'  filter, add the other dataview and the dataviews it impacts to the list of dataviews that should not use the persisted values
                                 if ( originalFilter.ImpactedDataViews?.Any() == true )

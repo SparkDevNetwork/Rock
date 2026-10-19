@@ -387,8 +387,6 @@ namespace RockWeb.Blocks.Reporting
 
                             try
                             {
-                                filterControl.SetSelection( selection );
-
                                 /*
                                     9/21/2026 - NA
 
@@ -408,6 +406,28 @@ namespace RockWeb.Blocks.Reporting
 
                                     Reason: Dynamic Report was silently changing a DataView filter's comparison type.
                                 */
+
+                                /*
+                                    10/19/2026 - DSH
+
+                                    Keep the saved filter's selection, in the format GetSelection
+                                    produces, on the filter control so later postbacks can tell
+                                    whether the person changed it. Both sides of that comparison
+                                    go through the same round trip, so a selection stored in an
+                                    older format (or one the round trip simplifies, such as a
+                                    simple filter turning Starts With into Contains) still matches
+                                    and the persisted data view values are still used.
+
+                                    Reason: Without the write-back, comparing against the raw stored
+                                    selection made unchanged filters look changed.
+                                */
+                                filterControl.SetSelection( filter.Selection );
+                                filterControl.OriginalSelection = filterControl.GetSelection();
+
+                                if ( selection != filter.Selection )
+                                {
+                                    filterControl.SetSelection( selection );
+                                }
                             }
                             catch ( Exception ex )
                             {
@@ -516,7 +536,7 @@ namespace RockWeb.Blocks.Reporting
                         // only save the preference if it is different from the original
                         var origFilter = dataViewFilterService.Get( filterControl.DataViewFilterGuid );
                         var selection = filterControl.GetSelection();
-                        if ( origFilter != null && origFilter.Selection != selection )
+                        if ( origFilter != null && ( filterControl.OriginalSelection ?? origFilter.Selection ) != selection )
                         {
                             preferences.SetValue( selectionKey, selection );
                         }
