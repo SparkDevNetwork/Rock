@@ -13,18 +13,30 @@ name: Merge-up Check
 #      label and ONE comment, edited in place, naming the merge (from and into)
 #      and the files. The chain is then run again without the PR: conflicts
 #      that are there anyway are marked as leftover drift from an earlier
-#      change, not this PR's. Clean: label and comment removed. (`squash` and
+#      change, not this PR's. The dry run then keeps going past the conflict
+#      (taking the side of the branch being merged into), so later steps that
+#      would probably conflict too are listed up front instead of turning up
+#      one ship at a time. Clean: label and comment removed. (`squash` and
 #      the AI trailer removal are skipped; they change commit messages, not
 #      files, so they can't change whether a merge conflicts.)
+#      A file deleted on one side and changed on the other gets its own plain
+#      explanation (who deleted it, and that the change has to be made again
+#      in whatever replaced it), because it can't be resolved automatically or
+#      by AI: git can only record conflicting lines.
 #   2. Resolved automatically when that's safe: version lines, and conflicts
 #      people already resolved the same way before (recorded resolutions). See
 #      the helpers file. Each one is shown in the comment, and again by Ship it.
-#   3. Proposed by AI (`propose`), only when someone adds the `ai-resolve`
-#      label (it uses credits). Claude resolves the conflicting merge in a
-#      scratch copy and the proposal is posted with both sides and its choice.
-#      Nothing uses it until a person adds `approve-resolution` (`approve`),
-#      which turns it into a recorded resolution that Ship it replays and
-#      explains like any other.
+#   3. Proposed by AI (`propose`), automatically, when step 1 finds a conflict
+#      between lines that nothing resolves. Claude resolves the conflicting
+#      merge in a scratch copy, and the proposal is posted with both sides and
+#      its choice. Nothing uses it until a person adds `approve-resolution`
+#      (`approve`), which turns it into a recorded resolution that Ship it
+#      replays and explains like any other.
+#      Claude is asked once per conflict, not once per check: each conflict has
+#      a key (from rerere's ids for it), and a conflict that already has a
+#      proposal, waiting or failed, isn't proposed again. Leftover drift that
+#      hits several PRs gets one proposal, on the first PR, and approving it
+#      there covers the others.
 #   4. By hand: `ship-only`, then the merge-up in SmartGit. `learn` records
 #      that resolution once it reaches public.
 #
@@ -38,7 +50,7 @@ name: Merge-up Check
 #
 # When it runs:
 #   - A PR is opened, reopened, pushed to, or retargeted: that PR is checked.
-#   - `ai-resolve` or `approve-resolution` is added to a PR.
+#   - `approve-resolution` is added to a PR.
 #   - The mirror's develop, release-* or hotfix-* branches move (they are
 #     copies of public, updated within about a minute): `learn`, then every
 #     open PR is checked again, because a public change can create or clear a
@@ -54,7 +66,7 @@ name: Merge-up Check
 #                                 to read the live public branches.
 #   vars.MERGE_CHAIN              The merge-up paths. Without it, only bringing
 #                                 the PR up to date is checked.
-#   secrets.ANTHROPIC_API_KEY     For `ai-resolve`.
+#   secrets.ANTHROPIC_API_KEY     For the AI-proposed resolutions.
 
 on:
   pull_request:
@@ -69,15 +81,10 @@ on:
 permissions:
   contents: read
 
-# A newer check makes an older one pointless, so it cancels it: one queue per
-# PR, and one for runs that check every PR. Runs that don't check (labels,
-# and edits that don't change the target branch, like a title fix) get their
-# own queue. Otherwise they would cancel a running check and then skip their
-# own, leaving the PR's label and comment out of date. A run cancelled part way
-# through saving saves nothing; the next run picks up from the last save.
-concurrency:
-  group: ${{ (github.event.action == 'labeled' || (github.event.action == 'edited' && github.event.changes.base == null)) && format('merge-up-check-solo-{0}', github.run_id) || (github.event_name == 'pull_request' && format('merge-up-check-pr-{0}', github.event.pull_request.number) || 'merge-up-check-all') }}
-  cancel-in-progress: true
+# Queues are set per job (see each job), not for the whole run, so a newer
+# check can cancel an older check without also cancelling a Claude proposal
+# that's half way through. A job cancelled part way through saving saves
+# nothing; the next run picks up from the last save.
 
 jobs:
   learn:
@@ -85,6 +92,11 @@ jobs:
     if: github.repository == 'SparkStealth/Rock-Mirror' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # One at a time. Each run learns from everything since the last save, so
+    # GitHub dropping a waiting run loses nothing.
+    concurrency:
+      group: merge-up-learn
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: read
@@ -199,7 +211,8 @@ jobs:
           approve_proposal() {
             out=$1
             proposal="$out/proposed/pr-$PR"
-            if [ ! -f "$proposal/proposal.json" ]; then
+            # A failed attempt is kept only so it isn't retried; nothing to approve.
+            if [ ! -f "$proposal/proposal.json" ] || [ "$(jq -r '.status // empty' "$proposal/proposal.json")" = "failed" ]; then
               touch "$RUNNER_TEMP/no-proposal"
               return 0
             fi
@@ -219,7 +232,7 @@ jobs:
 
           if [ -f "$RUNNER_TEMP/no-proposal" ]; then
             gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
-              -b "No AI-proposed resolution is waiting for this PR, so there was nothing to approve. Add the \`ai-resolve\` label first."
+              -b "No AI-proposed resolution is waiting for this PR, so there was nothing to approve. Claude proposes one automatically when the merge-up check finds a conflict it can resolve; see the merge-up check comment."
           else
             # Mark the proposal comment as approved.
             body="$RUNNER_TEMP/ai-comment.md"
@@ -231,13 +244,24 @@ jobs:
           mu_set_label "$PR" approve-resolution false
 
   propose:
-    # Claude proposes a resolution for the first merge-up conflict that has no
-    # automatic resolution. Only when a person adds `ai-resolve`.
+    # Claude proposes a resolution for each conflict `check` queued: the first
+    # merge-up conflict on a PR that nothing resolves, is between lines, and
+    # has no proposal yet.
+    needs: check
     if: >-
-      github.repository == 'SparkStealth/Rock-Mirror'
-      && github.event.action == 'labeled'
-      && github.event.label.name == 'ai-resolve'
-      && github.event.pull_request.state == 'open'
+      !cancelled()
+      && needs.check.outputs.propose != ''
+      && needs.check.outputs.propose != '[]'
+    strategy:
+      matrix:
+        include: ${{ fromJSON(needs.check.outputs.propose) }}
+      max-parallel: 2
+      fail-fast: false
+    # Never cancelled by a newer check: a proposal half way through would
+    # waste the run, and it would be tried again.
+    concurrency:
+      group: merge-up-propose-${{ matrix.pr }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
@@ -248,9 +272,9 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       MERGE_CHAIN: ${{ vars.MERGE_CHAIN }}
-      PR: ${{ github.event.pull_request.number }}
-      BASE: ${{ github.event.pull_request.base.ref }}
-      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      PR: ${{ matrix.pr }}
+      BASE: ${{ matrix.base }}
+      HEAD_REF: ${{ matrix.head }}
     steps:
       - name: Create ship token
         id: app
@@ -291,32 +315,28 @@ jobs:
           ai="$RUNNER_TEMP/ai"
           mkdir -p "$ai"
           # Stop at the conflict with the merge still in progress, for Claude.
-          MU_KEEP_CONFLICT=true
+          MU_ON_CONFLICT=keep
           mu_dry_run "$PR" "$BASE" "$HEAD_REF" "$ai/work"
           c="$ai/work/run/conflict"
 
-          if [ "$DRY_RUN" = "skipped" ] || [ ! -d "$c" ]; then
-            if [ -s "$ai/work/update-conflicts" ]; then
-              echo "This PR conflicts with \`$BASE\` itself, which is the author's to resolve: merge \`$BASE\` into the branch locally and push. \`ai-resolve\` only proposes resolutions for merge-up conflicts." > "$ai/nothing.md"
-            else
-              echo "There's no merge-up conflict to resolve: every merge-up step is clean or resolved automatically. See the merge-up check comment." > "$ai/nothing.md"
-            fi
+          # The PR or public may have changed since `check` queued this. If the
+          # conflict is gone, or is no longer one Claude can resolve, or already
+          # has a proposal, there's nothing to do; the next check comment says
+          # where things stand.
+          if [ "$DRY_RUN" = "skipped" ] || [ ! -d "$c" ] || ! mu_can_propose "$c"; then
+            echo "No conflict Claude can resolve any more. Nothing to propose."
             echo "ready=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
-          # Only conflicts rerere can record can be replayed by Ship it later,
-          # so a file deleted on one side, for example, has to be done by hand.
-          tr '\0' '\n' < "$MU_GITDIR/MERGE_RR" > "$ai/merge-rr" 2> /dev/null || true
-          untracked=$(cut -f2 "$ai/merge-rr" | grep -vxF -f - "$c/files" || true)
-          if [ -n "$untracked" ] || [ ! -s "$c/files" ]; then
-            {
-              echo "Merging \`$(cat "$c/from")\` into \`$(cat "$c/into")\` conflicts in ways a proposal can't be recorded for (for example, a file deleted on one side), so it has to be resolved by hand:"
-              printf '%s\n' "$untracked" | sed '/^$/d; s/^/- `/; s/$/`/'
-            } > "$ai/nothing.md"
+          key=$(cat "$c/key")
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          existing=$(mu_find_proposal "$key")
+          if [ -n "$existing" ]; then
+            echo "This conflict already has a proposal ($existing). Nothing to propose."
             echo "ready=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          cp "$c/merge-rr" "$ai/merge-rr"
 
           # Context for Claude, and a copy of each conflicted file to diff
           # against afterwards.
@@ -350,7 +370,7 @@ jobs:
             This is Rock RMS (C#, TypeScript and Vue). The repository is in the middle of a
             merge: `${{ steps.prepare.outputs.from }}` is being merged into
             `${{ steps.prepare.outputs.into }}` (git merge was run on `${{ steps.prepare.outputs.into }}`).
-            This merge is part of merging up PR #${{ github.event.pull_request.number }}.
+            This merge is part of merging up PR #${{ matrix.pr }}.
             The files with conflicts are listed in `.ai-resolve/conflicts.txt`.
 
             1. In each listed file, resolve every conflict between `<<<<<<<` and `>>>>>>>`
@@ -422,8 +442,8 @@ jobs:
           git rerere
           proposal="$ai/proposal"
           mkdir -p "$proposal/rr-cache"
-          jq -n --arg pr "$PR" --arg from "$from" --arg into "$into" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '{pr: ($pr | tonumber), from: $from, into: $into, proposedAt: $at, files: []}' > "$proposal/proposal.json"
+          jq -n --arg pr "$PR" --arg from "$from" --arg into "$into" --arg key "$(cat "$c/key")" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{pr: ($pr | tonumber), from: $from, into: $into, key: $key, status: "pending", proposedAt: $at, files: []}' > "$proposal/proposal.json"
           while IFS="$(printf '\t')" read -r id path; do
             dir=${id%%.*}
             variant=${id#"$dir"}
@@ -450,7 +470,7 @@ jobs:
             echo "$MU_AI_MARKER"
             echo "### AI-proposed resolution: merging \`$from\` into \`$into\`"
             echo
-            echo "Claude proposed this. **Nothing uses it until a person approves it** by adding the \`approve-resolution\` label. After that, Ship it replays it whenever this exact conflict comes up, and explains it on the PR again when it does."
+            echo "Claude proposed this automatically when the merge-up check found the conflict. **Nothing uses it until a person approves it** by adding the \`approve-resolution\` label. After that, Ship it replays it whenever this exact conflict comes up, on this PR or any other, and explains it on the PR again when it does. If it's wrong, don't approve it: ship with \`ship-only\` and do the merge-up by hand instead."
             echo
             if [ -s .ai-resolve/explanation.md ]; then
               # No mentions, even if the model wrote one.
@@ -473,27 +493,40 @@ jobs:
               echo "</details>"
             done < "$c/files"
             echo
-            echo "<sub>It only applies while the conflict stays exactly the same. If this PR or a public branch changes it, add \`ai-resolve\` again. [Workflow log]($MU_LOG_URL)</sub>"
+            echo "<sub>It only applies while the conflict stays exactly the same. If this PR or a public branch changes the conflict, Claude proposes again for the new one. [Workflow log]($MU_LOG_URL)</sub>"
           } > "$body"
           mu_set_comment "$PR" "$MU_AI_MARKER" "$body"
 
-      - name: Say there was nothing to propose
-        if: steps.prepare.outputs.ready == 'false'
-        run: |
-          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" -F "$RUNNER_TEMP/ai/nothing.md"
-
       - name: Report failure
-        if: failure()
+        # Recorded as a failed attempt for this conflict, so the next check
+        # doesn't spend another run on it. A changed conflict gets a new try.
+        if: failure() && steps.prepare.outputs.key != ''
+        env:
+          KEY: ${{ steps.prepare.outputs.key }}
         run: |
+          . "$RUNNER_TEMP/merge-up-lib.sh"
+          mu_init
           reason="${AI_FAIL:-Something unexpected failed. See the workflow log.}"
-          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
-            -b "**AI resolution failed.** $reason Add \`ai-resolve\` again to retry.
 
-          [Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          record_failure() {
+            rm -rf "$1/proposed/pr-$PR"
+            mkdir -p "$1/proposed/pr-$PR"
+            jq -n --arg pr "$PR" --arg key "$KEY" --arg reason "$reason" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{pr: ($pr | tonumber), key: $key, status: "failed", reason: $reason, proposedAt: $at, files: []}' \
+              > "$1/proposed/pr-$PR/proposal.json"
+          }
+          mu_save_cache "- Recorded a failed AI conflict resolution for PR #$PR." record_failure || true
 
-      - name: Remove the label
-        if: always()
-        run: gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/ai-resolve" > /dev/null 2>&1 || true
+          body="$RUNNER_TEMP/ai-failed.md"
+          {
+            echo "$MU_AI_MARKER"
+            echo "**Claude couldn't propose a resolution for this merge-up conflict.** $reason"
+            echo
+            echo "It won't try again for this same conflict. Ship with \`ship-only\` and do the merge-up by hand in SmartGit; once that merge reaches public, its resolution is recorded."
+            echo
+            echo "[Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          } > "$body"
+          mu_set_comment "$PR" "$MU_AI_MARKER" "$body"
 
   check:
     needs: [learn, approve]
@@ -510,10 +543,20 @@ jobs:
                   || (github.event.action == 'labeled' && github.event.label.name == 'approve-resolution'))))
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # A newer check makes an older one pointless, so it cancels it: one queue
+    # per PR, and one for runs that check every PR. Runs that don't check
+    # (labels, and edits that don't change the target branch, like a title
+    # fix) get their own queue. Otherwise they would cancel a running check
+    # and then skip their own, leaving the PR's label and comment out of date.
+    concurrency:
+      group: ${{ (github.event.action == 'labeled' || (github.event.action == 'edited' && github.event.changes.base == null)) && format('merge-up-check-solo-{0}', github.run_id) || (github.event_name == 'pull_request' && format('merge-up-check-pr-{0}', github.event.pull_request.number) || 'merge-up-check-all') }}
+      cancel-in-progress: true
     permissions:
       contents: read
       pull-requests: write
       issues: write
+    outputs:
+      propose: ${{ steps.check.outputs.propose }}
     env:
       GH_TOKEN: ${{ github.token }}
       MERGE_CHAIN: ${{ vars.MERGE_CHAIN }}
@@ -546,6 +589,7 @@ jobs:
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
 
       - name: Check each PR
+        id: check
         env:
           TOKEN: ${{ steps.app.outputs.token }}
         run: |
@@ -579,6 +623,12 @@ jobs:
               failed="$failed #$pr"
             fi
           done < "$RUNNER_TEMP/prs.txt"
+
+          # The PRs whose conflict gets a Claude proposal, for `propose`.
+          touch "$RUNNER_TEMP/propose.txt"
+          propose=$(jq -R -s -c 'split("\n") | map(select(length > 0) | split(" ") | {pr: .[0], base: .[1], head: .[2]})' "$RUNNER_TEMP/propose.txt")
+          echo "Claude will propose resolutions for: $propose"
+          echo "propose=$propose" >> "$GITHUB_OUTPUT"
 
           if [ -n "$failed" ]; then
             echo "Couldn't check:$failed"
