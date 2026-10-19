@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -47,6 +49,12 @@ namespace Rock.Field.Types
         /// The attribute matrix template (stored as AttributeMatrixTemplate.Id)
         /// </summary>
         public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
+
+        /// <summary>
+        /// The purpose used to derive the encryption key for attribute matrix
+        /// keys. Changing this invalidates all existing keys.
+        /// </summary>
+        private const string AttributeMatrixKeyPurpose = "Rock.Field.Types.MatrixFieldType.AttributeMatrixKey";
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
@@ -237,6 +245,7 @@ namespace Rock.Field.Types
                 return new MatrixFieldDataBag
                 {
                     AttributeMatrixGuid = attributeMatrixGuid,
+                    AttributeMatrixKey = CreateAttributeMatrixKey( attributeMatrixGuid.Value ),
                     MatrixItems = matrixItems,
                     Attributes = attributes,
                     DefaultAttributeValues = defaultAttributeValues,
@@ -269,15 +278,18 @@ namespace Rock.Field.Types
 
                 var matrixService = new AttributeMatrixService( rockContext );
                 var matrixItemService = new AttributeMatrixItemService( rockContext );
-                var matrix = matrixService.Get( dataBag.AttributeMatrixGuid ?? Guid.Empty );
+                var clientItems = dataBag.MatrixItems ?? new List<AttributeMatrixEditorPublicItemBag>();
 
+                var matrix = IsAttributeMatrixKeyValid( dataBag.AttributeMatrixKey, dataBag.AttributeMatrixGuid )
+                    ? matrixService.Get( dataBag.AttributeMatrixGuid.Value )
+                    : null;
 
-                if ( dataBag.AttributeMatrixGuid == null && dataBag.MatrixItems.Count == 0 )
+                if ( matrix == null && clientItems.Count == 0 )
                 {
                     // Empty Matrix, so don't bother creating/saving anything.
                     return string.Empty;
                 }
-                else if ( dataBag.AttributeMatrixGuid == null || matrix == null )
+                else if ( matrix == null )
                 {
                     // New Matrix
                     matrix = new AttributeMatrix { Guid = Guid.NewGuid() };
@@ -288,7 +300,7 @@ namespace Rock.Field.Types
                     rockContext.SaveChanges();
 
                     // Add all the items
-                    foreach ( var newItem in dataBag.MatrixItems )
+                    foreach ( var newItem in clientItems )
                     {
                         var matrixItem = new AttributeMatrixItem();
                         matrixItem.AttributeMatrix = matrix;
@@ -311,7 +323,7 @@ namespace Rock.Field.Types
                     else
                     {
                         // Delete any items that no longer exist in the list from the client
-                        var existingClientItemGuids = dataBag.MatrixItems.Select( mi => mi.Guid ).Where( g => !g.IsEmpty() ).ToList();
+                        var existingClientItemGuids = clientItems.Select( mi => mi.Guid ).Where( g => !g.IsEmpty() ).ToList();
                         foreach ( var matrixItem in matrix.AttributeMatrixItems.ToList() )
                         {
                             if ( !existingClientItemGuids.Contains( matrixItem.Guid ) )
@@ -322,7 +334,7 @@ namespace Rock.Field.Types
                         }
 
                         // Edit the matrix items to match the new matrix items from the client
-                        foreach ( var clientItem in dataBag.MatrixItems )
+                        foreach ( var clientItem in clientItems )
                         {
                             if ( clientItem.Guid == Guid.Empty )
                             {
@@ -336,8 +348,9 @@ namespace Rock.Field.Types
                             }
                             else
                             {
-                                // Existing Matrix Item
-                                var matrixItem = matrixItemService.Get( clientItem.Guid );
+                                // Existing Matrix Item. Only look within this matrix so a row
+                                // Guid from another matrix becomes a new row here instead.
+                                var matrixItem = matrix.AttributeMatrixItems.FirstOrDefault( i => i.Guid == clientItem.Guid );
 
                                 if ( matrixItem == null )
                                 {
@@ -469,6 +482,65 @@ namespace Rock.Field.Types
 
             rockContext.SaveChanges();
             matrixItem.SaveAttributeValues( rockContext );
+        }
+
+        /// <summary>
+        /// Creates a sealed key that binds the matrix to the person the editor
+        /// is being rendered for.
+        /// </summary>
+        /// <param name="matrixGuid">The unique identifier of the attribute matrix.</param>
+        /// <returns>The encrypted key to send to the client.</returns>
+        private static string CreateAttributeMatrixKey( Guid matrixGuid )
+        {
+            var keyData = new AttributeMatrixKeyData
+            {
+                MatrixGuid = matrixGuid,
+                PersonId = RockRequestContextAccessor.Current?.CurrentPerson?.Id
+            };
+
+            return Encryption.EncryptStringForPurpose( keyData.ToJson(), AttributeMatrixKeyPurpose );
+        }
+
+        /// <summary>
+        /// Determines whether the key sent by the client was issued for this
+        /// matrix and the current person.
+        /// </summary>
+        /// <param name="key">The key sent by the client.</param>
+        /// <param name="matrixGuid">The unique identifier of the attribute matrix sent by the client.</param>
+        /// <returns><c>true</c> if the key is valid for the matrix and the current person; otherwise <c>false</c>.</returns>
+        private static bool IsAttributeMatrixKeyValid( string key, Guid? matrixGuid )
+        {
+            if ( !matrixGuid.HasValue || key.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var keyData = Encryption.DecryptStringForPurpose( key, AttributeMatrixKeyPurpose )
+                ?.FromJsonOrNull<AttributeMatrixKeyData>();
+
+            if ( keyData == null )
+            {
+                return false;
+            }
+
+            return keyData.MatrixGuid == matrixGuid.Value
+                && keyData.PersonId == RockRequestContextAccessor.Current?.CurrentPerson?.Id;
+        }
+
+        /// <summary>
+        /// The data sealed inside the attribute matrix key.
+        /// </summary>
+        private class AttributeMatrixKeyData
+        {
+            /// <summary>
+            /// The unique identifier of the attribute matrix the key was issued for.
+            /// </summary>
+            public Guid MatrixGuid { get; set; }
+
+            /// <summary>
+            /// The identifier of the person the key was issued for, or <c>null</c> if anonymous.
+            /// </summary>
+            public int? PersonId { get; set; }
         }
 
         #region Filter Control
