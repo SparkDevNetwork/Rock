@@ -28,7 +28,10 @@ import { ChannelMentionEvent, ChatError, MentionListPage, MentionPerson, Mention
 import { Timelines } from "./useHistory.partial";
 import { LandingCheck, loadUntilHeld } from "./useJump.partial";
 
-/** How long the picker waits after the last keystroke before it searches. */
+/**
+ * How long the picker waits after the last keystroke before it searches. An estimate, not a
+ * measurement: about the gap between keystrokes of steady typing, so a typed name asks once.
+ */
 export const mentionSearchPause = 150;
 
 /** How many rows a page of the inbox holds. */
