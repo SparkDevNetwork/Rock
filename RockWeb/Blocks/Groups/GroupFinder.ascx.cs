@@ -890,7 +890,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( targetPerson != null )
             {
-                lTitle.Text = string.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
+                /*
+                    10/18/2026 - MSE
+
+                    The person comes from the PersonGuid query string and their name can be set
+                    by that person, so it is encoded before it is written into the title markup.
+
+                    Reason: Person names are plain text and must not render as HTML.
+                */
+                lTitle.Text = string.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName.EncodeHtml() );
                 acAddress.SetValues( targetPersonLocation );
                 acAddress.Visible = false;
                 phFilterControls.Visible = false;
@@ -2326,14 +2334,25 @@ namespace RockWeb.Blocks.Groups
         }}
 ";
 
+            /*
+                10/18/2026 - MSE
+
+                These JSON strings are written into an inline startup script, so a group
+                name containing "</script>" could end the script block and inject markup.
+                Each "<" is replaced with the JSON escape \u003c (before the backslashes
+                are doubled for the JS string literal) so JSON.parse still returns the
+                same values but the page source never contains a raw "<".
+
+                Reason: Prevent script breakout through group, location and fence data.
+            */
             var locationJson = location != null ?
-                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
+                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var fencesJson = fences != null && fences.Any() ?
-                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
+                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var groupsJson = groups != null && groups.Any() ?
-                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
+                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var markerDefinedValueId = GetAttributeValue( AttributeKey.MapMarker ).AsIntegerOrNull();
             var marker = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
