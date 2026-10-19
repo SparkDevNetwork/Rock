@@ -518,7 +518,14 @@ namespace RockWeb.Blocks.Streaks
 
             rppPerson.Visible = false;
             divPerson.Visible = true;
-            lPersonName.Text = enrollment.PersonAlias.Person.FullName;
+            /*
+                10/19/2026 - MSE
+
+                lPersonName is a Literal, so the person's name is encoded before it is written.
+
+                Reason: Prevent stored XSS through a person's name in Streak Detail.
+            */
+            lPersonName.Text = enrollment.PersonAlias.Person.FullName.EncodeHtml();
 
             rdpEnrollmentDate.SelectedDate = enrollment.EnrollmentDate;
             rlpLocation.Location = enrollment.Location;
@@ -644,8 +651,16 @@ namespace RockWeb.Blocks.Streaks
     <p><small><a href='/Person/{1}'>View Profile</a></small></p>
 ";
 
-            personImageStringBuilder.AppendFormat( photoFormat, person.Id, person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
-            personImageStringBuilder.AppendFormat( nameLinkFormat, person.FullName, person.Id );
+            /*
+                10/19/2026 - MSE
+
+                This HTML is written into a Literal. A person can set their own name (and the
+                photo URL carries their initials), so both are encoded before they go into the markup.
+
+                Reason: Prevent stored XSS through a person's name in Streak Detail.
+            */
+            personImageStringBuilder.AppendFormat( photoFormat, person.Id, person.PhotoUrl.EncodeHtml(), ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+            personImageStringBuilder.AppendFormat( nameLinkFormat, person.FullName.EncodeHtml(), person.Id );
 
             if ( person.TopSignalColor.IsNotNullOrWhiteSpace() )
             {

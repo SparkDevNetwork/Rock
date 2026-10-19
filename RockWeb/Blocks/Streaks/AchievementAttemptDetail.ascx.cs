@@ -565,8 +565,16 @@ namespace RockWeb.Blocks.Streaks
 
             if ( achiever is PersonAlias personAlias )
             {
-                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
-                personImageStringBuilder.AppendFormat( nameLinkFormat, personAlias.Person.FullName, personAlias.PersonId );
+                /*
+                    10/19/2026 - MSE
+
+                    This HTML is written into a Literal. A person can set their own name (and the
+                    photo URL carries their initials), so both are encoded before they go into the markup.
+
+                    Reason: Prevent stored XSS through a person's name in Achievement Attempt Detail.
+                */
+                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl.EncodeHtml(), ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+                personImageStringBuilder.AppendFormat( nameLinkFormat, personAlias.Person.FullName.EncodeHtml(), personAlias.PersonId );
             }
             else
             {

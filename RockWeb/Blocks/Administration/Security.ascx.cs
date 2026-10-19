@@ -594,7 +594,15 @@ namespace RockWeb.Blocks.Administration
                             r.AuthRule.GroupId == rule.GroupId ) )
                     {
                         var myRule = new MyAuthRule( rule );
-                        myRule.EntityTitle = string.Format( "{0} <small>({1})</small>", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
+                        /*
+                            10/19/2026 - MSE
+
+                            The From column shows EntityTitle as HTML. Only the small wrapper is markup;
+                            the parent entity name (for example a group name) is stored data, so it is encoded.
+
+                            Reason: Prevent stored XSS through an entity name in the Security dialog.
+                        */
+                        myRule.EntityTitle = string.Format( "{0} <small>({1})</small>", parent.ToString().EncodeHtml(), ( entityType.FriendlyName ?? entityType.Name ).EncodeHtml() ).TrimStart();
                         parentRules.Add( myRule );
                     }
                 }
