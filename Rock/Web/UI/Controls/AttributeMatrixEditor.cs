@@ -615,20 +615,39 @@ namespace Rock.Web.UI.Controls
         private void btnSaveMatrixItem_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
+            var attributeMatrix = this.AttributeMatrixGuid.HasValue ? new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value ) : null;
+            if ( attributeMatrix == null )
+            {
+                return;
+            }
+
             var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
-            AttributeMatrixItem attributeMatrixItem = null;
+            AttributeMatrixItem attributeMatrixItem;
             int attributeMatrixItemId = _hfMatrixItemId.Value.AsInteger();
 
             if ( attributeMatrixItemId > 0 )
             {
-                attributeMatrixItem = attributeMatrixItemService.Get( attributeMatrixItemId );
-            }
+                attributeMatrixItem = attributeMatrixItemService.Queryable()
+                    .FirstOrDefault( i => i.Id == attributeMatrixItemId && i.AttributeMatrixId == attributeMatrix.Id );
 
-            if ( attributeMatrixItem == null )
+                if ( attributeMatrixItem == null )
+                {
+                    _gMatrixItems.Visible = true;
+                    _pnlEditMatrixItem.Visible = false;
+                    _hfMatrixItemId.Value = null;
+                    BindGrid( this.AttributeMatrixGuid );
+
+                    // Set after BindGrid, which hides the warning.
+                    _nbWarning.Text = "The item could not be found.";
+                    _nbWarning.Visible = true;
+                    return;
+                }
+            }
+            else
             {
                 attributeMatrixItem = new AttributeMatrixItem();
-                attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
-                attributeMatrixItem.AttributeMatrixTemplateId = attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId;
+                attributeMatrixItem.AttributeMatrix = attributeMatrix;
+                attributeMatrixItem.AttributeMatrixTemplateId = attributeMatrix.AttributeMatrixTemplateId;
                 attributeMatrixItemService.Add( attributeMatrixItem );
             }
 

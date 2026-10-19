@@ -32,6 +32,12 @@ namespace Rock.ViewModels.Rest.Controls
         public Guid? AttributeMatrixGuid { get; set; } = null;
 
         /// <summary>
+        /// Server-issued sealed key that proves AttributeMatrixGuid was given to this editor.
+        /// Clients must send it back unchanged.
+        /// </summary>
+        public string AttributeMatrixKey { get; set; }
+
+        /// <summary>
         /// List of representations of AttributeMatrixItems in this AttributeMatrix
         /// </summary>
         public List<AttributeMatrixEditorPublicItemBag> MatrixItems { get; set; }
