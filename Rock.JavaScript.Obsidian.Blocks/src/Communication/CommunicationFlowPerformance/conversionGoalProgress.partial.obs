@@ -109,7 +109,7 @@
     import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
     import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
-    import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
+    import { escapeHtml, prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
     import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
@@ -247,7 +247,7 @@
                 const endsWithGroup = /^group$/i.test(groupTypeText) || / group$/i.test(groupTypeText);
                 const suffix = endsWithGroup ? "" : " group";
 
-                return `${who} joined ${prependSingularIndefiniteArticle(groupTypeText).replace(groupTypeText, strongify(groupTypeText))}${suffix} ${when}.`;
+                return `${who} joined ${prependSingularIndefiniteArticle(groupTypeText).replace(groupTypeText, () => strongify(groupTypeText))}${suffix} ${when}.`;
             }
 
             case ConversionGoalType.JoinedGroup: {
@@ -396,8 +396,19 @@
         }
     }
 
+    /*
+        10/19/2026 - MSE
+
+        The goal sentence is shown with v-html and every entity name in it (group,
+        group type, workflow type, registration instance, step type, data view) passes
+        through here. Those names are stored data, so the text is escaped and only the
+        strong tag is markup. The group type case uses a replacer function so that
+        sequences such as $& in a name are not treated as replacement patterns.
+
+        Reason: Prevent stored XSS through an entity name in Flow Performance.
+    */
     function strongify(text: string): string {
-        return `<strong>${text}</strong>`;
+        return `<strong>${escapeHtml(text)}</strong>`;
     }
 
     // #endregion Functions

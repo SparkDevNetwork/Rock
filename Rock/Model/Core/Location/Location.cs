@@ -449,15 +449,30 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the formatted HTML address.
+        /// Gets the formatted address as HTML. The address text is HTML encoded
+        /// and only the line breaks are emitted as <c>&lt;br&gt;</c> tags.
         /// </summary>
         /// <value>
-        /// The formatted HTML address.
+        /// The HTML encoded address text with line breaks converted to <c>&lt;br&gt;</c>.
         /// </value>
         [LavaVisible]
         public virtual string FormattedHtmlAddress
         {
-            get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
+            get
+            {
+                /*
+                    10/19/2026 - MSE
+
+                    The address parts are stored as entered, including by anonymous visitors on
+                    public forms, and this value is rendered as HTML by many blocks, controls and
+                    Lava templates. The text is encoded before the line breaks become <br> tags so
+                    stored markup is shown as text instead of running in the viewer's browser.
+                    Use FormattedAddress when plain text is needed.
+
+                    Reason: Stored address text must not render as HTML.
+                */
+                return FormattedAddress.EncodeHtml().ConvertCrLfToHtmlBr();
+            }
         }
 
         /// <summary>
