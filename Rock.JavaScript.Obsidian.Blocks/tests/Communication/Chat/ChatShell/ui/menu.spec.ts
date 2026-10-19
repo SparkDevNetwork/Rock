@@ -107,6 +107,18 @@ describe("the menu", () => {
         expect(anchor.getAttribute("aria-expanded")).toBe("true");
     });
 
+    test("says an item's dot as visually hidden text, since a label on a plain span is never read", async () => {
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items: [{ key: "mentions", label: "Mentions", icon: "at", hasDot: true }, ...items] }, attachTo: document.body });
+        (wrapper.get("button").element as HTMLElement).click();
+        await settle();
+
+        const dot = menuItems()[0].querySelector(".chat-menu-dot");
+        expect(dot).not.toBeNull();
+        expect(dot?.hasAttribute("aria-label")).toBe(false);
+        expect(dot?.querySelector(".chat-sr-only")?.textContent).toBe("new");
+        expect(menuItems()[1].querySelector(".chat-menu-dot")).toBeNull();
+    });
+
     test("moves down with the down arrow and wraps from the last item to the first", async () => {
         await open();
 

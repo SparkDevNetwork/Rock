@@ -34,7 +34,7 @@
                         <Icon v-if="item.icon" :name="item.icon" />
                         <span class="chat-menu-label">{{ item.label }}</span>
                         <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
-                        <span v-if="item.hasDot" class="chat-menu-dot" aria-label="new"></span>
+                        <span v-if="item.hasDot" class="chat-menu-dot"><span class="chat-sr-only">new</span></span>
                     </button>
                 </template>
             </div>

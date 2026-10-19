@@ -271,7 +271,9 @@ describe("the Mentions button", () => {
         await more.trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.textContent?.trim())).toEqual(["Mentions", "Threads"]);
+        // the label each item shows; the Mentions item's dot also reads "new" to a screen reader
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Mentions", "Threads"]);
+        expect(items[0].textContent?.trim()).toBe("Mentionsnew");
 
         items[0].click();
         await settle();
