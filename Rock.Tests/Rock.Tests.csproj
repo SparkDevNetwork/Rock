@@ -362,6 +362,7 @@
     <Compile Include="Utility\MethodRetryTests.cs" />
     <Compile Include="Utility\WebRequestHelperTests.cs" />
     <Compile Include="Web\Cache\GroupTypeCacheTests.cs" />
+    <Compile Include="Web\UI\Controls\ItemPickerTests.cs" />
     <Compile Include="Web\UI\Controls\KeyValueListTests.cs" />
     <Compile Include="Web\Cache\PageShortLinkCacheTests.cs" />
     <Compile Include="Web\Cache\SiteCacheTests.cs" />
