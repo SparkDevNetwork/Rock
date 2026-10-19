@@ -470,9 +470,19 @@ namespace RockWeb.Blocks.Crm
             if ( valuesRowPersonPersonProperty.PersonPropertyValue.LastModifiedDateTime != null )
             {
                 var pPropValue = valuesRowPersonPersonProperty.PersonPropertyValue;
+
+                /*
+                    10/18/2026 - MSE
+
+                    The modified by name belongs to whoever last changed the value, which can be
+                    the person themselves, and it is written into the selection label HTML, so
+                    the nick name and last name are HTML encoded.
+
+                    Reason: Prevent stored XSS through a person name in Person Merge.
+                */
                 personMergeFieldRowEventArgs.ContentHTML = pPropValue.FormattedValue
                     + $"<br><small class=\"text-muted\">Last Modified {pPropValue.LastModifiedDateTime.Value.ToShortDateString()} at " +
-                    $"{pPropValue.LastModifiedDateTime.Value.ToShortTimeString()} by {pPropValue.ModifiedByNickName} {pPropValue.ModifiedByLastName}</small>";
+                    $"{pPropValue.LastModifiedDateTime.Value.ToShortTimeString()} by {pPropValue.ModifiedByNickName.EncodeHtml()} {pPropValue.ModifiedByLastName.EncodeHtml()}</small>";
             }
             else
             {
