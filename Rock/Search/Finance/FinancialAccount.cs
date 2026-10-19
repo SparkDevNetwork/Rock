@@ -82,12 +82,33 @@ namespace Rock.Search.Finance
             var rockContext = new RockContext();
             var financialAccountService = new FinancialAccountService( rockContext );
 
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML, so the account name, GL code and
+                campus values are HTML encoded. Encoding can't be done in SQL, so the results are
+                materialized (capped at 50) first.
+
+                Reason: Prevent stored XSS through account names in Smart Search results.
+            */
+            var accountItems = financialAccountService.GetAccountsBySearchTerm( searchTerm )
+                .Select( v => new
+                {
+                    AccountName = v.PublicName == null || v.PublicName.Length == 0 ? v.Name : v.PublicName,
+                    v.GlCode,
+                    HasCampus = v.Campus != null,
+                    CampusText = v.Campus.ShortCode != "" ? v.Campus.ShortCode : v.Campus.Name
+                } )
+                .Take( 50 )
+                .ToList();
+
             // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
-            var qry = financialAccountService.GetAccountsBySearchTerm( searchTerm )
+            var qry = accountItems
                 .Select( v =>
-                    v.Campus == null
-                        ? ( v.PublicName == null || v.PublicName.Length==0 ? v.Name : v.PublicName ) + ( v.GlCode==null || v.GlCode.Length==0 ? "" : " (" + v.GlCode + ")" )
-                        : (v.PublicName == null || v.PublicName.Length == 0 ? v.Name : v.PublicName) + (v.GlCode == null || v.GlCode.Length == 0 ? "" : " (" + v.GlCode + ")") + "                                                  <span class='search-accessory label label-default pull-right'>" + ( v.Campus.ShortCode != "" ? v.Campus.ShortCode : v.Campus.Name ) + "</span>" );
+                    !v.HasCampus
+                        ? v.AccountName.EncodeHtml() + ( v.GlCode == null || v.GlCode.Length == 0 ? "" : " (" + v.GlCode.EncodeHtml() + ")" )
+                        : v.AccountName.EncodeHtml() + ( v.GlCode == null || v.GlCode.Length == 0 ? "" : " (" + v.GlCode.EncodeHtml() + ")" ) + "                                                  <span class='search-accessory label label-default pull-right'>" + v.CampusText.EncodeHtml() + "</span>" )
+                .AsQueryable();
             return qry;
         }
     }

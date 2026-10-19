@@ -33,13 +33,15 @@ namespace Rock.ElectronicSignature
 
         /// <summary>
         /// Gets or sets the typed signature when SignatureType is <see cref="SignatureType.Typed"/>
-        /// or full legal name when SignatureType is <see cref="SignatureType.Drawn"/>
+        /// or full legal name when SignatureType is <see cref="SignatureType.Drawn"/>.
+        /// This value must be HTML encoded by the caller.
         /// </summary>
         /// <value>The typed signature.</value>
         public string SignedName { get; set; }
 
         /// <summary>
-        /// Gets or sets the drawn signature data URL.
+        /// Gets or sets the drawn signature data URL. Only a base64 encoded
+        /// PNG data URL will be rendered.
         /// </summary>
         /// <value>The drawn signature data URL.</value>
         public string DrawnSignatureDataUrl { get; set; }
@@ -57,7 +59,8 @@ namespace Rock.ElectronicSignature
         public DateTime? SignedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the client ip address.
+        /// Gets or sets the client ip address. This value must be HTML encoded
+        /// by the caller.
         /// </summary>
         /// <value>The client ip address.</value>
         public string SignedClientIp { get; set; }

@@ -84,11 +84,32 @@ namespace Rock.Search.Person
         {
             var searchQry = GetSearchResults( searchterm );
 
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML, and business names can be set by
+                anonymous visitors through public giving forms. The name and campus values are HTML
+                encoded, which can't be done in SQL, so the results are materialized (capped at 50) first.
+
+                Reason: Prevent stored XSS through business names in Smart Search results.
+            */
+            var businessItems = searchQry
+                .Select( b => new
+                {
+                    b.LastName,
+                    HasCampus = b.PrimaryCampus != null,
+                    CampusText = b.PrimaryCampus.ShortCode != "" ? b.PrimaryCampus.ShortCode : b.PrimaryCampus.Name
+                } )
+                .Distinct()
+                .OrderBy( b => b.LastName )
+                .Take( 50 )
+                .ToList();
+
             // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
-            return searchQry
-                .OrderBy( q => q.LastName )
-            .Select( b => b.PrimaryCampus == null ? b.LastName : b.LastName + "                                                          <span class='search-accessory label label-default pull-right'>" + (b.PrimaryCampus.ShortCode != "" ? b.PrimaryCampus.ShortCode : b.PrimaryCampus.Name) + "</span>" )
-                .Distinct();
+            return businessItems
+                .Select( b => !b.HasCampus ? b.LastName.EncodeHtml() : b.LastName.EncodeHtml() + "                                                          <span class='search-accessory label label-default pull-right'>" + b.CampusText.EncodeHtml() + "</span>" )
+                .Distinct()
+                .AsQueryable();
         }
     }
 }
