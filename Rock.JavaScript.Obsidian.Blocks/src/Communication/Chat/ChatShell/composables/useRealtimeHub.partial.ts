@@ -82,6 +82,9 @@ export type RealtimeHubDependencies = {
     /** The open channel's topic has been joined, the first time or again after a drop. */
     onJoined: (channelId: string) => void;
 
+    /** The person's topic was joined again after a drop; never called for its first join. */
+    onPersonalRejoined?: () => void;
+
     /**
      * The live connection's health changed; null when it is healthy again. A read Realtime has
      * revoked from the open channel arrives here as rt.read_revoked, after the hub has left it.

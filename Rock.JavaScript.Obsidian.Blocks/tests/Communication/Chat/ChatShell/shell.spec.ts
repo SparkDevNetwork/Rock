@@ -20,7 +20,7 @@
 // however the earlier opens and saves settle.
 import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
-import { HistoryPage, MentionRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
@@ -88,7 +88,8 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }>,
     tokenPerson: { value: string | null },
     reloads: { count: number },
-    heldSends: { value: Deferred<void>[] | null }
+    heldSends: { value: Deferred<void>[] | null },
+    heldBootstraps: { value: Deferred<Response>[] | null }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -105,6 +106,8 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     const reloads = { count: 0 };
     // Set to a list, each send waits for the test to answer it, in the order they were sent.
     const heldSends: { value: Deferred<void>[] | null } = { value: null };
+    // Set to a list, each sidebar read waits for the test to answer it, in the order they were asked.
+    const heldBootstraps: { value: Deferred<Response>[] | null } = { value: null };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -161,6 +164,11 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
                 if (bootstrap.value instanceof Error) {
                     throw bootstrap.value;
                 }
+                if (heldBootstraps.value) {
+                    const answer = deferred<Response>();
+                    heldBootstraps.value.push(answer);
+                    return answer.promise;
+                }
                 return fakeResponse(200, bootstrap.value);
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_history")) {
@@ -211,7 +219,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -1557,5 +1565,287 @@ describe("mentions", () => {
         h.shell.mentions.search({ channel_id: channelA, can_mention: true, can_mention_all: true }, "a");
 
         expect(h.shell.mentions.state.picker.query).toBeNull();
+    });
+});
+
+// The live sidebar. A dropped and rejoined personal topic may have lost signals, so the sidebar is
+// read again, after a random wait of up to five seconds shared with any reload asked meanwhile, so
+// a Realtime restart that rejoins every client at once does not read every sidebar in the same
+// second. A reload in flight never lays its older snapshot over what arrived while it was out:
+// every personal event and save that lands meanwhile is applied at once and replayed over the
+// answer, and an answer older than the newest asked for is dropped.
+describe("the live sidebar", () => {
+    const dmD = "d000000d-0000-4000-8000-000000000000";
+    const channelE = "c000000e-0000-4000-8000-000000000000";
+
+    /** A sidebar row in the exact shape chat_get_bootstrap answers, read up to message 10. */
+    function sidebarRow(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
+        return {
+            channel_id: channelId,
+            name: "Room",
+            icon_url: null,
+            channel_type: "shared",
+            is_public: false,
+            always_shown: false,
+            is_member: true,
+            is_favorite: false,
+            notify_mode: "all",
+            is_leader: false,
+            can_post_announcements: false,
+            can_mention_all: false,
+            last_message_id: 10,
+            last_message_at: "2026-10-19T09:00:00Z",
+            last_message_type: "text",
+            last_sender_nick_name: "Ada",
+            last_sender_last_name: "Member",
+            last_sender_listed: true,
+            last_message_preview: "old",
+            last_message_is_own: false,
+            read_cursor: 10,
+            is_unread: false,
+            mention_count: 0,
+            all_mention_count: 0,
+            can_mention: true,
+            dm_names: null,
+            dm_other_count: null,
+            ...extra
+        };
+    }
+
+    /** The sidebar as the page loaded it, and as a reload taken before any change answers it. */
+    function snapshot(): { channels: SidebarRow[], reactions: [], me: { unread_mentions: UnreadMention[] } } {
+        return {
+            channels: [
+                sidebarRow(channelA, { read_cursor: 9 }),
+                sidebarRow(channelB),
+                sidebarRow(dmD, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1 }),
+                sidebarRow(channelE, { last_message_id: 12, read_cursor: 10, is_unread: true, mention_count: 1 })
+            ],
+            reactions: [],
+            me: { unread_mentions: [{ channel_id: channelE, parent_id: null, message_id: 11, created_at: "2026-10-19T09:00:00Z", in_channel: true }] }
+        };
+    }
+
+    /** Starts the shell over the snapshot with channel A open and the personal topic joined. */
+    async function startedLive(): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.bootstrap.value = snapshot();
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, personalTopic(tenant, person)).status?.("SUBSCRIBED");
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        return h;
+    }
+
+    function rowOf(h: ReturnType<typeof build>, channelId: string): SidebarRow | undefined {
+        return h.shell.channels.rows.find(r => r.channel_id === channelId);
+    }
+
+    /** Asks the shell for a reload, as a membership change in a room not on screen does. */
+    function askReload(h: ReturnType<typeof build>): void {
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c0-0000-4000-8000-000000000000" });
+    }
+
+    function personalStatus(h: ReturnType<typeof build>, status: string): void {
+        topicOf(h, personalTopic(tenant, person)).status?.(status);
+    }
+
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+    });
+
+    describe("a rejoin of the personal topic", () => {
+        test("reloads the sidebar once, after a random wait of up to five seconds", async () => {
+            const h = await startedLive();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            const before = h.counts.bootstraps;
+
+            personalStatus(h, "CHANNEL_ERROR");
+            personalStatus(h, "SUBSCRIBED");
+            await settle();
+            jest.advanceTimersByTime(2_400);
+            await settle();
+            expect(h.counts.bootstraps).toBe(before);
+
+            jest.advanceTimersByTime(200);
+            await settle();
+            expect(h.counts.bootstraps).toBe(before + 1);
+
+            jest.advanceTimersByTime(10_000);
+            await settle();
+            expect(h.counts.bootstraps).toBe(before + 1);
+        });
+
+        test("shares its reload with another rejoin and with a reload asked during the wait", async () => {
+            const h = await startedLive();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            const before = h.counts.bootstraps;
+
+            personalStatus(h, "TIMED_OUT");
+            personalStatus(h, "SUBSCRIBED");
+            jest.advanceTimersByTime(1_000);
+            personalStatus(h, "CLOSED");
+            personalStatus(h, "SUBSCRIBED");
+            askReload(h);
+            await settle();
+            jest.advanceTimersByTime(10_000);
+            await settle();
+
+            expect(h.counts.bootstraps).toBe(before + 1);
+        });
+
+        test("the first join of the personal topic reloads nothing", async () => {
+            const h = build();
+            h.bootstrap.value = snapshot();
+            const starting = h.shell.start();
+            await settle();
+            answerHistory(h, channelA, 10);
+            await starting;
+            await settle();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            const before = h.counts.bootstraps;
+
+            personalStatus(h, "SUBSCRIBED");
+            jest.advanceTimersByTime(10_000);
+            await settle();
+
+            expect(h.counts.bootstraps).toBe(before);
+        });
+    });
+
+    describe("a reload in flight", () => {
+        // Each event as the platform sends it, and what the row must show once the reload's older
+        // answer has landed over it.
+        const cases: Array<[string, string, Record<string, unknown>, (h: ReturnType<typeof build>) => void]> = [
+            ["channel.unread", "channel.unread", { channel_id: channelB, message_id: 11, id: "5e000011-0000-4000-8000-000000000000" }, h => {
+                expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ is_unread: true, last_message_id: 11 }));
+            }],
+            ["channel.mention, for a message the answer did not count", "channel.mention", { channel_id: channelB, message_id: 11, parent_id: null, in_channel: true, all: false, id: "5e000012-0000-4000-8000-000000000000" }, h => {
+                expect(rowOf(h, channelB)?.mention_count).toBe(1);
+            }],
+            ["dm.preview", "dm.preview", {
+                channel_id: dmD,
+                message_id: 11,
+                preview: "new",
+                sent_at: "2026-10-19T10:00:00.5+00:00",
+                sender: { nick_name: "Ben", last_name: "Okafor" },
+                is_own: false,
+                id: "5e000013-0000-4000-8000-000000000000"
+            }, h => {
+                expect(rowOf(h, dmD)).toEqual(expect.objectContaining({ last_message_id: 11, last_message_preview: "new", last_sender_nick_name: "Ben", is_unread: true }));
+            }],
+            ["channel.read", "channel.read", { channel_id: channelE, read_cursor: 12, last_message_id: 12, id: "5e000014-0000-4000-8000-000000000000" }, h => {
+                expect(rowOf(h, channelE)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false, mention_count: 0 }));
+                expect(h.shell.mentions.state.hasDot).toBe(false);
+            }]
+        ];
+
+        test.each(cases)("keeps %s that landed before the answer", async (_name, event, payload, check) => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(1);
+
+            personal(h, event, payload);
+            await settle();
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+
+            check(h);
+        });
+
+        test("does not count a mention twice when the answer already counts it", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+
+            personal(h, "channel.mention", { channel_id: channelB, message_id: 11, parent_id: null, in_channel: true, all: false, id: "5e000015-0000-4000-8000-000000000000" });
+            await settle();
+            const answer = snapshot();
+            answer.channels[1] = sidebarRow(channelB, { last_message_id: 11, is_unread: true, mention_count: 1 });
+            answer.me.unread_mentions.push({ channel_id: channelB, parent_id: null, message_id: 11, created_at: "2026-10-19T10:00:00Z", in_channel: true });
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, answer));
+            await settle();
+
+            expect(rowOf(h, channelB)?.mention_count).toBe(1);
+        });
+
+        test.each(["before", "after"])("keeps a save of the read position answered %s the sidebar", async order => {
+            const h = await startedLive();
+            h.shell.markRead(10);
+            await settle();
+            const save = h.saves.filter(s => s.channelId === channelA && s.messageId === 10).pop();
+            expect(save).toBeDefined();
+
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+
+            if (order === "before") {
+                save?.answer.resolve(fakeResponse(200, { read_cursor: 10, last_message_id: 10 }));
+                await settle();
+                h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            }
+            else {
+                h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+                await settle();
+                save?.answer.resolve(fakeResponse(200, { read_cursor: 10, last_message_id: 10 }));
+            }
+            await settle();
+
+            expect(rowOf(h, channelA)?.read_cursor).toBe(10);
+        });
+
+        test("an answer older than the newest asked for is dropped, its unread mentions with it", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            askReload(h);
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(2);
+
+            const newer = snapshot();
+            newer.channels[1] = sidebarRow(channelB, { name: "Renamed" });
+            newer.me.unread_mentions = [];
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, newer));
+            await settle();
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+
+            expect(rowOf(h, channelB)?.name).toBe("Renamed");
+            expect(h.shell.mentions.state.hasDot).toBe(false);
+        });
+
+        test("nothing lands once the shell stops, neither the answer nor a rejoin's wait", async () => {
+            const h = await startedLive();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            h.heldBootstraps.value = [];
+            askReload(h);
+            personalStatus(h, "CHANNEL_ERROR");
+            personalStatus(h, "SUBSCRIBED");
+            await settle();
+            const asked = h.heldBootstraps.value.length;
+
+            void h.shell.stop();
+            await settle();
+            const changed = snapshot();
+            changed.channels[1] = sidebarRow(channelB, { name: "Renamed" });
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, changed));
+            await settle();
+            jest.advanceTimersByTime(10_000);
+            await settle();
+
+            expect(rowOf(h, channelB)?.name).toBe("Room");
+            expect(h.heldBootstraps.value).toHaveLength(asked);
+        });
     });
 });

@@ -56,6 +56,7 @@ function row(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRo
         last_sender_last_name: "Reed",
         last_sender_listed: true,
         last_message_preview: "Are we doing the extended bridge again?",
+        last_message_is_own: false,
         read_cursor: 10,
         is_unread: false,
         mention_count: 0,
@@ -468,5 +469,66 @@ describe("the empty sidebar", () => {
         const w = mountSidebar({ rows: [] });
 
         expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
+    });
+});
+
+// The live sidebar: the reader's own last message reads "You: " in any direct message, and a row
+// glows once when a message from someone else reaches it, as the design's incoming message does.
+describe("the reader's own last message", () => {
+    test("reads 'You: ' in a two-person conversation and in a group", () => {
+        const ownPair = { ...dmAnna, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis", is_unread: false };
+        const ownGroup = { ...dmGroup, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis" };
+        const w = mountSidebar({ rows: [ownPair, ownGroup] });
+
+        expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-preview']").text()).toBe("You: Do you have a minute after rehearsal?");
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("You: Are we doing the extended bridge again?");
+    });
+
+    test("is never prefixed on a system line, and another's in a group keeps their first name", () => {
+        const ownSystem = { ...dmGroup, last_message_is_own: true, last_message_type: "system", last_message_preview: "Jordan added Priya" };
+        const w = mountSidebar({ rows: [ownSystem, dmBig] });
+
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Jordan added Priya");
+        expect(rowOf(w, dmBig.channel_id).get("[data-testid='row-preview']").text()).toBe("Marcus: Are we doing the extended bridge again?");
+    });
+});
+
+describe("the flash on a live message", () => {
+    test("a direct message's row glows on a message from someone else, even where it does not move", async () => {
+        const w = mountSidebar({ rows: [dmRead, dmGroup] });
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
+    });
+
+    test("not on the reader's own send, though it moves the row up", async () => {
+        const w = mountSidebar({ rows: [dmGroup, dmRead] });
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", last_message_is_own: true }, dmGroup] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+    });
+
+    test("not on an edit of the newest message, nor a walk-back after a delete", async () => {
+        const w = mountSidebar({ rows: [dmRead, dmGroup] });
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_preview: "Edited text" }, { ...dmGroup, last_message_id: 9, last_message_preview: "The one before" }] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
+    });
+
+    test("a channel's row glows on channel.unread, the one signal it gets until read, where it does not move", async () => {
+        const w = mountSidebar({ rows: [team, dmRead] });
+
+        await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true }, dmRead] });
+        await nextTick();
+
+        expect(rowOf(w, team.channel_id).classes()).toContain("is-flash");
     });
 });

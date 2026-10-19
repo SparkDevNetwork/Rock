@@ -390,3 +390,70 @@ describe("a Realtime error the client cannot classify", () => {
         expect(unknown).toHaveLength(0);
     });
 });
+
+// A dropped personal topic loses whatever signals were sent while it was down, so the hub tells
+// the shell when it is joined again, and the shell reads the sidebar again. The first join is the
+// page load's own, which has just read it.
+describe("the personal topic joined again", () => {
+    function hubCounting(client: RealtimeClientLike): { hub: ReturnType<typeof createRealtimeHub>, rejoins: () => number } {
+        let rejoins = 0;
+        const hub = createRealtimeHub({
+            client,
+            tenantId: tenant,
+            personAliasGuid: alias,
+            onChannelEvent: () => undefined,
+            onPersonalEvent: () => undefined,
+            onJoined: () => undefined,
+            onStatus: () => undefined,
+            onPersonalRejoined: () => rejoins++
+        });
+        return { hub, rejoins: () => rejoins };
+    }
+
+    test.each(["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"])("after %s, tells the shell once", async drop => {
+        const f = fakeClient();
+        const { hub, rejoins } = hubCounting(f.client);
+        await hub.start();
+        const personalChannel = f.channels[0];
+
+        personalChannel.status?.("SUBSCRIBED");
+        expect(rejoins()).toBe(0);
+
+        personalChannel.status?.(drop);
+        personalChannel.status?.("SUBSCRIBED");
+        expect(rejoins()).toBe(1);
+
+        // a second confirmation of the same join is not another rejoin
+        personalChannel.status?.("SUBSCRIBED");
+        expect(rejoins()).toBe(1);
+    });
+
+    test("the first join tells nothing, nor does the open channel's rejoin", async () => {
+        const f = fakeClient();
+        const { hub, rejoins } = hubCounting(f.client);
+        await hub.start();
+        f.channels[0].status?.("SUBSCRIBED");
+        hub.openChannel(channelOne);
+        const open = f.channels[1];
+
+        open.status?.("SUBSCRIBED");
+        open.status?.("CHANNEL_ERROR");
+        open.status?.("SUBSCRIBED");
+
+        expect(rejoins()).toBe(0);
+    });
+
+    test("a stopped hub tells nothing", async () => {
+        const f = fakeClient();
+        const { hub, rejoins } = hubCounting(f.client);
+        await hub.start();
+        const personalChannel = f.channels[0];
+        personalChannel.status?.("SUBSCRIBED");
+        personalChannel.status?.("CLOSED");
+
+        await hub.stop();
+        personalChannel.status?.("SUBSCRIBED");
+
+        expect(rejoins()).toBe(0);
+    });
+});

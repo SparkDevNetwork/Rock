@@ -48,8 +48,11 @@ export type ChannelStore = {
     /** Sets the channel on screen. */
     setActive: (channelId: string | null) => void;
 
-    /** An event on the person's own topic. */
-    applyPersonalEvent: (event: string, payload: unknown) => void;
+    /**
+     * An event on the person's own topic; replayed when a sidebar reload that was in flight as it
+     * arrived has since landed.
+     */
+    applyPersonalEvent: (event: string, payload: unknown, isReplay?: boolean) => void;
 
     /** A save of the read position came back. */
     applyMarkRead: (channelId: string, result: MarkReadResult) => void;

@@ -44,6 +44,7 @@ function row(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
         last_sender_last_name: "Lovelace",
         last_sender_listed: true,
         last_message_preview: "hi",
+        last_message_is_own: false,
         read_cursor: 10,
         is_unread: false,
         mention_count: 0,
@@ -206,5 +207,185 @@ describe("createChannelStore", () => {
         s.setSidebar([row(hidden, { is_unread: true })]);
 
         expect(s.rows.map(r => r.channel_id)).toEqual([hidden]);
+    });
+});
+
+// A direct message's row is kept live by dm.preview, sent to every member's topic, the sender's
+// own included, whenever the room's last timeline message changes: a send, an edit of the newest,
+// a delete or hide walking back to the one before, or to none. Its payload, as the platform's
+// signal builds it: the message, its preview as text, when it was sent, the sender's current
+// names, whether it is this reader's, and the signal's own id.
+describe("dm.preview", () => {
+    const dmOne = "d0000001-0000-4000-8000-000000000000";
+    const dmTwo = "d0000002-0000-4000-8000-000000000000";
+    const starredRoom = "c0000005-0000-4000-8000-000000000000";
+
+    /** A direct message's row, read up to its last message. */
+    function dm(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
+        return row(channelId, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1, ...extra });
+    }
+
+    /** dm.preview exactly as the platform sends it. */
+    function preview(channelId: string, messageId: number | null, extra: Record<string, unknown> = {}): Record<string, unknown> {
+        return {
+            channel_id: channelId,
+            message_id: messageId,
+            preview: messageId === null ? null : `message ${messageId}`,
+            sent_at: messageId === null ? null : "2026-10-19T11:00:00.123456+00:00",
+            sender: messageId === null ? null : { nick_name: "Ben", last_name: "Okafor" },
+            is_own: false,
+            id: "5e000001-0000-4000-8000-000000000000",
+            ...extra
+        };
+    }
+
+    function dmStore(rows: SidebarRow[]): { store: ReturnType<typeof createChannelStore>, reloads: () => number } {
+        let reloads = 0;
+        const s = createChannelStore({ reloadSidebar: () => reloads++ });
+        s.setSidebar(rows);
+        return { store: s, reloads: () => reloads };
+    }
+
+    test("moves the row's preview, time, pointer, sender and own flag", () => {
+        const { store: s, reloads } = dmStore([dm(dmOne)]);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 11));
+
+        expect(s.rows[0]).toEqual(expect.objectContaining({
+            last_message_id: 11,
+            last_message_at: "2026-10-19T11:00:00.123456+00:00",
+            last_message_preview: "message 11",
+            last_sender_nick_name: "Ben",
+            last_sender_last_name: "Okafor",
+            last_message_is_own: false
+        }));
+        expect(reloads()).toBe(0);
+    });
+
+    test("re-sorts the rows by the platform's own order: starred first, newest message, then the id", () => {
+        const { store: s } = dmStore([
+            row(starredRoom, { is_favorite: true, last_message_at: "2026-10-19T08:00:00Z" }),
+            dm(dmOne, { last_message_at: "2026-10-19T10:00:00Z" }),
+            dm(dmTwo, { last_message_at: "2026-10-19T09:00:00Z" }),
+            row(one, { last_message_at: "2026-10-19T09:30:00Z" })
+        ]);
+
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 11));
+
+        expect(s.rows.map(r => r.channel_id)).toEqual([starredRoom, dmTwo, dmOne, one]);
+
+        // two at the same time fall back to the room's id, as the platform breaks the tie
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 12));
+        expect(s.rows.map(r => r.channel_id)).toEqual([starredRoom, dmOne, dmTwo, one]);
+    });
+
+    test("bolds the row only when the message is not the reader's, not on screen and past their place", () => {
+        const { store: s } = dmStore([dm(dmOne), dm(dmTwo), dm(starredRoom, { read_cursor: 12 }), dm(hidden)]);
+        s.setActive(dmTwo);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 11, { is_own: true }));
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 11));
+        // an edit of the newest message, which the reader has already read
+        s.applyPersonalEvent("dm.preview", preview(starredRoom, 12));
+        s.applyPersonalEvent("dm.preview", preview(hidden, 11));
+
+        const unread = (id: string): boolean | undefined => s.rows.find(r => r.channel_id === id)?.is_unread;
+        expect(unread(dmOne)).toBe(false);
+        expect(s.rows.find(r => r.channel_id === dmOne)?.last_message_is_own).toBe(true);
+        expect(unread(dmTwo)).toBe(false);
+        expect(unread(starredRoom)).toBe(false);
+        expect(unread(hidden)).toBe(true);
+    });
+
+    test("a walk-back to an older message recomputes the bold, so a deleted unread message unbolds the row", () => {
+        const { store: s } = dmStore([dm(dmOne, { last_message_id: 11, read_cursor: 10, is_unread: true })]);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 10));
+
+        expect(s.rows[0]).toEqual(expect.objectContaining({ last_message_id: 10, last_message_preview: "message 10", is_unread: false }));
+    });
+
+    test("a walk-back to nothing empties the row, which then draws No messages yet", () => {
+        const { store: s } = dmStore([dm(dmOne, { last_message_id: 11, read_cursor: 10, is_unread: true })]);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, null));
+
+        expect(s.rows[0]).toEqual(expect.objectContaining({
+            last_message_id: null,
+            last_message_at: null,
+            last_message_preview: null,
+            last_sender_nick_name: null,
+            last_sender_last_name: null,
+            last_message_is_own: false,
+            is_unread: false
+        }));
+    });
+
+    test("for a room the sidebar does not hold, reloads only when the signal carries a message", () => {
+        const { store: s, reloads } = dmStore([dm(dmOne)]);
+
+        s.applyPersonalEvent("dm.preview", preview(hidden, null));
+        expect(reloads()).toBe(0);
+
+        // a hidden direct message comes back on a new message, as the sidebar's hide rule reads
+        s.applyPersonalEvent("dm.preview", preview(hidden, 12));
+        expect(reloads()).toBe(1);
+    });
+});
+
+// channel.read reaches the person's other devices when one of them saves a read position that
+// moved: the save's own answer, applied exactly as the saving device applies it.
+describe("channel.read", () => {
+    test("applies as a save: caught up clears the bold and the counts, one behind keeps them", () => {
+        const { store: s } = store();
+        s.setSidebar([
+            row(one, { last_message_id: 12, read_cursor: 10, is_unread: true, mention_count: 2, all_mention_count: 1 }),
+            row(two, { last_message_id: 12, read_cursor: 10, is_unread: true, mention_count: 2, all_mention_count: 1 })
+        ]);
+
+        s.applyPersonalEvent("channel.read", { channel_id: one, read_cursor: 12, last_message_id: 12, id: "5e000002-0000-4000-8000-000000000000" });
+        s.applyPersonalEvent("channel.read", { channel_id: two, read_cursor: 11, last_message_id: 12, id: "5e000003-0000-4000-8000-000000000000" });
+
+        expect(s.rows.find(r => r.channel_id === one)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false, mention_count: 0, all_mention_count: 0 }));
+        expect(s.rows.find(r => r.channel_id === two)).toEqual(expect.objectContaining({ read_cursor: 11, is_unread: true, mention_count: 2, all_mention_count: 1 }));
+    });
+
+    test("carries the room's pointer, so a channel row behind it stays bold after a read short of the newest", () => {
+        const { store: s } = store();
+        // this device heard of message 11 only; the room has since reached 12
+        s.setSidebar([row(one, { last_message_id: 11, read_cursor: 10, is_unread: true })]);
+
+        s.applyPersonalEvent("channel.read", { channel_id: one, read_cursor: 11, last_message_id: 12, id: "5e000004-0000-4000-8000-000000000000" });
+
+        expect(s.rows[0]).toEqual(expect.objectContaining({ read_cursor: 11, last_message_id: 12, is_unread: true }));
+    });
+});
+
+// A sidebar reload in flight keeps every personal event that arrived meanwhile and replays them
+// over its answer. Each states a value except channel.mention, which adds one: replayed, it adds
+// only for a message above the answer's own pointer for that row, which the answer did not count.
+describe("a replayed channel.mention", () => {
+    test("adds only above the answer's own pointer, even after a replayed signal has moved the row's", () => {
+        const { store: s } = store();
+        s.setSidebar([row(two, { last_message_id: 10, read_cursor: 8, is_unread: true, mention_count: 1 })]);
+
+        // counted by the answer already
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 9, parent_id: null, in_channel: true, all: false, id: "5e000005-0000-4000-8000-000000000000" }, true);
+        expect(s.rows[0].mention_count).toBe(1);
+
+        // after the answer was read: the unread signal moves the row's pointer to it, and its
+        // mention still counts
+        s.applyPersonalEvent("channel.unread", { channel_id: two, message_id: 11, id: "5e000006-0000-4000-8000-000000000000" }, true);
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 11, parent_id: null, in_channel: true, all: false, id: "5e000007-0000-4000-8000-000000000000" }, true);
+        expect(s.rows[0].mention_count).toBe(2);
+    });
+
+    test("a live mention, not replayed, still counts below the row's pointer when past the reader's place", () => {
+        const { store: s } = store();
+        s.setSidebar([row(two, { last_message_id: 10, read_cursor: 8, is_unread: true, mention_count: 1 })]);
+
+        s.applyPersonalEvent("channel.mention", { channel_id: two, message_id: 9, parent_id: null, in_channel: true, all: false, id: "5e000008-0000-4000-8000-000000000000" });
+
+        expect(s.rows[0].mention_count).toBe(2);
     });
 });

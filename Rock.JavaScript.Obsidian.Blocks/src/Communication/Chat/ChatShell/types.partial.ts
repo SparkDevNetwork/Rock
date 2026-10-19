@@ -40,6 +40,9 @@ export type SidebarRow = {
     last_sender_last_name: string | null;
     last_sender_listed: boolean;
     last_message_preview: string | null;
+
+    /** Whether the last message is the reader's own, under any of their aliases; false with none. */
+    last_message_is_own: boolean;
     read_cursor: number | null;
     is_unread: boolean;
     mention_count: number;

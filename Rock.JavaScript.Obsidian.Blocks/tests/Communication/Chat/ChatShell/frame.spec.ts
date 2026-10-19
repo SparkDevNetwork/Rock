@@ -64,6 +64,7 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
         last_sender_last_name: null,
         last_sender_listed: false,
         last_message_preview: null,
+        last_message_is_own: false,
         read_cursor: null,
         is_unread: false,
         mention_count: 0,

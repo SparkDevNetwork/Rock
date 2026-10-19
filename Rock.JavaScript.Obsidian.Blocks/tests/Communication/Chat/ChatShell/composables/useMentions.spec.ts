@@ -1012,3 +1012,41 @@ describe("a jump from the inbox", () => {
         expect(h.mentions.state.inbox.currentId).toBe(95);
     });
 });
+
+// A read saved on another of the person's devices arrives as channel.read, the save's own answer,
+// and takes the conversation's mentions it read off the dot here as a save of this device's does.
+describe("channel.read from another device", () => {
+    test("drops the conversation's mentions at or below its place, and not the ones past it", () => {
+        const h = setup();
+        h.mentions.setUnread([unread(50, "2026-10-18T09:00:00Z")]);
+
+        h.mentions.applyPersonalEvent("channel.read", { channel_id: channel, read_cursor: 49, last_message_id: 60, id: "5e000001-0000-4000-8000-000000000000" });
+        expect(h.mentions.state.hasDot).toBe(true);
+
+        h.mentions.applyPersonalEvent("channel.read", { channel_id: channel, read_cursor: 50, last_message_id: 60, id: "5e000002-0000-4000-8000-000000000000" });
+        expect(h.mentions.state.hasDot).toBe(false);
+    });
+
+    test("leaves a mention kept to a thread, and another conversation's", () => {
+        const h = setup();
+        h.mentions.setUnread([unread(55, "2026-10-18T09:00:00Z", { parent_id: 30, in_channel: false })]);
+
+        h.mentions.applyPersonalEvent("channel.read", { channel_id: channel, read_cursor: 500, last_message_id: 500, id: "5e000003-0000-4000-8000-000000000000" });
+        expect(h.mentions.state.hasDot).toBe(true);
+
+        const other = setup();
+        other.mentions.setUnread([unread(50, "2026-10-18T09:00:00Z")]);
+        other.mentions.applyPersonalEvent("channel.read", { channel_id: otherChannel, read_cursor: 500, last_message_id: 500, id: "5e000004-0000-4000-8000-000000000000" });
+        expect(other.mentions.state.hasDot).toBe(true);
+    });
+
+    test("a mention replayed over a reload's answer that already lists it is held once, so one read takes it", () => {
+        const h = setup();
+        h.mentions.setUnread([unread(50, "2026-10-18T09:00:00Z")]);
+
+        h.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 50, parent_id: null, in_channel: true, all: false, id: "5e000005-0000-4000-8000-000000000000" });
+        h.mentions.applyPersonalEvent("channel.read", { channel_id: channel, read_cursor: 50, last_message_id: 50, id: "5e000006-0000-4000-8000-000000000000" });
+
+        expect(h.mentions.state.hasDot).toBe(false);
+    });
+});
