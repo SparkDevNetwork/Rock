@@ -84,6 +84,15 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         return store.rows.find(row => row.channel_id === channelId);
     }
 
+    /**
+     * Whether the row's last message is one the reader typed. Their send never moves their read
+     * position, so without this their own last message would bold the row; a post Rock made in
+     * their name reads "You: " but is still news to them, as the platform's sidebar holds.
+     */
+    function isTypedByReader(row: SidebarRow): boolean {
+        return row.last_message_is_own && !row.last_message_posted_by_rock;
+    }
+
     /** A signal that a channel has something the person has not read. */
     function applyUnread(payload: unknown): void {
         const signal = payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null;
@@ -105,6 +114,9 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         row.is_unread = true;
         if (typeof signal.message_id === "number" && (row.last_message_id === null || signal.message_id > row.last_message_id)) {
             row.last_message_id = signal.message_id;
+            // the signal never announces a message the reader typed
+            row.last_message_is_own = false;
+            row.last_message_posted_by_rock = false;
         }
     }
 
@@ -174,11 +186,12 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         row.last_sender_nick_name = typeof sender?.nick_name === "string" ? sender.nick_name : null;
         row.last_sender_last_name = typeof sender?.last_name === "string" ? sender.last_name : null;
         row.last_message_is_own = isOwn;
+        row.last_message_posted_by_rock = signal.posted_by_rock === true;
 
         // Worked out again from the new pointer rather than only set, so a walk-back past an unread
-        // message that was deleted leaves the row read. The person's own message, or one in the
+        // message that was deleted leaves the row read. A message the person typed, or one in the
         // room on screen, is read already.
-        row.is_unread = messageId !== null && !isOwn && row.channel_id !== store.activeChannelId
+        row.is_unread = messageId !== null && !isTypedByReader(row) && row.channel_id !== store.activeChannelId
             && (row.read_cursor === null || messageId > row.read_cursor);
 
         sortRows();
@@ -202,13 +215,16 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             return;
         }
 
+        // A message the reader typed is read already; one the row has not heard of is nobody's
+        // it knows of.
+        const isTyped = result.last_message_id === row.last_message_id && isTypedByReader(row);
         row.read_cursor = result.read_cursor;
         if (result.last_message_id !== null) {
             row.last_message_id = result.last_message_id;
         }
         // A save that comes back after the person has returned to the channel leaves it read:
         // they are looking at it, and their next save settles it.
-        row.is_unread = channelId !== store.activeChannelId && isUnreadAfterSave(result);
+        row.is_unread = channelId !== store.activeChannelId && !isTyped && isUnreadAfterSave(result);
 
         // A save that reached the newest message read every mention in it; one behind may not
         // have, and the next save settles it.

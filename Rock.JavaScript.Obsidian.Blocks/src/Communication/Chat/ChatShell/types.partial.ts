@@ -43,6 +43,12 @@ export type SidebarRow = {
 
     /** Whether the last message is the reader's own, under any of their aliases; false with none. */
     last_message_is_own: boolean;
+
+    /**
+     * Whether Rock posted the last message, under the reader's name or another's. One posted in
+     * the reader's name reads "You: " and still makes the row unread; one they typed does not.
+     */
+    last_message_posted_by_rock: boolean;
     read_cursor: number | null;
     is_unread: boolean;
     mention_count: number;
@@ -478,6 +484,9 @@ export type DmPreviewEvent = {
 
     /** Whether the message is this reader's, true only on the sender's own topic. */
     is_own: boolean;
+
+    /** Whether Rock posted it; a post in the reader's own name still makes the row unread. */
+    posted_by_rock: boolean;
 };
 
 /**

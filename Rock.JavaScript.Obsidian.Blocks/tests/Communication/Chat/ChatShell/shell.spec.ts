@@ -1601,6 +1601,7 @@ describe("the live sidebar", () => {
             last_sender_listed: true,
             last_message_preview: "old",
             last_message_is_own: false,
+            last_message_posted_by_rock: false,
             read_cursor: 10,
             is_unread: false,
             mention_count: 0,
@@ -1737,6 +1738,7 @@ describe("the live sidebar", () => {
                 sent_at: "2026-10-19T10:00:00.5+00:00",
                 sender: { nick_name: "Ben", last_name: "Okafor" },
                 is_own: false,
+                posted_by_rock: false,
                 id: "5e000013-0000-4000-8000-000000000000"
             }, h => {
                 expect(rowOf(h, dmD)).toEqual(expect.objectContaining({ last_message_id: 11, last_message_preview: "new", last_sender_nick_name: "Ben", is_unread: true }));

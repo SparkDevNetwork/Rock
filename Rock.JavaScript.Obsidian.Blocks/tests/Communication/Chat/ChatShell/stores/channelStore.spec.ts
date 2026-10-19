@@ -45,6 +45,7 @@ function row(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
         last_sender_listed: true,
         last_message_preview: "hi",
         last_message_is_own: false,
+        last_message_posted_by_rock: false,
         read_cursor: 10,
         is_unread: false,
         mention_count: 0,
@@ -234,6 +235,7 @@ describe("dm.preview", () => {
             sent_at: messageId === null ? null : "2026-10-19T11:00:00.123456+00:00",
             sender: messageId === null ? null : { nick_name: "Ben", last_name: "Okafor" },
             is_own: false,
+            posted_by_rock: false,
             id: "5e000001-0000-4000-8000-000000000000",
             ...extra
         };
@@ -321,6 +323,41 @@ describe("dm.preview", () => {
         }));
     });
 
+    test("Rock's post in the reader's name bolds the row live and reads as theirs, where a message they typed does not bold it", () => {
+        const { store: s } = dmStore([dm(dmOne), dm(dmTwo)]);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 11, { is_own: true, posted_by_rock: true }));
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 11, { is_own: true, posted_by_rock: false }));
+
+        expect(s.rows.find(r => r.channel_id === dmOne)).toEqual(expect.objectContaining({ is_unread: true, last_message_is_own: true, last_message_posted_by_rock: true }));
+        expect(s.rows.find(r => r.channel_id === dmTwo)).toEqual(expect.objectContaining({ is_unread: false, last_message_is_own: true, last_message_posted_by_rock: false }));
+    });
+
+    test("a walk-back to a message the reader typed leaves the row read, and to one Rock posted in their name bolds it", () => {
+        const { store: s } = dmStore([
+            dm(dmOne, { last_message_id: 12, read_cursor: 10, is_unread: true }),
+            dm(dmTwo, { last_message_id: 12, read_cursor: 10, is_unread: true })
+        ]);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 11, { is_own: true }));
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 11, { is_own: true, posted_by_rock: true }));
+
+        expect(s.rows.find(r => r.channel_id === dmOne)?.is_unread).toBe(false);
+        expect(s.rows.find(r => r.channel_id === dmTwo)?.is_unread).toBe(true);
+    });
+
+    test("a read from another device short of a last message the reader typed leaves the row read", () => {
+        // loaded as the platform answers it: their own last message, their place below it, not bold
+        const { store: s } = dmStore([dm(dmOne, { last_message_id: 10, read_cursor: 8, is_unread: false, last_message_is_own: true })]);
+
+        s.applyPersonalEvent("channel.read", { channel_id: dmOne, read_cursor: 9, last_message_id: 10, id: "5e000009-0000-4000-8000-000000000000" });
+        expect(s.rows[0].is_unread).toBe(false);
+
+        // and the device's own save answers the same
+        s.applyMarkRead(dmOne, { read_cursor: 9, last_message_id: 10 });
+        expect(s.rows[0].is_unread).toBe(false);
+    });
+
     test("for a room the sidebar does not hold, reloads only when the signal carries a message", () => {
         const { store: s, reloads } = dmStore([dm(dmOne)]);
 
@@ -348,6 +385,16 @@ describe("channel.read", () => {
 
         expect(s.rows.find(r => r.channel_id === one)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false, mention_count: 0, all_mention_count: 0 }));
         expect(s.rows.find(r => r.channel_id === two)).toEqual(expect.objectContaining({ read_cursor: 11, is_unread: true, mention_count: 2, all_mention_count: 1 }));
+    });
+
+    test("a channel whose last message the reader typed bolds on a newer message from someone else, and a read short of it keeps the bold", () => {
+        const { store: s } = store();
+        s.setSidebar([row(one, { last_message_id: 10, read_cursor: 8, is_unread: false, last_message_is_own: true })]);
+
+        s.applyPersonalEvent("channel.unread", { channel_id: one, message_id: 11, id: "5e00000a-0000-4000-8000-000000000000" });
+        s.applyPersonalEvent("channel.read", { channel_id: one, read_cursor: 10, last_message_id: 11, id: "5e00000b-0000-4000-8000-000000000000" });
+
+        expect(s.rows[0]).toEqual(expect.objectContaining({ last_message_id: 11, last_message_is_own: false, is_unread: true }));
     });
 
     test("carries the room's pointer, so a channel row behind it stays bold after a read short of the newest", () => {

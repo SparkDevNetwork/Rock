@@ -57,6 +57,7 @@ function row(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRo
         last_sender_listed: true,
         last_message_preview: "Are we doing the extended bridge again?",
         last_message_is_own: false,
+        last_message_posted_by_rock: false,
         read_cursor: 10,
         is_unread: false,
         mention_count: 0,
