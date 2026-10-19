@@ -359,15 +359,20 @@ jobs:
             step="$resolved/step-$(printf '%02d' "$n")"
             mu_merge_step "$from" "$into" "$step"
             if [ "$STEP" = "conflict" ]; then
-              files=$(sed 's/^/- `/; s/$/`/' "$step/files")
+              # The same file notes and ways forward as the merge-up check
+              # comment, so the two always agree, including where Claude's
+              # proposal for this conflict stands.
+              MU_AI_STATUS=""
+              if mu_can_propose "$step"; then
+                MU_AI_STATUS=$(mu_find_proposal "$(cat "$step/key")")
+              fi
               {
                 echo "SHIP_FAIL<<EOF"
                 echo "Merging \`$from\` into \`$into\` hit conflicts. Nothing was pushed to any branch."
-                echo "$files"
+                mu_render_conflict_files "$step"
                 echo ""
-                echo "To ship now, either:"
-                echo "- add the \`ai-resolve\` label to have Claude propose a resolution, approve it with \`approve-resolution\`, then add \`ship\` again, or"
-                echo "- add the \`ship-only\` label to ship to \`$BASE\` without merging up, then do the merge-up by hand in SmartGit. Once that merge reaches public, its resolution is recorded, and Ship it can replay it if the identical conflict comes up again."
+                echo "To ship now:"
+                mu_render_ways_forward "$step" "$BASE" "$PR"
                 echo "EOF"
               } >> "$GITHUB_ENV"
               exit 1
