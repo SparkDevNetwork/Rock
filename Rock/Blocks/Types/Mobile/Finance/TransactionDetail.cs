@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -174,6 +175,38 @@ namespace Rock.Blocks.Types.Mobile.Finance
             };
         }
 
+        /// <summary>
+        /// Determines whether the current person can view the transaction. Givers
+        /// can view transactions given under their giving group or a business they
+        /// own, and staff need Edit permission on the block or the transaction.
+        /// </summary>
+        /// <param name="transaction">The financial transaction to check.</param>
+        /// <returns><c>true</c> if the current person can view the transaction; otherwise <c>false</c>.</returns>
+        private bool CanViewTransaction( FinancialTransaction transaction )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( currentPerson == null )
+            {
+                return false;
+            }
+
+            if ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) || transaction.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            var givingId = transaction.AuthorizedPersonAlias?.Person?.GivingId;
+            if ( givingId.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var validGivingIds = new List<string> { currentPerson.GivingId };
+            validGivingIds.AddRange( new PersonService( RockContext ).GetBusinesses( currentPerson.Id ).Select( b => b.GivingId ) );
+
+            return validGivingIds.Contains( givingId );
+        }
+
         #endregion
 
         #region Block Actions
@@ -195,6 +228,11 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             var financialTransaction = financialTransactionService.Get( transactionId, !this.PageCache.Layout.Site.DisablePredictableIds );
             if ( financialTransaction == null )
+            {
+                return ActionNotFound( "There is no transaction with the provided identifier." );
+            }
+
+            if ( !CanViewTransaction( financialTransaction ) )
             {
                 return ActionNotFound( "There is no transaction with the provided identifier." );
             }
