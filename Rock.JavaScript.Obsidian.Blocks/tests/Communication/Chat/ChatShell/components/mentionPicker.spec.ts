@@ -362,6 +362,25 @@ describe("the picker in the composer", () => {
         expect(options().map(nameOf)).toEqual(["Anna Reyes", "Ben Okafor"]);
     });
 
+    test("hands its people to the editor, so a pasted token of one of them is drawn as their chip", async () => {
+        const w = drawComposer(people);
+        const editor = editorOf(w);
+        editor.focus();
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(range);
+
+        const paste = new Event("paste", { bubbles: true, cancelable: true });
+        Object.defineProperty(paste, "clipboardData", { value: { getData: (format: string) => format === "text/plain" ? `<@${ben}> hi` : "" } });
+        editor.dispatchEvent(paste);
+        await nextTick();
+
+        expect(editor.querySelector("[data-testid='editor-chip']")?.textContent).toContain("Ben Okafor");
+        expect(boxText(w)).toBe(`<@${ben}> hi`);
+    });
+
     test("does not open on @ right after a chip", async () => {
         const w = drawComposer(people);
         await typeNodes(w, ["Hi @"]);

@@ -33,6 +33,7 @@
                             :placeholder="placeholder"
                             :isDisabled="isDisabled"
                             :isConversation="!isChannel"
+                            :people="mentionSource?.people ?? []"
                             data-testid="composer-input"
                             @send="onSubmit"
                             @upWhenEmpty="emit('editLast')"

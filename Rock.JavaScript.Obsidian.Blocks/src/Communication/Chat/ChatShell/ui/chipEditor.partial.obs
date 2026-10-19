@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
     import { h, onBeforeUnmount, onMounted, PropType, ref, render, watch } from "vue";
-    import { DisplayPiece } from "../types.partial";
+    import { DisplayPiece, MentionPerson } from "../types.partial";
     import Icon from "./icon.partial.obs";
     import { avatarHue } from "./brand.partial";
 
@@ -125,6 +125,12 @@
         isConversation: {
             type: Boolean,
             default: false
+        },
+
+        /** The people a mention picker found, whose names a pasted token can be drawn with. */
+        people: {
+            type: Array as PropType<MentionPerson[]>,
+            default: () => []
         }
     });
 
@@ -152,6 +158,9 @@
      * should still land where the person was typing.
      */
     let lastRange: Range | null = null;
+
+    /** Every chip's name this editor has drawn, by its guid in lower case or "all", so a pasted token can be drawn again. */
+    const drawnNames = new Map<string, string>();
 
     // #endregion Values
 
@@ -199,10 +208,14 @@
         emit("mentionQuery", mentionQueryAtCaret()?.query ?? null);
     }
 
-    /** Paste is plain text only, so markup from a web page never reaches the wire. */
+    /**
+     * Paste is plain text only, so markup from a web page never reaches the wire. A token the
+     * editor can name, as a copied chip writes, is drawn as its chip again; one it cannot name
+     * stays the text it is, as the server would leave it.
+     */
     function onPaste(event: ClipboardEvent): void {
         event.preventDefault();
-        insertText(event.clipboardData?.getData("text/plain") ?? "");
+        insertText(event.clipboardData?.getData("text/plain") ?? "", pasteNames());
     }
 
     /** Copy writes the wire text, so a chip pasted back into chat is the same mention. */
@@ -281,7 +294,7 @@
      * Inserts plain text at the caret, or at the end when the box has none. New lines become
      * line breaks built by hand, since a browser's own turn into divs or raw text under pre-wrap.
      */
-    function insertText(text: string): void {
+    function insertText(text: string, names?: Map<string, string>): void {
         const element = editorElement.value;
         const normalized = text.replace(/\r\n?/g, "\n");
         if (!element || !normalized) {
@@ -296,7 +309,7 @@
                 fragment.append(document.createElement("br"));
             }
             if (line) {
-                fragment.append(line);
+                fragment.append(...(names ? lineNodes(line, names) : [line]));
             }
         });
 
@@ -603,6 +616,46 @@
         return nodes;
     }
 
+    /** One line of text as its text and a chip for each token named. */
+    function lineNodes(line: string, names: Map<string, string>): Array<Node | string> {
+        const nodes: Array<Node | string> = [];
+        let last = 0;
+        const pattern = new RegExp(tokenPattern.source, "gi");
+        let match: RegExpExecArray | null;
+        while ((match = pattern.exec(line)) !== null) {
+            const name = names.get(match[1].toLowerCase());
+            if (name === undefined) {
+                continue;
+            }
+
+            if (match.index > last) {
+                nodes.push(line.slice(last, match.index));
+            }
+            nodes.push(chipFor(match[0], name));
+            last = match.index + match[0].length;
+        }
+
+        if (last < line.length) {
+            nodes.push(line.slice(last));
+        }
+
+        return nodes;
+    }
+
+    /** The names a pasted token may be drawn with: the message's pieces, this editor's chips, then the picker's people. */
+    function pasteNames(): Map<string, string> {
+        const names = mentionNames();
+        drawnNames.forEach((name, key) => names.set(key, name));
+        for (const person of props.people) {
+            const guid = person.person_alias_guid.toLowerCase();
+            if (!names.has(guid)) {
+                names.set(guid, [person.nick_name, person.last_name].filter(part => !!part).join(" "));
+            }
+        }
+
+        return names;
+    }
+
     /** Each admitted mention's name, by its guid in lower case or "all". */
     function mentionNames(): Map<string, string> {
         const names = new Map<string, string>();
@@ -628,6 +681,7 @@
      * since nobody is their own mention target.
      */
     function chipFor(token: string, name: string): HTMLElement {
+        drawnNames.set(token.slice(2, -1).toLowerCase(), name);
         const chip = document.createElement("span");
         chip.className = "chat-mn";
         chip.setAttribute("contenteditable", "false");

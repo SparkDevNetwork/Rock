@@ -227,6 +227,39 @@ describe("copy and paste", () => {
     });
 });
 
+describe("pasting a copied chip", () => {
+    test("draws a token the editor has a chip for as that chip again, never as the raw token", async () => {
+        const w = draw(`Hi <@${lee}>`, [{ type: "text", text: "Hi " }, mentionLee]);
+        const [chip] = chips(w);
+        select(range => range.selectNode(chip));
+        const copy = clipboardEvent("copy");
+        editor(w).dispatchEvent(copy);
+
+        caretAtEnd(w);
+        editor(w).dispatchEvent(clipboardEvent("paste", { "text/plain": ` and ${copy.store["text/plain"]}` }));
+        await nextTick();
+
+        expect(chips(w)).toHaveLength(2);
+        expect(chips(w)[1].textContent).toContain("Lee Leader");
+        expect(editor(w).textContent).not.toContain("<@");
+        expect(await sent(w)).toBe(`Hi <@${lee}> and <@${lee}>`);
+    });
+
+    test("names a pasted token from the picker's people, and leaves one it cannot name as text", async () => {
+        const stranger = "a0000099-0000-4000-8000-000000000000";
+        wrapper = mount(ChipEditor, { props: { text: "", pieces: null, people: [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes" }] }, attachTo: document.body });
+        caretAtEnd(wrapper);
+
+        editor(wrapper).dispatchEvent(clipboardEvent("paste", { "text/plain": `<@${anna}> meet <@${stranger}>` }));
+        await nextTick();
+
+        expect(chips(wrapper)).toHaveLength(1);
+        expect(chips(wrapper)[0].textContent).toContain("Anna Reyes");
+        expect(editor(wrapper).textContent).toContain(`<@${stranger}>`);
+        expect(await sent(wrapper)).toBe(`<@${anna}> meet <@${stranger}>`);
+    });
+});
+
 describe("the keys", () => {
     test("Enter sends the wire text and does not add a line", async () => {
         const w = draw(`Hi <@${lee}>`, [{ type: "text", text: "Hi " }, mentionLee]);
