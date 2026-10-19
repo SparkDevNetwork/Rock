@@ -142,23 +142,21 @@ namespace Rock.Tests.Lava
         [TestMethod]
         public void Render_ValueInQuotedAttributeWithXmlEncodingOption_CannotEndAttribute()
         {
-            var mergeValues = new LavaDataDictionary
+            var options = new LavaRenderOptions
             {
-                { "Url", "/page/1?a=1&b=2'><b>TH184</b>" },
-                { "Name", "José" }
+                MergeFields = new LavaDataDictionary
+                {
+                    { "Url", "/page/1?a=1&b=2'><b>TH184</b>" },
+                    { "Name", "José" }
+                },
+                ShouldEncodeStringsAsXml = true
             };
             var template = @"<a href='{{ Url }}'>{{ Name }}</a>";
             var expectedOutput = @"<a href='/page/1?a=1&amp;b=2&#x27;&gt;&lt;b&gt;TH184&lt;/b&gt;'>Jos&#xE9;</a>";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var parameters = new LavaRenderParameters
-                {
-                    ShouldEncodeStringsAsXml = true,
-                    Context = LavaRenderContext.FromMergeValues( mergeValues )
-                };
-
-                var output = TestHelper.GetTemplateOutput( engine, template, parameters );
+                var output = LavaRenderTestHelper.Render( engine, template, options );
 
                 Assert.AreEqual( expectedOutput, output );
             } );
@@ -172,24 +170,15 @@ namespace Rock.Tests.Lava
         [TestMethod]
         public void Render_EscapeFilterWithXmlEncodingOption_EncodesValueTwice()
         {
-            var mergeValues = new LavaDataDictionary { { "Name", "Jo & Al" } };
+            var mergeFields = new LavaDataDictionary { { "Name", "Jo & Al" } };
             var template = @"{{ Name | Escape }}";
+            var encodedOptions = new LavaRenderOptions { MergeFields = mergeFields, ShouldEncodeStringsAsXml = true };
+            var unencodedOptions = new LavaRenderOptions { MergeFields = mergeFields, ShouldEncodeStringsAsXml = false };
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var encodedParameters = new LavaRenderParameters
-                {
-                    ShouldEncodeStringsAsXml = true,
-                    Context = LavaRenderContext.FromMergeValues( mergeValues )
-                };
-                var unencodedParameters = new LavaRenderParameters
-                {
-                    ShouldEncodeStringsAsXml = false,
-                    Context = LavaRenderContext.FromMergeValues( mergeValues )
-                };
-
-                Assert.AreEqual( "Jo &amp;amp; Al", TestHelper.GetTemplateOutput( engine, template, encodedParameters ) );
-                Assert.AreEqual( "Jo &amp; Al", TestHelper.GetTemplateOutput( engine, template, unencodedParameters ) );
+                Assert.AreEqual( "Jo &amp;amp; Al", LavaRenderTestHelper.Render( engine, template, encodedOptions ) );
+                Assert.AreEqual( "Jo &amp; Al", LavaRenderTestHelper.Render( engine, template, unencodedOptions ) );
             } );
         }
 
