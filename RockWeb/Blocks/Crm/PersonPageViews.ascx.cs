@@ -165,10 +165,19 @@ namespace RockWeb.Blocks.Crm
 
                     var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
 
+                    /*
+                        10/18/2026 - MSE
+
+                        The device application and operating system are parsed from the user
+                        agent, which the caller controls, so they are HTML encoded before being
+                        written into the client icon HTML.
+
+                        Reason: Prevent stored XSS through a page view device.
+                    */
                     lClientIcon.Text = string.Format(
                         "<div class='pageviewsession-client pull-right'><div class='pull-left margin-r-sm'><small>{0}<br>{1}</small></div><i class='{2} ti-2x pull-right'></i></div>",
-                        session.PageViewSession.DeviceType.Application,
-                        session.PageViewSession.DeviceType.OperatingSystem,
+                        session.PageViewSession.DeviceType.Application.EncodeHtml(),
+                        session.PageViewSession.DeviceType.OperatingSystem.EncodeHtml(),
                         icon );
 
                     var lSessionDuration = e.Item.FindControl( "lSessionDuration" ) as Literal;
@@ -217,6 +226,39 @@ namespace RockWeb.Blocks.Crm
         #region Methods
 
         /// <summary>
+        /// Gets the page view URL to use as a link target, HTML encoded. Only absolute
+        /// web URLs and root relative URLs are allowed; anything else returns "#".
+        /// </summary>
+        /// <param name="interactionData">The interaction data that holds the page URL.</param>
+        /// <returns>The encoded URL, or "#" if the URL is not safe to link to.</returns>
+        protected string GetSafePageViewUrl( object interactionData )
+        {
+            /*
+                10/18/2026 - MSE
+
+                The page view URL comes from the interaction data, which any visitor can
+                influence (the requested URL, or the RegisterPageInteraction API). It is
+                written into an href, so it is limited to web or root relative URLs (which
+                blocks javascript: and protocol relative links) and HTML encoded so it
+                cannot break out of the attribute. Browsers remove tab, CR and LF anywhere
+                in a URL (so a root relative URL with a tab after the first slash would act
+                as a protocol relative link), so URLs containing them are rejected.
+
+                Reason: Prevent stored XSS through a page view URL.
+            */
+            var url = ( interactionData as string )?.Trim();
+
+            if ( url.IsNotNullOrWhiteSpace()
+                && url.IndexOfAny( new[] { '\t', '\r', '\n' } ) < 0
+                && ( url.IsValidUrl() || ( url.StartsWith( "/" ) && !url.StartsWith( "//" ) && !url.StartsWith( "/\\" ) ) ) )
+            {
+                return url.EncodeHtml();
+            }
+
+            return "#";
+        }
+
+        /// <summary>
         /// Shows the list.
         /// </summary>
         public void ShowList()
@@ -243,7 +285,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( person != null )
             {
-                lPersonName.Text = person.FullName;
+                lPersonName.Text = person.FullName.EncodeHtml();
 
                 InteractionService interactionService = new InteractionService( rockContext );
 
@@ -301,6 +343,17 @@ namespace RockWeb.Blocks.Crm
                                 .Skip( skipCount )
                                 .Take( sessionCount + 1 );
 
+                /*
+                    10/18/2026 - MSE
+
+                    The site name and page view summary are written by data binding expressions
+                    in the ascx. The summary is the page's browser title, which many blocks build
+                    from data that people can set, so the ascx uses the encoding binding syntax.
+                    Some blocks store an already encoded browser title, so the summary is HTML
+                    decoded first to avoid showing entities; the output is still always encoded.
+
+                    Reason: Prevent stored XSS through a page view title.
+                */
                 rptSessions.DataSource = pageviewInfo.ToList().Take( sessionCount );
                 rptSessions.DataBind();
 

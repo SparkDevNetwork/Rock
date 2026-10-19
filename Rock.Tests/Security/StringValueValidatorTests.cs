@@ -41,6 +41,9 @@ namespace Rock.Tests.Security
         [DataRow( "' ontouchstart='x'" )]
         [DataRow( "' onscrollend='x'" )]
         [DataRow( "' ONPOINTEROVER='x'" )]
+        [DataRow( "<animate onbegin=alert(1) attributeName=x dur=1s>" )]
+        [DataRow( "' onend='x'" )]
+        [DataRow( "' onrepeat = 'x'" )]
         public void Validate_WithEventHandlerAttribute_Throws( string value )
         {
             Assert.ThrowsExactly<PropertyValidationException>( () =>
@@ -54,6 +57,7 @@ namespace Rock.Tests.Security
         [DataRow( "Turn the focus = on." )]
         [DataRow( "pointerover='x'" )]
         [DataRow( "https://www.facebook.com/onpointerover" )]
+        [DataRow( "We will begin = soon." )]
         public void Validate_WithoutEventHandlerAttribute_DoesNotThrow( string value )
         {
             StringValueValidator.Validate( value, StringValidationRule.EventHandlerAttributes, typeof( object ), "Value" );

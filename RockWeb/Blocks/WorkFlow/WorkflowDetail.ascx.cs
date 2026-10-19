@@ -489,8 +489,16 @@ namespace RockWeb.Blocks.WorkFlow
                         .FirstOrDefault();
                     if ( person != null )
                     {
+                        /*
+                            10/18/2026 - MSE
+
+                            A person can set their own name, and the term description is rendered as HTML.
+                            Encode the name so it shows as text inside the link.
+
+                            Reason: Prevent stored cross-site scripting in the activity assigned person.
+                        */
                         tdAssignedToPerson.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
-                            ResolveRockUrl( "~/Person/" ), person.Id, person.FullName );
+                            ResolveRockUrl( "~/Person/" ), person.Id, person.FullName.EncodeHtml() );
                     }
                 }
 
@@ -500,7 +508,15 @@ namespace RockWeb.Blocks.WorkFlow
                     var group = _groupService.Get( activity.AssignedGroupId.Value);
                     if ( group != null )
                     {
-                        tdAssignedToGroup.Description = group.Name;
+                        /*
+                            10/18/2026 - MSE
+
+                            The group name can be edited by anyone with edit access to the group, and the
+                            term description is rendered as HTML. Encode it so it shows as text.
+
+                            Reason: Prevent stored cross-site scripting in the activity assigned group.
+                        */
+                        tdAssignedToGroup.Description = group.Name.EncodeHtml();
                     }
                 }
 
@@ -750,14 +766,30 @@ namespace RockWeb.Blocks.WorkFlow
                         lSummary.Text = Workflow.WorkflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
                     }
 
-                    tdName.Description = Workflow.Name;
-                    tdStatus.Description = Workflow.Status;
+                    /*
+                        10/18/2026 - MSE
+
+                        The workflow name and status can come from form input through workflow actions,
+                        and the term description is rendered as HTML. Encode them so they show as text.
+
+                        Reason: Prevent stored cross-site scripting in the workflow name and status.
+                    */
+                    tdName.Description = Workflow.Name.EncodeHtml();
+                    tdStatus.Description = Workflow.Status.EncodeHtml();
 
                     if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
                     {
                         var person = Workflow.InitiatorPersonAlias.Person;
+                        /*
+                            10/18/2026 - MSE
+
+                            A person can set their own name, and the term description is rendered as HTML.
+                            Encode the name so it shows as text inside the link.
+
+                            Reason: Prevent stored cross-site scripting in the workflow initiator.
+                        */
                         tdInitiator.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
-                            ResolveRockUrl("~/Person/"), person.Id, person.FullName );
+                            ResolveRockUrl("~/Person/"), person.Id, person.FullName.EncodeHtml() );
                     }
                     else
                     {

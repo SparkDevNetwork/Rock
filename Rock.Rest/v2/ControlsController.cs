@@ -4599,6 +4599,49 @@ namespace Rock.Rest.v2
         #region Email Editor
 
         /// <summary>
+        /// Determines whether the unique identifier belongs to one of the
+        /// starter email sections that the email editor seeds.
+        /// </summary>
+        /// <param name="guid">The email section unique identifier.</param>
+        /// <returns><c>true</c> if the unique identifier is a starter email section; otherwise, <c>false</c>.</returns>
+        private static bool IsStarterEmailSectionGuid( Guid guid )
+        {
+            return guid == Rock.SystemGuid.EmailSection.STARTER_HERO.AsGuid()
+                || guid == Rock.SystemGuid.EmailSection.STARTER_STANDARD_PROMO.AsGuid()
+                || guid == Rock.SystemGuid.EmailSection.STARTER_3_COLUMN_PROMO.AsGuid();
+        }
+
+        /// <summary>
+        /// Validates the source markup of an email section.
+        /// </summary>
+        /// <param name="sourceMarkup">The source markup to validate.</param>
+        /// <returns>The validation error message, or <c>null</c> if the markup is valid.</returns>
+        private static string GetEmailSectionSourceMarkupError( string sourceMarkup )
+        {
+            /*
+                10/18/2026 - MSE
+
+                Email section markup is shared with every email editor user and
+                is inserted into the editor iframe, which runs on the Rock origin.
+                Script tags, javascript: URLs and event handler attributes are
+                rejected here. This always runs and is not gated on
+                DbContext.EnableStringValidation, which is off by default.
+
+                Reason: Prevent stored script in saved email sections.
+            */
+            try
+            {
+                StringValueValidator.Validate( sourceMarkup, StringValueValidator.GetEffectiveRules( Rock.Enums.Security.StringValidationProfile.LavaAndBasicHtml ), typeof( EmailSection ), nameof( EmailSection.SourceMarkup ) );
+
+                return null;
+            }
+            catch ( PropertyValidationException ex )
+            {
+                return ex.Message;
+            }
+        }
+
+        /// <summary>
         /// Creates an email section.
         /// </summary>
         /// <param name="options">The email section to create.</param>
@@ -4649,16 +4692,32 @@ namespace Rock.Rest.v2
                 var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
                 var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
 
+                /*
+                    10/18/2026 - MSE
+
+                    The editor seeds the three starter sections from the browser
+                    with IsSystem set, so the flag is still honored for those.
+                    Any other section is saved as a normal section so that its
+                    creator and administrators can still edit or delete it.
+
+                    Reason: Prevent locking planted sections with IsSystem.
+                */
                 var emailSection = new EmailSection
                 {
                     Category = category,
                     Guid = options.Guid,
-                    IsSystem = options.IsSystem,
+                    IsSystem = options.IsSystem && IsStarterEmailSectionGuid( options.Guid ),
                     Name = options.Name,
                     SourceMarkup = options.SourceMarkup,
                     ThumbnailBinaryFile = thumbnailBinaryFile,
                     UsageSummary = options.UsageSummary
                 };
+
+                var sourceMarkupError = GetEmailSectionSourceMarkupError( options.SourceMarkup );
+                if ( sourceMarkupError != null )
+                {
+                    return BadRequest( sourceMarkupError );
+                }
 
                 if ( !emailSection.IsValid )
                 {
@@ -4852,6 +4911,12 @@ namespace Rock.Rest.v2
                         // The logged in person is not allowed to edit this email section.
                         return StatusCode( HttpStatusCode.Forbidden );
                     }
+                }
+
+                var sourceMarkupError = GetEmailSectionSourceMarkupError( options.SourceMarkup );
+                if ( sourceMarkupError != null )
+                {
+                    return BadRequest( sourceMarkupError );
                 }
 
                 if ( emailSection == null )

@@ -104,16 +104,31 @@ namespace Rock.Search.Person
 
             IQueryable<string> resultQry;
 
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML (typeahead.js sets innerHTML), and
+                person names can be set by anonymous visitors through public forms. The name and
+                campus values are HTML encoded so they always render as text. Encoding can't be done
+                in SQL, so the results are materialized (capped at 50) before formatting.
+
+                Reason: Prevent stored XSS through person names in Smart Search results.
+            */
             var disableCampusLabel = CampusCache.All( false ).Count() == 1;
             if ( disableCampusLabel )
             {
+                var nameItems = qry.Select( p => new { p.LastName, p.NickName } )
+                    .Distinct()
+                    .Take( 50 )
+                    .ToList();
+
                 if ( reversed )
                 {
-                    resultQry = qry.Select( p => p.LastName + ", " + p.NickName ).Distinct();
+                    resultQry = nameItems.Select( p => p.LastName.EncodeHtml() + ", " + p.NickName.EncodeHtml() ).Distinct().AsQueryable();
                 }
                 else
                 {
-                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
+                    resultQry = nameItems.Select( p => p.NickName.EncodeHtml() + " " + p.LastName.EncodeHtml() ).Distinct().AsQueryable();
                 }
             }
             else
@@ -129,12 +144,12 @@ namespace Rock.Search.Person
                 // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection.
                 if ( reversed )
                 {
-                    resultQry = resultItems.Select( p => p.CampusShortCode == null ? p.LastName + ", " + p.NickName : p.LastName + ", " + p.NickName + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ) + "</span>" )
+                    resultQry = resultItems.Select( p => p.CampusShortCode == null ? p.LastName.EncodeHtml() + ", " + p.NickName.EncodeHtml() : p.LastName.EncodeHtml() + ", " + p.NickName.EncodeHtml() + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ).EncodeHtml() + "</span>" )
                         .AsQueryable();
                 }
                 else
                 {
-                    resultQry = resultItems.Select( p => p.CampusShortCode == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ) + "</span>" )
+                    resultQry = resultItems.Select( p => p.CampusShortCode == null ? p.NickName.EncodeHtml() + " " + p.LastName.EncodeHtml() : p.NickName.EncodeHtml() + " " + p.LastName.EncodeHtml() + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ).EncodeHtml() + "</span>" )
                         .AsQueryable();
                 }
             }
