@@ -309,16 +309,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
             using ( var rockContext = new RockContext() )
             {
                 // First load the entity set from the entity set guid.
-                var entitySet = new EntitySetService( rockContext )
-                    .GetNoTracking( entitySetGuid );
+                var entitySet = GetCurrentPersonEntitySet( rockContext, entitySetGuid );
 
-                // Our recipients really should always be a Person entity,
-                // but just in case lets check for it.
-                var personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
-
-                if ( entitySet.EntityTypeId != personEntityTypeId )
+                if ( entitySet == null )
                 {
-                    return ActionBadRequest();
+                    return ActionNotFound( "Could not load the recipients for this communication." );
                 }
 
                 var personService = new PersonService( rockContext ).Queryable();
@@ -376,10 +371,17 @@ namespace Rock.Blocks.Types.Mobile.Communication
         {
             using ( var rockContext = new RockContext() )
             {
+                var entitySet = GetCurrentPersonEntitySet( rockContext, entitySetGuid );
+
+                if ( entitySet == null )
+                {
+                    return ActionNotFound();
+                }
+
                 // Load our recipient.
                 var entitySetItemService = new EntitySetItemService( rockContext );
                 var entitySetItem = entitySetItemService.Queryable()
-                    .Where( esi => esi.Guid == entitySetItemGuid && esi.EntitySet.Guid == entitySetGuid )
+                    .Where( esi => esi.Guid == entitySetItemGuid && esi.EntitySetId == entitySet.Id )
                     .FirstOrDefault();
 
                 if ( entitySetItem == null )
@@ -409,8 +411,12 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return ActionForbidden();
                 }
 
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySet = entitySetService.Get( sendCommunicationBag.EntitySetGuid );
+                if ( sendCommunicationBag == null )
+                {
+                    return ActionBadRequest();
+                }
+
+                var entitySet = GetCurrentPersonEntitySet( RockContext, sendCommunicationBag.EntitySetGuid );
 
                 if ( entitySet == null )
                 {
@@ -436,6 +442,23 @@ namespace Rock.Blocks.Types.Mobile.Communication
                      || !IsAttachmentAllowed( sendCommunicationBag.ImageAttachmentGuid ) )
                 {
                     return ActionBadRequest( "The attachment is not valid." );
+                }
+
+                /*
+                    10/19/2026 - MSE
+
+                    The from number comes from the client. Only a number the phone
+                    number picker offers is accepted, which applies number security,
+                    SMS enabled, the Allowed SMS Numbers setting and the personal
+                    number settings. Otherwise a text could be sent from another
+                    person's personal number or a number this block does not allow.
+
+                    Reason: Enforce the block's SMS number settings on the server.
+                */
+                if ( sendCommunicationBag.CommunicationType.ToNative() == CommunicationType.SMS
+                     && !LoadPhoneNumbers().Any( n => n.Guid == sendCommunicationBag.FromNumberGuid ) )
+                {
+                    return ActionBadRequest( "Invalid From Phone." );
                 }
 
                 return ActionOk( SendCommunicationInternal( sendCommunicationBag, entitySet ) );
@@ -486,6 +509,48 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Description = n.Name
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the person entity set if it was created by the current person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entitySetGuid">The entity set unique identifier from the client.</param>
+        /// <returns>The <see cref="EntitySet"/>, or <c>null</c> if it was not found, is not a person entity set or was not created by the current person.</returns>
+        private EntitySet GetCurrentPersonEntitySet( RockContext rockContext, Guid entitySetGuid )
+        {
+            /*
+                10/19/2026 - MSE
+
+                The entity set Guid comes from the client. The mobile app creates
+                the set with api/EntitySets/CreateFromItems while the person is
+                signed in, so the creator is the person who should use it. The
+                person Id is compared instead of the alias Id so a merged person
+                still matches. Sets with no creator, or that are not person sets,
+                are rejected.
+
+                Reason: Prevent reading, editing or messaging another person's recipient list.
+            */
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+            if ( !currentPersonId.HasValue )
+            {
+                return null;
+            }
+
+            var entitySet = new EntitySetService( rockContext ).Get( entitySetGuid );
+            var personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+
+            if ( entitySet == null
+                 || !entitySet.CreatedByPersonAliasId.HasValue
+                 || entitySet.EntityTypeId != personEntityTypeId )
+            {
+                return null;
+            }
+
+            var ownerPersonId = new PersonAliasService( rockContext ).GetPersonId( entitySet.CreatedByPersonAliasId.Value );
+
+            return ownerPersonId.HasValue && ownerPersonId.Value == currentPersonId.Value ? entitySet : null;
         }
 
         /// <summary>
