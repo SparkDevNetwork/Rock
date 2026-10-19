@@ -1271,7 +1271,16 @@ namespace Rock.Rest.Controllers
                 if ( spouse != null )
                 {
                     string spouseFullName = Person.FormatFullName( spouse.NickName, spouse.LastName, spouse.SuffixValueId );
-                    personInfoHtmlBuilder.Append( "<p class='spouse'><strong>Spouse:</strong> " + spouseFullName + "</p>" );
+
+                    /*
+                        10/19/2026 - MSE
+
+                        The details HTML is inserted into the person picker as HTML, so the spouse
+                        name is encoded there. SpouseName stays raw for JSON consumers.
+
+                        Reason: Stored names must not render as HTML.
+                    */
+                    personInfoHtmlBuilder.Append( "<p class='spouse'><strong>Spouse:</strong> " + spouseFullName.EncodeHtml() + "</p>" );
                     personSearchResult.SpouseName = spouseFullName;
                     personSearchResult.SpouseNickName = spouse.NickName;
                 }
@@ -1287,8 +1296,17 @@ namespace Rock.Rest.Controllers
                 if ( primaryLocation != null )
                 {
                     var fullStreetAddress = primaryLocation.GetFullStreetAddress();
-                    string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
-                    personSearchResult.Address = fullStreetAddress.ConvertCrLfToHtmlBr();
+
+                    /*
+                        10/19/2026 - MSE
+
+                        The details HTML and Address are both rendered as HTML by the person
+                        pickers, so the address text is encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
+                    string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.EncodeHtml().ConvertCrLfToHtmlBr()}</dd></dl>";
+                    personSearchResult.Address = fullStreetAddress.EncodeHtml().ConvertCrLfToHtmlBr();
                     personInfoHtmlBuilder.Append( addressHtml );
                 }
             }
@@ -1470,11 +1488,19 @@ namespace Rock.Rest.Controllers
                         recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
                     }
 
+                    /*
+                        10/19/2026 - MSE
+
+                        The person popovers render this HTML as is, so the person and spouse names
+                        are encoded before they are placed in the markup.
+
+                        Reason: Stored names must not render as HTML.
+                    */
                     var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                     html.AppendFormat(
                         "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                         Person.GetPersonPhotoImageTag( person, 65, 65 ),
-                        person.FullName,
+                        person.FullName.EncodeHtml(),
                         person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
                     html.Append( "<div class='body'>" );
@@ -1484,7 +1510,7 @@ namespace Rock.Rest.Controllers
                     {
                         html.AppendFormat(
                             "<div><strong>Spouse</strong> {0}</div>",
-                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                            ( spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName ).EncodeHtml() );
                     }
 
                     int? age = person.Age;
@@ -1795,10 +1821,11 @@ namespace Rock.Rest.Controllers
         public string CampusShortCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the address.
+        /// Gets or sets the address as HTML. The address text is HTML encoded
+        /// and only the line breaks are emitted as <c>&lt;br&gt;</c> tags.
         /// </summary>
         /// <value>
-        /// The address.
+        /// The HTML encoded address text with line breaks converted to <c>&lt;br&gt;</c>.
         /// </value>
         public string Address { get; set; }
 

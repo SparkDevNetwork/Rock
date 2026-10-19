@@ -579,7 +579,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 return location.FormattedHtmlAddress;
             }
 
-            return $"{location.Street1}<br/>{location.Street2}<br/>{location.City}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : "" )}, {location.State} {location.PostalCode}"
+            /*
+                10/19/2026 - MSE
+
+                The result is written into the page as HTML, so each stored address part is
+                encoded before it is joined with <br/> tags.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return $"{location.Street1.EncodeHtml()}<br/>{location.Street2.EncodeHtml()}<br/>{location.City.EncodeHtml()}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County.EncodeHtml() : "" )}, {location.State.EncodeHtml()} {location.PostalCode.EncodeHtml()}"
                 .ReplaceWhileExists( "  ", " " )
                 .ReplaceWhileExists( "<br/><br/>", "<br/>" );
         }
