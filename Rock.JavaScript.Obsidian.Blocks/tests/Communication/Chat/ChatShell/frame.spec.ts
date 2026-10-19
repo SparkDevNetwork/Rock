@@ -1274,6 +1274,20 @@ describe("mentions", () => {
         expect(mentionsOf().closeSearch).toHaveBeenCalledTimes(1);
     });
 
+    test("the composer's picker is told while its answer is on its way, so it draws nothing stale", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        Object.assign(mentionsOf().state.picker, { isAwaitingAnswer: true, isAwaitingFirstAnswer: true });
+        await settle();
+
+        const composer = w.findComponent(ComposerComponent);
+        expect(composer.props("mentionSource")).toEqual(expect.objectContaining({ isAwaitingAnswer: true, isAwaitingFirstAnswer: true }));
+
+        Object.assign(mentionsOf().state.picker, { isAwaitingAnswer: false, isAwaitingFirstAnswer: false });
+        await settle();
+        expect(composer.props("mentionSource")).toEqual(expect.objectContaining({ isAwaitingAnswer: false, isAwaitingFirstAnswer: false }));
+    });
+
     test("the thread's reply composer searches the people of the thread's conversation", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);

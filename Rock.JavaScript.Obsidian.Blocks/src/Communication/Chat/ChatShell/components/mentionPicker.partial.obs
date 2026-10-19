@@ -3,16 +3,21 @@
     <!--
         Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
         popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
+        Hidden until the open's first answer, so it never flashes an empty line or grows under the
+        person; kept in place rather than left out, since its way in starts as it shows. The empty
+        line is said only once the answer for what was typed is in and empty.
     -->
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <div ref="popElement"
              class="chat-mention-pop"
+             :class="{ 'is-waiting': isAwaitingFirstAnswer }"
              data-testid="mention-picker"
+             :aria-hidden="isAwaitingFirstAnswer ? 'true' : undefined"
              :style="popStyles">
-            <template v-if="rows.length > 0">
-                <div v-if="drawnPeople.length > 0" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
+            <template v-if="drawnRows.length > 0">
+                <div v-if="hasPeopleDrawn" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
                 <div :id="listId" role="listbox" aria-label="People to mention">
-                    <button v-for="(row, index) in rows"
+                    <button v-for="(row, index) in drawnRows"
                             :id="`${listId}-${index}`"
                             :key="row.token"
                             type="button"
@@ -36,7 +41,7 @@
                 </div>
             </template>
 
-            <div v-else :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this {{ place }} matches.</div>
+            <div v-else-if="!isAwaitingAnswer" :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this {{ place }} matches.</div>
         </div>
     </Teleport>
 </template>
@@ -53,6 +58,12 @@
     border-radius: var(--chat-r-pop);
     box-shadow: var(--chat-shadow-pop);
     animation: chat-mention-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* Waiting for the open's first answer: not drawn, and its way in held until it shows. */
+.chat-mention-pop.is-waiting {
+    visibility: hidden;
+    animation: none;
 }
 
 /* The way out, played by a copy left behind as the picker goes, since a removed element cannot animate. */
@@ -170,6 +181,12 @@
         canMention: boolean;
         people: MentionPerson[];
         isAllOffered: boolean;
+
+        /** The answer for what was typed is on its way; absent, the people are its answer. */
+        isAwaitingAnswer?: boolean;
+
+        /** No answer has come since the picker opened; absent, one has. */
+        isAwaitingFirstAnswer?: boolean;
     };
 
     /** One row: the token its chip carries and the name the chip shows. */
@@ -210,6 +227,18 @@
         isConversation: {
             type: Boolean,
             default: false
+        },
+
+        /** The answer for what was typed is on its way, so the people are those held, narrowed to it. */
+        isAwaitingAnswer: {
+            type: Boolean,
+            default: false
+        },
+
+        /** No answer has come since the picker opened, so it draws nothing yet. */
+        isAwaitingFirstAnswer: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -238,13 +267,22 @@
     /** Set once a row is chosen: the chip replaces the picker at once, with no way out played, as the design does. */
     let isChosen = false;
 
+    /**
+     * Enter or Tab pressed while no row matched what was typed and its answer was on its way: the
+     * answer's first row is chosen when it comes, unless another key is typed first.
+     */
+    let isChoicePending = false;
+
+    /** The rows last drawn that matched their query, kept on screen while a narrowing leaves none. */
+    const lastRows = ref<PickerRow[]>([]);
+
     const overlayHost = computed(() => overlayHostOf(props.anchor ?? props.target));
     const anchorElement = computed(() => props.anchor ?? props.target ?? undefined);
 
     // Above the box at its start, below only when there is no room above, slid along inside the
     // window 8px clear of its edge. Placed by left and top, since a transform here would override
     // the pop's own and the picker would only fade.
-    const { floatingStyles, placement, x } = useFloating(anchorElement, popElement, {
+    const { floatingStyles, placement, x, update } = useFloating(anchorElement, popElement, {
         placement: "top-start",
         strategy: "fixed",
         transform: false,
@@ -271,6 +309,16 @@
 
         return props.isAllOffered ? [{ token: "<@all>", name: "@all", isAll: true }, ...people] : people;
     });
+
+    /**
+     * Whether the rows drawn are the last ones that matched, held while the answer for a query
+     * none of them matches is on its way, so the list neither empties nor says nobody matches.
+     */
+    const isHoldingLastRows = computed((): boolean => rows.value.length === 0 && props.isAwaitingAnswer && lastRows.value.length > 0);
+
+    const drawnRows = computed((): PickerRow[] => isHoldingLastRows.value ? lastRows.value : rows.value);
+
+    const hasPeopleDrawn = computed((): boolean => drawnRows.value.some(row => !row.isAll));
 
     /**
      * The placement, with the pop grown from the box's middle along the picker's nearest edge and
@@ -302,24 +350,33 @@
             return;
         }
 
-        const count = rows.value.length;
+        // Only rows matching what was typed can be moved through or chosen.
+        const count = isHoldingLastRows.value || props.isAwaitingFirstAnswer ? 0 : rows.value.length;
+        const isAwaiting = props.isAwaitingAnswer || props.isAwaitingFirstAnswer;
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
             if (count > 0) {
                 activeIndex.value = (activeIndex.value + (event.key === "ArrowDown" ? 1 : -1) + count) % count;
             }
         }
-        else if (event.key === "Enter" || (event.key === "Tab" && count > 0)) {
+        else if (event.key === "Enter" || (event.key === "Tab" && (count > 0 || isAwaiting))) {
             // Enter is held even with nothing to choose, since a send is never what it means here.
             event.preventDefault();
-            const row = rows.value[activeIndex.value];
+            const row = count > 0 ? rows.value[activeIndex.value] : undefined;
             if (row) {
                 choose(row);
+            }
+            else if (isAwaiting) {
+                isChoicePending = true;
             }
         }
         else if (event.key === "Escape") {
             event.preventDefault();
             emit("close");
+        }
+        else if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete") {
+            // A changed query is a new wish; the Enter pressed for the old one no longer stands.
+            isChoicePending = false;
         }
     }
 
@@ -349,9 +406,14 @@
             return;
         }
 
+        if (props.isAwaitingFirstAnswer) {
+            unmarkTarget();
+            return;
+        }
+
         target.setAttribute("aria-expanded", "true");
         target.setAttribute("aria-controls", listId);
-        if (rows.value.length > 0) {
+        if (activeIndex.value >= 0 && activeIndex.value < drawnRows.value.length) {
             target.setAttribute("aria-activedescendant", `${listId}-${activeIndex.value}`);
         }
         else {
@@ -374,7 +436,7 @@
     function playWayOut(): void {
         const element = popElement.value;
         const parent = element?.parentElement;
-        if (isChosen || !element || !parent || typeof element.getAnimations !== "function") {
+        if (isChosen || props.isAwaitingFirstAnswer || !element || !parent || typeof element.getAnimations !== "function") {
             return;
         }
 
@@ -399,12 +461,38 @@
 
     // #region Watchers
 
-    // A new answer starts again at its first row, as each keystroke redraws the list.
-    watch(rows, () => {
-        activeIndex.value = 0;
+    // Each keystroke's rows start again at their first; rows held from an earlier query have none
+    // active, since none of them matches.
+    watch(rows, value => {
+        if (value.length > 0) {
+            lastRows.value = value;
+        }
+    }, { immediate: true });
+
+    watch([rows, isHoldingLastRows], () => {
+        activeIndex.value = isHoldingLastRows.value ? -1 : 0;
     });
 
-    watch([activeIndex, rows, () => props.target], async () => {
+    // The answer an Enter waited for has come: its first row is chosen, or nothing when it found nobody.
+    watch([rows, () => props.isAwaitingAnswer, () => props.isAwaitingFirstAnswer], () => {
+        if (!isChoicePending || props.isAwaitingAnswer || props.isAwaitingFirstAnswer) {
+            return;
+        }
+
+        isChoicePending = false;
+        const row = rows.value[0];
+        if (row) {
+            choose(row);
+        }
+    });
+
+    // Placed again as soon as new rows are drawn, before the frame is painted: waiting for the
+    // size watcher would draw one frame at the old height's top, a jump as the picker shows.
+    watch([drawnRows, () => props.isAwaitingFirstAnswer, () => props.isAwaitingAnswer], () => {
+        update();
+    }, { flush: "post" });
+
+    watch([activeIndex, drawnRows, () => props.target, () => props.isAwaitingFirstAnswer], async () => {
         await nextTick();
         markTarget();
     });

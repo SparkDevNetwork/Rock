@@ -48,6 +48,15 @@ export type MentionPickerState = {
 
     /** Whether the @all row leads the list. */
     isAllOffered: boolean;
+
+    /**
+     * Whether the answer for the newest query is still on its way; the people are then those
+     * already held, narrowed to the query, so every row drawn matches what was typed.
+     */
+    isAwaitingAnswer: boolean;
+
+    /** Whether no answer has come since the picker opened, when it has nothing to draw yet. */
+    isAwaitingFirstAnswer: boolean;
 };
 
 /** The inbox as the panel draws it. */
@@ -152,6 +161,20 @@ function isAllQuery(query: string): boolean {
 }
 
 /**
+ * The people held who still match a longer or different query, by the platform's own rule: a
+ * nick or last name starting with the text, in any letter case.
+ *
+ * @param people The people held.
+ * @param query The text after the @.
+ *
+ * @returns The people who match it.
+ */
+function narrowPeople(people: MentionPerson[], query: string): MentionPerson[] {
+    const typed = query.trim().toLowerCase();
+    return people.filter(person => (person.nick_name ?? "").toLowerCase().startsWith(typed) || (person.last_name ?? "").toLowerCase().startsWith(typed));
+}
+
+/**
  * Reads a channel.mention payload, which arrives untyped off the wire.
  *
  * @param payload The event's payload.
@@ -182,7 +205,7 @@ function readMentionEvent(payload: unknown): ChannelMentionEvent | null {
  */
 export function createMentions(dependencies: MentionsDependencies): Mentions {
     const state = reactive<MentionsState>({
-        picker: { query: null, people: [], isAllOffered: false },
+        picker: { query: null, people: [], isAllOffered: false, isAwaitingAnswer: false, isAwaitingFirstAnswer: false },
         inbox: { rows: [], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [], currentId: null },
         hasDot: false
     }) as MentionsState;
@@ -249,6 +272,8 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
 
         // A refusal lists nobody rather than the people an earlier query found.
         state.picker.people = result.ok ? ((result.data as Partial<MentionSearchAnswer> | null)?.people ?? []) : [];
+        state.picker.isAwaitingAnswer = false;
+        state.picker.isAwaitingFirstAnswer = false;
     }
 
     /** Drops a pause still running, so no search is asked for a query already replaced. */
@@ -362,6 +387,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
 
             searchGeneration++;
             cancelPause();
+            const isOpening = state.picker.query === null;
             state.picker.query = query;
             state.picker.isAllOffered = channel.can_mention_all && isAllQuery(query);
 
@@ -369,7 +395,17 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             // not asked; @all, when they hold the right, is offered alone.
             if (!channel.can_mention) {
                 state.picker.people = [];
+                state.picker.isAwaitingAnswer = false;
+                state.picker.isAwaitingFirstAnswer = false;
                 return;
+            }
+
+            // Until the answer comes the rows held are narrowed to what was typed, so Enter after
+            // a fast keystroke never takes a person the query no longer matches.
+            state.picker.people = narrowPeople(state.picker.people, query);
+            state.picker.isAwaitingAnswer = true;
+            if (isOpening) {
+                state.picker.isAwaitingFirstAnswer = true;
             }
 
             const generation = searchGeneration;
@@ -382,6 +418,8 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             state.picker.query = null;
             state.picker.people = [];
             state.picker.isAllOffered = false;
+            state.picker.isAwaitingAnswer = false;
+            state.picker.isAwaitingFirstAnswer = false;
         },
 
         openInbox: async (): Promise<void> => {

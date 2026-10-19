@@ -432,6 +432,80 @@ describe("the picker's search", () => {
         expect(h.callsTo("chat_search_mentionable")).toHaveLength(1);
     });
 
+    describe("while an answer is on its way", () => {
+        const priya = "a0000005-0000-4000-8000-000000000000";
+        const priyaPerson = { person_alias_guid: priya, nick_name: "Priya", last_name: "Shah" };
+        const annaKim = { person_alias_guid: "a0000006-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim" };
+
+        test("narrows the people it holds to each keystroke at once, by the platform's rule, so the first row always matches what was typed", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaKim, benPerson, priyaPerson])];
+            h.mentions.search(room, "");
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+
+            h.mentions.search(room, "pr");
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([priya]);
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(true);
+
+            // a last name counts too, in any letter case
+            const byLast = setup();
+            byLast.answers.chat_search_mentionable = [peopleAnswer([annaKim, benPerson, priyaPerson])];
+            byLast.mentions.search(room, "");
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+            byLast.mentions.search(room, "OK");
+            expect(byLast.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([ben]);
+
+            h.mentions.search(room, "x");
+            expect(h.mentions.state.picker.people).toEqual([]);
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(true);
+        });
+
+        test("is answered once the newest query's answer lands", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([priyaPerson])];
+
+            h.mentions.search(room, "pr");
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(true);
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(false);
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([priya]);
+        });
+
+        test("waits for the first answer of each open, and not again until the picker closes", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson]), peopleAnswer([annaPerson]), peopleAnswer([benPerson])];
+
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+
+            h.mentions.search(room, "a");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+
+            h.mentions.closeSearch();
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+            h.mentions.search(room, "b");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+        });
+
+        test("waits for nothing where the platform is not asked", () => {
+            const h = setup();
+
+            h.mentions.search({ ...room, can_mention: false, can_mention_all: true }, "");
+
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(false);
+        });
+    });
+
     describe("offers @all", () => {
         test.each([
             ["nothing typed", ""],

@@ -1207,7 +1207,9 @@
      */
     function mentionSourceFor(row: SidebarRow | null): MentionPickerSource | null {
         const picker = shell.value.mentions.state.picker;
-        return row ? { canMention: row.can_mention, people: picker.people, isAllOffered: picker.isAllOffered } : null;
+        return row
+            ? { canMention: row.can_mention, people: picker.people, isAllOffered: picker.isAllOffered, isAwaitingAnswer: picker.isAwaitingAnswer, isAwaitingFirstAnswer: picker.isAwaitingFirstAnswer }
+            : null;
     }
 
     /** Lands on a mention in the open conversation, again even when it was the last landed on. */

@@ -346,6 +346,91 @@ describe("the picker's keys, pressed in the editor", () => {
     });
 });
 
+describe("the picker while its answer is on its way", () => {
+    test("draws nothing until the open's first answer, holding Enter meanwhile so it never sends", async () => {
+        const { w, target } = drawPicker({ people: [], isAwaitingAnswer: true, isAwaitingFirstAnswer: true });
+
+        // hidden, its way in held until it shows
+        expect(picker()?.classList.contains("is-waiting")).toBe(true);
+        expect(picker()?.getAttribute("aria-hidden")).toBe("true");
+        expect(document.querySelector(".chat-mention-empty")).toBeNull();
+        expect(target.getAttribute("aria-expanded")).not.toBe("true");
+        const enter = await press(target, "Enter");
+        expect(enter.defaultPrevented).toBe(true);
+
+        await w.setProps({ people: [annaPerson, benPerson], isAwaitingAnswer: false, isAwaitingFirstAnswer: false });
+        await nextTick();
+
+        expect(picker()?.classList.contains("is-waiting")).toBe(false);
+        expect(picker()?.hasAttribute("aria-hidden")).toBe(false);
+        expect(options().map(nameOf)).toEqual(["Anna Reyes", "Ben Okafor"]);
+    });
+
+    test("says nobody matches only once the answer for what was typed is empty", async () => {
+        const { w } = drawPicker({ people: [annaPerson] });
+        await w.setProps({ people: [], isAwaitingAnswer: true });
+        await nextTick();
+
+        expect(document.querySelector(".chat-mention-empty")).toBeNull();
+        // the rows drawn last stay while the answer comes, none of them active
+        expect(options().map(nameOf)).toEqual(["Anna Reyes"]);
+        expect(activeOption()).toBeUndefined();
+
+        await w.setProps({ isAwaitingAnswer: false });
+        await nextTick();
+        expect(picker()?.textContent?.trim()).toBe("No one in this channel matches.");
+    });
+
+    test.each(["Enter", "Tab"])("%s with no row matching what was typed waits for the answer and takes its first row, never a stale one", async key => {
+        const { w, target } = drawPicker({ people: [annaPerson] });
+        await w.setProps({ people: [], isAwaitingAnswer: true });
+        await nextTick();
+
+        const event = await press(target, key);
+        expect(event.defaultPrevented).toBe(true);
+        expect(w.emitted("choose")).toBeUndefined();
+
+        await w.setProps({ people: [benPerson], isAwaitingAnswer: false });
+        await nextTick();
+        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor"]]);
+    });
+
+    test("a key typed after a waiting Enter takes the wait back", async () => {
+        const { w, target } = drawPicker({ people: [annaPerson] });
+        await w.setProps({ people: [], isAwaitingAnswer: true });
+        await nextTick();
+
+        await press(target, "Enter");
+        await press(target, "o");
+        await w.setProps({ people: [benPerson], isAwaitingAnswer: false });
+        await nextTick();
+
+        expect(w.emitted("choose")).toBeUndefined();
+    });
+
+    test("an answer that finds nobody ends a waiting Enter with nothing chosen", async () => {
+        const { w, target } = drawPicker({ people: [annaPerson] });
+        await w.setProps({ people: [], isAwaitingAnswer: true });
+        await nextTick();
+
+        await press(target, "Enter");
+        await w.setProps({ isAwaitingAnswer: false });
+        await nextTick();
+        await w.setProps({ people: [benPerson] });
+        await nextTick();
+
+        expect(w.emitted("choose")).toBeUndefined();
+    });
+
+    test("Enter takes the narrowed row matching what was typed while the answer is on its way", async () => {
+        const { w, target } = drawPicker({ people: [benPerson], isAwaitingAnswer: true });
+
+        await press(target, "Enter");
+
+        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor"]]);
+    });
+});
+
 describe("the picker in the composer", () => {
     test.each([
         ["at the start of the box", ["@an"], "an"],

@@ -69,6 +69,8 @@
                            :anchor="boxElement ?? null"
                            :people="mentionSource.canMention ? mentionSource.people : []"
                            :isAllOffered="mentionSource.isAllOffered"
+                           :isAwaitingAnswer="mentionSource.canMention && mentionSource.isAwaitingAnswer === true"
+                           :isAwaitingFirstAnswer="mentionSource.canMention && mentionSource.isAwaitingFirstAnswer === true"
                            :isConversation="!isChannel"
                            @choose="onMentionChoose"
                            @close="isMentionDismissed = true" />
