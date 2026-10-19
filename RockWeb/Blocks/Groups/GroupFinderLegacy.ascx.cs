@@ -306,8 +306,16 @@ namespace RockWeb.Blocks.Groups
 
         private static class AttributeDefaultLava
         {
+            /*
+                10/19/2026 - MSE
+
+                The map info window is rendered as HTML and group names can be set by group
+                editors, so the default template escapes the group name.
+
+                Reason: Prevent stored XSS through group names in the default info window.
+            */
             public const string MapInfo = @"
-<h4 class='margin-t-none'>{{ Group.Name }}</h4> 
+<h4 class='margin-t-none'>{{ Group.Name | Escape }}</h4> 
 
 <div class='margin-b-sm'>
 {% for attribute in Group.AttributeValues %}
@@ -902,13 +910,13 @@ namespace RockWeb.Blocks.Groups
 
                 if ( targetPersonLocation != null && targetPersonLocation.GeoPoint != null )
                 {
-                    lTitle.Text += string.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
+                    lTitle.Text += string.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString().EncodeHtml() );
 
                     ShowResults();
                 }
                 else if ( targetPersonLocation != null )
                 {
-                    lTitle.Text += string.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
+                    lTitle.Text += string.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString().EncodeHtml() );
                 }
                 else
                 {
