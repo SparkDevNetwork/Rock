@@ -18,7 +18,7 @@
         <template v-if="state === 'system'">
             <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
             <span class="chat-sys-text">
-                <MessageBody :text="display.text" :pieces="serverPieces" :personAliasGuid="personAliasGuid" />
+                <MessageBody :text="display.text" :pieces="serverPieces" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" />
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
             </span>
         </template>
@@ -35,7 +35,7 @@
                         <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                     </div>
                     <div class="chat-card" data-testid="block-card">
-                        <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :runAction="runBlockAction" />
+                        <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
                     </div>
                 </div>
             </template>
@@ -46,7 +46,7 @@
                     <span class="chat-card-time" data-testid="message-time">{{ time }}</span>
                 </div>
                 <div class="chat-card-body">
-                    <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :runAction="runBlockAction" />
+                    <MessageBody :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
                 </div>
             </div>
         </template>

@@ -531,6 +531,20 @@ describe("system lines and block posts", () => {
         expect(card.get("[data-testid='block-fallback']").text()).toBe("Vote: a or b");
         expect(wrapper.get("[data-testid='sender-name']").text()).toBe("Anna Reyes");
     });
+
+    test.each([["a direct message", false, "conversation"], ["a channel", true, "channel"]] as const)("a system line's @all chip in %s says %s", (_kind, isChannel, place) => {
+        const wrapper = draw({ message: message({ message_type: "system", person_alias_guid: null, body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel });
+
+        expect(root(wrapper).getAttribute("data-state")).toBe("system");
+        expect(wrapper.get("[data-testid='piece-mention']").attributes("aria-label")).toBe(`@all, everyone in this ${place}`);
+    });
+
+    test.each([["a direct message", false, "conversation"], ["a channel", true, "channel"]] as const)("a block post's @all chip in %s says %s", (_kind, isChannel, place) => {
+        const blocks = [{ type: "text", text: "hi @all", pieces: [{ type: "text", text: "hi " }, mentionAll], fallback: { type: "text", text: "hi @all" } }];
+        const wrapper = draw({ message: message({ message_type: "system", body: "hi <@all>", blocks }), isChannel });
+
+        expect(wrapper.get("[data-testid='block-card'] [data-testid='piece-mention']").attributes("aria-label")).toBe(`@all, everyone in this ${place}`);
+    });
 });
 
 describe("a reply also sent to the conversation", () => {
