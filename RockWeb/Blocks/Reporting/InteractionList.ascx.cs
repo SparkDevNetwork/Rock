@@ -326,9 +326,20 @@ namespace RockWeb.Blocks.Reporting
                     mergeFields.Add( MergeFieldKey.InteractionComponent, component );
                     mergeFields.Add( MergeFieldKey.Interactions, interactions.ToList().Take( pageSize ) );
 
+                    /*
+                        10/19/2026 - MSE
+
+                        Interaction data, summaries, person names, device text and component names
+                        can be set by anonymous visitors, signed-in people and mobile or TV apps.
+                        Render the channel template and the Default Template with {{ }} output values
+                        HTML encoded, while keeping the template's own markup. This also covers
+                        saved and custom templates without changing any saved setting.
+
+                        Reason: Prevent stored interaction values from rendering as HTML in the interaction list.
+                    */
                     lContent.Text = component.InteractionChannel.InteractionListTemplate.IsNotNullOrWhiteSpace() ?
-                        component.InteractionChannel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
+                        component.InteractionChannel.InteractionListTemplate.ResolveMergeFields( mergeFields, encodeStrings: true ) :
+                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields, encodeStrings: true );
 
                     // set next button
                     if ( interactions.Count() > pageSize )

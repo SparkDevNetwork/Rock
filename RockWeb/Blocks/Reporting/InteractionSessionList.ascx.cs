@@ -337,9 +337,20 @@ namespace RockWeb.Blocks.Reporting
                     mergeFields.Add( "InteractionChannel", interactionChannel );
                     mergeFields.Add( "WebSessions", webSessions.Take( sessionCount ) );
 
+                    /*
+                        10/19/2026 - MSE
+
+                        Interaction data, summaries, person names, device text and component names
+                        can be set by anonymous visitors, signed-in people and mobile or TV apps.
+                        Render the channel template and the Default Template with {{ }} output values
+                        HTML encoded, while keeping the template's own markup. This also covers
+                        saved and custom templates without changing any saved setting.
+
+                        Reason: Prevent stored interaction values from rendering as HTML in the session list.
+                    */
                     lContent.Text = interactionChannel.SessionListTemplate.IsNotNullOrWhiteSpace() ?
-                        interactionChannel.SessionListTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
+                        interactionChannel.SessionListTemplate.ResolveMergeFields( mergeFields, encodeStrings: true ) :
+                        GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields, encodeStrings: true );
 
                     // set next button
                     if ( webSessions.Count() > sessionCount )
