@@ -349,9 +349,12 @@
     color: var(--chat-muted);
 }
 
-/* After the muted rule: a muted room that is unread still reads bold. */
+/* A muted room that is unread still reads bold, its name and preview kept muted. */
 .chat-row.is-unread .chat-row-name {
     font-weight: 700;
+}
+
+.chat-row.is-unread:not(.is-muted) .chat-row-name {
     color: var(--chat-text);
 }
 
