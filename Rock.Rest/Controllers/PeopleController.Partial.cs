@@ -1316,7 +1316,15 @@ namespace Rock.Rest.Controllers
             {
                 StringBuilder sbEmailAndPhoneHtml = new StringBuilder();
                 sbEmailAndPhoneHtml.Append( "<div class='margin-t-sm'>" );
-                sbEmailAndPhoneHtml.Append( "<span class='email'>" + person.Email + "</span>" );
+                /*
+                    10/19/2026 - MSE
+
+                    Email is not validated on every save path and the details HTML is inserted
+                    into the person picker as HTML, so the address is encoded here.
+
+                    Reason: Stored email text must not render as HTML.
+                */
+                sbEmailAndPhoneHtml.Append( "<span class='email'>" + person.Email.EncodeHtml() + "</span>" );
                 string phoneNumberList = "<ul class='phones list-unstyled'>";
 
                 foreach ( var phoneNumber in phoneNumbers )
@@ -1527,7 +1535,8 @@ namespace Rock.Rest.Controllers
                         }
                         else
                         {
-                            html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.Email );
+                            // Encoded because the person popovers render this HTML as is.
+                            html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.Email.EncodeHtml() );
                         }
                     }
 
