@@ -2730,6 +2730,26 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
         public IActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
         {
+            if ( options?.Attributes == null || options.AttributeValues == null )
+            {
+                return BadRequest( "Invalid options." );
+            }
+
+            // Only matrix item attributes may be converted here. Otherwise any
+            // attribute's value conversion, including one that saves data, could
+            // be run by an anonymous caller.
+            var matrixItemEntityTypeId = EntityTypeCache.GetId<AttributeMatrixItem>();
+
+            foreach ( var attribute in options.Attributes )
+            {
+                var attributeCache = attribute.Value != null ? AttributeCache.Get( attribute.Value.AttributeGuid ) : null;
+
+                if ( attributeCache == null || attributeCache.EntityTypeId != matrixItemEntityTypeId )
+                {
+                    return BadRequest( "Invalid attribute." );
+                }
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
