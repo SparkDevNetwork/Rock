@@ -341,8 +341,8 @@
 
     /**
      * The @ query the caret ends, where a picker should open: an @ at the start of a line or
-     * after a space, then word characters up to the caret. An @ right after a chip or inside a
-     * word, as in an email address, is no query.
+     * after a space, then letters, digits or underscores up to the caret. An @ right after a
+     * chip or inside a word, as in an email address, is no query.
      */
     function mentionQueryAtCaret(): MentionQuery | null {
         const element = editorElement.value;
@@ -369,7 +369,8 @@
             return null;
         }
 
-        const match = node.data.slice(0, end).match(/(^|\s)@(\w*)$/);
+        // Letters and digits of any script, so a name such as Zoë keeps the query going.
+        const match = node.data.slice(0, end).match(/(^|\s)@([\p{L}\p{N}_]*)$/u);
         if (!match) {
             return null;
         }

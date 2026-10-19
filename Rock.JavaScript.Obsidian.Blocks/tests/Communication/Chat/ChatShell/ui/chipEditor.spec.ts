@@ -303,3 +303,16 @@ describe("inserting a mention", () => {
         expect(await sent(w)).toBe(`<@${lee}> thanks`);
     });
 });
+
+describe("the @ query at the caret", () => {
+    test.each([["a letter outside English", "Zoë"], ["a name in another script", "Јован"], ["a digit and an underscore", "lee_2"]])("keeps going through %s, so the picker stays open", async (_what, query) => {
+        const w = draw(`Hi @${query}`, null);
+        caretAtEnd(w);
+
+        editor(w).dispatchEvent(new Event("input", { bubbles: true }));
+        await nextTick();
+
+        const queries = w.emitted("mentionQuery") ?? [];
+        expect(queries[queries.length - 1]).toEqual([query]);
+    });
+});
