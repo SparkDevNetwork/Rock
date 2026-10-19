@@ -113,6 +113,7 @@
                           :isQuoteOwn="isOwnQuote(conversationQuote)"
                           :emojiSource="emojiSource"
                           :mentionSource="mentionSourceFor(activeRow)"
+                          :conversationKey="composerConversationKey"
                           @mentionQuery="onMentionQuery(activeRow, $event)"
                           @send="shell.send"
                           @edit="shell.directMessages.edit"
@@ -599,6 +600,10 @@
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
 
     const draft = computed((): DirectMessageDraft | null => shell.value.directMessages.draft);
+
+    /** The conversation the composer types into: the open channel, else the draft's people. */
+    const composerConversationKey = computed((): string | null => activeChannelId.value
+        ?? (draft.value ? draft.value.people.map(person => person.person_alias_guid).join(",") : null));
 
     /** Text Rock refused earlier, for the box of the conversation the same people now share. */
     const held = computed((): { body: string } | null => shell.value.directMessages.held);

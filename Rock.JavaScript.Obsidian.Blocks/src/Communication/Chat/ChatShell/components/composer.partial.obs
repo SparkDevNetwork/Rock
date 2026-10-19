@@ -34,6 +34,7 @@
                             :isDisabled="isDisabled"
                             :isConversation="!isChannel"
                             :people="mentionSource?.people ?? []"
+                            :conversationKey="conversationKey"
                             data-testid="composer-input"
                             @send="onSubmit"
                             @upWhenEmpty="emit('editLast')"
@@ -375,6 +376,12 @@
          */
         mentionSource: {
             type: Object as PropType<MentionPickerSource | null>,
+            default: null
+        },
+
+        /** Which conversation the box types into, since one box is kept as the person moves between them. */
+        conversationKey: {
+            type: String as PropType<string | null>,
             default: null
         }
     });

@@ -466,6 +466,33 @@ describe("the picker in the composer", () => {
         expect(boxText(w)).toBe(`<@${ben}> hi`);
     });
 
+    test("forgets the chips it drew in one conversation once it is another's, so a pasted token from there stays text", async () => {
+        wrapper = mount(Composer, { props: { mentionSource: people, conversationKey: "room-1" }, attachTo: document.body });
+        const w = wrapper;
+        await typeNodes(w, ["@be"]);
+        await w.setProps({ mentionSource: { ...people, people: [benPerson] } });
+        await nextTick();
+        await press(editorOf(w), "Enter");
+        await nextTick();
+        expect(editorOf(w).querySelectorAll("[data-testid='editor-chip']")).toHaveLength(1);
+
+        await w.setProps({ conversationKey: "room-2", mentionSource: { ...people, people: [annaPerson] } });
+        await typeNodes(w, ["x"]);
+        const editor = editorOf(w);
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(range);
+        const paste = new Event("paste", { bubbles: true, cancelable: true });
+        Object.defineProperty(paste, "clipboardData", { value: { getData: (format: string) => format === "text/plain" ? ` <@${ben}>` : "" } });
+        editor.dispatchEvent(paste);
+        await nextTick();
+
+        expect(editor.querySelector("[data-testid='editor-chip']")).toBeNull();
+        expect(boxText(w)).toBe(`x <@${ben}>`);
+    });
+
     test("does not open on @ right after a chip", async () => {
         const w = drawComposer(people);
         await typeNodes(w, ["Hi @"]);

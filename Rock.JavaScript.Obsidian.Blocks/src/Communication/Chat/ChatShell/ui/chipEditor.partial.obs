@@ -131,6 +131,12 @@
         people: {
             type: Array as PropType<MentionPerson[]>,
             default: () => []
+        },
+
+        /** Which conversation the box types into, for a host that keeps one box across them. */
+        conversationKey: {
+            type: String as PropType<string | null>,
+            default: null
         }
     });
 
@@ -737,6 +743,11 @@
         if (text !== getText()) {
             setText(text);
         }
+    });
+
+    // A name drawn in one conversation is not one its next may draw: that person may not be in it.
+    watch(() => props.conversationKey, () => {
+        drawnNames.clear();
     });
 
     // #endregion Watchers
