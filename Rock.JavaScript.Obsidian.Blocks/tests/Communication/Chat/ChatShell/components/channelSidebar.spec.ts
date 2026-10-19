@@ -540,6 +540,17 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
+    test("not the conversation on screen, which a message from someone else reaches without glowing", async () => {
+        const w = mountSidebar({ rows: [dmRead, dmGroup, team], activeChannelId: dmRead.channel_id });
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way" }, team, { ...dmGroup, last_message_id: 12, last_message_preview: "Hello", is_unread: true }] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+        // another conversation reached at the same time still glows
+        expect(rowOf(w, dmGroup.channel_id).classes()).toContain("is-flash");
+    });
+
     test("a channel's row glows on channel.unread, the one signal it gets until read, where it does not move", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 

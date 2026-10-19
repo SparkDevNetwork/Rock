@@ -736,7 +736,8 @@
     // from someone else, moved or not, as the design's incoming message glows; a channel that just
     // turned unread, the one signal it gets until read, or that moved up among the channels. The
     // person's own send, an edit and a walk-back after a delete are not news, nor is a room moving
-    // down because another passed it, and the first list a page loads glows nothing.
+    // down because another passed it, nor the conversation on screen, and the first list a page
+    // loads glows nothing.
     watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.channel_type === "dm", lastId: row.last_message_id, isOwn: row.last_message_is_own, isUnread: row.is_unread })), (rows, previous) => {
         if (!previous || previous.length === 0) {
             return;
@@ -750,6 +751,10 @@
         const placeNow = placeAmongChannels(rows);
 
         const flashed = rows.filter(row => {
+            // the conversation on screen is where the news is already shown, as in the design
+            if (row.id === props.activeChannelId) {
+                return false;
+            }
             const was = before.get(row.id);
             if (!was) {
                 return true;
