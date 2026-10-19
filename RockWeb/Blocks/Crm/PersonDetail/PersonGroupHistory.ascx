@@ -224,6 +224,26 @@
                     dataType: 'json',
                     contentType: 'application/json'
                 }).done(function (data) {
+                    /*
+                        10/18/2026 - MSE
+
+                        The Swimlanes control renders group, group type and role names as HTML, and
+                        those names are stored values. They are HTML encoded before being handed to it.
+
+                        Reason: Prevent stored XSS through group and role names in the group history timeline.
+                    */
+                    var encodeHtml = function (value) {
+                        return $('<div/>').text(value || '').html();
+                    };
+
+                    $.each(data || [], function (i, group) {
+                        group.GroupTypeName = encodeHtml(group.GroupTypeName);
+                        $.each(group.StartStopHistory || [], function (j, history) {
+                            history.GroupName = encodeHtml(history.GroupName);
+                            history.GroupRoleName = encodeHtml(history.GroupRoleName);
+                        });
+                    });
+
                     if (data.length) {
                         var swimlanes_vis = new Swimlanes($swimlanesContainer[0], data, { view_mode: "Year" });
                         $swimlanesContainer.show();

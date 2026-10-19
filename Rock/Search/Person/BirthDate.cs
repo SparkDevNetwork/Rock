@@ -107,8 +107,16 @@ namespace Rock.Search.Person
                     a.LastName
                 } ).ToList();
 
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML, and person names can be set by
+                anonymous visitors through public forms, so the names are HTML encoded.
+
+                Reason: Prevent stored XSS through person names in Smart Search results.
+            */
             // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html
-            var results = qryList.Select( r => $"                                                                       <data birthdate='{r.BirthDateParam}' person-id={r.Id}></data>{r.NickName + " " + r.LastName}                                                                       " ).ToList().AsQueryable();
+            var results = qryList.Select( r => $"                                                                       <data birthdate='{r.BirthDateParam}' person-id={r.Id}></data>{r.NickName.EncodeHtml() + " " + r.LastName.EncodeHtml()}                                                                       " ).ToList().AsQueryable();
 
             return results;
         }

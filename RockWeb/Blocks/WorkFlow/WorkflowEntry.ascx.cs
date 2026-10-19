@@ -2972,6 +2972,21 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            /*
+                10/18/2026 - MSE
+
+                The drawn signature data is posted by the client in a hidden field
+                and is placed into HTML that the server renders into a PDF. It must
+                be a base64 PNG data URL.
+
+                Reason: Prevent SSRF and HTML injection in signed documents.
+            */
+            if ( signatureDocumentTemplate.SignatureType == SignatureType.Drawn && !ElectronicSignatureHelper.IsValidDrawnSignatureDataUrl( escElectronicSignatureControl.DrawnSignatureImageDataUrl ) )
+            {
+                ShowMessage( NotificationBoxType.Danger, "Signature Error", "Invalid signature data received." );
+                return;
+            }
+
             var signedByPersonAliasId = electronicSignatureWorkflowAction.GetSignedByPersonAliasId( rockContext, workflowAction, this.CurrentPersonAliasId );
             Person signedByPerson;
             if ( signedByPersonAliasId.HasValue )
@@ -3026,14 +3041,23 @@ namespace RockWeb.Blocks.WorkFlow
             // Needed before determing SignatureInformation (Signed Name, metadata)
             signatureDocument.SignatureVerificationHash = SignatureDocumentService.CalculateSignatureVerificationHash( signatureDocument );
 
+            /*
+                10/18/2026 - MSE
+
+                The signed name and client IP address come from the request and are
+                placed into HTML that is rendered into the signed PDF. The helper
+                expects these to be encoded by the caller.
+
+                Reason: Prevent HTML injection in signed documents.
+            */
             var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
             {
                 SignatureType = signatureDocumentTemplate.SignatureType,
-                SignedName = escElectronicSignatureControl.SignedName,
+                SignedName = escElectronicSignatureControl.SignedName.EncodeHtml(),
                 DrawnSignatureDataUrl = escElectronicSignatureControl.DrawnSignatureImageDataUrl,
                 SignedByPerson = signedByPerson,
                 SignedDateTime = signatureDocument.SignedDateTime,
-                SignedClientIp = signatureDocument.SignedClientIp,
+                SignedClientIp = signatureDocument.SignedClientIp.EncodeHtml(),
                 SignatureVerificationHash = signatureDocument.SignatureVerificationHash
             };
 

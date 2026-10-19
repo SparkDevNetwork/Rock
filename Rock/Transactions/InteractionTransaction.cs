@@ -473,7 +473,7 @@ namespace Rock.Transactions
 
         /// <inheritdoc cref="Interaction.InteractionComponentId"/>
         /// <remarks>
-        /// This will be determined automatically from <seealso cref="InteractionComponentCache.GetComponentIdByChannelIdAndEntityId"/> 
+        /// This will be determined automatically from <seealso cref="InteractionComponentCache.GetComponentIdByChannelIdAndEntityId(int, int?, string)"/> 
         /// </remarks>
         public int? InteractionComponentId { get; private set; }
 
