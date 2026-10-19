@@ -634,7 +634,15 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return location.FormattedHtmlAddress;
             }
 
-            return $"{location.Street1}<br/>{location.Street2}<br/>{location.City}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : string.Empty )}, {location.State} {location.PostalCode}"
+            /*
+                10/19/2026 - MSE
+
+                The family card renders this with v-html, so each stored address part is
+                encoded before it is joined with <br/> tags.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return $"{location.Street1.EncodeHtml()}<br/>{location.Street2.EncodeHtml()}<br/>{location.City.EncodeHtml()}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County.EncodeHtml() : string.Empty )}, {location.State.EncodeHtml()} {location.PostalCode.EncodeHtml()}"
                 .ReplaceWhileExists( "  ", " " )
                 .ReplaceWhileExists( "<br/><br/>", "<br/>" );
         }
