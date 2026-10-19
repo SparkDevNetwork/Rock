@@ -102,8 +102,17 @@ namespace RockWeb.Blocks.Reporting
                 var componentService = new InteractionComponentService( rockContext );
                 var componentName = componentService.GetSelect( PageParameter( "ComponentId" ).AsInteger(), c => c.Name );
 
+                /*
+                    10/19/2026 - MSE
+
+                    Breadcrumb names are written into the page as HTML without encoding, and a
+                    component name can come from outside Rock (for example a mobile or TV
+                    application creating a component), so the name is HTML encoded here.
+
+                    Reason: Prevent script injection through an interaction component name.
+                */
                 var breadCrumbs = new List<BreadCrumb>();
-                breadCrumbs.Add( new BreadCrumb( componentName != null ? componentName : "Component", pageReference ) );
+                breadCrumbs.Add( new BreadCrumb( componentName != null ? componentName.EncodeHtml() : "Component", pageReference ) );
                 return breadCrumbs;
             }
         }
@@ -168,7 +177,18 @@ namespace RockWeb.Blocks.Reporting
                     component.InteractionChannel.ComponentDetailTemplate :
                     GetAttributeValue( "DefaultTemplate" );
 
-                lContent.Text = template.ResolveMergeFields( mergeFields );
+                /*
+                    10/19/2026 - MSE
+
+                    Interaction data, summaries, person names, device text and component names
+                    can be set by anonymous visitors, signed-in people and mobile or TV apps.
+                    Render the channel template and the Default Template with {{ }} output values
+                    HTML encoded, while keeping the template's own markup. This also covers
+                    saved and custom templates without changing any saved setting.
+
+                    Reason: Prevent stored interaction values from rendering as HTML in the component detail.
+                */
+                lContent.Text = template.ResolveMergeFields( mergeFields, encodeStrings: true );
             }
             else
             {
