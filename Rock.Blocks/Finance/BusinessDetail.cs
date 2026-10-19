@@ -337,7 +337,15 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
                 if ( location != null )
                 {
-                    bag.AddressAsHtml = location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                    /*
+                        10/19/2026 - MSE
+
+                        AddressAsHtml is rendered as HTML by the view panel, so the address text is
+                        encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
+                    bag.AddressAsHtml = location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
                 }
 
                 // Get Previous Addresses (stored as GroupLocation rows with Previous location type)
@@ -352,7 +360,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
                     if ( previousLocations.Any() )
                     {
                         bag.PreviousAddress = previousLocations
-                            .Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() )
+                            .Select( a => a.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() )
                             .JoinStrings( "<br><br>" );
                     }
                 }
@@ -435,6 +443,14 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 // Get Previous Addresses (stored as GroupLocation rows with Previous location type)
                 if ( previousLocationType != null )
                 {
+                    /*
+                        10/19/2026 - MSE
+
+                        PreviousAddress is HTML like AddressAsHtml (rendered with addHtmlValue in later
+                        versions), so the address text is encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
                     var previousLocations = entity.GivingGroup.GroupLocations
                         .Where( gl => gl.GroupLocationTypeValueId == previousLocationType.Id && gl.Location != null )
                         .OrderByDescending( gl => gl.CreatedDateTime )
@@ -444,7 +460,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
                     if ( previousLocations.Any() )
                     {
                         bag.PreviousAddress = previousLocations
-                            .Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() )
+                            .Select( a => a.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() )
                             .JoinStrings( "<br><br>" );
                     }
                 }
