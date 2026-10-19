@@ -3374,6 +3374,7 @@
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Data\Model.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
+    <Compile Include="Data\NotClientWritableAttribute.cs" />
     <Compile Include="Data\NotEmptyGuidAttribute.cs" />
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Data\PreviewableAttribute.cs" />

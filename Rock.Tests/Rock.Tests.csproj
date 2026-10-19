@@ -309,6 +309,7 @@
     <Compile Include="Rest\BlockActionRouteTests.cs" />
     <Compile Include="Rest\ConfigurationRecordWriteTests.cs" />
     <Compile Include="Rest\LaunchWorkflowAuthorizationTests.cs" />
+    <Compile Include="Rest\NotClientWritableAttributeTests.cs" />
     <Compile Include="Rest\RelatedEntityGraphTests.cs" />
     <Compile Include="Security\EncryptionTests.cs" />
     <Compile Include="Security\PasswordlessAuthenticationStateTests.cs" />

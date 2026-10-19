@@ -308,6 +308,20 @@ namespace Rock.Rest
 
             Service.Add( value );
 
+            /*
+                10/19/2026 - MSE
+
+                A new record never takes the storage columns (such as BinaryFile Path) from
+                the client. The FileSystem provider trusts a stored Path that starts with ~,
+                so a posted Path could point the record at any file under the web root.
+                Clearing them lets Rock set them from the file type when the record is saved.
+                Nothing may read ContentStream on the posted entity before this clear, because
+                the cached stream would survive it and be written by the storage provider.
+
+                Reason: Clients must not choose where a stored file lives.
+            */
+            NotClientWritableAttribute.ClearValues( Service.Context, value, typeof( T ) );
+
             if ( !value.IsValid )
             {
                 return ControllerContext.Request.CreateErrorResponse(
@@ -362,6 +376,19 @@ namespace Rock.Rest
             CheckCanEdit( targetModel );
 
             Service.SetValues( value, targetModel );
+
+            /*
+                10/19/2026 - MSE
+
+                PUT copies every mapped column, including the storage columns (such as
+                BinaryFile Path) that only Rock may set. The FileSystem provider trusts a
+                stored Path that starts with ~, so a posted Path could point the record at
+                any file under the web root. We put the stored values back instead of
+                rejecting the request so clients that echo the whole record keep working.
+
+                Reason: Clients must not choose where a stored file lives.
+            */
+            NotClientWritableAttribute.RestoreOriginalValues( Service.Context, targetModel, typeof( T ) );
 
             // The check above authorized the record as it is stored. Authorize it again with the
             // posted values applied, since they may change who is allowed to edit it.
@@ -457,6 +484,24 @@ namespace Rock.Rest
 
                     if ( property != null )
                     {
+                        /*
+                            10/19/2026 - MSE
+
+                            The storage columns (such as BinaryFile Path) are set only by Rock. The
+                            FileSystem provider trusts a stored Path that starts with ~, so a patched
+                            Path could point the record at any file under the web root. This applies
+                            to every caller, like the IsSystem rule.
+
+                            Reason: Clients must not choose where a stored file lives.
+                        */
+                        if ( NotClientWritableAttribute.GetPropertyNames( typeof( T ) ).Contains( property.Name ) )
+                        {
+                            var response = ControllerContext.Request.CreateErrorResponse(
+                                HttpStatusCode.BadRequest,
+                                string.Format( "Modifying property '{0}' is not permitted.", key ) );
+                            throw new HttpResponseException( response );
+                        }
+
                         if ( property.GetValue( targetModel ) == currentValue )
                         {
                             continue;
