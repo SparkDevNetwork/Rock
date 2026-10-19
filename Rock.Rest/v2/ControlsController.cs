@@ -767,7 +767,17 @@ namespace Rock.Rest.v2
             else
             {
                 editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
-                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+
+                /*
+                    10/19/2026 - MSE
+
+                    The address picker renders this string as HTML and the lookup can return an
+                    existing stored location, so the address text is encoded before the line
+                    breaks become <br>. The Address bag fields stay raw; they fill text inputs.
+
+                    Reason: Stored address text must not render as HTML.
+                */
+                addressString = editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
             }
 
             return Ok( new AddressControlValidateAddressResultsBag
@@ -823,7 +833,15 @@ namespace Rock.Rest.v2
                 };
             }
 
-            return Ok( editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
+            /*
+                10/19/2026 - MSE
+
+                The address picker renders this string as HTML, so the address text is
+                encoded before the line breaks become <br>.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return Ok( editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() );
         }
 
         #endregion
@@ -9881,11 +9899,19 @@ namespace Rock.Rest.v2
                         }
                     }
 
+                    /*
+                        10/19/2026 - MSE
+
+                        The person link control renders this popup with v-html, so the person and
+                        spouse names are encoded before they are placed in the markup.
+
+                        Reason: Stored names must not render as HTML.
+                    */
                     var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                     html.AppendFormat(
                         "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                         Person.GetPersonPhotoImageTag( person, 65, 65 ),
-                        person.FullName,
+                        person.FullName.EncodeHtml(),
                         person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
                     html.Append( "<div class='body'>" );
@@ -9895,7 +9921,7 @@ namespace Rock.Rest.v2
                     {
                         html.AppendFormat(
                             "<div><strong>Spouse</strong> {0}</div>",
-                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                            ( spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName ).EncodeHtml() );
                     }
 
                     int? age = person.Age;

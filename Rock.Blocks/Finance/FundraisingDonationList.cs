@@ -233,7 +233,15 @@ namespace Rock.Blocks.Finance
                 .AddTextField("donorEmail", a => a.Transaction.AuthorizedPersonAlias?.Person?.Email)
                 .AddTextField("participant", a => GetParticipantText(a))
                 .AddField("amount", a => a.Amount)
-                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr())
+                /*
+                    10/19/2026 - MSE
+
+                    donorAddressHtml is rendered as HTML, so the address text is encoded before
+                    the line breaks become <br>. donorAddress stays raw for the text filter.
+
+                    Reason: Stored address text must not render as HTML.
+                */
+                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe().EncodeHtml().ConvertCrLfToHtmlBr())
                 .AddTextField("donorAddress", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe())
                 .AddDateTimeField("date", a => a.Transaction.TransactionDateTime);
         }

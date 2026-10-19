@@ -203,6 +203,7 @@
     import { sleep } from "@Obsidian/Utility/promiseUtils";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
     const enum AgeClassification {
         Unknown = 0,
@@ -401,8 +402,18 @@
      */
     function getSubInformation(result: PersonSearchResult): string {
         const text: string[] = [];
+
+        /*
+            10/19/2026 - MSE
+
+            The returned text is rendered with v-html, and the spouse name and
+            record status arrive as raw text, so they are escaped here. The
+            Deceased label below is fixed markup and stays HTML.
+
+            Reason: Stored names must not render as HTML.
+        */
         if (result.spouseName) {
-            text.push(`Spouse: ${result.spouseName}`);
+            text.push(`Spouse: ${escapeHtml(result.spouseName)}`);
         }
 
         if (result.isBusiness) {
@@ -410,7 +421,7 @@
         }
 
         if (!result.isActive && result.recordStatus) {
-            text.push("(" + result.recordStatus + ")");
+            text.push("(" + escapeHtml(result.recordStatus) + ")");
         }
 
         if (result.isDeceased) {
