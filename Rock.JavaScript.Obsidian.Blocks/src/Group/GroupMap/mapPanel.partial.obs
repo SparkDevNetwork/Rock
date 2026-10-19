@@ -642,11 +642,23 @@
 
     /**
      * Decodes HTML entities in a map item name (mirrors the legacy htmlDecode).
+     * Tags in the name are kept as plain text.
      */
-    function htmlDecode(input: string): string {
-        const div = document.createElement("div");
-        div.innerHTML = input;
-        return div.childNodes.length === 0 ? "" : (div.childNodes[0].nodeValue ?? "");
+    function htmlDecode(input: string | null | undefined): string {
+        /*
+            10/18/2026 - MSE
+
+            Group and family names used for the marker titles are not encoded and can
+            be set by anonymous visitors (Family Pre-Registration) or group editors, so
+            they must not be parsed as HTML. A textarea only decodes character
+            references and keeps tags as text, while a div would create elements and
+            run their handlers.
+
+            Reason: Prevent stored XSS through group and family names in map marker titles.
+        */
+        const textArea = document.createElement("textarea");
+        textArea.innerHTML = input ?? "";
+        return textArea.value;
     }
 
     /**
