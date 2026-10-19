@@ -56,64 +56,64 @@ namespace Rock.Tests.Model
         public void GetComponentByChannelIdAndEntityId_WithoutUpdateExistingName_KeepsExistingName()
         {
             var components = GetComponents();
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock( false );
             rockContextMock.SetupDbSet( components );
 
             var service = new InteractionComponentService( rockContextMock.Object );
             var component = service.GetComponentByChannelIdAndEntityId( ChannelId, EntityId, PostedName, false );
 
-            Assert.That.AreSame( components[0], component );
-            Assert.That.AreEqual( OriginalName, component.Name );
-            Assert.That.AreEqual( 1, components.Count );
+            Assert.AreSame( components[0], component );
+            Assert.AreEqual( OriginalName, component.Name );
+            Assert.AreEqual( 1, components.Count );
         }
 
         [TestMethod]
         public void GetComponentByChannelIdAndEntityId_WithDefaultOverload_UpdatesExistingName()
         {
             var components = GetComponents();
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock( false );
             rockContextMock.SetupDbSet( components );
 
             var service = new InteractionComponentService( rockContextMock.Object );
             var component = service.GetComponentByChannelIdAndEntityId( ChannelId, EntityId, PostedName );
 
-            Assert.That.AreSame( components[0], component );
-            Assert.That.AreEqual( PostedName, component.Name );
-            Assert.That.AreEqual( 1, components.Count );
+            Assert.AreSame( components[0], component );
+            Assert.AreEqual( PostedName, component.Name );
+            Assert.AreEqual( 1, components.Count );
         }
 
         [TestMethod]
         public void GetComponentByChannelIdAndEntityId_WithoutUpdateExistingNameAndNoMatch_CreatesComponentWithName()
         {
             var components = GetComponents();
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock( false );
             rockContextMock.SetupDbSet( components );
 
             var service = new InteractionComponentService( rockContextMock.Object );
             var component = service.GetComponentByChannelIdAndEntityId( ChannelId, EntityId + 1, PostedName, false );
 
-            Assert.That.AreNotSame( components[0], component );
-            Assert.That.AreEqual( 2, components.Count );
-            Assert.That.AreSame( components[1], component );
-            Assert.That.AreEqual( PostedName, component.Name );
-            Assert.That.AreEqual( ChannelId, component.InteractionChannelId );
-            Assert.That.AreEqual( EntityId + 1, component.EntityId );
-            Assert.That.AreEqual( OriginalName, components[0].Name );
+            Assert.AreNotSame( components[0], component );
+            Assert.AreEqual( 2, components.Count );
+            Assert.AreSame( components[1], component );
+            Assert.AreEqual( PostedName, component.Name );
+            Assert.AreEqual( ChannelId, component.InteractionChannelId );
+            Assert.AreEqual( EntityId + 1, component.EntityId );
+            Assert.AreEqual( OriginalName, components[0].Name );
         }
 
         [TestMethod]
         public void GetComponentByComponentName_WithMatchingName_ReturnsExistingComponent()
         {
             var components = GetComponents();
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock( false );
             rockContextMock.SetupDbSet( components );
 
             var service = new InteractionComponentService( rockContextMock.Object );
             var component = service.GetComponentByComponentName( ChannelId, OriginalName );
 
-            Assert.That.AreSame( components[0], component );
-            Assert.That.AreEqual( OriginalName, component.Name );
-            Assert.That.AreEqual( 1, components.Count );
+            Assert.AreSame( components[0], component );
+            Assert.AreEqual( OriginalName, component.Name );
+            Assert.AreEqual( 1, components.Count );
         }
     }
 }
