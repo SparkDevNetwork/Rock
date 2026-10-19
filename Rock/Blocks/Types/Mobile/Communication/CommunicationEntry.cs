@@ -423,6 +423,22 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return ActionBadRequest( "The message session has expired. Please try again." );
                 }
 
+                /*
+                    10/18/2026 - MSE
+
+                    The attachment guids come from the client. Mobile uploads are saved as
+                    permanent files, so only a file the current person uploaded is accepted.
+                    Otherwise any file in the system, including secured files, could be
+                    attached and emailed to the sender.
+
+                    Reason: Prevent sending files the person is not allowed to see.
+                */
+                if ( !IsAttachmentAllowed( sendCommunicationBag.FileAttachmentGuid )
+                     || !IsAttachmentAllowed( sendCommunicationBag.ImageAttachmentGuid ) )
+                {
+                    return ActionBadRequest( "The attachment is not valid." );
+                }
+
                 return ActionOk( SendCommunicationInternal( sendCommunicationBag, entitySet ) );
             }
         }
@@ -474,6 +490,39 @@ namespace Rock.Blocks.Types.Mobile.Communication
         }
 
         /// <summary>
+        /// Determines whether the binary file can be attached to the
+        /// communication by the current person.
+        /// </summary>
+        /// <param name="binaryFileGuid">The unique identifier of the binary file from the client.</param>
+        /// <returns><c>true</c> if the file can be attached; otherwise <c>false</c>.</returns>
+        private bool IsAttachmentAllowed( Guid? binaryFileGuid )
+        {
+            if ( !binaryFileGuid.HasValue || binaryFileGuid.Value == Guid.Empty )
+            {
+                return true;
+            }
+
+            var guid = binaryFileGuid.Value;
+            var file = new BinaryFileService( RockContext ).Queryable()
+                .Where( b => b.Guid == guid )
+                .Select( b => new
+                {
+                    CreatedByPersonId = ( int? ) b.CreatedByPersonAlias.PersonId
+                } )
+                .FirstOrDefault();
+
+            // An unknown file is ignored when the communication is built.
+            if ( file == null )
+            {
+                return true;
+            }
+
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+            return currentPersonId.HasValue && file.CreatedByPersonId == currentPersonId.Value;
+        }
+
+        /// <summary>
         /// Creates a new communication and sends it based off the information in the <see cref="SendCommunication(SendCommunicationRequestBag)" />.
         /// </summary>
         /// <param name="bag">The bag containing the communication information.</param>
@@ -505,7 +554,18 @@ namespace Rock.Blocks.Types.Mobile.Communication
             // Structure the communication based on the communication type.
             if ( communicationType == CommunicationType.Email )
             {
-                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, bag.AdditionalEmailRecipients, personService, binaryFileService );
+                /*
+                    10/18/2026 - MSE
+
+                    Show Additional Email Recipients was only sent to the client as a UI
+                    flag. A crafted request could still add any email address as a
+                    recipient, so the setting is now enforced on the server.
+
+                    Reason: Only honor additional recipients when the block allows them.
+                */
+                var additionalRecipients = ShowAdditionalEmailRecipients ? bag.AdditionalEmailRecipients : null;
+
+                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, additionalRecipients, personService, binaryFileService );
             }
             else if ( communicationType == CommunicationType.SMS )
             {
@@ -732,24 +792,27 @@ namespace Rock.Blocks.Types.Mobile.Communication
             }
 
             // Add the additional email recipients as "nameless" recipients.
-            foreach( var emailRecipient in additionalRecipients )
+            if ( additionalRecipients != null )
             {
-                var emailPerson = personService.GetPersonFromEmailAddress( emailRecipient, true );
-                if ( emailPerson != null )
+                foreach ( var emailRecipient in additionalRecipients )
                 {
-                    var newRecipient = new CommunicationRecipient
+                    var emailPerson = personService.GetPersonFromEmailAddress( emailRecipient, true );
+                    if ( emailPerson != null )
                     {
-                        PersonAliasId = emailPerson.PrimaryAliasId,
-                        MediumEntityTypeId = emailMediumEntityTypeId
-                    };
+                        var newRecipient = new CommunicationRecipient
+                        {
+                            PersonAliasId = emailPerson.PrimaryAliasId,
+                            MediumEntityTypeId = emailMediumEntityTypeId
+                        };
 
-                    // Checking for duplicates.
-                    if ( communication.Recipients.Any( cr => cr.PersonAliasId == newRecipient.PersonAliasId ) )
-                    {
-                        continue;
-                    };
+                        // Checking for duplicates.
+                        if ( communication.Recipients.Any( cr => cr.PersonAliasId == newRecipient.PersonAliasId ) )
+                        {
+                            continue;
+                        };
 
-                    communication.Recipients.Add( newRecipient );
+                        communication.Recipients.Add( newRecipient );
+                    }
                 }
             }
 

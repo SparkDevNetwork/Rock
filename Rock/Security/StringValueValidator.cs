@@ -128,7 +128,18 @@ namespace Rock.Security
                 @"touchcancel|touchend|touchmove|touchstart|" +
                 @"transitioncancel|transitionend|transitionrun|transitionstart|" +
                 @"webkitanimationend|webkitanimationiteration|webkitanimationstart|" +
-                @"webkittransitionend" +
+                @"webkittransitionend|" +
+                /*
+                    10/18/2026 - MSE
+
+                    SVG animation elements (animate, set and others) run the
+                    begin, end and repeat handlers as soon as the animation
+                    starts, with no user action, so they are blocked like the
+                    other handlers.
+
+                    Reason: Block SVG animation event handlers in saved HTML.
+                */
+                @"begin|end|repeat" +
                 @")\s*=",
                 IgnoreCase );
 
