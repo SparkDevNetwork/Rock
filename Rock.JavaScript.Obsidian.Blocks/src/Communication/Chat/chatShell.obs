@@ -442,6 +442,7 @@
     import { ChatError, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
     import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
+    import { focusQuietly } from "./ChatShell/ui/tooltip.partial";
 
     // #region Types
 
@@ -841,11 +842,18 @@
         shownPanel.value = kind;
         void (channelId && kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.mentions.openInbox());
 
-        // Focus goes to the panel's first control, or its X or back chevron when it has none yet.
+        // Focus goes to the panel's first control, or its X or back chevron when it has none yet,
+        // without that button's tooltip, as a list whose first control is a tab shows none.
         await nextTick();
         const panel = panelElement.value;
-        (panel?.querySelector<HTMLElement>("[data-autofocus]")
-            ?? panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']"))?.focus();
+        const first = panel?.querySelector<HTMLElement>("[data-autofocus]");
+        const exit = panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']");
+        if (first) {
+            first.focus();
+        }
+        else if (exit) {
+            focusQuietly(exit);
+        }
     }
 
     function onThreadsTab(tab: ThreadListTab): void {

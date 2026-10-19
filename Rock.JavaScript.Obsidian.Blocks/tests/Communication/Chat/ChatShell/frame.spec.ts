@@ -1158,6 +1158,19 @@ describe("mentions", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
     });
 
+    test("on a phone, opened from the overflow menu, puts focus on its back chevron with no tooltip, as the threads list shows none", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+
+        await openInbox(w);
+        await new Promise(resolve => setTimeout(resolve, 700));
+        await settle();
+
+        expect(panelTitle(w)).toBe("Mentions");
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element);
+        expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => tip.textContent?.trim())).toEqual([]);
+    });
+
     test("the header's Mentions shows the shell's dot", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);

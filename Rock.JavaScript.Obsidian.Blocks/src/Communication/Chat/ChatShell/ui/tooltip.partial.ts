@@ -57,6 +57,25 @@ export type TooltipDelay = {
 
 const defaultTipDelay: TooltipDelay = { token: "--chat-d-tip-delay", fallbackMs: fallbackTipDelayMs };
 
+/** Set only while focusQuietly moves focus, which a browser reports at once. */
+let isQuietFocus = false;
+
+/**
+ * Focuses an element without showing its tooltip: a panel opening puts focus on its back chevron
+ * or X only so the keyboard starts inside it, which is not the person reaching for that button.
+ *
+ * @param element The element to focus.
+ */
+export function focusQuietly(element: HTMLElement): void {
+    isQuietFocus = true;
+    try {
+        element.focus();
+    }
+    finally {
+        isQuietFocus = false;
+    }
+}
+
 /**
  * The chat's tooltip for one anchor. The caller draws the tip, class chat-tip, role tooltip, at
  * the floating styles while it is shown, and binds the anchor's handlers. A tip shows once the
@@ -106,7 +125,7 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
      * :focus-visible, which the oldest Safari Rock supports cannot match from script.
      */
     function onFocus(): void {
-        if (!isPointerFocus) {
+        if (!isPointerFocus && !isQuietFocus) {
             scheduleTip();
         }
     }
