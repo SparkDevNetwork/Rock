@@ -41,6 +41,14 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         Key = AttributeKey.RelativeFilePath )]
 
+    [TextField(
+        "Root Folder",
+        Key = AttributeKey.RootFolder,
+        Description = "The folder that limits which files can be passed in the URL. Files outside it cannot be opened or saved. The file set in Relative File Path is always allowed. Must start with ~/. Uses ~/Content when blank.",
+        IsRequired = false,
+        DefaultValue = "~/Content",
+        Order = 1 )]
+
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( "0F1DADBC-6B12-4BAA-A828-FD1AA86AA387" )]
     public partial class FileEditor : RockBlock
@@ -62,6 +70,7 @@ namespace RockWeb.Blocks.Cms
         private static class AttributeKey
         {
             public const string RelativeFilePath = "RelativeFilePath";
+            public const string RootFolder = "RootFolder";
         }
 
         #endregion Attribute Keys
@@ -69,6 +78,16 @@ namespace RockWeb.Blocks.Cms
         #region Fields
 
         string _fileRelativePath = string.Empty;
+        string _filePhysicalPath = string.Empty;
+
+        private const string DefaultRootFolder = "~/Content";
+        private const string InvalidPathMessage = "Invalid relative file path.";
+        private const string FileTypeNotAllowedMessage = "Viewing/Editing of this file type is not allowed.";
+
+        // These apply whatever the Root Folder is, so widening the root
+        // never exposes server code, configuration or application data.
+        private static readonly string[] RestrictedFolders = { "Bin", "App_Code", "App_Data", "App_Browsers", "App_GlobalResources", "App_LocalResources" };
+        private static readonly string[] RestrictedCodeFileExtensions = { ".cs", ".vb", ".ascx", ".aspx", ".ashx", ".asmx", ".asax", ".master", ".svc", ".cshtml", ".vbhtml", ".config", ".dll", ".exe", ".skin", ".browser" };
 
         #endregion
 
@@ -162,15 +181,26 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var fileRelativePath = hfRelativePath.Value;
-            if ( string.IsNullOrWhiteSpace( fileRelativePath ) )
+            if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
             {
-                nbWarningMessage.Text = "Error while saving the content back to file";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                ShowError( "You are not authorized to edit this file." );
                 return;
             }
 
-            File.WriteAllText( Server.MapPath( _fileRelativePath ), ceFilerEditor.Text );
+            var fileRelativePath = hfRelativePath.Value;
+            if ( string.IsNullOrWhiteSpace( fileRelativePath ) || !string.Equals( fileRelativePath, _fileRelativePath, StringComparison.Ordinal ) )
+            {
+                ShowError( "Error while saving the content back to file" );
+                return;
+            }
+
+            if ( !TryGetValidatedFilePath( _fileRelativePath, out var physicalPath, out var errorMessage ) )
+            {
+                ShowError( errorMessage );
+                return;
+            }
+
+            File.WriteAllText( physicalPath, ceFilerEditor.Text );
         }
 
         /// <summary>
@@ -200,27 +230,20 @@ namespace RockWeb.Blocks.Cms
         {
             nbWarningMessage.Visible = false;
             pnlEditDetails.Visible = false;
-            string fileUrl = Server.MapPath( _fileRelativePath );
-            if ( string.IsNullOrWhiteSpace( _fileRelativePath )  || !File.Exists( fileUrl ) )
+
+            if ( !TryGetValidatedFilePath( _fileRelativePath, out var physicalPath, out var errorMessage ) )
             {
-                nbWarningMessage.Text = "Invalid file relative path";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
+                ShowError( errorMessage );
                 return;
             }
 
-            string ext = Path.GetExtension( _fileRelativePath );
-            if ( RestrictedFileExtension.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
-            {
-                nbWarningMessage.Text = "viewing/editing the file is not allowed.";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
-                return;
-            }
+            _filePhysicalPath = physicalPath;
+
+            string ext = Path.GetExtension( _filePhysicalPath ).ToLower();
 
             hfRelativePath.Value = _fileRelativePath;
             pnlEditDetails.Visible = true;
-            if ( EditorMode.ContainsKey( ext.ToLower() ) )
+            if ( EditorMode.ContainsKey( ext ) )
             {
                 ceFilerEditor.EditorMode = EditorMode[ext];
             }
@@ -229,9 +252,11 @@ namespace RockWeb.Blocks.Cms
                 ceFilerEditor.EditorMode = CodeEditorMode.Text;
             }
 
-            string fileName = Path.GetFileName( _fileRelativePath );
-            
-            string content = File.ReadAllText( fileUrl );
+            var canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            btnSave.Visible = canEdit;
+            ceFilerEditor.ReadOnly = !canEdit;
+
+            string content = File.ReadAllText( _filePhysicalPath );
 
             if ( !string.IsNullOrEmpty( content ) )
             {
@@ -253,6 +278,123 @@ namespace RockWeb.Blocks.Cms
             }
 
             return relativePath;
+        }
+
+        /// <summary>
+        /// Resolves a relative file path to a physical path the editor is allowed to open and save.
+        /// </summary>
+        /// <param name="relativeFilePath">The virtual path of the file, starting with ~/.</param>
+        /// <param name="physicalPath">The full physical path of the file when it is allowed.</param>
+        /// <param name="errorMessage">The message to show when the file is not allowed.</param>
+        /// <returns><c>true</c> if the file exists, is within the Root Folder or is the configured Relative File Path, and may be edited; otherwise <c>false</c>.</returns>
+        private bool TryGetValidatedFilePath( string relativeFilePath, out string physicalPath, out string errorMessage )
+        {
+            physicalPath = null;
+            errorMessage = InvalidPathMessage;
+
+            // A ":" would allow drive letters, UNC paths and NTFS stream names.
+            if ( relativeFilePath.IsNullOrWhiteSpace() || !relativeFilePath.StartsWith( "~/" ) || relativeFilePath.Contains( ":" ) )
+            {
+                return false;
+            }
+
+            var rootFolder = GetAttributeValue( AttributeKey.RootFolder );
+            if ( rootFolder.IsNullOrWhiteSpace() )
+            {
+                rootFolder = DefaultRootFolder;
+            }
+
+            if ( !rootFolder.StartsWith( "~/" ) )
+            {
+                errorMessage = "The File Editor Root Folder setting is not valid.";
+                return false;
+            }
+
+            string physicalWebRoot;
+            string physicalRoot;
+            string fullPath;
+
+            try
+            {
+                if ( !Rock.Utility.FileUtilities.IsFileTypeAllowed( Path.GetFileName( relativeFilePath ) ) )
+                {
+                    errorMessage = FileTypeNotAllowedMessage;
+                    return false;
+                }
+
+                // Server.MapPath throws for paths that climb above the application root.
+                physicalWebRoot = Path.GetFullPath( Server.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
+                physicalRoot = Path.GetFullPath( Server.MapPath( rootFolder ) );
+                fullPath = Path.GetFullPath( Server.MapPath( relativeFilePath ) );
+            }
+            catch ( Exception )
+            {
+                return false;
+            }
+
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRoot, physicalWebRoot ) )
+            {
+                errorMessage = "The File Editor Root Folder setting is not valid.";
+                return false;
+            }
+
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalWebRoot ) )
+            {
+                return false;
+            }
+
+            /*
+                10/16/26 - JMH
+
+                A file set in the Relative File Path block setting was chosen by an
+                administrator, so it is trusted even when it sits outside the Root Folder.
+                This keeps existing blocks pinned to files outside ~/Content working.
+                The Root Folder only guards paths passed in the URL.
+
+                Reason: Confine URL-supplied paths without breaking configured blocks.
+            */
+            var isConfiguredFile = string.Equals( relativeFilePath, GetAttributeValue( AttributeKey.RelativeFilePath ), StringComparison.Ordinal );
+            if ( !isConfiguredFile && !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalRoot ) )
+            {
+                return false;
+            }
+
+            // Short (8.3) names such as APP_CO~1 contain "~" and would not match the restricted folder names.
+            var webRootRelativePath = fullPath.Substring( physicalWebRoot.Length );
+            if ( webRootRelativePath.Contains( "~" )
+                || RestrictedFolders.Any( f => Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, Path.Combine( physicalWebRoot, f ) ) ) )
+            {
+                return false;
+            }
+
+            var ext = Path.GetExtension( fullPath );
+            if ( RestrictedFileExtension.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) )
+                || RestrictedCodeFileExtensions.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                errorMessage = FileTypeNotAllowedMessage;
+                return false;
+            }
+
+            // Checked last so the response can't be used to probe for files outside the root.
+            if ( !File.Exists( fullPath ) )
+            {
+                return false;
+            }
+
+            physicalPath = fullPath;
+            errorMessage = null;
+            return true;
+        }
+
+        /// <summary>
+        /// Shows an error message in the block's notification box.
+        /// </summary>
+        /// <param name="message">The message to show.</param>
+        private void ShowError( string message )
+        {
+            nbWarningMessage.Text = message;
+            nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+            nbWarningMessage.Visible = true;
         }
 
         #endregion
