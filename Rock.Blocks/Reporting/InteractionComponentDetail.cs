@@ -153,9 +153,21 @@ namespace Rock.Blocks.Reporting
                 }
 
                 box.ComponentName = interactionComponent.Name;
+
+                /*
+                    10/19/2026 - MSE
+
+                    Interaction data, summaries, person names, device text and component names
+                    can be set by anonymous visitors, signed-in people and mobile or TV apps.
+                    Render the channel template and the Default Template with {{ }} output values
+                    HTML encoded, while keeping the template's own markup. This also covers
+                    saved and custom templates without changing any saved setting.
+
+                    Reason: Prevent stored interaction values from rendering as HTML in the component detail.
+                */
                 box.Content = interactionComponent.InteractionChannel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
-                    interactionComponent.InteractionChannel.ComponentDetailTemplate.ResolveMergeFields( mergeFields ) :
-                    GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
+                    interactionComponent.InteractionChannel.ComponentDetailTemplate.ResolveMergeFields( mergeFields, encodeStrings: true ) :
+                    GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields, encodeStrings: true );
             }
             else
             {
@@ -205,7 +217,16 @@ namespace Rock.Blocks.Reporting
             }
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-            var breadCrumb = new BreadCrumbLink( data?.Name ?? "Interaction Component", breadCrumbPageRef );
+            /*
+                10/19/2026 - MSE
+
+                Breadcrumb names are written into the page as HTML without encoding, and a
+                component name can come from outside Rock (for example a mobile or TV
+                application creating a component), so the name is HTML encoded here.
+
+                Reason: Prevent script injection through an interaction component name.
+            */
+            var breadCrumb = new BreadCrumbLink( data?.Name?.EncodeHtml() ?? "Interaction Component", breadCrumbPageRef );
 
             return new BreadCrumbResult
             {
