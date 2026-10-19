@@ -228,9 +228,15 @@ PY
 #   clean     merged with no conflicts
 #   resolved  every conflict was resolved automatically and the merge was
 #             committed; the folder says how, for the explanation comment
-#   conflict  at least one conflict wasn't covered; the folder lists the files
-#             and their conflicts. The merge is aborted, unless
-#             MU_KEEP_CONFLICT is true (the AI resolver works on it).
+#   conflict  at least one conflict wasn't covered; the folder lists the files,
+#             what kind of conflict each is, and their conflicts. Then, by
+#             MU_ON_CONFLICT:
+#               abort (default)  the merge is aborted
+#               keep             the merge is left in progress (the AI
+#                                resolver works on it)
+#               ours             each conflicted file takes the version of the
+#                                branch being merged into, and the merge is
+#                                committed, so later steps can still be probed
 mu_merge_step() {
   local from=$1 into=$2 dir=$3 conflicted unresolved i f
   git switch -q "$into"
@@ -300,18 +306,143 @@ mu_merge_step() {
            inside{chunk = chunk $0 "\\n"}' "$f" > "$dir/chunks-$i"
     fi
   done < "$dir/files"
-  if [ "$MU_KEEP_CONFLICT" != "true" ]; then
-    git merge --abort
-  fi
+  mu_classify_conflicts "$from" "$into" "$dir"
+
+  # rerere's ids for the conflicts it couldn't resolve, and a key made from
+  # them. The same conflict has the same key on any PR (leftover drift hits
+  # several at once), so Claude is only asked once per conflict. An id is
+  # "<hash of the conflict>" or "<hash>.<variant>"; the variant only counts
+  # earlier unresolved tries in this job, so the key leaves it out.
+  tr '\0' '\n' < "$MU_GITDIR/MERGE_RR" > "$dir/merge-rr" 2> /dev/null || true
+  cut -f1 "$dir/merge-rr" | sed 's/\..*$//' | sort | git hash-object --stdin > "$dir/key"
+
+  case "${MU_ON_CONFLICT:-abort}" in
+    keep) ;;
+    ours)
+      if [ -s "$dir/files" ]; then
+        mu_take_into_side "$dir/files"
+      else
+        git merge --abort > /dev/null 2>&1 || true
+      fi ;;
+    *) git merge --abort ;;
+  esac
   STEP=conflict
+}
+
+# Writes $3/kinds: one "<path><TAB><kind><TAB><detail>" line per conflicted
+# file in $3/files, for a merge of $1 into $2 that is still in progress.
+#   content       both sides changed the same lines. Recorded and AI-proposed
+#                 resolutions can cover it.
+#   deleted-into  the branch being merged into deleted the file and the other
+#                 side changed it. Detail: "<commit><TAB><subject>" of the
+#                 deletion.
+#   deleted-from  the branch being merged deleted it, and the branch merged
+#                 into changed it. Same detail.
+#   other         a conflict with no conflicting lines to show (for example a
+#                 binary file, or a file where the other side has a folder).
+# Only "content" conflicts can be recorded by rerere, so only they can be
+# resolved automatically or by an AI proposal.
+mu_classify_conflicts() {
+  local from=$1 into=$2 dir=$3 f stages deleted_by
+  : > "$dir/kinds"
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    stages=$(git ls-files -u -- "$f" | awk '{print $3}' | sort -u | tr -d '\n')
+    case "$stages" in
+      *2*3*)
+        if [ -f "$f" ] && grep -qE '^<<<<<<< ' "$f"; then
+          printf '%s\tcontent\t\n' "$f" >> "$dir/kinds"
+        else
+          printf '%s\tother\t\n' "$f" >> "$dir/kinds"
+        fi ;;
+      *3*)
+        deleted_by=$(git log -1 --diff-filter=D --format='%h%x09%s' "$into" -- "$f" 2> /dev/null || true)
+        printf '%s\tdeleted-into\t%s\n' "$f" "$deleted_by" >> "$dir/kinds" ;;
+      *2*)
+        deleted_by=$(git log -1 --diff-filter=D --format='%h%x09%s' "$from" -- "$f" 2> /dev/null || true)
+        printf '%s\tdeleted-from\t%s\n' "$f" "$deleted_by" >> "$dir/kinds" ;;
+      *)
+        printf '%s\tother\t\n' "$f" >> "$dir/kinds" ;;
+    esac
+  done < "$dir/files"
+}
+
+# True when every conflicted file in the step folder $1 is a "content"
+# conflict, the only kind a recorded or AI-proposed resolution can cover.
+mu_all_content_conflicts() {
+  [ -s "$1/kinds" ] && ! cut -f2 "$1/kinds" | grep -qvx content
+}
+
+# True when Claude can propose a resolution for the conflicting step folder
+# $1: every file is a conflict between lines, and rerere is tracking each one,
+# so an approved proposal can be recorded and replayed.
+mu_can_propose() {
+  mu_all_content_conflicts "$1" || return 1
+  [ -z "$(cut -f2 "$1/merge-rr" 2> /dev/null | grep -vxF -f - "$1/files" || true)" ]
+}
+
+# Prints "<pr> <status>" for the proposal that covers conflict key $1, if
+# any: one queued earlier in this run ("queued"), or one saved on the
+# rerere-cache branch ("pending", waiting for approval, or "failed": Claude
+# couldn't propose one). A proposal on a closed PR doesn't count, so the
+# conflict is proposed again for an open one.
+mu_find_proposal() {
+  local key=$1 file pr status
+  if [ -f "$RUNNER_TEMP/propose-keys" ]; then
+    pr=$(awk -v k="$key" '$1 == k { print $2; exit }' "$RUNNER_TEMP/propose-keys")
+    if [ -n "$pr" ]; then
+      echo "$pr queued"
+      return 0
+    fi
+  fi
+  for file in "$MU_CACHE"/proposed/pr-*/proposal.json; do
+    [ -f "$file" ] || continue
+    [ "$(jq -r '.key // empty' "$file")" = "$key" ] || continue
+    pr=$(jq -r '.pr' "$file")
+    status=$(jq -r '.status // empty' "$file")
+    if [ "$(gh pr view "$pr" -R "$GITHUB_REPOSITORY" --json state -q .state 2> /dev/null)" = "OPEN" ]; then
+      echo "$pr ${status:-pending}"
+      return 0
+    fi
+  done
+}
+
+# Finishes a conflicted merge by giving each file in $1 the version of the
+# branch being merged into (deleted, if that branch deleted it). Only used to
+# probe the merge-up steps after a conflict; never pushed.
+mu_take_into_side() {
+  local f
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    if git ls-files -u -- "$f" | awk '{print $3}' | grep -qx 2; then
+      git checkout -q --ours -- "$f"
+      git add -- "$f"
+    else
+      git rm -q --cached -- "$f" > /dev/null 2>&1 || true
+      rm -f -- "$f"
+    fi
+  done < "$1"
+  # Files a recorded resolution already covered in this merge stay marked as
+  # conflicted (see mu_setup); keep what it wrote.
+  git diff --name-only --diff-filter=U | sort -u | xargs -r -d '\n' git add --
+  # Without this, git would record these stand-in resolutions as if a person
+  # had made them, and later dry runs in this job would replay them.
+  git rerere clear
+  git -c rerere.enabled=false commit -q --no-edit
 }
 
 # Runs every step of the plan file $1, writing each step's folder under $2.
 # Every target branch starts from the live public version. Sets CHAIN to clean
-# or conflict and stops at the first conflict, like Ship it. The conflicting
-# step's folder is $2/conflict.
+# or conflict. The first conflicting step's folder is $2/conflict.
+#
+# Like Ship it, it stops at the first conflict, unless $3 is "probe". Then it
+# goes on to estimate the later steps, so a PR shows all its conflicts at once
+# instead of one at a time: the conflicting step takes the side of the branch
+# being merged into, and each later conflict is written to $2/probe-NN (and
+# handled the same way). That's an estimate, because the real resolution may
+# differ. Automatic resolutions found after the first conflict aren't kept.
 mu_run_chain() {
-  local plan=$1 out=$2 t n=0 total from into step
+  local plan=$1 out=$2 mode=$3 t n=0 total from into step
   mkdir -p "$out"
   git switch -q --detach
   for t in $(awk '{print $2}' "$plan" | awk '!seen[$0]++'); do
@@ -322,14 +453,24 @@ mu_run_chain() {
   while read -r from into; do
     n=$((n + 1))
     step="$out/step-$(printf '%02d' "$n")"
-    mu_merge_step "$from" "$into" "$step"
+    if [ "$mode" = "probe" ]; then
+      MU_ON_CONFLICT=ours mu_merge_step "$from" "$into" "$step"
+    else
+      mu_merge_step "$from" "$into" "$step"
+    fi
+
     if [ "$STEP" = "clean" ]; then
       rm -rf "$step"
-    elif [ "$STEP" = "conflict" ]; then
+    elif [ "$STEP" = "conflict" ] && [ "$CHAIN" = "clean" ]; then
       CHAIN=conflict
       mv "$step" "$out/conflict"
       if [ "$n" -lt "$total" ]; then touch "$out/conflict/more-steps"; fi
-      break
+      if [ "$mode" != "probe" ]; then break; fi
+      touch "$out/conflict/probed"
+    elif [ "$STEP" = "conflict" ]; then
+      mv "$step" "$out/probe-$(printf '%02d' "$n")"
+    elif [ "$CHAIN" = "conflict" ]; then
+      rm -rf "$step"
     fi
   done < "$plan"
 }
@@ -465,9 +606,10 @@ mu_reset_repo() {
 #   update-conflicts   bringing the PR up to date with public conflicted
 #   pr-files           the files the PR changes
 #   run/               the merge-up (run/conflict, run/step-NN)
+#                      and run/probe-NN, later conflicts found by probing
 #   control/           on a conflict, the same merge-up without the PR
-# With MU_KEEP_CONFLICT=true it stops at the conflict with the merge still in
-# progress and skips the run without the PR.
+# With MU_ON_CONFLICT=keep it stops at the first conflict with the merge still
+# in progress, and skips both the probing and the run without the PR.
 # Sets DRY_RUN to "skipped" when there is nothing to check (not shippable, or
 # already on public), otherwise "done". It never returns non-zero for that, so
 # a real failure inside still stops the job.
@@ -524,11 +666,15 @@ mu_dry_run() {
   mu_merge_plan "$base" > "$work/plan.txt"
   echo "Merge plan:"
   cat "$work/plan.txt"
-  mu_run_chain "$work/plan.txt" "$work/run"
+  if [ "$MU_ON_CONFLICT" = "keep" ]; then
+    mu_run_chain "$work/plan.txt" "$work/run"
+    return 0
+  fi
+  mu_run_chain "$work/plan.txt" "$work/run" probe
 
   # 3. On a conflict, the same merge-up from public alone, to tell this PR's
   # conflicts from leftover drift.
-  if [ "$CHAIN" = "conflict" ] && [ "$MU_KEEP_CONFLICT" != "true" ]; then
+  if [ "$CHAIN" = "conflict" ]; then
     mu_reset_repo
     git branch -f "$base" "public/$base"
     mu_run_chain "$work/plan.txt" "$work/control"
@@ -536,9 +682,90 @@ mu_dry_run() {
   return 0
 }
 
+# What kind of conflict file $2 is, in the conflicting step folder $1, as a
+# short plain note (empty for an ordinary conflict between lines).
+mu_kind_note() {
+  local d=$1 f=$2 kind detail sha subject from into
+  from=$(cat "$d/from") into=$(cat "$d/into")
+  kind=$(awk -F'\t' -v f="$f" '$1 == f { print $2; exit }' "$d/kinds" 2> /dev/null)
+  detail=$(awk -F'\t' -v f="$f" '$1 == f { print $3 "\t" $4; exit }' "$d/kinds" 2> /dev/null)
+  sha=$(printf '%s' "$detail" | cut -f1)
+  subject=$(printf '%s' "$detail" | cut -f2)
+  case "$kind" in
+    deleted-into)
+      echo "deleted in \`$into\`${sha:+ by \`$sha\` ($subject)}, but changed in \`$from\`" ;;
+    deleted-from)
+      echo "deleted in \`$from\`${sha:+ by \`$sha\` ($subject)}, but changed in \`$into\`" ;;
+    other)
+      echo "no conflicting lines to show (for example, a binary file)" ;;
+  esac
+}
+
+# The conflicting step folder $1 as a markdown list of its files, each with a
+# kind note when it isn't an ordinary conflict. With $2 (the first conflicting
+# step's folder, for probed steps), a file that conflicted there too is marked:
+# the probe stood in for that resolution, so this may just be its echo.
+mu_render_conflict_files() {
+  local d=$1 first=$2 f note
+  while IFS= read -r f; do
+    note=$(mu_kind_note "$d" "$f")
+    if [ -n "$first" ] && grep -qxF -- "$f" "$first/files"; then
+      note="${note:+$note; }it conflicts in the merge above too, so this may go away once that's resolved"
+    fi
+    echo "- \`$f\`${note:+ ($note)}"
+  done < "$d/files"
+}
+
+# What to do about the conflicting step folder $1, for PR $3 into $2, as a
+# markdown list. MU_AI_STATUS ("<pr> <status>", from mu_find_proposal or
+# mu_check_pr) says where Claude's proposal for this conflict stands; without
+# it (Ship it's failure message) the text is general.
+mu_render_ways_forward() {
+  local d=$1 base=$2 pr=$3 from into ai_pr ai_status
+  from=$(cat "$d/from") into=$(cat "$d/into")
+  ai_pr=${MU_AI_STATUS%% *}
+  ai_status=${MU_AI_STATUS#* }
+  if cut -f2 "$d/kinds" 2> /dev/null | grep -qx 'deleted-into'; then
+    echo "- **A file this PR changes no longer exists in \`$into\`.** It was usually replaced there (for example, a WebForms block converted to Obsidian), so the change has to be made again in its replacement: open a PR into \`$into\` with the same change. Claude can't propose a resolution and none can be recorded, because git can only record conflicting lines, not a choice to keep a file deleted."
+    echo "- Then ship this PR with \`ship-only\`, and merge it up by hand in SmartGit, keeping the file deleted when merging into \`$into\`."
+    return 0
+  elif cut -f2 "$d/kinds" 2> /dev/null | grep -qx 'deleted-from'; then
+    echo "- **\`$from\` deletes a file that \`$into\` still changes.** Decide by hand whether \`$into\` should keep it. Claude can't propose a resolution for that choice, and none can be recorded."
+    echo "- Then ship with \`ship-only\`, and do the merge-up by hand in SmartGit."
+    return 0
+  elif ! mu_all_content_conflicts "$d"; then
+    echo "- Ship with \`ship-only\`, then do the merge-up by hand in SmartGit. These conflicts have no conflicting lines git can record, so Claude can't propose a resolution and none can be recorded."
+    return 0
+  fi
+
+  case "$ai_status" in
+    queued)
+      if [ "$ai_pr" = "$pr" ]; then
+        echo "- Claude is proposing a resolution now. It'll be posted here in a few minutes, and nothing uses it until a person approves it with the \`approve-resolution\` label."
+      else
+        echo "- Claude is proposing a resolution on #$ai_pr, which hits the same conflict. Once someone approves it there, this PR uses it too."
+      fi ;;
+    pending)
+      if [ "$ai_pr" = "$pr" ]; then
+        echo "- Claude proposed a resolution (see the AI-proposed resolution comment). If it's right, add the \`approve-resolution\` label, then \`ship\`."
+      else
+        echo "- Claude proposed a resolution on #$ai_pr for the same conflict. Approve it there with \`approve-resolution\`, and this PR uses it too."
+      fi ;;
+    failed)
+      if [ "$ai_pr" = "$pr" ]; then
+        echo "- Claude couldn't propose a resolution for this conflict (see the AI resolution comment), and won't try again unless the conflict changes."
+      else
+        echo "- Claude couldn't propose a resolution for this conflict (see #$ai_pr), and won't try again unless the conflict changes."
+      fi ;;
+    *)
+      echo "- The merge-up check has Claude propose a resolution for this conflict automatically. Approve it with the \`approve-resolution\` label, then add \`ship\` again." ;;
+  esac
+  echo "- Or add \`ship-only\` to ship to \`$base\` without merging up, then do the merge-up by hand in SmartGit. When that merge reaches public, its resolution is recorded, and Ship it replays it if the identical conflict comes up again."
+}
+
 # Writes the merge-up check comment for PR $1 (into $2) from the dry run in $3.
 mu_render_check_comment() {
-  local pr=$1 base=$2 work=$3 c cc from into same_step drift_files pr_files i j f notes total drift
+  local pr=$1 base=$2 work=$3 c cc p from into same_step drift_files pr_files i j f notes kind_note total drift
   {
     echo "$MU_CHECK_MARKER"
     if [ -s "$work/update-conflicts" ]; then
@@ -597,6 +824,10 @@ mu_render_check_comment() {
           else
             pr_files=$((pr_files + 1))
           fi
+          kind_note=$(mu_kind_note "$c" "$f")
+          if [ -n "$kind_note" ]; then
+            notes="$kind_note${notes:+; $notes}"
+          fi
           echo "- \`$f\`${notes:+ ($notes)}"
         done < "$c/files"
       else
@@ -621,10 +852,13 @@ mu_render_check_comment() {
         echo "Without this PR this merge is clean, so these conflicts come from this PR's changes."
       fi
 
+      # Only ordinary conflicts have lines worth showing. For the other kinds
+      # git's diff just says "Unmerged path", and the note above says it all.
       i=0
       while IFS= read -r f; do
         i=$((i + 1))
         [ -s "$c/diff-$i" ] || continue
+        [ -z "$(mu_kind_note "$c" "$f")" ] || continue
         echo
         echo "<details><summary><code>$f</code>: the conflict</summary>"
         echo
@@ -637,9 +871,23 @@ mu_render_check_comment() {
 
       echo
       echo "Ways forward:"
-      echo "- Add the \`ai-resolve\` label to have Claude propose a resolution. Nothing is used until a person approves it with the \`approve-resolution\` label."
-      echo "- Or add \`ship-only\` to ship to \`$base\` without merging up, then do the merge-up by hand in SmartGit. When that merge reaches public, its resolution is recorded, and Ship it replays it if the identical conflict comes up again."
-      if [ -f "$c/more-steps" ]; then
+      mu_render_ways_forward "$c" "$base" "$pr"
+
+      # Later steps, estimated by keeping `into`'s side of this conflict.
+      if [ -f "$c/probed" ] && ls -d "$work"/run/probe-* > /dev/null 2>&1; then
+        echo
+        echo "### Probably also conflicts later"
+        echo
+        echo "Estimated by keeping \`$into\`'s side of the conflict above, so this can change once it's really resolved:"
+        for p in "$work"/run/probe-*; do
+          echo
+          echo "Merging \`$(cat "$p/from")\` into \`$(cat "$p/into")\`:"
+          mu_render_conflict_files "$p" "$c"
+        done
+      elif [ -f "$c/probed" ]; then
+        echo
+        echo "The later merge-up steps look clean (estimated by keeping \`$into\`'s side of the conflict above)."
+      elif [ -f "$c/more-steps" ]; then
         echo
         echo "Later merge-up steps weren't checked, because they come after this one."
       fi
@@ -765,7 +1013,7 @@ mu_apply_recordings() {
 # Dry run for PR $1 (into $2, from branch $3), then sets its label and its
 # merge-up check comment from the result.
 mu_check_pr() {
-  local pr=$1 base=$2 head=$3 work="$RUNNER_TEMP/pr-$1" has_conflict=false
+  local pr=$1 base=$2 head=$3 work="$RUNNER_TEMP/pr-$1" has_conflict=false key
   mu_dry_run "$pr" "$base" "$head" "$work"
   if [ "$DRY_RUN" = "skipped" ]; then
     mu_set_label "$pr" merge-up-conflict false
@@ -776,6 +1024,23 @@ mu_check_pr() {
   if [ -s "$work/update-conflicts" ] || [ -d "$work/run/conflict" ]; then
     has_conflict=true
   fi
+
+  # A conflict Claude can resolve gets a proposal automatically, once per
+  # conflict: not again for a conflict that already has one (waiting for
+  # approval, or failed), whether on this PR or another. Queued PRs are
+  # written to propose.txt for the `propose` job.
+  MU_AI_STATUS=""
+  if [ -d "$work/run/conflict" ] && mu_can_propose "$work/run/conflict"; then
+    key=$(cat "$work/run/conflict/key")
+    MU_AI_STATUS=$(mu_find_proposal "$key")
+    if [ -z "$MU_AI_STATUS" ]; then
+      echo "$pr $base $head" >> "$RUNNER_TEMP/propose.txt"
+      echo "$key $pr" >> "$RUNNER_TEMP/propose-keys"
+      MU_AI_STATUS="$pr queued"
+    fi
+    echo "AI proposal: $MU_AI_STATUS"
+  fi
+
   mu_set_label "$pr" merge-up-conflict "$has_conflict"
   if [ "$has_conflict" = "true" ] || mu_has_resolutions "$work/run"; then
     mu_render_check_comment "$pr" "$base" "$work"
