@@ -110,6 +110,12 @@ namespace RockWeb.Blocks.Cms
         EditorMode = CodeEditorMode.Lava,
         Category = "CustomSetting",
         Key = AttributeKey.PostHtml )]
+
+    [BooleanField( "Allow Smart Search Requests",
+        Description = "When enabled, a request with the SmartSearch page parameter uses the global Smart Search entities and field criteria instead of this block's Enabled Models and Base Field Filters. Only enable this on the internal Smart Search results page.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.AllowSmartSearchRequests )]
     [Rock.SystemGuid.BlockTypeGuid( "FDF1BBFF-7A7B-4F4E-BF34-831203B0FEAC" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
@@ -128,6 +134,7 @@ namespace RockWeb.Blocks.Cms
             public const string CustomResultsCommands = "CustomResultsCommands";
             public const string PreHtml = "PreHtml";
             public const string PostHtml = "PostHtml";
+            public const string AllowSmartSearchRequests = "AllowSmartSearchRequests";
         }
 
         #endregion AttributeKeys
@@ -227,7 +234,7 @@ namespace RockWeb.Blocks.Cms
 
                 // if this is from the smart search apply some additional configuration
                 var showRefineSearch = PageParameter( PageParameterKey.ShowRefineSearch ).AsBoolean();
-                if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.SmartSearch ) ) )
+                if ( IsSmartSearchRequest() )
                 {
                     lbRefineSearch.Visible = showRefineSearch;
                 }
@@ -286,6 +293,7 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( AttributeKey.PreHtml, cePreHtml.Text );
             SetAttributeValue( AttributeKey.PostHtml, cePostHtml.Text );
             SetAttributeValue( AttributeKey.CustomResultsCommands, string.Join( ",", cblLavaCommands.SelectedValues ) );
+            SetAttributeValue( AttributeKey.AllowSmartSearchRequests, cbAllowSmartSearchRequests.Checked.ToString() );
 
             SaveAttributeValues();
 
@@ -512,6 +520,17 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Determines whether this request should use the global Smart Search settings. The SmartSearch
+        /// page parameter is supplied by the client, so it is only honored when the block allows it.
+        /// </summary>
+        /// <returns><c>true</c> if the global Smart Search settings should be used; otherwise <c>false</c>.</returns>
+        private bool IsSmartSearchRequest()
+        {
+            return GetAttributeValue( AttributeKey.AllowSmartSearchRequests ).AsBoolean()
+                && PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace();
+        }
+
+        /// <summary>
         /// Gets the search entities.
         /// </summary>
         /// <returns></returns>
@@ -519,7 +538,7 @@ namespace RockWeb.Blocks.Cms
         {
             List<int> selectedEntities = new List<int>();
 
-            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() )
+            if ( IsSmartSearchRequest() )
             {
                 // get entities from smart search config
                 var searchEntitiesSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
@@ -551,7 +570,7 @@ namespace RockWeb.Blocks.Cms
         {
             List<FieldValue> fieldValues = new List<FieldValue>();
 
-            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() )
+            if ( IsSmartSearchRequest() )
             {
                 // get the field criteria
                 var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
@@ -641,7 +660,7 @@ namespace RockWeb.Blocks.Cms
                 pageReference.Parameters.AddOrReplace( "Q", tbSearch.Text );
             }
 
-            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() && respectSmartSearch )
+            if ( IsSmartSearchRequest() && respectSmartSearch )
             {
                 pageReference.Parameters.AddOrReplace( "SmartSearch", "true" );
             }
@@ -957,6 +976,7 @@ namespace RockWeb.Blocks.Cms
             cbShowRefinedSearch.Checked = GetAttributeValue( AttributeKey.ShowRefinedSearch ).AsBoolean();
             cbShowScores.Checked = GetAttributeValue( AttributeKey.ShowScores ).AsBoolean();
             cbUseCustomResults.Checked = GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean();
+            cbAllowSmartSearchRequests.Checked = GetAttributeValue( AttributeKey.AllowSmartSearchRequests ).AsBoolean();
             ceCustomResultsTemplate.Text = GetAttributeValue( AttributeKey.LavaResultTemplate );
             cePreHtml.Text = GetAttributeValue( AttributeKey.PreHtml );
             cePostHtml.Text = GetAttributeValue( AttributeKey.PostHtml );
