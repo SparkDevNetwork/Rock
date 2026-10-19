@@ -129,7 +129,8 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             return;
         }
 
-        // A room the sidebar does not hold yet comes with channel.unread, whose reload counts it.
+        // A room the sidebar does not hold yet comes with channel.unread, or for a direct message
+        // with dm.preview, whose reload counts it.
         const row = find(signal.channel_id);
         if (!row) {
             return;
