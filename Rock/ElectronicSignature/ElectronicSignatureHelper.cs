@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -40,6 +41,24 @@ namespace Rock.ElectronicSignature
         /// Regular Expression for inserting multiple signature blocks into a document.
         /// </summary>
         private const string SIGNATURE_INSERTION_EXPRESSION = "<!--\\s*\\[\\[\\s*SignatureDetails\\s*\\]\\]\\s*-->";
+
+        /// <summary>
+        /// Regular Expression that matches a base64 encoded PNG data URL, which
+        /// is the only format produced by the drawn signature pad.
+        /// </summary>
+        private static readonly Regex DrawnSignatureDataUrlRegex = new Regex( @"^data:image/png;base64,[A-Za-z0-9+/]+={0,2}\z", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Determines whether the value is a base64 encoded PNG data URL as
+        /// produced by the drawn signature pad.
+        /// </summary>
+        /// <param name="dataUrl">The drawn signature data URL.</param>
+        /// <returns><c>true</c> if the value is a valid drawn signature data URL; otherwise, <c>false</c>.</returns>
+        [RockInternal( "17.12" )]
+        public static bool IsValidDrawnSignatureDataUrl( string dataUrl )
+        {
+            return dataUrl.IsNotNullOrWhiteSpace() && DrawnSignatureDataUrlRegex.IsMatch( dataUrl );
+        }
 
         /// <summary>
         /// Gets the signature document HTML (prior to signing)
@@ -79,16 +98,38 @@ namespace Rock.ElectronicSignature
 
             if ( signatureInformationHtmlArgs.SignatureType == SignatureType.Drawn )
             {
-                signatureHtml = $@"<img src='{signatureInformationHtmlArgs.DrawnSignatureDataUrl}' class='signature-image' />";
+                /*
+                    10/18/2026 - MSE
+
+                    The drawn signature data comes from the client and this HTML is
+                    rendered by the server side PDF generator. Only a base64 PNG data
+                    URL is allowed so that a URL cannot be fetched by the server and
+                    the value cannot break out of the src attribute.
+
+                    Reason: Prevent SSRF and HTML injection in signed documents.
+                */
+                signatureHtml = IsValidDrawnSignatureDataUrl( signatureInformationHtmlArgs.DrawnSignatureDataUrl )
+                    ? $@"<img src='{signatureInformationHtmlArgs.DrawnSignatureDataUrl}' class='signature-image' />"
+                    : string.Empty;
             }
             else
             {
                 signatureHtml = $@"<span class='signature-typed'> {signatureInformationHtmlArgs.SignedName} <span>";
             }
 
+            /*
+                10/18/2026 - MSE
+
+                The person's name can contain markup and is placed into HTML that
+                is rendered into the signed PDF, so it is encoded here. SignedName
+                and SignedClientIp must be encoded by the caller.
+
+                Reason: Prevent HTML injection in signed documents.
+            */
+
             // If SignedByPerson is not null, use the SignedByPerson's name, regardless of Typed or Drawn
             // otherwise, use the Name they typed
-            var signatureInfoName = signatureInformationHtmlArgs.SignedByPerson?.FullName;
+            var signatureInfoName = signatureInformationHtmlArgs.SignedByPerson?.FullName.EncodeHtml();
             if ( signatureInfoName.IsNullOrWhiteSpace() )
             {
                 signatureInfoName = signatureInformationHtmlArgs.SignedName;

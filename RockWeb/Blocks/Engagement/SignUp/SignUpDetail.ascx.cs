@@ -555,7 +555,15 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( group != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( group.Name, pageReference ) );
+                    /*
+                        10/18/2026 - MSE
+
+                        The project name can be edited by anyone with edit access to the project, and
+                        breadcrumb names are rendered as HTML. Encode it so it shows as text.
+
+                        Reason: Prevent stored cross-site scripting in the breadcrumb.
+                    */
+                    breadCrumbs.Add( new BreadCrumb( group.Name.EncodeHtml(), pageReference ) );
                 }
                 else
                 {
@@ -684,7 +692,15 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 var allowedGroupTypeIds = GetAllowedGroupTypeIds( group.ParentGroup.GroupTypeId );
                 if ( !allowedGroupTypeIds.Contains( this.GroupTypeId ) )
                 {
-                    nbGroupTypeNotAllowed.Text = $"The {group.ParentGroup.Name} group does not allow child groups with a {this.CurrentGroupType.Name} group type.";
+                    /*
+                        10/18/2026 - MSE
+
+                        The parent group name can be edited by anyone with edit access to that group, and
+                        notification box text is rendered as HTML. Encode the names so they show as text.
+
+                        Reason: Prevent stored cross-site scripting in the group type warning.
+                    */
+                    nbGroupTypeNotAllowed.Text = $"The {group.ParentGroup.Name.EncodeHtml()} group does not allow child groups with a {this.CurrentGroupType.Name.EncodeHtml()} group type.";
                     nbGroupTypeNotAllowed.Visible = true;
 
                     this.GroupTypeId = allowedGroupTypeIds.FirstOrDefault();
@@ -2702,7 +2718,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
             else
             {
-                lDescription.Text = group.Description;
+                /*
+                    10/18/2026 - MSE
+
+                    The project description is plain text that can be edited by anyone with edit
+                    access to the project. The literal is rendered as HTML, so encode it so it shows
+                    as text.
+
+                    Reason: Prevent stored cross-site scripting in the project description.
+                */
+                lDescription.Text = group.Description.EncodeHtml();
                 pnlDescription.Visible = true;
             }
 
@@ -3590,7 +3615,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         private void ShowOpportunityAlreadyExistsMessage()
         {
-            nbOpportunityAlreadyExists.Text = $"A {this.ProjectName} opportunity already exists for the selected Location & Schedule combination.<br />Please edit the existing opportunity or choose a different Location and/or Schedule to add a new opportunity.";
+            /*
+                10/18/2026 - MSE
+
+                The project name can be edited by anyone with edit access to the project, and
+                notification box text is rendered as HTML. Encode it so it shows as text while
+                the line break markup in the message still works.
+
+                Reason: Prevent stored cross-site scripting in the duplicate opportunity message.
+            */
+            nbOpportunityAlreadyExists.Text = $"A {this.ProjectName.EncodeHtml()} opportunity already exists for the selected Location & Schedule combination.<br />Please edit the existing opportunity or choose a different Location and/or Schedule to add a new opportunity.";
             nbOpportunityAlreadyExists.Visible = true;
         }
 

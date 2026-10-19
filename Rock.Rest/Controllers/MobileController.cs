@@ -387,7 +387,8 @@ namespace Rock.Rest.Controllers
                                 // Get or create a new component with the details we have.
                                 if ( mobileInteraction.ComponentEntityId.HasValue )
                                 {
-                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName );
+                                    // The client may name a new component but must not rename an existing one.
+                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName, false );
                                 }
                                 else
                                 {
