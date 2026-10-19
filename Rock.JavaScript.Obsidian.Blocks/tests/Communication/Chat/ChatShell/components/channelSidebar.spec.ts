@@ -514,6 +514,17 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
+    test("on a post Rock made in the reader's name, which is news to them as its bold says", async () => {
+        const w = mountSidebar({ rows: [dmGroup, dmRead] });
+
+        await w.setProps({
+            rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "Your class starts at 7", last_message_is_own: true, last_message_posted_by_rock: true, is_unread: true }, dmGroup]
+        });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+    });
+
     test("not on an edit of the newest message, nor a walk-back after a delete", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup] });
 

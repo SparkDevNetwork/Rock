@@ -499,7 +499,7 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
-    import { isTwoPersonDirectMessage, roomTitle } from "../stores/channelStore.partial";
+    import { isTwoPersonDirectMessage, isTypedByReader, roomTitle } from "../stores/channelStore.partial";
     import { SidebarRow } from "../types.partial";
 
     // #region Types
@@ -736,12 +736,12 @@
     // #region Watchers
 
     // A row glows once for news: a room new to the list; a direct message reached by a message
-    // from someone else, moved or not, as the design's incoming message glows; a channel that just
-    // turned unread, the one signal it gets until read, or that moved up among the channels. The
-    // person's own send, an edit and a walk-back after a delete are not news, nor is a room moving
-    // down because another passed it, nor the conversation on screen, and the first list a page
-    // loads glows nothing.
-    watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.channel_type === "dm", lastId: row.last_message_id, isOwn: row.last_message_is_own, isUnread: row.is_unread })), (rows, previous) => {
+    // the person did not type (someone else's, or Rock's post in their name), moved or not, as the
+    // design's incoming message glows; a channel that just turned unread, the one signal it gets
+    // until read, or that moved up among the channels. The person's own send, an edit and a
+    // walk-back after a delete are not news, nor is a room moving down because another passed it,
+    // nor the conversation on screen, and the first list a page loads glows nothing.
+    watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.channel_type === "dm", lastId: row.last_message_id, isTyped: isTypedByReader(row), isUnread: row.is_unread })), (rows, previous) => {
         if (!previous || previous.length === 0) {
             return;
         }
@@ -763,7 +763,7 @@
                 return true;
             }
             if (row.isDm) {
-                return !row.isOwn && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
+                return !row.isTyped && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
             }
             return (row.isUnread && !was.isUnread) || placeNow.get(row.id)! < placeBefore.get(row.id)!;
         }).map(row => row.id);

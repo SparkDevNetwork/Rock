@@ -62,6 +62,20 @@ export type ChannelStore = {
 };
 
 /**
+ * Whether the row's last message is one the reader typed. Their send never moves their read
+ * position, so without this their own last message would bold the row; a post Rock made in
+ * their name reads "You: " but is still news to them, as the platform's sidebar holds. The bold
+ * and the sidebar's glow both read it, so they never disagree on what is news.
+ *
+ * @param row The row, or the parts of it this reads.
+ *
+ * @returns True when the reader typed the row's last message.
+ */
+export function isTypedByReader(row: Pick<SidebarRow, "last_message_is_own" | "last_message_posted_by_rock">): boolean {
+    return row.last_message_is_own && !row.last_message_posted_by_rock;
+}
+
+/**
  * Creates the sidebar store.
  *
  * @param dependencies What the store reaches outside itself.
@@ -82,15 +96,6 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
     /** The row of a channel, if the sidebar holds it. */
     function find(channelId: string): SidebarRow | undefined {
         return store.rows.find(row => row.channel_id === channelId);
-    }
-
-    /**
-     * Whether the row's last message is one the reader typed. Their send never moves their read
-     * position, so without this their own last message would bold the row; a post Rock made in
-     * their name reads "You: " but is still news to them, as the platform's sidebar holds.
-     */
-    function isTypedByReader(row: SidebarRow): boolean {
-        return row.last_message_is_own && !row.last_message_posted_by_rock;
     }
 
     /** A signal that a channel has something the person has not read. */
