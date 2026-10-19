@@ -43,6 +43,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityDetail
         public List<ListItemBag> AvailabilityCriteriaOptions { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the current person is authorized to view grades.
+        /// </summary>
+        public bool CanViewGrades { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of due date criteria options.
         /// </summary>
         public List<ListItemBag> DueDateCriteriaOptions { get; set; }
