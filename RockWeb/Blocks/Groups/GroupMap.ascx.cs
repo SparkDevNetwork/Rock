@@ -163,11 +163,20 @@ namespace RockWeb.Blocks.Groups
 
         #region Constants
 
+        /*
+            10/19/2026 - MSE
+
+            The info window is rendered as HTML. Group names, person names and emails can be
+            set by group editors or anonymous visitors (Family Pre-Registration), so the default
+            template escapes them.
+
+            Reason: Prevent stored XSS through names in the default info window.
+        */
         private const string DEFAULT_LAVA_TEMPLATE = @"
 <div style='width:250px'>
 
     <div class='clearfix'>
-        <h4 class='pull-left' style='margin-top: 0;'>{{ GroupName }}</h4>
+        <h4 class='pull-left' style='margin-top: 0;'>{{ GroupName | Escape }}</h4>
         <span class='label label-campus pull-right'>{{ Campus.Name }}</span>
     </div>
 
@@ -186,12 +195,12 @@ namespace RockWeb.Blocks.Groups
 							<img src='{{ GroupMember.PhotoUrl }}&maxheight=50&maxwidth=50'>
 						</div>
 					{% endif %}
-					<a href='{{ GroupMember.ProfilePageUrl }}'>{{ GroupMember.NickName }} {{ GroupMember.LastName }}</a> - {{ GroupMember.Role }}
+					<a href='{{ GroupMember.ProfilePageUrl }}'>{{ GroupMember.NickName | Escape }} {{ GroupMember.LastName | Escape }}</a> - {{ GroupMember.Role }}
                     {% if groupTypeGuid != '790E3215-3B10-442B-AF69-616C0DCB998E' and GroupMember.ConnectionStatus != '' %}
 				        <br>{{ GroupMember.ConnectionStatus }}
 					{% endif %}
 					{% if GroupMember.Email != '' %}
-						<br>{{ GroupMember.Email }}
+						<br>{{ GroupMember.Email | Escape }}
 					{% endif %}
 					{% for Phone in GroupMember.Person.PhoneNumbers %}
 						<br>{{ Phone.NumberTypeValue.Value }}: {{ Phone.NumberFormatted }}
