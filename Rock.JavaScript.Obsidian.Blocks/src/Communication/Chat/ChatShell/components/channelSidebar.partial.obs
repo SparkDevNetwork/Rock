@@ -61,7 +61,7 @@
                             :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
                             :aria-current="isActive(row) ? 'true' : undefined"
                             @click="emit('select', row.channel_id)"
-                            @animationend="onFlashEnd(row.channel_id)">
+                            @animationend.self="onFlashEnd(row.channel_id)">
                         <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
                         <template v-if="lookOf(row) === 'community'">
                             <span class="chat-cs-slot" aria-hidden="true">
@@ -588,6 +588,10 @@
 
     // #region Event Handlers
 
+    /**
+     * The row's own glow has ended. Bound to the row alone: the dot or badge a row gains animates
+     * too, and its end bubbling up would cut the glow short.
+     */
     function onFlashEnd(channelId: string): void {
         if (flashIds.value.has(channelId)) {
             const next = new Set(flashIds.value);

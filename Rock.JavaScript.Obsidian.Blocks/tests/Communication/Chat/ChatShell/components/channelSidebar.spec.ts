@@ -524,6 +524,22 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
+    test("glows for its own whole length, not ending when the dot it gains finishes its own animation", async () => {
+        const w = mountSidebar({ rows: [dmRead, dmGroup] });
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
+        await nextTick();
+        // the dot's animation ends first, and its event bubbles up through the row
+        rowOf(w, dmRead.channel_id).get("[data-testid='row-dot']").element.dispatchEvent(new Event("animationend", { bubbles: true }));
+        await nextTick();
+        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+
+        // the row's own glow ending is what clears it
+        rowOf(w, dmRead.channel_id).element.dispatchEvent(new Event("animationend", { bubbles: true }));
+        await nextTick();
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+    });
+
     test("a channel's row glows on channel.unread, the one signal it gets until read, where it does not move", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 
