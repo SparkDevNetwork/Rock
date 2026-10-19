@@ -51,6 +51,14 @@ namespace Rock.Blocks.Cms
         Order = 0
     )]
 
+    [TextField(
+        "Root Folder",
+        Key = AttributeKey.RootFolder,
+        Description = "The folder that limits which files can be passed in the URL. Files outside it cannot be opened or saved. The file set in Relative File Path is always allowed. Must start with ~/. Uses ~/Content when blank.",
+        IsRequired = false,
+        DefaultValue = "~/Content",
+        Order = 1 )]
+
     #endregion Block Attributes
 
     // was [Rock.SystemGuid.BlockTypeGuid( "327370A5-3CC0-42AD-B236-F45260F6A1EE" )]
@@ -62,6 +70,7 @@ namespace Rock.Blocks.Cms
         #region Fields
 
         private string _fileRelativePath = string.Empty;
+        private string _filePhysicalPath = string.Empty;
         private string _worksurfaceLayoutName = "Full Worksurface";
 
         #endregion Fields
@@ -69,6 +78,15 @@ namespace Rock.Blocks.Cms
         #region Properties
 
         private const string FriendlyBlockName = "File Editor";
+        private const string DefaultRootFolder = "~/Content";
+        private const string InvalidPathMessage = "Invalid relative file path.";
+        private const string FileTypeNotAllowedMessage = "Viewing/Editing of this file type is not allowed.";
+        private const string InvalidRootFolderMessage = "The File Editor Root Folder setting is not valid.";
+
+        // These apply whatever the Root Folder is, so widening the root
+        // never exposes server code, configuration or application data.
+        private static readonly string[] RestrictedFolders = { "Bin", "App_Code", "App_Data", "App_Browsers", "App_GlobalResources", "App_LocalResources" };
+        private static readonly string[] RestrictedCodeFileExtensions = { ".cs", ".vb", ".ascx", ".aspx", ".ashx", ".asmx", ".asax", ".master", ".svc", ".cshtml", ".vbhtml", ".config", ".dll", ".exe", ".skin", ".browser" };
 
         private List<string> RestrictedFileExtension
         {
@@ -96,6 +114,7 @@ namespace Rock.Blocks.Cms
         private static class AttributeKey
         {
             public const string RelativeFilePath = "RelativeFilePath";
+            public const string RootFolder = "RootFolder";
         }
 
         private static class PageParameterKey
@@ -179,12 +198,10 @@ namespace Rock.Blocks.Cms
         /// <returns>A <see cref="FileEditorBag"/> containing the resolved file path and the file's contents.</returns>
         private FileEditorBag GetBoxBag()
         {
-            var filePath = RockApp.Current.MapPath( _fileRelativePath );
-
             var bag = new FileEditorBag
             {
-                FilePath = filePath,
-                FileContents = File.ReadAllText( filePath ),
+                FilePath = _filePhysicalPath,
+                FileContents = File.ReadAllText( _filePhysicalPath ),
             };
 
             return bag;
@@ -216,19 +233,18 @@ namespace Rock.Blocks.Cms
             var options = new FileEditorOptionsBag
             {
                 IsEditable = IsPersonEditOrAdminAuthorized(),
-                EditorMode = GetEditorModeFromFileExtension( Path.GetExtension( _fileRelativePath ) ),
+                EditorMode = GetEditorModeFromFileExtension( Path.GetExtension( _filePhysicalPath ).ToLower() ),
                 isWorksurfaceLayout = PageCache.Layout.ToString() == _worksurfaceLayoutName,
             };
             return options;
         }
 
         /// <summary>
-        /// Validates that a relative file path is provided and that the file exists at the specified path.
+        /// Validates that a relative file path was provided and names a file the editor may open and save.
         /// </summary>
-        /// <remarks>This method checks whether a relative file path is provided and whether the file
-        /// exists at the resolved path. If either condition is not met, an appropriate error message is assigned to
-        /// <paramref name="errorMessage"/>.</remarks>
-        /// <param name="errorMessage">When the method completes, contains an error message if the validation fails; otherwise, remains unchanged.</param>
+        /// <param name="errorMessage">The message to show when validation fails.</param>
+        /// <returns><c>true</c> if the file may be edited; otherwise <c>false</c>.</returns>
+        /// <remarks>On success, sets the relative and physical paths that <see cref="GetBoxBag"/> and <see cref="Save"/> use.</remarks>
         private bool IsRelativeFilePathGood( out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -240,26 +256,120 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            // Check that the file exists
-            var fileUrl = RockApp.Current.MapPath( relativeFilePath );
-            if ( !File.Exists( fileUrl ) )
+            if ( !TryGetValidatedFilePath( relativeFilePath, out var physicalPath, out errorMessage ) )
             {
-                errorMessage = $"Invalid relative file path.";
-                return false;
-            }
-
-            // Check that the file extension is not restricted
-            if ( RestrictedFileExtension.Any( a =>
-                Path.GetExtension( relativeFilePath )
-                .Equals( a, StringComparison.OrdinalIgnoreCase )
-            ) )
-            {
-                errorMessage = $"Viewing/Editing of this file type is not allowed.";
                 return false;
             }
 
             _fileRelativePath = relativeFilePath;
+            _filePhysicalPath = physicalPath;
 
+            return true;
+        }
+
+        /// <summary>
+        /// Resolves a relative file path to a physical path the editor is allowed to open and save.
+        /// </summary>
+        /// <param name="relativeFilePath">The virtual path of the file, starting with ~/.</param>
+        /// <param name="physicalPath">The full physical path of the file when it is allowed.</param>
+        /// <param name="errorMessage">The message to show when the file is not allowed.</param>
+        /// <returns><c>true</c> if the file exists, is within the Root Folder or is the configured Relative File Path, and may be edited; otherwise <c>false</c>.</returns>
+        private bool TryGetValidatedFilePath( string relativeFilePath, out string physicalPath, out string errorMessage )
+        {
+            physicalPath = null;
+            errorMessage = InvalidPathMessage;
+
+            // MapPath returns absolute, drive and UNC paths unchanged, and a ":"
+            // would also allow NTFS stream names.
+            if ( relativeFilePath.IsNullOrWhiteSpace() || !relativeFilePath.StartsWith( "~/" ) || relativeFilePath.Contains( ":" ) )
+            {
+                return false;
+            }
+
+            var rootFolder = GetAttributeValue( AttributeKey.RootFolder );
+            if ( rootFolder.IsNullOrWhiteSpace() )
+            {
+                rootFolder = DefaultRootFolder;
+            }
+
+            if ( !rootFolder.StartsWith( "~/" ) || rootFolder.Contains( ":" ) )
+            {
+                errorMessage = InvalidRootFolderMessage;
+                return false;
+            }
+
+            string physicalWebRoot;
+            string physicalRoot;
+            string fullPath;
+
+            try
+            {
+                if ( !Rock.Utility.FileUtilities.IsFileTypeAllowed( Path.GetFileName( relativeFilePath ) ) )
+                {
+                    errorMessage = FileTypeNotAllowedMessage;
+                    return false;
+                }
+
+                physicalWebRoot = Path.GetFullPath( RockApp.Current.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
+                physicalRoot = Path.GetFullPath( RockApp.Current.MapPath( rootFolder ) );
+                fullPath = Path.GetFullPath( RockApp.Current.MapPath( relativeFilePath ) );
+            }
+            catch ( Exception )
+            {
+                return false;
+            }
+
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRoot, physicalWebRoot ) )
+            {
+                errorMessage = InvalidRootFolderMessage;
+                return false;
+            }
+
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalWebRoot ) )
+            {
+                return false;
+            }
+
+            /*
+                10/19/26 - JMH
+
+                A file set in the Relative File Path block setting was chosen by an
+                administrator, so it is trusted even when it sits outside the Root Folder.
+                This keeps existing blocks pinned to files outside ~/Content working.
+                The Root Folder only guards paths passed in the URL.
+
+                Reason: Confine URL-supplied paths without breaking configured blocks.
+            */
+            var isConfiguredFile = string.Equals( relativeFilePath, GetAttributeValue( AttributeKey.RelativeFilePath ), StringComparison.Ordinal );
+            if ( !isConfiguredFile && !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalRoot ) )
+            {
+                return false;
+            }
+
+            // Short (8.3) names such as APP_CO~1 contain "~" and would not match the restricted folder names.
+            var webRootRelativePath = fullPath.Substring( physicalWebRoot.Length );
+            if ( webRootRelativePath.Contains( "~" )
+                || RestrictedFolders.Any( f => Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, Path.Combine( physicalWebRoot, f ) ) ) )
+            {
+                return false;
+            }
+
+            var ext = Path.GetExtension( fullPath );
+            if ( RestrictedFileExtension.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) )
+                || RestrictedCodeFileExtensions.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                errorMessage = FileTypeNotAllowedMessage;
+                return false;
+            }
+
+            // Checked last so the response can't be used to probe for files outside the root.
+            if ( !File.Exists( fullPath ) )
+            {
+                return false;
+            }
+
+            physicalPath = fullPath;
+            errorMessage = null;
             return true;
         }
 
@@ -398,23 +508,21 @@ namespace Rock.Blocks.Cms
             }
 
             // The file path in the bag is posted back by the browser, so run the
-            // same relative path, existence and restricted extension checks
-            // that init used and write to the path derived from them instead.
+            // same checks that init used and write to the path derived from them instead.
             if ( !IsRelativeFilePathGood( out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
 
-            var filePath = RockApp.Current.MapPath( _fileRelativePath );
-            // Init sends this same mapped path down, so it must match exactly.
-            var isSameFileAsInit = string.Equals( bag.FilePath, filePath, StringComparison.OrdinalIgnoreCase );
+            // Init sends this same validated path down, so it must match exactly.
+            var isSameFileAsInit = string.Equals( bag.FilePath, _filePhysicalPath, StringComparison.OrdinalIgnoreCase );
 
             if ( !isSameFileAsInit )
             {
-                return ActionBadRequest( "Invalid relative file path." );
+                return ActionBadRequest( InvalidPathMessage );
             }
 
-            File.WriteAllText( filePath, bag.FileContents );
+            File.WriteAllText( _filePhysicalPath, bag.FileContents );
             return ActionOk();
         }
 
