@@ -273,6 +273,12 @@
      */
     let isChoicePending = false;
 
+    /**
+     * Set as the picker goes. A choice can unmount it while a mark is waiting on the next tick, and
+     * that mark would expand the editor again over a listbox that is gone.
+     */
+    let isUnmounted = false;
+
     /** The rows last drawn that matched their query, kept on screen while a narrowing leaves none. */
     const lastRows = ref<PickerRow[]>([]);
 
@@ -402,7 +408,7 @@
     /** Marks the editor as this picker's combobox, pointing at the active row. */
     function markTarget(): void {
         const target = props.target;
-        if (!target) {
+        if (!target || isUnmounted) {
             return;
         }
 
@@ -508,6 +514,7 @@
     });
 
     onBeforeUnmount(() => {
+        isUnmounted = true;
         document.removeEventListener("keydown", onKeydown, true);
         document.removeEventListener("pointerdown", onDocumentPointerDown, true);
         unmarkTarget();

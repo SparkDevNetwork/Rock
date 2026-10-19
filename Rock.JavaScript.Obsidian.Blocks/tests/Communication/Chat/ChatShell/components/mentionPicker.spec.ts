@@ -510,6 +510,25 @@ describe("the picker in the composer", () => {
         expect(editor.getAttribute("aria-activedescendant")).toBe(options()[0].id);
     });
 
+    test("leaves the editor collapsed, pointing at nothing, when an Enter pressed before the first answer chooses once it comes", async () => {
+        const w = drawComposer({ canMention: true, people: [], isAllOffered: false, isAwaitingAnswer: true, isAwaitingFirstAnswer: true });
+        await typeNodes(w, ["Hi @an"]);
+        expect(picker()).not.toBeNull();
+
+        await press(editorOf(w), "Enter");
+        await w.setProps({ mentionSource: { ...people, isAwaitingAnswer: false, isAwaitingFirstAnswer: false } });
+        for (let i = 0; i < 4; i++) {
+            await nextTick();
+        }
+
+        const editor = editorOf(w);
+        expect(boxText(w)).toBe(`Hi <@${anna}> `);
+        expect(picker()).toBeNull();
+        expect(editor.getAttribute("aria-expanded")).toBe("false");
+        expect(editor.hasAttribute("aria-controls")).toBe(false);
+        expect(editor.hasAttribute("aria-activedescendant")).toBe(false);
+    });
+
     test.each(["Enter", "Tab"])("%s inserts the active person's chip and a space in place of the query, and sends nothing", async key => {
         const w = drawComposer(people);
         await typeNodes(w, ["Hi @an"]);
