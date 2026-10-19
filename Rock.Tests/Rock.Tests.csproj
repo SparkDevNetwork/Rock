@@ -261,6 +261,7 @@
     <Compile Include="Configuration\RockAppExtensionsTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchRestrictedMemberTests.cs" />
+    <Compile Include="Core\ElectronicSignature\ElectronicSignatureHelperTests.cs" />
     <Compile Include="Field\Types\AudioUrlFieldTypeTests.cs" />
     <Compile Include="Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Field\Types\EmailFieldTypeTests.cs" />
