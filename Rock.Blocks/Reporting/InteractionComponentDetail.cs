@@ -217,7 +217,16 @@ namespace Rock.Blocks.Reporting
             }
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-            var breadCrumb = new BreadCrumbLink( data?.Name ?? "Interaction Component", breadCrumbPageRef );
+            /*
+                10/19/2026 - MSE
+
+                Breadcrumb names are written into the page as HTML without encoding, and a
+                component name can come from outside Rock (for example a mobile or TV
+                application creating a component), so the name is HTML encoded here.
+
+                Reason: Prevent script injection through an interaction component name.
+            */
+            var breadCrumb = new BreadCrumbLink( data?.Name?.EncodeHtml() ?? "Interaction Component", breadCrumbPageRef );
 
             return new BreadCrumbResult
             {
