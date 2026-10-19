@@ -23,6 +23,13 @@
 
 /** The settings that will be edited in the custom settings panel for the Universal Search block. */
 export type CustomSettingsBag = {
+    /**
+     * Gets or sets a value indicating whether a request with the SmartSearch page
+     * parameter uses the global Smart Search entities and field criteria instead of
+     * the block's Enabled Models and Base Field Filters.
+     */
+    allowSmartSearchRequests: boolean;
+
     /** Gets or sets the base field filters that are always applied. */
     baseFieldFilters?: string | null;
 

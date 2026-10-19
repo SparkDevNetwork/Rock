@@ -142,6 +142,14 @@ namespace Rock.Blocks.Cms
         Order = 11,
         Key = AttributeKey.PostHtml )]
 
+    [BooleanField(
+        "Allow Smart Search Requests",
+        Description = "When enabled, a request with the SmartSearch page parameter uses the global Smart Search entities and field criteria instead of this block's Enabled Models and Base Field Filters. Only enable this on the internal Smart Search results page.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Order = 12,
+        Key = AttributeKey.AllowSmartSearchRequests )]
+
     #endregion Block Attributes
 
     [ConfigurationChangedReload( Rock.Enums.Cms.BlockReloadMode.Block )]
@@ -175,6 +183,7 @@ namespace Rock.Blocks.Cms
             public const string CustomResultsCommands = "CustomResultsCommands";
             public const string PreHtml = "PreHtml";
             public const string PostHtml = "PostHtml";
+            public const string AllowSmartSearchRequests = "AllowSmartSearchRequests";
         }
 
         private static class PageParameterKey
@@ -204,7 +213,7 @@ namespace Rock.Blocks.Cms
                 ResultsPerPage = GetResultsPerPage(),
                 ShowRefinedSearchToggle = GetShowRefinedSearchToggle(),
                 IsRefinedSearchVisible = PageParameter( PageParameterKey.RefinedSearch ).AsBoolean(),
-                IsSmartSearchRequest = PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace()
+                IsSmartSearchRequest = IsSmartSearchAllowed() && PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace()
             };
 
             if ( TryGetRedirectUrl( out var redirectUrl, out var redirectError ) )
@@ -277,8 +286,9 @@ namespace Rock.Blocks.Cms
                 return resultBag;
             }
 
-            var selectedEntities = GetSelectedEntityIds( bag.SelectedEntityTypeIds, bag.IsSmartSearchRequest );
-            var fieldValues = GetSelectedFieldValues( selectedEntities, bag.SelectedFilters, bag.IsSmartSearchRequest );
+            var isSmartSearchRequest = bag.IsSmartSearchRequest && IsSmartSearchAllowed();
+            var selectedEntities = GetSelectedEntityIds( bag.SelectedEntityTypeIds, isSmartSearchRequest );
+            var fieldValues = GetSelectedFieldValues( selectedEntities, bag.SelectedFilters, isSmartSearchRequest );
             var fieldCriteria = new SearchFieldCriteria
             {
                 FieldValues = fieldValues
@@ -413,6 +423,17 @@ namespace Rock.Blocks.Cms
             }
 
             return filters;
+        }
+
+        /// <summary>
+        /// Determines whether this block allows smart search requests. The smart search
+        /// flag comes from the client (page parameter or block action), so it is only
+        /// honored when this returns <c>true</c>.
+        /// </summary>
+        /// <returns><c>true</c> if smart search requests are allowed; otherwise <c>false</c>.</returns>
+        private bool IsSmartSearchAllowed()
+        {
+            return GetAttributeValue( AttributeKey.AllowSmartSearchRequests ).AsBoolean();
         }
 
         /// <summary>
@@ -633,7 +654,7 @@ namespace Rock.Blocks.Cms
         /// <returns><c>true</c> if the toggle should be shown; otherwise <c>false</c>.</returns>
         private bool GetShowRefinedSearchToggle()
         {
-            if ( PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() )
+            if ( IsSmartSearchAllowed() && PageParameter( PageParameterKey.SmartSearch ).IsNotNullOrWhiteSpace() )
             {
                 return PageParameter( PageParameterKey.ShowRefineSearch ).AsBoolean();
             }
@@ -878,7 +899,8 @@ namespace Rock.Blocks.Cms
                 LavaResultTemplate = GetAttributeValue( AttributeKey.LavaResultTemplate ),
                 CustomResultsCommands = GetAttributeValue( AttributeKey.CustomResultsCommands ).SplitDelimitedValues().ToList(),
                 PreHtml = GetAttributeValue( AttributeKey.PreHtml ),
-                PostHtml = GetAttributeValue( AttributeKey.PostHtml )
+                PostHtml = GetAttributeValue( AttributeKey.PostHtml ),
+                AllowSmartSearchRequests = GetAttributeValue( AttributeKey.AllowSmartSearchRequests ).AsBoolean()
             };
         }
 
@@ -1094,6 +1116,9 @@ namespace Rock.Blocks.Cms
 
                 box.IfValidProperty( nameof( box.Settings.PostHtml ),
                     () => block.SetAttributeValue( AttributeKey.PostHtml, box.Settings.PostHtml ) );
+
+                box.IfValidProperty( nameof( box.Settings.AllowSmartSearchRequests ),
+                    () => block.SetAttributeValue( AttributeKey.AllowSmartSearchRequests, box.Settings.AllowSmartSearchRequests.ToString() ) );
 
                 block.SaveAttributeValues( rockContext );
 
