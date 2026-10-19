@@ -1105,7 +1105,7 @@ namespace Rock.Rest.Controllers
 
                 if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
-                    string infoWindow = group.Name;
+                    string infoWindow = group.Name.EncodeHtml();
 
                     if ( infoWindowDetails != null )
                     {
@@ -1144,7 +1144,16 @@ namespace Rock.Rest.Controllers
 
                         var dictLocation = new Dictionary<string, object>();
                         dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Value );
-                        dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
+                        /*
+                            10/19/2026 - MSE
+
+                            The address is used as HTML in the info window (line breaks become <br>)
+                            and can be entered by anonymous visitors (Family Pre-Registration) or
+                            group editors, so it is encoded before the line breaks are added.
+
+                            Reason: Prevent stored XSS through addresses in the map info window.
+                        */
+                        dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() );
                         dictLocation.Add( "Street1", grouplocation.Location.Street1 );
                         dictLocation.Add( "Street2", grouplocation.Location.Street2 );
                         dictLocation.Add( "City", grouplocation.Location.City );
