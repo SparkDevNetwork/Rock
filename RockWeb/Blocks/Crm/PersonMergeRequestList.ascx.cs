@@ -165,7 +165,16 @@ namespace RockWeb.Blocks.Crm
                     Literal lMergeRecords = e.Row.FindControl( "lMergeRecords" ) as Literal;
                     if ( lMergeRecords != null )
                     {
-                        lMergeRecords.Text = mergeRecords.ToList().AsDelimited( "<br />" );
+                        /*
+                            10/18/2026 - MSE
+
+                            Person names are plain text that anyone can set (for example through
+                            a public signup form), and they are joined into HTML here, so each
+                            name is HTML encoded.
+
+                            Reason: Prevent stored XSS through a person name in the merge request list.
+                        */
+                        lMergeRecords.Text = mergeRecords.Select( p => p.FullName.EncodeHtml() ).ToList().AsDelimited( "<br />" );
                     }
                 }
             }
