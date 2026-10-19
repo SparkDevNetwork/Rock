@@ -180,6 +180,17 @@ describe("createChannelStore", () => {
         expect(s.rows.find(r => r.channel_id === two)?.mention_count).toBe(1);
     });
 
+    test("a save that caught up clears the row's mentions, by name and @all, and one behind keeps them", () => {
+        const { store: s } = store();
+        s.setSidebar([row(one, { mention_count: 2, all_mention_count: 1 }), row(two, { mention_count: 3, all_mention_count: 2 })]);
+
+        s.applyMarkRead(one, { read_cursor: 11, last_message_id: 11 });
+        s.applyMarkRead(two, { read_cursor: 10, last_message_id: 11 });
+
+        expect(s.rows.find(r => r.channel_id === one)).toEqual(expect.objectContaining({ mention_count: 0, all_mention_count: 0 }));
+        expect(s.rows.find(r => r.channel_id === two)).toEqual(expect.objectContaining({ mention_count: 3, all_mention_count: 2 }));
+    });
+
     test("a fresh sidebar replaces the rows", () => {
         const { store: s } = store();
 

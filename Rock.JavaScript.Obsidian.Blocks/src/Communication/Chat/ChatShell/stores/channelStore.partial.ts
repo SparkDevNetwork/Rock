@@ -155,6 +155,13 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             // A save that comes back after the person has returned to the channel leaves it read:
             // they are looking at it, and their next save settles it.
             row.is_unread = channelId !== store.activeChannelId && isUnreadAfterSave(result);
+
+            // A save that reached the newest message read every mention in it; one behind may not
+            // have, and the next save settles it.
+            if (!isUnreadAfterSave(result)) {
+                row.mention_count = 0;
+                row.all_mention_count = 0;
+            }
         }
     });
 }
