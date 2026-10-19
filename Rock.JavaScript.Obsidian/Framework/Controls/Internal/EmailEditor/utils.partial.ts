@@ -323,6 +323,65 @@ export const horizontalAlignmentConverter: ValueConverter<HorizontalAlignment | 
 
 // #region Functions
 
+/**
+ * Parses HTML in an inert document, removes active content, and imports
+ * the remaining nodes into the target document.
+ *
+ * Use this instead of assigning `innerHTML` on an element owned by a live
+ * document when the HTML comes from saved data or another window.
+ *
+ * @param targetDocument The document that will own the returned nodes.
+ * @param html The HTML to import.
+ * @returns A document fragment, owned by the target document, that contains the cleaned nodes.
+ */
+export function importInertHtml(targetDocument: Document, html: string): DocumentFragment {
+    /*
+        10/18/2026 - MSE
+
+        Email section markup is saved by any email editor user and inserted
+        into the editor iframe, which runs on the Rock origin. Assigning it
+        with innerHTML on an element of a live document runs event handlers
+        (for example an image error handler) even before the element is
+        attached. A document created with createHTMLDocument has no browsing
+        context, so nothing loads or runs while the markup is parsed and
+        cleaned there. Only the cleaned nodes are imported into the target.
+
+        Reason: Prevent saved email sections and messages from running script.
+    */
+    const inertDocument = document.implementation.createHTMLDocument("");
+    const container = inertDocument.createElement("div");
+    container.innerHTML = html;
+
+    container
+        .querySelectorAll("script, iframe, frame, frameset, object, embed, base, meta[http-equiv], animate, set")
+        .forEach(element => element.remove());
+
+    container.querySelectorAll("*").forEach(element => {
+        for (const attribute of Array.from(element.attributes)) {
+            const name = attribute.name.toLowerCase();
+            // Remove whitespace and control characters, which browsers ignore in URL schemes.
+            // eslint-disable-next-line no-control-regex
+            const value = attribute.value.toLowerCase().replace(/[\s\u0000-\u001f\u007f]/g, "");
+
+            if (name.startsWith("on")
+                || name === "srcdoc"
+                || value.startsWith("javascript:")
+                || value.startsWith("vbscript:")
+                || value.startsWith("data:text/html")) {
+                element.removeAttribute(attribute.name);
+            }
+        }
+    });
+
+    const fragment = targetDocument.createDocumentFragment();
+
+    for (const node of Array.from(container.childNodes)) {
+        fragment.appendChild(targetDocument.importNode(node, true));
+    }
+
+    return fragment;
+}
+
 /** Uses an accordion group if one is set up. */
 export function useAccordionGroup(isExpanded: Ref<boolean>): void {
     const accordionKey = newGuid();
