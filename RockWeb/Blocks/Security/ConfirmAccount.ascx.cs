@@ -270,9 +270,18 @@ namespace RockWeb.Blocks.Security
                 Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
                 string caption = GetAttributeValue( "ConfirmedCaption" );
+                /*
+                    10/19/2026 - MSE
+
+                    The caption template is admin authored HTML and is written into a Literal. The
+                    first name and user name formatted into it are stored data a person can set, so
+                    they are encoded.
+
+                    Reason: Prevent stored XSS through a person's name in Confirm Account.
+                */
                 if ( caption.Contains( "{0}" ) )
                 {
-                    caption = string.Format( caption, user.Person.FirstName );
+                    caption = string.Format( caption, user.Person.FirstName.EncodeHtml() );
                 }
 
                 lConfirmed.Text = caption;
@@ -299,13 +308,22 @@ namespace RockWeb.Blocks.Security
                 if ( component.SupportsChangePassword )
                 {
                     string caption = GetAttributeValue( "ResetPasswordCaption" );
+                    /*
+                        10/19/2026 - MSE
+
+                        The caption template is admin authored HTML and is written into a Literal. The
+                        first name and user name formatted into it are stored data a person can set, so
+                        they are encoded.
+
+                        Reason: Prevent stored XSS through a person's name in Confirm Account.
+                    */
                     if ( caption.Contains( "{1}" ) )
                     {
-                        caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                        caption = string.Format( caption, user.Person.FirstName.EncodeHtml(), user.UserName.EncodeHtml() );
                     }
                     else if ( caption.Contains( "{0}" ) )
                     {
-                        caption = string.Format( caption, user.Person.FirstName );
+                        caption = string.Format( caption, user.Person.FirstName.EncodeHtml() );
                     }
 
                     lResetPassword.Text = caption;
@@ -338,13 +356,22 @@ namespace RockWeb.Blocks.Security
                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
                     string caption = GetAttributeValue( "PasswordResetCaption" );
+                    /*
+                        10/19/2026 - MSE
+
+                        The caption template is admin authored HTML and is written into a Literal. The
+                        first name and user name formatted into it are stored data a person can set, so
+                        they are encoded.
+
+                        Reason: Prevent stored XSS through a person's name in Confirm Account.
+                    */
                     if ( caption.Contains( "{1}" ) )
                     {
-                        caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                        caption = string.Format( caption, user.Person.FirstName.EncodeHtml(), user.UserName.EncodeHtml() );
                     }
                     else if ( caption.Contains( "{0}" ) )
                     {
-                        caption = string.Format( caption, user.Person.FirstName );
+                        caption = string.Format( caption, user.Person.FirstName.EncodeHtml() );
                     }
 
                     lResetSuccess.Text = caption;
@@ -390,7 +417,16 @@ namespace RockWeb.Blocks.Security
                     }
                     else
                     {
-                        caption = string.Format( caption, user.UserName );
+                        /*
+                            10/19/2026 - MSE
+
+                            The caption template is admin authored HTML and is written into a Literal. The
+                            first name and user name formatted into it are stored data a person can set, so
+                            they are encoded.
+
+                            Reason: Prevent stored XSS through a person's name in Confirm Account.
+                        */
+                        caption = string.Format( caption, user.UserName.EncodeHtml() );
                     }
                 }
 

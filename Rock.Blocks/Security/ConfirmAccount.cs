@@ -428,9 +428,17 @@ namespace Rock.Blocks.Security
         {
             var caption = this.AccountConfirmedCaptionTemplate;
 
+            /*
+                10/19/2026 - MSE
+
+                The caption template is admin authored HTML and stays HTML. The first name and
+                user name formatted into it are stored data a person can set, so they are encoded.
+
+                Reason: Prevent stored XSS through a person's name in Confirm Account.
+            */
             if ( caption.Contains( "{0}" ) )
             {
-                caption = string.Format( caption, user.Person.FirstName );
+                caption = string.Format( caption, user.Person.FirstName.EncodeHtml() );
             }
 
             return caption;
@@ -520,13 +528,21 @@ namespace Rock.Blocks.Security
         private string GetChangePasswordCaption( UserLogin user )
         {
             var caption = this.ChangePasswordCaptionTemplate;
+            /*
+                10/19/2026 - MSE
+
+                The caption template is admin authored HTML and stays HTML. The first name and
+                user name formatted into it are stored data a person can set, so they are encoded.
+
+                Reason: Prevent stored XSS through a person's name in Confirm Account.
+            */
             if ( caption.Contains( "{1}" ) )
             {
-                caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                caption = string.Format( caption, user.Person.FirstName.EncodeHtml(), user.UserName.EncodeHtml() );
             }
             else if ( caption.Contains( "{0}" ) )
             {
-                caption = string.Format( caption, user.Person.FirstName );
+                caption = string.Format( caption, user.Person.FirstName.EncodeHtml() );
             }
             return caption;
         }
@@ -540,9 +556,17 @@ namespace Rock.Blocks.Security
         {
             var caption = this.DeleteConfirmationCaptionTemplate;
 
+            /*
+                10/19/2026 - MSE
+
+                The caption template is admin authored HTML and stays HTML. The first name and
+                user name formatted into it are stored data a person can set, so they are encoded.
+
+                Reason: Prevent stored XSS through a person's name in Confirm Account.
+            */
             if ( caption.Contains( "{0}" ) )
             {
-                caption = string.Format( caption, user.UserName );
+                caption = string.Format( caption, user.UserName.EncodeHtml() );
             }
 
             return caption;
@@ -579,13 +603,21 @@ namespace Rock.Blocks.Security
         {
             var caption = this.PasswordChangedCaptionTemplate;
 
+            /*
+                10/19/2026 - MSE
+
+                The caption template is admin authored HTML and stays HTML. The first name and
+                user name formatted into it are stored data a person can set, so they are encoded.
+
+                Reason: Prevent stored XSS through a person's name in Confirm Account.
+            */
             if ( caption.Contains( "{1}" ) )
             {
-                caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                caption = string.Format( caption, user.Person.FirstName.EncodeHtml(), user.UserName.EncodeHtml() );
             }
             else if ( caption.Contains( "{0}" ) )
             {
-                caption = string.Format( caption, user.Person.FirstName );
+                caption = string.Format( caption, user.Person.FirstName.EncodeHtml() );
             }
 
             return caption;

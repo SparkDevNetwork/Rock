@@ -53,5 +53,20 @@ namespace Rock.Tests.Model
 
             Assert.AreEqual( "<a class='' href='/Person/1'>&lt;img src=x onerror=alert(1)&gt; O&#39;Brien &amp; Sons</a>", anchorTag );
         }
+
+        [TestMethod]
+        public void GetAnchorTag_WithQuoteInCssClass_EncodesCssClass()
+        {
+            var person = new Person
+            {
+                Id = 1,
+                NickName = "Ted",
+                LastName = "Decker"
+            };
+
+            var anchorTag = person.GetAnchorTag( "/", "x' onmouseover='y" );
+
+            Assert.AreEqual( "<a class='x&#39; onmouseover=&#39;y' href='/Person/1'>Ted Decker</a>", anchorTag );
+        }
     }
 }

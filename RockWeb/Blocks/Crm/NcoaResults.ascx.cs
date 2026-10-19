@@ -577,8 +577,17 @@ namespace RockWeb.Blocks.Crm
 
                 var ncoaHistoryRecord = filteredRecords.Single( a => a.Id == ncoaRow.Id );
 
+                /*
+                    10/19/2026 - MSE
+
+                    OriginalAddress and NewAddress are written with <%# Eval %>, which does not
+                    encode, so the address text is encoded before the line breaks become <br>.
+
+                    Reason: Stored address text must not render as HTML.
+                */
                 ncoaRow.OriginalAddress = FormattedAddress( ncoaHistoryRecord.OriginalStreet1, ncoaHistoryRecord.OriginalStreet2,
                                          ncoaHistoryRecord.OriginalCity, ncoaHistoryRecord.OriginalState, ncoaHistoryRecord.OriginalPostalCode )
+                                         .EncodeHtml()
                                          .ConvertCrLfToHtmlBr();
                 ncoaRow.Status = ncoaHistoryRecord.Processed == Processed.Complete ? "Processed" : "Not Processed";
                 ncoaRow.StatusCssClass = ncoaHistoryRecord.Processed == Processed.Complete ? "label-success" : "label-default";
@@ -642,6 +651,7 @@ namespace RockWeb.Blocks.Crm
                     ncoaRow.MoveDistance = ncoaHistoryRecord.MoveDistance;
                     ncoaRow.NewAddress = FormattedAddress( ncoaHistoryRecord.UpdatedStreet1, ncoaHistoryRecord.UpdatedStreet2,
                                            ncoaHistoryRecord.UpdatedCity, ncoaHistoryRecord.UpdatedState, ncoaHistoryRecord.UpdatedPostalCode )
+                                           .EncodeHtml()
                                            .ConvertCrLfToHtmlBr();
                     if ( ncoaHistoryRecord.Processed != Processed.Complete )
                     {
