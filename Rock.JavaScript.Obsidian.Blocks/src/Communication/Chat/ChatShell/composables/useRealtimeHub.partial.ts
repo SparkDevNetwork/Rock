@@ -213,10 +213,28 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
             }
 
             const channel = client.channel(personalTopic(dependencies.tenantId, dependencies.personAliasGuid), { config: { private: true } });
+            // Signals sent while the topic was down are lost, so a join after a drop is told to the
+            // shell, which reads the sidebar again. The first join is the page load's, which has
+            // just read it, and a second confirmation of the same join is not a rejoin.
+            let hasJoined = false;
+            let isDropped = false;
             personal = channel
                 .on("broadcast", { event: "*" }, message => dependencies.onPersonalEvent(message.event ?? "", message.payload))
                 .on("system", {}, message => onSystem(channel, message))
-                .subscribe((status, error) => report(status, error));
+                .subscribe((status, error) => {
+                    report(status, error);
+                    if (status !== "SUBSCRIBED") {
+                        isDropped = hasJoined;
+                        return;
+                    }
+
+                    const isRejoin = isDropped && !isStopped;
+                    hasJoined = true;
+                    isDropped = false;
+                    if (isRejoin) {
+                        dependencies.onPersonalRejoined?.();
+                    }
+                });
         },
 
         openChannel: (channelId: string): void => {

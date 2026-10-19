@@ -45,7 +45,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -441,6 +441,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     async function end(): Promise<void> {
         isStopped = true;
         cancelRecheck();
+        cancelSidebarWait();
         timelines.stop();
         threads.stop();
         messageActions.stop();
@@ -542,16 +543,23 @@ export function createChatShell(options: ShellOptions): ChatShell {
         applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload)
     });
 
-    const channels = createChannelStore({ reloadSidebar: () => void loadSidebar() });
+    // a reload asked while a rejoin's wait is pending is the one that wait will make
+    const channels = createChannelStore({ reloadSidebar: () => sidebarWait === null ? void loadSidebar() : undefined });
+
+    /** A save of the read position, applied to the row and the unread mentions. */
+    function applySave(channelId: string, result: MarkReadResult): void {
+        channels.applyMarkRead(channelId, result);
+        // a mention at or below the saved cursor has been read where it lives
+        if (result.read_cursor !== null) {
+            mentions.channelRead(channelId, result.read_cursor);
+        }
+    }
 
     const tracker: ReadTracker = createReadTracker({
         save: createKeepaliveSave({ fetch: options.fetch, projectUrl, publishableKey, currentToken: session.currentToken }),
         onSaved: (channelId, result) => {
-            channels.applyMarkRead(channelId, result);
-            // a mention at or below the saved cursor has been read where it lives
-            if (result.read_cursor !== null) {
-                mentions.channelRead(channelId, result.read_cursor);
-            }
+            applySave(channelId, result);
+            sidebarJournal?.push({ channelId, result });
         }
     });
 
@@ -694,9 +702,26 @@ export function createChatShell(options: ShellOptions): ChatShell {
         report
     });
 
-    /** Fetches the sidebar and replaces the rows with it. */
+    // A sidebar read is a snapshot taken some time after it is asked for. Each read takes the next
+    // generation, and only the newest asked for may land; every change that arrives while it is
+    // out is applied at once and kept here, then replayed over its answer, which may predate it.
+    // Null while no read is out.
+    let sidebarGeneration = 0;
+    let sidebarJournal: Array<{ event: string, payload: unknown } | { channelId: string, result: MarkReadResult }> | null = null;
+
+    /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
+    const replayedEvents = new Set(["channel.unread", "channel.mention", "dm.preview", "channel.read"]);
+
+    /** Fetches the sidebar and replaces the rows with it, unless a newer read was asked for meanwhile. */
     async function loadSidebar(): Promise<SidebarRow[]> {
+        const generation = ++sidebarGeneration;
+        sidebarJournal = [];
         const result = await call("chat_get_bootstrap", { p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
+        if (isStopped || generation !== sidebarGeneration) {
+            return channels.rows;
+        }
+        const journal = sidebarJournal;
+        sidebarJournal = null;
         options.mark("chat:sidebar");
 
         if (!result.ok) {
@@ -714,7 +739,45 @@ export function createChatShell(options: ShellOptions): ChatShell {
         if (Array.isArray(answer?.reactions)) {
             favorites.splice(0, favorites.length, ...answer.reactions);
         }
-        return rows;
+
+        // In arrival order, through the same handlers; each states a value, and a mention the
+        // answer already counted is not counted again.
+        for (const change of journal) {
+            if ("event" in change) {
+                channels.applyPersonalEvent(change.event, change.payload, true);
+                mentions.applyPersonalEvent(change.event, change.payload);
+            }
+            else {
+                applySave(change.channelId, change.result);
+            }
+        }
+        return channels.rows;
+    }
+
+    /** The wait before a rejoin's sidebar read, pending; null when none is. */
+    let sidebarWait: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * Reads the sidebar again after the personal topic was joined again, after a random wait so a
+     * Realtime restart that rejoins every client at once does not read every sidebar in the same
+     * second. Live signals still apply meanwhile, and any reload asked during the wait is this one.
+     */
+    function reloadAfterRejoin(): void {
+        if (sidebarWait !== null || isStopped) {
+            return;
+        }
+        sidebarWait = setTimeout(() => {
+            sidebarWait = null;
+            void loadSidebar().catch(() => undefined);
+        }, Math.random() * channelChangedWaitMs);
+    }
+
+    /** Cancels a rejoin's wait still pending. */
+    function cancelSidebarWait(): void {
+        if (sidebarWait !== null) {
+            clearTimeout(sidebarWait);
+            sidebarWait = null;
+        }
     }
 
     /**
@@ -900,6 +963,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     }
                     channels.applyPersonalEvent(event, payload);
                     mentions.applyPersonalEvent(event, payload);
+                    if (replayedEvents.has(event)) {
+                        sidebarJournal?.push({ event, payload });
+                    }
 
                     // Only the channel on screen is joined, so only a change to it can need a cut.
                     const changed = (payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null)?.channel_id;
@@ -912,6 +978,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         recheck();
                     }
                 },
+                onPersonalRejoined: reloadAfterRejoin,
                 onJoined: channelId => {
                     options.mark("chat:join");
                     timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
@@ -1062,6 +1129,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             push?.stop();
             state.isPushOffered = false;
             cancelRecheck();
+            cancelSidebarWait();
             timelines.stop();
             directMessages.stop();
 

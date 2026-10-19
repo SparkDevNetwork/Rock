@@ -460,6 +460,34 @@ export type ChannelUnreadEvent = {
     message_id: number;
 };
 
+/**
+ * A direct message's last timeline message changed, on the personal topic of every member, the
+ * sender's included: a send, an edit of the newest, or a delete or hide walking back to the one
+ * before. Everything but the room is null once no message is left.
+ */
+export type DmPreviewEvent = {
+    channel_id: string;
+    message_id: number | null;
+
+    /** The message as the sidebar draws it, as text. */
+    preview: string | null;
+    sent_at: string | null;
+
+    /** The sender's current names. */
+    sender: { nick_name: string | null, last_name: string | null } | null;
+
+    /** Whether the message is this reader's, true only on the sender's own topic. */
+    is_own: boolean;
+};
+
+/**
+ * A read saved on another of the person's devices that moved their place, on their personal
+ * topic: the save's own answer, with the channel it was for.
+ */
+export type ChannelReadEvent = MarkReadResult & {
+    channel_id: string;
+};
+
 /** What the platform's token exchange answers. */
 export type TokenExchangeResponse = {
     access_token?: string;

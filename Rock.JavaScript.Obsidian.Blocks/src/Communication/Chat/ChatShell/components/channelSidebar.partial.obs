@@ -552,7 +552,7 @@
     /** What "Find a conversation" holds. */
     const query = ref("");
 
-    /** The rooms glowing because they just arrived or moved up. */
+    /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
     const flashIds = ref(new Set<string>());
 
     // #endregion Values
@@ -689,8 +689,9 @@
     }
 
     /**
-     * The last message's text, after the sender's first name in a room of more than two people,
-     * where the reader cannot otherwise tell who wrote it.
+     * The last message's text, after "You: " when it is the reader's own in any direct message,
+     * else after the sender's first name in a room of more than two people, where the reader
+     * cannot otherwise tell who wrote it. A system line is nobody's.
      */
     function previewOf(row: SidebarRow): string {
         if (row.last_message_id === null) {
@@ -698,8 +699,15 @@
         }
 
         const text = row.last_message_preview ?? "";
+        if (row.last_message_type === "system") {
+            return text;
+        }
+        if (row.last_message_is_own && kindOf(row) !== "channel") {
+            return `You: ${text}`;
+        }
+
         const sender = row.last_sender_nick_name ?? row.last_sender_last_name;
-        const isNamed = kindOf(row) !== "person" && row.last_message_type !== "system" && !!sender;
+        const isNamed = kindOf(row) !== "person" && !!sender;
         return isNamed ? `${sender}: ${text}` : text;
     }
 
@@ -720,18 +728,36 @@
 
     // #region Watchers
 
-    // A room that is new to the list, or that moved up it as a new message does, glows once. The
-    // first list a page loads glows nothing, and a room moving down because another passed it is
-    // not news.
-    watch(() => props.rows.map(row => row.channel_id), (ids, previous) => {
+    // A row glows once for news: a room new to the list; a direct message reached by a message
+    // from someone else, moved or not, as the design's incoming message glows; a channel that just
+    // turned unread, the one signal it gets until read, or that moved up among the channels. The
+    // person's own send, an edit and a walk-back after a delete are not news, nor is a room moving
+    // down because another passed it, and the first list a page loads glows nothing.
+    watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.channel_type === "dm", lastId: row.last_message_id, isOwn: row.last_message_is_own, isUnread: row.is_unread })), (rows, previous) => {
         if (!previous || previous.length === 0) {
             return;
         }
 
-        const before = new Map(previous.map((id, index) => [id, index]));
-        const moved = ids.filter((id, index) => !before.has(id) || index < before.get(id)!);
-        if (moved.length > 0) {
-            flashIds.value = new Set([...flashIds.value, ...moved]);
+        const before = new Map(previous.map(row => [row.id, row]));
+        // A channel's place is read among the channels alone, so a conversation passing it either
+        // way does not move it.
+        const placeAmongChannels = (list: typeof rows): Map<string, number> => new Map(list.filter(row => !row.isDm).map((row, index) => [row.id, index]));
+        const placeBefore = placeAmongChannels(previous);
+        const placeNow = placeAmongChannels(rows);
+
+        const flashed = rows.filter(row => {
+            const was = before.get(row.id);
+            if (!was) {
+                return true;
+            }
+            if (row.isDm) {
+                return !row.isOwn && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
+            }
+            return (row.isUnread && !was.isUnread) || placeNow.get(row.id)! < placeBefore.get(row.id)!;
+        }).map(row => row.id);
+
+        if (flashed.length > 0) {
+            flashIds.value = new Set([...flashIds.value, ...flashed]);
         }
     });
 

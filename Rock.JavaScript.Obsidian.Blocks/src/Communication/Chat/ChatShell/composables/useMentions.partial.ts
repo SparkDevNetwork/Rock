@@ -260,6 +260,13 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         state.hasDot = unread.some(entry => entry.createdAt === null || lastVisit === null || entry.createdAt > lastVisit);
     }
 
+    /** Drops the conversation's mentions at or below a saved read position. */
+    function channelRead(channelId: string, readCursor: number): void {
+        // A reply kept to its thread is read in the thread, not by reading the conversation.
+        unread = unread.filter(entry => entry.channel_id !== channelId || !entry.in_channel || entry.message_id > readCursor);
+        refreshDot();
+    }
+
     // #region The picker
 
     /** Asks the platform for the people matching a query, if it is still the newest. */
@@ -519,11 +526,22 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         },
 
         applyPersonalEvent: (event, payload): void => {
-            if (event !== "channel.mention" || isStopped) {
+            if (isStopped) {
                 return;
             }
 
-            // @all writes no mention the inbox lists, so it raises only the sidebar's count.
+            // a read saved on another of the person's devices reads what a save here would
+            const read = payload as { channel_id?: unknown, read_cursor?: unknown } | null;
+            if (event === "channel.read" && typeof read?.channel_id === "string" && typeof read.read_cursor === "number") {
+                channelRead(read.channel_id, read.read_cursor);
+                return;
+            }
+            if (event !== "channel.mention") {
+                return;
+            }
+
+            // @all writes no mention the inbox lists, so it raises only the sidebar's count. One
+            // already held, as a mention replayed over a reload's answer is, is held once.
             const mention = readMentionEvent(payload);
             if (!mention || mention.all || unread.some(entry => entry.message_id === mention.message_id)) {
                 return;
@@ -540,11 +558,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             refreshDot();
         },
 
-        channelRead: (channelId, readCursor): void => {
-            // A reply kept to its thread is read in the thread, not by reading the conversation.
-            unread = unread.filter(entry => entry.channel_id !== channelId || !entry.in_channel || entry.message_id > readCursor);
-            refreshDot();
-        },
+        channelRead,
 
         threadOpened: (channelId, rootId): void => {
             unread = unread.filter(entry => entry.channel_id !== channelId || entry.parent_id !== rootId);
