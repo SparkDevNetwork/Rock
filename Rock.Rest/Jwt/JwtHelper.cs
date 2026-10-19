@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
@@ -55,21 +56,22 @@ namespace Rock.Rest.Jwt
                 jwtString = jwtString.Substring( jwtPrefix.Length );
             }
 
-            var jwtConfigs = GetJwtConfigs();
-            if ( !jwtConfigs.Any() )
-            {
-                // if there aren't any GetJwtConfigs defined, do all the standard validation checks, but don't do Audience or Issuer validation
-                var unvalidatedToken = new JwtSecurityToken( jwtString );
-                var issurer = unvalidatedToken.Payload?.Iss ?? ( string ) unvalidatedToken.Header["iss"];
-                if ( issurer.IsNullOrWhiteSpace() )
-                {
-                    return null;
-                }
+            /*
+                10/19/2026 - MSE
 
-                jwtConfigs.Add( new JwtConfig
-                {
-                    OpenIdConfigurationUrl = $"{issurer}.well-known/openid-configuration"
-                } );
+                Tokens are only trusted when an administrator has added an active
+                JSON Web Token Configuration value for the provider. We used to fall
+                back to the issuer named inside the unvalidated token and download
+                signing keys from that issuer's discovery URL, which let the caller
+                pick their own trust anchor (sign in as any AUTH0_ or OIDC_ login)
+                and made Rock fetch any HTTPS URL the caller chose.
+
+                Reason: Signing keys must only come from admin configuration.
+            */
+            var jwtConfigs = GetJwtConfigs();
+            if ( jwtConfigs == null || !jwtConfigs.Any() )
+            {
+                return null;
             }
 
             JwtSecurityToken validatedToken = null;
@@ -200,8 +202,8 @@ namespace Rock.Rest.Jwt
             var searchKeyAttributeCache = AttributeCache.Get( SystemGuid.Attribute.DEFINED_VALUE_JWT_SEARCH_KEY );
 
             // The configs should be ordered since they will be attempted in the order given here. The Rock admin may want them
-            // tried in a specific order.
-            return definedTypeCache.DefinedValues.OrderBy( dv => dv.Order ).ThenBy( dv => dv.Id ).Select( dv =>
+            // tried in a specific order. Only active values are trusted.
+            return definedTypeCache.DefinedValues.Where( dv => dv.IsActive ).OrderBy( dv => dv.Order ).ThenBy( dv => dv.Id ).Select( dv =>
             {
                 var config = new JwtConfig
                 {
@@ -271,17 +273,42 @@ namespace Rock.Rest.Jwt
                 jwtString = jwtString.Substring( HeaderTokens.JwtPrefix.Length );
             }
 
-            // Retrieve the configuration manager, which is cached according to the jwtConfig.JwksJsonFileUrl
-            var configurationManager = GetConfigurationManager( jwtConfig.OpenIdConfigurationUrl );
-
-            if ( configurationManager == null )
+            if ( jwtConfig.OpenIdConfigurationUrl.IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
-            // The configuration manager handles caching the configuration documents and keys, which are from another
-            // server or provider like Auth0.
-            var openIdConnectConfiguration = AsyncHelper.RunSync( () => configurationManager.GetConfigurationAsync() );
+            OpenIdConnectConfiguration openIdConnectConfiguration;
+
+            /*
+                10/19/2026 - MSE
+
+                Fetching the provider's discovery document can fail (bad URL, the
+                provider is down, a non HTTPS URL outside development). Log it and
+                treat the token as not valid instead of letting the exception turn
+                an anonymous request into a server error.
+
+                Reason: A failed key fetch must not cause a 500.
+            */
+            try
+            {
+                // Retrieve the configuration manager, which is cached according to the jwtConfig.JwksJsonFileUrl
+                var configurationManager = GetConfigurationManager( jwtConfig.OpenIdConfigurationUrl );
+
+                if ( configurationManager == null )
+                {
+                    return null;
+                }
+
+                // The configuration manager handles caching the configuration documents and keys, which are from another
+                // server or provider like Auth0.
+                openIdConnectConfiguration = AsyncHelper.RunSync( () => configurationManager.GetConfigurationAsync() );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( $"Unable to load the OpenID configuration from '{jwtConfig.OpenIdConfigurationUrl}' for JWT validation.", ex ) );
+                return null;
+            }
 
             if ( openIdConnectConfiguration == null || openIdConnectConfiguration.SigningKeys == null || !openIdConnectConfiguration.SigningKeys.Any() )
             {
@@ -335,21 +362,18 @@ namespace Rock.Rest.Jwt
         /// <returns></returns>
         private static ConfigurationManager<OpenIdConnectConfiguration> GetConfigurationManager( string jwksJsonFileUrl )
         {
-            if ( !_configurationManagerCache.ContainsKey( jwksJsonFileUrl ) )
+            // This is called from concurrent requests, so the cache must be thread safe.
+            return _configurationManagerCache.GetOrAdd( jwksJsonFileUrl, url =>
             {
                 var httpDocumentRetriever = new HttpDocumentRetriever();
                 httpDocumentRetriever.RequireHttps = !System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
-                var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                    jwksJsonFileUrl,
+                return new ConfigurationManager<OpenIdConnectConfiguration>(
+                    url,
                     new OpenIdConnectConfigurationRetriever(),
-                   httpDocumentRetriever );
-
-                _configurationManagerCache[jwksJsonFileUrl] = configurationManager;
-            }
-
-            return _configurationManagerCache[jwksJsonFileUrl];
+                    httpDocumentRetriever );
+            } );
         }
 
-        private static Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _configurationManagerCache = new Dictionary<string, ConfigurationManager<OpenIdConnectConfiguration>>();
+        private static readonly ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _configurationManagerCache = new ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>>();
     }
 }
