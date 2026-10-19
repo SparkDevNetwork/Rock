@@ -82,10 +82,30 @@ namespace Rock.Search.Group
         {
             var groupQry = ( IQueryable<Model.Group> ) SearchQuery( searchterm );
 
-            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
-            return GetSearchResults( searchterm )
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML, so the group name and campus
+                values are HTML encoded. Encoding can't be done in SQL, so the results are
+                materialized (capped at 50) first.
+
+                Reason: Prevent stored XSS through group names in Smart Search results.
+            */
+            var groupItems = GetSearchResults( searchterm )
                 .OrderBy( g => g.Name )
-                .Select( g => g.Campus == null ? g.Name : g.Name + "                                               <span class='search-accessory label label-default pull-right'>" + (g.Campus.ShortCode != "" ? g.Campus.ShortCode : g.Campus.Name) + "</span>" );
+                .Select( g => new
+                {
+                    g.Name,
+                    HasCampus = g.Campus != null,
+                    CampusText = g.Campus.ShortCode != "" ? g.Campus.ShortCode : g.Campus.Name
+                } )
+                .Take( 50 )
+                .ToList();
+
+            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
+            return groupItems
+                .Select( g => !g.HasCampus ? g.Name.EncodeHtml() : g.Name.EncodeHtml() + "                                               <span class='search-accessory label label-default pull-right'>" + g.CampusText.EncodeHtml() + "</span>" )
+                .AsQueryable();
         }
     }
 }

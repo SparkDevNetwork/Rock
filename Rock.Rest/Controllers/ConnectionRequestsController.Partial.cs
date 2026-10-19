@@ -98,6 +98,15 @@ namespace Rock.Rest.Controllers
             var rockContext = ( RockContext ) Service.Context;
             var list = new List<TreeViewItem>();
 
+            /*
+                10/18/2026 - MSE
+
+                The tree view (rockTree.js) renders node names as HTML, and requester names can be
+                set by anonymous visitors through public forms. Opportunity, requester and connection
+                type names are HTML encoded, the same as other tree endpoints such as LocationsController.
+
+                Reason: Prevent stored XSS in the Connection Request picker.
+            */
             if ( id.StartsWith( "T" ) )
             {
                 int connectionTypeId = id.Substring( 1 ).AsInteger();
@@ -108,7 +117,7 @@ namespace Rock.Rest.Controllers
                 {
                     var item = new TreeViewItem();
                     item.Id = string.Format( "O{0}", opportunity.Id );
-                    item.Name = opportunity.Name;
+                    item.Name = System.Web.HttpUtility.HtmlEncode( opportunity.Name );
                     item.HasChildren = opportunity.ConnectionRequests
                         .Any( r =>
                             r.ConnectionState == ConnectionState.Active ||
@@ -132,7 +141,7 @@ namespace Rock.Rest.Controllers
                 {
                     var item = new TreeViewItem();
                     item.Id = request.Id.ToString();
-                    item.Name = request.PersonAlias.Person.FullName;
+                    item.Name = System.Web.HttpUtility.HtmlEncode( request.PersonAlias.Person.FullName );
                     item.HasChildren = false;
                     item.IconCssClass = "fa fa-user";
                     list.Add( item );
@@ -150,7 +159,7 @@ namespace Rock.Rest.Controllers
                     {
                         var item = new TreeViewItem();
                         item.Id = string.Format( "T{0}", connectionType.Id );
-                        item.Name = connectionType.Name;
+                        item.Name = System.Web.HttpUtility.HtmlEncode( connectionType.Name );
                         item.HasChildren = connectionType.ConnectionOpportunities.Any();
                         item.IconCssClass = connectionType.IconCssClass;
                         list.Add( item );

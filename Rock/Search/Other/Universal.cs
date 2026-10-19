@@ -142,8 +142,17 @@ namespace Rock.Search.Other
                 var results = GetSearchResults( searchterm )
                     .Where( r => r.IsViewAllowed( RockRequestContextAccessor.Current?.CurrentPerson, rockContext ) );
 
+                /*
+                    10/18/2026 - MSE
+
+                    Smart Search renders each result string as HTML, and indexed document names can
+                    come from values set by anonymous visitors (for example person names). The icon
+                    class and document name are HTML encoded so they always render as text.
+
+                    Reason: Prevent stored XSS through indexed document names in Smart Search results.
+                */
                 // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html
-                return results.Select( r => $"                                                                       <data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{r.IconCssClass}'></i> {r.DocumentName}                                                                               " ).ToList().AsQueryable();
+                return results.Select( r => $"                                                                       <data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{r.IconCssClass.EncodeHtml()}'></i> {r.DocumentName.EncodeHtml()}                                                                               " ).ToList().AsQueryable();
             }
         }
     }
