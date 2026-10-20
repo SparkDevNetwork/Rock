@@ -92,6 +92,27 @@ const refusals: Record<string, RosterRefusal> = {
     "authz.no_roster_right": "no_roster_right"
 };
 
+/** A search not asked. */
+function noSearch(): MemberSearchState {
+    return { query: null, rows: [], hasMore: false, isSearching: false, error: null };
+}
+
+/** The roster of no room, which the panel starts from and every open and close returns to. */
+function emptyState(): MembersState {
+    return {
+        channelId: null,
+        rows: [],
+        hasMore: false,
+        isLoading: false,
+        isLoadingMore: false,
+        error: null,
+        moreError: null,
+        refusal: null,
+        query: "",
+        search: noSearch()
+    };
+}
+
 /**
  * Whether a person matches a query by the platform's own rule: their nick name, their last name
  * or their whole name starts with it, in any letter case.
@@ -153,18 +174,7 @@ export function searchStatus(state: MembersState): "searching" | "answered" | "f
  * @returns The roster.
  */
 export function createMembers(dependencies: MembersDependencies): Members {
-    const state = reactive<MembersState>({
-        channelId: null,
-        rows: [],
-        hasMore: false,
-        isLoading: false,
-        isLoadingMore: false,
-        error: null,
-        moreError: null,
-        refusal: null,
-        query: "",
-        search: { query: null, rows: [], hasMore: false, isSearching: false, error: null }
-    }) as MembersState;
+    const state = reactive<MembersState>(emptyState()) as MembersState;
 
     let isStopped = false;
 
@@ -287,18 +297,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
         rosterGeneration++;
         searchGeneration++;
         cancelPause();
-        Object.assign(state, {
-            channelId: null,
-            rows: [],
-            hasMore: false,
-            isLoading: false,
-            isLoadingMore: false,
-            error: null,
-            moreError: null,
-            refusal: null,
-            query: "",
-            search: { query: null, rows: [], hasMore: false, isSearching: false, error: null }
-        });
+        Object.assign(state, emptyState());
     }
 
     return {
@@ -366,7 +365,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
             // A query of only spaces is the plain roster, which is already loaded.
             if (!query.trim() || !state.channelId) {
-                state.search = { query: null, rows: [], hasMore: false, isSearching: false, error: null };
+                state.search = noSearch();
                 return;
             }
 
