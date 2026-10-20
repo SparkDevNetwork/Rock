@@ -22,7 +22,7 @@
     transition: background-color .15s ease-in-out;
 
     /* May need to revisit this if a mobile version of the UI is needed */
-    min-width: v-bind(minWidth);
+    min-width: var(--displaycard-min-width, 440px);
 }
 
 /* Only show hover state if the item is clickable. */
@@ -56,7 +56,7 @@
     /* The icon+title+desc container needs a min width;
        otherwise, it'll shrink until it's hidden
        before the aside shrinks. */
-    min-width: v-bind(iconTitleAndDescMinWidth);
+    min-width: var(--displaycard-heading-min-width, 150px);
 }
 
 .displaycard-heading-text {
@@ -174,6 +174,8 @@
     .displaycard-aside {
         justify-content: flex-start;
         height: auto;
+        max-width: 100%;
+        min-width: 0;
     }
 
     .displaycard-actions {
