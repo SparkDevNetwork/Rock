@@ -44,6 +44,9 @@ const refusedSentence = "You can't join this channel.";
 /** What a Join that could not reach the door says, as the chat says any change made while offline. */
 const offlineSentence = "Couldn't join. You're offline, so try again in a moment.";
 
+/** What a Join says when Rock answered without its door's result while the connection held. */
+const failedSentence = "Couldn't join. Try again in a moment.";
+
 /** Which campus chip is pressed: every campus, one campus, or the rooms with no campus. */
 export type DirectoryCampus =
     | { kind: "all" }
@@ -471,10 +474,14 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         return state.facts[channelId]?.is_member === true || (!!row && row.is_member);
     }
 
-    /** Join did not reach the door's answer: it says so where it was pressed and aloud, and may be pressed again. */
+    /**
+     * Join did not reach the door's answer: it says so where it was pressed and aloud, and may be
+     * pressed again, since nothing the door decided stands in the way.
+     */
     function failJoin(channelId: string): void {
-        state.joins[channelId] = { kind: "failed", text: offlineSentence };
-        announce(offlineSentence);
+        const text = dependencies.isOffline() ? offlineSentence : failedSentence;
+        state.joins[channelId] = { kind: "failed", text };
+        announce(text);
     }
 
     /** The room is joined and the platform holds it: every copy of it here says so. */
@@ -633,9 +640,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
 
-            // Rock answered without its door's result: no sentence of its own, so the person may
-            // press Join again once the connection is back.
-            if (answer.code === "door.unavailable" && dependencies.isOffline()) {
+            // Rock answered without its door's result: the door decided nothing, so the person may
+            // press Join again; only a code the door answered itself is a refusal.
+            if (answer.code === "door.unavailable") {
                 failJoin(channelId);
                 return;
             }

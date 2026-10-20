@@ -774,13 +774,36 @@ describe("Join", () => {
         expect(s.joinCalls).toHaveLength(1);
     });
 
-    test("a door that cannot be reached is offline too", async () => {
+    test("a door that cannot be reached once the connection is lost is offline too", async () => {
         const s = await previewing();
         void s.rooms.join(volunteers);
+        s.offline.value = true;
         s.joinCalls[0].answer.reject(new Error("network"));
         await settle();
 
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." });
+    });
+
+    test("Rock failing to answer while online is a failure to press Join again after, not a refusal", async () => {
+        const s = await previewing();
+        void s.rooms.join(volunteers);
+        s.joinCalls[0].answer.resolve(door("door.unavailable", "An error occurred."));
+        await settle();
+
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. Try again in a moment." });
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Couldn't join. Try again in a moment.", isAssertive: false }));
+
+        void s.rooms.join(volunteers);
+        expect(s.joinCalls).toHaveLength(2);
+    });
+
+    test("a door that throws while online says to try again, not that the person is offline", async () => {
+        const s = await previewing();
+        void s.rooms.join(volunteers);
+        s.joinCalls[0].answer.reject(new Error("server"));
+        await settle();
+
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. Try again in a moment." });
     });
 
     test("a fresh visit to the directory forgets a join that finished and keeps a refusal", async () => {
