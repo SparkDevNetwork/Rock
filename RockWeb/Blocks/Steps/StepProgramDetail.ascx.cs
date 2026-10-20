@@ -911,6 +911,23 @@ namespace RockWeb.Blocks.Steps
                     return;
                 }
 
+                /*
+                    10/19/2026 - MSE
+
+                    The program's CanDelete check used to run after the step type
+                    deletes were saved, so a refused program delete still removed its
+                    step types and every Step record. Check the program first so a
+                    refused delete removes nothing.
+
+                    Reason: A refused delete must not remove anything.
+                */
+                string errorMessage;
+                if ( !stepProgramService.CanDelete( stepProgram, out errorMessage ) )
+                {
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
                 var stepTypes = stepProgram.StepTypes.ToList();
                 var stepTypeService = new StepTypeService( rockContext );
 
@@ -927,13 +944,6 @@ namespace RockWeb.Blocks.Steps
                 }
 
                 rockContext.SaveChanges();
-
-                string errorMessage;
-                if ( !stepProgramService.CanDelete( stepProgram, out errorMessage ) )
-                {
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
 
                 stepProgramService.Delete( stepProgram );
                 rockContext.SaveChanges();
