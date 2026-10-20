@@ -218,7 +218,7 @@
 }
 
 .chat-fd-hdr :deep(.chat-fd-back) {
-    margin-left: -4px;
+    margin-left: -8px;
 }
 
 .chat-fd-hdr-ic {
@@ -572,6 +572,36 @@
     color: var(--chat-text-2);
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+/* A phone's narrower gutters, and a tighter row so the name keeps its room beside Join. */
+.chat-fd.is-phone .chat-fd-tools {
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.chat-fd.is-phone .chat-fd-wrap {
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.chat-fd.is-phone .chat-fd-filters {
+    flex-wrap: wrap;
+}
+
+.chat-fd.is-phone .chat-fd-open {
+    gap: 12px;
+    padding-left: 10px;
+}
+
+.chat-fd.is-phone .chat-fd-act {
+    min-width: 0;
+    padding-right: 10px;
+}
+
+.chat-fd.is-phone .chat-fd-act .chat-fd-btn,
+.chat-fd.is-phone .chat-fd-joined {
+    min-width: 64px;
 }
 
 /* A phone has the width for one line of a description only if it gives up two. */

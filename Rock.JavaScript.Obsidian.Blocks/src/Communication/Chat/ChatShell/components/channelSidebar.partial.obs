@@ -459,6 +459,12 @@
     color: var(--chat-muted);
 }
 
+/* Its search mark is the small icon in the channel's 20px slot, not a channel's 16px one. */
+.chat-row.is-browse .chat-cs-slot .chat-ic {
+    width: 15px;
+    height: 15px;
+}
+
 /* A new person with nothing to list yet. */
 .chat-side-empty {
     display: flex;
