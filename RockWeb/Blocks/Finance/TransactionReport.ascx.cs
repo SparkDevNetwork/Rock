@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -153,7 +154,9 @@ namespace RockWeb.Blocks.Finance
 
         /// <summary>
         /// Gets the person context, but only if the current person is allowed to view that
-        /// person's transactions.
+        /// person's transactions. This is allowed if they share the same giving unit, the
+        /// person is one of the current person's businesses, or the current person is
+        /// authorized to edit this block.
         /// </summary>
         /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
         private Person GetAuthorizedContextPerson()
@@ -164,6 +167,11 @@ namespace RockWeb.Blocks.Finance
             if ( contextPerson == null || currentPerson == null )
             {
                 return null;
+            }
+
+            if ( IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return contextPerson;
             }
 
             var isInGivingUnit = contextPerson.GivingId.IsNotNullOrWhiteSpace()
