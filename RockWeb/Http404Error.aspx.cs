@@ -41,7 +41,16 @@ public partial class Http404Error : System.Web.UI.Page
         // Check to see if exception should be logged
         if ( GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean(true) )
         {
-            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", proxySafeUri.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
+            /*
+                10/19/2026 - MSE
+
+                The 404 URL and referrer are stored in the exception Description, which
+                staff can read. Hide rckipid tokens and sensitive query values first.
+                AbsoluteUri keeps %26 encoded, so a value is never cut short.
+
+                Reason: Exception log must not store impersonation tokens or REST keys.
+            */
+            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", ExceptionLogService.RedactUrl( proxySafeUri.AbsoluteUri ), Request.UrlReferrer != null ? ExceptionLogService.RedactUrl( Request.UrlReferrer.AbsoluteUri ) : "Direct Link" ) ), Context );
         }
 
         // If this is an API call, set status code and exit

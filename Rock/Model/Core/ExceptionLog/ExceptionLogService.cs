@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -390,14 +391,24 @@ namespace Rock.Model
                         string val = string.Empty;
                         try
                         {
-                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                            /*
+                                10/19/2026 - MSE
+
+                                Server variables include the cookie and authorization headers
+                                (HTTP_COOKIE, ALL_RAW, HTTP_AUTHORIZATION_TOKEN...) and URLs that
+                                can carry an rckipid or API key. Staff can read the exception log,
+                                so credential values are redacted before they are stored.
+
+                                Reason: Exception log must not store sign-in tickets, REST keys or rckipid tokens.
+                            */
+                            val = RedactServerVariable( serverVar, serverVarList[serverVar].ToStringSafe(), null ).EncodeHtml();
                         }
                         catch
                         {
                             // ignore
                         }
 
-                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                        serverVars.Append( $"<tr><td><b>{serverVar.EncodeHtml()}</b></td><td>{val}</td></tr>" );
                     }
 
                     serverVars.Append( "</table>" );
@@ -434,7 +445,16 @@ namespace Rock.Model
                     {
                         foreach ( var cookie in cookieHeaderValue.Cookies )
                         {
-                            cookies.Append( "<tr><td><b>" + cookie.Name + "</b></td><td>" + cookie.Value.EncodeHtml() + "</td></tr>" );
+                            /*
+                                10/19/2026 - MSE
+
+                                Cookie values hold the .ROCK sign-in ticket, the session id and
+                                other secrets, so only the cookie names are stored. Names are HTML
+                                encoded because Exception Detail renders this table as HTML.
+
+                                Reason: Exception log must not store sign-in tickets or allow stored script.
+                            */
+                            cookies.Append( "<tr><td><b>" + cookie.Name.EncodeHtml() + "</b></td><td>" + RedactedValue + "</td></tr>" );
                         }
                     }
 
@@ -453,7 +473,7 @@ namespace Rock.Model
                     {
                         if ( IsKeySensitive( qKey.ToLower() ) )
                         {
-                            nvc.Add( qKey, "obfuscated" );
+                            nvc.Add( qKey, RedactedValue );
                         }
                         else
                         {
@@ -461,7 +481,15 @@ namespace Rock.Model
                         }
                     }
 
-                    queryString = "?" + string.Join( "&", nvc.AllKeys.Select( a => a.UrlEncode() + "=" + nvc[a].UrlEncode() ) );
+                    /*
+                        10/19/2026 - MSE
+
+                        Only top level keys are checked above, so a token nested inside
+                        another value (returnurl=%2Fpage%3Frckipid%3D...) is redacted here.
+
+                        Reason: Exception log must not store impersonation tokens or REST keys.
+                    */
+                    queryString = RedactQueryParameters( "?" + string.Join( "&", nvc.AllKeys.Select( a => a.UrlEncode() + "=" + nvc[a].UrlEncode() ) ) );
                 }
 
                 exceptionLog.Cookies = cookies.ToString();
@@ -484,13 +512,226 @@ namespace Rock.Model
         /// </returns>
         private static bool IsKeySensitive( string key )
         {
+            if ( key == null )
+            {
+                return false;
+            }
+
+            /*
+                10/19/2026 - MSE
+
+                rckipid and rckid (person action identifier) act as the person, apikey is
+                the REST key, token covers access_token, id_token and similar, cc is the
+                account confirmation code and code is the passwordless login and OIDC
+                callback code. Their values must never reach the exception log.
+
+                Reason: Exception log must not store impersonation tokens, REST keys or login codes.
+            */
             return key.Contains( "nolog" ) ||
                 key.Contains( "creditcard" ) ||
                 key.Contains( "cc-number" ) ||
                 key.Contains( "cvv" ) ||
                 key.Contains( "ssn" ) ||
                 key.Contains( "accountnumber" ) ||
-                key.Contains( "account-number" );
+                key.Contains( "account-number" ) ||
+                key.Contains( "rckipid" ) ||
+                key.Contains( "rckid" ) ||
+                key.Contains( "personactionidentifier" ) ||
+                key.Contains( "apikey" ) ||
+                key.Contains( "api-key" ) ||
+                key.Contains( "token" ) ||
+                key.Contains( "password" ) ||
+                key.Contains( "secret" ) ||
+                key == "cc" ||
+                key == "code";
+        }
+
+        /// <summary>
+        /// The text written to the exception log in place of a sensitive value.
+        /// </summary>
+        internal const string RedactedValue = "obfuscated";
+
+        /// <summary>
+        /// The text written in place of an rckipid route segment. Matches
+        /// <see cref="PersonToken.ObfuscateRockMagicToken(string)"/>.
+        /// </summary>
+        private const string RedactedRouteToken = "XXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+
+        /// <summary>
+        /// The shortest rckipid route value that is treated as a token and replaced.
+        /// </summary>
+        private const int MinimumRouteTokenLength = 16;
+
+        /// <summary>
+        /// Matches each key=value pair at the start of the text or after a ?, &amp; or ;.
+        /// </summary>
+        private static readonly Regex _queryParameterRegex = new Regex( @"(?<=^|[?&;])([^=&;#?\s]+)=([^&;#\s]*)", RegexOptions.Compiled );
+
+        /// <summary>
+        /// The characters that end a query string value as ASP.NET reads it.
+        /// </summary>
+        private static readonly char[] _queryValueEndCharacters = new[] { '&', '#' };
+
+        /// <summary>
+        /// Matches a sensitive key followed by a raw or URL encoded = anywhere in the
+        /// text, such as inside another parameter's value. The value runs to the next
+        /// &amp;, %26 or #. The short cc and code keys must start a parameter.
+        /// </summary>
+        private static readonly Regex _nestedSensitiveValueRegex = new Regex(
+            @"(?<key>rckipid|rckid|personactionidentifier|apikey|api-key|token|password|secret|(?<=^|[?&;]|%3F|%26)(?:cc|code))(?<separator>=|%3D)(?:(?!%26)[^&#])*",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase );
+
+        /// <summary>
+        /// Replaces the value of every sensitive key=value pair in a URL, query string
+        /// or similar text with <see cref="RedactedValue"/>. Never throws; if the text
+        /// cannot be processed then <see cref="RedactedValue"/> is returned.
+        /// </summary>
+        /// <param name="text">The URL, query string or other text.</param>
+        /// <returns>The text with sensitive values replaced.</returns>
+        internal static string RedactQueryParameters( string text )
+        {
+            if ( string.IsNullOrEmpty( text ) )
+            {
+                return text;
+            }
+
+            try
+            {
+                /*
+                    10/19/2026 - MSE
+
+                    ASP.NET reads a query value up to the next & or #, so a sensitive
+                    value is redacted up to there, not just to the first space or ;.
+                    A second pass then redacts sensitive keys nested inside another
+                    value (returnurl=%2Fpage%3Frckipid%3D...), in raw or encoded form.
+
+                    Reason: Exception log must not store any part of a token, key or password.
+                */
+                var result = new StringBuilder();
+                var position = 0;
+                var match = _queryParameterRegex.Match( text );
+
+                while ( match.Success )
+                {
+                    var key = match.Groups[1].Value;
+
+                    // Rock decodes keys when it reads them, so check the decoded key.
+                    if ( IsKeySensitive( SafeUnescape( key ).ToLowerInvariant() ) )
+                    {
+                        var valueStart = match.Groups[2].Index;
+                        var valueEnd = text.IndexOfAny( _queryValueEndCharacters, valueStart );
+
+                        if ( valueEnd < 0 )
+                        {
+                            valueEnd = text.Length;
+                        }
+
+                        result.Append( text, position, valueStart - position ).Append( RedactedValue );
+                        position = valueEnd;
+                        match = _queryParameterRegex.Match( text, position );
+                    }
+                    else
+                    {
+                        match = match.NextMatch();
+                    }
+                }
+
+                result.Append( text, position, text.Length - position );
+
+                return _nestedSensitiveValueRegex.Replace( result.ToString(), m => m.Groups["key"].Value + m.Groups["separator"].Value + RedactedValue );
+            }
+            catch
+            {
+                return RedactedValue;
+            }
+        }
+
+        /// <summary>
+        /// Returns the value of a server variable as it should be written to the
+        /// exception log. Variables that carry credentials are replaced entirely,
+        /// others have sensitive query values and the rckipid route token replaced.
+        /// Never throws; if the value cannot be processed then
+        /// <see cref="RedactedValue"/> is returned.
+        /// </summary>
+        /// <param name="name">The server variable name.</param>
+        /// <param name="value">The server variable value.</param>
+        /// <param name="routeToken">The rckipid route value of the request, if any.</param>
+        /// <returns>The value to write to the exception log.</returns>
+        internal static string RedactServerVariable( string name, string value, string routeToken )
+        {
+            if ( string.IsNullOrEmpty( value ) )
+            {
+                return value;
+            }
+
+            try
+            {
+                var upperName = ( name ?? string.Empty ).ToUpperInvariant();
+
+                if ( upperName == "ALL_HTTP"
+                    || upperName == "ALL_RAW"
+                    || upperName.Contains( "COOKIE" )
+                    || upperName.Contains( "AUTHORIZATION" )
+                    || upperName.Contains( "PASSWORD" )
+                    || upperName.Contains( "TOKEN" )
+                    || upperName.Contains( "APIKEY" )
+                    || upperName.Contains( "API_KEY" )
+                    || upperName.Contains( "SECRET" )
+                    || upperName.Contains( "JWT" )
+                    || upperName.Contains( "OIDC" ) )
+                {
+                    return RedactedValue;
+                }
+
+#if WEBFORMS
+                if ( upperName == "HTTP_REFERER" )
+                {
+                    // The referrer can be a page URL with an {rckipid} route segment.
+                    value = PersonToken.ObfuscateRockMagicToken( value );
+                }
+#endif
+
+                var redacted = RedactQueryParameters( value );
+
+                /*
+                    10/19/2026 - MSE
+
+                    Variables such as UNENCODED_URL keep the route token URL encoded,
+                    so the encoded forms are replaced too. Short route values are not
+                    tokens and replacing them would garble the whole row.
+
+                    Reason: Exception log must not store rckipid route tokens.
+                */
+                if ( !string.IsNullOrEmpty( routeToken ) && routeToken.Length >= MinimumRouteTokenLength )
+                {
+                    redacted = redacted.Replace( routeToken, RedactedRouteToken )
+                        .Replace( Uri.EscapeDataString( routeToken ), RedactedRouteToken )
+                        .Replace( System.Web.HttpUtility.UrlEncode( routeToken ), RedactedRouteToken );
+                }
+
+                return redacted;
+            }
+            catch
+            {
+                return RedactedValue;
+            }
+        }
+
+        /// <summary>
+        /// URL decodes the text, returning the original text if it cannot be decoded.
+        /// </summary>
+        /// <param name="text">The text to decode.</param>
+        /// <returns>The decoded text.</returns>
+        private static string SafeUnescape( string text )
+        {
+            try
+            {
+                return Uri.UnescapeDataString( text.Replace( '+', ' ' ) );
+            }
+            catch
+            {
+                return text;
+            }
         }
     }
 }
