@@ -30,7 +30,7 @@
             </div>
 
             <div v-if="isEmpty" class="chat-intro-foot" data-testid="intro-foot">
-                <Icon name="message" size="xs" />{{ facts.can_post ? "No messages yet. Be the first to say hello." : "Nothing has been posted yet." }}
+                <Icon name="message" size="xs" />{{ canPostOnceIn ? "No messages yet. Be the first to say hello." : "Nothing has been posted yet." }}
             </div>
         </div>
     </section>
@@ -321,11 +321,17 @@
     const leaderFaces = computed((): AvatarPerson[] => leaders.value.map(leader => ({ name: leader.name, photoUrl: leader.photoUrl })));
 
     /**
+     * Whether the person may post, or would once in: a person previewing the room need only join,
+     * so the empty foot still asks them to say hello and no note says why they cannot.
+     */
+    const canPostOnceIn = computed((): boolean => props.facts.can_post || props.facts.can_post_code === joinRequiredCode);
+
+    /**
      * Why the person cannot post, in the server's words, then how they hear of what is posted.
      * Not for a person who need only join, which the join bar in the composer's place says.
      */
     const note = computed((): string | null => {
-        if (props.facts.can_post || props.facts.can_post_code === joinRequiredCode) {
+        if (canPostOnceIn.value) {
             return null;
         }
 

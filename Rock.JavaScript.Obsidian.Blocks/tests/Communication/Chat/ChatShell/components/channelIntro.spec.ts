@@ -230,6 +230,12 @@ describe("an empty room's foot", () => {
         expect(w.get("[data-testid='intro-foot']").text()).toBe("No messages yet. Be the first to say hello.");
     });
 
+    test("asks a person previewing the room to say hello, since they need only join to post", () => {
+        const w = mountIntro({ isEmpty: true, facts: facts({ is_member: false, can_post: false, can_post_code: "authz.join_required", can_post_reason: "Join this channel to post." }) });
+
+        expect(w.get("[data-testid='intro-foot']").text()).toBe("No messages yet. Be the first to say hello.");
+    });
+
     test("says nothing has been posted where they cannot", () => {
         const w = mountIntro({ isEmpty: true, facts: facts({ can_post: false, can_post_code: "authz.leaders_only", can_post_reason: "Only leaders can post." }) });
 
