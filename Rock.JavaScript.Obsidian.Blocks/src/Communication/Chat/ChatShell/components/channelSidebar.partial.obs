@@ -9,6 +9,7 @@
                         icon="compose"
                         label="New message"
                         data-testid="new-message"
+                        :aria-pressed="isNewMessageOpen ? 'true' : 'false'"
                         @click="emit('newMessage')" />
         </div>
 
@@ -67,7 +68,7 @@
                             :data-unread="isUnread(row) ? 'true' : 'false'"
                             :data-muted="isMuted(row) ? 'true' : 'false'"
                             :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
-                            :aria-current="isActive(row) && !isBrowseOpen ? 'true' : undefined"
+                            :aria-current="isActive(row) && !isBrowseOpen && !isNewMessageOpen ? 'true' : undefined"
                             @click="emit('select', row.channel_id)"
                             @animationend.self="onFlashEnd(row.channel_id)">
                         <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
@@ -603,6 +604,15 @@
          * conversation under it, which is out of view until the directory closes.
          */
         isBrowseOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Whether New message is open in the conversation's place, which presses its button and,
+         * as Browse channels does, takes the current mark from the conversation out of view.
+         */
+        isNewMessageOpen: {
             type: Boolean,
             default: false
         }
