@@ -102,8 +102,14 @@ afterEach(() => {
     wrapper = null;
 });
 
-const text = (w: VueWrapper, mark: string): string => w.get(`[data-testid='${mark}']`).text().replace(/\s+/g, " ").trim();
-const all = (w: VueWrapper, mark: string): string[] => w.findAll(`[data-testid='${mark}']`).map(e => e.text().replace(/\s+/g, " ").trim());
+/** An element's text as a person reads it: each element's words apart from the next. */
+function spaced(node: Node): string {
+    return node.nodeType === Node.TEXT_NODE ? node.textContent ?? "" : Array.from(node.childNodes).map(child => ` ${spaced(child)} `).join("");
+}
+
+const read = (element: Element): string => spaced(element).replace(/\s+/g, " ").replace(/ ([.,])/g, "$1").trim();
+const text = (w: VueWrapper, mark: string): string => read(w.get(`[data-testid='${mark}']`).element);
+const all = (w: VueWrapper, mark: string): string[] => w.findAll(`[data-testid='${mark}']`).map(e => read(e.element));
 
 // #endregion Fixtures
 

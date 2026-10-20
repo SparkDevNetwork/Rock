@@ -1,0 +1,788 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PanelHost title="Members"
+               :subtitle="channelName"
+               :isPhone="isPhone"
+               @close="emit('close')">
+        <template v-if="!refusal" #top>
+            <div class="chat-mb-top">
+                <label class="chat-mb-search">
+                    <Icon name="search" size="sm" />
+                    <input ref="filterElement"
+                           type="search"
+                           placeholder="Filter members"
+                           aria-label="Filter members"
+                           autocomplete="off"
+                           spellcheck="false"
+                           data-testid="members-filter"
+                           :value="query"
+                           :data-autofocus="isPhone ? undefined : ''"
+                           @input="onInput"
+                           @keydown="onFilterKeydown" />
+                    <button v-if="query"
+                            type="button"
+                            class="chat-mb-clear"
+                            aria-label="Clear filter"
+                            data-testid="members-clear"
+                            @click="onClear">
+                        <Icon name="x" size="xs" />
+                    </button>
+                </label>
+            </div>
+        </template>
+
+        <div ref="listElement" data-testid="members-panel" :aria-busy="isLoading ? 'true' : 'false'">
+            <div v-if="refusal === 'not_member'" class="chat-mb-state" data-testid="members-state" data-state="not_member">
+                <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="users" /></span>
+                <h4>Join to see who's here</h4>
+                <p>Members of {{ channelName }} can see its member list.</p>
+            </div>
+
+            <div v-else-if="refusal === 'no_roster_right'" class="chat-mb-state" data-testid="members-state" data-state="no_roster_right">
+                <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="eye-off" /></span>
+                <h4>Only leaders can see who's here</h4>
+                <p>{{ channelName }} keeps its member list private. You can still message people you know.</p>
+            </div>
+
+            <div v-else-if="error" class="chat-mb-state" data-testid="members-state" data-state="error">
+                <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="wifi-off" /></span>
+                <h4>Couldn't load members</h4>
+                <p>Check your connection, then try again.</p>
+                <button type="button" class="chat-ls-btn" data-testid="members-retry" @click="emit('retry')"><Icon name="refresh" size="xs" />Try again</button>
+            </div>
+
+            <div v-else-if="isLoading" class="chat-mb-list">
+                <span class="chat-sr-only">Loading members</span>
+                <div v-for="width in skeletonWidths" :key="width" class="chat-mb-skel" aria-hidden="true" data-testid="member-skeleton">
+                    <i class="chat-skeleton chat-mb-skel-c"></i>
+                    <span class="chat-mb-skel-l"><i class="chat-skeleton" :style="{ width: `${width}%` }"></i><i class="chat-skeleton"></i></span>
+                </div>
+            </div>
+
+            <div v-else class="chat-mb-list">
+                <p v-if="searchStatus === 'failed'" class="chat-mb-hint is-error" data-testid="members-hint">
+                    <Icon name="alert" size="xs" />Couldn't search right now.
+                    <button type="button" class="chat-mb-link" data-testid="members-search-retry" @click="emit('retrySearch')">Try again</button>
+                </p>
+                <p v-else-if="searchStatus" class="chat-mb-hint" role="status" data-testid="members-hint">
+                    <template v-if="searchStatus === 'searching'"><span class="chat-spinner" aria-hidden="true"></span>Searching everyone in {{ channelName }}</template>
+                    <template v-else><Icon name="search" size="xs" />{{ foundLine }}</template>
+                </p>
+
+                <section v-for="section in sections" :key="section.title" :aria-label="section.title">
+                    <h4 class="chat-mb-sec" data-testid="members-section">{{ section.title }}<span v-if="section.count !== null" data-testid="members-section-count">{{ section.count }}</span></h4>
+                    <ul class="chat-mb-rows" :class="{ 'is-phone': isPhone }" role="list">
+                        <li v-for="row in section.rows"
+                            :key="row.guid"
+                            class="chat-mb-row"
+                            :class="{ 'is-in': freshIds.has(row.guid) }"
+                            data-testid="member-row">
+                            <button type="button"
+                                    class="chat-mb-who"
+                                    data-testid="member-who"
+                                    :data-person="row.guid"
+                                    :aria-label="row.label"
+                                    @click="emit('person', row.guid)">
+                                <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" />
+                                <span class="chat-mb-txt">
+                                    <span class="chat-mb-name">
+                                        <b>{{ row.name }}</b>
+                                        <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
+                                        <span v-if="row.isLeader" class="chat-pill" data-testid="member-leader">Leader</span>
+                                    </span>
+                                    <span v-if="row.campus" class="chat-mb-sub" data-testid="member-campus">{{ row.campus }}</span>
+                                </span>
+                            </button>
+                            <span v-if="row.canMessage" class="chat-mb-acts">
+                                <button type="button"
+                                        class="chat-mb-msg"
+                                        data-testid="member-message"
+                                        :aria-label="`Message ${row.name}`"
+                                        @click="emit('message', row.guid)">
+                                    <Icon name="message" size="xs" />Message
+                                </button>
+                            </span>
+                        </li>
+                    </ul>
+                </section>
+
+                <div v-if="isNoneShown" class="chat-mb-none" data-testid="members-none">No one in {{ channelName }} matches &ldquo;{{ query.trim() }}&rdquo;.</div>
+
+                <div v-if="isMoreShown" class="chat-mb-more">
+                    <span v-if="moreError" class="chat-mb-more-err" data-testid="members-more-error"><Icon name="alert" size="xs" />Couldn't load more.</span>
+                    <button type="button"
+                            class="chat-ls-btn"
+                            data-testid="members-more"
+                            :aria-busy="isLoadingMore ? 'true' : undefined"
+                            :aria-disabled="isLoadingMore ? 'true' : undefined"
+                            @click="onLoadMore">
+                        <template v-if="isLoadingMore"><span class="chat-spinner" aria-hidden="true"></span>Loading</template>
+                        <template v-else-if="moreError">Try again</template>
+                        <template v-else>Load more</template>
+                    </button>
+                </div>
+                <div v-else-if="isEndShown" class="chat-mb-end" data-testid="members-end">That's everyone.</div>
+            </div>
+
+            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
+        </div>
+    </PanelHost>
+</template>
+
+<style scoped>
+/* Ported from the design's members panel; the small outlined button, the skeleton and the spinner are the sheet's. */
+.chat-mb-top {
+    flex: none;
+    padding: 12px 14px 6px;
+}
+
+.chat-mb-search {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    margin: 0;
+    font-weight: 400;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-search:focus-within {
+    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-mb-search input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 13.5px;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.chat-mb-search input::placeholder {
+    color: var(--chat-muted);
+}
+
+/* The filter draws its own clear button, never the browser's. */
+.chat-mb-search input::-webkit-search-cancel-button,
+.chat-mb-search input::-webkit-search-decoration {
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.chat-mb-clear {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    margin-right: -6px;
+    color: var(--chat-text-2);
+    background: var(--chat-press);
+    border: 0;
+    border-radius: 50%;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-clear:hover {
+    color: var(--chat-text);
+    background: color-mix(in srgb, var(--chat-text) 16%, transparent);
+}
+
+.chat-mb-list {
+    padding: 2px 8px 0;
+}
+
+.chat-mb-sec {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 14px 10px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.chat-mb-sec span {
+    padding: 0 6px;
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-mb-rows {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.chat-mb-row {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-row:hover,
+.chat-mb-row:focus-within {
+    background: var(--chat-hover);
+}
+
+/* Rows a fetch brought rise in from half the message rise. */
+.chat-mb-row.is-in {
+    animation: chat-mb-in var(--chat-t-msg) var(--chat-ease-in) both;
+}
+
+@keyframes chat-mb-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-rise) * .5));
+    }
+}
+
+.chat-mb-who {
+    display: flex;
+    flex: 1;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+    padding: 6px 8px;
+    color: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-mb-who :deep(.chat-av) {
+    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-who:hover :deep(.chat-av) {
+    box-shadow: 0 0 0 2px var(--chat-surface), 0 0 0 3.5px var(--chat-line-strong);
+}
+
+.chat-mb-txt {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-mb-name {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+    font-size: 14px;
+    color: var(--chat-text);
+}
+
+.chat-mb-name b {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-mb-name .chat-pill {
+    flex: none;
+}
+
+.chat-mb-you {
+    flex: none;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-mb-sub {
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A row's actions show on hover or focus, and always where there is no hover, as on a phone. */
+.chat-mb-acts {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    padding-right: 6px;
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-row:hover .chat-mb-acts,
+.chat-mb-row:focus-within .chat-mb-acts,
+.chat-mb-rows.is-phone .chat-mb-acts {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .chat-mb-acts {
+        opacity: 1;
+    }
+}
+
+.chat-mb-msg {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 28px;
+    padding: 0 11px 0 9px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-msg:hover {
+    color: var(--chat-text);
+    border-color: var(--chat-icon);
+}
+
+.chat-mb-hint {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 8px 10px 0;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-mb-hint .chat-spinner {
+    width: 11px;
+    height: 11px;
+    border-width: 1.6px;
+}
+
+.chat-mb-hint.is-error {
+    color: var(--chat-danger-ink);
+}
+
+.chat-mb-link {
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--chat-brand-ink);
+    background: none;
+    border: 0;
+}
+
+.chat-mb-none {
+    margin: 18px 10px 4px;
+    font-size: 13px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+.chat-mb-more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 8px 4px;
+}
+
+.chat-mb-more .chat-ls-btn[aria-busy="true"] {
+    color: var(--chat-muted);
+}
+
+.chat-mb-more-err {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 12.5px;
+    color: var(--chat-danger-ink);
+}
+
+.chat-mb-end {
+    padding: 16px 0 4px;
+    font-size: 12px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+.chat-mb-state {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 56px 32px 24px;
+    text-align: center;
+}
+
+.chat-mb-state-ic {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 8px;
+    color: var(--chat-icon);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: 16px;
+}
+
+.chat-mb-state-ic :deep(.chat-ic) {
+    width: 22px;
+    height: 22px;
+}
+
+.chat-mb-state h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+.chat-mb-state p {
+    max-width: 30ch;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--chat-muted);
+}
+
+.chat-mb-state .chat-ls-btn {
+    margin-top: 12px;
+}
+
+.chat-mb-skel {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px;
+}
+
+.chat-mb-skel i {
+    display: block;
+    border-radius: var(--chat-r-full);
+}
+
+.chat-mb-skel-c {
+    flex: none;
+    width: 36px;
+    height: 36px;
+}
+
+.chat-mb-skel-l {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.chat-mb-skel-l i:first-child {
+    height: 10px;
+}
+
+.chat-mb-skel-l i:last-child {
+    width: 32%;
+    height: 8px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import PanelHost from "../ui/panelHost.partial.obs";
+    import { ChatError, RosterMember } from "../types.partial";
+
+    // #region Types
+
+    /** One row as it is drawn and read. */
+    type DrawnMember = {
+        guid: string;
+        name: string;
+        photoUrl: string | null;
+        isSelf: boolean;
+        isLeader: boolean;
+        campus: string;
+        canMessage: boolean;
+        label: string;
+    };
+
+    /** One heading and its rows. */
+    type DrawnSection = {
+        title: string;
+
+        /** The rows' count, only once the loaded rows prove it; else null. */
+        count: number | null;
+        rows: DrawnMember[];
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The room's name as the header shows it, a channel's written with no "#". */
+        channelName: {
+            type: String,
+            required: true
+        },
+
+        /** A channel lists its leaders first; a group conversation lists everyone together. */
+        isChannel: {
+            type: Boolean,
+            default: true
+        },
+
+        /** The rows to list: the loaded roster, or under a query what the search shows. */
+        members: {
+            type: Array as PropType<RosterMember[]>,
+            required: true
+        },
+
+        /** Whether more people wait after the last row, for the roster or under a query its search. */
+        hasMore: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The first page is on its way. */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A later page is on its way. */
+        isLoadingMore: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why the first page failed, other than a refusal, or null. */
+        error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** Why the last later page failed, or null. */
+        moreError: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** Why the platform will not list the room for the reader, or null. */
+        refusal: {
+            type: String as PropType<"not_member" | "no_roster_right" | null>,
+            default: null
+        },
+
+        /** The filter as typed. */
+        query: {
+            type: String,
+            default: ""
+        },
+
+        /** Where the search of the whole room is, or null with no query. */
+        searchStatus: {
+            type: String as PropType<"searching" | "answered" | "failed" | null>,
+            default: null
+        },
+
+        /** The reader, whose own row says "(you)" and offers no Message. */
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        /** The church's campus names by guid in lower case, from the init box. */
+        campusNames: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        /** Whether the chat is in its one-pane phone layout, where a row's actions always show. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "query", text: string): void;
+        (e: "loadMore"): void;
+        (e: "retry"): void;
+        (e: "retrySearch"): void;
+        (e: "message", personAliasGuid: string): void;
+        (e: "person", personAliasGuid: string): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const skeletonWidths = [58, 44, 66, 50, 40, 62, 48];
+
+    const listElement = ref<HTMLElement>();
+    const filterElement = ref<HTMLInputElement>();
+
+    /** The people a later page brought, who rise in. */
+    const freshIds = ref(new Set<string>());
+
+    const announcement = ref("");
+
+    /** How many rows were drawn when a later page was asked for, until it lands. */
+    let moreFrom: number | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isQuery = computed((): boolean => props.query.trim() !== "");
+
+    const sections = computed((): DrawnSection[] => {
+        const rows = props.members.map(drawMember);
+        // A heading's count is drawn only when the loaded rows prove it, since the roster carries
+        // no total; under a query the rows are a search's, so no heading counts the room.
+        const isAll = !props.hasMore && !isQuery.value;
+        if (!props.isChannel) {
+            return rows.length ? [{ title: "In this conversation", count: isAll ? rows.length : null, rows }] : [];
+        }
+
+        const leaders = rows.filter(r => r.isLeader);
+        const rest = rows.filter(r => !r.isLeader);
+        const drawn: DrawnSection[] = [];
+        if (leaders.length) {
+            // The roster lists leaders first, so a member row loaded means every leader is.
+            const isLeadersAll = !isQuery.value && (!props.hasMore || rest.length > 0);
+            drawn.push({ title: "Leaders", count: isLeadersAll ? leaders.length : null, rows: leaders });
+        }
+        if (rest.length) {
+            drawn.push({ title: "Members", count: isAll ? rest.length : null, rows: rest });
+        }
+        return drawn;
+    });
+
+    const foundLine = computed((): string => {
+        const count = props.members.length;
+        return count ? `${count} ${count === 1 ? "person" : "people"} in ${props.channelName}` : `Searched everyone in ${props.channelName}`;
+    });
+
+    const isNoneShown = computed((): boolean => isQuery.value && props.searchStatus === "answered" && props.members.length === 0);
+
+    /** Browsing pages on while more wait; a search pages on only once its own answer filled a page. */
+    const isMoreShown = computed((): boolean => props.hasMore && (!isQuery.value || props.searchStatus === "answered"));
+
+    const isEndShown = computed((): boolean => props.isChannel && !isQuery.value && !props.hasMore);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onInput(event: Event): void {
+        emit("query", (event.target as HTMLInputElement).value);
+    }
+
+    /** Escape clears a query before it closes the panel. */
+    function onFilterKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape" && props.query) {
+            event.preventDefault();
+            emit("query", "");
+        }
+    }
+
+    function onClear(): void {
+        emit("query", "");
+        filterElement.value?.focus();
+    }
+
+    function onLoadMore(): void {
+        // the page already on its way answers for this press too
+        if (!props.isLoadingMore) {
+            emit("loadMore");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function drawMember(member: RosterMember): DrawnMember {
+        const name = `${member.nick_name ?? ""} ${member.last_name ?? ""}`.trim() || "Someone";
+        const isSelf = member.person_alias_guid.toLowerCase() === props.personAliasGuid.toLowerCase();
+        const isLeader = props.isChannel && member.is_leader;
+        const campusId = member.details?.campus_id;
+        const campus = campusId ? props.campusNames[campusId.toLowerCase()] ?? "" : "";
+        const parts = [name, isSelf ? "you" : "", isLeader ? "leader" : "", campus].filter(p => !!p);
+
+        return {
+            guid: member.person_alias_guid,
+            name,
+            photoUrl: member.avatar_url,
+            isSelf,
+            isLeader,
+            campus,
+            canMessage: member.can_message && !isSelf,
+            label: `${parts.join(", ")}. View profile`
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.isLoadingMore, isLoadingMore => {
+        if (isLoadingMore) {
+            moreFrom = props.members.length;
+        }
+    });
+
+    // A later page's rows rise in, and its first row takes focus when the person asked from Load
+    // more, so the keyboard carries on where the list grew.
+    watch(() => props.isLoadingMore, async (isLoadingMore, wasLoadingMore) => {
+        const from = moreFrom;
+        if (!wasLoadingMore || isLoadingMore || from === null) {
+            return;
+        }
+
+        moreFrom = null;
+        const added = props.members.slice(from);
+        if (props.moreError || added.length === 0) {
+            return;
+        }
+
+        const active = document.activeElement;
+        const wasOnMore = !active || active === document.body || !!active.closest("[data-testid='members-more']");
+        freshIds.value = new Set(added.map(m => m.person_alias_guid));
+        announcement.value = `${added.length} more ${added.length === 1 ? "member" : "members"} loaded`;
+        await nextTick();
+        if (wasOnMore) {
+            listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${added[0].person_alias_guid}']`)?.focus({ preventScroll: true });
+        }
+    });
+
+    // A screen reader hears what the first page brought.
+    watch(() => props.isLoading, (isLoading, wasLoading) => {
+        if (wasLoading && !isLoading && !props.error && !props.refusal) {
+            const count = props.members.length;
+            announcement.value = props.hasMore ? `First ${count} members loaded` : `${count} ${count === 1 ? "member" : "members"}`;
+        }
+    });
+
+    // #endregion Watchers
+</script>
