@@ -224,14 +224,30 @@ namespace Rock.Blocks.Communication.Chat
         /// </summary>
         /// <param name="channelGuid">The channel.</param>
         /// <param name="personAliasGuid">The person removed, by any of their aliases.</param>
+        /// <param name="replacementPersonAliasGuid">Who leads next when the person removed is a channel's last leader.</param>
         /// <returns>Whether they were removed, or why not.</returns>
         [BlockAction]
-        public async Task<BlockActionResult> RemoveMember( Guid channelGuid, Guid personAliasGuid )
+        public async Task<BlockActionResult> RemoveMember( Guid channelGuid, Guid personAliasGuid, Guid? replacementPersonAliasGuid = null )
         {
             var person = GetCurrentPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
-            return ActionOk( await ChatDoorHelper.RemoveMemberAsync( person, channelGuid, personAliasGuid, context, RockContext ) );
+            return ActionOk( await ChatDoorHelper.RemoveMemberAsync( person, channelGuid, personAliasGuid, replacementPersonAliasGuid, context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Says whether the person may add and remove people in a room, asked when its members
+        /// are opened, so the screen offers only what the doors would allow.
+        /// </summary>
+        /// <param name="channelGuid">The channel.</param>
+        /// <returns>The person's rights in the room.</returns>
+        [BlockAction]
+        public BlockActionResult GetMemberRights( Guid channelGuid )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( ChatDoorHelper.GetMemberRights( person, channelGuid, context, RockContext ) );
         }
 
         /// <summary>

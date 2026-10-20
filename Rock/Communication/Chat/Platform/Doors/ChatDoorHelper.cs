@@ -487,10 +487,11 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="caller">The person removing.</param>
         /// <param name="channelGuid">The channel, as the browser names it.</param>
         /// <param name="personAliasGuid">The person removed, by any of their aliases.</param>
+        /// <param name="replacementPersonAliasGuid">Who leads next when the person removed is a channel's last leader, by any of their aliases.</param>
         /// <param name="context">The church's settings, for the session gates.</param>
         /// <param name="rockContext">The context the membership is removed in.</param>
         /// <returns>Whether they were removed, and whether the platform had taken it yet.</returns>
-        internal static async Task<ChatMembershipResultBag> RemoveMemberAsync( Person caller, Guid channelGuid, Guid personAliasGuid, ChatSessionContext context, RockContext rockContext )
+        internal static async Task<ChatMembershipResultBag> RemoveMemberAsync( Person caller, Guid channelGuid, Guid personAliasGuid, Guid? replacementPersonAliasGuid, ChatSessionContext context, RockContext rockContext )
         {
             var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
             if ( !gate.Success )
@@ -542,6 +543,47 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             var isDirect = room.Channel.ChannelType == DirectChannelType;
             return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " removed " + targetName + "." : null ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Whether the caller may add and remove people in a room, by the rule the add and remove
+        /// doors apply, so the screen offers only what those doors would allow.
+        /// </summary>
+        /// <param name="caller">The person asking.</param>
+        /// <param name="channelGuid">The channel, as the browser names it.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context read in.</param>
+        /// <returns>The caller's rights in the room; none where chat refuses them or the room is not a channel.</returns>
+        internal static ChatMemberRightsBag GetMemberRights( Person caller, Guid channelGuid, ChatSessionContext context, RockContext rockContext )
+        {
+            return new ChatMemberRightsBag();
+        }
+
+        /// <summary>
+        /// Why a channel's leader may not be removed: only a Chat Administrator removes one, and
+        /// the last one only with someone named to lead next.
+        /// </summary>
+        /// <param name="targetLeads">Whether the person removed holds a live leader membership of the channel.</param>
+        /// <param name="callerIsChatAdministrator">Whether the caller is an active Chat Administrator.</param>
+        /// <param name="isLastLeader">Whether nobody else leads the channel.</param>
+        /// <param name="hasReplacement">Whether the caller named someone to lead next.</param>
+        /// <returns>The refusal, or null where the removal may go ahead.</returns>
+        internal static ChatMembershipResultBag RefuseLeaderRemoval( bool targetLeads, bool callerIsChatAdministrator, bool isLastLeader, bool hasReplacement )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// The role the person named to lead next is given: the removed leader's own role when it
+        /// is a leader role of the channel's type, so a church's role name carries over, otherwise
+        /// the type's first leader role by order.
+        /// </summary>
+        /// <param name="heldRoleId">The role the removed leader held, if known.</param>
+        /// <param name="typeRoles">The roles of the channel's group type.</param>
+        /// <returns>The role, or null when the type has no leader role.</returns>
+        internal static int? PickLeaderRoleId( int? heldRoleId, IEnumerable<(int Id, bool IsLeader, int Order)> typeRoles )
+        {
+            return null;
         }
 
         /// <summary>

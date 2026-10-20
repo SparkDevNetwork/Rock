@@ -57,7 +57,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 ["JoinChannel"] = new[] { ( "channelGuid", typeof( Guid ) ) },
                 ["LeaveChannel"] = new[] { ( "channelGuid", typeof( Guid ) ) },
                 ["AddMembers"] = new[] { ( "channelGuid", typeof( Guid ) ), ( "personAliasGuids", typeof( List<Guid> ) ) },
-                ["RemoveMember"] = new[] { ( "channelGuid", typeof( Guid ) ), ( "personAliasGuid", typeof( Guid ) ) },
+                ["RemoveMember"] = new[] { ( "channelGuid", typeof( Guid ) ), ( "personAliasGuid", typeof( Guid ) ), ( "replacementPersonAliasGuid", typeof( Guid? ) ) },
+                ["GetMemberRights"] = new[] { ( "channelGuid", typeof( Guid ) ) },
                 ["RenameConversation"] = new[] { ( "channelGuid", typeof( Guid ) ), ( "name", typeof( string ) ) }
             };
 
@@ -548,6 +549,160 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         #endregion Remove
+
+        #region Removing a leader
+
+        [TestMethod]
+        public void AManagerWhoIsNotAChatAdministratorCannotRemoveALeader()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var manager = scene.AddManagerRole();
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bo, m => m.GroupRoleId = leader );
+
+                var result = scene.Remove( lee, room, scene.Alias( ada ) );
+
+                Assert.AreEqual( "door.not_allowed", result.Code );
+                Assert.AreEqual( "Only Chat Administrators can remove a leader.", result.Message );
+                CollectionAssert.Contains( scene.ActiveMembers( room ), ada );
+            }
+        }
+
+        [TestMethod]
+        public void AChatAdministratorRemovesALeaderOfAnySharedChannelWithNoLine()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // A Chat Administrator manages every shared channel, so they need neither a role
+                // in this one nor its Manage Members right.
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                scene.MakeChatAdministrator( admin );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bo, m => m.GroupRoleId = leader );
+                scene.WaitForPushes();
+
+                Assert.AreEqual( "ok", scene.Remove( admin, room, scene.Alias( ada ) ).Code );
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( room ), ada );
+                Assert.IsTrue( scene.WaitForPushes().SelectMany( p => p.AbsentMembers ).Contains( (room, scene.Alias( ada )) ) );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void RemovingTheLastLeaderNeedsALiveListedUnbannedMemberToLeadNext()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bea = scene.AddChatPerson( "Bea" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var eve = scene.AddChatPerson( "Eve" );
+                scene.MakeChatAdministrator( admin );
+                scene.AddToBanList( eve );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bea, m => m.IsChatBanned = true );
+                scene.Fixture.AddMember( room, eve );
+
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, room, scene.Alias( ada ) ).Code, "nobody named to lead next" );
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( ada ) ).Code, "the leader removed cannot lead next" );
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( bea ) ).Code, "banned from the room" );
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( cy ) ).Code, "not in the room" );
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( eve ) ).Code, "on the Chat Ban List, so not listed" );
+                CollectionAssert.Contains( scene.ActiveMembers( room ), ada );
+                Assert.AreEqual( leader, scene.Memberships( room, ada ).Single().GroupRoleId, "a refusal changes nobody's role" );
+            }
+        }
+
+        [TestMethod]
+        public void RemovingTheLastLeaderWithAReplacementMovesTheReplacementToTheLeadersRoleInOnePush()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                scene.MakeChatAdministrator( admin );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Pastor", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bo );
+                scene.WaitForPushes();
+
+                Assert.AreEqual( "ok", scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( bo ) ).Code );
+
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( room ), ada );
+                Assert.AreEqual( leader, scene.Memberships( room, bo ).Single().GroupRoleId, "the replacement takes the removed leader's own role" );
+
+                var push = scene.WaitForPushes().Single( p => p.AbsentMembers.Contains( (room, scene.Alias( ada )) ) );
+                Assert.IsTrue( push.Members.Any( r => ( Guid ) r[0] == room && ( Guid ) r[1] == scene.Alias( bo ) ), "the new leader goes in the same push as the removal" );
+
+                var payload = scene.Fixture.Project();
+                var row = payload.Rows( "members" ).Single( r => ( Guid ) r[0] == room && ( Guid ) r[1] == scene.Alias( bo ) );
+                Assert.IsTrue( ( bool ) payload.Value( "members", row, "is_leader" ), "the platform is told the replacement leads" );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        #endregion Removing a leader
+
+        #region The screen's rights
+
+        [TestMethod]
+        public void TheMemberRightsFollowTheDoorsRule()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee", isOpenDmAllowed: true );
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var admin = scene.AddChatPerson( "Admin" );
+                scene.MakeChatAdministrator( admin );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                scene.Fixture.AddMember( room, ada );
+                var pair = scene.Start( ada, scene.Alias( bo ) ).ChannelGuid.Value;
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( lee ) ).ChannelGuid.Value;
+
+                Assert.IsTrue( scene.Rights( lee, room ).CanManageMembers, "Manage Members on the channel" );
+                Assert.IsFalse( scene.Rights( ada, room ).CanManageMembers, "a member without the right" );
+                Assert.IsTrue( scene.Rights( admin, room ).CanManageMembers, "a Chat Administrator manages every shared channel" );
+                Assert.IsTrue( scene.Rights( bo, group ).CanManageMembers, "a member of a group conversation" );
+                Assert.IsFalse( scene.Rights( ada, pair ).CanManageMembers, "a conversation of two stays as it is" );
+                Assert.IsFalse( scene.Rights( admin, group ).CanManageMembers, "a Chat Administrator is not in the conversation" );
+                Assert.IsFalse( scene.Rights( lee, Guid.NewGuid() ).CanManageMembers, "nothing at all" );
+            }
+        }
+
+        [TestMethod]
+        public void TheSessionSaysWhoIsAChatAdministrator()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                scene.MakeChatAdministrator( admin );
+
+                Assert.IsTrue( scene.OpenSession( admin ).IsChatAdministrator );
+                Assert.IsFalse( scene.OpenSession( ada ).IsChatAdministrator );
+            }
+        }
+
+        #endregion The screen's rights
 
         #region Rename
 

@@ -41,6 +41,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public const int BanListGroupId = 40;
         public const int ChatPeopleGroupId = 50;
         public const int ChatPeopleRoleId = 7;
+        public const int ChatAdministratorsGroupId = 60;
         public const string Kid = "kid-test-1";
 
         /// <summary>
@@ -83,6 +84,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
                 Name = "Chat People",
                 GroupTypeId = 1,
                 GroupType = new GroupType { Id = 1, DefaultGroupRoleId = ChatPeopleRoleId }
+            } );
+
+            rockContext.Set<Group>().Add( new Group
+            {
+                Id = ChatAdministratorsGroupId,
+                Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS ),
+                Name = "Chat Administrators",
+                GroupTypeId = 1
             } );
 
             return rockContextMock;
@@ -171,6 +180,24 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             rockContext.Set<GroupMember>().Add( new GroupMember
             {
                 GroupId = BanListGroupId,
+                PersonId = personId,
+                GroupMemberStatus = status,
+                IsArchived = isArchived
+            } );
+        }
+
+        /// <summary>
+        /// Puts the person in the Chat Administrators group.
+        /// </summary>
+        /// <param name="rockContext">The seeded context.</param>
+        /// <param name="personId">The person.</param>
+        /// <param name="status">The membership status.</param>
+        /// <param name="isArchived">Whether the membership is archived.</param>
+        public static void AddChatAdministrator( RockContext rockContext, int personId, GroupMemberStatus status = GroupMemberStatus.Active, bool isArchived = false )
+        {
+            rockContext.Set<GroupMember>().Add( new GroupMember
+            {
+                GroupId = ChatAdministratorsGroupId,
                 PersonId = personId,
                 GroupMemberStatus = status,
                 IsArchived = isArchived

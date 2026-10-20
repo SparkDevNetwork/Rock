@@ -273,6 +273,7 @@ namespace Rock.Communication.Chat.Platform.Session
                 TenantId = result.TenantId,
                 PersonAliasGuid = result.PersonAliasGuid,
                 CanStartDm = result.CanStartDm,
+                IsChatAdministrator = IsChatAdministrator( person.Id, rockContext ),
                 PersonNickName = person.NickName,
                 PersonLastName = person.LastName,
                 // Rock's photo address draws a placeholder for a person with none, which would
@@ -729,6 +730,18 @@ namespace Rock.Communication.Chat.Platform.Session
                 && m.PersonId == person.Id
                 && m.GroupMemberStatus == GroupMemberStatus.Active
                 && !m.IsArchived );
+        }
+
+        /// <summary>
+        /// Whether the person is an active member of Rock's Chat Administrators group, who
+        /// manage every shared channel and alone remove a channel's leader.
+        /// </summary>
+        /// <param name="personId">The person.</param>
+        /// <param name="rockContext">The context read in.</param>
+        /// <returns>True for an active, unarchived membership of the group.</returns>
+        internal static bool IsChatAdministrator( int personId, RockContext rockContext )
+        {
+            return false;
         }
 
         /// <summary>

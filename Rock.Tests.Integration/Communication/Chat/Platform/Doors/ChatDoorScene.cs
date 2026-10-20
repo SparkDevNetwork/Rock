@@ -128,6 +128,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             Fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid(), personId );
         }
 
+        /// <summary>
+        /// Puts a person in Rock's Chat Administrators group.
+        /// </summary>
+        public void MakeChatAdministrator( int personId )
+        {
+            Fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid(), personId );
+        }
+
         public void MakeDeceased( int personId )
         {
             using ( var rockContext = new RockContext() )
@@ -267,9 +275,39 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         /// <summary>
         /// Removes a person from a channel or a conversation as the caller, inside a request of its own.
         /// </summary>
-        public ChatMembershipResultBag Remove( int callerId, Guid channelGuid, Guid personAliasGuid )
+        public ChatMembershipResultBag Remove( int callerId, Guid channelGuid, Guid personAliasGuid, Guid? replacementPersonAliasGuid = null )
         {
-            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.RemoveMemberAsync( caller, channelGuid, personAliasGuid, context, rockContext ) );
+            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.RemoveMemberAsync( caller, channelGuid, personAliasGuid, replacementPersonAliasGuid, context, rockContext ) );
+        }
+
+        /// <summary>
+        /// Asks what the caller may change about who is in a room, inside a request of its own.
+        /// </summary>
+        public ChatMemberRightsBag Rights( int callerId, Guid channelGuid )
+        {
+            using ( ChatSyncProjectionFixture.InsideRequest() )
+            using ( var rockContext = new RockContext() )
+            {
+                var caller = new PersonService( rockContext ).Get( callerId );
+                var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
+
+                return ChatDoorHelper.GetMemberRights( caller, channelGuid, context, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// The session the Chat block opens for the caller, inside a request of its own.
+        /// </summary>
+        public ChatShellSessionBag OpenSession( int callerId )
+        {
+            using ( ChatSyncProjectionFixture.InsideRequest() )
+            using ( var rockContext = new RockContext() )
+            {
+                var caller = new PersonService( rockContext ).Get( callerId );
+                var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
+
+                return ChatSessionHelper.OpenSession( caller, context, rockContext );
+            }
         }
 
         /// <summary>

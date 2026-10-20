@@ -89,6 +89,31 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
+        public void OpenSession_Ok_AnActiveChatAdministrator_IsToldSo()
+        {
+            // The screen offers a Chat Administrator what only they may do, such as removing a
+            // leader; the doors still decide every change.
+            AddChatAdministrator( _rockContext, PersonId );
+
+            var bag = ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext );
+
+            Assert.AreEqual( "ok", bag.Gate );
+            Assert.IsTrue( bag.IsChatAdministrator );
+        }
+
+        [TestMethod]
+        public void OpenSession_Ok_SomeoneNotActiveInChatAdministrators_IsNotOne()
+        {
+            Assert.IsFalse( ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext ).IsChatAdministrator, "not in the group" );
+
+            AddChatAdministrator( _rockContext, PersonId, GroupMemberStatus.Inactive );
+            AddChatAdministrator( _rockContext, PersonId, isArchived: true );
+            AddChatAdministrator( _rockContext, PersonId + 1 );
+
+            Assert.IsFalse( ChatSessionHelper.OpenSession( Adult(), SigningConfig(), _rockContext ).IsChatAdministrator, "an inactive or archived membership, or someone else's, does not count" );
+        }
+
+        [TestMethod]
         public void OpenSession_Ok_CarriesThePersonsOwnNameForTheirOwnMessages()
         {
             var person = Adult();

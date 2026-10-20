@@ -60,6 +60,13 @@ export type ChatShellSessionBag = {
     canStartDm: boolean;
 
     /**
+     * Gets or sets whether the person is an active member of Rock's Chat Administrators group,
+     * read when chat opens, so the screen offers what only a Chat Administrator may do. The
+     * doors still decide every change.
+     */
+    isChatAdministrator: boolean;
+
+    /**
      * Gets or sets the person's nick name, when the gates passed, so their own messages are
      * named before the platform has sent a name back for them.
      */
