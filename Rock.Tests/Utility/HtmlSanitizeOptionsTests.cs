@@ -51,25 +51,25 @@ namespace Rock.Tests.Utility
         {
             var options = new HtmlSanitizeOptions().MakeReadOnly();
 
-            Assert.ThrowsException<InvalidOperationException>( () => options.AllowTag( "b" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.DisallowTag( "b" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.AllowAttribute( "b", "title" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.DisallowAttribute( "b", "title" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.AllowDataAttributes() );
-            Assert.ThrowsException<InvalidOperationException>( () => options.DisallowDataAttributes() );
-            Assert.ThrowsException<InvalidOperationException>( () => options.AllowUrlScheme( "https" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.DisallowUrlScheme( "https" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.AllowCssProperty( "color" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.DisallowCssProperty( "color" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.SetRemovalMode( "font", HtmlTagRemovalMode.Unwrap ) );
-            Assert.ThrowsException<InvalidOperationException>( () => options.SetDefaultRemovalMode( HtmlTagRemovalMode.Unwrap ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.AllowTag( "b" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.DisallowTag( "b" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.AllowAttribute( "b", "title" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.DisallowAttribute( "b", "title" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.AllowDataAttributes() );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.DisallowDataAttributes() );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.AllowUrlScheme( "https" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.DisallowUrlScheme( "https" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.AllowCssProperty( "color" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.DisallowCssProperty( "color" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.SetRemovalMode( "font", HtmlTagRemovalMode.Unwrap ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => options.SetDefaultRemovalMode( HtmlTagRemovalMode.Unwrap ) );
         }
 
         [TestMethod]
         public void EditMethods_OnPresets_ThrowInvalidOperationException()
         {
-            Assert.ThrowsException<InvalidOperationException>( () => HtmlSanitizeOptions.Simple.AllowTag( "font" ) );
-            Assert.ThrowsException<InvalidOperationException>( () => HtmlSanitizeOptions.Rich.DisallowTag( "img" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => HtmlSanitizeOptions.Simple.AllowTag( "font" ) );
+            Assert.ThrowsExactly<InvalidOperationException>( () => HtmlSanitizeOptions.Rich.DisallowTag( "img" ) );
         }
 
         [TestMethod]
@@ -108,7 +108,7 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void CopyConstructor_NullSource_ThrowsArgumentNullException()
         {
-            Assert.ThrowsException<ArgumentNullException>( () => new HtmlSanitizeOptions( null ) );
+            Assert.ThrowsExactly<ArgumentNullException>( () => new HtmlSanitizeOptions( null ) );
         }
 
         [TestMethod]
@@ -132,11 +132,11 @@ namespace Rock.Tests.Utility
         [TestMethod]
         public void Sanitize_NullOptions_ThrowsArgumentNullException()
         {
-            Assert.ThrowsException<ArgumentNullException>( () => Sanitize( "<b>x</b>", null ) );
-            Assert.ThrowsException<ArgumentNullException>( () => Sanitize( null, null ) );
+            Assert.ThrowsExactly<ArgumentNullException>( () => Sanitize( "<b>x</b>", null ) );
+            Assert.ThrowsExactly<ArgumentNullException>( () => Sanitize( null, null ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "script" )]
         [DataRow( "SCRIPT" )]
         [DataRow( "style" )]
@@ -165,12 +165,12 @@ namespace Rock.Tests.Utility
         {
             var options = new HtmlSanitizeOptions();
 
-            Assert.ThrowsException<ArgumentException>( () => options.AllowTag( tag ) );
-            Assert.ThrowsException<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Unwrap ) );
-            Assert.ThrowsException<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Drop ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowTag( tag ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Unwrap ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Drop ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "svg" )]
         [DataRow( "MATH" )]
         public void ForeignContentRoot_CanBeAllowedButNotGivenARemovalMode( string tag )
@@ -178,11 +178,11 @@ namespace Rock.Tests.Utility
             var options = new HtmlSanitizeOptions();
 
             Assert.AreSame( options, options.AllowTag( tag ) );
-            Assert.ThrowsException<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Unwrap ) );
-            Assert.ThrowsException<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Drop ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Unwrap ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.SetRemovalMode( tag, HtmlTagRemovalMode.Drop ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "onclick" )]
         [DataRow( "OnMouseOver" )]
         [DataRow( "on" )]
@@ -197,11 +197,11 @@ namespace Rock.Tests.Utility
         {
             var options = new HtmlSanitizeOptions();
 
-            Assert.ThrowsException<ArgumentException>( () => options.AllowAttribute( "img", attribute ) );
-            Assert.ThrowsException<ArgumentException>( () => options.AllowAttribute( "", attribute ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowAttribute( "img", attribute ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowAttribute( "", attribute ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "javascript" )]
         [DataRow( "JavaScript" )]
         [DataRow( "vbscript" )]
@@ -209,19 +209,19 @@ namespace Rock.Tests.Utility
         [DataRow( "data" )]
         public void AllowUrlScheme_BlockedScheme_ThrowsArgumentException( string scheme )
         {
-            Assert.ThrowsException<ArgumentException>( () => new HtmlSanitizeOptions().AllowUrlScheme( scheme ) );
+            Assert.ThrowsExactly<ArgumentException>( () => new HtmlSanitizeOptions().AllowUrlScheme( scheme ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "behavior" )]
         [DataRow( "BEHAVIOR" )]
         [DataRow( "-moz-binding" )]
         public void AllowCssProperty_NeverAllowedProperty_ThrowsArgumentException( string property )
         {
-            Assert.ThrowsException<ArgumentException>( () => new HtmlSanitizeOptions().AllowCssProperty( property ) );
+            Assert.ThrowsExactly<ArgumentException>( () => new HtmlSanitizeOptions().AllowCssProperty( property ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( null )]
         [DataRow( "" )]
         [DataRow( "  " )]
@@ -229,20 +229,20 @@ namespace Rock.Tests.Utility
         {
             var options = new HtmlSanitizeOptions();
 
-            Assert.ThrowsException<ArgumentException>( () => options.AllowTag( name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowTag( name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.SetRemovalMode( name, HtmlTagRemovalMode.Unwrap ) );
-            Assert.ThrowsException<ArgumentException>( () => options.AllowAttribute( "span", name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.AllowAttribute( "", name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowAttribute( "span", name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowAttribute( "", name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.AllowUrlScheme( name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowUrlScheme( name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.AllowCssProperty( name ) );
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowCssProperty( name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowTag( name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowTag( name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.SetRemovalMode( name, HtmlTagRemovalMode.Unwrap ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowAttribute( "span", name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowAttribute( "", name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowAttribute( "span", name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowAttribute( "", name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowUrlScheme( name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowUrlScheme( name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.AllowCssProperty( name ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowCssProperty( name ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( null )]
         [DataRow( "" )]
         [DataRow( "  " )]
@@ -253,7 +253,7 @@ namespace Rock.Tests.Utility
             Assert.AreEqual( "<b data-x=\"1\">a</b><i data-x=\"2\">b</i>", Sanitize( "<b data-x=\"1\">a</b><i data-x=\"2\">b</i>", options ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( null )]
         [DataRow( "" )]
         [DataRow( "  " )]
@@ -271,8 +271,8 @@ namespace Rock.Tests.Utility
         {
             var options = new HtmlSanitizeOptions( HtmlSanitizeOptions.Simple );
 
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowAttribute( "a", "title" ) );
-            Assert.ThrowsException<ArgumentException>( () => options.DisallowAttribute( "span", "CLASS" ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowAttribute( "a", "title" ) );
+            Assert.ThrowsExactly<ArgumentException>( () => options.DisallowAttribute( "span", "CLASS" ) );
         }
 
         [TestMethod]
@@ -280,8 +280,8 @@ namespace Rock.Tests.Utility
         {
             var options = new HtmlSanitizeOptions();
 
-            Assert.ThrowsException<ArgumentOutOfRangeException>( () => options.SetRemovalMode( "font", ( HtmlTagRemovalMode ) 2 ) );
-            Assert.ThrowsException<ArgumentOutOfRangeException>( () => options.SetDefaultRemovalMode( ( HtmlTagRemovalMode ) 2 ) );
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>( () => options.SetRemovalMode( "font", ( HtmlTagRemovalMode ) 2 ) );
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>( () => options.SetDefaultRemovalMode( ( HtmlTagRemovalMode ) 2 ) );
         }
     }
 }

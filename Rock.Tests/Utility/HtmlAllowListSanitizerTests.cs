@@ -100,7 +100,7 @@ namespace Rock.Tests.Utility
             Assert.AreEqual( expected, sanitizer.Sanitize( actual, options ), "Sanitizing the output again changed it." );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<span>a</span><b>b</b><strong>c</strong><i>d</i><em>e</em><u>f</u><s>g</s><strike>h</strike><small>i</small><sub>j</sub><sup>k</sup><mark>l</mark><abbr>m</abbr><q>n</q><cite>o</cite><code>p</code><kbd>q</kbd><samp>r</samp><var>s</var>", "Simple", "<span>a</span><b>b</b><strong>c</strong><i>d</i><em>e</em><u>f</u><s>g</s><strike>h</strike><small>i</small><sub>j</sub><sup>k</sup><mark>l</mark><abbr>m</abbr><q>n</q><cite>o</cite><code>p</code><kbd>q</kbd><samp>r</samp><var>s</var>" )]
         [DataRow( "<span>a</span><b>b</b><strong>c</strong><i>d</i><em>e</em><u>f</u><s>g</s><strike>h</strike><small>i</small><sub>j</sub><sup>k</sup><mark>l</mark><abbr>m</abbr><q>n</q><cite>o</cite><code>p</code><kbd>q</kbd><samp>r</samp><var>s</var>", "Rich", "<span>a</span><b>b</b><strong>c</strong><i>d</i><em>e</em><u>f</u><s>g</s><strike>h</strike><small>i</small><sub>j</sub><sup>k</sup><mark>l</mark><abbr>m</abbr><q>n</q><cite>o</cite><code>p</code><kbd>q</kbd><samp>r</samp><var>s</var>" )]
         [DataRow( "<p>a<br>b</p><hr><blockquote>c</blockquote><pre>d</pre>", "Simple", "<p>a<br>b</p><hr><blockquote>c</blockquote><pre>d</pre>" )]
@@ -131,7 +131,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<h1>a</h1><ul><li>b</li></ul><ol><li>c</li></ol><dl><dt>d</dt></dl><section>e</section><table><tr><td>f</td></tr></table><img src=\"/a.png\">g", "Simple", "g" )]
         [DataRow( "<span id=\"x\" data-a=\"b\">c</span><a name=\"n\" href=\"/x\">y</a>", "Simple", "<span>c</span><a href=\"/x\">y</a>" )]
         [DataRow( "<span style=\"position: absolute; top: 0; z-index: 9; overflow: hidden; transform: none; border-collapse: collapse; table-layout: fixed; flex: 1; justify-content: center; gap: 1px; color: red\">x</span>", "Simple", "<span style=\"color: red\">x</span>" )]
@@ -141,7 +141,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<font>a</font><blink>b</blink><marquee>c</marquee>d", "Simple", "d" )]
         [DataRow( "<font>a</font><blink>b</blink><marquee>c</marquee>d", "Rich", "d" )]
         [DataRow( "<font>a</font><blink>b</blink><marquee>c</marquee>d", "SimpleUnwrap", "abcd" )]
@@ -156,7 +156,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "a<script>b</script><style>c</style><iframe>d</iframe><object>e</object><embed><form>f</form><link><meta><base><svg><text>j</text></svg><math><mi>k</mi></math><noscript>l</noscript><template>m</template><applet>n</applet><xmp>o</xmp><noembed>p</noembed><noframes>q</noframes><title>r</title>z", "Simple", "az" )]
         [DataRow( "a<script>b</script><style>c</style><iframe>d</iframe><object>e</object><embed><form>f</form><link><meta><base><svg><text>j</text></svg><math><mi>k</mi></math><noscript>l</noscript><template>m</template><applet>n</applet><xmp>o</xmp><noembed>p</noembed><noframes>q</noframes><title>r</title>z", "Rich", "a<svg></svg>z" )]
         [DataRow( "a<script>b</script><style>c</style><iframe>d</iframe><object>e</object><embed><form>f</form><link><meta><base><svg><text>j</text></svg><math><mi>k</mi></math><noscript>l</noscript><template>m</template><applet>n</applet><xmp>o</xmp><noembed>p</noembed><noframes>q</noframes><title>r</title>z", "SimpleUnwrap", "az" )]
@@ -176,7 +176,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<label for=\"q\">Find</label><input type=\"search\" name=\"q\" value=\"a\" placeholder=\"p\" autofocus=\"\" maxlength=\"9\"><button type=\"submit\" name=\"go\" value=\"1\" class=\"btn\">Go</button>", "Rich", "<label for=\"q\">Find</label><input type=\"search\" name=\"q\" value=\"a\" placeholder=\"p\" autofocus=\"\" maxlength=\"9\"><button type=\"submit\" name=\"go\" value=\"1\" class=\"btn\">Go</button>" )]
         [DataRow( "<input type=\"password\" name=\"p\"><input type=\"hidden\" name=\"h\" value=\"v\"><input type=\"checkbox\" checked=\"\" disabled=\"\">", "Rich", "<input type=\"password\" name=\"p\"><input type=\"hidden\" name=\"h\" value=\"v\"><input type=\"checkbox\" checked=\"\" disabled=\"\">" )]
         [DataRow( "<select name=\"s\" multiple=\"\" size=\"2\"><optgroup label=\"g\"><option value=\"1\" selected=\"\">a</option><option value=\"2\" disabled=\"\">b</option></optgroup></select>", "Rich", "<select name=\"s\" multiple=\"\" size=\"2\"><optgroup label=\"g\"><option value=\"1\" selected=\"\">a</option><option value=\"2\" disabled=\"\">b</option></optgroup></select>" )]
@@ -191,7 +191,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<input name=\"submit\"><button name=\"reset\">a</button><input id=\"addEventListener\"><input name=\"querySelector\">", "Rich", "<input><button>a</button><input><input>" )]
         [DataRow( "<input name=\"__EVENTTARGET\" value=\"x\"><input type=\"hidden\" name=\"__VIEWSTATE\" value=\"y\"><span id=\"__proto__\">z</span>", "Rich", "<input value=\"x\"><input type=\"hidden\" value=\"y\"><span>z</span>" )]
         [DataRow( "<input type=\"hidden\" name=\"ctl00$main$ctl05$cbIsActive\" value=\"on\"><a name=\"a$b\">x</a>", "Rich", "<input type=\"hidden\" value=\"on\"><a>x</a>" )]
@@ -201,7 +201,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<div style=\"position: fixed; top: 0; left: 0; z-index: 99999; color: red\">a</div>", "Rich", "<div style=\"top: 0; left: 0; z-index: 99999; color: red\">a</div>" )]
         [DataRow( "<div style=\"POSITION: Fixed !important\">a</div><div style=\"position: absolute\">b</div><div style=\"position: sticky\">c</div>", "Rich", "<div>a</div><div style=\"position: absolute\">b</div><div style=\"position: sticky\">c</div>" )]
         public void Sanitize_FixedPosition_IsRemoved( string html, string optionsName, string expected )
@@ -215,7 +215,7 @@ namespace Rock.Tests.Utility
         /// parsed by Chrome, which built the same tree and found nothing
         /// script-capable.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<svg><style><img src=x onerror=alert(1)></style></svg>", "Simple", "" )]
         [DataRow( "<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>", "Simple", "" )]
         [DataRow( "<math><mtext><table><mglyph><style><!--</style><img title=\"--&gt;&lt;img src=1 onerror=alert(1)&gt;\">", "Simple", "" )]
@@ -329,7 +329,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<svg><path d=\"M0 0\"/></svg><math><mi>x</mi></math>a", "SimpleUnwrap", "a" )]
         [DataRow( "<svg><path d=\"M0 0\"/></svg><math><mi>x</mi></math>a", "RichUnwrap", "<svg><path d=\"M0 0\"></path></svg>a" )]
         [DataRow( "<svg><desc><b>x</b></desc><text>y</text></svg>a", "RichUnwrap", "<svg></svg>a" )]
@@ -339,7 +339,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<math><mi><b>x</b></mi><mrow><mi>y</mi></mrow></math>", "RichMath", "<math><mi><b>x</b></mi><mrow><mi>y</mi></mrow></math>" )]
         [DataRow( "<math><mrow></p></mrow></math>", "RichMath", "<math><mrow></mrow></math>" )]
         [DataRow( "<math><mrow><b>z</b></mrow></math>", "RichMath", "<math><mrow></mrow></math><b>z</b>" )]
@@ -349,7 +349,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<span style=\"font-family: a[1]; color: red\">a</span><span style=\"color: red{x}; width: 1px\">b</span>", "Rich", "<span style=\"font-family: a[1]; color: red\">a</span><span style=\"color: red{x}; width: 1px\">b</span>" )]
         [DataRow( "<span style=\"color: [red; width: 1px\">c</span><span style=\"color: {red; width: 1px\">d</span>", "Rich", "<span>c</span><span>d</span>" )]
         public void Sanitize_CssBracketsAndBraces_SplitOnlyOutsideThem( string html, string optionsName, string expected )
@@ -357,7 +357,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<a href=\"mailto:a@example.com\">a</a><a href=\"https://example.com/\">b</a>", "SimpleNoMailto", "<a>a</a><a href=\"https://example.com/\">b</a>" )]
         [DataRow( "<span style=\"color: red; font-weight: bold\">a</span>", "SimpleNoColor", "<span style=\"font-weight: bold\">a</span>" )]
         public void Sanitize_DisallowedSchemeOrCssProperty_IsRemoved( string html, string optionsName, string expected )
@@ -365,7 +365,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "a<!-- c -->b<?php x ?>c", "Simple", "abc" )]
         [DataRow( "<b><!--[if IE]><script>x</script><![endif]-->a</b>", "RichUnwrap", "<b>a</b>" )]
         [DataRow( "<b onclick=\"x\" OnMouseOver=\"y\" ONLOAD=\"z\" foo=\"z\">x</b>", "Simple", "<b>x</b>" )]
@@ -383,7 +383,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<a href=\"/relative\">a</a><a href=\"//cdn.example.com/x\">b</a><a href=\"#frag\">c</a><a href=\"mailto:a@b.c\">d</a><a href=\"tel:+1\">e</a><a href=\"HTTPS://x\">f</a><a href=\"page.html\">g</a><a href=\"http://x/\">h</a>", "Simple", "<a href=\"/relative\">a</a><a href=\"//cdn.example.com/x\">b</a><a href=\"#frag\">c</a><a href=\"mailto:a@b.c\">d</a><a href=\"tel:+1\">e</a><a href=\"HTTPS://x\">f</a><a href=\"page.html\">g</a><a href=\"http://x/\">h</a>" )]
         [DataRow( "<a href=\"javascript:alert(1)\">a</a><a href=\"JaVaScRiPt:alert(1)\">b</a><a href=\"vbscript:x\">c</a><a href=\"file:///c:/x\">d</a>", "Simple", "<a>a</a><a>b</a><a>c</a><a>d</a>" )]
         [DataRow( "<a href=\"data:text/html,x\">a</a><a href=\"DATA:image/png;base64,AA\">b</a><a href=\" data:x\">c</a><a href=\"data:image/png;base64,iVBOR\">d</a><a href=\"dAtA:,x\">e</a><a href=\"data&#58;x\">f</a>", "Simple", "<a>a</a><a>b</a><a>c</a><a>d</a><a>e</a><a>f</a>" )]
@@ -398,7 +398,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<blockquote cite=\"javascript:alert(1)\">a</blockquote><blockquote cite=\" https://x/\">b</blockquote>", "SimpleCite", "<blockquote>a</blockquote><blockquote cite=\"https://x/\">b</blockquote>" )]
         [DataRow( "<blockquote cite=\"https://x/\">a</blockquote>", "Simple", "<blockquote>a</blockquote>" )]
         [DataRow( "<video poster=\"javascript:alert(1)\">a</video><video poster=\"/p.png\">b</video>", "RichVideo", "<video>a</video><video poster=\"/p.png\">b</video>" )]
@@ -407,7 +407,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<a href=\"https://ex ample.com/\">a</a><a href=\"https://example.com/a b\">b</a><a href=\"https://example.com/\u0001\">c</a>", "Simple", "<a href=\"https://ex ample.com/\">a</a><a href=\"https://example.com/a b\">b</a><a href=\"https://example.com/\u0001\">c</a>" )]
         [DataRow( "<a href=\"page?time=10:30\">a</a><a href=\"/page?time=10:30\">b</a><a href=\"#a:b\">c</a><a href=\"https://x/?a=b:c\">d</a><a href=\"mailto:a@b.c?subject=a:b\">e</a>", "Simple", "<a>a</a><a href=\"/page?time=10:30\">b</a><a href=\"#a:b\">c</a><a href=\"https://x/?a=b:c\">d</a><a href=\"mailto:a@b.c?subject=a:b\">e</a>" )]
         [DataRow( "<a href=\"https://example.com/[x\">a</a><a href=\"http://[::1\">b</a><a href=\"https://example.com/a]b)\">c</a><a href=\"https://[example.com/\">d</a><a href=\"https://example.com/a(b\">e</a>", "Simple", "<a href=\"https://example.com/[x\">a</a><a href=\"http://[::1\">b</a><a href=\"https://example.com/a]b)\">c</a><a href=\"https://[example.com/\">d</a><a href=\"https://example.com/a(b\">e</a>" )]
@@ -418,7 +418,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<a href=\"/x\" target=\"_blank\" rel=\"nofollow\">a</a>", "Simple", "<a href=\"/x\" target=\"_blank\" rel=\"noopener noreferrer\">a</a>" )]
         [DataRow( "<a rel=\"opener\" href=\"/x\" target=\"_BLANK\">a</a>", "Simple", "<a rel=\"noopener noreferrer\" href=\"/x\" target=\"_BLANK\">a</a>" )]
         [DataRow( "<a target=\"_blank\">a</a>", "Simple", "<a target=\"_blank\" rel=\"noopener noreferrer\">a</a>" )]
@@ -429,7 +429,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "a</body>b", "Simple", "ab" )]
         [DataRow( "<html><body>a</body></html>b", "Simple", "ab" )]
         [DataRow( "<head><title>t</title></head>x", "Simple", "x" )]
@@ -444,7 +444,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<span style=\"color: red; background: none; background-color: #fff; background-image: none; background-position: top; background-repeat: no-repeat; background-size: cover\">a</span>", "Simple", "<span style=\"color: red; background: none; background-color: #fff; background-image: none; background-position: top; background-repeat: no-repeat; background-size: cover\">a</span>" )]
         [DataRow( "<span style=\"font: 12px serif; font-family: Arial, 'Times New Roman'; font-size: 1em; font-style: italic; font-variant: small-caps; font-weight: bold\">a</span>", "Simple", "<span style=\"font: 12px serif; font-family: Arial, 'Times New Roman'; font-size: 1em; font-style: italic; font-variant: small-caps; font-weight: bold\">a</span>" )]
         [DataRow( "<span style=\"text-align: center; text-indent: 1em; text-transform: uppercase; text-shadow: 1px 1px #000; text-overflow: ellipsis; text-decoration: underline; text-decoration-line: underline; text-decoration-color: red; text-decoration-style: dotted; text-decoration-thickness: 2px\">a</span>", "Simple", "<span style=\"text-align: center; text-indent: 1em; text-transform: uppercase; text-shadow: 1px 1px #000; text-overflow: ellipsis; text-decoration: underline; text-decoration-line: underline; text-decoration-color: red; text-decoration-style: dotted; text-decoration-thickness: 2px\">a</span>" )]
@@ -479,7 +479,7 @@ namespace Rock.Tests.Utility
         /// it, a value no CSS parser would accept is kept as written, and an
         /// empty style attribute is removed.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<span style=\"color: red\\9\">a</span><span style=\"color: red; width: e\\78 pression(1)\">b</span><span style=\"background: u\\72l(javascript:x); color: blue\">c</span>", "Simple", "<span>a</span><span style=\"color: red\">b</span><span style=\"color: blue\">c</span>" )]
         [DataRow( "<span style=\"font-family: a@b; color: red\">a</span><span style=\"color: red /* c */\">b</span><span style=\"color: red */\">c</span><span style=\"color: /**/red; width: 1px\">d</span>", "Simple", "<span style=\"color: red\">a</span><span>b</span><span>c</span><span style=\"width: 1px\">d</span>" )]
         [DataRow( "<span style=\"color: banana\">a</span>", "Simple", "<span style=\"color: banana\">a</span>" )]
@@ -489,7 +489,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<b>a</b><font color=\"red\">b</font><font size=\"1\">c</font>", "SimpleFont", "<b>a</b><font color=\"red\">b</font><font>c</font>" )]
         [DataRow( "<span class=\"mention\" data-identifier=\"abc\">@Ted</span><span data-other=\"x\">y</span><b data-identifier=\"z\">z</b>", "NotesMention", "<span class=\"mention\" data-identifier=\"abc\">@Ted</span><span>y</span><b>z</b>" )]
         [DataRow( "<span class=\"mention\" data-identifier=\"abc\">@Ted</span>", "Simple", "<span class=\"mention\">@Ted</span>" )]
@@ -501,7 +501,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "<td>a</td><li>b</li>", "Rich", "a<li>b</li>" )]
         [DataRow( "<td>a</td><li>b</li>", "Simple", "a" )]
         [DataRow( "<tr><td>a</td></tr>", "RichUnwrap", "a" )]
@@ -514,7 +514,7 @@ namespace Rock.Tests.Utility
             AssertSanitized( html, optionsName, expected );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "plain text, nothing to do.", "Simple", "plain text, nothing to do." )]
         [DataRow( "plain\r\ntext", "Simple", "plain\r\ntext" )]
         [DataRow( "a\r\nb<br>", "Simple", "a\nb<br>" )]
@@ -676,7 +676,7 @@ namespace Rock.Tests.Utility
         {
             using ( TestHelper.CreateScopedRockApp( sc => sc.RemoveAll<IHtmlAllowListSanitizer>() ) )
             {
-                Assert.ThrowsException<InvalidOperationException>( () => "<b>x</b>".SanitizeHtml( HtmlSanitizeOptions.Simple ) );
+                Assert.ThrowsExactly<InvalidOperationException>( () => "<b>x</b>".SanitizeHtml( HtmlSanitizeOptions.Simple ) );
             }
         }
 
