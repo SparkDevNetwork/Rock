@@ -136,11 +136,14 @@ Potty Trained --- Id: 141 - Guid: e6905502-4c23-4879-a60f-8c4ceb3ee2e9
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
+            // The block content is rendered with the caller's enabled commands, so the caller must enable the entity command used in the block content.
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input );
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
             } );
 
         }
@@ -409,13 +412,80 @@ Shortcode content.
             }
             else
             {
-                expectedOutput = @"The Lava command 'execute' is not configured for this template.";
+                // The shortcode template renders with its own commands, but the block content renders with the caller's commands only.
+                expectedOutput = @"
+<h1>Shortcode Content</h1>
+Shortcode content.
+<h1>User Content</h1>
+The Lava command 'execute' is not configured for this template.
+";
             }
 
             // Render the template with no enabled commands.
             // The shortcode should render correctly using the enabled commands defined by its definition,
             // but the content should show a permission error.
             var options = new LavaTestRenderOptions { EnabledCommands = templateEnabledCommands };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                shortCodeDataManager.RegisterDynamicShortcodeForLavaEngine( engine, shortcodeDefinition );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
+        }
+
+        private const string _testChildItemShortcodeGuid = "C5B1E6A2-3D4F-4E8A-9B7C-1F2E3D4C5B6A";
+
+        /// <summary>
+        /// A command enabled for a shortcode should not be available to the content of a child element supplied by the caller.
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeBlock_WithEnabledCommandInChildElement_EnforcesSecurityForTemplateContext()
+        {
+            var shortcodeTemplate = @"
+<h1>Shortcode Content</h1>
+{% execute %}
+    return ""Shortcode content."";
+{% endexecute %}
+{% for item in items %}
+<h1>Item Content</h1>
+{{ item.content }}
+{% endfor %}
+";
+
+            // Create a new test shortcode with the "execute" command permission.
+            var shortCodeDataManager = new ShortcodeDataManager();
+            var shortcodeDefinition = shortCodeDataManager
+                .NewDynamicShortcode( _testChildItemShortcodeGuid.AsGuid(),
+                    $"Test ({_testChildItemShortcodeGuid})",
+                    "shortcode_execute_item",
+                     Rock.Model.TagType.Block,
+                     shortcodeTemplate )
+                .WithEnabledCommands( "execute" );
+
+            var rockContext = new RockContext();
+            shortCodeDataManager.SaveDynamicShortcode( shortcodeDefinition, rockContext );
+
+            // Place the secured command inside a child element, with no other block content.
+            var input = @"
+{[ shortcode_execute_item ]}
+[[ item ]]
+{% execute %}
+    return ""** Injected execute result! **"";
+{% endexecute %}
+[[ enditem ]]
+{[ endshortcode_execute_item ]}
+";
+
+            var expectedOutput = @"
+<h1>Shortcode Content</h1>
+Shortcode content.
+<h1>Item Content</h1>
+The Lava command 'execute' is not configured for this template.
+";
+
+            // Render the template with no enabled commands.
+            var options = new LavaTestRenderOptions { EnabledCommands = null };
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
