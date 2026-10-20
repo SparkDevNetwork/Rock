@@ -23,7 +23,7 @@ using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.Security.Authentication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Security
