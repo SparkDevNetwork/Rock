@@ -1,0 +1,1295 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="viewElement"
+         class="chat-nd"
+         :class="{ 'is-phone': isPhone }"
+         role="region"
+         :aria-labelledby="titleId"
+         data-testid="new-message-view">
+        <header class="chat-nd-hdr">
+            <IconButton v-if="isPhone"
+                        class="chat-nd-back"
+                        icon="left"
+                        label="Back to conversations"
+                        data-testid="nd-back"
+                        @click="emit('back')" />
+            <span class="chat-nd-hdr-ic" aria-hidden="true"><Icon name="compose" /></span>
+            <div class="chat-nd-hdr-title">
+                <b :id="titleId" data-testid="nd-title">New message</b>
+                <span class="chat-nd-hdr-sub" data-testid="nd-subtitle">{{ subtitle }}</span>
+            </div>
+            <IconButton v-if="!isPhone"
+                        icon="x"
+                        label="Close New message"
+                        tooltip="Close"
+                        data-testid="nd-close"
+                        @click="emit('close')" />
+        </header>
+
+        <div class="chat-nd-to">
+            <div class="chat-pk">
+                <div class="chat-pk-field" @mousedown="onFieldMousedown">
+                    <span :id="labelId" class="chat-pk-label" data-testid="nd-to-label">To:</span>
+                    <span class="chat-pk-chips" role="list" aria-label="Chosen people">
+                        <span v-for="person in chosen"
+                              :key="person.person_alias_guid"
+                              class="chat-pk-chip"
+                              :class="{ 'is-new': newChipId === person.person_alias_guid }"
+                              role="listitem"
+                              data-testid="nd-chip">
+                            <Avatar :people="[faceOf(person)]" :size="22" />
+                            <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
+                            <button type="button"
+                                    class="chat-pk-x"
+                                    :aria-label="`Remove ${nameOf(person)}`"
+                                    :disabled="isLocked"
+                                    data-testid="nd-chip-remove"
+                                    @click="emit('unchoose', person.person_alias_guid)">
+                                <Icon name="x" size="xs" />
+                            </button>
+                        </span>
+                    </span>
+                    <input ref="inputElement"
+                           class="chat-pk-input"
+                           type="text"
+                           role="combobox"
+                           aria-autocomplete="list"
+                           :aria-expanded="isListOpen ? 'true' : 'false'"
+                           :aria-controls="listId"
+                           :aria-labelledby="labelId"
+                           :aria-describedby="noteId"
+                           :aria-activedescendant="activeOptionId"
+                           autocomplete="off"
+                           spellcheck="false"
+                           :placeholder="chosen.length > 0 ? '' : 'Type a name'"
+                           :value="query"
+                           :disabled="isLocked"
+                           :data-autofocus="isFieldFocusedFirst ? '' : undefined"
+                           data-testid="nd-to-input"
+                           @input="onInput"
+                           @focus="isFocused = true; isListClosed = false"
+                           @blur="isFocused = false"
+                           @keydown="onKeydown" />
+                    <span v-if="isSearching" class="chat-pk-busy"><span class="chat-spinner"></span></span>
+                </div>
+
+                <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
+                <div v-if="isListOpen"
+                     :id="listId"
+                     class="chat-pk-list"
+                     role="listbox"
+                     aria-label="People"
+                     data-testid="nd-suggestions"
+                     @mousedown.prevent>
+                    <div v-if="results === null" class="chat-pk-msg" data-testid="nd-searching">Searching…</div>
+                    <div v-else-if="options.length === 0" class="chat-pk-msg" data-testid="nd-none">No one found for “{{ query.trim() }}”. Can't find someone? They may not accept messages from everyone.</div>
+                    <div v-for="(option, index) in options"
+                         v-else
+                         :id="optionId(option.person)"
+                         :key="option.person.person_alias_guid"
+                         class="chat-pk-opt"
+                         :class="{ 'is-active': index === activeIndex }"
+                         role="option"
+                         :aria-selected="index === activeIndex ? 'true' : 'false'"
+                         data-testid="nd-option"
+                         @mousedown.prevent="pick(option.person)"
+                         @mouseenter="activeIndex = index">
+                        <Avatar :people="[faceOf(option.person)]" :size="32" />
+                        <span class="chat-pk-o-main"><b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b></span>
+                        <span class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                    </div>
+                </div>
+
+                <div :id="noteId" class="chat-pk-note" aria-live="polite" data-testid="nd-note">{{ note }}</div>
+            </div>
+        </div>
+
+        <div class="chat-nd-body">
+            <div v-if="chosen.length === 0" class="chat-nd-scroll">
+                <div class="chat-nd-start is-empty" data-testid="nd-empty">
+                    <span class="chat-nd-empty-ic" aria-hidden="true"><Icon name="compose" /></span>
+                    <b>Start a conversation</b>
+                    <p>Choose one person for a private conversation, or up to {{ maxOthers }} for a group. You can message people who accept messages from everyone, and people in your private groups.</p>
+                </div>
+            </div>
+
+            <!-- While the lookup is out nothing is guessed: a quiet line only once it is slow. -->
+            <div v-else-if="!isAnswered" class="chat-nd-scroll" aria-busy="true">
+                <div v-if="lookup.isSlow" class="chat-nd-look" data-testid="nd-looking"><span class="chat-spinner"></span>Looking for your conversation…</div>
+            </div>
+
+            <template v-else>
+                <div v-if="isFound" class="chat-nd-found" role="status" data-testid="nd-found">
+                    <Avatar :people="foundFaces" :size="chosen.length === 1 ? 36 : 28" />
+                    <span class="chat-nd-found-t">
+                        <b>You already have this conversation</b>
+                        <span>{{ foundTitle }}. What you send goes there.</span>
+                    </span>
+                    <button type="button" class="chat-nd-btn" data-testid="nd-open" @click="emit('open', lookup.channelId as string)">Open</button>
+                </div>
+
+                <div class="chat-nd-scroll">
+                    <div v-if="!isFound" class="chat-nd-start" data-testid="nd-start">
+                        <Avatar :people="startFaces" :size="chosen.length === 1 ? 56 : 48" />
+                        <b data-testid="nd-start-title">{{ startTitle }}</b>
+                        <p v-if="chosen.length === 1">This is the start of your conversation with <strong>{{ chosen[0].nick_name }}</strong>. Only the two of you can see it.</p>
+                        <p v-else>This is the start of a group conversation. Only the {{ chosen.length + 1 }} people here can see it.</p>
+                    </div>
+
+                    <!-- The first message on its way, in the Conversational look its conversation will have. -->
+                    <div v-if="pendingPhase" class="chat-nd-pend" data-testid="nd-pending">
+                        <div class="chat-nd-bubble">{{ pendingText }}</div>
+                        <div v-if="pendingPhase === 'failed'" class="chat-nd-meta is-failed">
+                            <Icon name="alert" size="xs" />
+                            <span>Not sent.</span>
+                            <button type="button" class="chat-nd-link" data-testid="nd-retry" @click="emit('retry')">Try again</button>
+                            <button type="button" class="chat-nd-link is-quiet" data-testid="nd-discard" @click="emit('discard')">Delete</button>
+                        </div>
+                        <div v-else class="chat-nd-meta" data-testid="nd-phase">
+                            <template v-if="pendingPhase === 'asking'"><span class="chat-spinner"></span>Starting your conversation…</template>
+                            <template v-else-if="pendingPhase === 'waiting'"><Icon name="clock" size="xs" />Still setting it up…</template>
+                            <template v-else><Icon name="clock" size="xs" />Sending…</template>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="refusedText" class="chat-nd-refused-wrap">
+                    <div class="chat-nd-refused" role="alert" data-testid="nd-refused">
+                        <Icon name="alert" size="sm" />
+                        <span class="chat-nd-refused-t">{{ refusedText }}</span>
+                        <button v-if="refused"
+                                type="button"
+                                class="chat-nd-btn"
+                                data-testid="nd-refused-remove"
+                                @click="emit('unchoose', refused.person.person_alias_guid)">
+                            Remove {{ refused.person.nick_name }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- The conversation's own composer; its key hint gives way to this view's hint below it. -->
+                <Composer class="chat-nd-comp"
+                          :title="isFound ? foundTitle : startTitle"
+                          :isPhone="isPhone"
+                          :isDisabled="isLocked"
+                          :heldText="heldText"
+                          :heldBy="heldBy"
+                          :isTextKeptOnSend="isTextKeptOnSend(draft)"
+                          :emojiSource="emojiSource"
+                          conversationKey="new-message"
+                          @vue:mounted="onComposerMounted"
+                          @send="onSend"
+                          @edit="emit('edit', $event)"
+                          @emojiPickerOpen="emit('emojiPickerOpen')"
+                          @emojiChosen="emit('emojiChosen', $event)" />
+                <div class="chat-nd-foot">
+                    <span class="chat-nd-hint" data-testid="nd-hint">
+                        <template v-if="isLocked">You can send more once the conversation starts.</template>
+                        <template v-else-if="isFound"><kbd>Enter</kbd> sends to your conversation with {{ foundTitle }}</template>
+                        <template v-else>Your first message starts the conversation.</template>
+                    </span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Keyed by count, so the same words are read twice. -->
+        <span class="chat-sr-only" aria-live="polite" data-testid="nd-announcement"><span v-if="announcement" :key="announcement.count">{{ announcement.text }}</span></span>
+    </div>
+</template>
+
+<style scoped>
+/* New message, in the conversation's place as Browse channels is: its header, the To field, then the body. */
+.chat-nd {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--chat-surface);
+}
+
+/* The conversation header's own frame, as Browse channels draws it, so the rules align across the columns. */
+.chat-nd-hdr {
+    display: flex;
+    flex: none;
+    gap: 12px;
+    align-items: center;
+    height: 64px;
+    padding: 0 12px 0 20px;
+    background: var(--chat-surface);
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-nd.is-phone .chat-nd-hdr {
+    padding-left: 12px;
+}
+
+.chat-nd-hdr :deep(.chat-nd-back) {
+    margin-left: -8px;
+}
+
+.chat-nd-hdr-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-hdr-ic);
+}
+
+.chat-nd-hdr-ic :deep(.chat-ic) {
+    width: 19px;
+    height: 19px;
+}
+
+.chat-nd-hdr-title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.chat-nd-hdr-title b {
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-nd-hdr-sub {
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Above the body, so the suggestions it drops over the start block stay on top. */
+.chat-nd-to {
+    position: relative;
+    z-index: 4;
+    flex: none;
+    width: 100%;
+    max-width: 780px;
+    padding: 14px 24px 8px;
+    margin: 0 auto;
+}
+
+.chat-nd.is-phone .chat-nd-to {
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.chat-pk {
+    position: relative;
+}
+
+.chat-pk-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    min-height: 46px;
+    padding: 7px 10px 7px 14px;
+    cursor: text;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-lg);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pk-field:focus-within {
+    border-color: var(--chat-focus-line);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-pk-label {
+    margin-right: 4px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+/* The chips flow with the input as one wrapping line. */
+.chat-pk-chips {
+    display: contents;
+}
+
+.chat-pk-chip {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    max-width: 100%;
+    height: 30px;
+    padding: 0 3px 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-full);
+}
+
+/* Only the chip just chosen enters, so the others stay still as one is added. */
+.chat-pk-chip.is-new {
+    animation: chat-pk-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+@keyframes chat-pk-in {
+    from {
+        opacity: 0;
+        transform: scale(var(--chat-pop-scale));
+    }
+}
+
+.chat-pk-chip-n {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-pk-x {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--chat-text-2);
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pk-x:hover:not(:disabled) {
+    color: var(--chat-text);
+    background: var(--chat-brand-ring);
+}
+
+.chat-pk-x:disabled {
+    opacity: .4;
+}
+
+/* The field shows focus, so the input inside it draws no outline of its own. */
+.chat-pk-input {
+    flex: 1;
+    min-width: 120px;
+    height: 30px;
+    padding: 0;
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.chat-pk-input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+.chat-pk-input:disabled {
+    cursor: default;
+}
+
+.chat-pk-busy {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    color: var(--chat-muted);
+}
+
+.chat-pk-busy .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+
+.chat-pk-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    z-index: 6;
+    max-height: 340px;
+    padding: 6px;
+    overflow-y: auto;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-pk-pop-in var(--chat-t-base) var(--chat-ease-in);
+    scrollbar-width: thin;
+}
+
+@keyframes chat-pk-pop-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(var(--chat-pop-scale));
+    }
+}
+
+.chat-pk-opt {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 10px 7px 8px;
+    cursor: pointer;
+    border-radius: var(--chat-r-option);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pk-opt:hover {
+    background: var(--chat-hover);
+}
+
+.chat-pk-opt.is-active {
+    background: var(--chat-brand-tint);
+}
+
+.chat-pk-o-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-pk-o-main b {
+    overflow: hidden;
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-pk-o-main mark {
+    padding: 0;
+    color: inherit;
+    background: var(--chat-brand-tint);
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px var(--chat-brand-tint);
+}
+
+/* The plus shows on the row Enter would pick, and under the pointer. */
+.chat-pk-enter {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    color: var(--chat-brand-ink);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pk-opt.is-active .chat-pk-enter,
+.chat-pk-opt:hover .chat-pk-enter {
+    opacity: 1;
+}
+
+.chat-pk-msg {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--chat-muted);
+}
+
+.chat-pk-note {
+    padding: 6px 4px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+.chat-pk-note:empty {
+    display: none;
+}
+
+.chat-nd-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chat-nd-scroll {
+    flex: 1;
+    min-height: 0;
+    padding: 4px 0 14px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.chat-nd-start {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 36px 24px 12px;
+    text-align: center;
+    animation: chat-nd-strip-in var(--chat-t-msg) var(--chat-ease-in);
+}
+
+.chat-nd-start.is-empty {
+    padding-top: 56px;
+}
+
+/* A pile's faces stand apart from each other by a ring of the surface. */
+.chat-nd-start :deep(.chat-pile.is-pile .chat-av) {
+    box-shadow: 0 0 0 3px var(--chat-surface);
+}
+
+.chat-nd-start b {
+    margin-top: 6px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+}
+
+.chat-nd-start p {
+    max-width: 46ch;
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--chat-muted);
+}
+
+.chat-nd-start p strong {
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+.chat-nd-empty-ic {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-dialog);
+}
+
+.chat-nd-empty-ic :deep(.chat-ic) {
+    width: 26px;
+    height: 26px;
+}
+
+.chat-nd-look {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-nd-look .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+
+/* Centred on the 780px column with a 24px gutter, as the To field above it. */
+.chat-nd-found {
+    display: flex;
+    flex: none;
+    gap: 12px;
+    align-items: center;
+    max-width: 732px;
+    padding: 10px 10px 10px 12px;
+    margin: 6px max(24px, calc(50% - 366px)) 4px;
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-lg);
+    animation: chat-nd-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-nd.is-phone .chat-nd-found {
+    margin-right: 12px;
+    margin-left: 12px;
+}
+
+.chat-nd-found :deep(.chat-pile.is-pile .chat-av) {
+    box-shadow: 0 0 0 2px var(--chat-sidebar);
+}
+
+.chat-nd-found-t {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-nd-found-t b {
+    font-size: 14px;
+}
+
+.chat-nd-found-t span {
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+/* The design's small line button, as Browse channels draws it. */
+.chat-nd-btn {
+    display: inline-flex;
+    flex: none;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 11px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-nd-btn:hover {
+    border-color: var(--chat-icon);
+}
+
+/* The pending message: the person's own bubble at the right, its phase under it. */
+.chat-nd-pend {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    max-width: 780px;
+    padding: 12px 24px 0;
+    margin: 0 auto;
+}
+
+.chat-nd.is-phone .chat-nd-pend {
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.chat-nd-bubble {
+    min-width: 0;
+    max-width: 100%;
+    padding: 6px 13px 7px;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--chat-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-bubble);
+    box-shadow: inset 0 0 0 1px var(--chat-own-hairline);
+}
+
+.chat-nd-meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 16px;
+    padding: 1px 12px 0;
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+}
+
+.chat-nd-meta.is-failed {
+    font-weight: 600;
+    color: var(--chat-danger-ink);
+}
+
+.chat-nd-meta .chat-spinner {
+    width: 10px;
+    height: 10px;
+    border-width: 1.5px;
+}
+
+.chat-nd-link {
+    padding: 0;
+    font-weight: 700;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    background: none;
+    border: 0;
+}
+
+/* Delete is the quieter of the two, so Try again reads as the way forward. */
+.chat-nd-link.is-quiet {
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+/* The refusal sits at the top of the composer, inside its gutter. */
+.chat-nd-refused-wrap {
+    flex: none;
+    padding: 0 20px 6px;
+}
+
+.chat-nd.is-phone .chat-nd-refused-wrap {
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.chat-nd-refused {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 8px 8px 12px;
+    font-size: 13px;
+    color: var(--chat-text);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-pop);
+    animation: chat-nd-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-nd-refused :deep(.chat-ic) {
+    flex: none;
+    color: var(--chat-danger-ink);
+}
+
+.chat-nd-refused-t {
+    flex: 1;
+    min-width: 0;
+}
+
+/* This view's hint takes the place of the composer's own, in the same foot under the box. */
+.chat-nd-comp :deep(.chat-composer-foot) {
+    display: none;
+}
+
+.chat-nd .chat-nd-comp.chat-composer {
+    padding-bottom: 0;
+}
+
+.chat-nd-foot {
+    display: flex;
+    flex: none;
+    gap: 10px;
+    align-items: center;
+    min-height: 16px;
+    padding: 6px 34px 14px;
+    font-size: 11.5px;
+    color: var(--chat-muted);
+}
+
+.chat-nd.is-phone .chat-nd-foot {
+    padding-right: 26px;
+    padding-left: 26px;
+}
+
+/* Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight. */
+.chat-nd-hint kbd {
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+@keyframes chat-nd-strip-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-pk-chip.is-new,
+    .chat-pk-list,
+    .chat-nd-start,
+    .chat-nd-found {
+        animation: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Composer from "./composer.partial.obs";
+    import { PickerSource } from "./emojiPicker.partial.obs";
+    import { DirectMessageDraft, DirectMessageLookup, isTextKeptOnSend, maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
+    import { joinNames } from "../stores/channelStore.partial";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+
+    // #region Types
+
+    /** A person found, with their name split around the part the search matched. */
+    type Option = {
+        person: PersonRow;
+        before: string;
+        match: string;
+        after: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The people chosen so far, in the order they were chosen. */
+        chosen: {
+            type: Array as PropType<PersonRow[]>,
+            required: true
+        },
+
+        /** The people search: the platform lists only people the person may message. */
+        search: {
+            type: Function as PropType<(query: string) => Promise<PersonRow[]>>,
+            required: true
+        },
+
+        /** The conversation the people chosen already have, as last looked up. */
+        lookup: {
+            type: Object as PropType<DirectMessageLookup>,
+            required: true
+        },
+
+        /** The found conversation's title as the sidebar draws it, or null. */
+        foundTitle: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The draft for new people, holding the box's text and the first message's phase. */
+        draft: {
+            type: Object as PropType<DirectMessageDraft | null>,
+            default: null
+        },
+
+        /** The sentence for the last thing that failed, or null. */
+        error: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** A refusal about one of the people chosen, which offers to take them out. */
+        refused: {
+            type: Object as PropType<{ person: PersonRow, text: string } | null>,
+            default: null
+        },
+
+        /** What the composer's emoji picker draws, or null for none. */
+        emojiSource: {
+            type: Object as PropType<PickerSource | null>,
+            default: null
+        },
+
+        isPhone: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "back"): void,
+        (e: "close"): void,
+        (e: "choose", person: PersonRow): void,
+        (e: "unchoose", personAliasGuid: string): void,
+        /** Open the conversation the people chosen already have. */
+        (e: "open", channelId: string): void,
+        /** The message: to the conversation found, or the first of a new one. */
+        (e: "send", body: string): void,
+        (e: "edit", body: string): void,
+        /** Send the failed first message again. */
+        (e: "retry"): void,
+        /** Drop the failed first message. */
+        (e: "discard"): void,
+        (e: "emojiPickerOpen"): void,
+        (e: "emojiChosen", code: string): void
+    }>();
+
+    // #region Values
+
+    const titleId = `chat-nd-title-${newGuid()}`;
+    const labelId = `chat-nd-label-${newGuid()}`;
+    const listId = `chat-nd-list-${newGuid()}`;
+    const noteId = `chat-nd-note-${newGuid()}`;
+
+    /**
+     * How long typing must pause before the search goes out, an estimate. A search per keystroke
+     * would cost the platform a query for every letter of every name typed.
+     */
+    const searchPauseMs = 250;
+
+    const viewElement = ref<HTMLElement>();
+    const inputElement = ref<HTMLInputElement>();
+
+    const query = ref("");
+
+    /** The last answer for the text typed, or null while none has come for it. */
+    const results = ref<PersonRow[] | null>(null);
+
+    /** The option Enter would pick, by its place in the list. */
+    const activeIndex = ref(0);
+
+    const isFocused = ref(false);
+
+    /** Escape or a pick closed the list; typing opens it again. */
+    const isListClosed = ref(false);
+
+    /** Whether the pause is running or its search has not answered. */
+    const isSearching = ref(false);
+
+    /** An Enter pressed before the answer came, which picks from it once it does. */
+    const isEnterWaiting = ref(false);
+
+    /** "No one to message for …", shown in the note until the text changes. */
+    const noOneText = ref<string | null>(null);
+
+    /** The person chosen last, whose chip plays its way in. */
+    const newChipId = ref<string | null>(null);
+
+    /** The text of the message sent, which the pending message draws while the box moves on. */
+    const sentText = ref<string | null>(null);
+
+    /**
+     * What holds the box's text: the draft, or a fresh object standing in for it. The box takes
+     * held text only when this changes, never as it mounts, so a box drawn over a draft that
+     * already has text is handed a new holder to put that text in it.
+     */
+    const heldBy = ref<object | null>(props.draft);
+
+    /** The newest sentence for screen readers, counted so the same words are read twice. */
+    const announcement = ref<{ text: string, count: number } | null>(null);
+
+    /**
+     * Opened with people already chosen, the message is the next thing to write, so focus goes
+     * to it once the lookup answers; opened empty, the To field takes the view's first focus.
+     */
+    const isFieldFocusedFirst = props.chosen.length === 0;
+    let isEditorFocusOwed = !isFieldFocusedFirst;
+
+    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** Counts the text typed, so an answer for text the person has since changed is dropped. */
+    let searchCount = 0;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isLocked = computed((): boolean => props.draft?.status === "starting");
+
+    const isFound = computed((): boolean => props.lookup.status === "found");
+
+    /** Whether the lookup has said what the people chosen have, which the composer waits for. */
+    const isAnswered = computed((): boolean => props.lookup.status === "found" || props.lookup.status === "new");
+
+    const subtitle = computed((): string => {
+        if (props.chosen.length === 0) {
+            return `Choose up to ${maxOthers} people`;
+        }
+
+        if (isFound.value) {
+            return "You already have this conversation";
+        }
+
+        return props.chosen.length === 1 ? "New conversation" : `New group of ${props.chosen.length + 1} people`;
+    });
+
+    /** The title the sidebar will give the new conversation, so the name never changes as it starts. */
+    const startTitle = computed((): string => props.chosen.length === 1
+        ? nameOf(props.chosen[0])
+        : joinNames(props.chosen.map(person => person.nick_name), 0));
+
+    const startFaces = computed((): AvatarPerson[] => props.chosen.slice(0, 3).map(faceOf));
+
+    const foundFaces = computed((): AvatarPerson[] => props.chosen.slice(0, props.chosen.length === 1 ? 1 : 2).map(faceOf));
+
+    /** The answer, less the people already chosen, each with its match marked. */
+    const options = computed((): Option[] => {
+        const needle = query.value.trim().toLowerCase();
+        return (results.value ?? [])
+            .filter(person => !props.chosen.some(chosen => chosen.person_alias_guid === person.person_alias_guid))
+            .map(person => {
+                const name = nameOf(person);
+                const at = matchAt(name.toLowerCase(), needle);
+                return {
+                    person,
+                    before: at < 0 ? name : name.slice(0, at),
+                    match: at < 0 ? "" : name.slice(at, at + needle.length),
+                    after: at < 0 ? "" : name.slice(at + needle.length)
+                };
+            });
+    });
+
+    /** The list opens on text typed, never on an empty field, and not once the conversation is full. */
+    const isListOpen = computed((): boolean => isFocused.value
+        && !isListClosed.value
+        && !isLocked.value
+        && query.value.trim() !== ""
+        && props.chosen.length < maxOthers);
+
+    const activeOptionId = computed((): string | undefined => {
+        const option = isListOpen.value ? options.value[activeIndex.value] : undefined;
+        return option ? optionId(option.person) : undefined;
+    });
+
+    const note = computed((): string => {
+        if (noOneText.value) {
+            return noOneText.value;
+        }
+
+        const count = props.chosen.length;
+        if (count >= maxOthers) {
+            return `${maxOthers} people is the most for one conversation. Press Tab to write your message.`;
+        }
+
+        return count >= 6 ? `${count} of ${maxOthers} people` : "";
+    });
+
+    const pendingPhase = computed(() => props.draft?.phase ?? null);
+
+    const pendingText = computed((): string => sentText.value ?? props.draft?.body ?? "");
+
+    /** While the first message is out or failed its text is on the pending message, so the box is empty. */
+    const heldText = computed((): string => pendingPhase.value ? "" : props.draft?.body ?? "");
+
+    const refusedText = computed((): string | null => props.refused?.text ?? props.error);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** A press on the field's empty space puts the caret in the input, as a text field would. */
+    function onFieldMousedown(event: MouseEvent): void {
+        if (!(event.target as HTMLElement).closest("button, input")) {
+            event.preventDefault();
+            inputElement.value?.focus();
+        }
+    }
+
+    function onInput(event: Event): void {
+        query.value = (event.target as HTMLInputElement).value;
+        isListClosed.value = false;
+        noOneText.value = null;
+        cancelSearch();
+        const thisSearch = ++searchCount;
+        const text = query.value.trim();
+
+        if (text === "") {
+            results.value = null;
+            isSearching.value = false;
+            isEnterWaiting.value = false;
+            return;
+        }
+
+        isSearching.value = true;
+        searchTimer = setTimeout(async () => {
+            searchTimer = null;
+            const rows = await props.search(text);
+            if (thisSearch !== searchCount) {
+                return;
+            }
+
+            isSearching.value = false;
+            results.value = rows;
+            activeIndex.value = 0;
+
+            if (isEnterWaiting.value) {
+                isEnterWaiting.value = false;
+                pickWithText();
+                return;
+            }
+
+            const count = options.value.length;
+            announce(count ? `${count} ${count === 1 ? "person" : "people"} found` : "No one found");
+        }, searchPauseMs);
+    }
+
+    function onKeydown(event: KeyboardEvent): void {
+        const hasText = query.value.trim() !== "";
+
+        if ((event.key === "ArrowDown" || event.key === "ArrowUp") && isListOpen.value && options.value.length > 0) {
+            event.preventDefault();
+            const step = event.key === "ArrowDown" ? 1 : -1;
+            activeIndex.value = (activeIndex.value + step + options.value.length) % options.value.length;
+        }
+        else if (event.key === "Enter") {
+            // Enter with text only ever picks someone, so a half-typed name is never sent as the message.
+            event.preventDefault();
+            if (hasText) {
+                if (isSearching.value) {
+                    isEnterWaiting.value = true;
+                }
+                else {
+                    pickWithText();
+                }
+            }
+            else if (props.chosen.length >= maxOthers) {
+                // The note already says how to move on; focus stays so it is read.
+                announce(`${maxOthers} people is the most for one conversation.`);
+            }
+            else if (props.chosen.length > 0) {
+                focusEditor();
+            }
+        }
+        else if (event.key === "Tab" && !event.shiftKey && props.chosen.length > 0 && editorElement()) {
+            // The next field is the message, not the emoji button that sits before it.
+            event.preventDefault();
+            focusEditor();
+        }
+        else if (event.key === "Backspace" && !query.value && props.chosen.length > 0) {
+            event.preventDefault();
+            emit("unchoose", props.chosen[props.chosen.length - 1].person_alias_guid);
+        }
+        else if (event.key === "Escape") {
+            // Stopped here so nothing behind the view closes with it.
+            if (isListOpen.value) {
+                event.preventDefault();
+                event.stopPropagation();
+                isListClosed.value = true;
+            }
+            else if (props.chosen.length === 0) {
+                event.stopPropagation();
+                emit("close");
+            }
+        }
+    }
+
+    function onComposerMounted(): void {
+        if (heldText.value) {
+            heldBy.value = {};
+        }
+
+        if (isEditorFocusOwed) {
+            isEditorFocusOwed = false;
+            // A phone's keyboard would cover the start block the person has not read yet, and a
+            // person already typing in the To field keeps their place there.
+            nextTick(() => {
+                if (!props.isPhone && document.activeElement !== inputElement.value) {
+                    focusEditor();
+                }
+            });
+        }
+    }
+
+    function onSend(body: string): void {
+        sentText.value = isFound.value ? null : body;
+        emit("send", body);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function nameOf(person: PersonRow): string {
+        return `${person.nick_name} ${person.last_name}`;
+    }
+
+    function faceOf(person: PersonRow): AvatarPerson {
+        return { name: nameOf(person), photoUrl: person.avatar_url };
+    }
+
+    function optionId(person: PersonRow): string {
+        return `${listId}-${person.person_alias_guid}`;
+    }
+
+    /** Where the text typed starts in a name: its start, else a word's start, else anywhere. */
+    function matchAt(name: string, needle: string): number {
+        if (!needle) {
+            return -1;
+        }
+
+        if (name.startsWith(needle)) {
+            return 0;
+        }
+
+        const word = name.indexOf(` ${needle}`);
+        return word < 0 ? name.indexOf(needle) : word + 1;
+    }
+
+    /** Picks the option marked, else the first; with no one found, the note says so. */
+    function pickWithText(): void {
+        if (props.chosen.length >= maxOthers) {
+            return;
+        }
+
+        const option = options.value[activeIndex.value] ?? options.value[0];
+        if (option) {
+            pick(option.person);
+            return;
+        }
+
+        noOneText.value = `No one to message for “${query.value.trim()}”`;
+        announce(`No one to message for ${query.value.trim()}`);
+    }
+
+    function pick(person: PersonRow): void {
+        cancelSearch();
+        searchCount++;
+        query.value = "";
+        results.value = null;
+        isSearching.value = false;
+        isListClosed.value = true;
+        activeIndex.value = 0;
+        newChipId.value = person.person_alias_guid;
+        emit("choose", person);
+        announce(`Added ${nameOf(person)}. ${props.chosen.length + 1} ${props.chosen.length === 0 ? "person" : "people"} chosen.`);
+    }
+
+    function editorElement(): HTMLElement | null {
+        return viewElement.value?.querySelector<HTMLElement>("[data-testid='composer-input']") ?? null;
+    }
+
+    function focusEditor(): void {
+        editorElement()?.focus();
+    }
+
+    function announce(text: string): void {
+        announcement.value = { text, count: (announcement.value?.count ?? 0) + 1 };
+    }
+
+    function cancelSearch(): void {
+        if (searchTimer !== null) {
+            clearTimeout(searchTimer);
+            searchTimer = null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.draft, draft => {
+        heldBy.value = draft;
+    });
+
+    // A first message that is over, sent or refused, takes its text off the pending message; a
+    // refusal puts it back in the box through the draft.
+    watch(pendingPhase, phase => {
+        if (!phase) {
+            sentText.value = null;
+        }
+    });
+
+    // A chip's remove button goes with its chip, and a browser drops focus from it to the page, so
+    // focus moves to the field to carry on typing; focus somewhere else is left where it is.
+    watch(() => props.chosen.length, async (count, before) => {
+        const active = document.activeElement;
+        if (count >= before || isLocked.value || (active && active !== document.body && !viewElement.value?.contains(active))) {
+            return;
+        }
+
+        await nextTick();
+        inputElement.value?.focus({ preventScroll: true });
+    });
+
+    // #endregion Watchers
+
+    onBeforeUnmount(cancelSearch);
+</script>

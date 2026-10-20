@@ -27,7 +27,7 @@
 // The view draws the people, the lookup and the draft in the exact shapes useDirectMessage keeps,
 // and reads what it asks for from its events.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { mount, VueWrapper } from "@vue/test-utils";
+import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import NewMessage from "../../../../../src/Communication/Chat/ChatShell/components/newMessage.partial.obs";
 import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
@@ -90,6 +90,12 @@ function editor(w: VueWrapper): HTMLElement {
 
 function plain(text: string | undefined): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+/** The words beside the face an element draws: a face without a photo draws its initials as text. */
+function besideFace(element: DOMWrapper<Element>): string {
+    const face = element.findComponent(Avatar);
+    return plain(face.exists() ? element.text().replace(face.text(), "") : element.text());
 }
 
 async function settle(): Promise<void> {
@@ -198,7 +204,7 @@ describe("the To field", () => {
         const w = mountView({ chosen: [anna, caleb], lookup: fresh, draft: draftFor([anna, caleb]) });
 
         const chips = w.findAll("[data-testid='nd-chip']");
-        expect(chips.map(chip => plain(chip.text()))).toEqual(["Anna Reyes", "Caleb Brooks"]);
+        expect(chips.map(besideFace)).toEqual(["Anna Reyes", "Caleb Brooks"]);
         expect(chips[0].findComponent(Avatar).exists()).toBe(true);
         expect(field(w).placeholder).toBe("");
 
@@ -250,7 +256,7 @@ describe("the suggestions", () => {
         expect(list.attributes("role")).toBe("listbox");
         expect(field(w).getAttribute("aria-expanded")).toBe("true");
         const options = w.findAll("[data-testid='nd-option']");
-        expect(options.map(o => plain(o.text()))).toEqual(["Anna Reyes", "Andre Lin"]);
+        expect(options.map(besideFace)).toEqual(["Anna Reyes", "Andre Lin"]);
         expect(options.every(o => o.attributes("role") === "option")).toBe(true);
         expect(options[0].get("mark").text()).toBe("An");
         expect(options[0].attributes("aria-selected")).toBe("true");
@@ -262,7 +268,7 @@ describe("the suggestions", () => {
         await typeName(w, "an");
         await afterPause();
 
-        expect(w.findAll("[data-testid='nd-option']").map(o => plain(o.text()))).toEqual(["Andre Lin"]);
+        expect(w.findAll("[data-testid='nd-option']").map(besideFace)).toEqual(["Andre Lin"]);
     });
 
     test("say no one was found, with the hint about who can be messaged", async () => {
@@ -289,7 +295,7 @@ describe("the suggestions", () => {
         answerFirst([anna, andre]);
         await settle();
 
-        expect(w.findAll("[data-testid='nd-option']").map(o => plain(o.text()))).toEqual(["Caleb Brooks"]);
+        expect(w.findAll("[data-testid='nd-option']").map(besideFace)).toEqual(["Caleb Brooks"]);
     });
 
     test("say how many were found to a screen reader", async () => {
