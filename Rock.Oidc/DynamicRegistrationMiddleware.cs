@@ -20,6 +20,7 @@ using System.Text;
 
 using Microsoft.Owin;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -150,7 +151,7 @@ namespace Rock.Oidc
                     return;
                 }
 
-                using ( var rockContext = new Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     new AuthClientService( rockContext ).Add( authClient );
 
