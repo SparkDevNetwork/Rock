@@ -113,9 +113,9 @@ namespace Rock.Tests.Integration.Security
             var userLoginService = new UserLoginService( new RockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
-            Assert.That.IsNotNull( actualUserLogin );
-            Assert.That.AreNotEqual( testPerson.Id, actualUserLogin.PersonId );
-            Assert.That.AreEqual( 0, userLoginService.Queryable().Count( ul => ul.PersonId == testPerson.Id ) );
+            Assert.IsNotNull( actualUserLogin );
+            Assert.AreNotEqual( testPerson.Id, actualUserLogin.PersonId );
+            Assert.AreEqual( 0, userLoginService.Queryable().Count( ul => ul.PersonId == testPerson.Id ) );
         }
 
         [TestMethod]

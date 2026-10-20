@@ -23,7 +23,6 @@ using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.Security.Authentication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -45,9 +44,9 @@ namespace Rock.Tests.Integration.Security
 
             var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, new RockContext(), null, null, true );
 
-            Assert.That.IsNotNull( userLogin );
-            Assert.That.AreNotEqual( testPerson.Id, userLogin.PersonId );
-            Assert.That.AreEqual( 0, GetLoginCount( testPerson.Id ) );
+            Assert.IsNotNull( userLogin );
+            Assert.AreNotEqual( testPerson.Id, userLogin.PersonId );
+            Assert.AreEqual( 0, GetLoginCount( testPerson.Id ) );
         }
 
         [TestMethod]
@@ -59,8 +58,8 @@ namespace Rock.Tests.Integration.Security
 
             var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, new RockContext(), null, null, true );
 
-            Assert.That.IsNotNull( userLogin );
-            Assert.That.AreEqual( testPerson.Id, userLogin.PersonId );
+            Assert.IsNotNull( userLogin );
+            Assert.AreEqual( testPerson.Id, userLogin.PersonId );
         }
 
         [TestMethod]
@@ -72,8 +71,8 @@ namespace Rock.Tests.Integration.Security
 
             var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, new RockContext(), null, null, false );
 
-            Assert.That.IsNotNull( userLogin );
-            Assert.That.AreEqual( testPerson.Id, userLogin.PersonId );
+            Assert.IsNotNull( userLogin );
+            Assert.AreEqual( testPerson.Id, userLogin.PersonId );
         }
 
         /// <summary>
