@@ -23,12 +23,14 @@
 // read is kept. Join goes through Rock's door. A join Rock made that the platform has not taken
 // yet is pending until a sidebar reload shows the room as a member, since that reload is the
 // platform saying it holds the membership. A room opened with no sidebar row keeps a stand-in row
-// in the sidebar store until another conversation opens or a reload brings its real row. Once
-// stopped, nothing more is asked and no answer still on its way reaches the screen.
+// in the sidebar store until another conversation opens or a reload brings its real row. Leave and
+// a group's Rename go through Rock's doors as Join does, and the profile card reads its person for
+// the room it was opened from, keeping only the newest card's answer. Once stopped, nothing more
+// is asked and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { ChannelStore } from "../stores/channelStore.partial";
-import { ChannelFacts, ChatError, DirectoryPage, DirectoryRow, SidebarRow } from "../types.partial";
+import { ChannelStore, roomTitle } from "../stores/channelStore.partial";
+import { ChannelFacts, ChatError, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 import { JoinResult } from "./useSend.partial";
 
@@ -46,6 +48,12 @@ const offlineSentence = "Couldn't join. You're offline, so try again in a moment
 
 /** What a Join says when Rock answered without its door's result while the connection held. */
 const failedSentence = "Couldn't join. Try again in a moment.";
+
+/** What Leave says when the page has no door to ask. */
+const leaveRefusedSentence = "You can't leave this conversation right now.";
+
+/** What Rename says when the page has no door to ask. */
+const renameRefusedSentence = "This conversation can't be renamed right now.";
 
 /** Which campus chip is pressed: every campus, one campus, or the rooms with no campus. */
 export type DirectoryCampus =
@@ -77,6 +85,9 @@ export type DirectoryPageResult = { ok: true, page: DirectoryPage } | { ok: fals
 
 /** A room's facts, or the refusal. */
 export type ChannelFactsResult = { ok: true, facts: ChannelFacts } | { ok: false, error: ChatError };
+
+/** The profile card's person, or the refusal; a person the platform does not list is a refusal. */
+export type PersonProfileResult = { ok: true, person: PersonProfile } | { ok: false, error: ChatError };
 
 /** Browse channels as the view draws it. */
 export type DirectoryState = {
@@ -125,6 +136,38 @@ export type JoinState =
     | { kind: "refused", text: string }
     | { kind: "failed", text: string };
 
+/**
+ * Where Leave is for one room: not asked, the door on its way, left (pending included, since Rock
+ * has made the change and the platform follows), refused with the door's own sentence, or not
+ * asked because the connection is lost. Refused and offline may be asked again.
+ */
+export type LeaveState =
+    | { kind: "idle" }
+    | { kind: "leaving" }
+    | { kind: "left" }
+    | { kind: "refused", text: string }
+    | { kind: "offline" };
+
+/**
+ * Where a group's Rename is: not asked, the door on its way, saved, pending while the new name
+ * reaches everyone, refused with the door's own sentence, or not asked because the connection is
+ * lost.
+ */
+export type RenameState =
+    | { kind: "idle" }
+    | { kind: "saving" }
+    | { kind: "saved" }
+    | { kind: "pending" }
+    | { kind: "refused", text: string }
+    | { kind: "offline" };
+
+/** The open profile card: whom it is for, the room it was opened from, and the person once read. */
+export type ProfileCardState = {
+    personAliasGuid: string;
+    channelId: string;
+    person: PersonProfile | null;
+};
+
 /** A sentence for screen readers; the count moves on with each, so the same words twice are read twice. */
 export type RoomAnnouncement = {
     text: string;
@@ -141,6 +184,15 @@ export type RoomsState = {
 
     /** Each room's Join, by its id; a room not here is idle. */
     joins: Record<string, JoinState>;
+
+    /** Each room's Leave, by its id; a room not here is idle. */
+    leaves: Record<string, LeaveState>;
+
+    /** Each group's Rename, by its id; a group not here is idle. */
+    renames: Record<string, RenameState>;
+
+    /** The profile card open now, or null; drawn only once its person is read. */
+    card: ProfileCardState | null;
     announcement: RoomAnnouncement | null;
 };
 
@@ -154,6 +206,18 @@ export type RoomsDependencies = {
 
     /** Rock's Join door; without it, Join is refused. */
     joinChannel?: (channelId: string) => Promise<JoinResult>;
+
+    /** Rock's Leave door; without it, Leave is refused. */
+    leaveChannel?: (channelId: string) => Promise<JoinResult>;
+
+    /** Rock's Rename door for a group; without it, Rename is refused. */
+    renameConversation?: (channelId: string, name: string) => Promise<JoinResult>;
+
+    /** Reads one person for the profile card, chat_get_person through the shell's call path. */
+    getPerson: (personAliasGuid: string, channelId: string) => Promise<PersonProfileResult>;
+
+    /** Opens a conversation as a sidebar row does: the next one after a leave. */
+    openChannel: (channelId: string) => void;
 
     /** The sidebar, which a previewed room's stand-in row joins. */
     channels: Pick<ChannelStore, "rows" | "previewChannelId" | "setPreview">;
@@ -204,6 +268,22 @@ export type Rooms = {
     join: (channelId: string) => Promise<void>;
 
     joinOf: (channelId: string) => JoinState;
+
+    /** Leaves a room through Rock's door, from its details. */
+    leave: (channelId: string) => Promise<void>;
+
+    leaveOf: (channelId: string) => LeaveState;
+
+    /** Renames a group through Rock's door; a blank name goes back to everyone's names. */
+    rename: (channelId: string, name: string) => Promise<void>;
+
+    renameOf: (channelId: string) => RenameState;
+
+    /** Opens the profile card for a person, read for the room it was opened from. */
+    openCard: (personAliasGuid: string, channelId: string) => void;
+
+    /** Closes the profile card; an answer still on its way is dropped. */
+    closeCard: () => void;
 
     /** A room's facts as last read, or null before the first read lands. */
     factsOf: (channelId: string) => ChannelFacts | null;
@@ -297,6 +377,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         },
         facts: {},
         joins: {},
+        leaves: {},
+        renames: {},
+        card: null,
         announcement: null
     }) as RoomsState;
 
@@ -311,6 +394,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     const factsGeneration = new Map<string, number>();
 
     let announcements = 0;
+
+    // Each card opened or closed moves this on, so a person read for a card no longer open never lands.
+    let cardGeneration = 0;
 
     /** Puts a sentence in the live region. */
     function announce(text: string, isAssertive = false): void {
@@ -511,6 +597,51 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     // #endregion Join
 
+    // #region Leave and Rename
+
+    /** The room's title as the sidebar shows it, a group with no name by its people. */
+    function titleOf(channelId: string): string {
+        const row = channels.rows.find(r => r.channel_id === channelId);
+        return row ? roomTitle(row) : nameOf(channelId);
+    }
+
+    /**
+     * Opens the conversation after the one left in the sidebar, or the one before it when the
+     * last was left, so the person lands somewhere they still are rather than on an empty column.
+     */
+    function openNext(channelId: string): void {
+        const rows = channels.rows.filter(r => r.is_member || r.channel_id === channelId);
+        const index = rows.findIndex(r => r.channel_id === channelId);
+        const next = index < 0 ? undefined : rows[index + 1] ?? rows[index - 1];
+        if (next) {
+            dependencies.openChannel(next.channel_id);
+        }
+    }
+
+    /**
+     * Asks one of Rock's membership doors, marking the room offline where the connection is lost
+     * or the door cannot be reached. Null when there is no answer to act on: offline, or stopped.
+     */
+    async function askDoor(ask: () => Promise<JoinResult>, offline: () => void): Promise<JoinResult | null> {
+        if (dependencies.isOffline()) {
+            offline();
+            return null;
+        }
+
+        try {
+            const answer = await ask();
+            return isStopped ? null : answer;
+        }
+        catch {
+            if (!isStopped) {
+                offline();
+            }
+            return null;
+        }
+    }
+
+    // #endregion Leave and Rename
+
     return {
         state,
 
@@ -667,6 +798,110 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
         joinOf: (channelId: string): JoinState => state.joins[channelId] ?? { kind: "idle" },
 
+        leave: async (channelId: string): Promise<void> => {
+            if (isStopped || state.leaves[channelId]?.kind === "leaving") {
+                return;
+            }
+
+            const door = dependencies.leaveChannel;
+            if (!door) {
+                state.leaves[channelId] = { kind: "refused", text: leaveRefusedSentence };
+                return;
+            }
+
+            state.leaves[channelId] = { kind: "leaving" };
+            const answer = await askDoor(() => door(channelId), () => {
+                state.leaves[channelId] = { kind: "offline" };
+            });
+            if (!answer) {
+                return;
+            }
+
+            if (answer.code !== "ok") {
+                const text = answer.message || leaveRefusedSentence;
+                state.leaves[channelId] = { kind: "refused", text };
+                announce(text, true);
+                return;
+            }
+
+            // Pending is left as well: Rock has removed the membership, and the platform's
+            // signal takes the room out of the sidebar when it follows.
+            state.leaves[channelId] = { kind: "left" };
+            const title = titleOf(channelId);
+            dependencies.notify({ code: "room.left", text: `You left ${title}`, icon: "door" });
+            announce(`You left ${title}.`);
+            if (dependencies.activeChannelId() === channelId) {
+                openNext(channelId);
+            }
+        },
+
+        leaveOf: (channelId: string): LeaveState => state.leaves[channelId] ?? { kind: "idle" },
+
+        rename: async (channelId: string, name: string): Promise<void> => {
+            if (isStopped || state.renames[channelId]?.kind === "saving") {
+                return;
+            }
+
+            const door = dependencies.renameConversation;
+            if (!door) {
+                state.renames[channelId] = { kind: "refused", text: renameRefusedSentence };
+                return;
+            }
+
+            // A blank name is no name, which titles the group by its people again.
+            const trimmed = name.trim();
+            state.renames[channelId] = { kind: "saving" };
+            const answer = await askDoor(() => door(channelId, trimmed), () => {
+                state.renames[channelId] = { kind: "offline" };
+            });
+            if (!answer) {
+                return;
+            }
+
+            if (answer.code !== "ok") {
+                const text = answer.message || renameRefusedSentence;
+                state.renames[channelId] = { kind: "refused", text };
+                announce(text, true);
+                return;
+            }
+
+            state.renames[channelId] = { kind: answer.isPending ? "pending" : "saved" };
+            if (answer.isPending) {
+                announce("Saved. It can take a minute to reach everyone.");
+            }
+            else {
+                announce(trimmed === "" ? "Name removed. Showing everyone's names." : `Renamed to ${trimmed}.`);
+            }
+        },
+
+        renameOf: (channelId: string): RenameState => state.renames[channelId] ?? { kind: "idle" },
+
+        openCard: (personAliasGuid: string, channelId: string): void => {
+            if (isStopped) {
+                return;
+            }
+
+            const generation = ++cardGeneration;
+            state.card = { personAliasGuid, channelId, person: null };
+            // A read that throws is a read that failed, so it draws no card either.
+            const read = dependencies.getPerson(personAliasGuid, channelId)
+                .catch((): PersonProfileResult => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }));
+            void read.then(result => {
+                if (isStopped || generation !== cardGeneration) {
+                    return;
+                }
+
+                // A person the platform does not list, or a read that failed, draws no card: the
+                // opener stays as it was with nothing to show.
+                state.card = result.ok ? { personAliasGuid, channelId, person: result.person } : null;
+            });
+        },
+
+        closeCard: (): void => {
+            cardGeneration++;
+            state.card = null;
+        },
+
         factsOf: (channelId: string): ChannelFacts | null => state.facts[channelId] ?? null,
 
         previewRoom: (channelId: string): void => {
@@ -712,6 +947,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             isStopped = true;
             cancelPause();
             directoryGeneration++;
+            cardGeneration++;
         }
     };
 }

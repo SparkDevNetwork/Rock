@@ -96,6 +96,19 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         };
     }
 
+    /**
+     * Asks one of Rock's membership doors. Rock answering without the door's result decided
+     * nothing, so it is a refusal with Rock's own sentence, and the person may ask again.
+     */
+    async function membershipDoor(action: string, args: Record<string, unknown>): Promise<ChatMembershipResultBag> {
+        const result = await invokeBlockAction<ChatMembershipResultBag>(action, args);
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        return { code: "door.unavailable", message: result.errorMessage ?? null, isPending: false };
+    }
+
     return session => createChatShell({
         session,
         linkedChannelId: options.linkedChannelId,
@@ -131,6 +144,8 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
             // Rock did not answer with a door result, so the message fails and can be sent again.
             return { code: "door.unavailable", message: result.errorMessage ?? null, isPending: false };
         },
+        leaveChannel: channelId => membershipDoor("LeaveChannel", { channelGuid: channelId }),
+        renameConversation: (channelId, name) => membershipDoor("RenameConversation", { channelGuid: channelId, name }),
         createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
         fetch: (url, init) => window.fetch(url, init),
         storage: safeLocalStorage(),

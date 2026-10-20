@@ -35,7 +35,7 @@ import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, Rooms } from "./composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms } from "./composables/useRooms.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -46,7 +46,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelFacts, ChannelUnreadEvent, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
+import { ChannelFacts, ChannelUnreadEvent, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -87,6 +87,12 @@ export type ShellOptions = {
 
     /** Asks Rock's door to join a public or pinned room; without it, a send never joins. */
     joinChannel?: (channelId: string) => Promise<JoinResult>;
+
+    /** Asks Rock's door to take the person out of a room; without it, Leave is refused. */
+    leaveChannel?: (channelId: string) => Promise<JoinResult>;
+
+    /** Asks Rock's door to rename a group; a blank name goes back to its people's names. Without it, Rename is refused. */
+    renameConversation?: (channelId: string, name: string) => Promise<JoinResult>;
 
     /**
      * Whether the page narrows the sidebar's pinned rooms and the people search to the person's
@@ -666,10 +672,26 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return { ok: true, page: { channels: page.channels ?? [], total: page.total ?? 0 } };
     }
 
+    /** One person for the profile card, as the room the card was opened from shows them. */
+    async function getPerson(personAliasGuid: string, channelId: string): Promise<PersonProfileResult> {
+        const result = await call("chat_get_person", { p_person_alias_guid: personAliasGuid, p_channel_id: channelId });
+        return result.ok ? { ok: true, person: result.data as PersonProfile } : { ok: false, error: result.error };
+    }
+
     const rooms = createRooms({
         getChannel,
         listDirectory,
+        getPerson,
         joinChannel: options.joinChannel,
+        leaveChannel: options.leaveChannel,
+        renameConversation: options.renameConversation,
+        // The next conversation after a leave opens as a sidebar row does.
+        openChannel: channelId => {
+            directMessages.close();
+            if (channelId !== state.activeChannelId) {
+                void open(channelId);
+            }
+        },
         channels,
         activeChannelId: () => state.activeChannelId,
         // a lost connection is told by its banner, and a door asked then would not be reached

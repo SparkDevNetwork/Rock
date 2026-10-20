@@ -395,6 +395,23 @@ export type PersonRow = {
     avatar_url: string | null;
 };
 
+/** One person as chat_get_person answers for the profile card, in the room the card was opened from. */
+export type PersonProfile = PersonRow & {
+    is_self: boolean;
+
+    /** Leads that room; false in a direct message and wherever the room hides its roster. */
+    is_leader: boolean;
+
+    /** Their campus and badges, only when they show their details; null otherwise. */
+    details: { campus_id: string | null, badge_keys: string[] } | null;
+
+    /** Whether the caller may message them: never themselves. */
+    can_message: boolean;
+
+    /** The two-person conversation the caller already has with them, or null. */
+    dm_channel_id: string | null;
+};
+
 /** What chat_search_people returns. */
 export type PeopleSearchAnswer = {
     people: PersonRow[];
