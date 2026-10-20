@@ -324,12 +324,14 @@ namespace Rock.Communication.Chat.Platform.Session
         /// The church's active campuses, as the chat names them.
         /// </summary>
         /// <param name="campuses">Every campus, as Rock caches them.</param>
-        /// <returns>The active ones, in the order given.</returns>
+        /// <returns>The active ones, in the church's own order.</returns>
         internal static List<ChatCampusBag> ListActiveCampuses( IEnumerable<CampusCache> campuses )
         {
-            // A closed campus is left out, so it is never offered as a place to browse.
+            // A closed campus is left out, so it is never offered as a place to browse. The cache
+            // lists campuses by key, not in the order the church set.
             return campuses
                 .Where( c => c.IsActive == true )
+                .OrderBy( c => c.Order )
                 .Select( c => new ChatCampusBag
                 {
                     Guid = c.Guid,

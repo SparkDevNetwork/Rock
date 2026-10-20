@@ -546,8 +546,8 @@ BEGIN
             ELSE COALESCE( [CG].[IsChatSearchIndexedOverride], [CG].[IsChatSearchIndexed] )
         END AS [is_search_indexed],
 
-        -- At most 500 characters, which the far side refuses past, and a blank one sent as none,
-        -- which it refuses too. Cut short of a character that takes two UTF-16 units rather than
+        -- At most 500 characters, which the far side refuses past, and a blank one sent as none.
+        -- Cut short of a character that takes two UTF-16 units rather than
         -- through it, because half of one is not text the far side can read. A direct message is
         -- titled by its people and drawn with no description.
         CASE

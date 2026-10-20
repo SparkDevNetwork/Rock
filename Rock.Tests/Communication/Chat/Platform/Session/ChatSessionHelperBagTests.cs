@@ -141,21 +141,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
-        public void ListActiveCampuses_ListsEachActiveCampusByItsGuidNameAndShortCode_AndNoInactiveOne()
+        public void ListActiveCampuses_ListsEachActiveCampusByItsGuidNameAndShortCode_InTheChurchsOrder_AndNoInactiveOne()
         {
             // The chat resolves every campus a room or a person names from this list, so a
-            // closed campus is left out rather than offered as a filter.
+            // closed campus is left out rather than offered as a filter. East comes first in the
+            // church's own order, though it is given last.
             using var app = TestHelper.CreateScopedRockApp();
-            _rockContext.Set<Campus>().Add( TestCampus( 9301, "c9301000-0000-4000-8000-000000000001", "Main Campus", "MAIN", true ) );
-            _rockContext.Set<Campus>().Add( TestCampus( 9302, "c9302000-0000-4000-8000-000000000001", "Closed Campus", "OLD", false ) );
-            _rockContext.Set<Campus>().Add( TestCampus( 9303, "c9303000-0000-4000-8000-000000000001", "East Campus", null, true ) );
+            _rockContext.Set<Campus>().Add( TestCampus( 9301, "c9301000-0000-4000-8000-000000000001", "Main Campus", "MAIN", true, 2 ) );
+            _rockContext.Set<Campus>().Add( TestCampus( 9302, "c9302000-0000-4000-8000-000000000001", "Closed Campus", "OLD", false, 0 ) );
+            _rockContext.Set<Campus>().Add( TestCampus( 9303, "c9303000-0000-4000-8000-000000000001", "East Campus", null, true, 1 ) );
 
             var campuses = new[] { 9301, 9302, 9303 }.Select( id => CampusCache.Get( id, _rockContext ) ).ToList();
 
             var listed = ChatSessionHelper.ListActiveCampuses( campuses );
 
             CollectionAssert.AreEqual(
-                new[] { "c9301000-0000-4000-8000-000000000001|Main Campus|MAIN", "c9303000-0000-4000-8000-000000000001|East Campus|" },
+                new[] { "c9303000-0000-4000-8000-000000000001|East Campus|", "c9301000-0000-4000-8000-000000000001|Main Campus|MAIN" },
                 listed.Select( c => $"{c.Guid}|{c.Name}|{c.ShortCode}" ).ToArray() );
         }
 
@@ -370,7 +371,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
         #region Support
 
-        private static Campus TestCampus( int id, string guid, string name, string shortCode, bool isActive )
+        private static Campus TestCampus( int id, string guid, string name, string shortCode, bool isActive, int order = 0 )
         {
             return new Campus
             {
@@ -378,7 +379,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
                 Guid = Guid.Parse( guid ),
                 Name = name,
                 ShortCode = shortCode,
-                IsActive = isActive
+                IsActive = isActive,
+                Order = order
             };
         }
 
