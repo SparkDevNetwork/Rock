@@ -15,7 +15,7 @@
 // </copyright>
 //
 // The shell's wiring: one place that builds the session, the live connection, the timelines,
-// the sender, the read tracker, the threads, the mentions and the sidebar, and joins them. Each of those is its own tested
+// the sender, the read tracker, the threads, the mentions, the rooms and the sidebar, and joins them. Each of those is its own tested
 // module; what is here decides only which one hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
@@ -35,6 +35,7 @@ import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, Rooms } from "./composables/useRooms.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -45,7 +46,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
+import { ChannelFacts, ChannelUnreadEvent, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -192,6 +193,9 @@ export type ChatShell = {
 
     /** The @ picker's search, the mentions inbox and the header's dot. */
     mentions: Mentions;
+
+    /** Browse channels, each open room's facts, Join, and a previewed room's sidebar row. */
+    rooms: Rooms;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -447,6 +451,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         messageActions.stop();
         reactions.stop();
         mentions.stop();
+        rooms.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -561,6 +566,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const savesSentAt = new WeakMap<MarkReadResult, number>();
     const tracker: ReadTracker = createReadTracker({
         save: async (channelId, messageId) => {
+            // A room the person is only previewing has no read position of theirs to keep.
+            if (channels.rows.some(row => row.channel_id === channelId && !row.is_member)) {
+                return null;
+            }
+
             const sentAt = channels.saveSent();
             const result = await keepaliveSave(channelId, messageId);
             if (result) {
@@ -625,6 +635,46 @@ export function createChatShell(options: ShellOptions): ChatShell {
         land: messageId => options.mentionViews?.land(messageId),
         openThread: async (channelId, rootId, messageId) => options.mentionViews?.openThread(channelId, rootId, messageId),
         toast: notice => options.notify?.(notice)
+    });
+
+    /** One room's facts, read when it opens and again on its membership change. */
+    async function getChannel(channelId: string): Promise<ChannelFactsResult> {
+        const result = await call("chat_get_channel", { p_channel_id: channelId });
+        return result.ok ? { ok: true, facts: result.data as ChannelFacts } : { ok: false, error: result.error };
+    }
+
+    /**
+     * A page of Browse channels. The church's own campus limit goes with every page, as it goes
+     * with the people search and the sidebar, so a room hidden there is hidden here too.
+     */
+    async function listDirectory(asked: DirectoryRequest): Promise<DirectoryPageResult> {
+        const result = await call("chat_list_directory", {
+            p_query: asked.query,
+            p_campus_only: options.areSharedChannelsFilteredByCampus ?? false,
+            p_campus_id: asked.campusId,
+            p_whole_church: asked.wholeChurch,
+            p_not_joined: asked.notJoined,
+            p_after: asked.after,
+            p_limit: asked.limit
+        });
+        if (!result.ok) {
+            return { ok: false, error: result.error };
+        }
+
+        const page = (result.data ?? {}) as Partial<DirectoryPage>;
+        return { ok: true, page: { channels: page.channels ?? [], total: page.total ?? 0 } };
+    }
+
+    const rooms = createRooms({
+        getChannel,
+        listDirectory,
+        joinChannel: options.joinChannel,
+        channels,
+        activeChannelId: () => state.activeChannelId,
+        // a lost connection is told by its banner, and a door asked then would not be reached
+        isOffline: () => state.connection !== null,
+        isCampusLimited: options.areSharedChannelsFilteredByCampus ?? false,
+        notify: notice => options.notify?.(notice)
     });
 
     const sender = createSender({
@@ -763,6 +813,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 applySave(change.channelId, change.result, change.sentAt);
             }
         }
+
+        // a join still settling is settled by the reload that shows the room as the person's
+        rooms.sidebarLoaded();
         return channels.rows;
     }
 
@@ -834,6 +887,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     function showChannel(channelId: string | null): void {
         if (state.activeChannelId !== channelId) {
             messageActions.switchConversation(channelId);
+            rooms.conversationShown(channelId);
         }
         state.activeChannelId = channelId;
         channels.setActive(channelId);
@@ -862,6 +916,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             tracker.show(channelId);
         }
         showChannel(channelId);
+
+        // The room's facts are read beside its history, so neither waits for the other.
+        void rooms.channelOpened(channelId);
 
         const outcome = await openChannel({
             join: id => hub?.openChannel(id),
@@ -901,6 +958,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         messageActions,
         reactions,
         mentions,
+        rooms,
         isNewMessageShown: isNewMessageShown(options.session),
 
         openDirectMessage: async (): Promise<void> => {
@@ -988,6 +1046,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // A conversation Rock made before the platform had taken it may have arrived.
                     if (event === "membership.changed") {
                         void directMessages.membershipChanged(typeof changed === "string" ? changed : null);
+                        rooms.membershipChanged(typeof changed === "string" ? changed : null);
                     }
                     if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
                         recheck();
@@ -1155,6 +1214,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             messageActions.stop();
             reactions.stop();
             mentions.stop();
+            rooms.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.

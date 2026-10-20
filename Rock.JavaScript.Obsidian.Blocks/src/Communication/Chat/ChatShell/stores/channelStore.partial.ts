@@ -45,8 +45,20 @@ export type ChannelStore = {
     /** The channel on screen, or null. */
     activeChannelId: string | null;
 
-    /** Replaces every row with a fresh sidebar. */
+    /** The room the person is previewing without a sidebar row of its own, whose stand-in row the rows hold; or null. */
+    previewChannelId: string | null;
+
+    /**
+     * Replaces every row with a fresh sidebar. A previewed room's row is kept after them, unless
+     * the fresh sidebar holds the room itself, which ends the preview.
+     */
     setSidebar: (rows: SidebarRow[]) => void;
+
+    /**
+     * Shows a room the person is previewing as a row after the others, or takes the row away with
+     * null. A room the sidebar already holds is never previewed.
+     */
+    setPreview: (row: SidebarRow | null) => void;
 
     /** Sets the channel on screen. */
     setActive: (channelId: string | null) => void;
@@ -91,8 +103,27 @@ export function isTypedByReader(row: Pick<SidebarRow, "last_message_is_own" | "l
 export function createChannelStore(dependencies: ChannelStoreDependencies): ChannelStore {
     const store = reactive({
         rows: [] as SidebarRow[],
-        activeChannelId: null as string | null
+        activeChannelId: null as string | null,
+        previewChannelId: null as string | null
     });
+
+    /**
+     * A room opened from Browse channels or a link has no row in the platform's sidebar until the
+     * person joins it, so a stand-in is kept here and put back after every fresh sidebar, which
+     * may have been read before the room was opened.
+     */
+    function setPreview(row: SidebarRow | null): void {
+        const previous = store.previewChannelId;
+        const others = previous ? store.rows.filter(r => r.channel_id !== previous) : store.rows;
+        if (!row || others.some(r => r.channel_id === row.channel_id)) {
+            store.previewChannelId = null;
+            store.rows = others;
+            return;
+        }
+
+        store.previewChannelId = row.channel_id;
+        store.rows = [...others, row];
+    }
 
     // Each row's last message as the latest sidebar answer read it. A mention replayed over that
     // answer was already counted in it when its message is at or below this, wherever the row's
@@ -284,7 +315,15 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
     return Object.assign(store, {
         setSidebar: (rows: SidebarRow[]): void => {
-            store.rows = rows;
+            const preview = store.rows.find(row => row.channel_id === store.previewChannelId);
+            // the fresh rows' own copy of the room, once it has one, ends the preview
+            if (preview && !rows.some(row => row.channel_id === preview.channel_id)) {
+                store.rows = [...rows, preview];
+            }
+            else {
+                store.previewChannelId = null;
+                store.rows = rows;
+            }
             answerPointers = new Map(rows.map(row => [row.channel_id, row.last_message_id]));
             const at = ++moves;
             movedAt.clear();
@@ -314,6 +353,8 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
                 dependencies.reloadSidebar();
             }
         },
+
+        setPreview,
 
         applyMarkRead
     });

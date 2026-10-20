@@ -65,6 +65,67 @@ export type SidebarRow = {
     dm_other_count: number | null;
 };
 
+/** A leader of a channel, as chat_get_channel lists up to three of them by name. */
+export type ChannelLeader = {
+    person_alias_guid: string;
+    nick_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+};
+
+/** One of the other people in a direct message, as chat_get_channel lists up to eight of them. */
+export type ChannelPerson = ChannelLeader & {
+    /** Their campus and badges, only when they show their details; null otherwise. */
+    details: { campus_id: string | null, badge_keys: string[] } | null;
+};
+
+/** What chat_get_channel answers about one room, read when it opens. */
+export type ChannelFacts = {
+    channel_id: string;
+    name: string | null;
+    icon_url: string | null;
+    channel_type: string;
+    is_member: boolean;
+    can_post: boolean;
+    can_post_code: string | null;
+
+    /** The server's sentence for why the reader cannot post, or null when they can. */
+    can_post_reason: string | null;
+    max_length: number;
+    can_leave: boolean;
+    description: string | null;
+    group_type_name: string | null;
+    campus_id: string | null;
+    is_public: boolean;
+
+    /** The room's listed members, each person once. */
+    member_count: number;
+
+    /** Up to three listed leaders by name; empty for a direct message. */
+    leaders: ChannelLeader[];
+
+    /** For a direct message, up to eight of the others; empty for a channel. */
+    people: ChannelPerson[];
+};
+
+/** One public channel of Browse channels, as chat_list_directory lists them by name. */
+export type DirectoryRow = {
+    channel_id: string;
+    name: string | null;
+    icon_url: string | null;
+    campus_id: string | null;
+    is_member: boolean;
+    can_post_code: string | null;
+    description: string | null;
+    group_type_name: string | null;
+};
+
+/** What chat_list_directory answers: a page of rows, and every room matching, counted past the page. */
+export type DirectoryPage = {
+    channels: DirectoryRow[];
+    total: number;
+};
+
 /**
  * One piece of a message body as the server built it. Every piece has a text, which is what a
  * client that does not know its type shows; the other keys depend on the type.

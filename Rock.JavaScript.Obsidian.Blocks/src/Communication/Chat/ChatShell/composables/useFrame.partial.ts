@@ -16,7 +16,8 @@
 //
 // What each column of the block's frame shows: the panel column's one panel at a time (the
 // threads list, the mentions inbox or a thread in its drawer), the way back from a thread to the
-// list it came from, focus handed back to what opened a panel, and on a phone which of the three
+// list it came from, focus handed back to what opened a panel, the main column's full views (such
+// as Browse channels) that take the conversation's place, and on a phone which of the three
 // panes is in front. The block keeps the template and the wiring; this keeps the rules, so the
 // phone's pane is worked out in one place from everything that can take a column.
 //
@@ -33,6 +34,9 @@ import { OpenThreadState } from "./useThreads.partial";
 
 /** What the panel column can hold: the threads list, the mentions inbox, or one thread in its drawer. */
 export type PanelKind = "threads" | "mentions" | "thread";
+
+/** A view that takes the conversation's place in the main column. */
+export type MainViewKind = "directory";
 
 /** Which pane a phone shows in front. */
 export type FramePane = "list" | "conversation" | "panel";
@@ -86,6 +90,12 @@ export type Frame = {
     /** The panel open in the right-hand column, or null while it is closed. */
     panelKind: Ref<PanelKind | null>;
 
+    /**
+     * The full view drawn in the conversation's place, or null. The conversation stays laid out
+     * underneath and out of reach, so its place in the feed survives.
+     */
+    mainView: Ref<MainViewKind | null>;
+
     /** What the column draws: the open panel, kept through its close so it narrows over its content. */
     shownPanel: Ref<PanelKind | null>;
 
@@ -125,6 +135,15 @@ export type Frame = {
     closeThreadDrawer: () => void;
 
     closePanel: () => void;
+
+    /** Opens a full view in the conversation's place, or brings the one open back to the front. */
+    openMainView: (kind: MainViewKind) => Promise<void>;
+
+    /** Closes the full view: its X or Escape. The conversation underneath comes back. */
+    closeMainView: () => void;
+
+    /** A room chosen in the full view: previewed if it has no sidebar row, opened, and the view closed. */
+    openFromMainView: (channelId: string) => Promise<void>;
 };
 
 /** Below this width the block shows one pane at a time, as on a phone. */
@@ -166,6 +185,11 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
     const panelElement = ref<HTMLElement>();
 
+    const mainView = ref<MainViewKind | null>(null);
+
+    /** What had focus as the full view opened, which its close and a phone's Back return to. */
+    let mainViewOpener: HTMLElement | null = null;
+
     let panelClearTimer: number | undefined;
 
     const drawnThread = shallowRef<OpenThreadState | null>(null);
@@ -188,15 +212,15 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     let linkedReply = dependencies.linkedReply;
 
     /**
-     * Which pane a phone shows: the conversation once one is open, until Back asks for the list,
-     * and an open panel over it.
+     * Which pane a phone shows: the conversation once one is open, or a full view in its place,
+     * until Back asks for the list, and an open panel over the conversation.
      */
     const pane = computed((): FramePane => {
-        if (!(activeChannelId.value || draft.value) || isListChosen.value) {
+        if (!(activeChannelId.value || draft.value || mainView.value) || isListChosen.value) {
             return "list";
         }
 
-        return panelKind.value ? "panel" : "conversation";
+        return panelKind.value && !mainView.value ? "panel" : "conversation";
     });
 
     const isSidebarHidden = computed((): boolean => isPhone.value && pane.value !== "list");
@@ -217,7 +241,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     }
 
     async function onSelect(channelId: string): Promise<void> {
-        // Choosing the conversation already open behind the list brings it back too.
+        // Choosing the conversation already open behind the list or a full view brings it back too.
+        leaveMainView();
         isListChosen.value = false;
         isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
@@ -237,9 +262,15 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
         // Back on a phone hides the button that had focus, so focus returns to the row of the
         // conversation just left, where the person was in the list. A New message draft has no
-        // row yet, so focus goes to the New message button that opened it.
+        // row yet, so focus goes to the New message button that opened it. A full view stays
+        // behind the list, as the prototype keeps it, and focus goes to the row that opened it.
         if (isPhone.value) {
             await nextTick();
+            if (mainView.value && mainViewOpener?.isConnected) {
+                mainViewOpener.focus();
+                return;
+            }
+
             const row = leftChannelId
                 ? rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)
                 : null;
@@ -336,9 +367,85 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
     }
 
+    /**
+     * Opens a full view in the conversation's place, closing the panel column, since its buttons
+     * sit in the header the view covers. The view open behind a phone's list comes back as it was.
+     * Focus goes to the view's first field, except on a phone, where it would raise the keyboard.
+     */
+    async function openMainView(kind: MainViewKind): Promise<void> {
+        isListChosen.value = false;
+        isPaneMotionOn.value = true;
+        if (mainView.value !== kind) {
+            const active = document.activeElement;
+            mainViewOpener = active instanceof HTMLElement && rootElement.value?.contains(active) ? active : null;
+            if (panelKind.value) {
+                releasePanel();
+                panelKind.value = null;
+                finishClosing();
+            }
+            mainView.value = kind;
+            shell.value.rooms.openDirectory();
+        }
+
+        await nextTick();
+        if (!isPhone.value) {
+            rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus();
+        }
+    }
+
+    /**
+     * Closes the full view. Focus goes to the composer of the conversation it gave back, or on a
+     * phone or with none, to what opened the view, else the conversation's title.
+     */
+    function closeMainView(): void {
+        if (!mainView.value) {
+            return;
+        }
+
+        const opener = mainViewOpener;
+        leaveMainView();
+
+        void nextTick(() => {
+            const root = rootElement.value;
+            const composer = isPhone.value ? null : root?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='composer-input']");
+            (composer
+                ?? (opener?.isConnected ? opener : null)
+                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+        });
+    }
+
+    /**
+     * Opens a room chosen in the full view. One with no sidebar row is previewed before it opens,
+     * so its row and its join bar are there at once; the view closes even when the room is the
+     * one already underneath. Focus lands on Join, the preview's one action, else on the composer,
+     * or on a phone the title, since a focused composer would raise the keyboard.
+     */
+    async function openFromMainView(channelId: string): Promise<void> {
+        shell.value.rooms.previewRoom(channelId);
+        leaveMainView();
+        isListChosen.value = false;
+        isPaneMotionOn.value = true;
+        await shell.value.selectChannel(channelId);
+
+        await nextTick();
+        const main = rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main']");
+        (main?.querySelector<HTMLElement>("[data-testid='join-channel']")
+            ?? (isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']"))
+            ?? main?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Lets go of the full view, without moving focus. */
+    function leaveMainView(): void {
+        if (mainView.value) {
+            mainView.value = null;
+            mainViewOpener = null;
+            shell.value.rooms.closeDirectory();
+        }
+    }
 
     /** Opens a mention's thread at the reply over its conversation, with a way back to the inbox. */
     async function openThreadFromMentions(channelId: string, rootId: number, messageId: number): Promise<void> {
@@ -515,14 +622,17 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     // out of view unless the panel shows it, and a phone shows only one pane.
     watchEffect(() => {
         shell.value.state.hiddenPanes = {
-            conversation: isConversationHidden.value,
+            // a full view covers the conversation wherever it is drawn
+            conversation: isConversationHidden.value || !!mainView.value,
             thread: isPanelHidden.value || panelKind.value !== "thread"
         };
     });
 
-    // Any conversation that opens, from a row, a push or a new message, comes forward on a phone.
+    // Any conversation that opens, from a row, a push or a new message, comes forward on a phone,
+    // and takes the place of a full view.
     watch([activeChannelId, draft], () => {
         isListChosen.value = false;
+        leaveMainView();
     });
 
     // The drawer keeps the thread it last drew, so a closing drawer still has its content.
@@ -596,6 +706,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         isPanelGone,
         goneStyle,
         panelKind,
+        mainView,
         shownPanel,
         panelElement,
         drawnThread,
@@ -613,6 +724,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         openFromTap,
         openThreadDrawer,
         closeThreadDrawer,
-        closePanel
+        closePanel,
+        openMainView,
+        closeMainView,
+        openFromMainView
     };
 }
