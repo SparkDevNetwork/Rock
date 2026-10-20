@@ -34,6 +34,11 @@
 // already made; the failed one stays a failed row there with its own Retry, or goes when a copy
 // shows it was posted after all. A refused one never left Rock, so its text is the only copy and
 // goes back in the box for the person to send.
+//
+// New message begins afresh or with people chosen, and from then on every change to the people
+// chosen looks up the conversation they already have. Only the newest lookup lands, however the
+// answers arrive, and the view says it is looking only once one has taken a moment, so a quick
+// answer never flashes it. People who have a conversation send to it; new people get a draft.
 import { reactive, toRaw } from "vue";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow } from "../types.partial";
@@ -52,6 +57,9 @@ export const maxOthers = 8;
  * about to take it, and the person decides with the ordinary failed message.
  */
 const maxRetriedSends = 5;
+
+/** How long a lookup runs before New message says it is looking, so a quick answer shows nothing. */
+export const lookupSlowAfter = 300;
 
 /** Shown on a draft whose message could not be sent because the platform does not hold its conversation. */
 const notReadySentence = "The conversation is not ready yet, so your message was not sent. Send it again in a moment.";
@@ -86,6 +94,26 @@ export type DirectMessageDraft = {
 
     /** The conversation Rock answered, while the platform has not shown it to the person yet. */
     channelGuid: string | null;
+
+    /**
+     * Where its first message is, for New message to draw on it: Rock asked, the conversation
+     * waited for, a send on its way, or failed with Try again; null before a send and once one
+     * is refused, since a refusal leaves only the text.
+     */
+    phase?: DraftPhase;
+};
+
+/** The part of a first message's phase a draft draws. */
+export type DraftPhase = "asking" | "waiting" | "trying" | "failed" | null;
+
+/**
+ * What New message knows of the conversation the people chosen already have: nobody chosen, a
+ * lookup on its way (slow once it has run a moment), found with its id, or new.
+ */
+export type DirectMessageLookup = {
+    status: "idle" | "waiting" | "found" | "new";
+    channelId: string | null;
+    isSlow: boolean;
 };
 
 /** What the direct messages reach outside themselves. */
@@ -139,6 +167,18 @@ export type DirectMessages = {
      */
     held: { body: string } | null;
 
+    /** The conversation the people chosen already have, as New message last looked it up. */
+    lookup: DirectMessageLookup;
+
+    /** A refusal Rock gave about one of the people chosen, for the strip that offers to take them out. */
+    refused: { person: PersonRow, text: string } | null;
+
+    /** Begins New message afresh, or with these people chosen, looking up what they already have. */
+    begin: (people?: PersonRow[]) => void;
+
+    /** Empties a draft whose first message failed, dropping that message for good. */
+    discardFailed: () => void;
+
     /** The people the platform's search answers for the text typed. */
     search: (query: string) => Promise<PersonRow[]>;
 
@@ -151,7 +191,7 @@ export type DirectMessages = {
     /** Opens the conversation the picked people share, or a draft for them. */
     open: () => Promise<void>;
 
-    /** Sends a draft's first message. True when it was sent. */
+    /** Sends a draft's first message, or a message to the conversation found. True when it was sent. */
     sendFirst: (body: string) => Promise<boolean>;
 
     /** The text in the composer's box changed, so the draft holds what the person sees. */
@@ -243,7 +283,9 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         chosen: [] as PersonRow[],
         draft: null as DirectMessageDraft | null,
         error: null as string | null,
-        held: null as { body: string } | null
+        held: null as { body: string } | null,
+        lookup: { status: "idle", channelId: null, isSlow: false } as DirectMessageLookup,
+        refused: null as { person: PersonRow, text: string } | null
     });
 
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
@@ -277,6 +319,19 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
     let isStopped = false;
 
+    // Only once New message has begun does a change to the people chosen look them up.
+    let isBegun = false;
+
+    // Each lookup and each close moves this on, so an older answer landing late is dropped.
+    let lookupGeneration = 0;
+    let slowTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * The text in the box while New message is open, carried to the next draft when the people
+     * chosen change, so taking someone out never loses what the person wrote.
+     */
+    let boxText = "";
+
     /** The same key for the same people in any order. */
     function peopleKey(people: PersonRow[]): string {
         return people.map(p => p.person_alias_guid.toLowerCase()).sort().join(",");
@@ -287,10 +342,24 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         return message.draft !== null && state.draft !== null && toRaw(state.draft) === toRaw(message.draft);
     }
 
+    /** The phase a draft draws for a first message's: a sent or refused one leaves nothing to draw. */
+    function drawnPhase(phase: FirstMessagePhase): DraftPhase {
+        return phase === "sent" || phase === "refused" ? null : phase;
+    }
+
+    /** Moves a first message to a phase, and its draft with it, so the draft always draws where it is. */
+    function setPhase(message: FirstMessage, phase: FirstMessagePhase): void {
+        message.phase = phase;
+        if (message.draft) {
+            message.draft.phase = drawnPhase(phase);
+        }
+    }
+
     /** Ties a first message to a draft, so a send from that draft finds it. */
     function carry(draft: DirectMessageDraft, message: FirstMessage): void {
         carriedBy.set(toRaw(draft), message);
         message.draft = draft;
+        draft.phase = drawnPhase(message.phase);
     }
 
     /** Keeps a first message's text for the next draft to its people. */
@@ -364,7 +433,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         waiting.delete(message);
 
         if (isSent) {
-            message.phase = "sent";
+            setPhase(message, "sent");
 
             // Posted, so the draft goes whatever the open answers: kept, it would offer to send
             // the message a second time.
@@ -377,7 +446,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             return;
         }
 
-        message.phase = "failed";
+        setPhase(message, "failed");
 
         // Its failed row, with its Retry, is in the conversation the person was taken to.
         if (message.isShown) {
@@ -412,7 +481,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         }
 
         // Marked before any await, so a signal and a wait ending together send it once.
-        message.phase = "trying";
+        setPhase(message, "trying");
         message.tries++;
         const isLast = message.tries >= maxRetriedSends;
 
@@ -432,7 +501,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             await finish(message, isSent);
         }
         else {
-            message.phase = "waiting";
+            setPhase(message, "waiting");
         }
     }
 
@@ -442,7 +511,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
      * finds it ended or on its way.
      */
     async function waitForConversation(message: FirstMessage): Promise<void> {
-        message.phase = "waiting";
+        setPhase(message, "waiting");
         waiting.add(message);
 
         let attempt = 0;
@@ -478,6 +547,8 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         while (queued.length > 0) {
             const message = queued[0];
             message.phase = "trying";
+            // The queued message has no draft of its own, so the draft sending it draws its try.
+            draft.phase = "trying";
             const isSent = await sendTry(message, true);
             if (isStopped) {
                 return false;
@@ -485,6 +556,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
             if (!isSent) {
                 message.phase = "failed";
+                draft.phase = "failed";
                 if (state.draft && toRaw(state.draft) === toRaw(draft)) {
                     draft.status = "draft";
                     state.error = notReadySentence;
@@ -504,7 +576,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
     /** Sends a first message once, as an ordinary send of its row, and settles it by the answer. */
     async function sendOnce(message: FirstMessage): Promise<boolean> {
-        message.phase = "trying";
+        setPhase(message, "trying");
         const isSent = await sendTry(message, true);
         if (isStopped) {
             return false;
@@ -544,11 +616,17 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         // A refusal is Rock's answer and no wait changes it. A person still on the draft is told
         // there; one who left it is told in the toast, and the text waits for their next draft.
         if (!channelId) {
-            message.phase = "refused";
+            setPhase(message, "refused");
             const reason = answer.message ?? "The conversation could not be started. Try again.";
             if (isOnScreen(message)) {
                 draft.status = "draft";
                 state.error = reason;
+
+                // A refusal about one of the people also names them, for the strip that offers
+                // to take them out.
+                const named = answer.personAliasGuid?.toLowerCase();
+                const person = named ? message.people.find(p => p.person_alias_guid.toLowerCase() === named) : undefined;
+                state.refused = person ? { person, text: reason } : null;
             }
             else {
                 reportLeft(message, { code: "door.first_message_refused", severity: "permission" }, reason);
@@ -583,7 +661,174 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         return sendOnce(message);
     }
 
+    /** Ends a lookup's wait, so no looking state comes for it. */
+    function cancelSlow(): void {
+        if (slowTimer !== null) {
+            clearTimeout(slowTimer);
+            slowTimer = null;
+        }
+    }
+
+    /**
+     * Opens the conversation people already share. A failed message kept for them is a row there
+     * with its Retry already; refused text has no row anywhere, so it goes in the box. An open
+     * that did not happen keeps everything for the next try.
+     *
+     * @returns True when the conversation opened.
+     */
+    async function openShared(people: PersonRow[], channelId: string): Promise<boolean> {
+        const key = peopleKey(people);
+        const keptMessages = (kept.get(key) ?? []).filter(m => m.phase !== "sent");
+        kept.delete(key);
+        const refusedText = keptMessages.filter(m => m.phase === "refused").map(m => m.body).join("\n\n");
+
+        const isOpened = await dependencies.openChannel(channelId);
+        if (isStopped) {
+            return false;
+        }
+
+        if (!isOpened) {
+            keptMessages.forEach(keep);
+        }
+        else if (refusedText !== "") {
+            state.held = { body: refusedText };
+        }
+        return isOpened;
+    }
+
+    /**
+     * Puts a draft for people with no conversation on screen. Refused text needs the box, so the
+     * draft's own message is a new one carrying it and every failed message is tried first.
+     * Otherwise the newest failed message is the draft's own, its text in the box and its row and
+     * key the retry, and older ones go first. With nothing kept, the box holds what was typed.
+     */
+    function openDraft(people: PersonRow[], typed: string): void {
+        const key = peopleKey(people);
+        const keptMessages = (kept.get(key) ?? []).filter(m => m.phase !== "sent");
+        kept.delete(key);
+        const refusedText = keptMessages.filter(m => m.phase === "refused").map(m => m.body).join("\n\n");
+        const failed = keptMessages.filter(m => m.phase !== "refused");
+
+        const carried = refusedText === "" ? failed[failed.length - 1] : undefined;
+        const queued = failed.filter(m => m !== carried);
+
+        const body = carried ? carried.boxBody ?? carried.body : refusedText || typed;
+        state.draft = { people, body, status: "draft", channelGuid: carried?.channelId ?? null, phase: null };
+        if (carried) {
+            carry(state.draft, carried);
+        }
+        if (queued.length > 0) {
+            queuedOn.set(toRaw(state.draft), queued);
+        }
+    }
+
+    /**
+     * Looks up the conversation the people chosen now have, in place of any lookup still out.
+     * The draft for the people before goes, its text carried in the box.
+     */
+    function lookUp(): void {
+        const generation = ++lookupGeneration;
+        cancelSlow();
+        if (state.draft) {
+            boxText = state.draft.body;
+        }
+        leaveDraft();
+        state.refused = null;
+        state.error = null;
+
+        const people = [...state.chosen];
+        if (people.length === 0) {
+            state.lookup = { status: "idle", channelId: null, isSlow: false };
+            return;
+        }
+
+        state.lookup = { status: "waiting", channelId: null, isSlow: false };
+        slowTimer = setTimeout(() => {
+            slowTimer = null;
+            if (!isStopped && generation === lookupGeneration) {
+                state.lookup.isSlow = true;
+            }
+        }, lookupSlowAfter);
+
+        void (async (): Promise<void> => {
+            let result: Awaited<ReturnType<DirectMessageDependencies["findConversation"]>>;
+            try {
+                result = await dependencies.findConversation(people.map(p => p.person_alias_guid));
+            }
+            catch {
+                result = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
+            }
+            if (isStopped || generation !== lookupGeneration) {
+                return;
+            }
+
+            cancelSlow();
+            if (!result.ok) {
+                // Nothing is known, so nothing can be sent until the people change or are chosen again.
+                state.lookup = { status: "waiting", channelId: null, isSlow: false };
+                state.error = result.error.text ?? "The conversation could not be looked up. Try again.";
+                return;
+            }
+
+            // Asking Rock now would create a conversation nobody has written in, so people with
+            // none get a draft and Rock is asked only once there is a message to send.
+            if (result.channelId) {
+                state.lookup = { status: "found", channelId: result.channelId, isSlow: false };
+                return;
+            }
+
+            state.lookup = { status: "new", channelId: null, isSlow: false };
+            openDraft(people, boxText);
+        })();
+    }
+
+    /** Forgets everything New message held, so the next begins afresh. */
+    function reset(): void {
+        lookupGeneration++;
+        cancelSlow();
+        leaveDraft();
+        state.chosen = [];
+        state.error = null;
+        state.refused = null;
+        state.lookup = { status: "idle", channelId: null, isSlow: false };
+        boxText = "";
+    }
+
     return Object.assign(state, {
+        begin: (people: PersonRow[] = []): void => {
+            reset();
+            if (isStopped) {
+                return;
+            }
+
+            isBegun = true;
+            state.chosen = people.slice(0, maxOthers);
+            if (state.chosen.length > 0) {
+                lookUp();
+            }
+        },
+
+        discardFailed: (): void => {
+            const draft = state.draft;
+            const carried = draft ? carriedBy.get(toRaw(draft)) : undefined;
+            if (!draft || draft.phase !== "failed") {
+                return;
+            }
+
+            // The person chose to drop it: nothing keeps it for a later draft or tries it again.
+            if (carried) {
+                carriedBy.delete(toRaw(draft));
+                carried.draft = null;
+            }
+            queuedOn.delete(toRaw(draft));
+            draft.body = "";
+            draft.phase = null;
+            draft.channelGuid = null;
+            draft.status = "draft";
+            boxText = "";
+            state.error = null;
+        },
+
         search: async (query: string): Promise<PersonRow[]> => {
             const result = await dependencies.search(query);
             if (!result.ok) {
@@ -603,11 +848,20 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             }
 
             state.chosen.push(person);
+            if (isBegun) {
+                lookUp();
+            }
             return true;
         },
 
         unchoose: (personAliasGuid: string): void => {
             state.chosen = state.chosen.filter(p => p.person_alias_guid !== personAliasGuid);
+            if (state.refused?.person.person_alias_guid === personAliasGuid) {
+                state.refused = null;
+            }
+            if (isBegun) {
+                lookUp();
+            }
         },
 
         open: async (): Promise<void> => {
@@ -629,50 +883,34 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
             // Kept messages for these people are taken either way, into their new draft or the
             // conversation they share now. One posted since it was kept needs nothing more.
-            const key = peopleKey(people);
-            const keptMessages = (kept.get(key) ?? []).filter(m => m.phase !== "sent");
-            kept.delete(key);
-            const refusedText = keptMessages.filter(m => m.phase === "refused").map(m => m.body).join("\n\n");
-            const failed = keptMessages.filter(m => m.phase !== "refused");
-
             // Asking Rock now would create a conversation nobody has written in, so people with
             // none get a draft and Rock is asked only once there is a message to send.
             if (result.channelId) {
-                const isOpened = await dependencies.openChannel(result.channelId);
-                if (isStopped) {
-                    return;
-                }
-
-                // A failed message is a row in that conversation with its Retry already; refused
-                // text has no row anywhere, so it goes in the box. An open that did not happen
-                // keeps everything for the next try.
-                if (!isOpened) {
-                    keptMessages.forEach(keep);
-                }
-                else if (refusedText !== "") {
-                    state.held = { body: refusedText };
-                }
+                await openShared(people, result.channelId);
                 return;
             }
 
-            // Refused text needs the box, so the draft's own message is a new one carrying it and
-            // every failed message is tried first. Otherwise the newest failed message is the
-            // draft's own, its text in the box and its row and key the retry, and older ones go
-            // first.
-            const carried = refusedText === "" ? failed[failed.length - 1] : undefined;
-            const queued = failed.filter(m => m !== carried);
-
-            state.draft = { people, body: carried ? carried.boxBody ?? carried.body : refusedText, status: "draft", channelGuid: carried?.channelId ?? null };
-            if (carried) {
-                carry(state.draft, carried);
-            }
-            if (queued.length > 0) {
-                queuedOn.set(toRaw(state.draft), queued);
-            }
+            openDraft(people, "");
         },
 
         sendFirst: async (body: string): Promise<boolean> => {
             const draft = state.draft;
+
+            // People who already have a conversation send to it as an ordinary message, once it
+            // is on screen; Rock is asked nothing.
+            const found = state.lookup.status === "found" ? state.lookup.channelId : null;
+            if (!draft && found && body.trim() !== "") {
+                state.held = null;
+                if (!await openShared([...state.chosen], found) || isStopped) {
+                    return false;
+                }
+                try {
+                    return await dependencies.send(found, body);
+                }
+                catch {
+                    return false;
+                }
+            }
 
             // A draft already starting has its message; a second send would ask Rock twice.
             if (!draft || draft.status === "starting" || body.trim() === "") {
@@ -682,6 +920,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             draft.body = body;
             draft.status = "starting";
             state.error = null;
+            state.refused = null;
 
             // Failed messages kept with this draft are older than its own, so they go first. Only
             // awaited when there are some, so an ordinary first message asks Rock at once.
@@ -732,6 +971,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         },
 
         edit: (body: string): void => {
+            boxText = body;
             if (state.draft) {
                 state.draft.body = body;
             }
@@ -750,13 +990,15 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         },
 
         close: (): void => {
-            leaveDraft();
-            state.chosen = [];
-            state.error = null;
+            isBegun = false;
+            reset();
         },
 
         stop: (): void => {
             isStopped = true;
+            isBegun = false;
+            lookupGeneration++;
+            cancelSlow();
             waiting.clear();
         }
     });

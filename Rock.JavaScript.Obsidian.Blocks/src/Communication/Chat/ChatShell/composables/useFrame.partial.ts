@@ -26,6 +26,7 @@
 
 import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef, ShallowRef, StyleValue, watch, watchEffect } from "vue";
 import { ChatShell } from "../shell.partial";
+import { PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/tooltip.partial";
 import { DirectMessageDraft } from "./useDirectMessage.partial";
@@ -35,8 +36,8 @@ import { OpenThreadState } from "./useThreads.partial";
 /** What the panel column can hold: the threads list, the mentions inbox, or one thread in its drawer. */
 export type PanelKind = "threads" | "mentions" | "thread";
 
-/** A view that takes the conversation's place in the main column. */
-export type MainViewKind = "directory";
+/** A view that takes the conversation's place in the main column: Browse channels or New message. */
+export type MainViewKind = "directory" | "newdm";
 
 /** Which pane a phone shows in front. */
 export type FramePane = "list" | "conversation" | "panel";
@@ -136,8 +137,11 @@ export type Frame = {
 
     closePanel: () => void;
 
-    /** Opens a full view in the conversation's place, or brings the one open back to the front. */
-    openMainView: (kind: MainViewKind) => Promise<void>;
+    /**
+     * Opens a full view in the conversation's place, or brings the one open back to the front.
+     * New message begins with the people given, as a profile card's Message chooses its person.
+     */
+    openMainView: (kind: MainViewKind, people?: PersonRow[]) => Promise<void>;
 
     /** Closes the full view: its X or Escape. The conversation underneath comes back. */
     closeMainView: () => void;
@@ -372,19 +376,33 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * sit in the header the view covers. The view open behind a phone's list comes back as it was.
      * Focus goes to the view's first field, except on a phone, where it would raise the keyboard.
      */
-    async function openMainView(kind: MainViewKind): Promise<void> {
+    async function openMainView(kind: MainViewKind, people?: PersonRow[]): Promise<void> {
         isListChosen.value = false;
         isPaneMotionOn.value = true;
         if (mainView.value !== kind) {
+            // One full view taking another's place returns, when it closes, to what opened the first.
             const active = document.activeElement;
-            mainViewOpener = active instanceof HTMLElement && rootElement.value?.contains(active) ? active : null;
+            const opener = mainView.value
+                ? mainViewOpener
+                : active instanceof HTMLElement && rootElement.value?.contains(active) ? active : null;
+            leaveMainView();
+            mainViewOpener = opener;
             if (panelKind.value) {
                 releasePanel();
                 panelKind.value = null;
                 finishClosing();
             }
             mainView.value = kind;
-            shell.value.rooms.openDirectory();
+            if (kind === "directory") {
+                shell.value.rooms.openDirectory();
+            }
+            else {
+                shell.value.directMessages.begin(people);
+            }
+        }
+        else if (kind === "newdm" && people) {
+            // A profile card's Message over New message begins it again with its person.
+            shell.value.directMessages.begin(people);
         }
 
         await nextTick();
@@ -440,10 +458,19 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
     /** Lets go of the full view, without moving focus. */
     function leaveMainView(): void {
-        if (mainView.value) {
-            mainView.value = null;
-            mainViewOpener = null;
+        const kind = mainView.value;
+        if (!kind) {
+            return;
+        }
+
+        mainView.value = null;
+        mainViewOpener = null;
+        if (kind === "directory") {
             shell.value.rooms.closeDirectory();
+        }
+        else {
+            // A first message on its way carries on alone; the people chosen and the draft go.
+            shell.value.directMessages.close();
         }
     }
 
@@ -628,9 +655,10 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         };
     });
 
-    // Any conversation that opens, from a row, a push or a new message, comes forward on a phone,
-    // and takes the place of a full view.
-    watch([activeChannelId, draft], () => {
+    // Any conversation that opens, from a row, a push or a first message, comes forward on a phone,
+    // and takes the place of a full view. A New message draft is drawn inside its view, so it
+    // coming or going changes nothing here.
+    watch(activeChannelId, () => {
         isListChosen.value = false;
         leaveMainView();
     });

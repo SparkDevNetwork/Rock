@@ -1140,7 +1140,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         send: async (body: string): Promise<void> => {
-            if (directMessages.draft) {
+            // While New message has people chosen, the box is theirs, never the conversation's
+            // left open underneath.
+            if (directMessages.draft || directMessages.lookup.status !== "idle") {
                 await directMessages.sendFirst(body);
             }
             else if (state.activeChannelId && isSendKeyed()) {
