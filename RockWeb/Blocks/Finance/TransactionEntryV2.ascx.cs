@@ -2654,8 +2654,8 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             var targetPerson = GetTargetPerson( rockContext );
 
-            // No person, no accounts
-            if ( targetPerson == null )
+            // Only a giver identified by login or a validated person token may see saved accounts; a person found by matching on an anonymous gift may not.
+            if ( targetPerson == null || !IsTargetPersonVerified() )
             {
                 return;
             }
@@ -2940,24 +2940,39 @@ mission. We are so grateful for your commitment.</p>
             var savedAccountId = ddlPersonSavedAccount.SelectedValue.AsIntegerOrNull();
             if ( savedAccountId.HasValue && savedAccountId.Value > 0 )
             {
-                FinancialPersonSavedAccount financialPersonSavedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( savedAccountId.Value );
+                var savedAccountOwner = IsTargetPersonVerified() ? GetTargetPerson( rockContext ) : null;
+                FinancialPersonSavedAccount financialPersonSavedAccount = null;
 
-                if ( financialPersonSavedAccount != null )
+                if ( savedAccountOwner != null )
                 {
-                    if ( financialPersonSavedAccount.ReferenceNumber.IsNotNullOrWhiteSpace() )
-                    {
-                        paymentInfo.ReferenceNumber = financialPersonSavedAccount.ReferenceNumber;
-                    }
+                    financialPersonSavedAccount = new FinancialPersonSavedAccountService( rockContext )
+                        .GetByPersonId( savedAccountOwner.Id )
+                        .Where( a => a.Id == savedAccountId.Value
+                            && !a.IsSystem
+                            && a.FinancialGatewayId == this.FinancialGateway.Id )
+                        .FirstOrDefault();
+                }
 
-                    if ( financialPersonSavedAccount.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
-                    {
-                        paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.GatewayPersonIdentifier;
-                    }
-                    else
-                    {
-                        // If this is from a SavedAccount, and GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber.
-                        paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.ReferenceNumber;
-                    }
+                if ( financialPersonSavedAccount == null )
+                {
+                    nbProcessTransactionError.Text = "The selected payment method is not available. Please choose a different payment method.";
+                    nbProcessTransactionError.Visible = true;
+                    return;
+                }
+
+                if ( financialPersonSavedAccount.ReferenceNumber.IsNotNullOrWhiteSpace() )
+                {
+                    paymentInfo.ReferenceNumber = financialPersonSavedAccount.ReferenceNumber;
+                }
+
+                if ( financialPersonSavedAccount.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+                {
+                    paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.GatewayPersonIdentifier;
+                }
+                else
+                {
+                    // If this is from a SavedAccount, and GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber.
+                    paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.ReferenceNumber;
                 }
             }
 
