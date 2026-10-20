@@ -49,8 +49,13 @@ namespace Rock.Tests.Utility
             ["SimpleUnwrapBlink"] = new HtmlSanitizeOptions( HtmlSanitizeOptions.Simple )
                 .SetRemovalMode( "blink", HtmlTagRemovalMode.Unwrap )
                 .MakeReadOnly(),
-            ["NotesMention"] = new HtmlSanitizeOptions( HtmlSanitizeOptions.Simple )
+            ["NoteText"] = new HtmlSanitizeOptions()
+                .AllowTag( "br" )
+                .AllowTag( "div" )
+                .AllowTag( "span" )
+                .AllowAttribute( "span", "class" )
                 .AllowAttribute( "span", "data-identifier" )
+                .SetDefaultRemovalMode( HtmlTagRemovalMode.Unwrap )
                 .MakeReadOnly(),
             ["SimpleFont"] = new HtmlSanitizeOptions( HtmlSanitizeOptions.Simple )
                 .AllowTag( "font" )
@@ -491,7 +496,12 @@ namespace Rock.Tests.Utility
 
         [TestMethod]
         [DataRow( "<b>a</b><font color=\"red\">b</font><font size=\"1\">c</font>", "SimpleFont", "<b>a</b><font color=\"red\">b</font><font>c</font>" )]
-        [DataRow( "<span class=\"mention\" data-identifier=\"abc\">@Ted</span><span data-other=\"x\">y</span><b data-identifier=\"z\">z</b>", "NotesMention", "<span class=\"mention\" data-identifier=\"abc\">@Ted</span><span>y</span><b>z</b>" )]
+        [DataRow( "<span class=\"mention\" data-identifier=\"abc\">@Ted</span><span data-other=\"x\">y</span><b data-identifier=\"z\">z</b>", "NoteText", "<span class=\"mention\" data-identifier=\"abc\">@Ted</span><span>y</span>z" )]
+        [DataRow( "<span class=\"mention\" data-identifier=\"abc\" style=\"color: red\" title=\"t\">@Ted</span>", "NoteText", "<span class=\"mention\" data-identifier=\"abc\">@Ted</span>" )]
+        [DataRow( "a\n<div class=\"c\" style=\"color: red\">b</div><br class=\"c\">c &amp; &lt; &nbsp;", "NoteText", "a\n<div>b</div><br>c &amp; &lt; &nbsp;" )]
+        [DataRow( "<b style=\"color: red\">a</b><a href=\"https://x\">b</a><h1>c</h1>", "NoteText", "abc" )]
+        [DataRow( "a<img src=\"/x.png\">b<script>x</script><style>y</style>c", "NoteText", "abc" )]
+        [DataRow( "Tom & Jerry say 3 < 5", "NoteText", "Tom &amp; Jerry say 3 &lt; 5" )]
         [DataRow( "<span class=\"mention\" data-identifier=\"abc\">@Ted</span>", "Simple", "<span class=\"mention\">@Ted</span>" )]
         [DataRow( "<p>a<img src=\"/a.png\" alt=\"x\">b</p>", "RichNoImg", "<p>ab</p>" )]
         [DataRow( "<img src=\"/a.png\" alt=\"x\" width=\"1\">", "RichNoImgAlt", "<img src=\"/a.png\" width=\"1\">" )]
