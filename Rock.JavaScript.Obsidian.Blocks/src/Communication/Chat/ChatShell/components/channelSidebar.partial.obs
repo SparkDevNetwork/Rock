@@ -67,7 +67,7 @@
                             :data-unread="isUnread(row) ? 'true' : 'false'"
                             :data-muted="isMuted(row) ? 'true' : 'false'"
                             :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
-                            :aria-current="isActive(row) ? 'true' : undefined"
+                            :aria-current="isActive(row) && !isBrowseOpen ? 'true' : undefined"
                             @click="emit('select', row.channel_id)"
                             @animationend.self="onFlashEnd(row.channel_id)">
                         <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
@@ -590,7 +590,10 @@
             default: false
         },
 
-        /** Whether Browse channels is open, which marks its row as the one shown. */
+        /**
+         * Whether Browse channels is open, which marks its row as the one shown in place of the
+         * conversation under it, which is out of view until the directory closes.
+         */
         isBrowseOpen: {
             type: Boolean,
             default: false

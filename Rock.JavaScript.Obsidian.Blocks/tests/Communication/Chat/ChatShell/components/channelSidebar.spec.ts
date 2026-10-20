@@ -517,6 +517,16 @@ describe("Browse channels", () => {
         expect(w.get("[data-testid='sidebar-browse']").attributes("aria-current")).toBe("true");
     });
 
+    test("takes the current mark from the conversation under it while the directory is open, and gives it back", async () => {
+        const w = mountSidebar({ activeChannelId: team.channel_id, isBrowseOpen: true });
+
+        expect(rowOf(w, team.channel_id).attributes("aria-current")).toBeUndefined();
+        expect(w.get("[data-testid='sidebar-browse']").attributes("aria-current")).toBe("true");
+
+        await w.setProps({ isBrowseOpen: false });
+        expect(rowOf(w, team.channel_id).attributes("aria-current")).toBe("true");
+    });
+
     test("is the Channels heading's 26px plus too, and only that heading's", async () => {
         const w = mountSidebar();
 
