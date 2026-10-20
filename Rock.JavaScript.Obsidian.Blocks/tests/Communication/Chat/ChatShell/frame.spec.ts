@@ -840,6 +840,66 @@ describe("the panel column", () => {
         expect(w.get("[data-testid='header-threads']").attributes("aria-expanded")).toBe("false");
     });
 
+    test("gives focus back to the header button that opened it when its X closes it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='header-threads']").element);
+    });
+
+    test("closes again from the header button that opened it, letting its list go", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        expect(panelOpen(w)).toBe("false");
+        expect((mockShell!.threads as { closeList: jest.Mock }).closeList).toHaveBeenCalledTimes(1);
+    });
+
+    test("keeps drawing a closed panel while the column narrows, then lets it go", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+
+        expect(panelOpen(w)).toBe("false");
+        expect(w.find("[data-testid='frame-panel'] [data-testid='panel-title']").exists()).toBe(true);
+
+        // jsdom has no token sheet, so the column's close takes the design's 300ms fallback.
+        await new Promise(resolve => setTimeout(resolve, 350));
+        await settle();
+
+        expect(w.find("[data-testid='frame-panel'] [data-testid='panel-title']").exists()).toBe(false);
+    });
+
+    test("lets an open list go when a thread pill opens a thread in its place, with no way back to it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+
+        expect((mockShell!.threads as { closeList: jest.Mock }).closeList).toHaveBeenCalledTimes(1);
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+        expect(w.find("[data-testid='frame-panel'] [data-testid='panel-back']").exists()).toBe(false);
+    });
+
     test("on a phone, Threads is in the header's overflow menu, not a button of its own", async () => {
         const w = await mountBlock(390);
         await openRow(w, team.channel_id);
