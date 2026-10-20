@@ -29,7 +29,7 @@
 // to the room's last message, on the sender's own devices too. A channel's row only bolds.
 import { reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
-import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
+import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
 
 /** What the store reaches outside itself. */
 export type ChannelStoreDependencies = {
@@ -45,6 +45,9 @@ export type ChannelStore = {
     /** The channel on screen, or null. */
     activeChannelId: string | null;
 
+    /** The church's chat badges, in the order the bootstrap lists them. */
+    badges: ChatBadge[];
+
     /** The room the person is previewing without a sidebar row of its own, whose stand-in row the rows hold; or null. */
     previewChannelId: string | null;
 
@@ -59,6 +62,9 @@ export type ChannelStore = {
      * null. A room the sidebar already holds is never previewed.
      */
     setPreview: (row: SidebarRow | null) => void;
+
+    /** Replaces the church's badges with the ones a fresh bootstrap listed. */
+    setBadges: (badges: ChatBadge[]) => void;
 
     /** Sets the channel on screen. */
     setActive: (channelId: string | null) => void;
@@ -104,7 +110,8 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
     const store = reactive({
         rows: [] as SidebarRow[],
         activeChannelId: null as string | null,
-        previewChannelId: null as string | null
+        previewChannelId: null as string | null,
+        badges: [] as ChatBadge[]
     });
 
     /**
@@ -328,6 +335,10 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             const at = ++moves;
             movedAt.clear();
             rows.forEach(row => movedAt.set(row.channel_id, at));
+        },
+
+        setBadges: (badges: ChatBadge[]): void => {
+            store.badges = badges;
         },
 
         saveSent: (): number => moves,

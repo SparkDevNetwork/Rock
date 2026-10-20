@@ -200,6 +200,12 @@ export type TimelineMessage = {
     sender_last_name?: string | null;
     sender_avatar_url?: string | null;
     sender_listed?: boolean;
+
+    /**
+     * Whether the sender leads this channel now, under any of their merged records; false in a
+     * direct message and on a system line. Kept live, as a renamed sender's name is.
+     */
+    sender_is_leader?: boolean;
     message_type: string;
     body: string | null;
 
@@ -425,6 +431,54 @@ export type FindDmAnswer = {
     channel_id: string | null;
 };
 
+/** What a person who shows their profile details lets others see. */
+export type PersonDetails = {
+    /** Their campus, by the guid the init box names it under; null when they have none. */
+    campus_id: string | null;
+
+    /** The church's chat badges they hold, by key, in no particular order. */
+    badge_keys: string[];
+};
+
+/** One person of a room's roster, as chat_list_members answers it. */
+export type RosterMember = {
+    person_alias_guid: string;
+    nick_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+
+    /** Whether they lead this room. */
+    is_leader: boolean;
+
+    /** Their campus and badges, only when they show their profile details; else null. */
+    details: PersonDetails | null;
+
+    /** Whether the reader may message them from here. */
+    can_message: boolean;
+};
+
+/** What chat_list_members returns: one page, leaders first, then by name. */
+export type RosterPage = {
+    members: RosterMember[];
+};
+
+/**
+ * One of the church's chat badges, as the bootstrap lists them: a label a person carries across
+ * the whole church, drawn on their profile card in the church's order.
+ */
+export type ChatBadge = {
+    badge_key: string;
+    name: string;
+
+    /** A Font Awesome class Rock pages load, or null for none. */
+    icon_css: string | null;
+
+    /** The badge's own colors, or null where the church set none. */
+    bg_color: string | null;
+    fg_color: string | null;
+    sort_order: number;
+};
+
 /** One person chat_search_mentionable answers. It carries no photo; the picker draws initials. */
 export type MentionPerson = {
     person_alias_guid: string;
@@ -492,6 +546,9 @@ export type MessageCreatedEvent = {
 
     /** The actions the server lists on it, the same for every viewer. */
     actions?: MessageAction[];
+
+    /** Whether the sender leads this channel now; false in a direct message and on a system line. */
+    sender_is_leader?: boolean;
     created_at: string;
 
     /** The key the message was sent under; null for a message sent without one. */

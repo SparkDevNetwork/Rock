@@ -46,7 +46,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelFacts, ChannelUnreadEvent, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
+import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -824,7 +824,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         // the bootstrap's own key names
         /* eslint-disable-next-line @typescript-eslint/naming-convention */
-        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], me?: { unread_mentions?: UnreadMention[] } } | null;
+        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: { unread_mentions?: UnreadMention[] } } | null;
         const rows = answer?.channels ?? [];
         channels.setSidebar(rows);
         // every load restates the unread mentions, so one read elsewhere stops lighting the dot
@@ -832,6 +832,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         if (Array.isArray(answer?.reactions)) {
             favorites.splice(0, favorites.length, ...answer.reactions);
         }
+        // a profile card names a person's badge keys by these
+        channels.setBadges(Array.isArray(answer?.badges) ? answer.badges : []);
 
         // In arrival order, through the same handlers; each states a value, and a mention the
         // answer already counted is not counted again.
