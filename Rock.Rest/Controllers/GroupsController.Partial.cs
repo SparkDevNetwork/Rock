@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
-using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -1076,155 +1075,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the map information window.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="infoWindowDetails">The information window details.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException">
-        /// </exception>
-        [Authenticate, Secured]
-        [HttpPost]
-        [System.Web.Http.Route( "api/Groups/GetMapInfoWindow/{groupId}/{locationId}" )]
-        [Rock.SystemGuid.RestActionGuid( "2D5859DF-84C8-4237-80D1-2CC6F70663F9" )]
-        public InfoWindowResult GetMapInfoWindow( int groupId, int locationId, [FromBody] InfoWindowRequest infoWindowDetails )
-        {
-            // Enable proxy creation since security is being checked and need to navigate parent authorities
-            SetProxyCreation( true );
-
-            // Use new service with new context so properties can be navigated by liquid
-            var group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Location,Campus,Members.Person" )
-                .Where( g => g.Id == groupId )
-                .FirstOrDefault();
-
-            if ( group != null )
-            {
-                var person = GetPerson();
-
-                if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
-                {
-                    string infoWindow = group.Name.EncodeHtml();
-
-                    if ( infoWindowDetails != null )
-                    {
-                        var groupPageParams = new Dictionary<string, string>();
-                        groupPageParams.Add( "GroupId", group.Id.ToString() );
-                        var groupDetailUrl = new PageReference( infoWindowDetails.GroupPage, groupPageParams ).BuildUrl();
-
-                        var personPageParams = new Dictionary<string, string>();
-                        personPageParams.Add( "PersonId", string.Empty );
-                        var personProfileUrl = new PageReference( infoWindowDetails.PersonProfilePage, personPageParams ).BuildUrl();
-
-                        var mapPageParams = new Dictionary<string, string>();
-                        mapPageParams.Add( "GroupId", group.Id.ToString() );
-                        var groupMapUrl = new PageReference( infoWindowDetails.MapPage, mapPageParams ).BuildUrl();
-
-                        var grouplocation = group.GroupLocations
-                            .Where( g => g.LocationId == locationId )
-                            .FirstOrDefault();
-
-                        dynamic dynGroup = new ExpandoObject();
-                        dynGroup.GroupId = group.Id;
-                        dynGroup.GroupName = group.Name;
-                        dynGroup.DetailPageUrl = groupDetailUrl;
-                        dynGroup.MapPageUrl = groupMapUrl;
-
-                        var dictCampus = new Dictionary<string, object>();
-                        dictCampus.Add( "Name", group.Campus != null ? group.Campus.Name : string.Empty );
-                        dynGroup.Campus = dictCampus;
-
-                        var dictGroupType = new Dictionary<string, object>();
-                        dictGroupType.Add( "Id", group.GroupType.Id );
-                        dictGroupType.Add( "Guid", group.GroupType.Guid.ToString().ToUpper() );
-                        dictGroupType.Add( "GroupTerm", group.GroupType.GroupTerm );
-                        dictGroupType.Add( "GroupMemberTerm", group.GroupType.GroupMemberTerm );
-                        dynGroup.GroupType = dictGroupType;
-
-                        var dictLocation = new Dictionary<string, object>();
-                        dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Value );
-                        /*
-                            10/19/2026 - MSE
-
-                            The address is used as HTML in the info window (line breaks become <br>)
-                            and can be entered by anonymous visitors (Family Pre-Registration) or
-                            group editors, so it is encoded before the line breaks are added.
-
-                            Reason: Prevent stored XSS through addresses in the map info window.
-                        */
-                        dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() );
-                        dictLocation.Add( "Street1", grouplocation.Location.Street1 );
-                        dictLocation.Add( "Street2", grouplocation.Location.Street2 );
-                        dictLocation.Add( "City", grouplocation.Location.City );
-                        dictLocation.Add( "State", grouplocation.Location.State );
-                        dictLocation.Add( "PostalCode", grouplocation.Location.PostalCode );
-                        dictLocation.Add( "Country", grouplocation.Location.Country );
-                        dynGroup.Location = dictLocation;
-
-                        var members = new List<Dictionary<string, object>>();
-                        foreach ( var member in group.Members.OrderBy( m => m.GroupRole.Order ).ThenBy( m => m.Person.BirthDate ) )
-                        {
-                            var dictMember = new Dictionary<string, object>();
-                            dictMember.Add( "PersonId", member.Person.Id );
-                            dictMember.Add( "ProfilePageUrl", personProfileUrl + member.Person.Id.ToString() );
-                            dictMember.Add( "Role", member.GroupRole.Name );
-                            dictMember.Add( "NickName", member.Person.NickName );
-                            dictMember.Add( "LastName", member.Person.LastName );
-                            dictMember.Add( "PhotoUrl", member.Person.PhotoId.HasValue ? member.Person.PhotoUrl : string.Empty );
-                            dictMember.Add( "PhotoId", member.Person.PhotoId );
-                            dictMember.Add(
-                                "ConnectionStatus",
-                                member.Person.ConnectionStatusValue != null ? member.Person.ConnectionStatusValue.Value : string.Empty );
-                            dictMember.Add( "Email", member.Person.Email );
-
-                            var phoneTypes = new List<Dictionary<string, object>>();
-                            foreach ( PhoneNumber p in member.Person.PhoneNumbers )
-                            {
-                                var dictPhoneNumber = new Dictionary<string, object>();
-                                dictPhoneNumber.Add( "Name", p.NumberTypeValue.Value );
-                                dictPhoneNumber.Add( "Number", p.ToString() );
-                                phoneTypes.Add( dictPhoneNumber );
-                            }
-
-                            dictMember.Add( "PhoneTypes", phoneTypes );
-
-                            members.Add( dictMember );
-                        }
-
-                        dynGroup.Members = members;
-
-                        var groupDict = dynGroup as IDictionary<string, object>;
-                        /*
-                            10/20/26 - JMH
-
-                            The template comes from the request, so it renders with no Lava
-                            commands and with person tokens turned off.
-
-                            Reason: The caller controls the template.
-                        */
-                        string result;
-                        using ( Rock.Security.PersonTokenScope.RestrictTo( null ) )
-                        {
-                            result = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template ).ResolveMergeFields( groupDict, new List<string>() );
-                        }
-
-                        return new InfoWindowResult( result );
-                    }
-
-                    return new InfoWindowResult( infoWindow );
-                }
-                else
-                {
-                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
-                }
-            }
-            else
-            {
-                throw new HttpResponseException( HttpStatusCode.BadRequest );
-            }
-        }
-
-        /// <summary>
         ///
         /// </summary>
         public class GuestFamily
@@ -1392,44 +1242,6 @@ namespace Rock.Rest.Controllers
             /// The main phone.
             /// </value>
             public PhoneNumber MainPhone { get; set; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public class InfoWindowRequest
-        {
-            /// <summary>
-            /// Gets or sets the group page.
-            /// </summary>
-            /// <value>
-            /// The group page.
-            /// </value>
-            public string GroupPage { get; set; }
-
-            /// <summary>
-            /// Gets or sets the person profile page.
-            /// </summary>
-            /// <value>
-            /// The person profile page.
-            /// </value>
-            public string PersonProfilePage { get; set; }
-
-            /// <summary>
-            /// Gets or sets the map page.
-            /// </summary>
-            /// <value>
-            /// The map page.
-            /// </value>
-            public string MapPage { get; set; }
-
-            /// <summary>
-            /// Gets or sets the template.
-            /// </summary>
-            /// <value>
-            /// The template.
-            /// </value>
-            public string Template { get; set; }
         }
 
         /// <summary>
@@ -1672,29 +1484,6 @@ namespace Rock.Rest.Controllers
             /// The end time.
             /// </value>
             public TimeSpan EndTime { get; set; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public class InfoWindowResult
-        {
-            /// <summary>
-            /// Gets or sets the result.
-            /// </summary>
-            /// <value>
-            /// The result.
-            /// </value>
-            public string Result { get; set; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="InfoWindowResult"/> class.
-            /// </summary>
-            /// <param name="result">The result.</param>
-            public InfoWindowResult( string result )
-            {
-                Result = result;
-            }
         }
 
         #endregion
