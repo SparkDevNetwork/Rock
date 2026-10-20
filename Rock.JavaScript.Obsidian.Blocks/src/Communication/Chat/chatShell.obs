@@ -1172,9 +1172,20 @@
     });
 
     // The join bar gives way to the composer in the same channel once the join settles, and the
-    // composer rises into its place; one opened another way is simply there.
+    // composer rises into its place; one opened another way is simply there. Focus in the bar
+    // goes with it to the composer, or on a phone, where a focused composer would raise the
+    // keyboard unasked, to the conversation's title; focus anywhere else is the person's and stays.
     watch([isJoinBarShown, activeChannelId], ([isShown, channelId], [wasShown, wasChannelId]) => {
         isComposerEntering.value = wasShown && !isShown && channelId === wasChannelId;
+        const bar = rootElement.value?.querySelector("[data-testid='frame-main'] [data-testid='join-bar']");
+        if (!isComposerEntering.value || !bar?.contains(document.activeElement)) {
+            return;
+        }
+
+        void nextTick(() => {
+            const main = rootElement.value?.querySelector("[data-testid='frame-main']");
+            main?.querySelector<HTMLElement>(isPhone.value ? "[data-testid='header-title']" : "[data-testid='composer-input']")?.focus();
+        });
     });
 
     // From the first sidebar the page loads, a count of none included, so a badge a mention push

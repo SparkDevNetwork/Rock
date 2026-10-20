@@ -114,6 +114,15 @@ describe("pending", () => {
         expect(text.find(".chat-spinner").exists()).toBe(true);
         expect(w.find("button").exists()).toBe(false);
     });
+    test("keeps focus on the bar when the button the person pressed goes, rather than dropping it to the page", async () => {
+        const w = mountBar({ kind: "joining" });
+        (w.get("[data-testid='join-channel']").element as HTMLElement).focus();
+
+        await w.setProps({ state: { kind: "pending" } });
+        await nextTick();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='join-bar']").element);
+    });
 
 });
 

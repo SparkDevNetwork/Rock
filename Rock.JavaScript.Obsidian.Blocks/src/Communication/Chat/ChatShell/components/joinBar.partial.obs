@@ -1,8 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-joinbar-place" :class="{ 'is-phone': isPhone }">
+        <!-- Focusable from script, so focus has a place when the button pressed goes. -->
         <div ref="barElement"
              class="chat-joinbar"
+             tabindex="-1"
              :class="{ 'is-refused': drawn === 'refused', 'is-pending': drawn === 'pending' }"
              data-testid="join-bar"
              :data-state="drawn">
@@ -271,16 +273,22 @@
 
     // #region Watchers
 
-    // The button the person pressed leaves with a refusal, so focus goes to the way on from here
-    // rather than falling to the page; focus anywhere else is the person's and stays.
+    // The button the person pressed leaves with a refusal or a pending join, so focus goes to the
+    // way on from here, or to the bar saying the room is setting up, rather than falling to the
+    // page; focus anywhere else is the person's and stays.
     watch(drawn, async (now) => {
         const hadFocus = !!barElement.value && barElement.value.contains(document.activeElement);
-        if (now !== "refused" || !hadFocus) {
+        if ((now !== "refused" && now !== "pending") || !hadFocus) {
             return;
         }
 
         await nextTick();
-        browseButton.value?.focus();
+        if (now === "refused") {
+            browseButton.value?.focus();
+        }
+        else {
+            barElement.value?.focus();
+        }
     }, { flush: "pre" });
 
     // #endregion Watchers

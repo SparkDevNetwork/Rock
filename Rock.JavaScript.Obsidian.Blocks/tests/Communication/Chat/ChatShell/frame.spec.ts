@@ -2400,6 +2400,43 @@ describe("a channel the person has not joined", () => {
         expect(main.get(".chat-composer").classes()).toContain("is-entering");
     });
 
+    test("moves focus from the join bar to the composer once joined, as the design does on a wide screen", async () => {
+        const w = await openVolunteers();
+        (w.get("[data-testid='join-channel']").element as HTMLElement).focus();
+
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true });
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='composer-input']").element);
+    });
+
+    test("on a phone moves focus from the join bar to the conversation's title, never raising the keyboard", async () => {
+        const w = await mountBlock(390);
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(volunteers);
+        await settle();
+        await openRow(w, volunteers.channel_id);
+        (w.get("[data-testid='join-channel']").element as HTMLElement).focus();
+
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true });
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-title']").element);
+    });
+
+    test("leaves focus alone after a join when the person was elsewhere", async () => {
+        const w = await openVolunteers();
+        const search = w.get("[data-testid='sidebar-search']").element as HTMLElement;
+        search.focus();
+
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true });
+        await settle();
+
+        expect(document.activeElement).toBe(search);
+    });
+
     test("speaks what the rooms say about a join while Browse channels is closed", async () => {
         const w = await openVolunteers();
         expect(w.find("[data-testid='main-view']").exists()).toBe(false);
