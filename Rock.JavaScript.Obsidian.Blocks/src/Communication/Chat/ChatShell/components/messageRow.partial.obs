@@ -62,12 +62,25 @@
             </button>
             <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" isCommunity @jump="emit('jump', $event)" />
             <div class="chat-cm-gutter">
-                <span v-if="isHead" class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
+                <template v-if="isHead">
+                    <button v-if="authorGuid"
+                            type="button"
+                            class="chat-cm-av chat-person-opener"
+                            data-testid="sender-avatar"
+                            :aria-label="displayName"
+                            @click="onAuthor"><Avatar :people="[face]" :size="communityFaceSize" /></button>
+                    <span v-else class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
+                </template>
                 <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
             </div>
             <div class="chat-cm-main">
                 <div v-if="isHead" class="chat-cm-head" data-testid="message-head">
-                    <span class="chat-cm-name" data-testid="sender-name">{{ displayName }}</span>
+                    <component :is="authorGuid ? 'button' : 'span'"
+                               :type="authorGuid ? 'button' : undefined"
+                               class="chat-cm-name"
+                               :class="{ 'chat-person-opener': !!authorGuid }"
+                               data-testid="sender-name"
+                               @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
                     <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                 </div>
@@ -79,7 +92,7 @@
                                v-on="editorHandlers" />
                 <div v-else class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
                     <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                    <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" />
+                    <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
                     <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
@@ -104,7 +117,13 @@
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
         <template v-else>
-            <div v-if="isNameShown" class="chat-msg-name" data-testid="sender-name">{{ displayName }}</div>
+            <div v-if="isNameShown" class="chat-msg-name">
+                <component :is="authorGuid ? 'button' : 'span'"
+                           :type="authorGuid ? 'button' : undefined"
+                           :class="{ 'chat-person-opener': !!authorGuid }"
+                           data-testid="sender-name"
+                           @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
+            </div>
             <button v-if="isThreadReply"
                     type="button"
                     class="chat-thread-label"
@@ -116,7 +135,15 @@
             <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" @jump="emit('jump', $event)" />
             <div class="chat-msg-line">
                 <span v-if="!isOwn" class="chat-msg-face">
-                    <Avatar v-if="isLastOfGroup" :people="[face]" :size="34" />
+                    <template v-if="isLastOfGroup">
+                        <button v-if="authorGuid"
+                                type="button"
+                                class="chat-person-opener"
+                                data-testid="sender-avatar"
+                                :aria-label="displayName"
+                                @click="onAuthor"><Avatar :people="[face]" :size="34" /></button>
+                        <Avatar v-else :people="[face]" :size="34" />
+                    </template>
                 </span>
                 <!-- The bubble's box, which its bar is docked to the outer top corner of. -->
                 <div class="chat-bub-anchor">
@@ -131,7 +158,7 @@
                             <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                         </div>
                         <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                        <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" isConversation />
+                        <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" isConversation :isPersonOpenable="!!message" @person="onPerson" />
                     </div>
                     <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
                 </div>
@@ -290,6 +317,44 @@
     font-size: 12.5px;
     font-weight: 600;
     color: var(--chat-text-2);
+}
+
+/*
+    An author's name or face that opens their card keeps its look: the button gives up its own face,
+    and the name underlines on hover as a link would.
+*/
+.chat-person-opener {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-xs);
+}
+
+.chat-cm-name.chat-person-opener {
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+.chat-cm-name.chat-person-opener:hover,
+.chat-msg-name .chat-person-opener:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.chat-msg-face > .chat-person-opener {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    line-height: 0;
+    border-radius: 50%;
+}
+
+.chat-msg-face > .chat-person-opener > :deep(.chat-pile) {
+    position: static;
 }
 
 .chat-msg-line {
@@ -1267,6 +1332,15 @@
     /** Community's face fills its gutter, which is narrower on a phone. */
     const communityFaceSize = computed((): number => props.isPhone ? 32 : 36);
 
+    /**
+     * The author whose card the name and face open: a stored message's sender. A send not stored
+     * yet, a line from the church and a sender the church no longer lists name no one to open.
+     */
+    const authorGuid = computed((): string | null => {
+        const message = props.message;
+        return message?.person_alias_guid && message.sender_listed !== false ? message.person_alias_guid : null;
+    });
+
     const face = computed((): Face => ({
         name: displayName.value,
         photoUrl: props.message?.sender_avatar_url ?? (props.isOwn ? props.personPhotoUrl : null)
@@ -1438,6 +1512,18 @@
         if (props.pending) {
             emit("discard", props.pending.localId);
         }
+    }
+
+    /** Asks for the author's card beside the name or face pressed. */
+    function onAuthor(event: MouseEvent): void {
+        if (authorGuid.value) {
+            onPerson(authorGuid.value, event.currentTarget as HTMLElement);
+        }
+    }
+
+    /** Asks for a person's card, from the author or a chip in the body, beside what was pressed. */
+    function onPerson(personAliasGuid: string, anchor: HTMLElement): void {
+        emit("messageAction", { kind: "person", personAliasGuid, anchor });
     }
 
     function onOpenRepliedThread(): void {

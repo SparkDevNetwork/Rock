@@ -43,14 +43,16 @@ export type ActionNotice = {
 /**
  * What a message's bar, menu, sheet, editor, reactions or block button asks for, with the message
  * it was asked on. A block's button passes onSettled, so it stays busy until its action has
- * answered; a request for the picker passes what it is placed beside.
+ * answered; a request for the picker passes what it is placed beside, and so does a request for
+ * a person's card, made from the author's name or face or a chip, which names no message.
  */
 export type MessageActionRequest =
     | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit", message: TimelineMessage }
     | { kind: "saveEdit", message: TimelineMessage, body: string }
     | { kind: "server", message: TimelineMessage, action: MessageAction, onSettled?: () => void }
     | { kind: "react", message: TimelineMessage, code: string }
-    | { kind: "openPicker", message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement };
+    | { kind: "openPicker", message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement }
+    | { kind: "person", personAliasGuid: string, anchor: HTMLElement };
 
 /** What the actions reach outside themselves. */
 export type MessageActionsDependencies = {
