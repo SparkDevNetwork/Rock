@@ -15,7 +15,7 @@
 // </copyright>
 //
 // What each column of the block's frame shows: the panel column's one panel at a time (the
-// threads list, the mentions inbox or a thread in its drawer), the way back from a thread to the
+// threads list, the mentions inbox, the members panel or a thread in its drawer), the way back from a thread to the
 // list it came from, focus handed back to what opened a panel, the main column's full views (such
 // as Browse channels) that take the conversation's place, and on a phone which of the three
 // panes is in front. The block keeps the template and the wiring; this keeps the rules, so the
@@ -32,8 +32,11 @@ import { focusQuietly } from "../ui/tooltip.partial";
 import { ReplyLanding, ThreadOrigin } from "./useJump.partial";
 import { OpenThreadState } from "./useThreads.partial";
 
-/** What the panel column can hold: the threads list, the mentions inbox, or one thread in its drawer. */
-export type PanelKind = "threads" | "mentions" | "thread";
+/** What the panel column can hold: the threads list, the mentions inbox, the members panel, or one thread in its drawer. */
+export type PanelKind = "threads" | "mentions" | "members" | "thread";
+
+/** The panels that list something, which a thread can be opened from or which take a thread's place. */
+export type ListPanelKind = "threads" | "mentions" | "members";
 
 /** A view that takes the conversation's place in the main column: Browse channels or New message. */
 export type MainViewKind = "directory" | "newdm";
@@ -114,7 +117,7 @@ export type Frame = {
 
     onBack: () => Promise<void>;
 
-    onListPanel: (kind: "threads" | "mentions") => Promise<void>;
+    onListPanel: (kind: ListPanelKind) => Promise<void>;
 
     openThreadFromList: (rootId: number, channelId: string) => void;
 
@@ -280,17 +283,17 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     }
 
     /**
-     * The header's Threads opens the open conversation's threads, and its Mentions the inbox; each
-     * closes its list when it is the one open.
+     * The header's Threads opens the open conversation's threads, its Mentions the inbox, and
+     * Members the open conversation's roster; each closes its list when it is the one open.
      */
-    async function onListPanel(kind: "threads" | "mentions"): Promise<void> {
+    async function onListPanel(kind: ListPanelKind): Promise<void> {
         if (panelKind.value === kind) {
             closePanel();
             return;
         }
 
         const channelId = activeChannelId.value;
-        if (kind === "threads" && !channelId) {
+        if (kind !== "mentions" && !channelId) {
             return;
         }
 
@@ -300,7 +303,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         isPaneMotionOn.value = true;
         panelKind.value = kind;
         shownPanel.value = kind;
-        void (channelId && kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.mentions.openInbox());
+        void (!channelId || kind === "mentions" ? shell.value.mentions.openInbox()
+            : kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.members.open(channelId));
 
         // Focus goes to the panel's first control, or its X or back chevron when it has none yet,
         // without that button's tooltip, as a list whose first control is a tab shows none.
@@ -520,6 +524,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         else if (list === "mentions") {
             shell.value.mentions.closeInbox();
         }
+        else if (list === "members") {
+            shell.value.members.close();
+        }
     }
 
     /**
@@ -550,7 +557,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * header's dot, as the thread is where they are read.
      */
     async function openThreadDrawer(channelId: string, rootId: number, origin: ThreadOrigin): Promise<void> {
-        if (origin === null && (panelKind.value === "threads" || panelKind.value === "mentions")) {
+        if (origin === null && (panelKind.value === "threads" || panelKind.value === "mentions" || panelKind.value === "members")) {
             releasePanel();
         }
         shell.value.mentions.threadOpened(channelId, rootId);
@@ -703,14 +710,14 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
     });
 
-    // The threads list follows the open conversation, and closes with none open.
+    // The threads list and the roster follow the open conversation; a draft has neither, so it closes.
     watch(activeChannelId, channelId => {
-        if (panelKind.value !== "threads") {
+        if (panelKind.value !== "threads" && panelKind.value !== "members") {
             return;
         }
 
         if (channelId) {
-            void shell.value.threads.openList(channelId);
+            void (panelKind.value === "threads" ? shell.value.threads.openList(channelId) : shell.value.members.open(channelId));
         }
         else {
             closePanel();

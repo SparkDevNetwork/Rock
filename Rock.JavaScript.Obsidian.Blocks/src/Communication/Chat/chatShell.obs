@@ -4,7 +4,8 @@
          class="chat-shell"
          data-testid="chat-shell"
          :data-phase="shell.state.phase"
-         :data-phone="isPhone ? 'true' : 'false'">
+         :data-phone="isPhone ? 'true' : 'false'"
+         @keydown="onShellKeydown">
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -263,6 +264,18 @@
                                    @refresh="shell.mentions.refreshInbox"
                                    @loadOlder="shell.mentions.loadOlder"
                                    @close="closePanel" />
+
+                    <MembersPanel v-else-if="shownPanel === 'members'"
+                                  v-bind="membersView"
+                                  :campusNames="campusNames"
+                                  :isPhone="isPhone"
+                                  :personAliasGuid="personAliasGuid"
+                                  @query="shell.members.setQuery"
+                                  @loadMore="shell.members.loadMore"
+                                  @retry="shell.members.retry"
+                                  @retrySearch="shell.members.retrySearch"
+                                  @message="onMemberMessage"
+                                  @close="closePanel" />
 
                     <ThreadDrawer v-else-if="shownPanel === 'thread' && drawnThread"
                                   :key="drawnThread.rootId"
@@ -579,6 +592,8 @@
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
+    import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
+    import { searchStatus, shownMembers } from "./ChatShell/composables/useMembers.partial";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import JoinBar from "./ChatShell/components/joinBar.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
@@ -827,6 +842,29 @@
 
         return kinds;
     });
+
+    /** What the members panel draws of the roster: the rows the query shows and where its search is. */
+    const membersView = computed(() => {
+        const members = shell.value.members.state;
+        const channelId = members.channelId ?? "";
+        const isQuery = members.query.trim() !== "";
+        return {
+            channelName: roomTitles.value[channelId] ?? "",
+            isChannel: roomKinds.value[channelId] === "channel",
+            members: shownMembers(members),
+            hasMore: isQuery ? members.search.hasMore : members.hasMore,
+            isLoading: members.isLoading,
+            isLoadingMore: members.isLoadingMore,
+            error: members.error,
+            moreError: members.moreError,
+            refusal: members.refusal,
+            query: members.query,
+            searchStatus: searchStatus(members)
+        };
+    });
+
+    /** The church's campus names by guid in lower case, from the init box, for a member's campus. */
+    const campusNames: Record<string, string> = Object.fromEntries((config.campuses ?? []).map(campus => [campus.guid.toLowerCase(), campus.name ?? ""]));
 
     /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
     const publicRooms = computed((): Record<string, boolean> => {
@@ -1200,6 +1238,34 @@
         personCampusGuid.value = outcome.session.personCampusGuid ?? null;
         shell.value = buildShell(outcome.session);
         void shell.value.start();
+    }
+
+    /**
+     * Message from a member row: the conversation with that person, or a draft for them, in place
+     * of the open room, as New message would open it.
+     */
+    async function onMemberMessage(personAliasGuid: string): Promise<void> {
+        const member = shownMembers(shell.value.members.state).find(m => m.person_alias_guid === personAliasGuid);
+        if (!member) {
+            return;
+        }
+
+        const directMessages = shell.value.directMessages;
+        [...directMessages.chosen].forEach(person => directMessages.unchoose(person.person_alias_guid));
+        directMessages.choose({ person_alias_guid: member.person_alias_guid, nick_name: member.nick_name ?? "", last_name: member.last_name ?? "", avatar_url: member.avatar_url });
+        closePanel();
+        await onOpenDirectMessage();
+    }
+
+    /**
+     * A temporary way into the members panel, Alt+Shift+M, until the header's facepile and a
+     * group's Members button open it; it goes once they do.
+     */
+    function onShellKeydown(event: KeyboardEvent): void {
+        if (event.altKey && event.shiftKey && event.key.toLowerCase() === "m" && activeChannelId.value) {
+            event.preventDefault();
+            void onListPanel("members");
+        }
     }
 
     // #endregion Event Handlers

@@ -36,6 +36,7 @@ import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
 import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms } from "./composables/useRooms.partial";
+import { createMembers, Members } from "./composables/useMembers.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -205,6 +206,8 @@ export type ChatShell = {
 
     /** Browse channels, each open room's facts, Join, and a previewed room's sidebar row. */
     rooms: Rooms;
+    /** The members panel's roster and its search. */
+    members: Members;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -458,6 +461,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reactions.stop();
         mentions.stop();
         rooms.stop();
+        members.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -699,6 +703,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isCampusLimited: options.areSharedChannelsFilteredByCampus ?? false,
         notify: notice => options.notify?.(notice)
     });
+    const members = createMembers({ call });
 
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId) => {
@@ -992,6 +997,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reactions,
         mentions,
         rooms,
+        members,
         isNewMessageShown: isNewMessageShown(options.session),
 
         start: async (): Promise<void> => {
@@ -1246,6 +1252,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             reactions.stop();
             mentions.stop();
             rooms.stop();
+            members.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.
