@@ -69,6 +69,12 @@ export type MobileApplicationBag = {
     auth0RecordStatus?: ListItemBag | null;
 
     /**
+     * Gets or sets a value indicating whether a first Auth0 sign-in is
+     * linked to an existing person only if Auth0 reports the email as verified.
+     */
+    auth0RequireVerifiedEmail: boolean;
+
+    /**
      * Gets or sets the iOS bundle identifier supplied by the shell
      * hosting service. Required when deep linking is enabled.
      */
