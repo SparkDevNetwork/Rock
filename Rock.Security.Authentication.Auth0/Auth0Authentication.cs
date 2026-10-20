@@ -92,6 +92,11 @@ namespace Rock.Security.Authentication.Auth0
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 7 )]
 
+    [BooleanField( "Require Verified Email",
+        Key = AttributeKey.RequireVerifiedEmail,
+        Description = "When enabled, a first sign-in is matched to an existing person only if Auth0 reports the email address as verified. Otherwise a new person is created. Disable this only if every email address in your Auth0 tenant is verified by other means.",
+        DefaultBooleanValue = true,
+        Order = 8 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" )]
     public class Auth0Authentication : AuthenticationComponent, IExternalRedirectAuthentication
@@ -108,6 +113,7 @@ namespace Rock.Security.Authentication.Auth0
             public const string LoginButtonCSSClass = "LoginButtonCSSClass";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RequireVerifiedEmail = "RequireVerifiedEmail";
         }
 
         #endregion
@@ -182,6 +188,19 @@ namespace Rock.Security.Authentication.Auth0
         /// <returns></returns>
         public static string GetAuth0UserName( Auth0UserInfo auth0UserInfo, int? personConnectionStatusValueId = null, int? personRecordStatusValueId = null )
         {
+            return GetAuth0UserName( auth0UserInfo, personConnectionStatusValueId, personRecordStatusValueId, true );
+        }
+
+        /// <summary>
+        /// Creates or Finds a Person and UserLogin record, and returns the userLogin.UserName
+        /// </summary>
+        /// <param name="auth0UserInfo">The auth0 user information.</param>
+        /// <param name="personConnectionStatusValueId">The person connection status identifier to use when creating a new person.</param>
+        /// <param name="personRecordStatusValueId">The person record status identifier to use when creating a new person.</param>
+        /// <param name="requireVerifiedEmail">If <c>true</c>, a first sign-in is only linked to an existing person when Auth0 reports the email as verified.</param>
+        /// <returns></returns>
+        public static string GetAuth0UserName( Auth0UserInfo auth0UserInfo, int? personConnectionStatusValueId, int? personRecordStatusValueId, bool requireVerifiedEmail )
+        {
             string username = string.Empty;
 
             string userName = "AUTH0_" + auth0UserInfo.sub;
@@ -204,8 +223,19 @@ namespace Rock.Security.Authentication.Auth0
 
                     Person person = null;
 
+                    /*
+                        10/19/2026 - MSE
+
+                        An email that Auth0 has not verified is not proof that the caller owns
+                        the matched record, so only look for an existing person when Auth0 reports
+                        the email as verified (unless an admin turned off Require Verified Email).
+                        Otherwise a new pending person is created below.
+
+                        Reason: Link a first sign-in to an existing person only by a verified email.
+                    */
+
                     // If person had an email, get the first person with the same name and email address.
-                    if ( !string.IsNullOrWhiteSpace( email ) )
+                    if ( !string.IsNullOrWhiteSpace( email ) && ( auth0UserInfo.email_verified || !requireVerifiedEmail ) )
                     {
                         var personService = new PersonService( rockContext );
                         person = personService.FindPerson( firstName, lastName, email, true );
@@ -514,7 +544,9 @@ namespace Rock.Security.Authentication.Auth0
                             personRecordStatusValueId = DefinedValueCache.Get( personRecordStatusValueGuid.Value ).Id;
                         }
 
-                        result.UserName = GetAuth0UserName( auth0UserInfo, personConnectionStatusValueId, personRecordStatusValueId );
+                        var requireVerifiedEmail = this.GetAttributeValue( AttributeKey.RequireVerifiedEmail ).AsBooleanOrNull() ?? true;
+
+                        result.UserName = GetAuth0UserName( auth0UserInfo, personConnectionStatusValueId, personRecordStatusValueId, requireVerifiedEmail );
                         result.IsAuthenticated = true;
                     }
                 }
