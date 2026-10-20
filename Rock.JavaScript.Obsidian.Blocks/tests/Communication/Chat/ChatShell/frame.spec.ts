@@ -27,7 +27,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
-import { MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChannelFacts, MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
@@ -165,6 +165,7 @@ function fakeShell(): Record<string, unknown> {
 
     const threads = fakeThreads();
     const mentions = fakeMentions(state);
+    const rooms = fakeRooms();
 
     mockShell = {
         state,
@@ -200,6 +201,7 @@ function fakeShell(): Record<string, unknown> {
         sendReply: jest.fn(),
         threads,
         mentions,
+        rooms,
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -220,6 +222,56 @@ function fakeShell(): Record<string, unknown> {
     };
 
     return mockShell;
+}
+
+/**
+ * The rooms the shell holds, as useRooms' createRooms answers them, reduced to the state the block
+ * draws and the calls it makes: opening and closing the directory, Join, and each room's facts.
+ */
+function fakeRooms(): Record<string, unknown> {
+    const state = reactive({
+        directory: {
+            isOpen: false,
+            query: "",
+            campus: { kind: "all" },
+            show: "all",
+            rows: [] as unknown[],
+            total: 0,
+            hasMore: false,
+            isLoading: false,
+            isSearching: false,
+            isLoadingMore: false,
+            error: null,
+            moreError: null,
+            isCampusLimited: false,
+            emptyKind: "none" as string | null
+        },
+        facts: {} as Record<string, ChannelFacts>,
+        joins: {} as Record<string, unknown>,
+        announcement: null
+    });
+
+    return {
+        state,
+        openDirectory: jest.fn(() => {
+            state.directory.isOpen = true;
+        }),
+        closeDirectory: jest.fn(() => {
+            state.directory.isOpen = false;
+        }),
+        setQuery: jest.fn(),
+        clearQuery: jest.fn(),
+        setCampus: jest.fn(),
+        setShow: jest.fn(),
+        clearFilters: jest.fn(),
+        loadMore: jest.fn(async () => undefined),
+        retry: jest.fn(async () => undefined),
+        join: jest.fn(async () => undefined),
+        joinOf: (channelId: string) => state.joins[channelId] ?? { kind: "idle" },
+        factsOf: (channelId: string) => state.facts[channelId] ?? null,
+        previewRoom: jest.fn(),
+        stop: jest.fn()
+    };
 }
 
 /**
@@ -421,6 +473,34 @@ function shellRoot(w: VueWrapper): HTMLElement {
 function isPaneHidden(w: VueWrapper, testId: string): boolean {
     const pane = w.get(`[data-testid='${testId}']`).element as HTMLElement;
     return pane.getAttribute("aria-hidden") === "true" || pane.hasAttribute("inert");
+}
+
+/** The rooms the mounted block's shell holds. */
+function roomsOf(): { state: { facts: Record<string, ChannelFacts>, joins: Record<string, unknown>, directory: Record<string, unknown> } } & Record<string, jest.Mock> {
+    return mockShell!.rooms as ReturnType<typeof roomsOf>;
+}
+
+/** A room's facts in the exact shape chat_get_channel answers. */
+function roomFacts(overrides: Partial<ChannelFacts> & { channel_id: string }): ChannelFacts {
+    return {
+        name: null,
+        icon_url: null,
+        channel_type: "shared",
+        is_member: true,
+        can_post: true,
+        can_post_code: null,
+        can_post_reason: null,
+        max_length: 5000,
+        can_leave: true,
+        description: null,
+        group_type_name: null,
+        campus_id: null,
+        is_public: true,
+        member_count: 0,
+        leaders: [],
+        people: [],
+        ...overrides
+    };
 }
 
 async function openRow(w: VueWrapper, channelId: string): Promise<void> {
@@ -1393,12 +1473,17 @@ describe("a named group direct message", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='sender-name']").text()).toBe("Anna Kim");
     });
 
-    test("writes no head count under its name, since the platform counts only an unnamed room's people", async () => {
+    test("writes no head count under its name until the room's facts are read, then counts its members", async () => {
         const w = await mountBlock(1200);
         await openHike(w);
 
         expect(w.get("[data-testid='frame-main'] [data-testid='header-title']").text()).toContain("Hike planning");
         expect(w.find("[data-testid='frame-main'] [data-testid='header-subtitle']").exists()).toBe(false);
+
+        roomsOf().state.facts[hike.channel_id] = roomFacts({ channel_id: hike.channel_id, channel_type: "dm", name: "Hike planning", member_count: 4 });
+        await settle();
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("4 people");
     });
 
     test("an unnamed group still counts its people with the reader under its title", async () => {
@@ -2189,5 +2274,190 @@ describe("delete confirm", () => {
 
         expect(messages().confirmDelete).toHaveBeenCalledTimes(1);
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
+    });
+});
+
+describe("Browse channels", () => {
+    const volunteers: SidebarRow = sidebarRow({ channel_id: "c0000011-0000-4000-8000-000000000000", name: "Volunteers", is_public: true, is_member: false });
+
+    /** A directory row of the room above, in the shape chat_list_directory answers. */
+    function listVolunteers(): void {
+        const directory = roomsOf().state.directory;
+        directory.rows = [{ channel_id: volunteers.channel_id, name: "Volunteers", icon_url: null, campus_id: null, is_member: false, can_post_code: null, description: null, group_type_name: null }];
+        directory.total = 1;
+        directory.emptyKind = null;
+    }
+
+    test("opens from the sidebar's Browse row in the conversation's place, the conversation inert under it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        await settle();
+
+        const main = w.get("[data-testid='frame-main']");
+        const view = main.get("[data-testid='main-view']");
+        expect(view.attributes("data-kind")).toBe("directory");
+        expect(view.find("[data-testid='channel-directory']").exists()).toBe(true);
+        expect(main.get("[data-testid='frame-conversation']").attributes("inert")).toBeDefined();
+        expect(roomsOf().openDirectory).toHaveBeenCalledTimes(1);
+        expect(w.get("[data-testid='sidebar-browse']").attributes("aria-current")).toBe("true");
+        expect(document.activeElement).toBe(view.get("[data-testid='directory-search']").element);
+    });
+
+    test("opens from the Channels heading's plus too", async () => {
+        const w = await mountBlock(1200);
+
+        await w.get("[data-testid='section-browse']").trigger("click");
+        await settle();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(true);
+    });
+
+    test("closes from its X, giving the conversation back", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='directory-close']").trigger("click");
+        await settle();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(w.get("[data-testid='frame-conversation']").attributes("inert")).toBeUndefined();
+        expect(roomsOf().closeDirectory).toHaveBeenCalled();
+    });
+
+    test("hands the search, the filters and Join on to the rooms", async () => {
+        const w = await mountBlock(1200);
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        listVolunteers();
+        await settle();
+
+        await w.get("[data-testid='directory-search']").setValue("vol");
+        await w.get("[data-testid='directory-show-not-joined']").trigger("click");
+        await w.get("[data-testid='directory-join']").trigger("click");
+
+        expect(roomsOf().setQuery).toHaveBeenCalledWith("vol");
+        expect(roomsOf().setShow).toHaveBeenCalledWith("notJoined");
+        expect(roomsOf().join).toHaveBeenCalledWith(volunteers.channel_id);
+    });
+
+    test("opening a row previews its room and closes the view", async () => {
+        const w = await mountBlock(1200);
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        listVolunteers();
+        await settle();
+
+        await w.get("[data-testid='directory-row-open']").trigger("click");
+        await settle();
+
+        expect(roomsOf().previewRoom).toHaveBeenCalledWith(volunteers.channel_id);
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+    });
+});
+
+describe("a channel the person has not joined", () => {
+    const volunteers: SidebarRow = sidebarRow({ channel_id: "c0000011-0000-4000-8000-000000000000", name: "Volunteers", is_public: true, is_member: false });
+
+    async function openVolunteers(): Promise<VueWrapper> {
+        const w = await mountBlock(1200);
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(volunteers);
+        await settle();
+        await openRow(w, volunteers.channel_id);
+        return w;
+    }
+
+    test("shows the join bar in the composer's place, which joins through the rooms", async () => {
+        const w = await openVolunteers();
+
+        const main = w.get("[data-testid='frame-main']");
+        expect(main.find("[data-testid='composer-input']").exists()).toBe(false);
+        expect(main.get("[data-testid='join-bar-title']").text()).toBe("You're previewing Volunteers");
+
+        await main.get("[data-testid='join-channel']").trigger("click");
+        expect(roomsOf().join).toHaveBeenCalledWith(volunteers.channel_id);
+    });
+
+    test("draws the join bar in the state the room's Join is in", async () => {
+        const w = await openVolunteers();
+
+        roomsOf().state.joins[volunteers.channel_id] = { kind: "pending" };
+        await settle();
+
+        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("pending");
+    });
+
+    test("gives the composer back once joined, which enters from below", async () => {
+        const w = await openVolunteers();
+
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true });
+        await settle();
+
+        const main = w.get("[data-testid='frame-main']");
+        expect(main.find("[data-testid='join-bar']").exists()).toBe(false);
+        expect(main.get(".chat-composer").classes()).toContain("is-entering");
+    });
+
+    test("never shows the join bar in a channel the person is in, whose composer is simply there", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        expect(w.find("[data-testid='join-bar']").exists()).toBe(false);
+        expect(w.get("[data-testid='frame-main'] .chat-composer").classes()).not.toContain("is-entering");
+    });
+
+    test("a refusal's Browse channels opens the directory", async () => {
+        const w = await openVolunteers();
+        roomsOf().state.joins[volunteers.channel_id] = { kind: "refused", text: "You can't join this channel." };
+        await settle();
+
+        await w.get("[data-testid='join-bar-browse']").trigger("click");
+        await settle();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(true);
+    });
+});
+
+describe("the header's subtitle, from the room's facts", () => {
+    test("is the open channel's description", async () => {
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, description: "Sunday teams" });
+        await openRow(w, team.channel_id);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("Sunday teams");
+    });
+
+    test("is the other person's campus, named from the init box's campuses", async () => {
+        mockConfig.campuses = [{ guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "DT" }];
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[dmAnna.channel_id] = roomFacts({
+            channel_id: dmAnna.channel_id,
+            channel_type: "dm",
+            member_count: 2,
+            people: [{ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, details: { campus_id: "d0000001-0000-4000-8000-000000000000", badge_keys: [] } }]
+        });
+        await openRow(w, dmAnna.channel_id);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("Downtown Campus");
+    });
+});
+
+describe("the channel intro", () => {
+    test("is drawn at the top of a channel's history from its facts", async () => {
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", description: "Sunday teams", member_count: 12 });
+        await openRow(w, team.channel_id);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='intro-title']").text()).toBe("Worship Team");
+    });
+
+    test("is never drawn in a direct message", async () => {
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[dmAnna.channel_id] = roomFacts({ channel_id: dmAnna.channel_id, channel_type: "dm", member_count: 2 });
+        await openRow(w, dmAnna.channel_id);
+
+        expect(w.find("[data-testid='channel-intro']").exists()).toBe(false);
     });
 });

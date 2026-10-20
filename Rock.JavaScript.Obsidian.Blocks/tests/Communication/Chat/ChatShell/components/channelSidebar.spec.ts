@@ -471,6 +471,82 @@ describe("the empty sidebar", () => {
 
         expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
     });
+
+    test("offers Browse channels beside New message, a line button after the filled one", async () => {
+        const w = mountSidebar({ rows: [] });
+        const actions = w.get("[data-testid='sidebar-empty'] .chat-side-empty-actions");
+
+        const buttons = actions.findAll("button");
+        expect(buttons.map(button => button.text())).toEqual(["New message", "Browse channels"]);
+        expect(buttons[1].attributes("data-testid")).toBe("empty-browse");
+        expect(buttons[1].classes()).toContain("is-line");
+
+        await buttons[1].trigger("click");
+        expect(w.emitted("browse")).toHaveLength(1);
+    });
+
+    test("offers Browse channels without DM Access too, since browsing needs none", () => {
+        const w = mountSidebar({ rows: [], isNewMessageShown: false });
+
+        expect(w.get("[data-testid='empty-browse']").text()).toBe("Browse channels");
+    });
+});
+
+describe("Browse channels", () => {
+    test("is a row at the end of the channels, after a room the person has not joined", () => {
+        const preview = row({ channel_id: "c0000009-0000-4000-8000-000000000000", name: "Volunteers", is_member: false, is_public: true });
+        const w = mountSidebar({ rows: [team, preview, youth, dmAnna] });
+
+        const section = w.get("[data-testid='sidebar-section'][data-section='channels']");
+        const browse = section.get("[data-testid='sidebar-browse']");
+        const rows = section.findAll("[data-testid='channel-row']").map(r => r.element);
+        expect(rowIdsIn(w, "channels")).toEqual([team.channel_id, youth.channel_id, preview.channel_id]);
+        expect(rows[rows.length - 1].compareDocumentPosition(browse.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(browse.text()).toBe("Browse channels");
+        expect(browse.classes()).toEqual(expect.arrayContaining(["chat-row", "is-cs", "is-browse"]));
+    });
+
+    test("opens the directory from its row, and is current while the directory is open", async () => {
+        const w = mountSidebar();
+
+        expect(w.get("[data-testid='sidebar-browse']").attributes("aria-current")).toBeUndefined();
+        await w.get("[data-testid='sidebar-browse']").trigger("click");
+        expect(w.emitted("browse")).toHaveLength(1);
+
+        await w.setProps({ isBrowseOpen: true });
+        expect(w.get("[data-testid='sidebar-browse']").attributes("aria-current")).toBe("true");
+    });
+
+    test("is the Channels heading's 26px plus too, and only that heading's", async () => {
+        const w = mountSidebar();
+
+        const plus = w.get("[data-testid='sidebar-section'][data-section='channels'] [data-testid='section-browse']");
+        expect(plus.attributes("aria-label")).toBe("Browse channels");
+        expect(plus.classes()).toContain("chat-sec-btn");
+        expect(w.findAll("[data-testid='section-browse']")).toHaveLength(1);
+
+        await plus.trigger("click");
+        expect(w.emitted("browse")).toHaveLength(1);
+    });
+
+    test("stays while a search narrows the rooms, as the way to find one not listed", async () => {
+        const w = mountSidebar();
+
+        await w.get("[data-testid='sidebar-search']").setValue("zzz");
+
+        expect(w.find("[data-testid='sidebar-browse']").exists()).toBe(true);
+    });
+});
+
+describe("a previewed room", () => {
+    test("is muted among the channels and says it is not joined", () => {
+        const preview = row({ channel_id: "c0000009-0000-4000-8000-000000000000", name: "Volunteers", is_member: false, is_public: true, last_message_id: null });
+        const w = mountSidebar({ rows: [team, preview], activeChannelId: preview.channel_id });
+
+        expect(rowOf(w, preview.channel_id).classes()).toContain("is-out");
+        expect(rowOf(w, preview.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", not joined");
+        expect(rowOf(w, preview.channel_id).attributes("aria-current")).toBe("true");
+    });
 });
 
 // The live sidebar: the reader's own last message reads "You: " in any direct message, and a row

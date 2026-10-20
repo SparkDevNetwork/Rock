@@ -23,7 +23,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChatHeader from "../../../../../src/Communication/Chat/ChatShell/components/chatHeader.partial.obs";
-import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChannelFacts, ChannelPerson, ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 
 const lostConnection: ChatError = { code: "rt.disconnected", severity: "degraded", text: null };
@@ -91,6 +91,87 @@ describe("the title and subtitle", () => {
         await w.setProps({ title: "Anna Kim", kind: "person", people: ["Anna Kim"] });
         expect(w.get("[data-testid='header-title']").text()).toBe("Anna Kim");
         expect(w.find(".chat-header-ic").exists()).toBe(false);
+    });
+});
+
+describe("the subtitle, from the room's facts", () => {
+    const downtown = { guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "Downtown" };
+
+    /** A room's facts in the exact shape chat_get_channel answers. */
+    function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
+        return {
+            channel_id: "c0000001-0000-4000-8000-000000000000",
+            name: null,
+            icon_url: null,
+            channel_type: "shared",
+            is_member: true,
+            can_post: true,
+            can_post_code: null,
+            can_post_reason: null,
+            max_length: 5000,
+            can_leave: true,
+            description: null,
+            group_type_name: null,
+            campus_id: null,
+            is_public: true,
+            member_count: 0,
+            leaders: [],
+            people: [],
+            ...overrides
+        };
+    }
+
+    function anna(details: ChannelPerson["details"]): ChannelPerson {
+        return { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Reyes", avatar_url: null, details };
+    }
+
+    test("is a channel's description", () => {
+        const w = mountHeader({ kind: "channel", facts: facts({ description: "Serve teams across the church" }), campuses: [downtown] });
+
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("Serve teams across the church");
+    });
+
+    test("is left out for a channel with no description", () => {
+        const w = mountHeader({ kind: "channel", facts: facts({ description: "  " }) });
+
+        expect(w.find("[data-testid='header-subtitle']").exists()).toBe(false);
+    });
+
+    test("is the other person's campus by name in a conversation of two, when they show their details", () => {
+        const w = mountHeader({ title: "Anna Reyes", kind: "person", people: ["Anna Reyes"], facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ campus_id: downtown.guid, badge_keys: [] })] }), campuses: [downtown] });
+
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("Downtown Campus");
+    });
+
+    test("is left out for a person who does not show their details, or has no campus", () => {
+        const hidden = mountHeader({ kind: "person", facts: facts({ channel_type: "dm", member_count: 2, people: [anna(null)] }), campuses: [downtown] });
+        expect(hidden.find("[data-testid='header-subtitle']").exists()).toBe(false);
+        hidden.unmount();
+
+        const none = mountHeader({ kind: "person", facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ campus_id: null, badge_keys: [] })] }), campuses: [downtown] });
+        expect(none.find("[data-testid='header-subtitle']").exists()).toBe(false);
+    });
+
+    test("is a group's head count from the room's members, a named group's included", () => {
+        const w = mountHeader({ title: "Hike planning", kind: "group", facts: facts({ channel_type: "dm", name: "Hike planning", member_count: 4 }) });
+
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("4 people");
+    });
+
+    test("stands in for the line the shell worked out once the facts land", async () => {
+        const w = mountHeader({ kind: "group", subtitle: "3 people" });
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("3 people");
+
+        await w.setProps({ facts: facts({ channel_type: "dm", member_count: 5 }) });
+
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("5 people");
+    });
+
+    test("still gives way to the connection's state", () => {
+        const w = mountHeader({ kind: "channel", facts: facts({ description: "Serve teams" }), connection: lostConnection });
+
+        expect(w.find("[data-testid='header-subtitle']").exists()).toBe(false);
+        expect(w.get("[data-testid='connection-badge']").text()).toContain("Reconnecting");
     });
 });
 

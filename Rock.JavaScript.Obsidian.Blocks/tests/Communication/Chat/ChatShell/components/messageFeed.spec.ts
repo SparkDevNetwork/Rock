@@ -24,12 +24,13 @@
 // that the test reports through, and the feed's scroll sizes set by hand.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, reactive } from "vue";
+import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/components/channelIntro.partial.obs";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -903,5 +904,83 @@ describe("the history skeleton", () => {
         await nextTick();
 
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+    });
+});
+
+describe("the channel intro", () => {
+    const volunteers: ChannelFacts = {
+        channel_id: "c1",
+        name: "Volunteers",
+        icon_url: null,
+        channel_type: "shared",
+        is_member: true,
+        can_post: true,
+        can_post_code: null,
+        can_post_reason: null,
+        max_length: 5000,
+        can_leave: true,
+        description: "Serve teams across the church",
+        group_type_name: "Serving Team",
+        campus_id: null,
+        is_public: true,
+        member_count: 42,
+        leaders: [],
+        people: []
+    };
+
+    function drawWithFacts(state: TimelineState, extra: Record<string, unknown> = {}): VueWrapper {
+        return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, isChannel: true, timeline: state, facts: volunteers, campuses: [], notifyMode: "mentions", ...extra } });
+    }
+
+    test("is drawn at the top of a channel once its oldest page is loaded, before the first day", () => {
+        const wrapper = drawWithFacts(timeline([message(1, anna, at(14, 50))]));
+
+        const intro = wrapper.getComponent(ChannelIntro);
+        expect(intro.props("facts")).toEqual(volunteers);
+        expect(intro.props("notifyMode")).toBe("mentions");
+        expect(intro.props("isEmpty")).toBe(false);
+        expect(isBefore(intro.element, wrapper.get("[data-testid='day-section']").element)).toBe(true);
+        expect(wrapper.get("[data-testid='message-feed']").element.contains(intro.element)).toBe(true);
+    });
+
+    test("tells the intro an empty channel is empty, for its foot", () => {
+        const wrapper = drawWithFacts(timeline([]));
+
+        expect(wrapper.getComponent(ChannelIntro).props("isEmpty")).toBe(true);
+    });
+
+    test("is not drawn while older messages are still to load", () => {
+        const wrapper = drawWithFacts(timeline([message(1, anna, at(14, 50))], { hasMore: true }));
+
+        expect(wrapper.findComponent(ChannelIntro).exists()).toBe(false);
+    });
+
+    test("is not drawn before the first page lands", () => {
+        const wrapper = drawWithFacts(timeline([], { isLoaded: false }));
+
+        expect(wrapper.findComponent(ChannelIntro).exists()).toBe(false);
+    });
+
+    test("is not drawn before the room's facts are read", () => {
+        const wrapper = drawWithFacts(timeline([message(1, anna, at(14, 50))]), { facts: null });
+
+        expect(wrapper.findComponent(ChannelIntro).exists()).toBe(false);
+    });
+
+    test("is never drawn in a direct message", () => {
+        const wrapper = drawWithFacts(timeline([message(1, anna, at(14, 50))]), { isChannel: false, isDirectMessage: true, facts: { ...volunteers, channel_type: "dm" } });
+
+        expect(wrapper.findComponent(ChannelIntro).exists()).toBe(false);
+    });
+
+    test("appears once the last older page is loaded", async () => {
+        const state = timeline([message(5, anna, at(14, 50))], { hasMore: true });
+        const wrapper = drawWithFacts(state);
+
+        state.messages.unshift(message(1, anna, at(14, 40)));
+        state.hasMore = false;
+        await nextTick();
+
+        expect(wrapper.findComponent(ChannelIntro).exists()).toBe(true);
     });
 });
