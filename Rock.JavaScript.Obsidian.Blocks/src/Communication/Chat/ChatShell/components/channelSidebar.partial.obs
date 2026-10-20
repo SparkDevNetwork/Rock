@@ -500,17 +500,25 @@
     color: var(--chat-muted);
 }
 
+/*
+    Side by side where the column has the room; in a narrower one the second button goes under
+    the first rather than either breaking its words inside its 30px.
+*/
 .chat-side-empty-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
+    justify-content: center;
     margin-top: 6px;
 }
 
 .chat-side-empty-btn {
     display: inline-flex;
+    flex: none;
     gap: 6px;
     align-items: center;
     height: 30px;
+    white-space: nowrap;
     padding: 0 14px;
     font-size: 13px;
     font-weight: 600;
