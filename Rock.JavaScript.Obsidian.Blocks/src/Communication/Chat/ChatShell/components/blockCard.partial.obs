@@ -1,0 +1,141 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- A block post's card. In bubbles it carries its own head; in Community the row's head stands over it. -->
+    <div class="chat-card" data-testid="block-card">
+        <template v-if="head">
+            <div class="chat-card-head">
+                <Avatar :people="[head.face]" :size="22" />
+                <span class="chat-card-name" data-testid="sender-name">{{ head.name }}</span>
+                <span class="chat-card-time" data-testid="message-time">{{ head.time }}</span>
+            </div>
+            <div class="chat-card-body">
+                <MessageBody :text="text" :blocks="blocks" :personAliasGuid="personAliasGuid" :isConversation="isConversation" :runAction="runAction" />
+            </div>
+        </template>
+        <MessageBody v-else :text="text" :blocks="blocks" :personAliasGuid="personAliasGuid" :isConversation="isConversation" :runAction="runAction" />
+    </div>
+</template>
+
+<style scoped>
+/* A card from its sender, or from the church when nobody sent it, drawn by the look around it. */
+.chat-card {
+    max-width: 540px;
+    overflow: hidden;
+    font-size: 14.5px;
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-xl);
+    box-shadow: var(--chat-shadow-card);
+}
+
+.is-conversational .chat-card {
+    margin: 14px 20px 0 40px;
+}
+
+.is-community .chat-card {
+    max-width: 520px;
+    margin-top: 4px;
+    border-radius: var(--chat-r-lg);
+    box-shadow: none;
+}
+
+.chat-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 0;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.chat-card-time {
+    margin-left: auto;
+    font-weight: 400;
+    color: var(--chat-muted);
+}
+
+.chat-card-body,
+.is-community .chat-card {
+    padding: 8px 14px 12px;
+}
+
+.chat-card :deep(.chat-block-context) {
+    display: flex;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+.chat-card :deep(.chat-block-divider) {
+    margin: 10px 0;
+    border: 0;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-card :deep(.chat-block-image img) {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    border-radius: var(--chat-r-lg);
+}
+
+/* Before Safari 15 there is no aspect-ratio, so the box is held to 16 to 7 by its padding instead. */
+@supports not (aspect-ratio: 16 / 7) {
+    .chat-card :deep(.chat-block-image) {
+        position: relative;
+        height: 0;
+        padding-top: 43.75%;
+    }
+
+    .chat-card :deep(.chat-block-image img) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import MessageBody from "./messageBody.partial.obs";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import { MessageAction } from "../types.partial";
+
+    defineProps({
+        /** The post's text, which a block the client does not know falls back to. */
+        text: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        blocks: {
+            type: Array as PropType<unknown[] | null>,
+            default: null
+        },
+
+        /** The sender's face, name and time over the blocks, or null where the row draws its own head. */
+        head: {
+            type: Object as PropType<{ face: AvatarPerson, name: string, time: string } | null>,
+            default: null
+        },
+
+        /** The reader's alias guid, so a mention of them draws as the "you" chip. */
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        /** A direct message or group, whose @all chip says "conversation" rather than "channel". */
+        isConversation: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Runs a block button's action, settling once it has answered, so the button stays busy till then. */
+        runAction: {
+            type: Function as PropType<(action: MessageAction) => Promise<void>>,
+            default: null
+        }
+    });
+</script>

@@ -654,8 +654,8 @@ describe("the components' own styles", () => {
     });
 
     test("a block image keeps its 16 to 7 shape in a browser without aspect-ratio, by a padding box", () => {
-        const row = readSheet(rowPath);
-        const fallback = row.rules.filter(r => r.media.includes("@supportsnot(aspect-ratio"));
+        const card = readSheet(resolve(components, "blockCard.partial.obs"));
+        const fallback = card.rules.filter(r => r.media.includes("@supportsnot(aspect-ratio"));
         const box = fallback.find(r => /chat-block-image\)?$/.test(r.selector));
         const image = fallback.find(r => r.selector.includes("chat-block-image img"));
 

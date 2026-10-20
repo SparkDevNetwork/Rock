@@ -196,6 +196,92 @@ export function quoteKey(channelId: string, rootId?: number | null): string {
     return typeof rootId === "number" ? `${channelId}/${rootId}` : channelId;
 }
 
+/** Where a message row's requests go, and the places on the row a picker is set beside. */
+export type MessageRowPlace = {
+    /** The row's message, read at each choice; null while a send is not stored yet. */
+    message: () => TimelineMessage | null;
+
+    request: (request: MessageActionRequest) => void;
+
+    openThread: (rootId: number) => void;
+
+    /** Where a picker asked for by a control is placed, for a control that may leave with its sheet. */
+    pickerAnchor: (anchor: HTMLElement) => HTMLElement;
+
+    /** The message itself, its bubble or a channel's whole row. */
+    messageAnchor: () => HTMLElement | null;
+};
+
+/** A message row's handlers for each of its parts, every choice made into a request. */
+export type MessageRowRequests = {
+    /** The bar's and the sheet's choices, one set for both. */
+    actions: {
+        replyInThread: (messageId: number) => void;
+        quote: (message: TimelineMessage) => void;
+        edit: (message: TimelineMessage) => void;
+        copy: (message: TimelineMessage) => void;
+        delete: (message: TimelineMessage) => void;
+        serverAction: (action: MessageAction) => void;
+        react: (message: TimelineMessage, code: string) => void;
+        openPicker: (message: TimelineMessage, anchor: HTMLElement) => void;
+    };
+
+    reactions: { toggle: (code: string) => void, openPicker: (opener: HTMLElement) => void };
+
+    editor: { save: (body: string) => void, cancel: () => void };
+
+    runBlockAction: (action: MessageAction) => Promise<void>;
+};
+
+/**
+ * What a message row hands its bar and sheet, its reaction chips, its editor and its block
+ * buttons: each choice as one request about the row's message, so every way of acting on a
+ * message asks in the same words. Reply in thread opens the drawer on the root, as its thread
+ * pill does. A chip's add opens the picker on the message rather than on itself, since a choice
+ * that takes the last chip away takes the add chip with it; focus comes back to it.
+ *
+ * @param place Where the requests go, and the row's places a picker is set beside.
+ *
+ * @returns The handlers for each part.
+ */
+export function messageRowRequests(place: MessageRowPlace): MessageRowRequests {
+    /** Asks about the row's message, when it is stored. */
+    const about = (make: (message: TimelineMessage) => MessageActionRequest): void => {
+        const message = place.message();
+        if (message) {
+            place.request(make(message));
+        }
+    };
+
+    return {
+        actions: {
+            replyInThread: (messageId: number): void => place.openThread(messageId),
+            quote: (message: TimelineMessage): void => place.request({ kind: "quote", message }),
+            edit: (message: TimelineMessage): void => place.request({ kind: "edit", message }),
+            copy: (message: TimelineMessage): void => place.request({ kind: "copy", message }),
+            delete: (message: TimelineMessage): void => place.request({ kind: "delete", message }),
+            serverAction: (action: MessageAction): void => about(message => ({ kind: "server", message, action })),
+            react: (message: TimelineMessage, code: string): void => place.request({ kind: "react", message, code }),
+            openPicker: (message: TimelineMessage, anchor: HTMLElement): void => place.request({ kind: "openPicker", message, anchor: place.pickerAnchor(anchor) })
+        },
+        reactions: {
+            toggle: (code: string): void => about(message => ({ kind: "react", message, code })),
+            openPicker: (opener: HTMLElement): void => about(message => ({ kind: "openPicker", message, anchor: place.messageAnchor() ?? opener, opener }))
+        },
+        editor: {
+            save: (body: string): void => about(message => ({ kind: "saveEdit", message, body })),
+            cancel: (): void => about(message => ({ kind: "cancelEdit", message }))
+        },
+        // The promise settles once the action has answered, so the button stays busy till then.
+        runBlockAction: (action: MessageAction): Promise<void> => {
+            const message = place.message();
+            return message
+                ? new Promise<void>(resolve => place.request({ kind: "server", message, action, onSettled: resolve }))
+                : Promise.resolve();
+        }
+    };
+}
+
 /**
  * The text a copy writes: what the person reads, so a mention copies as its name rather than its
  * token.
