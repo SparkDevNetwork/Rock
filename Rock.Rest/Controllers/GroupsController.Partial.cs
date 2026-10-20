@@ -1194,7 +1194,19 @@ namespace Rock.Rest.Controllers
                         dynGroup.Members = members;
 
                         var groupDict = dynGroup as IDictionary<string, object>;
-                        string result = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template ).ResolveMergeFields( groupDict );
+                        /*
+                            10/20/26 - JMH
+
+                            The template comes from the request, so it renders with no Lava
+                            commands and with person tokens turned off.
+
+                            Reason: The caller controls the template.
+                        */
+                        string result;
+                        using ( Rock.Security.PersonTokenScope.RestrictTo( null ) )
+                        {
+                            result = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template ).ResolveMergeFields( groupDict, new List<string>() );
+                        }
 
                         return new InfoWindowResult( result );
                     }
