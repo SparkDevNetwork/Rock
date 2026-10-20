@@ -46,6 +46,7 @@ using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Utility.CaptchaApi;
+using Rock.Utility.HtmlSanitization;
 using Rock.Utility.Settings;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -372,6 +373,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IHostingSettings, HostingSettings>();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
             sc.AddSingleton<ICaptchaProvider, CaptchaProofOfWorkProvider>();
+            sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IUserAgentParser, UserAgentParser>();
             sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
