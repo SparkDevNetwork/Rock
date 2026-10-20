@@ -309,6 +309,22 @@ namespace RockWeb.Blocks.Steps
                 return;
             }
 
+            /*
+                10/19/2026 - MSE
+
+                The grid lists every step program the person can view, so a block
+                editor could delete a program they are not allowed to edit, along
+                with its step types and every person's steps in it. Require EDIT on
+                the program, the same rule Step Program Detail uses.
+
+                Reason: Prevent deleting step programs without edit permission.
+            */
+            if ( !stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
+                return;
+            }
+
             string errorMessage;
 
             if ( !stepProgramService.CanDelete( stepProgram, out errorMessage ) )
