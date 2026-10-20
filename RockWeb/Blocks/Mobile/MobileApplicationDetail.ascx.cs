@@ -510,6 +510,7 @@ namespace RockWeb.Blocks.Mobile
             dvpAuth0ConnectionStatus.SelectedDefinedValueId = additionalSettings.Auth0ConnectionStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
             dvpAuth0RecordStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ).Id;
             dvpAuth0RecordStatus.SelectedDefinedValueId = additionalSettings.Auth0RecordStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+            cbAuth0RequireVerifiedEmail.Checked = additionalSettings.Auth0RequireVerifiedEmail;
 
             tbEntraClientId.Text = additionalSettings.EntraClientId;
             tbEntraTenantId.Text = additionalSettings.EntraTenantId;
@@ -1041,6 +1042,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.Auth0Domain = tbAuth0ClientDomain.Text;
             additionalSettings.Auth0ConnectionStatusValueId = dvpAuth0ConnectionStatus.SelectedDefinedValueId;
             additionalSettings.Auth0RecordStatusValueId = dvpAuth0RecordStatus.SelectedDefinedValueId;
+            additionalSettings.Auth0RequireVerifiedEmail = cbAuth0RequireVerifiedEmail.Checked;
             additionalSettings.EntraClientId = tbEntraClientId.Text;
             additionalSettings.EntraTenantId = tbEntraTenantId.Text;
 
