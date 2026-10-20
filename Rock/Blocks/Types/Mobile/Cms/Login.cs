@@ -734,7 +734,17 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 FirstName = firstName,
                 LastName = lastName,
                 Email = email,
-                EmailVerified = emailVerified.AsBooleanOrNull() ?? true,
+                /*
+                    10/19/2026 - MSE
+
+                    Auth0 sends email_verified, so a missing value is not proof that the caller
+                    owns the email and is treated as not verified. Microsoft Graph never sends it,
+                    and Entra emails are trusted because GetEntraUserInfoAsync only accepts tokens
+                    issued by the configured tenant and for the configured application.
+
+                    Reason: Do not treat a missing Auth0 email_verified value as verified.
+                */
+                EmailVerified = emailVerified.AsBooleanOrNull() ?? ( provider == SupportedAuthenticationProvider.Entra ),
                 ForeignKey = sub,
                 Gender = gender,
                 NickName = nickname,
@@ -756,9 +766,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="connectionStatusValueId">The connection status to use when generating a new person.</param>
         /// <param name="recordStatusValueId">The record status to use when generating a </param>
         /// <param name="rockContext"></param>
+        /// <param name="requireVerifiedEmail">If <c>true</c>, an existing person is only matched when the provider reports the email as verified.</param>
         /// <returns></returns>
         [RockInternal( "1.15.1" )]
-        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null )
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null, bool requireVerifiedEmail = true )
         {
             rockContext = rockContext ?? new RockContext();
             UserLogin user = null;
@@ -803,7 +814,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var personMatchQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, phoneNumber );
                 var personService = new PersonService( rockContext );
 
-                person = personService.FindPerson( personMatchQuery, true );
+                /*
+                    10/19/2026 - MSE
+
+                    An email the provider has not verified is not proof that the caller owns
+                    the matched record, so only look for an existing person when the email is
+                    verified (unless the setting is off). Otherwise a new pending person is
+                    created below. This also skips the phone match, which is not verified either.
+
+                    Reason: Link a first sign-in to an existing person only by a verified email.
+                */
+                if ( !requireVerifiedEmail || personInfo.EmailVerified == true )
+                {
+                    person = personService.FindPerson( personMatchQuery, true );
+                }
+
                 rockContext.WrapTransaction( () =>
                 {
                     // If we couldn't match a person, we should create a new one.
@@ -1081,7 +1106,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( errorMessage );
             }
 
-            var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, RockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId );
+            // The Require Verified Email setting applies to Auth0 only.
+            var requireVerifiedEmail = options.AuthenticationProvider == SupportedAuthenticationProvider.Auth0 && ( additionalSettings?.Auth0RequireVerifiedEmail ?? true );
+
+            var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, RockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId, requireVerifiedEmail );
 
             // Something went wrong or we didn't receive enough information to create a Person.
             if ( userLogin == null )
