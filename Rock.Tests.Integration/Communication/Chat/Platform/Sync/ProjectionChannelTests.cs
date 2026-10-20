@@ -210,7 +210,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 var row = payload.Row( "channels", "channel_id", channelGuid );
 
                 Assert.IsNotNull( row, "the channel was not projected at all" );
-                Assert.AreEqual( "Chat Shared Channel Fixture", ( string ) payload.Value( "channels", row, "group_type_name" ) );
+                Assert.AreEqual( GroupTypeName( fixture.SharedGroupTypeId ), ( string ) payload.Value( "channels", row, "group_type_name" ) );
             }
         }
 
@@ -284,6 +284,19 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 Assert.AreEqual( false, ( bool ) payload.Value( "channels", row, "is_public" ) );
                 Assert.AreEqual( false, ( bool ) payload.Value( "channels", row, "always_shown" ) );
                 Assert.AreEqual( false, ( bool ) payload.Value( "channels", row, "is_search_indexed" ) );
+            }
+        }
+
+        /// <summary>
+        /// A group type's name as Rock stores it.
+        /// </summary>
+        /// <param name="groupTypeId">The type.</param>
+        /// <returns>Its name.</returns>
+        internal static string GroupTypeName( int groupTypeId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new GroupTypeService( rockContext ).Get( groupTypeId ).Name;
             }
         }
 

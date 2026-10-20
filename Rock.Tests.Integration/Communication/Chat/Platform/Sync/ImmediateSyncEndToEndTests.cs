@@ -169,7 +169,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 var row = platform.WaitForChannel( configuration.TenantId.Value, channel,
                     r => r != null && ( string ) r["description"] == "Where the youth team plans each week." );
                 Assert.IsNotNull( row, "the description edited in Rock never reached the platform" );
-                Assert.AreEqual( "Chat Shared Channel Fixture", ( string ) row["group_type_name"],
+                Assert.AreEqual( ProjectionChannelTests.GroupTypeName( fixture.SharedGroupTypeId ), ( string ) row["group_type_name"],
                     "the platform did not store the name of the channel's group type" );
             }
         }
