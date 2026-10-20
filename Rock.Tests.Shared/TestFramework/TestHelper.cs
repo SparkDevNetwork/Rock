@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 using Rock.Configuration;
+using Rock.Utility.HtmlSanitization;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared
@@ -241,6 +242,7 @@ namespace Rock.Tests.Shared
             sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton( hostingMock.Object );
+            sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
 
             configureApp?.Invoke( sc );
 

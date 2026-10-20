@@ -19,6 +19,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Communication.Chat;
+using Rock.Utility.HtmlSanitization;
 
 namespace Rock.Configuration
 {
@@ -92,6 +93,7 @@ namespace Rock.Configuration
                 sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
                 sc.AddSingleton<IHostingSettings, HostingSettings>();
                 sc.AddSingleton<IChatProvider, StreamChatProvider>();
+                sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
 
                 Current = new RockApp( sc.BuildServiceProvider() );
             }
