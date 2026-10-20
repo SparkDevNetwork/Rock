@@ -408,6 +408,7 @@ namespace Rock.Blocks.Mobile
             bag.Auth0RecordStatus = DefinedValueToListItemBag(
                 settings.Auth0RecordStatusValueId
                 ?? DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() )?.Id );
+            bag.Auth0RequireVerifiedEmail = settings.Auth0RequireVerifiedEmail;
             bag.EntraClientId = settings.EntraClientId;
             bag.EntraTenantId = settings.EntraTenantId;
             bag.EntraAuthenticationComponent = ComponentGuidToListItemBag( settings.EntraAuthenticationComponent );
@@ -507,6 +508,9 @@ namespace Rock.Blocks.Mobile
 
             box.IfValidProperty( nameof( box.Bag.Auth0RecordStatus ),
                 () => settings.Auth0RecordStatusValueId = box.Bag.Auth0RecordStatus.GetEntityId<DefinedValue>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.Auth0RequireVerifiedEmail ),
+                () => settings.Auth0RequireVerifiedEmail = box.Bag.Auth0RequireVerifiedEmail );
 
             box.IfValidProperty( nameof( box.Bag.EntraClientId ),
                 () => settings.EntraClientId = box.Bag.EntraClientId );
