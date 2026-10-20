@@ -29,6 +29,12 @@ export type AttributesOptionsBag = {
     /** Whether or not to allow attribute values to be set */
     allowSettingOfValues: boolean;
 
+    /** Whether or not the current person can add, edit, delete and reorder attributes */
+    canEditAttributes: boolean;
+
+    /** Whether or not the current person can edit attribute values */
+    canEditAttributeValues: boolean;
+
     /** Whether or not to show the "Show In Grid" checkbox in the attribute editor */
     enableShowInGrid: boolean;
 

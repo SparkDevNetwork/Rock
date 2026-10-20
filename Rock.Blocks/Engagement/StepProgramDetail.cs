@@ -2272,8 +2272,24 @@ namespace Rock.Blocks.Engagement
             }
 
             string errorMessage = null;
-            RockContext.WrapTransaction( () =>
+
+            /*
+                10/19/2026 - MSE
+
+                The step types used to be deleted and saved before the program's
+                CanDelete check, and WrapTransaction always commits, so a refused
+                program delete still removed its step types and every Step record.
+                Check the program first and roll back on every refusal.
+
+                Reason: A refused delete must not remove anything.
+            */
+            RockContext.WrapTransactionIf( () =>
             {
+                if ( !entityService.CanDelete( entity, out errorMessage ) )
+                {
+                    return false;
+                }
+
                 var stepTypes = entity.StepTypes.ToList();
                 var stepTypeService = new StepTypeService( RockContext );
 
@@ -2282,12 +2298,12 @@ namespace Rock.Blocks.Engagement
                     if ( stepType.IsSystem )
                     {
                         errorMessage = $"This program contains the Step Type, '{stepType.Name}', which is a system Step Type and cannot be deleted.";
-                        return;
+                        return false;
                     }
 
                     if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
                     {
-                        return;
+                        return false;
                     }
 
                     stepTypeService.Delete( stepType );
@@ -2295,13 +2311,10 @@ namespace Rock.Blocks.Engagement
 
                 RockContext.SaveChanges();
 
-                if ( !entityService.CanDelete( entity, out errorMessage ) )
-                {
-                    return;
-                }
-
                 entityService.Delete( entity );
                 RockContext.SaveChanges();
+
+                return true;
             } );
 
             return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );
