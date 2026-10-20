@@ -32,6 +32,7 @@
                 <div class="chat-cm-main">
                     <div class="chat-cm-head" data-testid="message-head">
                         <span class="chat-cm-name" data-testid="sender-name">{{ displayName }}</span>
+                        <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
                         <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                     </div>
                     <BlockCard :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
@@ -76,6 +77,7 @@
                                :class="{ 'chat-person-opener': !!authorGuid }"
                                data-testid="sender-name"
                                @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
+                    <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
                     <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                 </div>
@@ -1196,6 +1198,12 @@
     const isTomb = computed((): boolean => state.value === "deleted" || state.value === "hidden" || state.value === "removed");
 
     const isAnnouncement = computed((): boolean => !isTomb.value && props.message?.message_type === "announcement");
+
+    /**
+     * The Leader pill beside the name: a fact about the sender in this channel now, so only a
+     * channel's rows draw it. Those are always Community rows, so the bubbles never need it.
+     */
+    const isLeaderShown = computed((): boolean => props.isChannel && props.message?.sender_is_leader === true);
 
     const isEdited = computed((): boolean => !isTomb.value && !props.pending && !!props.message?.edited_at);
 
