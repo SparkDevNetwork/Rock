@@ -72,7 +72,12 @@ type LiveTopic = {
     status: ((status: string, error?: unknown) => void) | null;
 };
 
-function build(options: { startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult>, mentionViews?: ShellOptions["mentionViews"] } = {}): {
+function build(options: {
+    startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult>,
+    mentionViews?: ShellOptions["mentionViews"],
+    joinChannel?: ShellOptions["joinChannel"],
+    areSharedChannelsFilteredByCampus?: boolean
+} = {}): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<Response>[]>,
     saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }>,
@@ -89,7 +94,11 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     tokenPerson: { value: string | null },
     reloads: { count: number },
     heldSends: { value: Deferred<void>[] | null },
-    heldBootstraps: { value: Deferred<Response>[] | null }
+    heldBootstraps: { value: Deferred<Response>[] | null },
+    channelReads: string[],
+    channelFacts: Record<string, unknown>,
+    directoryCalls: Array<Record<string, unknown>>,
+    sendRefusals: { value: Array<{ status: number, body: unknown }> }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -108,6 +117,12 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     const heldSends: { value: Deferred<void>[] | null } = { value: null };
     // Set to a list, each sidebar read waits for the test to answer it, in the order they were asked.
     const heldBootstraps: { value: Deferred<Response>[] | null } = { value: null };
+    // Each room's chat_get_channel answer by id; a room not listed answers as one the reader is in.
+    const channelReads: string[] = [];
+    const channelFacts: Record<string, unknown> = {};
+    const directoryCalls: Array<Record<string, unknown>> = [];
+    // Refusals the next sends answer, in order, before the sends that post.
+    const sendRefusals: { value: Array<{ status: number, body: unknown }> } = { value: [] };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -179,8 +194,20 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
             if (url.endsWith("/rest/v1/rpc/chat_find_dm")) {
                 return fakeResponse(200, { channel_id: null });
             }
+            if (url.endsWith("/rest/v1/rpc/chat_get_channel")) {
+                channelReads.push(body.p_channel_id);
+                return fakeResponse(200, channelFacts[body.p_channel_id] ?? memberFacts(body.p_channel_id));
+            }
+            if (url.endsWith("/rest/v1/rpc/chat_list_directory")) {
+                directoryCalls.push(body);
+                return fakeResponse(200, { channels: [], total: 0 });
+            }
             if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
                 sent.push({ channelId: body.p_channel_id, body: body.p_body, args: body });
+                const refusal = sendRefusals.value.shift();
+                if (refusal) {
+                    return fakeResponse(refusal.status, refusal.body);
+                }
                 const id = 900 + sent.length;
                 if (heldSends.value) {
                     const answer = deferred<void>();
@@ -212,6 +239,8 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
         },
         mark: () => undefined,
         startDirectMessage: options.startDirectMessage,
+        joinChannel: options.joinChannel,
+        areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mentionViews: options.mentionViews,
         reloadPage: () => {
             reloads.count++;
@@ -220,7 +249,32 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
+        channelReads, channelFacts, directoryCalls, sendRefusals,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
+    };
+}
+
+/** chat_get_channel's answer for a room the reader is in, in its exact shape. */
+function memberFacts(channelId: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        channel_id: channelId,
+        name: "Room",
+        icon_url: null,
+        channel_type: "shared",
+        is_member: true,
+        can_post: true,
+        can_post_code: null,
+        can_post_reason: null,
+        max_length: 4000,
+        can_leave: true,
+        description: null,
+        group_type_name: "Small Group",
+        campus_id: null,
+        is_public: false,
+        member_count: 12,
+        leaders: [],
+        people: [],
+        ...extra
     };
 }
 
@@ -1692,8 +1746,8 @@ describe("the live sidebar", () => {
     }
 
     /** Starts the shell over the snapshot with channel A open and the personal topic joined. */
-    async function startedLive(): Promise<ReturnType<typeof build>> {
-        const h = build();
+    async function startedLive(options: Parameters<typeof build>[0] = {}): Promise<ReturnType<typeof build>> {
+        const h = build(options);
         h.bootstrap.value = snapshot();
         const starting = h.shell.start();
         await settle();
@@ -1935,6 +1989,163 @@ describe("the live sidebar", () => {
 
             expect(rowOf(h, channelB)?.name).toBe("Room");
             expect(h.heldBootstraps.value).toHaveLength(asked);
+        });
+    });
+
+    describe("rooms", () => {
+        const volunteers = "c00000f1-0000-4000-8000-000000000000";
+
+        /** chat_get_channel's answer for Volunteers, a public channel the reader has not joined. */
+        function volunteersFacts(extra: Record<string, unknown> = {}): Record<string, unknown> {
+            return memberFacts(volunteers, {
+                name: "Volunteers",
+                is_member: false,
+                is_public: true,
+                can_post: false,
+                can_post_code: "authz.join_required",
+                can_post_reason: "Join this channel to post.",
+                can_leave: false,
+                ...extra
+            });
+        }
+
+        /** Opens Volunteers, which has no sidebar row, and answers its newest page. */
+        async function openVolunteers(h: ReturnType<typeof build>): Promise<void> {
+            h.channelFacts[volunteers] = volunteersFacts();
+            const opening = h.shell.selectChannel(volunteers);
+            await settle();
+            answerHistory(h, volunteers, 30);
+            await opening;
+            await settle();
+        }
+
+        test("a conversation's facts are read beside its history on every open", async () => {
+            const h = await startedLive();
+            expect(h.channelReads).toEqual([channelA]);
+
+            const toB = h.shell.selectChannel(channelB);
+            await settle();
+            // asked before its history answers, not after
+            expect(h.channelReads).toEqual([channelA, channelB]);
+            answerHistory(h, channelB, 11);
+            await toB;
+            await settle();
+
+            expect(h.shell.rooms.factsOf(channelB)).toEqual(memberFacts(channelB));
+        });
+
+        test("a membership change for a room reads its facts again", async () => {
+            const h = await startedLive();
+
+            personal(h, "membership.changed", { channel_id: channelA, id: "5e0000f1-0000-4000-8000-000000000000" });
+            await settle();
+
+            expect(h.channelReads).toEqual([channelA, channelA]);
+        });
+
+        test("the directory asks chat_list_directory with the church's campus limit and the chosen filters", async () => {
+            const h = await startedLive({ areSharedChannelsFilteredByCampus: true });
+
+            h.shell.rooms.openDirectory();
+            await settle();
+
+            expect(h.directoryCalls).toEqual([{
+                p_query: null,
+                p_campus_only: true,
+                p_campus_id: null,
+                p_whole_church: false,
+                p_not_joined: false,
+                p_after: null,
+                p_limit: 50
+            }]);
+        });
+
+        test("a room opened with no sidebar row is previewed after the channels, kept across a reload in flight and its replay", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+
+            await openVolunteers(h);
+            expect(h.shell.channels.rows.map(r => r.channel_id)).toEqual([channelA, channelB, dmD, channelE, volunteers]);
+            expect(rowOf(h, volunteers)).toEqual(expect.objectContaining({ name: "Volunteers", is_member: false }));
+
+            personal(h, "channel.unread", { channel_id: channelB, message_id: 11, id: "5e0000f2-0000-4000-8000-000000000000" });
+            await settle();
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+
+            expect(rowOf(h, volunteers)).toEqual(expect.objectContaining({ name: "Volunteers", is_member: false }));
+            expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ is_unread: true, last_message_id: 11 }));
+        });
+
+        test("the previewed row goes once another conversation opens", async () => {
+            const h = await startedLive();
+            await openVolunteers(h);
+            expect(rowOf(h, volunteers)).toBeDefined();
+
+            void h.shell.selectChannel(channelA);
+            await settle();
+
+            expect(rowOf(h, volunteers)).toBeUndefined();
+        });
+
+        test("no read position is saved for a room only previewed", async () => {
+            const h = await startedLive();
+            await openVolunteers(h);
+            h.shell.seen(30);
+
+            void h.shell.selectChannel(channelA);
+            await settle();
+
+            expect(h.saves.filter(s => s.channelId === volunteers)).toEqual([]);
+        });
+
+        test("a pending join settles on the reload its membership change asks, which brings the real row", async () => {
+            const doorCalls: string[] = [];
+            const h = await startedLive({
+                joinChannel: async channelId => {
+                    doorCalls.push(channelId);
+                    return { code: "ok", message: null, isPending: true, personAliasGuid: person } as never;
+                }
+            });
+            await openVolunteers(h);
+
+            await h.shell.rooms.join(volunteers);
+            await settle();
+            expect(doorCalls).toEqual([volunteers]);
+            expect(h.shell.rooms.joinOf(volunteers)).toEqual({ kind: "pending" });
+
+            const joined = snapshot();
+            joined.channels.push(sidebarRow(volunteers, { name: "Volunteers", is_public: true, last_message_id: 31, read_cursor: 30 }));
+            h.bootstrap.value = joined;
+            h.channelFacts[volunteers] = volunteersFacts({ is_member: true, can_post: true, can_post_code: null, can_post_reason: null });
+            personal(h, "membership.changed", { channel_id: volunteers, id: "5e0000f3-0000-4000-8000-000000000000" });
+            await settle();
+
+            expect(h.shell.rooms.joinOf(volunteers)).toEqual({ kind: "joined", isFresh: true });
+            expect(h.shell.channels.rows.filter(r => r.channel_id === volunteers)).toEqual([expect.objectContaining({ is_member: true, last_message_id: 31 })]);
+            expect(h.shell.rooms.factsOf(volunteers)?.is_member).toBe(true);
+        });
+
+        test("a stale row's send refused as needing a join joins through the door and resends once under the same key", async () => {
+            const doorCalls: string[] = [];
+            const h = await startedLive({
+                joinChannel: async channelId => {
+                    doorCalls.push(channelId);
+                    return { code: "ok", message: null, isPending: false, personAliasGuid: person } as never;
+                }
+            });
+            // the row still says the person is in channel A, which they have since left in Rock
+            h.sendRefusals.value = [{ status: 403, body: { code: "42501", message: "authz.join_required", hint: "Join this channel to post." } }];
+
+            await h.shell.send("hello again");
+            await settle();
+
+            expect(doorCalls).toEqual([channelA]);
+            expect(h.sent.map(s => s.channelId)).toEqual([channelA, channelA]);
+            expect(h.sent[1].args.p_client_key).toBe(h.sent[0].args.p_client_key);
+            expect(h.shell.sender.pending(channelA)).toEqual([]);
         });
     });
 });
