@@ -57,8 +57,14 @@ export type ChannelStore = {
      */
     applyPersonalEvent: (event: string, payload: unknown, isReplay?: boolean) => void;
 
-    /** A save of the read position came back. */
-    applyMarkRead: (channelId: string, result: MarkReadResult) => void;
+    /**
+     * A save of the read position came back. `sentAt` is what `saveSent` answered as the save set
+     * out; without it, a newer pointer the row holds is always kept.
+     */
+    applyMarkRead: (channelId: string, result: MarkReadResult, sentAt?: number) => void;
+
+    /** A save of the read position is setting out; the answer to hand back with its result. */
+    saveSent: () => number;
 };
 
 /**
@@ -93,6 +99,12 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
     // pointer has moved since; a plain map, since nothing draws it.
     let answerPointers = new Map<string, number | null>();
 
+    // When each row's pointer was last moved by a signal or a fresh sidebar, as a count of those
+    // moves, so a save's answer can tell a message that reached the row after the save set out
+    // from one it was sent knowing of; a plain map, since nothing draws it.
+    let moves = 0;
+    const movedAt = new Map<string, number>();
+
     /** The row of a channel, if the sidebar holds it. */
     function find(channelId: string): SidebarRow | undefined {
         return store.rows.find(row => row.channel_id === channelId);
@@ -119,6 +131,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         row.is_unread = true;
         if (typeof signal.message_id === "number" && (row.last_message_id === null || signal.message_id > row.last_message_id)) {
             row.last_message_id = signal.message_id;
+            movedAt.set(row.channel_id, ++moves);
             // the signal never announces a message the reader typed
             row.last_message_is_own = false;
             row.last_message_posted_by_rock = false;
@@ -185,6 +198,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         const sender = signal.sender as Partial<Record<"nick_name" | "last_name", unknown>> | null | undefined;
         const isOwn = signal.is_own === true;
         row.last_message_id = messageId;
+        movedAt.set(row.channel_id, ++moves);
         row.last_message_at = messageId !== null && typeof signal.sent_at === "string" ? signal.sent_at : null;
         row.last_message_preview = messageId !== null && typeof signal.preview === "string" ? signal.preview : null;
         // the pointer only ever rests on a timeline message, never a system line
@@ -215,21 +229,26 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
     }
 
     /** A save of the read position, from this device or, as channel.read, from another of the person's. */
-    function applyMarkRead(channelId: string, result: MarkReadResult): void {
+    function applyMarkRead(channelId: string, result: MarkReadResult, sentAt?: number): void {
         const row = find(channelId);
         if (!row) {
             return;
         }
 
-        // The pointer only moves forward here: an answer that comes back after a newer message
-        // reached the row carries the pointer as it stood when the save ran, so the bold is worked
-        // out from the newer of the two.
-        const isAhead = result.last_message_id !== null
-            && (row.last_message_id === null || result.last_message_id > row.last_message_id);
-        // A message the reader typed is read already; one the row has not heard of is nobody's
-        // it knows of.
-        const isTyped = !isAhead && isTypedByReader(row);
-        if (isAhead) {
+        // An answer that comes back after a newer message reached the row carries the pointer as
+        // it stood when the save ran, so the row keeps the newer one and the bold is worked out from
+        // it. A newer pointer the row already held when the save set out is one the save ran past:
+        // a deleted message walked back from, which a channel hears of no other way, so the
+        // answer's is taken. Without the moment the save set out, as for a read from another
+        // device, the newer is kept: a stale bold the next open clears, never a row left plain
+        // over a message the platform holds unread.
+        const isRowNewer = row.last_message_id !== null
+            && (result.last_message_id === null || row.last_message_id > result.last_message_id);
+        const isKept = isRowNewer && (sentAt === undefined || (movedAt.get(channelId) ?? 0) > sentAt);
+        // A message the reader typed is read already; one the answer names instead is nobody's
+        // the row knows of.
+        const isTyped = (isKept || row.last_message_id === result.last_message_id) && isTypedByReader(row);
+        if (!isKept && result.last_message_id !== null) {
             row.last_message_id = result.last_message_id;
         }
         row.read_cursor = result.read_cursor;
@@ -267,7 +286,12 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         setSidebar: (rows: SidebarRow[]): void => {
             store.rows = rows;
             answerPointers = new Map(rows.map(row => [row.channel_id, row.last_message_id]));
+            const at = ++moves;
+            movedAt.clear();
+            rows.forEach(row => movedAt.set(row.channel_id, at));
         },
+
+        saveSent: (): number => moves,
 
         setActive: (channelId: string | null): void => {
             store.activeChannelId = channelId;

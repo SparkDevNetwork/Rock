@@ -547,19 +547,31 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const channels = createChannelStore({ reloadSidebar: () => sidebarWait === null ? void loadSidebar() : undefined });
 
     /** A save of the read position, applied to the row and the unread mentions. */
-    function applySave(channelId: string, result: MarkReadResult): void {
-        channels.applyMarkRead(channelId, result);
+    function applySave(channelId: string, result: MarkReadResult, sentAt: number | undefined): void {
+        channels.applyMarkRead(channelId, result, sentAt);
         // a mention at or below the saved cursor has been read where it lives
         if (result.read_cursor !== null) {
             mentions.channelRead(channelId, result.read_cursor);
         }
     }
 
+    const keepaliveSave = createKeepaliveSave({ fetch: options.fetch, projectUrl, publishableKey, currentToken: session.currentToken });
+    // When each save set out, by its answer, so the row can tell a message that reached it since
+    // from one the save already ran past
+    const savesSentAt = new WeakMap<MarkReadResult, number>();
     const tracker: ReadTracker = createReadTracker({
-        save: createKeepaliveSave({ fetch: options.fetch, projectUrl, publishableKey, currentToken: session.currentToken }),
+        save: async (channelId, messageId) => {
+            const sentAt = channels.saveSent();
+            const result = await keepaliveSave(channelId, messageId);
+            if (result) {
+                savesSentAt.set(result, sentAt);
+            }
+            return result;
+        },
         onSaved: (channelId, result) => {
-            applySave(channelId, result);
-            sidebarJournal?.push({ channelId, result });
+            const sentAt = savesSentAt.get(result);
+            applySave(channelId, result, sentAt);
+            sidebarJournal?.push({ channelId, result, sentAt });
         }
     });
 
@@ -707,7 +719,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // out is applied at once and kept here, then replayed over its answer, which may predate it.
     // Null while no read is out.
     let sidebarGeneration = 0;
-    let sidebarJournal: Array<{ event: string, payload: unknown } | { channelId: string, result: MarkReadResult }> | null = null;
+    let sidebarJournal: Array<{ event: string, payload: unknown } | { channelId: string, result: MarkReadResult, sentAt: number | undefined }> | null = null;
 
     /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
     const replayedEvents = new Set(["channel.unread", "channel.mention", "dm.preview", "channel.read"]);
@@ -748,7 +760,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 mentions.applyPersonalEvent(change.event, change.payload);
             }
             else {
-                applySave(change.channelId, change.result);
+                applySave(change.channelId, change.result, change.sentAt);
             }
         }
         return channels.rows;
