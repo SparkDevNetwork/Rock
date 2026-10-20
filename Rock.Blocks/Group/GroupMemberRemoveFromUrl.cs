@@ -90,8 +90,8 @@ namespace Rock.Blocks.Group
         Reason: Mirror GroupMemberAddFromURL block group-type guard for URL-based remove.
     */
     [GroupTypesField( "Limit Group Type",
-        Description = "To ensure that people cannot modify the URL and try removing people from standard Rock security groups with known Id numbers you can limit which Group Types are considered valid during remove.",
-        IsRequired = false,
+        Description = "The group types that people can be removed from by a link. Required: when blank, the block removes no one. Security role groups are not supported.",
+        IsRequired = true,
         Order = 5,
         Key = AttributeKey.LimitGroupType )]
 
@@ -145,6 +145,27 @@ namespace Rock.Blocks.Group
         /// <returns>The rendered HTML content string.</returns>
         private string ProcessRemoval()
         {
+            /*
+                10/19/2026 - MSE
+
+                Limit Group Type is required. The block removes no one until an administrator
+                selects the group types it may remove people from, and it never accepts the
+                Security Role group type. These checks run before any value from the URL
+                is read so a misconfigured block makes no changes.
+
+                Reason: Only remove people from group types an administrator has allowed.
+            */
+            var allowedGroupTypeGuids = GetAttributeValue( AttributeKey.LimitGroupType ).SplitDelimitedValues().AsGuidList();
+            if ( !allowedGroupTypeGuids.Any() )
+            {
+                return "<div class='alert alert-warning'>This block is not configured. An administrator must select one or more group types in the Limit Group Type setting.</div>";
+            }
+
+            if ( allowedGroupTypeGuids.Contains( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+            {
+                return "<div class='alert alert-warning'>Security role groups are not supported by this block. An administrator must remove the Security Role group type from the Limit Group Type setting.</div>";
+            }
+
             var groupService = new GroupService( RockContext );
             var group = GetGroupFromRequest( groupService );
 
@@ -154,6 +175,19 @@ namespace Rock.Blocks.Group
             }
 
             if ( !IsGroupTypeAllowed( group ) )
+            {
+                return "<div class='alert alert-warning'>Invalid group specified.</div>";
+            }
+
+            /*
+                10/19/2026 - MSE
+
+                Security role groups are refused whatever the block settings say,
+                including a security role chosen as the Default Group.
+
+                Reason: Never remove people from security roles by a link.
+            */
+            if ( group.IsSecurityRoleOrSecurityGroupType() )
             {
                 return "<div class='alert alert-warning'>Invalid group specified.</div>";
             }
@@ -258,7 +292,7 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Determines whether the group's type is allowed by the Limit Group Type setting.
-        /// When the setting is empty, all group types are allowed (same as Group Member Add From URL).
+        /// When the setting is empty, no group types are allowed (same as Group Member Add From URL).
         /// </summary>
         /// <param name="group">The resolved group.</param>
         /// <returns><c>true</c> if the group type is allowed; otherwise <c>false</c>.</returns>
@@ -268,10 +302,10 @@ namespace Rock.Blocks.Group
                 .SplitDelimitedValues()
                 .AsGuidList();
 
-            // Empty setting means no restriction.
+            // An empty setting allows nothing; the setting is required.
             if ( !allowedGroupTypeGuids.Any() )
             {
-                return true;
+                return false;
             }
 
             var groupType = GroupTypeCache.Get( group.GroupTypeId );

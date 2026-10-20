@@ -127,6 +127,7 @@ namespace Rock.Model
 
                 // If current HttpContext is available, populate its information as well.
                 var request = context.Request;
+                var routeToken = request.RequestContext?.RouteData?.Values["rckipid"] as string;
 
                 StringBuilder cookies = new StringBuilder();
                 var cookieList = request.Cookies;
@@ -140,7 +141,16 @@ namespace Rock.Model
                         var httpCookie = cookieList[cookie];
                         if ( httpCookie != null )
                         {
-                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value.EncodeHtml() + "</td></tr>" );
+                            /*
+                                10/19/2026 - MSE
+
+                                Cookie values hold the .ROCK sign-in ticket, the session id and
+                                other secrets, so only the cookie names are stored. Names are HTML
+                                encoded because Exception Detail renders this table as HTML.
+
+                                Reason: Exception log must not store sign-in tickets or allow stored script.
+                            */
+                            cookies.Append( "<tr><td><b>" + cookie.EncodeHtml() + "</b></td><td>" + RedactedValue + "</td></tr>" );
                         }
                     }
 
@@ -165,14 +175,24 @@ namespace Rock.Model
                         string val = string.Empty;
                         try
                         {
-                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                            /*
+                                10/19/2026 - MSE
+
+                                Server variables include the cookie and authorization headers
+                                (HTTP_COOKIE, ALL_RAW, HTTP_AUTHORIZATION_TOKEN...) and URLs that
+                                can carry an rckipid or API key. Staff can read the exception log,
+                                so credential values are redacted before they are stored.
+
+                                Reason: Exception log must not store sign-in tickets, REST keys or rckipid tokens.
+                            */
+                            val = RedactServerVariable( serverVar, serverVarList[serverVar].ToStringSafe(), routeToken ).EncodeHtml();
                         }
                         catch
                         {
                             // ignore
                         }
 
-                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                        serverVars.Append( $"<tr><td><b>{serverVar.EncodeHtml()}</b></td><td>{val}</td></tr>" );
                     }
 
                     serverVars.Append( "</table>" );
@@ -180,9 +200,20 @@ namespace Rock.Model
 
                 exceptionLog.Cookies = cookies.ToString();
                 exceptionLog.StatusCode = context.Response.StatusCode.ToString();
-                exceptionLog.PageUrl = request.UrlProxySafe().ToString();
+
+                /*
+                    10/19/2026 - MSE
+
+                    The URL and query string can carry an rckipid token, an API key or
+                    a login code, so sensitive values are redacted before they are stored.
+                    AbsoluteUri is used because ToString() decodes %26 inside a value,
+                    which would end the redaction early and keep part of the secret.
+
+                    Reason: Exception log must not store impersonation tokens or REST keys.
+                */
+                exceptionLog.PageUrl = RedactUrl( request.UrlProxySafe().AbsoluteUri );
                 exceptionLog.ServerVariables = serverVars.ToString();
-                exceptionLog.QueryString = request.UrlProxySafe().Query;
+                exceptionLog.QueryString = RedactQueryParameters( request.UrlProxySafe().Query );
                 /*
                      SK - 11/24/2021
                      We are commenting out below line as we have decided not to store form data from now on as it may contain sensative data.
@@ -194,6 +225,33 @@ namespace Rock.Model
             }
 
             return exceptionLog;
+        }
+
+        /// <summary>
+        /// Hides sensitive query values and rckipid tokens in a URL before it is
+        /// written to the exception log. Never throws; if the URL cannot be
+        /// processed then the part before the query string is returned.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>The URL with sensitive values replaced.</returns>
+        [Rock.Attribute.RockInternal( "17.12", true )]
+        public static string RedactUrl( string url )
+        {
+            if ( string.IsNullOrEmpty( url ) )
+            {
+                return url;
+            }
+
+            try
+            {
+                return RedactQueryParameters( PersonToken.ObfuscateRockMagicToken( url ) );
+            }
+            catch
+            {
+                var queryIndex = url.IndexOf( '?' );
+
+                return queryIndex >= 0 ? url.Substring( 0, queryIndex ) : url;
+            }
         }
     }
 }

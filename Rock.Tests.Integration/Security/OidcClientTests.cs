@@ -30,6 +30,7 @@ namespace Rock.Tests.Integration.Security
                 {
                     new Claim(JwtClaimTypes.Subject, userId),
                     new Claim(JwtClaimTypes.Email, expectedPerson.Email),
+                    new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
                     new Claim(JwtClaimTypes.GivenName, expectedPerson.FirstName),
                     new Claim(JwtClaimTypes.FamilyName, expectedPerson.LastName)
                 } ),
@@ -44,9 +45,77 @@ namespace Rock.Tests.Integration.Security
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
+            Assert.AreEqual( expectedPerson.Id, actualUserLogin.PersonId );
             Assert.AreEqual( expectedPerson.Email, actualUserLogin.Person.Email );
             Assert.AreEqual( expectedPerson.FirstName, actualUserLogin.Person.FirstName );
             Assert.AreEqual( expectedPerson.LastName, actualUserLogin.Person.LastName );
+        }
+
+        [TestMethod]
+        public void HandleOidcUserAddUpdate_UnverifiedEmailCreatesNewPerson()
+        {
+            var testPerson = AddTestPerson();
+            var userId = System.Guid.NewGuid().ToString( "N" );
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity( new[]
+                {
+                    new Claim(JwtClaimTypes.Subject, userId),
+                    new Claim(JwtClaimTypes.Email, testPerson.Email),
+                    new Claim(JwtClaimTypes.GivenName, testPerson.FirstName),
+                    new Claim(JwtClaimTypes.FamilyName, testPerson.LastName)
+                } ),
+            };
+
+            var token = ( JwtSecurityToken ) tokenHandler.CreateToken( tokenDescriptor );
+
+            var oidcClient = new OidcClient();
+            var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
+
+            AssertLoginIsNotLinkedToPerson( userName, testPerson );
+        }
+
+        [TestMethod]
+        public void HandleOidcUserAddUpdate_FalseEmailVerifiedCreatesNewPerson()
+        {
+            var testPerson = AddTestPerson();
+            var userId = System.Guid.NewGuid().ToString( "N" );
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity( new[]
+                {
+                    new Claim(JwtClaimTypes.Subject, userId),
+                    new Claim(JwtClaimTypes.Email, testPerson.Email),
+                    new Claim(JwtClaimTypes.EmailVerified, "false", ClaimValueTypes.Boolean),
+                    new Claim(JwtClaimTypes.GivenName, testPerson.FirstName),
+                    new Claim(JwtClaimTypes.FamilyName, testPerson.LastName)
+                } ),
+            };
+
+            var token = ( JwtSecurityToken ) tokenHandler.CreateToken( tokenDescriptor );
+
+            var oidcClient = new OidcClient();
+            var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
+
+            AssertLoginIsNotLinkedToPerson( userName, testPerson );
+        }
+
+        /// <summary>
+        /// Asserts that the login was created on a different person and that
+        /// the test person still has no login.
+        /// </summary>
+        /// <param name="userName">The user name returned by the OIDC client.</param>
+        /// <param name="testPerson">The existing test person that must not be linked.</param>
+        private static void AssertLoginIsNotLinkedToPerson( string userName, Person testPerson )
+        {
+            var userLoginService = new UserLoginService( new RockContext() );
+            var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
+
+            Assert.IsNotNull( actualUserLogin );
+            Assert.AreNotEqual( testPerson.Id, actualUserLogin.PersonId );
+            Assert.AreEqual( 0, userLoginService.Queryable().Count( ul => ul.PersonId == testPerson.Id ) );
         }
 
         [TestMethod]
