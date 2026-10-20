@@ -2479,6 +2479,16 @@ describe("a channel the person has not joined", () => {
         expect(w.get("[data-testid='frame-main'] .chat-composer").classes()).not.toContain("is-entering");
     });
 
+    test("tells the feed when the room's Join was refused, for its intro", async () => {
+        const w = await openVolunteers();
+        expect(w.getComponent(MessageFeedComponent).props("isJoinRefused")).toBe(false);
+
+        roomsOf().state.joins[volunteers.channel_id] = { kind: "refused", text: "You can't join this channel." };
+        await settle();
+
+        expect(w.getComponent(MessageFeedComponent).props("isJoinRefused")).toBe(true);
+    });
+
     test("a refusal's Browse channels opens the directory", async () => {
         const w = await openVolunteers();
         roomsOf().state.joins[volunteers.channel_id] = { kind: "refused", text: "You can't join this channel." };

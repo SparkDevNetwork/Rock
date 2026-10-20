@@ -91,6 +91,7 @@
                                  :isPhone="isPhone"
                                  :isEntering="isFeedEntering"
                                  :isPreviewing="!!activeRow && !activeRow.is_member"
+                                 :isJoinRefused="shell.rooms.joinOf(activeChannelId).kind === 'refused'"
                                  :facts="activeKind === 'channel' ? activeFacts : null"
                                  :campuses="campuses"
                                  :notifyMode="activeRow?.notify_mode ?? null"

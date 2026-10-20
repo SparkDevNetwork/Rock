@@ -56,6 +56,7 @@
                           :campuses="campuses"
                           :notifyMode="notifyMode"
                           :isEmpty="timeline.messages.length === 0 && pending.length === 0"
+                          :isJoinRefused="isJoinRefused"
                           :isPhone="isPhone" />
 
             <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
@@ -607,6 +608,12 @@
 
         /** A room the person has not joined, where they may read but not act on a message. */
         isPreviewing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the door refused the person's join of the room, which the intro's foot says. */
+        isJoinRefused: {
             type: Boolean,
             default: false
         },

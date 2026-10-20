@@ -943,6 +943,12 @@ describe("the channel intro", () => {
         expect(wrapper.get("[data-testid='message-feed']").element.contains(intro.element)).toBe(true);
     });
 
+    test("tells the intro the person's join was refused, for its foot", () => {
+        const wrapper = drawWithFacts(timeline([]), { isJoinRefused: true });
+
+        expect(wrapper.getComponent(ChannelIntro).props("isJoinRefused")).toBe(true);
+    });
+
     test("tells the intro an empty channel is empty, for its foot", () => {
         const wrapper = drawWithFacts(timeline([]));
 

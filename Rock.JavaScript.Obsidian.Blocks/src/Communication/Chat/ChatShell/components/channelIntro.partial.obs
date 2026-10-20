@@ -30,7 +30,7 @@
             </div>
 
             <div v-if="isEmpty" class="chat-intro-foot" data-testid="intro-foot">
-                <Icon name="message" size="xs" />{{ canPostOnceIn ? "No messages yet. Be the first to say hello." : "Nothing has been posted yet." }}
+                <Icon name="message" size="xs" />{{ canPostOnceIn && !isJoinRefused ? "No messages yet. Be the first to say hello." : "Nothing has been posted yet." }}
             </div>
         </div>
     </section>
@@ -259,6 +259,12 @@
 
         /** Whether the room has no messages at all, which draws the foot. */
         isEmpty: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the door refused the person's join, so they cannot post here even once in. */
+        isJoinRefused: {
             type: Boolean,
             default: false
         },

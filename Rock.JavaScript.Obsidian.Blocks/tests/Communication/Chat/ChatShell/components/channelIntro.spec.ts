@@ -236,6 +236,14 @@ describe("an empty room's foot", () => {
         expect(w.get("[data-testid='intro-foot']").text()).toBe("No messages yet. Be the first to say hello.");
     });
 
+    test("says nothing has been posted to a person previewing the room whose join was refused", () => {
+        const w = mountIntro({ isEmpty: true, isJoinRefused: true, facts: facts({ is_member: false, can_post: false, can_post_code: "authz.join_required", can_post_reason: "Join this channel to post." }) });
+
+        expect(w.get("[data-testid='intro-foot']").text()).toBe("Nothing has been posted yet.");
+        // the join bar says why they cannot join, so no note repeats it
+        expect(w.find("[data-testid='intro-note']").exists()).toBe(false);
+    });
+
     test("says nothing has been posted where they cannot", () => {
         const w = mountIntro({ isEmpty: true, facts: facts({ can_post: false, can_post_code: "authz.leaders_only", can_post_reason: "Only leaders can post." }) });
 
