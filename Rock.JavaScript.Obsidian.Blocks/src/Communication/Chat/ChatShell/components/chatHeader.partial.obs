@@ -8,15 +8,22 @@
                     data-testid="header-back"
                     @click="emit('back')" />
 
-        <div class="chat-header-id">
+        <!-- A room's mark and title open its details; with no room there is nothing to open. -->
+        <component :is="kind ? 'button' : 'div'"
+                   class="chat-header-id"
+                   v-bind="detailsAttributes"
+                   @click="kind && emit('details')">
             <span v-if="kind === 'channel'" class="chat-header-ic">
                 <Icon :name="isPublic ? 'hash' : 'lock'" />
             </span>
             <Avatar v-else-if="faces.length > 0" :people="faces" :size="kind === 'person' ? 36 : 28" />
 
             <span class="chat-header-title">
-                <!-- Focusable from script, so a phone can move focus here when a conversation slides in. -->
-                <b class="chat-header-name" data-testid="header-title" tabindex="-1">{{ title }}</b>
+                <span class="chat-header-name-row">
+                    <!-- Focusable from script, so a phone can move focus here when a conversation slides in. -->
+                    <b class="chat-header-name" data-testid="header-title" tabindex="-1">{{ title }}</b>
+                    <span v-if="kind" class="chat-header-chev"><Icon name="down" size="xs" /></span>
+                </span>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
                     <span class="chat-header-live" data-testid="connection-dot"></span>Reconnecting…
                 </span>
@@ -25,7 +32,7 @@
                 </span>
                 <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
-        </div>
+        </component>
 
         <div class="chat-header-actions">
             <IconButton v-if="isThreadsOffered && !isPhone"
@@ -116,8 +123,8 @@
 }
 
 /*
-    The room's mark and title, padded as the button that opens the room's details will be, and
-    pulled back by its left padding so the mark still lines up with the feed's edge.
+    The room's mark and title, the button that opens the room's details, pulled back by its left
+    padding so the mark still lines up with the feed's edge.
 */
 .chat-header-id {
     display: flex;
@@ -127,7 +134,42 @@
     min-width: 0;
     padding: 4px 10px 4px 6px;
     margin-left: -6px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background: transparent;
+    border: 0;
     border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+button.chat-header-id:hover {
+    background: var(--chat-hover);
+}
+
+button.chat-header-id:active {
+    background: var(--chat-press);
+}
+
+.chat-header-name-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    min-width: 0;
+}
+
+/* The chevron says the title opens something, and nudges down on hover. */
+.chat-header-chev {
+    display: inline-flex;
+    flex: none;
+    color: var(--chat-icon);
+    opacity: .7;
+    transition: transform var(--chat-t-fast) var(--chat-ease-in), opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+button.chat-header-id:hover .chat-header-chev {
+    opacity: 1;
+    transform: translateY(1px);
 }
 
 .is-phone .chat-header-id {
@@ -339,6 +381,10 @@
     .chat-conn-bar::after {
         animation: none;
     }
+
+    button.chat-header-id:hover .chat-header-chev {
+        transform: none;
+    }
 }
 </style>
 
@@ -363,7 +409,8 @@
         (e: "back"): void,
         (e: "backOnline"): void,
         (e: "threads"): void,
-        (e: "mentions"): void
+        (e: "mentions"): void,
+        (e: "details"): void
     }>();
 
     const props = defineProps({
@@ -525,6 +572,16 @@
     /** A person's one face, or a group's first two. */
     const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(name => ({ name })));
 
+    /** The title button's name and role, for a room; the plain title of no room has none. */
+    const detailsAttributes = computed((): Record<string, string> => props.kind
+        ? {
+            "type": "button",
+            "aria-haspopup": "dialog",
+            "aria-label": `${props.title}, ${props.kind === "channel" ? "channel" : "conversation"} details`,
+            "data-testid": "header-details"
+        }
+        : {});
+
     /** The phone's overflow menu; empty leaves the button out, since a menu of nothing is a dead end. */
     const moreItems = computed((): MenuItem[] => {
         const items: MenuItem[] = [];
@@ -539,6 +596,11 @@
 
         if (props.isPushOffered) {
             items.push({ key: "push", label: "Turn on notifications", icon: "bell" });
+        }
+
+        // Last, as the title opens the same details on a phone too.
+        if (props.kind) {
+            items.push({ key: "details", label: props.kind === "channel" ? "Channel details" : "Conversation details", icon: "settings" });
         }
 
         return items;
@@ -566,6 +628,9 @@
         }
         else if (key === "mentions") {
             emit("mentions");
+        }
+        else if (key === "details") {
+            emit("details");
         }
     }
 

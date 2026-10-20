@@ -154,6 +154,13 @@ function plain(text: string): string {
     return text.replace(/\s+/g, " ").trim();
 }
 
+/** An element's words as a screen reader reads them: an avatar's letters are hidden decoration. */
+function spoken(inside: { element: Element }): string {
+    const copy = inside.element.cloneNode(true) as Element;
+    copy.querySelectorAll("[aria-hidden='true']").forEach(hidden => hidden.remove());
+    return plain(copy.textContent ?? "");
+}
+
 async function settle(): Promise<void> {
     await nextTick();
     await nextTick();
@@ -259,11 +266,11 @@ describe("a channel's identity", () => {
     test("names its leaders with their faces, joined A and B, or A, B and C", async () => {
         const w = mountDetails();
         const leaders = w.get("[data-testid='details-leaders']");
-        expect(plain(leaders.text())).toBe("Led by Tom Hale and Grace Kim");
+        expect(spoken(leaders)).toBe("Led by Tom Hale and Grace Kim");
         expect(leaders.findComponent(Avatar).props("people")).toHaveLength(2);
 
         await w.setProps({ facts: channelFacts({ leaders: [tom, grace, ana] }) });
-        expect(plain(w.get("[data-testid='details-leaders']").text())).toBe("Led by Tom Hale, Grace Kim and Ana Ruiz");
+        expect(spoken(w.get("[data-testid='details-leaders']"))).toBe("Led by Tom Hale, Grace Kim and Ana Ruiz");
 
         await w.setProps({ facts: channelFacts({ leaders: [] }) });
         expect(w.find("[data-testid='details-leaders']").exists()).toBe(false);
@@ -310,7 +317,7 @@ describe("a group's identity", () => {
     test("lists everyone in it as a chip, the person included", () => {
         const w = mountGroup();
 
-        const chips = w.findAll("[data-testid='details-person']").map(chip => plain(chip.text()));
+        const chips = w.findAll("[data-testid='details-person']").map(chip => spoken(chip));
         expect(chips).toEqual(["Jordan Ellis (you)", "Caleb Brooks", "Hannah Diaz", "Luis Romero"]);
         expect(w.get("[data-testid='details-people']").attributes("aria-label")).toBe("People in this conversation");
     });

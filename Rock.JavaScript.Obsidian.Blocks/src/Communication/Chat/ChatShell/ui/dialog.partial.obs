@@ -3,38 +3,51 @@
     <Transition leave-active-class="is-leaving">
         <div v-if="isOpen"
              class="chat-modal"
+             :class="{ 'is-sheet': isSettings && isPhone }"
              data-testid="dialog-scrim"
              @mousedown.self="onScrimDown"
              @click.self="onScrimClick">
             <div ref="dialogElement"
                  class="chat-dialog"
-                 :class="{ 'is-wide': isWide }"
+                 :class="{ 'is-wide': isWide || isSettings, 'is-settings': isSettings }"
                  role="dialog"
                  aria-modal="true"
                  :aria-labelledby="titleId"
                  data-testid="dialog"
                  @keydown="onKeydown">
-                <h3 :id="titleId" class="chat-dialog-title">{{ title }}</h3>
-                <p v-if="body" class="chat-dialog-body">{{ body }}</p>
-                <slot />
-                <div v-if="$slots.preview" class="chat-dialog-preview" data-testid="dialog-preview">
-                    <slot name="preview" />
-                </div>
-                <div class="chat-dialog-actions">
-                    <slot name="actions">
-                        <button ref="cancelElement"
-                                type="button"
-                                class="chat-dialog-btn is-line"
-                                data-testid="dialog-cancel"
-                                @click="emit('close')">Cancel</button>
-                        <button v-if="confirmLabel"
-                                type="button"
-                                class="chat-dialog-btn"
-                                :class="isDestructive ? 'is-danger' : 'is-brand'"
-                                data-testid="dialog-confirm"
-                                @click="emit('confirm')">{{ confirmLabel }}</button>
-                    </slot>
-                </div>
+                <!-- A settings dialog: a fixed head with its tools, and a body that scrolls under it. -->
+                <template v-if="isSettings">
+                    <div class="chat-dialog-head">
+                        <h3 :id="titleId" class="chat-dialog-title">{{ title }}</h3>
+                        <slot name="tools" />
+                    </div>
+                    <div class="chat-dialog-scroll">
+                        <slot />
+                    </div>
+                </template>
+                <template v-else>
+                    <h3 :id="titleId" class="chat-dialog-title">{{ title }}</h3>
+                    <p v-if="body" class="chat-dialog-body">{{ body }}</p>
+                    <slot />
+                    <div v-if="$slots.preview" class="chat-dialog-preview" data-testid="dialog-preview">
+                        <slot name="preview" />
+                    </div>
+                    <div class="chat-dialog-actions">
+                        <slot name="actions">
+                            <button ref="cancelElement"
+                                    type="button"
+                                    class="chat-dialog-btn is-line"
+                                    data-testid="dialog-cancel"
+                                    @click="emit('close')">Cancel</button>
+                            <button v-if="confirmLabel"
+                                    type="button"
+                                    class="chat-dialog-btn"
+                                    :class="isDestructive ? 'is-danger' : 'is-brand'"
+                                    data-testid="dialog-confirm"
+                                    @click="emit('confirm')">{{ confirmLabel }}</button>
+                        </slot>
+                    </div>
+                </template>
             </div>
         </div>
     </Transition>
@@ -86,6 +99,58 @@
     from {
         opacity: 0;
         transform: translateY(8px) scale(var(--chat-pop-scale));
+    }
+}
+
+/* A settings dialog keeps its head in view and scrolls only its body, within the frame's height. */
+.chat-dialog.is-settings {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100% - 8px);
+    padding: 0;
+    overflow: hidden;
+}
+
+.chat-dialog-head {
+    display: flex;
+    flex: none;
+    gap: 10px;
+    align-items: center;
+    padding: 14px 12px 12px 20px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-dialog-head .chat-dialog-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 16px;
+}
+
+.chat-dialog-scroll {
+    padding: 18px 20px 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+/* On a phone a settings dialog rises from the bottom as a sheet. */
+.chat-modal.is-sheet {
+    place-items: end stretch;
+    padding: 0;
+}
+
+.chat-modal.is-sheet .chat-dialog {
+    width: 100%;
+    max-height: 90%;
+    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
+    animation: chat-sheet-rise var(--chat-t-panel) var(--chat-ease-in);
+}
+
+@keyframes chat-sheet-rise {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
     }
 }
 
@@ -156,7 +221,8 @@
 
 /* Reduced motion: the dialog only fades in, with the scrim. */
 @media (prefers-reduced-motion: reduce) {
-    .chat-dialog {
+    .chat-dialog,
+    .chat-modal.is-sheet .chat-dialog {
         animation-name: chat-scrim-in;
     }
 }
@@ -197,6 +263,18 @@
         },
 
         isWide: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether this is a settings dialog: a head holding the title and the tools slot, no actions row. */
+        isSettings: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the chat is in its phone layout, where a settings dialog is a sheet from the bottom. */
+        isPhone: {
             type: Boolean,
             default: false
         }
