@@ -2487,7 +2487,7 @@ namespace RockWeb.Blocks.Connection
 
             BindPhoto( person );
 
-            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ConvertMarkdownToHtml() : string.Empty;
+            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ConvertMarkdownToHtml().SanitizeHtml( strict: false ) : string.Empty;
             lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
 
             if ( !connectionRequest.DueDate.HasValue )
