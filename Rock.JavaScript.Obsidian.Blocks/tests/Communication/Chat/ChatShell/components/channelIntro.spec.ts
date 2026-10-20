@@ -163,7 +163,7 @@ describe("Led by", () => {
         const w = mountIntro({ facts: facts({ leaders: [leader("Tom", "Hale", 1)] }) });
 
         const leaders = w.get("[data-testid='intro-leaders']");
-        expect(leaders.text()).toBe("Led by Tom Hale");
+        expect(leaders.get("[data-testid='intro-leaders-text']").text()).toBe("Led by Tom Hale");
         expect(leaders.findAll("b").map(name => name.text())).toEqual(["Tom Hale"]);
         const pile = leaders.getComponent(Avatar);
         expect(pile.props("size")).toBe(20);
@@ -173,14 +173,14 @@ describe("Led by", () => {
     test("joins two leaders with and", () => {
         const w = mountIntro({ facts: facts({ leaders: [leader("Tom", "Hale", 1), leader("Grace", "Kim", 2)] }) });
 
-        expect(w.get("[data-testid='intro-leaders']").text()).toBe("Led by Tom Hale and Grace Kim");
+        expect(w.get("[data-testid='intro-leaders-text']").text()).toBe("Led by Tom Hale and Grace Kim");
     });
 
     test("joins three leaders with a comma and and, each face drawn", () => {
         const w = mountIntro({ facts: facts({ leaders: [leader("Tom", "Hale", 1), leader("Grace", "Kim", 2), leader("Ana", "Ruiz", 3)] }) });
 
         const leaders = w.get("[data-testid='intro-leaders']");
-        expect(leaders.text()).toBe("Led by Tom Hale, Grace Kim and Ana Ruiz");
+        expect(leaders.get("[data-testid='intro-leaders-text']").text()).toBe("Led by Tom Hale, Grace Kim and Ana Ruiz");
         expect((leaders.getComponent(Avatar).props("people") as unknown[]).length).toBe(3);
     });
 });

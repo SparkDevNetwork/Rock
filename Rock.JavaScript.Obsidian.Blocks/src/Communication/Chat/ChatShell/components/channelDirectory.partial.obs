@@ -1,0 +1,1188 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="viewElement"
+         class="chat-fd"
+         :class="{ 'is-phone': isPhone }"
+         role="region"
+         :aria-labelledby="titleId"
+         data-testid="channel-directory"
+         @keydown="onKeydown">
+        <header class="chat-fd-hdr">
+            <IconButton v-if="isPhone"
+                        class="chat-fd-back"
+                        icon="left"
+                        label="Back to conversations"
+                        data-testid="directory-back"
+                        @click="emit('back')" />
+            <span class="chat-fd-hdr-ic" aria-hidden="true"><Icon name="hash" /></span>
+            <div class="chat-fd-hdr-title">
+                <b :id="titleId" data-testid="directory-title">Browse channels</b>
+                <span class="chat-fd-hdr-sub" data-testid="directory-subtitle">Public channels at {{ organizationName }}</span>
+            </div>
+            <IconButton v-if="!isPhone"
+                        icon="x"
+                        label="Close Browse channels"
+                        tooltip="Close"
+                        data-testid="directory-close"
+                        @click="emit('close')" />
+        </header>
+
+        <div class="chat-fd-tools">
+            <div class="chat-fd-search">
+                <Icon name="search" size="sm" />
+                <input ref="searchInput"
+                       type="search"
+                       placeholder="Search channels by name"
+                       aria-label="Search channels"
+                       autocomplete="off"
+                       spellcheck="false"
+                       :aria-controls="resultsId"
+                       :value="directory.query"
+                       data-autofocus
+                       data-testid="directory-search"
+                       @input="onInput" />
+                <span v-if="directory.isSearching" class="chat-fd-busy" data-testid="directory-search-busy"><span class="chat-spinner"></span></span>
+                <IconButton v-if="directory.query"
+                            class="chat-fd-clear"
+                            icon="x"
+                            iconSize="sm"
+                            label="Clear search"
+                            data-testid="directory-search-clear"
+                            @click="onClearSearch" />
+            </div>
+
+            <div class="chat-fd-filters">
+                <div v-if="directory.isCampusLimited" class="chat-fd-note" data-testid="directory-campus-note">
+                    <Icon name="info" size="sm" />
+                    <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
+                </div>
+                <div v-else-if="campuses.length > 0" class="chat-fd-chips" role="group" aria-label="Campus" data-testid="directory-chips">
+                    <button v-for="chip in chips"
+                            :key="chip.key"
+                            type="button"
+                            class="chat-fd-chip"
+                            data-testid="directory-chip"
+                            :data-campus="chip.key"
+                            :aria-pressed="isChipPressed(chip.campus) ? 'true' : 'false'"
+                            @click="emit('campus', chip.campus)">
+                        {{ chip.label }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div ref="scrollElement"
+             class="chat-fd-scroll"
+             :class="{ 'is-scrolled': isScrolled }"
+             data-testid="directory-scroll"
+             @scroll="onScroll">
+            <div :id="resultsId" class="chat-fd-wrap" data-testid="directory-results" :aria-busy="directory.isLoading ? 'true' : 'false'">
+                <template v-if="directory.isLoading">
+                    <div class="chat-fd-count"><span data-testid="directory-count">Loading channels…</span></div>
+                    <ul class="chat-fd-list" aria-hidden="true">
+                        <li v-for="(width, index) in skeletonWidths" :key="index" class="chat-fd-sk" data-testid="directory-skeleton-row">
+                            <i class="chat-skeleton is-icon"></i>
+                            <span>
+                                <i class="chat-skeleton" :style="{ width: `${width * .45}%` }"></i>
+                                <i class="chat-skeleton" :style="{ width: `${width}%` }"></i>
+                                <i class="chat-skeleton is-meta" :style="{ width: `${width * .6}%` }"></i>
+                            </span>
+                        </li>
+                    </ul>
+                </template>
+
+                <div v-else-if="directory.error" class="chat-fd-error" role="status" data-testid="directory-error">
+                    <Icon name="alert" size="sm" />
+                    <span>{{ errorSentence(directory.error, "Couldn't load channels. Check your connection and try again.") }}</span>
+                    <button type="button" class="chat-fd-btn" data-testid="directory-retry" @click="emit('retry')">Try again</button>
+                </div>
+
+                <div v-else-if="directory.emptyKind === 'none'" class="chat-fd-empty" data-testid="directory-empty" data-kind="none">
+                    <span class="chat-fd-empty-ic" aria-hidden="true"><Icon name="hash" /></span>
+                    <b>No channels to browse yet</b>
+                    <span>When {{ organizationName || "your church" }} opens channels to everyone, they'll show up here.</span>
+                </div>
+
+                <template v-else>
+                    <div class="chat-fd-count">
+                        <span data-testid="directory-count">{{ countText }}</span>
+                        <div class="chat-fd-seg" role="group" aria-label="Show" data-testid="directory-show">
+                            <button type="button" :aria-pressed="directory.show === 'all' ? 'true' : 'false'" data-testid="directory-show-all" @click="emit('show', 'all')">All</button>
+                            <button type="button" :aria-pressed="directory.show === 'notJoined' ? 'true' : 'false'" data-testid="directory-show-not-joined" @click="emit('show', 'notJoined')">Not joined</button>
+                        </div>
+                    </div>
+
+                    <div v-if="empty" class="chat-fd-empty" data-testid="directory-empty" :data-kind="directory.emptyKind">
+                        <span class="chat-fd-empty-ic" aria-hidden="true"><Icon :name="empty.icon" /></span>
+                        <b>{{ empty.title }}</b>
+                        <span>{{ empty.text }}</span>
+                        <button type="button" class="chat-fd-btn" data-testid="directory-empty-action" @click="empty.act">{{ empty.button }}</button>
+                    </div>
+
+                    <ul v-else class="chat-fd-list" aria-label="Channels" data-testid="directory-list">
+                        <li v-for="row in drawnRows"
+                            :key="row.id"
+                            class="chat-fd-row"
+                            :class="{ 'is-member': row.isMember }"
+                            data-testid="directory-row"
+                            :data-channel-id="row.id"
+                            :data-member="row.isMember ? 'true' : 'false'">
+                            <button type="button"
+                                    class="chat-fd-open"
+                                    data-testid="directory-row-open"
+                                    :aria-label="row.label"
+                                    @click="emit('open', row.id)">
+                                <span class="chat-fd-ic" aria-hidden="true"><Icon name="hash" /></span>
+                                <span class="chat-fd-main">
+                                    <span class="chat-fd-name" data-testid="directory-row-name">{{ row.before }}<mark v-if="row.match">{{ row.match }}</mark>{{ row.after }}</span>
+                                    <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
+                                    <span class="chat-fd-meta" data-testid="directory-row-meta">
+                                        <span v-for="part in row.meta" :key="part">{{ part }}</span>
+                                    </span>
+                                    <span v-if="row.join.kind === 'refused'" class="chat-fd-err" role="note" data-testid="directory-row-refused">
+                                        <Icon name="alert" size="xs" /><span>{{ row.join.text }}</span>
+                                    </span>
+                                    <span v-else-if="row.join.kind === 'pending'" class="chat-fd-wait" data-testid="directory-row-wait">Setting up, a few seconds</span>
+                                </span>
+                            </button>
+
+                            <div class="chat-fd-act">
+                                <span v-if="row.join.kind === 'pending'" class="chat-fd-joined is-pending" data-testid="directory-pending">
+                                    <span class="chat-spinner"></span>Finishing up
+                                </span>
+                                <span v-else-if="row.isMember && row.join.kind !== 'joining'"
+                                      class="chat-fd-joined"
+                                      :class="{ 'is-fresh': row.join.kind === 'joined' && row.join.isFresh }"
+                                      data-testid="directory-joined">
+                                    <Icon name="check" size="xs" />Joined
+                                </span>
+                                <!-- One button through Join, Joining and a refusal, so focus stays on it while the door is out. -->
+                                <button v-else
+                                        type="button"
+                                        class="chat-fd-btn chat-fd-join"
+                                        :data-testid="row.join.kind === 'joining' ? 'directory-joining' : 'directory-join'"
+                                        :aria-label="row.join.kind === 'joining' ? undefined : `Join ${row.name}`"
+                                        :aria-disabled="row.join.kind === 'joining' ? 'true' : undefined"
+                                        :aria-busy="row.join.kind === 'joining' ? 'true' : undefined"
+                                        :disabled="row.join.kind === 'refused' || undefined"
+                                        @click="onJoin(row.id, row.join)">
+                                    <template v-if="row.join.kind === 'joining'"><span class="chat-spinner"></span>Joining</template>
+                                    <template v-else>Join</template>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div v-if="directory.isLoadingMore" class="chat-fd-more" data-testid="directory-more">
+                        <span class="chat-spinner"></span>Loading more channels…
+                    </div>
+                    <div v-else-if="directory.moreError" class="chat-fd-error" role="status" data-testid="directory-more-error">
+                        <Icon name="alert" size="sm" />
+                        <span>{{ errorSentence(directory.moreError, "Couldn't load more channels. Check your connection and try again.") }}</span>
+                        <button type="button" class="chat-fd-btn" @click="emit('retry')">Try again</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Results and joins out of sight are spoken; a refused join assertively. Keyed by count, so the same words are read twice. -->
+        <span class="chat-sr-only" aria-live="polite" data-testid="directory-announcement"><span v-if="announcement && !announcement.isAssertive" :key="announcement.count">{{ announcement.text }}</span></span>
+        <span class="chat-sr-only" aria-live="assertive" data-testid="directory-alert"><span v-if="announcement && announcement.isAssertive" :key="announcement.count">{{ announcement.text }}</span></span>
+    </div>
+</template>
+
+<style scoped>
+/* Browse channels, in the conversation's place: its header, the tools, then the rooms scrolling under them. */
+.chat-fd {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--chat-surface);
+}
+
+/* The conversation header's own frame, so the rules align across the columns. */
+.chat-fd-hdr {
+    display: flex;
+    flex: none;
+    gap: 12px;
+    align-items: center;
+    height: 64px;
+    padding: 0 12px 0 20px;
+    background: var(--chat-surface);
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-fd.is-phone .chat-fd-hdr {
+    padding-left: 12px;
+}
+
+.chat-fd-hdr :deep(.chat-fd-back) {
+    margin-left: -4px;
+}
+
+.chat-fd-hdr-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-hdr-ic);
+}
+
+.chat-fd-hdr-ic :deep(.chat-ic) {
+    width: 19px;
+    height: 19px;
+}
+
+.chat-fd-hdr-title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.chat-fd-hdr-title b {
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-fd-hdr-sub {
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-fd-tools {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 780px;
+    padding: 16px 24px 4px;
+    margin: 0 auto;
+}
+
+.chat-fd-search {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    height: 44px;
+    padding: 0 8px 0 14px;
+    color: var(--chat-muted);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-lg);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-fd-search:focus-within {
+    border-color: var(--chat-focus-line);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+/* The box shows focus, so the field inside it draws no outline or cancel button of its own. */
+.chat-fd-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    font: inherit;
+    font-size: 15px;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.chat-fd-search input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+.chat-fd-search input::-webkit-search-cancel-button {
+    display: none;
+    -webkit-appearance: none;
+}
+
+.chat-fd-search :deep(.chat-fd-clear) {
+    width: 30px;
+    height: 30px;
+}
+
+.chat-fd-busy {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    color: var(--chat-muted);
+}
+
+.chat-fd-busy .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+
+.chat-fd-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+}
+
+/* The chips scroll sideways rather than wrap; the padding keeps a focus ring inside the clip. */
+.chat-fd-chips {
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+    padding: 3px;
+    margin: -3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.chat-fd-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.chat-fd-chip {
+    flex: none;
+    height: 30px;
+    padding: 0 13px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    white-space: nowrap;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-fd-chip:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-fd-chip[aria-pressed="true"] {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-color: var(--chat-brand-line);
+}
+
+.chat-fd-note {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--chat-text-2);
+    background: var(--chat-info-soft);
+    border-radius: var(--chat-r-md);
+    animation: chat-fd-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-fd-note :deep(.chat-ic) {
+    color: var(--chat-info-ink);
+}
+
+.chat-fd-note b {
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+/* A hairline under the tools once rows pass beneath them. */
+.chat-fd-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border-top: 1px solid transparent;
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+}
+
+.chat-fd-scroll.is-scrolled {
+    border-top-color: var(--chat-line);
+}
+
+.chat-fd-wrap {
+    max-width: 780px;
+    padding: 6px 12px 28px;
+    margin: 0 auto;
+}
+
+.chat-fd-count {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+/* The small segmented control: the chosen half filled in the text color. */
+.chat-fd-seg {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-fd-seg button {
+    padding: 3px 10px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-fd-seg button:hover:not([aria-pressed="true"]) {
+    color: var(--chat-text);
+}
+
+.chat-fd-seg button[aria-pressed="true"] {
+    color: var(--chat-surface);
+    background: var(--chat-text);
+}
+
+.chat-fd-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.chat-fd-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* A rule between rows from the text's edge, hidden beside a row under the pointer or focus. */
+.chat-fd-row + .chat-fd-row::before {
+    position: absolute;
+    top: 0;
+    right: 14px;
+    left: 66px;
+    height: 1px;
+    content: "";
+    background: var(--chat-line);
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-fd-row:hover,
+.chat-fd-row:focus-within {
+    background: var(--chat-hover);
+}
+
+.chat-fd-row:hover::before,
+.chat-fd-row:hover + .chat-fd-row::before,
+.chat-fd-row:focus-within::before,
+.chat-fd-row:focus-within + .chat-fd-row::before {
+    opacity: 0;
+}
+
+.chat-fd-open {
+    display: flex;
+    flex: 1;
+    gap: 14px;
+    align-items: flex-start;
+    min-width: 0;
+    padding: 13px 8px 13px 12px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-fd-open:focus-visible {
+    outline-offset: -2px;
+}
+
+.chat-fd-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: var(--chat-icon);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-hdr-ic);
+    transition: background-color var(--chat-t-base) var(--chat-ease-state), color var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-fd-row.is-member .chat-fd-ic {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-color: transparent;
+}
+
+.chat-fd-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding-top: 1px;
+}
+
+.chat-fd-name {
+    font-size: 14.5px;
+    font-weight: 650;
+    line-height: 1.3;
+    color: var(--chat-text);
+    overflow-wrap: anywhere;
+}
+
+.chat-fd-name mark {
+    color: inherit;
+    background: var(--chat-brand-tint);
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px var(--chat-brand-tint);
+}
+
+.chat-fd-desc {
+    overflow: hidden;
+    font-size: 13px;
+    color: var(--chat-text-2);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* A phone has the width for one line of a description only if it gives up two. */
+.chat-fd.is-phone .chat-fd-desc {
+    display: -webkit-box;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.chat-fd-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-fd-meta > span + span::before {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    margin: 0 7px;
+    vertical-align: middle;
+    content: "";
+    background: currentColor;
+    border-radius: 50%;
+    opacity: .55;
+}
+
+.chat-fd-err {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-top: 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-danger-ink);
+    animation: chat-fd-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-fd-err :deep(.chat-ic) {
+    margin-top: 2px;
+}
+
+.chat-fd-wait {
+    margin-top: 4px;
+    font-size: 12.5px;
+    color: var(--chat-text-2);
+}
+
+.chat-fd-act {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 92px;
+    padding-right: 12px;
+}
+
+/* The design's small line button, used for Join and for each empty state's way out. */
+.chat-fd-btn {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 11px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-fd-btn:hover:not(:disabled) {
+    border-color: var(--chat-icon);
+}
+
+.chat-fd-btn:disabled {
+    opacity: .5;
+}
+
+.chat-fd-act .chat-fd-btn {
+    min-width: 76px;
+}
+
+.chat-fd-btn .chat-spinner {
+    width: 12px;
+    height: 12px;
+}
+
+/* Join leans in toward the church color when its row is pointed at or it has focus. */
+.chat-fd-join {
+    opacity: .92;
+}
+
+.chat-fd-row:hover .chat-fd-join:not(:disabled),
+.chat-fd-join:focus-visible {
+    color: var(--chat-brand-ink);
+    border-color: var(--chat-brand);
+    opacity: 1;
+}
+
+.chat-fd-joined {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+.chat-fd-joined :deep(.chat-ic) {
+    color: var(--chat-success);
+}
+
+.chat-fd-joined .chat-spinner {
+    width: 12px;
+    height: 12px;
+}
+
+.chat-fd-joined.is-pending {
+    color: var(--chat-text-2);
+}
+
+/* A join just made pops in, once, in the church color. */
+.chat-fd-joined.is-fresh {
+    color: var(--chat-brand-ink);
+    animation: chat-fd-pop var(--chat-d-fd-pop) var(--chat-ease-spring);
+}
+
+.chat-fd-joined.is-fresh :deep(.chat-ic) {
+    color: var(--chat-brand-ink);
+}
+
+@keyframes chat-fd-pop {
+    from {
+        opacity: 0;
+        transform: scale(.7);
+    }
+}
+
+@keyframes chat-fd-strip-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+.chat-fd-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 48px 24px 24px;
+    text-align: center;
+}
+
+.chat-fd-empty-ic {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 6px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-empty);
+}
+
+.chat-fd-empty-ic :deep(.chat-ic) {
+    width: 26px;
+    height: 26px;
+}
+
+.chat-fd-empty b {
+    font-size: 15.5px;
+}
+
+.chat-fd-empty > span:not(.chat-fd-empty-ic) {
+    max-width: 40ch;
+    font-size: 13.5px;
+    color: var(--chat-muted);
+}
+
+.chat-fd-empty .chat-fd-btn {
+    margin-top: 10px;
+}
+
+.chat-fd-error {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    margin: 8px 0;
+    font-size: 13px;
+    color: var(--chat-text-2);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-md);
+}
+
+.chat-fd-error :deep(.chat-ic) {
+    flex: none;
+    color: var(--chat-danger-ink);
+}
+
+.chat-fd-error > span {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-fd-more {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-fd-more .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+
+/* The same box as a real row (13px padding, 40px icon, name, description and meta lines), so nothing jumps on load. */
+.chat-fd-sk {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    min-height: 86px;
+    padding: 13px 12px;
+}
+
+.chat-fd-sk > span {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 9px;
+    padding-top: 4px;
+}
+
+.chat-fd-sk i {
+    display: block;
+    height: 11px;
+    border-radius: 6px;
+}
+
+.chat-fd-sk i.is-meta {
+    height: 9px;
+}
+
+.chat-fd-sk i.is-icon {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--chat-r-hdr-ic);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import { messageForError } from "../errors.partial";
+    import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
+    import { ChatError } from "../types.partial";
+
+    // #region Types
+
+    /** One campus chip: what it asks for and what it says. */
+    type Chip = {
+        key: string;
+        label: string;
+        campus: DirectoryCampus;
+    };
+
+    /** A row as the list draws it, worked out once per answer. */
+    type DrawnRow = {
+        id: string;
+        name: string;
+
+        /** The name split around the part the search matched. */
+        before: string;
+        match: string;
+        after: string;
+        description: string | null;
+        meta: string[];
+        isMember: boolean;
+        join: JoinState;
+        label: string;
+    };
+
+    /** An empty answer's look and its one way out. */
+    type EmptyState = {
+        icon: string;
+        title: string;
+        text: string;
+        button: string;
+        act: () => void;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** Browse channels as the rooms hold it. */
+        directory: {
+            type: Object as PropType<DirectoryState>,
+            required: true
+        },
+
+        /** Each room's Join by its id; a room not here is idle. */
+        joins: {
+            type: Object as PropType<Record<string, JoinState>>,
+            default: () => ({})
+        },
+
+        /** The newest sentence for screen readers, or null. */
+        announcement: {
+            type: Object as PropType<RoomAnnouncement | null>,
+            default: null
+        },
+
+        /** The church's campuses, for the chips and for naming each room's campus. */
+        campuses: {
+            type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
+        },
+
+        /** The person's own campus, which the church's campus note names. */
+        personCampusGuid: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        organizationName: {
+            type: String,
+            default: ""
+        },
+
+        isPhone: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "back"): void,
+        (e: "close"): void,
+        (e: "query", query: string): void,
+        (e: "clearQuery"): void,
+        (e: "campus", campus: DirectoryCampus): void,
+        (e: "show", show: DirectoryShow): void,
+        (e: "clearFilters"): void,
+        (e: "loadMore"): void,
+        (e: "retry"): void,
+        (e: "join", channelId: string): void,
+        (e: "open", channelId: string): void
+    }>();
+
+    // #region Values
+
+    const titleId = `chat-fd-title-${newGuid()}`;
+    const resultsId = `chat-fd-results-${newGuid()}`;
+
+    const viewElement = ref<HTMLElement>();
+    const searchInput = ref<HTMLInputElement>();
+    const scrollElement = ref<HTMLElement>();
+
+    /** Whether rows have passed under the tools, which draws the hairline. */
+    const isScrolled = ref(false);
+
+    /** The skeleton rows' widths, as the design draws them, so five rows do not look stamped out. */
+    const skeletonWidths = [62, 48, 70, 54, 40];
+
+    /** How near the list's end, in pixels, the next page is asked for: about four rows ahead. */
+    const loadMoreDistance = 360;
+
+    const idle: JoinState = { kind: "idle" };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const ownCampusName = computed((): string => campusNameOf(props.personCampusGuid) ?? "your campus");
+
+    const chips = computed((): Chip[] => [
+        { key: "all", label: "All campuses", campus: { kind: "all" } },
+        ...props.campuses.map(campus => ({ key: campus.guid, label: campus.shortCode?.trim() || campus.name || "", campus: { kind: "campus", campusId: campus.guid } as DirectoryCampus })),
+        { key: "whole-church", label: "Whole church", campus: { kind: "wholeChurch" } }
+    ]);
+
+    const countText = computed((): string => {
+        const total = props.directory.total;
+        const count = total.toLocaleString();
+        if (props.directory.query.trim()) {
+            return `${count} ${total === 1 ? "channel matches" : "channels match"}`;
+        }
+
+        return `${count} ${total === 1 ? "channel" : "channels"}`;
+    });
+
+    const drawnRows = computed((): DrawnRow[] => {
+        const needle = props.directory.query.trim().toLowerCase();
+        return props.directory.rows.map(row => {
+            const name = row.name ?? "";
+            const at = needle ? name.toLowerCase().indexOf(needle) : -1;
+            const join = props.joins[row.channel_id] ?? idle;
+            // a join the door and the platform agree on shows as one before the row's own flag turns
+            const isMember = row.is_member || join.kind === "joined";
+            const meta = [row.group_type_name ?? "", campusNameOf(row.campus_id) ?? "Whole church"].filter(part => part !== "");
+
+            return {
+                id: row.channel_id,
+                name,
+                before: at < 0 ? name : name.slice(0, at),
+                match: at < 0 ? "" : name.slice(at, at + needle.length),
+                after: at < 0 ? "" : name.slice(at + needle.length),
+                description: row.description?.trim() || null,
+                meta,
+                isMember,
+                join,
+                label: `${name}${isMember ? ", joined" : ""}, ${meta.join(", ")}. ${isMember ? "Open" : "Preview"} channel`
+            };
+        });
+    });
+
+    /** The empty state the answer draws, past the one with nothing public at all. */
+    const empty = computed((): EmptyState | null => {
+        const query = props.directory.query.trim();
+        const campus = props.directory.campus;
+
+        switch (props.directory.emptyKind) {
+            case "query":
+                return {
+                    icon: "search",
+                    title: `No channels match “${query}”`,
+                    text: "Search looks at channel names. Private groups don't show here; a leader can add you.",
+                    button: "Clear search",
+                    act: onClearSearch
+                };
+
+            case "filters": {
+                const looking = [
+                    campus.kind === "wholeChurch" ? "the whole church" : campus.kind === "campus" ? campusNameOf(campus.campusId) ?? "" : "",
+                    props.directory.show === "notJoined" ? "channels you haven't joined" : ""
+                ].filter(part => part !== "");
+
+                return {
+                    icon: "search",
+                    title: `No channels match “${query}”`,
+                    text: `You're only looking at ${looking.join(", and ")}. Clear the filters to search every public channel.`,
+                    button: "Clear filters",
+                    act: () => emit("clearFilters")
+                };
+            }
+
+            case "allJoined":
+                return {
+                    icon: "check",
+                    title: "You're in every channel here",
+                    text: `Nothing left to join${campus.kind !== "all" ? " for this campus" : ""}.`,
+                    button: "Show all",
+                    act: () => emit("show", "all")
+                };
+
+            case "campus":
+                return {
+                    icon: "hash",
+                    title: "No channels for this campus yet",
+                    text: "Try another campus, or the whole church.",
+                    button: "All campuses",
+                    act: () => emit("campus", { kind: "all" })
+                };
+
+            default:
+                return null;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onInput(event: Event): void {
+        emit("query", (event.target as HTMLInputElement).value);
+    }
+
+    /** Clears the search, keeping focus in the field so typing carries on. */
+    function onClearSearch(): void {
+        emit("clearQuery");
+        searchInput.value?.focus();
+    }
+
+    /** Join, unless the door is already out: held by aria-disabled, so the press arrives and is dropped here. */
+    function onJoin(channelId: string, join: JoinState): void {
+        if (join.kind !== "joining" && join.kind !== "refused") {
+            emit("join", channelId);
+        }
+    }
+
+    function onScroll(): void {
+        const scroller = scrollElement.value;
+        if (!scroller) {
+            return;
+        }
+
+        isScrolled.value = scroller.scrollTop > 2;
+
+        // The rooms drop a second ask while one is out, and ask nothing once the list has ended.
+        const isNearEnd = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < loadMoreDistance;
+        if (isNearEnd && props.directory.hasMore && !props.directory.isLoadingMore && !props.directory.moreError) {
+            emit("loadMore");
+        }
+    }
+
+    /**
+     * Down from the search to the first row, Up and Down between rows, Up from the first row back
+     * to the search. Escape clears a search that holds words, else closes the view; it stops here
+     * so nothing behind the view closes with it.
+     */
+    function onKeydown(event: KeyboardEvent): void {
+        const target = event.target as HTMLElement;
+        const rows = Array.from(viewElement.value?.querySelectorAll<HTMLElement>("[data-testid='directory-row-open']") ?? []);
+
+        if (event.key === "Escape") {
+            event.stopPropagation();
+            if (target === searchInput.value && props.directory.query) {
+                emit("clearQuery");
+                return;
+            }
+
+            emit("close");
+            return;
+        }
+
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+            return;
+        }
+
+        if (target === searchInput.value) {
+            if (event.key === "ArrowDown" && rows.length > 0) {
+                event.preventDefault();
+                rows[0].focus();
+            }
+            return;
+        }
+
+        const index = rows.indexOf(target);
+        if (index < 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const next = index + (event.key === "ArrowDown" ? 1 : -1);
+        if (next < 0) {
+            searchInput.value?.focus();
+        }
+        else {
+            rows[next]?.focus();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** A campus by name, from the church's list, or null for none or one it no longer lists. */
+    function campusNameOf(campusId: string | null | undefined): string | null {
+        const id = campusId?.toLowerCase();
+        return id ? props.campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
+    }
+
+    function isChipPressed(campus: DirectoryCampus): boolean {
+        const chosen = props.directory.campus;
+        return chosen.kind === campus.kind && (chosen.kind !== "campus" || (campus.kind === "campus" && chosen.campusId === campus.campusId));
+    }
+
+    /** A refusal's sentence is the server's; a call that never reached the platform says so in this view's words. */
+    function errorSentence(error: ChatError, offline: string): string {
+        return error.text || error.severity === "session" ? messageForError(error) : offline;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // A refused Join is disabled, and a browser drops focus from a disabled button to the page, so
+    // focus on it moves first to the row's own button.
+    watch(() => props.directory.rows.map(row => (props.joins[row.channel_id] ?? idle).kind), async (kinds, before) => {
+        const active = document.activeElement;
+        const refusedIndex = kinds.findIndex((kind, index) => kind === "refused" && before?.[index] !== "refused");
+        if (refusedIndex < 0 || !active) {
+            return;
+        }
+
+        const id = props.directory.rows[refusedIndex].channel_id;
+        const row = viewElement.value?.querySelector<HTMLElement>(`[data-testid='directory-row'][data-channel-id='${id}']`);
+        if (row?.querySelector(".chat-fd-act")?.contains(active)) {
+            await nextTick();
+            row.querySelector<HTMLElement>("[data-testid='directory-row-open']")?.focus();
+        }
+    }, { flush: "pre" });
+
+    // #endregion Watchers
+</script>

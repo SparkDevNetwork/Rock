@@ -76,9 +76,13 @@ describe("joining", () => {
         const join = w.get("[data-testid='join-channel']");
         expect(join.text()).toBe("Joining");
         expect(join.find(".chat-spinner").exists()).toBe(true);
-        expect(join.attributes("disabled")).toBeDefined();
+        // held by aria-disabled rather than disabled, since a browser drops focus from a disabled button
+        expect(join.attributes("aria-disabled")).toBe("true");
         expect(join.attributes("aria-busy")).toBe("true");
         expect(w.get("[data-testid='join-bar-title']").text()).toBe("You're previewing Volunteers");
+
+        await join.trigger("click");
+        expect(w.emitted("join")).toBeUndefined();
     });
 
     test("keeps focus on the button while it turns to Joining", async () => {

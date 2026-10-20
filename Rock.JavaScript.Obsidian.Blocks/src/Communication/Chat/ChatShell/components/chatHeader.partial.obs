@@ -23,7 +23,7 @@
                 <span v-else-if="isBehind" class="chat-header-sub" data-testid="catching-up-badge" data-tone="info">
                     <span class="chat-header-live"></span>Catching up on new messages…
                 </span>
-                <span v-else-if="subtitle" class="chat-header-sub" data-testid="header-subtitle">{{ subtitle }}</span>
+                <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
         </div>
 
@@ -344,7 +344,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { ChatError } from "../types.partial";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { ChannelFacts, ChatError } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -371,10 +372,25 @@
             default: ""
         },
 
-        /** The line under the title the wire has, such as a group's "3 people"; null for none. */
+        /**
+         * The line under the title the shell worked out, such as a draft's or a group's "3 people",
+         * which stands until the room's facts are read; null for none.
+         */
         subtitle: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** What chat_get_channel answered about the open room, once read; the subtitle comes from it. */
+        facts: {
+            type: Object as PropType<ChannelFacts | null>,
+            default: null
+        },
+
+        /** The church's campuses, which name a person's campus. */
+        campuses: {
+            type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
         },
 
         /** What the room is, or null to draw no mark beside the title. */
@@ -476,6 +492,34 @@
     // #endregion Values
 
     // #region Computed Values
+
+    /**
+     * The line under the title, from the room's facts once read: a channel's description, the
+     * other person's campus when they show their details, or a group's head count, a named
+     * group's included. Until then, whatever the shell worked out.
+     */
+    const shownSubtitle = computed((): string | null => {
+        const facts = props.facts;
+        if (!facts) {
+            return props.subtitle;
+        }
+
+        switch (props.kind) {
+            case "channel":
+                return facts.description?.trim() || null;
+
+            case "person": {
+                const campusId = facts.people[0]?.details?.campus_id?.toLowerCase();
+                return campusId ? props.campuses.find(campus => campus.guid.toLowerCase() === campusId)?.name ?? null : null;
+            }
+
+            case "group":
+                return facts.member_count > 0 ? `${facts.member_count.toLocaleString()} people` : null;
+
+            default:
+                return props.subtitle;
+        }
+    });
 
     /** A person's one face, or a group's first two. */
     const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(name => ({ name })));

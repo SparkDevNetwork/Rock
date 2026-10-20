@@ -379,8 +379,18 @@ describe("Join on a row", () => {
         const joining = rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']");
         expect(joining.text()).toBe("Joining");
         expect(joining.find(".chat-spinner").exists()).toBe(true);
-        expect(joining.attributes("disabled")).toBeDefined();
+        // held by aria-disabled rather than disabled, since a browser drops focus from a disabled button
+        expect(joining.attributes("aria-disabled")).toBe("true");
         expect(joining.attributes("aria-busy")).toBe("true");
+    });
+
+    test("asks nothing of the door while Joining is pressed again", async () => {
+        const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "joining" } };
+        const w = mountDirectory({ joins });
+
+        await rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']").trigger("click");
+
+        expect(w.emitted("join")).toBeUndefined();
     });
 
     test("pops a fresh Joined in, the row's icon turning member, once the door and the platform agree", () => {
@@ -411,6 +421,18 @@ describe("Join on a row", () => {
         const row = rowOf(w, volunteers.channel_id);
         expect(row.get("[data-testid='directory-join']").attributes("disabled")).toBeDefined();
         expect(row.get("[data-testid='directory-row-refused']").text()).toBe("Volunteers is full right now. Ask Nathan Hughes about joining.");
+    });
+
+    test("moves focus from a Join turned refused to the row's own button, rather than to the page", async () => {
+        const joins = reactive<Record<string, JoinState>>({ [volunteers.channel_id]: { kind: "joining" } });
+        const w = mountDirectory({ joins });
+        (rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']").element as HTMLElement).focus();
+
+        joins[volunteers.channel_id] = { kind: "refused", text: "You can't join this channel." };
+        await nextTick();
+        await nextTick();
+
+        expect(document.activeElement).toBe(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").element);
     });
 
     test("offers Join again when the door could not be reached", () => {

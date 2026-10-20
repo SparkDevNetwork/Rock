@@ -30,8 +30,10 @@
                                 :isNewMessageShown="shell.isNewMessageShown"
                                 :organizationName="organizationName"
                                 :isPhone="isPhone"
+                                :isBrowseOpen="mainView === 'directory'"
                                 @select="onSelect"
-                                @newMessage="isPickerShown = true" />
+                                @newMessage="isPickerShown = true"
+                                @browse="openMainView('directory')" />
             </div>
 
             <section class="chat-frame-main"
@@ -41,86 +43,134 @@
                      :aria-hidden="isConversationHidden ? 'true' : undefined"
                      :inert="isConversationHidden || undefined"
                      :style="isConversationGone ? goneStyle : undefined">
-                <ChatHeader :title="activeTitle"
-                            :subtitle="activeSubtitle"
-                            :kind="activeKind"
-                            :isPublic="activeRow?.is_public ?? false"
-                            :people="activePeople"
-                            :connection="shell.state.connection"
-                            :banner="shell.state.banner"
-                            :isUpdateRequired="shell.state.isUpdateRequired"
-                            :isBehind="isActiveBehind"
-                            :isPushOffered="shell.state.isPushOffered"
-                            :isPhone="isPhone"
-                            :isEmpty="!activeChannelId && !draft"
-                            :isThreadsOffered="!!activeChannelId"
-                            :isThreadsOpen="panelKind === 'threads'"
-                            :isMentionsOffered="shell.state.phase === 'ready'"
-                            :isMentionsOpen="panelKind === 'mentions'"
-                            :hasMentionDot="shell.mentions.state.hasDot"
-                            @threads="onListPanel('threads')"
-                            @mentions="onListPanel('mentions')"
-                            @turnOnPush="onTurnOnPush"
-                            @back="onBack"
-                            @backOnline="onBackOnline" />
+                <!--
+                    The conversation stays laid out under a full view, so its place in the feed
+                    survives, and is out of reach until the view closes. Drawn as no box of its own,
+                    so the column lays its parts out as before.
+                -->
+                <div class="chat-frame-under"
+                     data-testid="frame-conversation"
+                     :aria-hidden="mainView ? 'true' : undefined"
+                     :inert="!!mainView || undefined">
+                    <ChatHeader :title="activeTitle"
+                                :subtitle="activeSubtitle"
+                                :facts="activeFacts"
+                                :campuses="campuses"
+                                :kind="activeKind"
+                                :isPublic="activeRow?.is_public ?? false"
+                                :people="activePeople"
+                                :connection="shell.state.connection"
+                                :banner="shell.state.banner"
+                                :isUpdateRequired="shell.state.isUpdateRequired"
+                                :isBehind="isActiveBehind"
+                                :isPushOffered="shell.state.isPushOffered"
+                                :isPhone="isPhone"
+                                :isEmpty="!activeChannelId && !draft"
+                                :isThreadsOffered="!!activeChannelId"
+                                :isThreadsOpen="panelKind === 'threads'"
+                                :isMentionsOffered="shell.state.phase === 'ready'"
+                                :isMentionsOpen="panelKind === 'mentions'"
+                                :hasMentionDot="shell.mentions.state.hasDot"
+                                @threads="onListPanel('threads')"
+                                @mentions="onListPanel('mentions')"
+                                @turnOnPush="onTurnOnPush"
+                                @back="onBack"
+                                @backOnline="onBackOnline" />
 
-                <MessageFeed v-if="activeChannelId"
-                             :key="activeChannelId"
-                             :timeline="shell.timelines.state(activeChannelId)"
-                             :pending="shell.sender.pending(activeChannelId)"
-                             :sentKeys="shell.sender.sentKeys"
-                             :personAliasGuid="personAliasGuid"
-                             :personName="personName"
-                             :personPhotoUrl="personPhotoUrl"
-                             :organizationName="organizationName"
-                             :isChannel="activeKind === 'channel'"
-                             :isDirectMessage="isActiveDirectMessage"
+                    <MessageFeed v-if="activeChannelId"
+                                 :key="activeChannelId"
+                                 :timeline="shell.timelines.state(activeChannelId)"
+                                 :pending="shell.sender.pending(activeChannelId)"
+                                 :sentKeys="shell.sender.sentKeys"
+                                 :personAliasGuid="personAliasGuid"
+                                 :personName="personName"
+                                 :personPhotoUrl="personPhotoUrl"
+                                 :organizationName="organizationName"
+                                 :isChannel="activeKind === 'channel'"
+                                 :isDirectMessage="isActiveDirectMessage"
+                                 :isPhone="isPhone"
+                                 :isEntering="isFeedEntering"
+                                 :isPreviewing="!!activeRow && !activeRow.is_member"
+                                 :facts="activeKind === 'channel' ? activeFacts : null"
+                                 :campuses="campuses"
+                                 :notifyMode="activeRow?.notify_mode ?? null"
+                                 :editingId="editingIdIn(activeChannelId)"
+                                 :editError="editErrorIn(activeChannelId)"
+                                 :isEditSaving="isEditSavingIn(activeChannelId)"
+                                 :landOnId="landingMessageId"
+                                 :reactionHost="reactionHost"
+                                 @seen="shell.seen"
+                                 @markRead="shell.markRead"
+                                 @firstShown="shell.firstMessageShown"
+                                 @retry="onRetry"
+                                 @discard="shell.sender.discard"
+                                 @loadOlder="shell.loadOlder"
+                                 @openThread="onOpenThread"
+                                 @jump="onJump($event, false)"
+                                 @messageAction="onMessageAction($event, null)" />
+                    <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
+                        {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
+                        <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
+                    </div>
+                    <div v-else class="chat-shell-empty">
+                        {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
+                    </div>
+
+                    <!-- A channel the person is previewing has the join bar in the composer's place. -->
+                    <JoinBar v-if="isJoinBarShown && activeChannelId"
+                             :name="activeTitle"
+                             :state="shell.rooms.joinOf(activeChannelId)"
                              :isPhone="isPhone"
-                             :isEntering="isFeedEntering"
-                             :isPreviewing="!!activeRow && !activeRow.is_member"
-                             :editingId="editingIdIn(activeChannelId)"
-                             :editError="editErrorIn(activeChannelId)"
-                             :isEditSaving="isEditSavingIn(activeChannelId)"
-                             :landOnId="landingMessageId"
-                             :reactionHost="reactionHost"
-                             @seen="shell.seen"
-                             @markRead="shell.markRead"
-                             @firstShown="shell.firstMessageShown"
-                             @retry="onRetry"
-                             @discard="shell.sender.discard"
-                             @loadOlder="shell.loadOlder"
-                             @openThread="onOpenThread"
-                             @jump="onJump($event, false)"
-                             @messageAction="onMessageAction($event, null)" />
-                <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
-                    {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
-                    <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
-                </div>
-                <div v-else class="chat-shell-empty">
-                    {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
+                             @join="onJoin"
+                             @browse="openMainView('directory')" />
+
+                    <Composer v-else-if="activeChannelId || draft"
+                              :class="{ 'is-entering': isComposerEntering }"
+                              :isDisabled="isComposerDisabled"
+                              :title="activeKind ? activeTitle : null"
+                              :isChannel="activeKind === 'channel'"
+                              :isPhone="isPhone"
+                              :isLocked="!shell.state.isComposerOpen"
+                              :heldText="draft?.body ?? held?.body ?? ''"
+                              :heldBy="draft ?? held"
+                              :isTextKeptOnSend="isTextKeptOnSend(draft)"
+                              :quote="conversationQuote"
+                              :isQuoteOwn="isOwnQuote(conversationQuote)"
+                              :emojiSource="emojiSource"
+                              :mentionSource="mentionSourceFor(activeRow)"
+                              :conversationKey="composerConversationKey"
+                              @mentionQuery="onMentionQuery(activeRow, $event)"
+                              @send="shell.send"
+                              @edit="shell.directMessages.edit"
+                              @editLast="onEditLast"
+                              @cancelQuote="onCancelQuote(conversationQuoteKey)"
+                              @emojiPickerOpen="onEmojiPickerOpen"
+                              @emojiChosen="onEmojiChosen"
+                              @animationend="onComposerAnimationEnd" />
                 </div>
 
-                <Composer v-if="activeChannelId || draft"
-                          :isDisabled="isComposerDisabled"
-                          :title="activeKind ? activeTitle : null"
-                          :isChannel="activeKind === 'channel'"
-                          :isPhone="isPhone"
-                          :isLocked="!shell.state.isComposerOpen"
-                          :heldText="draft?.body ?? held?.body ?? ''"
-                          :heldBy="draft ?? held"
-                          :isTextKeptOnSend="isTextKeptOnSend(draft)"
-                          :quote="conversationQuote"
-                          :isQuoteOwn="isOwnQuote(conversationQuote)"
-                          :emojiSource="emojiSource"
-                          :mentionSource="mentionSourceFor(activeRow)"
-                          :conversationKey="composerConversationKey"
-                          @mentionQuery="onMentionQuery(activeRow, $event)"
-                          @send="shell.send"
-                          @edit="shell.directMessages.edit"
-                          @editLast="onEditLast"
-                          @cancelQuote="onCancelQuote(conversationQuoteKey)"
-                          @emojiPickerOpen="onEmojiPickerOpen"
-                          @emojiChosen="onEmojiChosen" />
+                <!-- A full view in the conversation's place, rising in as a conversation switch does. -->
+                <div v-if="mainView" class="chat-main-view" data-testid="main-view" :data-kind="mainView">
+                    <ChannelDirectory v-if="mainView === 'directory'"
+                                      :directory="shell.rooms.state.directory"
+                                      :joins="shell.rooms.state.joins"
+                                      :announcement="shell.rooms.state.announcement"
+                                      :campuses="campuses"
+                                      :personCampusGuid="personCampusGuid"
+                                      :organizationName="organizationName"
+                                      :isPhone="isPhone"
+                                      @back="onBack"
+                                      @close="closeMainView"
+                                      @query="shell.rooms.setQuery"
+                                      @clearQuery="shell.rooms.clearQuery"
+                                      @campus="shell.rooms.setCampus"
+                                      @show="shell.rooms.setShow"
+                                      @clearFilters="shell.rooms.clearFilters"
+                                      @loadMore="shell.rooms.loadMore"
+                                      @retry="shell.rooms.retry"
+                                      @join="shell.rooms.join"
+                                      @open="openFromMainView" />
+                </div>
 
                 <!-- Centred over the conversation it reports on, so a panel open beside it never pulls a toast off it. -->
                 <ErrorToast v-if="!isPhone" :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
@@ -394,6 +444,42 @@
     transform: translateX(100%);
 }
 
+/* No box of its own: the header, the feed and the composer stay the column's own flex items. */
+.chat-frame-under {
+    display: contents;
+}
+
+/* A full view over the conversation, which stays laid out and inert underneath. */
+.chat-main-view {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--chat-surface);
+    animation: chat-view-in var(--chat-d-view) var(--chat-ease-in);
+}
+
+@keyframes chat-view-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+/* After a join settles, the composer takes the join bar's place, rising in as a message does. */
+.chat-composer.is-entering {
+    animation: chat-composer-enter var(--chat-t-msg) var(--chat-ease-in);
+}
+
+@keyframes chat-composer-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
 .chat-shell-empty {
     display: flex;
     flex: 1;
@@ -420,6 +506,7 @@
     import { birthdateOutcome, isBirthdatePromptShown } from "./ChatShell/birthdate.partial";
     import { createBrowserShellBuilder } from "./ChatShell/browserShell.partial";
     import BirthdatePrompt from "./ChatShell/components/birthdatePrompt.partial.obs";
+    import ChannelDirectory from "./ChatShell/components/channelDirectory.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
@@ -429,6 +516,7 @@
     import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
+    import JoinBar from "./ChatShell/components/joinBar.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
@@ -441,7 +529,8 @@
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
-    import { ChatError, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
+    import { ChannelFacts, ChatError, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
@@ -465,6 +554,12 @@
     const personPhotoUrl = ref(config.session?.personPhotoUrl ?? null);
 
     const organizationName = config.organizationName ?? "";
+
+    /** The church's campuses, which name every campus a room or a person carries. */
+    const campuses: ChatCampusBag[] = config.campuses ?? [];
+
+    /** The person's own campus, which the church's campus note in Browse channels names. */
+    const personCampusGuid = ref(config.session?.personCampusGuid ?? null);
 
     const buildShell = createBrowserShellBuilder({
         linkedChannelId: config.channelGuid ?? null,
@@ -505,6 +600,9 @@
      */
     const isFeedEntering = ref(false);
 
+    /** Whether the composer is rising into the join bar's place after a join settled. */
+    const isComposerEntering = ref(false);
+
     /** The one reaction picker open at a time, and what every message row and emoji picker reads of the reactions. */
     const { reactionPicker, reactionHost, emojiSource, pickerMine, openReactionPicker, closeReactionPicker, onPickerReact } = useReactionPicker(shell, organizationName);
 
@@ -522,7 +620,8 @@
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
         panelKind, shownPanel, panelElement, drawnThread, threadOrigin, threadOpenCount,
         onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
-        openThreadFromMentions, openFromTap, openThreadDrawer, closeThreadDrawer, closePanel
+        openThreadFromMentions, openFromTap, openThreadDrawer, closeThreadDrawer, closePanel,
+        mainView, openMainView, closeMainView, openFromMainView
     } = useFrame({
         shell,
         activeChannelId,
@@ -574,6 +673,15 @@
     /** The sidebar row of the open conversation, which carries everything the header draws. */
     const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
 
+    /** What chat_get_channel last answered about the open conversation, or null before it lands. */
+    const activeFacts = computed((): ChannelFacts | null => activeChannelId.value && !draft.value ? shell.value.rooms.factsOf(activeChannelId.value) : null);
+
+    /**
+     * Whether the open channel is one the person is not in, where the join bar stands in the
+     * composer's place. A join stays here while pending, until the sidebar shows them a member.
+     */
+    const isJoinBarShown = computed((): boolean => !draft.value && activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
+
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
     const isActiveDirectMessage = computed((): boolean => !!activeRow.value && isTwoPersonDirectMessage(activeRow.value));
 
@@ -624,7 +732,10 @@
         return activeKind.value === "channel" ? "community" : "conversational";
     });
 
-    /** A group's head count, the one subtitle the wire carries; a channel's description and a person's campus are not on it yet. */
+    /**
+     * The header's line until the room's facts are read, which the header then takes its subtitle
+     * from: a draft's or an unnamed group's head count.
+     */
     const activeSubtitle = computed((): string | null => {
         if (activeKind.value !== "group") {
             return null;
@@ -710,6 +821,19 @@
         await shell.value.openDirectMessage();
         if (!shell.value.directMessages.error) {
             isPickerShown.value = false;
+        }
+    }
+
+    function onJoin(): void {
+        if (activeChannelId.value) {
+            void shell.value.rooms.join(activeChannelId.value);
+        }
+    }
+
+    /** The composer's own rise has ended; a strip inside it ending says nothing about the composer. */
+    function onComposerAnimationEnd(event: AnimationEvent): void {
+        if (event.target === event.currentTarget) {
+            isComposerEntering.value = false;
         }
     }
 
@@ -936,6 +1060,7 @@
         personAliasGuid.value = outcome.session.personAliasGuid ?? "";
         personName.value = fullName(outcome.session);
         personPhotoUrl.value = outcome.session.personPhotoUrl ?? null;
+        personCampusGuid.value = outcome.session.personCampusGuid ?? null;
         shell.value = buildShell(outcome.session);
         void shell.value.start();
     }
@@ -1043,6 +1168,12 @@
     // Before the new feed mounts, which reads it once.
     watch(activeChannelId, (now, before) => {
         isFeedEntering.value = !!now && !!before && now !== before;
+    });
+
+    // The join bar gives way to the composer in the same channel once the join settles, and the
+    // composer rises into its place; one opened another way is simply there.
+    watch([isJoinBarShown, activeChannelId], ([isShown, channelId], [wasShown, wasChannelId]) => {
+        isComposerEntering.value = wasShown && !isShown && channelId === wasChannelId;
     });
 
     // From the first sidebar the page loads, a count of none included, so a badge a mention push

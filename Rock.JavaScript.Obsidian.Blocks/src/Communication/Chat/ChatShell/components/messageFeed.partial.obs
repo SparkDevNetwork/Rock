@@ -50,6 +50,14 @@
                 Show older messages
             </button>
 
+            <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
+            <ChannelIntro v-if="isIntroShown && facts"
+                          :facts="facts"
+                          :campuses="campuses"
+                          :notifyMode="notifyMode"
+                          :isEmpty="timeline.messages.length === 0 && pending.length === 0"
+                          :isPhone="isPhone" />
+
             <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
                 <div class="chat-day-pill" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
 
@@ -523,6 +531,8 @@
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import ChannelIntro from "./channelIntro.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
@@ -531,7 +541,7 @@
     import { ReactionHost } from "../composables/useReactions.partial";
     import { useSentHold } from "../composables/useSend.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
-    import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
         timeline: {
@@ -599,6 +609,24 @@
         isPreviewing: {
             type: Boolean,
             default: false
+        },
+
+        /** What chat_get_channel answered about a channel, for its intro; null before it is read or in a direct message. */
+        facts: {
+            type: Object as PropType<ChannelFacts | null>,
+            default: null
+        },
+
+        /** The church's campuses, which name the channel's campus in its intro. */
+        campuses: {
+            type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
+        },
+
+        /** The person's notify mode for the room, which the intro's posting note speaks of. */
+        notifyMode: {
+            type: String as PropType<string | null>,
+            default: null
         },
 
         /** The message open in the editor, which draws no bar, or null. */
@@ -741,6 +769,9 @@
     });
 
     const isSkeletonShown = computed((): boolean => isSkeletonDue.value && !props.timeline.isLoaded);
+
+    /** A channel's intro stands at its true start only, so not while older pages remain; a direct message has none. */
+    const isIntroShown = computed((): boolean => props.isChannel && props.timeline.isLoaded && !props.timeline.hasMore);
 
     /** Shown only while the divider is off screen, and gone once the person marks the channel read. */
     const isStripShown = computed((): boolean => dividerBeforeId.value !== null && isDividerOffScreen.value && !isMarkedRead.value);

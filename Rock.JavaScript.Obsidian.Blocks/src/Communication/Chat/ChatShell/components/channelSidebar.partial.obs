@@ -27,8 +27,9 @@
                 <span class="chat-side-empty-ic"><Icon name="message" /></span>
                 <b>No conversations yet</b>
                 <span>Message someone from your groups, or browse channels to join.</span>
-                <div v-if="isNewMessageShown" class="chat-side-empty-actions">
-                    <button type="button" class="chat-side-empty-btn" data-testid="empty-new-message" @click="emit('newMessage')">New message</button>
+                <div class="chat-side-empty-actions">
+                    <button v-if="isNewMessageShown" type="button" class="chat-side-empty-btn" data-testid="empty-new-message" @click="emit('newMessage')">New message</button>
+                    <button type="button" class="chat-side-empty-btn is-line" data-testid="empty-browse" @click="emit('browse')">Browse channels</button>
                 </div>
             </div>
 
@@ -39,6 +40,13 @@
                      :data-section="section.key">
                     <div class="chat-sec">
                         <h3 data-testid="section-heading">{{ section.title }}</h3>
+                        <IconButton v-if="section.key === 'channels'"
+                                    class="chat-sec-btn"
+                                    icon="plus"
+                                    iconSize="sm"
+                                    label="Browse channels"
+                                    data-testid="section-browse"
+                                    @click="emit('browse')" />
                         <IconButton v-if="section.key === 'dms' && isNewMessageShown"
                                     class="chat-sec-btn"
                                     icon="plus"
@@ -102,6 +110,18 @@
                         </span>
 
                         <span class="chat-sr-only" data-testid="row-label-suffix">{{ labelSuffixOf(row) }}</span>
+                    </button>
+
+                    <!-- After every channel, a room only previewed included: the way to the ones not listed. -->
+                    <button v-if="section.key === 'channels'"
+                            type="button"
+                            class="chat-row is-cs is-browse"
+                            data-testid="sidebar-browse"
+                            data-layout="community"
+                            :aria-current="isBrowseOpen ? 'true' : undefined"
+                            @click="emit('browse')">
+                        <span class="chat-cs-slot" aria-hidden="true"><Icon name="search" size="sm" /></span>
+                        <span class="chat-row-name">Browse channels</span>
                     </button>
                 </div>
             </template>
@@ -432,6 +452,13 @@
     color: var(--chat-muted);
 }
 
+/* Browse channels reads as a way on rather than a room: its name quiet, as a room not joined is. */
+.chat-row.is-browse .chat-row-name,
+.chat-row.is-browse[aria-current="true"] .chat-row-name {
+    font-weight: 500;
+    color: var(--chat-muted);
+}
+
 /* A new person with nothing to list yet. */
 .chat-side-empty {
     display: flex;
@@ -491,6 +518,19 @@
 .chat-side-empty-btn:hover {
     box-shadow: inset 0 0 0 999px var(--chat-press);
 }
+
+/* The second way out, drawn as the design's line button beside the filled one. */
+.chat-side-empty-btn.is-line {
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-side-empty-btn.is-line:hover {
+    border-color: var(--chat-icon);
+    box-shadow: none;
+}
 </style>
 
 <script setup lang="ts">
@@ -542,12 +582,19 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether Browse channels is open, which marks its row as the one shown. */
+        isBrowseOpen: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "select", channelId: string): void,
-        (e: "newMessage"): void
+        (e: "newMessage"): void,
+        (e: "browse"): void
     }>();
 
     // #region Values
