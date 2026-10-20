@@ -2400,6 +2400,16 @@ describe("a channel the person has not joined", () => {
         expect(main.get(".chat-composer").classes()).toContain("is-entering");
     });
 
+    test("speaks what the rooms say about a join while Browse channels is closed", async () => {
+        const w = await openVolunteers();
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+
+        (roomsOf().state as unknown as { announcement: unknown }).announcement = { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 };
+        await settle();
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='join-bar-announcement']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
+    });
+
     test("never shows the join bar in a channel the person is in, whose composer is simply there", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);

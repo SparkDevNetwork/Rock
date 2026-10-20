@@ -114,6 +114,7 @@ describe("pending", () => {
         expect(text.find(".chat-spinner").exists()).toBe(true);
         expect(w.find("button").exists()).toBe(false);
     });
+
 });
 
 describe("refused", () => {
@@ -155,6 +156,35 @@ describe("refused", () => {
         await nextTick();
 
         expect(document.activeElement).toBe(elsewhere);
+    });
+});
+
+describe("what is spoken", () => {
+    test("a pending join is read politely, with Browse channels closed", () => {
+        const w = mountBar({ kind: "pending" }, { announcement: { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 } });
+
+        const polite = w.get("[data-testid='join-bar-announcement']");
+        expect(polite.attributes("aria-live")).toBe("polite");
+        expect(polite.text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
+        expect(w.get("[data-testid='join-bar-alert']").text()).toBe("");
+    });
+
+    test("a refused join is read assertively", () => {
+        const w = mountBar({ kind: "refused", text: "Volunteers is full right now." }, { announcement: { text: "Volunteers is full right now.", isAssertive: true, count: 2 } });
+
+        const alert = w.get("[data-testid='join-bar-alert']");
+        expect(alert.attributes("aria-live")).toBe("assertive");
+        expect(alert.text()).toBe("Volunteers is full right now.");
+        expect(w.get("[data-testid='join-bar-announcement']").text()).toBe("");
+    });
+
+    test("the same words again are put in afresh, so they are read again", async () => {
+        const w = mountBar({ kind: "failed", text: "Couldn't join." }, { announcement: { text: "Couldn't join.", isAssertive: false, count: 1 } });
+        const before = w.get("[data-testid='join-bar-announcement'] span").element;
+
+        await w.setProps({ announcement: { text: "Couldn't join.", isAssertive: false, count: 2 } });
+
+        expect(w.get("[data-testid='join-bar-announcement'] span").element).not.toBe(before);
     });
 });
 

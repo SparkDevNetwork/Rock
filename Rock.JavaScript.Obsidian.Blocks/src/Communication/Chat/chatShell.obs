@@ -120,6 +120,7 @@
                     <JoinBar v-if="isJoinBarShown && activeChannelId"
                              :name="activeTitle"
                              :state="shell.rooms.joinOf(activeChannelId)"
+                             :announcement="shell.rooms.state.announcement"
                              :isPhone="isPhone"
                              @join="onJoin"
                              @browse="openMainView('directory')" />
