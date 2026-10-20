@@ -1272,8 +1272,23 @@ namespace Rock.Blocks.Engagement
                 }
 
                 string errorMessage = null;
-                rockContext.WrapTransaction( () =>
+                /*
+                    10/19/2026 - MSE
+
+                    The step types used to be deleted and saved before the program's
+                    CanDelete check, and WrapTransaction always commits, so a refused
+                    program delete still removed its step types and every Step record.
+                    Check the program first and roll back on every refusal.
+
+                    Reason: A refused delete must not remove anything.
+                */
+                rockContext.WrapTransactionIf( () =>
                 {
+                    if ( !entityService.CanDelete( entity, out errorMessage ) )
+                    {
+                        return false;
+                    }
+
                     var stepTypes = entity.StepTypes.ToList();
                     var stepTypeService = new StepTypeService( rockContext );
 
@@ -1281,7 +1296,7 @@ namespace Rock.Blocks.Engagement
                     {
                         if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
                         {
-                            return;
+                            return false;
                         }
 
                         stepTypeService.Delete( stepType );
@@ -1289,13 +1304,10 @@ namespace Rock.Blocks.Engagement
 
                     rockContext.SaveChanges();
 
-                    if ( !entityService.CanDelete( entity, out errorMessage ) )
-                    {
-                        return;
-                    }
-
                     entityService.Delete( entity );
                     rockContext.SaveChanges();
+
+                    return true;
                 } );
 
                 return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );

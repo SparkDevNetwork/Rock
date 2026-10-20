@@ -245,17 +245,33 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new StepProgramService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( entity == null )
+                /*
+                    10/19/2026 - MSE
+
+                    Block EDIT alone let a block editor delete any step program by key,
+                    including programs outside the block's categories, and with them every
+                    step type and Step record. The program must be one this block lists
+                    and one the person may edit, the same rule Step Program Detail uses.
+
+                    Reason: Only delete listed step programs the person may edit.
+                */
+                var entityId = entity?.Id ?? 0;
+                if ( entity == null || !GetListQueryable( rockContext ).Any( sp => sp.Id == entityId ) )
                 {
                     return ActionBadRequest( $"{StepProgram.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
                 }
