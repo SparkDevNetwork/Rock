@@ -16,12 +16,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using Microsoft.Owin;
 
-using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -117,38 +115,43 @@ namespace Rock.Oidc
                 var json = Encoding.UTF8.GetString( context.Request.Body.ReadBytesToEnd() );
                 var request = json.FromJsonOrThrow<RegisterRequest>();
 
-                var clientId = $"dcr.{Guid.NewGuid()}";
+                var clientId = $"{AuthClientService.DynamicClientIdPrefix}{Guid.NewGuid()}";
                 var clientSecret = Guid.NewGuid().ToString();
-
-                var validScopes = AuthClientService.AllowedDynamicScopes;
-                var allowedScopes = new List<string>();
-
-                if ( request.scope.IsNotNullOrWhiteSpace() )
-                {
-                    allowedScopes = request.scope.SplitDelimitedValues( " " )
-                        .Where( s => validScopes.Contains( s ) )
-                        .ToList();
-                }
 
                 var entityTypeName = EntityTypeCache.Get<Rock.Security.Authentication.Database>().Name;
                 var databaseAuth = AuthenticationContainer.GetComponent( entityTypeName ) as Rock.Security.Authentication.Database;
                 var encryptedClientSecret = databaseAuth.EncryptString( clientSecret );
 
-                using ( var rockContext = RockApp.Current.CreateRockContext() )
+                var authClient = new AuthClient
                 {
-                    var authClient = new AuthClient
-                    {
-                        AllowUserApiAccess = true,
-                        AllowedClaims = "[]",
-                        AllowedScopes = allowedScopes.ToJson(),
-                        IsActive = true,
-                        Name = request.client_name,
-                        ClientId = clientId,
-                        ClientSecretHash = encryptedClientSecret,
-                        RedirectUri = request.redirect_uris.JoinStrings( "," ),
-                        PostLogoutRedirectUri = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ),
-                    };
+                    AllowUserApiAccess = false,
+                    AllowedClaims = "[]",
+                    AllowedScopes = AuthClientService.AllowedDynamicScopes.ToJson(),
+                    ScopeApprovalExpiration = 365,
+                    IsActive = true,
+                    Name = request?.client_name,
+                    ClientId = clientId,
+                    ClientSecretHash = encryptedClientSecret,
+                    RedirectUri = request?.redirect_uris?.JoinStrings( "," ),
+                    PostLogoutRedirectUri = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ),
+                };
 
+                if ( !AuthClientService.AreRedirectUrisValid( authClient ) )
+                {
+                    // Error code from RFC 7591 section 3.2.2.
+                    context.Response.StatusCode = 400;
+                    context.Response.ContentType = "application/json";
+                    context.Response.Write( new
+                    {
+                        error = "invalid_redirect_uri",
+                        error_description = "One or more redirect URIs are not allowed."
+                    }.ToJson() );
+
+                    return;
+                }
+
+                using ( var rockContext = new Data.RockContext() )
+                {
                     new AuthClientService( rockContext ).Add( authClient );
 
                     rockContext.SaveChanges();
