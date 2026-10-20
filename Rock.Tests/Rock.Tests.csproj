@@ -364,6 +364,8 @@
     <Compile Include="Utility\RockCacheabilityTests.cs" />
     <Compile Include="Utility\ReflectionTests.cs" />
     <Compile Include="Utility\TimeIntervalTests.cs" />
+    <Compile Include="Utility\HtmlAllowListSanitizerTests.cs" />
+    <Compile Include="Utility\HtmlSanitizeOptionsTests.cs" />
     <Compile Include="Utility\MethodRetryTests.cs" />
     <Compile Include="Utility\WebRequestHelperTests.cs" />
     <Compile Include="Web\Cache\GroupTypeCacheTests.cs" />

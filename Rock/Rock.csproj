@@ -2574,6 +2574,11 @@
     <Compile Include="Utility\ExtensionMethods\DecimalRockExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SiteTypeExtensions.cs" />
     <Compile Include="Utility\FileUrlHelper.cs" />
+    <Compile Include="Utility\HtmlSanitization\HtmlAllowListSanitizer.cs" />
+    <Compile Include="Utility\HtmlSanitization\HtmlAllowListTables.cs" />
+    <Compile Include="Utility\HtmlSanitization\HtmlSanitizeOptions.cs" />
+    <Compile Include="Utility\HtmlSanitization\HtmlTagRemovalMode.cs" />
+    <Compile Include="Utility\HtmlSanitization\IHtmlAllowListSanitizer.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\IWebHostEnvironment.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
@@ -4609,6 +4614,7 @@
     <Compile Include="Utility\ExtensionMethods\ReportingExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\StringHtmlSanitizationExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringHumanizerExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringPluralizationExtensions.cs" />
     <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />

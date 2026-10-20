@@ -46,6 +46,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Utility.HtmlSanitization;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -339,6 +340,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
 
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the
