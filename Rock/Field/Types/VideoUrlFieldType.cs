@@ -140,7 +140,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "A url pointing at a video file, stored as supplied. It is a link rather than the video itself, and nothing checks what the url returns, so a url that is not video saves cleanly and then fails to play."
+                ValueFormat = "A url pointing at a video file, stored as supplied. It is a link rather than the video itself, and nothing checks what the url returns, so a url that is not video saves cleanly and then fails to play. Only an http, https or relative url is given a player; any other scheme is stored but displayed as plain text."
             };
         }
 

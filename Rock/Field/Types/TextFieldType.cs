@@ -172,8 +172,11 @@ namespace Rock.Field.Types
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
             var isPassword = privateConfigurationValues.GetValueOrDefault( IS_PASSWORD_KEY, string.Empty ).AsBoolean();
-            var allowsHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
-            var allowsLava = privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
+            var isFirstName = privateConfigurationValues.GetValueOrDefault( IS_FIRST_NAME, string.Empty ).AsBoolean();
+
+            // A first name field uses the Name rules, which ignore allowhtml and allowlava.
+            var allowsHtml = !isFirstName && privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var allowsLava = !isFirstName && privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
             var maximumCharacters = privateConfigurationValues.GetValueOrNull( MAX_CHARACTERS ).AsIntegerOrNull();
 
             if ( !isPassword && !allowsHtml && !allowsLava && !maximumCharacters.HasValue )
@@ -190,7 +193,7 @@ namespace Rock.Field.Types
 
             if ( allowsHtml )
             {
-                notes.Add( "HTML is kept rather than stripped" );
+                notes.Add( "basic HTML is accepted, though script tags, javascript: URLs and event handler attributes are rejected on save" );
             }
 
             if ( isPassword )

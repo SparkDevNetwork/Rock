@@ -194,7 +194,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "Markdown source, stored exactly as written. It is converted to HTML when displayed, so store the markdown rather than the rendered result."
+                ValueFormat = "Markdown source, stored exactly as written. It is converted to HTML when displayed, so store the markdown rather than the rendered result. Inline HTML tags and Lava are accepted; script tags, javascript: URLs and event handler attributes are rejected on save. When displayed, the HTML is cleaned to a fixed list of safe tags and attributes, so any other HTML is stored but left out of the display."
             };
         }
 

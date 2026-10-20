@@ -118,7 +118,7 @@ namespace Rock.Field.Types
 
             if ( allowsHtml )
             {
-                notes.Add( "HTML is kept rather than stripped" );
+                notes.Add( "basic HTML is accepted, though script tags, javascript: URLs and event handler attributes are rejected on save" );
             }
 
             if ( maximumCharacters.HasValue )

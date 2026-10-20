@@ -189,7 +189,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "A url, stored exactly as supplied. Rock reads it as an absolute Uri, so include the scheme rather than starting at the host; a url without one is stored but will not resolve when used."
+                ValueFormat = "A url, stored exactly as supplied. Rock reads it as an absolute Uri, so include the scheme rather than starting at the host; a url without one is stored but will not resolve when used. Only an http, https or relative url is shown as a link; any other scheme, such as javascript: or data:, is stored but displayed as plain text."
             };
         }
 

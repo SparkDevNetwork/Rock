@@ -327,13 +327,14 @@ namespace Rock.Field.Types
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
             var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( "definedtype" ).AsInteger() );
+            var contentRuleNote = GetContentRuleNote( privateConfigurationValues );
 
             if ( definedType != null )
             {
                 return new FieldTypeHints
                 {
                     IsCompleteList = false,
-                    ValueFormat = $"One or more ids of DefinedValues from the '{definedType.Name}' defined type, separated by pipes rather than commas, as in 12|15|19. These are ids, not guids and not idKeys. Each entry is url encoded when read back, so a value containing a pipe or a percent sign must be percent encoded.",
+                    ValueFormat = $"One or more ids of DefinedValues from the '{definedType.Name}' defined type, separated by pipes rather than commas, as in 12|15|19. These are ids, not guids and not idKeys. Each entry is url encoded when read back, so a value containing a pipe or a percent sign must be percent encoded.{contentRuleNote}",
                     Instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey} and take the id of each one you want."
                 };
             }
@@ -341,8 +342,39 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "One or more text entries separated by pipes rather than commas, as in first|second|third. Each entry is url encoded, so an entry that itself contains a pipe or a percent sign must be percent encoded."
+                ValueFormat = "One or more text entries separated by pipes rather than commas, as in first|second|third. Each entry is url encoded, so an entry that itself contains a pipe or a percent sign must be percent encoded." + contentRuleNote
             };
+        }
+
+        /// <summary>
+        /// Describes what the allowhtml and allowlava options let a value contain,
+        /// matching <see cref="GetValidationRules(Dictionary{string, string})"/>.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values of the field.</param>
+        /// <returns>A sentence with a leading space, or <c>null</c> when neither option is set.</returns>
+        internal static string GetContentRuleNote( Dictionary<string, string> privateConfigurationValues )
+        {
+            var allowsHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var allowsLava = privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
+
+            if ( !allowsHtml && !allowsLava )
+            {
+                return null;
+            }
+
+            var notes = new List<string>();
+
+            if ( allowsLava )
+            {
+                notes.Add( "Lava in this value is resolved when the value is used, so it is stored as written rather than as its result" );
+            }
+
+            if ( allowsHtml )
+            {
+                notes.Add( "basic HTML is accepted, though script tags, javascript: URLs and event handler attributes are rejected on save" );
+            }
+
+            return $" On this field {notes.JoinStrings( ", " )}.";
         }
 
         #endregion

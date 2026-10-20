@@ -361,6 +361,8 @@ namespace Rock.Field.Types
                 valueFormat += $" The base url here is '{baseUrl}', so store only what would follow it.";
             }
 
+            valueFormat += " A value with a scheme other than http or https, or one containing an HTML character reference, is displayed as plain text and is not passed to the display template. HTML tags, Lava and event handler attributes such as onclick= are rejected on save.";
+
             return new FieldTypeHints
             {
                 IsCompleteList = false,
