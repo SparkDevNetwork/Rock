@@ -364,6 +364,7 @@
     <Compile Include="Rest\SecuredAttributeTests.cs" />
     <Compile Include="Core\Logging\RockLoggingHelpers.cs" />
     <Compile Include="Security\OidcClientTests.cs" />
+    <Compile Include="Security\MobileLoginExternalAuthenticationTests.cs" />
     <Compile Include="Core\Storage\AmazonS3ComponentTests.cs" />
     <Compile Include="Core\Storage\AzureCloudComponentTests.cs" />
     <Compile Include="Core\Storage\BaseStorageComponentTests.cs" />
