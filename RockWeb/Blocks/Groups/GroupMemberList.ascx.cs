@@ -514,7 +514,7 @@ namespace RockWeb.Blocks.Groups
                         regLinks.Add(
                             string.Format(
                                 "<a href='{0}'>{1}</a>",
-                                LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.RegistrationId.ToString() } } ),
+                                LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", IdHasher.Instance.GetHash( reg.RegistrationId ) } } ),
                                 reg.RegistrationName ) );
                     }
 

@@ -1142,7 +1142,7 @@ namespace Rock.Blocks.Group
                     Text = r.Name,
                     Value = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, new Dictionary<string, string>
                     {
-                        [PageParameterKey.RegistrationId] = r.Id.ToString()
+                        [PageParameterKey.RegistrationId] = Rock.Utility.IdHasher.Instance.GetHash( r.Id )
                     } )
                 } )
                 .ToList();
