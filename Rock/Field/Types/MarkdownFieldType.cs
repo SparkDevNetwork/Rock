@@ -26,8 +26,8 @@ using Rock.Attribute;
 using Rock.Enums.Security;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility.HtmlSanitization;
 using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
 
 namespace Rock.Field.Types
 {
@@ -43,6 +43,47 @@ namespace Rock.Field.Types
 
         private const string NUMBER_OF_ROWS = "numberofrows";
         private const string HTML_VALUE = "htmlvalue";
+
+        /// <summary>
+        /// The sanitize options for the HTML made from Markdown: the Simple
+        /// preset plus the elements CommonMark writes (headings, lists, tables
+        /// and images). Rich is not used because Markdown values can be written
+        /// by anonymous visitors (for example on Family Pre-Registration), and
+        /// Rich allows form controls, SVG, id, data-* and positional CSS meant
+        /// for staff-authored templates.
+        /// </summary>
+        private static readonly HtmlSanitizeOptions MarkdownSanitizeOptions = new HtmlSanitizeOptions( HtmlSanitizeOptions.Simple )
+            .AllowTag( "h1" )
+            .AllowTag( "h2" )
+            .AllowTag( "h3" )
+            .AllowTag( "h4" )
+            .AllowTag( "h5" )
+            .AllowTag( "h6" )
+            .AllowTag( "ul" )
+            .AllowTag( "ol" )
+            .AllowTag( "li" )
+            .AllowTag( "dl" )
+            .AllowTag( "dt" )
+            .AllowTag( "dd" )
+            .AllowTag( "table" )
+            .AllowTag( "thead" )
+            .AllowTag( "tbody" )
+            .AllowTag( "tfoot" )
+            .AllowTag( "tr" )
+            .AllowTag( "th" )
+            .AllowTag( "td" )
+            .AllowTag( "caption" )
+            .AllowTag( "img" )
+            .AllowAttribute( "img", "src" )
+            .AllowAttribute( "img", "alt" )
+            .AllowAttribute( "img", "width" )
+            .AllowAttribute( "img", "height" )
+            .AllowAttribute( "td", "colspan" )
+            .AllowAttribute( "td", "rowspan" )
+            .AllowAttribute( "th", "colspan" )
+            .AllowAttribute( "th", "rowspan" )
+            .AllowAttribute( "ol", "start" )
+            .MakeReadOnly();
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
@@ -94,7 +135,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return privateValue.ConvertMarkdownToHtml() ?? string.Empty;
+            return privateValue.ConvertMarkdownToHtml()?.SanitizeHtml( MarkdownSanitizeOptions ) ?? string.Empty;
         }
 
         /// <inheritdoc/>
@@ -111,7 +152,7 @@ namespace Rock.Field.Types
                 result = result.Substring( 3, result.Length - 7 );
             }
 
-            return result.Truncate( CondensedTruncateLength );
+            return result.Truncate( CondensedTruncateLength ).SanitizeHtml( MarkdownSanitizeOptions );
         }
 
         #endregion
@@ -230,7 +271,6 @@ namespace Rock.Field.Types
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
 
-            result = HtmlSanitizer.SanitizeHtml( result );
             return result;
         }
 
