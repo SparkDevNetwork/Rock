@@ -255,6 +255,12 @@ namespace Rock.Lava
                 {
                     context.ExitChildScope();
                 }
+                else
+                {
+                    // A Shared scope shares the shortcode's variables with the caller, but not its Lava commands.
+                    // Restore the caller's enabled commands so the rest of the calling template cannot use the shortcode's commands.
+                    context.SetEnabledCommands( callerEnabledCommands );
+                }
             }
 
             // Reset the original parameters in the context
