@@ -111,7 +111,7 @@ namespace Rock.Tests.Integration.Security
         /// <param name="testPerson">The existing test person that must not be linked.</param>
         private static void AssertLoginIsNotLinkedToPerson( string userName, Person testPerson )
         {
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );

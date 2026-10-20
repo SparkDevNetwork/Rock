@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Blocks.Types.Mobile.Cms;
 using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.Security.Authentication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -42,7 +43,7 @@ namespace Rock.Tests.Integration.Security
             var personInfo = CreateUserInfo( testPerson, false );
             var userLoginInfo = CreateUserLoginInfo( personInfo.ForeignKey );
 
-            var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, new RockContext(), null, null, true );
+            var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, RockApp.Current.CreateRockContext(), null, null, true );
 
             Assert.IsNotNull( userLogin );
             Assert.AreNotEqual( testPerson.Id, userLogin.PersonId );
@@ -56,7 +57,7 @@ namespace Rock.Tests.Integration.Security
             var personInfo = CreateUserInfo( testPerson, true );
             var userLoginInfo = CreateUserLoginInfo( personInfo.ForeignKey );
 
-            var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, new RockContext(), null, null, true );
+            var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, RockApp.Current.CreateRockContext(), null, null, true );
 
             Assert.IsNotNull( userLogin );
             Assert.AreEqual( testPerson.Id, userLogin.PersonId );
@@ -69,7 +70,7 @@ namespace Rock.Tests.Integration.Security
             var personInfo = CreateUserInfo( testPerson, false );
             var userLoginInfo = CreateUserLoginInfo( personInfo.ForeignKey );
 
-            var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, new RockContext(), null, null, false );
+            var userLogin = Login.GetOrCreatePersonFromExternalAuthenticationUserInfo( personInfo, userLoginInfo, RockApp.Current.CreateRockContext(), null, null, false );
 
             Assert.IsNotNull( userLogin );
             Assert.AreEqual( testPerson.Id, userLogin.PersonId );
@@ -120,7 +121,7 @@ namespace Rock.Tests.Integration.Security
         /// <returns>The number of logins.</returns>
         private static int GetLoginCount( int personId )
         {
-            return new UserLoginService( new RockContext() ).Queryable().Count( ul => ul.PersonId == personId );
+            return new UserLoginService( RockApp.Current.CreateRockContext() ).Queryable().Count( ul => ul.PersonId == personId );
         }
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace Rock.Tests.Integration.Security
                 LastName = "User"
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             new PersonService( rockContext ).Add( person );
             rockContext.SaveChanges();
 
