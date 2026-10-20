@@ -183,12 +183,17 @@
     color: var(--chat-text-2);
 }
 
+/*
+    The leaders' 20px faces overlap a fixed 5px, one letter at 8px, ringed in the surface. The
+    avatar sets its own size ratio and overlap inline, so these must win over it.
+*/
 .chat-intro-facts :deep(.chat-av) {
+    font-size: 8px !important;
     box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
 .chat-intro-facts :deep(.chat-pile.is-pile .chat-av + .chat-av) {
-    margin-left: -5px;
+    margin-left: -5px !important;
 }
 
 .chat-intro-note {
