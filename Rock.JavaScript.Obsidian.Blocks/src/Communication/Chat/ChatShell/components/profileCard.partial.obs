@@ -1,0 +1,399 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!--
+        Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+        a card drawn inside it; left in place where there is no root, as when a part is drawn alone.
+    -->
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <div ref="cardElement"
+             class="chat-pc"
+             :class="{ 'is-leaving': isClosing }"
+             role="dialog"
+             :aria-label="`Profile, ${fullName}`"
+             tabindex="-1"
+             data-testid="profile-card"
+             :style="cardStyles"
+             @keydown="onKeydown">
+            <div class="chat-pc-band" aria-hidden="true"></div>
+            <div class="chat-pc-body">
+                <span class="chat-pc-av"><Avatar :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" /></span>
+                <div class="chat-pc-name">
+                    <b data-testid="profile-name">{{ fullName }}</b>
+                    <span v-if="person.is_leader" class="chat-pc-tag" data-testid="profile-leader">Leader</span>
+                    <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">This is you</span>
+                </div>
+                <div v-if="campusName" class="chat-pc-line" data-testid="profile-campus"><Icon name="pin" size="xs" />{{ campusName }}</div>
+                <p v-if="note" class="chat-pc-note" data-testid="profile-note"><Icon v-if="!person.is_self" name="eye-off" size="xs" />{{ note }}</p>
+                <div v-if="!person.is_self" class="chat-pc-acts">
+                    <button v-if="person.can_message"
+                            type="button"
+                            class="chat-pc-btn"
+                            data-testid="profile-message"
+                            @click="emit('message', person)"><Icon name="message" size="xs" />Message</button>
+                    <div v-else class="chat-pc-muted" data-testid="profile-cannot-message">
+                        <Icon name="mail" size="xs" />
+                        <span><b>Direct messages aren't available with {{ person.nick_name }}.</b> You can still mention them in a channel you share.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+</template>
+
+<style scoped>
+/* Fixed, so the chat's clipped frame cannot cut a card near its edge; no padding, the band runs to the edge. */
+.chat-pc {
+    z-index: 1050;
+    width: 300px;
+    max-width: calc(100vw - 16px);
+    overflow: hidden;
+    color: var(--chat-text);
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-xl);
+    outline: none;
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-pc-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* Leaves half as far and faster than it came, and takes no press on its way out. */
+.chat-pc.is-leaving {
+    pointer-events: none;
+    animation: chat-pc-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+/* The band's gradient is in the sheet, beside the avatar's, since both are drawn from the person's hue. */
+.chat-pc-band {
+    height: 68px;
+}
+
+.chat-pc-body {
+    position: relative;
+    padding: 0 18px 16px;
+}
+
+/* Overlaps the band by 30px, ringed in the card's own fill so the band never touches the face. */
+.chat-pc-av {
+    display: inline-block;
+    margin-top: -30px;
+    line-height: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--chat-raised);
+}
+
+.chat-pc-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin-top: 8px;
+}
+
+.chat-pc-name b {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+}
+
+.chat-pc-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 7px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--chat-info-ink);
+    letter-spacing: .02em;
+    background: var(--chat-info-soft);
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-pc-you {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-wash);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-pc-line {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--chat-text-2);
+}
+
+.chat-pc-line :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+.chat-pc-note {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-muted);
+}
+
+.chat-pc-acts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.chat-pc-btn {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 34px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pc-btn:hover {
+    box-shadow: inset 0 0 0 999px var(--chat-press);
+}
+
+.chat-pc-muted {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 9px 11px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-md);
+}
+
+.chat-pc-muted > :deep(.chat-ic) {
+    margin-top: 2px;
+    color: var(--chat-icon);
+}
+
+.chat-pc-muted b {
+    display: block;
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+/* Enters from just toward what opened it and a touch small, as every popover does. */
+@keyframes chat-pc-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+    }
+}
+
+@keyframes chat-pc-out {
+    to {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import { avatarHue, tokenDuration } from "../ui/brand.partial";
+    import { overlayHostOf } from "../ui/tooltip.partial";
+    import { PersonProfile } from "../types.partial";
+
+    const props = defineProps({
+        /** The person as chat_get_person answered for the room the card was opened from. */
+        person: {
+            type: Object as PropType<PersonProfile>,
+            required: true
+        },
+
+        /** The church's campuses from the init box, to name the person's campus by. */
+        campuses: {
+            type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
+        },
+
+        /** The name, face or chip the card opens beside; drawn in place where there is none. */
+        anchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "message", person: PersonProfile): void;
+    }>();
+
+    // #region Values
+
+    const cardElement = ref<HTMLElement>();
+    const isClosing = ref(false);
+
+    /** The chat's root, which the card is drawn in; null where the card is drawn alone. */
+    const overlayHost = ref<HTMLElement | null>(overlayHostOf(props.anchor));
+
+    /**
+     * What had focus as the card opened, which Escape gives it back to. Read before the card takes
+     * focus; the anchor stands in should that have been nothing.
+     */
+    const opener = (document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+        ? document.activeElement
+        : null) ?? props.anchor;
+
+    /** The way out's length where the sheet is not on the page, and how long past it a close still waits. */
+    const fallbackOutMs = 120;
+    const outGraceMs = 50;
+
+    /**
+     * Opened from the right-hand panel, the card stands beside the panel at the opener's height
+     * rather than over the list; it falls back below the opener where the panel leaves no room.
+     */
+    const panel = props.anchor?.closest<HTMLElement>(".chat-panel") ?? null;
+    const reference = panel && props.anchor
+        ? {
+            getBoundingClientRect: (): DOMRect => {
+                const left = panel.getBoundingClientRect().left;
+                const top = (props.anchor?.getBoundingClientRect().top ?? 0) - 12;
+                return { x: left, y: top, left, top, right: left, bottom: top, width: 0, height: 0, toJSON: () => ({}) } as DOMRect;
+            },
+            contextElement: props.anchor
+        }
+        : props.anchor;
+
+    // Placed by left and top, since a transform here would override the pop's own and the card
+    // would only fade; kept 8px inside the window.
+    const { floatingStyles, placement } = useFloating(ref(reference), cardElement, {
+        placement: panel ? "left-start" : "bottom-start",
+        strategy: "fixed",
+        transform: false,
+        middleware: [offset(panel ? 10 : 8), flip({ fallbackPlacements: ["bottom-start", "top-start"] }), shift({ padding: 8 })],
+        whileElementsMounted: autoUpdate
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const fullName = computed((): string => [props.person.nick_name, props.person.last_name].filter(part => !!part).join(" "));
+
+    /** The campus by its name, only when the person shows details and the church still lists it. */
+    const campusName = computed((): string => {
+        const id = props.person.details?.campus_id?.toLowerCase();
+        return id ? props.campuses.find(campus => campus.guid?.toLowerCase() === id)?.name ?? "" : "";
+    });
+
+    /** What the person's own card tells them others see, or that someone else keeps details private. */
+    const note = computed((): string => {
+        if (props.person.is_self) {
+            return props.person.details ? "Others see your campus and badges." : "Your campus and badges are hidden. Others see only your name and photo.";
+        }
+
+        return props.person.details ? "" : `${props.person.nick_name} keeps profile details private.`;
+    });
+
+    /** The placement, the person's hue for the band, and the pop grown toward what opened it. */
+    const cardStyles = computed((): Record<string, string> => ({
+        ...(props.anchor ? floatingStyles.value : {}),
+        "--chat-av-hue": String(avatarHue(fullName.value)),
+        "--chat-pop-toward": placement.value.startsWith("top") ? "1" : "-1",
+        transformOrigin: placement.value.startsWith("left") ? "100% 0" : placement.value.startsWith("top") ? "0 100%" : "0 0"
+    }));
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            void close(true);
+        }
+    }
+
+    /** A press anywhere outside the card closes it, leaving focus where the press put it. */
+    function onDocumentPress(event: Event): void {
+        const target = event.target as Node;
+
+        // A press on what opened the card is left to that control, which closes it by its click.
+        if (cardElement.value?.contains(target) || props.anchor?.contains(target)) {
+            return;
+        }
+
+        void close(false);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Plays the way out, then asks to be removed, since a removed element cannot animate; where
+     * nothing animates the word goes at once, and a hidden tab that holds the animation still lets
+     * it go once the way out's length has passed.
+     */
+    async function close(isFocusReturned: boolean): Promise<void> {
+        if (isClosing.value) {
+            return;
+        }
+
+        isClosing.value = true;
+        if (isFocusReturned) {
+            opener?.focus({ preventScroll: true });
+        }
+
+        await nextTick();
+
+        const card = cardElement.value;
+        const animations = card?.getAnimations?.() ?? [];
+        if (card && animations.length > 0) {
+            const outMs = tokenDuration(card, "--chat-t-fast", fallbackOutMs) + outGraceMs;
+            await Promise.race([
+                Promise.allSettled(animations.map(animation => animation.finished)),
+                new Promise(resolve => window.setTimeout(resolve, outMs))
+            ]);
+        }
+
+        emit("close");
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        // mousedown rather than click, so a press that starts a text selection elsewhere still closes it.
+        document.addEventListener("mousedown", onDocumentPress, true);
+        await nextTick();
+        cardElement.value?.focus({ preventScroll: true });
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("mousedown", onDocumentPress, true);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
