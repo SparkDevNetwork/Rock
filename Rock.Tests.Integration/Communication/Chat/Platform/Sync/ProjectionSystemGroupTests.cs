@@ -70,6 +70,9 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         {
             using ( var fixture = new ChatSyncProjectionFixture() )
             {
+                // The test database never runs the plugin migration that ships Chat People.
+                fixture.EnsureChatPeopleGroup();
+
                 var groupTypeId = fixture.EnableChatForGroupTypeOf( systemGroupGuid );
 
                 // Another group of the same type still qualifies, so the rule is not off for the type.
