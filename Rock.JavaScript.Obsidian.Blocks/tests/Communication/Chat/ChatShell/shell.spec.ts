@@ -2101,6 +2101,23 @@ describe("the live sidebar", () => {
             expect(h.saves.filter(s => s.channelId === volunteers)).toEqual([]);
         });
 
+        test("a pinned room the person has not joined still saves where they have read to", async () => {
+            const h = build();
+            const pinned = snapshot();
+            pinned.channels[0] = sidebarRow(channelA, { read_cursor: 9, is_public: true, always_shown: true, is_member: false });
+            h.bootstrap.value = pinned;
+            const starting = h.shell.start();
+            await settle();
+            answerHistory(h, channelA, 10);
+            await starting;
+            await settle();
+
+            h.shell.markRead(10);
+            await settle();
+
+            expect(h.saves.filter(s => s.channelId === channelA && s.messageId === 10)).toHaveLength(1);
+        });
+
         test("a pending join settles on the reload its membership change asks, which brings the real row", async () => {
             const doorCalls: string[] = [];
             const h = await startedLive({

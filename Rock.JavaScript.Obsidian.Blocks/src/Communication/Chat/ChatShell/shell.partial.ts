@@ -566,8 +566,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const savesSentAt = new WeakMap<MarkReadResult, number>();
     const tracker: ReadTracker = createReadTracker({
         save: async (channelId, messageId) => {
-            // A room the person is only previewing has no read position of theirs to keep.
-            if (channels.rows.some(row => row.channel_id === channelId && !row.is_member)) {
+            // A room the person is only previewing has no read position of theirs to keep, until
+            // they join it; a pinned room they have not joined is theirs to read, so it keeps one.
+            if (channels.previewChannelId === channelId && !channels.rows.some(row => row.channel_id === channelId && row.is_member)) {
                 return null;
             }
 
