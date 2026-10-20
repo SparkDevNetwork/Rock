@@ -284,6 +284,23 @@ namespace Rock.Blocks.Crm
                 return false;
             }
 
+            /*
+                10/19/2026 - MSE
+
+                Edit, Save, Delete and RefreshAttributes all load the signal type
+                through this method. Without this check a person who can only view
+                the block could open any signal type for editing or delete it (which
+                removes that signal from every person who has it) by sending the
+                block action directly.
+
+                Reason: Require EDIT on the signal type for every edit action.
+            */
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionForbidden( $"Not authorized to edit {SignalType.FriendlyTypeName}." );
+                return false;
+            }
+
             return true;
         }
 

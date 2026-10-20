@@ -138,8 +138,10 @@ namespace Rock.Blocks.Core
             var box = new ListBlockBox<AttributesOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = true;
-            box.IsDeleteEnabled = true;
+            var canEditAttributes = CanEditAttributes();
+
+            box.IsAddEnabled = canEditAttributes;
+            box.IsDeleteEnabled = canEditAttributes;
             box.ExpectedRowCount = null;
             box.Options = new AttributesOptionsBag
             {
@@ -148,6 +150,8 @@ namespace Rock.Blocks.Core
                 HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues().ToList(),
                 EnableShowInGrid = GetAttributeValue( AttributeKey.EnableShowInGrid ).AsBoolean(),
                 AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean(),
+                CanEditAttributes = canEditAttributes,
+                CanEditAttributeValues = CanEditAttributeValues(),
             };
             box.GridDefinition = builder.BuildDefinition();
             box.SecurityGrantToken = GetSecurityGrantToken();
@@ -224,6 +228,39 @@ namespace Rock.Blocks.Core
             }
 
             return GetListQueryable( rockContext ).Any( a => a.Id == attributeId );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can add, edit, delete and
+        /// reorder attributes with this block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person can edit attributes; otherwise <c>false</c>.</returns>
+        private bool CanEditAttributes()
+        {
+            /*
+                10/19/2026 - MSE
+
+                The attribute definition and value actions used to run for anyone
+                who could view the block. Changing attribute definitions requires
+                EDIT on the block. ADMINISTRATE is also accepted because Rock does
+                not treat ADMINISTRATE as EDIT and some roles (for example on the
+                Calendars pages) only hold ADMINISTRATE. Editing values also
+                requires the Allow Setting of Values block setting.
+
+                Reason: Prevent people with only View access from changing attributes.
+            */
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit attribute values
+        /// with this block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person can edit attribute values; otherwise <c>false</c>.</returns>
+        private bool CanEditAttributeValues()
+        {
+            return GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean() && CanEditAttributes();
         }
 
         /// <inheritdoc/>
@@ -509,6 +546,11 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( "Setting values is not enabled." );
             }
 
+            if ( !CanEditAttributeValues() )
+            {
+                return ActionForbidden( "You are not authorized to edit attribute values." );
+            }
+
             var attribute = Rock.Web.Cache.AttributeCache.Get( attributeGuid );
 
             if ( attribute == null || !IsAttributeAllowed( attribute.Id, RockContext ) )
@@ -540,6 +582,11 @@ namespace Rock.Blocks.Core
             if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() != true )
             {
                 return ActionBadRequest( "Setting values is not enabled." );
+            }
+
+            if ( !CanEditAttributeValues() )
+            {
+                return ActionForbidden( "You are not authorized to edit attribute values." );
             }
 
             var attribute = AttributeCache.Get( attributeGuid );
@@ -593,6 +640,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetEditAttribute( Guid attributeGuid )
         {
+            if ( !CanEditAttributes() )
+            {
+                return ActionForbidden( "You are not authorized to edit attributes." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
@@ -615,6 +667,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult NewAttribute( Guid? entityTypeGuid )
         {
+            if ( !CanEditAttributes() )
+            {
+                return ActionForbidden( "You are not authorized to edit attributes." );
+            }
+
             var attribute = new Model.Attribute
             {
                 FieldTypeId = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid(), RockContext ).Id,
@@ -639,6 +696,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveEditAttribute( Guid? entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, PublicEditableAttributeBag attribute )
         {
+            if ( !CanEditAttributes() )
+            {
+                return ActionForbidden( "You are not authorized to edit attributes." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
@@ -712,6 +774,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult DeleteAttribute( Guid attributeGuid )
         {
+            if ( !CanEditAttributes() )
+            {
+                return ActionForbidden( "You are not authorized to delete attributes." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
@@ -748,6 +815,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !CanEditAttributes() )
+            {
+                return ActionForbidden( "You are not authorized to reorder attributes." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
