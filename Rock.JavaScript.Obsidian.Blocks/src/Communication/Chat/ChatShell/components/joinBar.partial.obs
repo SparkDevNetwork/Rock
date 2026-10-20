@@ -175,6 +175,13 @@
     width: 13px;
     height: 13px;
 }
+
+/* Reduced motion: the bar only fades in, as the quote strip does. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-joinbar {
+        animation-name: chat-crossfade;
+    }
+}
 </style>
 
 <script setup lang="ts">

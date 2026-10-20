@@ -22,11 +22,32 @@
 //
 // The view draws the directory as the rooms hold it, so each test hands it a state in the exact
 // shape useRooms keeps, and reads what it asks for from its events.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
 import { DirectoryState, JoinState, RoomAnnouncement } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+
+
+/** The rules a component's styles give under reduced motion, selector and body, read from its source. */
+function reducedMotionRules(relativePath: string): Array<{ selector: string, body: string }> {
+    const source = readFileSync(join(__dirname, relativePath), "utf8");
+    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+    const rules: Array<{ selector: string, body: string }> = [];
+    for (const media of style.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{/g)) {
+        // the block runs to the brace that closes the one the query opened
+        let depth = 1;
+        let end = (media.index ?? 0) + media[0].length;
+        for (; end < style.length && depth > 0; end++) {
+            depth += style[end] === "{" ? 1 : style[end] === "}" ? -1 : 0;
+        }
+        const inner = style.slice((media.index ?? 0) + media[0].length, end - 1);
+        rules.push(...Array.from(inner.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] })));
+    }
+    return rules;
+}
 
 // #region Fixtures
 
@@ -711,5 +732,17 @@ describe("what is spoken", () => {
         await w.setProps({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 2 } });
 
         expect(w.get("[data-testid='directory-announcement'] span").element).not.toBe(before);
+    });
+});
+
+describe("under reduced motion", () => {
+    const rules = (): Array<{ selector: string, body: string }> => reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs");
+
+    test("the church's campus note does not animate", () => {
+        expect(rules().some(r => /(^|,)\s*\.chat-fd-note\s*(,|$)/.test(r.selector) && /animation:\s*none/.test(r.body))).toBe(true);
+    });
+
+    test("a row's refusal or failure only fades in", () => {
+        expect(rules().some(r => /(^|,)\s*\.chat-fd-err\s*(,|$)/.test(r.selector) && /animation-name:\s*chat-crossfade/.test(r.body))).toBe(true);
     });
 });

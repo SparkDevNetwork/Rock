@@ -446,6 +446,24 @@ function entryFor(element: Element): ResizeObserverEntry {
 
 let wrapper: VueWrapper | null = null;
 
+/** The rules a component's styles give under reduced motion, selector and body, read from its source. */
+function reducedMotionRules(relativePath: string): Array<{ selector: string, body: string }> {
+    const source = readFileSync(join(__dirname, relativePath), "utf8");
+    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+    const rules: Array<{ selector: string, body: string }> = [];
+    for (const media of style.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{/g)) {
+        // the block runs to the brace that closes the one the query opened
+        let depth = 1;
+        let end = (media.index ?? 0) + media[0].length;
+        for (; end < style.length && depth > 0; end++) {
+            depth += style[end] === "{" ? 1 : style[end] === "}" ? -1 : 0;
+        }
+        const inner = style.slice((media.index ?? 0) + media[0].length, end - 1);
+        rules.push(...Array.from(inner.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] })));
+    }
+    return rules;
+}
+
 async function settle(): Promise<void> {
     for (let i = 0; i < 4; i++) {
         await nextTick();
@@ -2445,6 +2463,12 @@ describe("a channel the person has not joined", () => {
         await settle();
 
         expect(w.get("[data-testid='frame-main'] [data-testid='join-bar-announcement']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
+    });
+
+    test("the composer's re-entry only fades in under reduced motion", () => {
+        const rules = reducedMotionRules("../../../../src/Communication/Chat/chatShell.obs");
+
+        expect(rules.some(r => /(^|,)\s*\.chat-composer\.is-entering\s*(,|$)/.test(r.selector) && /animation-name:\s*chat-crossfade/.test(r.body))).toBe(true);
     });
 
     test("never shows the join bar in a channel the person is in, whose composer is simply there", async () => {

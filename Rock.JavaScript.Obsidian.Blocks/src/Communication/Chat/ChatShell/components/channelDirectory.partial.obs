@@ -760,6 +760,17 @@
     }
 }
 
+/* Reduced motion: the church's campus note is simply there, and a row's note only fades in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-fd-note {
+        animation: none;
+    }
+
+    .chat-fd-err {
+        animation-name: chat-crossfade;
+    }
+}
+
 .chat-fd-empty {
     display: flex;
     flex-direction: column;

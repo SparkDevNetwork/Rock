@@ -481,6 +481,13 @@
     }
 }
 
+/* Reduced motion: the composer only fades back in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-composer.is-entering {
+        animation-name: chat-crossfade;
+    }
+}
+
 .chat-shell-empty {
     display: flex;
     flex: 1;

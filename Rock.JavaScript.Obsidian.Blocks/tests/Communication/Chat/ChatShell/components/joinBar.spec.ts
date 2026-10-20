@@ -33,6 +33,24 @@ function mountBar(state: JoinState = { kind: "idle" }, props: Record<string, unk
     return wrapper;
 }
 
+/** The rules a component's styles give under reduced motion, selector and body, read from its source. */
+function reducedMotionRules(relativePath: string): Array<{ selector: string, body: string }> {
+    const source = readFileSync(join(__dirname, relativePath), "utf8");
+    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+    const rules: Array<{ selector: string, body: string }> = [];
+    for (const media of style.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{/g)) {
+        // the block runs to the brace that closes the one the query opened
+        let depth = 1;
+        let end = (media.index ?? 0) + media[0].length;
+        for (; end < style.length && depth > 0; end++) {
+            depth += style[end] === "{" ? 1 : style[end] === "}" ? -1 : 0;
+        }
+        const inner = style.slice((media.index ?? 0) + media[0].length, end - 1);
+        rules.push(...Array.from(inner.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] })));
+    }
+    return rules;
+}
+
 afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
@@ -206,5 +224,11 @@ describe("the entrance", () => {
         expect(w.get("[data-testid='join-bar']").classes()).toContain("chat-joinbar");
         expect(style).toMatch(/\.chat-joinbar\s*\{[^}]*animation:\s*chat-strip-in var\(--chat-t-base\) var\(--chat-ease-in\)/);
         expect(style).toMatch(/@keyframes chat-strip-in\s*\{\s*from\s*\{\s*opacity:\s*0;\s*transform:\s*translateY\(6px\);/);
+    });
+
+    test("only fades in under reduced motion, as the quote strip does", () => {
+        const rules = reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs");
+
+        expect(rules.some(r => /(^|,)\s*\.chat-joinbar\s*(,|$)/.test(r.selector) && /animation-name:\s*chat-crossfade/.test(r.body))).toBe(true);
     });
 });
