@@ -514,7 +514,8 @@
             }
 
             case "group":
-                return facts.member_count > 0 ? `${facts.member_count.toLocaleString()} people` : null;
+                // the listed count leaves out anyone not shown, so a group can be down to one
+                return facts.member_count > 0 ? `${facts.member_count.toLocaleString()} ${facts.member_count === 1 ? "person" : "people"}` : null;
 
             default:
                 return props.subtitle;

@@ -158,6 +158,12 @@ describe("the subtitle, from the room's facts", () => {
         expect(w.get("[data-testid='header-subtitle']").text()).toBe("4 people");
     });
 
+    test("counts one person as one person, as a group left with only the reader listed is", () => {
+        const w = mountHeader({ title: "Hike planning", kind: "group", facts: facts({ channel_type: "dm", name: "Hike planning", member_count: 1 }) });
+
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("1 person");
+    });
+
     test("stands in for the line the shell worked out once the facts land", async () => {
         const w = mountHeader({ kind: "group", subtitle: "3 people" });
         expect(w.get("[data-testid='header-subtitle']").text()).toBe("3 people");
