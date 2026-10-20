@@ -142,6 +142,9 @@
                                     <span v-if="row.join.kind === 'refused'" class="chat-fd-err" role="note" data-testid="directory-row-refused">
                                         <Icon name="alert" size="xs" /><span>{{ row.join.text }}</span>
                                     </span>
+                                    <span v-else-if="row.join.kind === 'failed'" class="chat-fd-err" role="note" data-testid="directory-row-failed">
+                                        <Icon name="alert" size="xs" /><span>{{ row.join.text }}</span>
+                                    </span>
                                     <span v-else-if="row.join.kind === 'pending'" class="chat-fd-wait" data-testid="directory-row-wait">Setting up, a few seconds</span>
                                 </span>
                             </button>

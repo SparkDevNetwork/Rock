@@ -11,6 +11,7 @@
                 <b data-testid="join-bar-title">{{ title }}</b>
                 <span v-if="drawn === 'pending'" data-testid="join-bar-text"><span class="chat-spinner"></span>Setting up, a few seconds</span>
                 <span v-else-if="drawn === 'refused'" data-testid="join-bar-text">{{ refusal }}</span>
+                <span v-else-if="drawn === 'failed'" class="is-failed" data-testid="join-bar-text"><Icon name="alert" size="xs" />{{ failure }}</span>
                 <span v-else data-testid="join-bar-text">Join this channel to post and get notifications.</span>
             </span>
 
@@ -90,6 +91,14 @@
 .chat-joinbar-main > span {
     font-size: 12.5px;
     color: var(--chat-text-2);
+}
+
+/* A Join that did not reach the door says so where its sentence was, as an inline note does. */
+.chat-joinbar-main > span.is-failed {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    color: var(--chat-danger-ink);
 }
 
 /* Rock has the membership; only the platform's copy is still on its way. */
@@ -199,14 +208,15 @@
     // #region Computed Values
 
     /**
-     * The bar's state. A Join the door could not reach is offered again as it first was; a room
+     * The bar's state. A Join the door could not reach says why and is offered again; a room
      * joined is the composer's place again, so the bar is gone before it would say so.
      */
-    const drawn = computed((): "preview" | "joining" | "pending" | "refused" => {
+    const drawn = computed((): "preview" | "joining" | "pending" | "refused" | "failed" => {
         switch (props.state.kind) {
             case "joining":
             case "pending":
             case "refused":
+            case "failed":
                 return props.state.kind;
 
             default:
@@ -229,6 +239,9 @@
 
     /** The door's own sentence, as it arrived. */
     const refusal = computed((): string => props.state.kind === "refused" ? props.state.text : "");
+
+    /** Why the door could not be reached. */
+    const failure = computed((): string => props.state.kind === "failed" ? props.state.text : "");
 
     // #endregion Computed Values
 

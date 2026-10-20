@@ -21,7 +21,8 @@
 // query; its filters ask again at once; its next page loads after the last row it holds. A room's
 // facts are read on every open and again on that room's membership change, the newest read kept.
 // Join goes through Rock's door: joining, then joined, or pending until a sidebar reload shows the
-// row as a member, or refused with the door's own sentence, or offline. A room opened with no
+// row as a member, or refused with the door's own sentence, or failed, saying why, with Join to
+// press again. A room opened with no
 // sidebar row keeps a muted row after the channels, across any sidebar reload, until another
 // conversation opens or the reload brings its real row. Once stopped, nothing more is asked and no
 // answer still on its way reaches the screen.
@@ -758,14 +759,15 @@ describe("Join", () => {
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "refused", text: "You can't join this channel." });
     });
 
-    test("offline asks no door and leaves Join to press again", async () => {
+    test("offline asks no door, says so politely and leaves Join to press again", async () => {
         const s = await previewing();
         s.offline.value = true;
 
         await s.rooms.join(volunteers);
 
         expect(s.joinCalls).toEqual([]);
-        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "offline" });
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." });
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Couldn't join. You're offline, so try again in a moment.", isAssertive: false }));
 
         s.offline.value = false;
         void s.rooms.join(volunteers);
@@ -778,7 +780,7 @@ describe("Join", () => {
         s.joinCalls[0].answer.reject(new Error("network"));
         await settle();
 
-        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "offline" });
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." });
     });
 
     test("a fresh visit to the directory forgets a join that finished and keeps a refusal", async () => {

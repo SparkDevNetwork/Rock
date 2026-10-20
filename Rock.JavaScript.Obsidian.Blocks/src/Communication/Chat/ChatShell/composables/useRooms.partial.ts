@@ -41,6 +41,9 @@ export const directoryPageSize = 50;
 /** The sentence a refusal shows when the door gave none of its own, as the door words its refusal. */
 const refusedSentence = "You can't join this channel.";
 
+/** What a Join that could not reach the door says, as the chat says any change made while offline. */
+const offlineSentence = "Couldn't join. You're offline, so try again in a moment.";
+
 /** Which campus chip is pressed: every campus, one campus, or the rooms with no campus. */
 export type DirectoryCampus =
     | { kind: "all" }
@@ -109,7 +112,7 @@ export type DirectoryState = {
 /**
  * Where Join is for one room: not asked, the door on its way, joined (fresh until the next visit,
  * so the check pops in once), pending while the platform takes the membership, refused with the
- * door's own sentence, or offline with Join to press again.
+ * door's own sentence, or failed without the door's answer, saying why, with Join to press again.
  */
 export type JoinState =
     | { kind: "idle" }
@@ -117,7 +120,7 @@ export type JoinState =
     | { kind: "joined", isFresh: boolean }
     | { kind: "pending" }
     | { kind: "refused", text: string }
-    | { kind: "offline" };
+    | { kind: "failed", text: string };
 
 /** A sentence for screen readers; the count moves on with each, so the same words twice are read twice. */
 export type RoomAnnouncement = {
@@ -468,6 +471,12 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         return state.facts[channelId]?.is_member === true || (!!row && row.is_member);
     }
 
+    /** Join did not reach the door's answer: it says so where it was pressed and aloud, and may be pressed again. */
+    function failJoin(channelId: string): void {
+        state.joins[channelId] = { kind: "failed", text: offlineSentence };
+        announce(offlineSentence);
+    }
+
     /** The room is joined and the platform holds it: every copy of it here says so. */
     function finishJoin(channelId: string): void {
         state.joins[channelId] = { kind: "joined", isFresh: true };
@@ -599,8 +608,12 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
 
-            if (dependencies.isOffline() || !dependencies.joinChannel) {
-                state.joins[channelId] = dependencies.joinChannel ? { kind: "offline" } : { kind: "refused", text: refusedSentence };
+            if (!dependencies.joinChannel) {
+                state.joins[channelId] = { kind: "refused", text: refusedSentence };
+                return;
+            }
+            if (dependencies.isOffline()) {
+                failJoin(channelId);
                 return;
             }
 
@@ -611,7 +624,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
             catch {
                 if (!isStopped) {
-                    state.joins[channelId] = { kind: "offline" };
+                    failJoin(channelId);
                 }
                 return;
             }
@@ -623,7 +636,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // Rock answered without its door's result: no sentence of its own, so the person may
             // press Join again once the connection is back.
             if (answer.code === "door.unavailable" && dependencies.isOffline()) {
-                state.joins[channelId] = { kind: "offline" };
+                failJoin(channelId);
                 return;
             }
 

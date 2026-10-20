@@ -60,11 +60,19 @@ describe("previewing", () => {
         expect(w.emitted("join")).toHaveLength(1);
     });
 
-    test("offers Join channel again when the door could not be reached", () => {
-        const w = mountBar({ kind: "offline" });
+    test("says why when the door could not be reached, and offers Join channel again", () => {
+        const w = mountBar({ kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." });
 
-        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("preview");
-        expect(w.get("[data-testid='join-channel']").attributes("disabled")).toBeUndefined();
+        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("failed");
+        expect(w.get("[data-testid='join-bar-title']").text()).toBe("You're previewing Volunteers");
+        const text = w.get("[data-testid='join-bar-text']");
+        expect(text.text()).toBe("Couldn't join. You're offline, so try again in a moment.");
+        expect(text.classes()).toContain("is-failed");
+        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "alert" && text.element.contains(icon.element))).toBe(true);
+        const join = w.get("[data-testid='join-channel']");
+        expect(join.text()).toBe("Join channel");
+        expect(join.attributes("disabled")).toBeUndefined();
+        expect(join.attributes("aria-disabled")).toBeUndefined();
     });
 });
 
