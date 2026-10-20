@@ -21,16 +21,19 @@
             <div v-else :class="row.cssClass" :data-testid="row.testId">
                 <template v-for="(piece, pieceIndex) in row.pieces" :key="pieceIndex">
                     <a v-if="piece.kind === 'link'" class="chat-lnk" :href="piece.url" target="_blank" rel="noopener noreferrer nofollow">{{ piece.text }}</a>
-                    <span v-else-if="piece.kind === 'mention'" :class="{ 'chat-mn-wrap': !!piece.trail }"><span
+                    <span v-else-if="piece.kind === 'mention'" :class="{ 'chat-mn-wrap': !!piece.trail }"><component
+                          :is="isOpenable(piece) ? 'button' : 'span'"
+                          :type="isOpenable(piece) ? 'button' : undefined"
                           class="chat-mn"
                           :class="[`is-${piece.mention}`, { 'is-punctuated': !!piece.trail }]"
                           data-testid="piece-mention"
                           :data-mention="piece.mention"
-                          :aria-label="piece.label"><span v-if="piece.mention === 'all'" class="chat-mn-glyph" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
+                          :aria-label="piece.label"
+                          @click="isOpenable(piece) && onPerson(piece, $event)"><span v-if="piece.mention === 'all'" class="chat-mn-glyph" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
                           class="chat-av chat-mn-av"
                           :data-initial="piece.initial"
                           :style="{ '--chat-av-hue': piece.hue }"
-                          aria-hidden="true"></span><span v-if="piece.mention !== 'all'" class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></span>{{ piece.trail }}</span>
+                          aria-hidden="true"></span><span v-if="piece.mention !== 'all'" class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
                     <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
                     <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
                     <template v-else>{{ piece.text }}</template>
@@ -52,6 +55,16 @@
 }
 
 /* The mention chip's look is in the sheet, shared with the editor. */
+
+/* A chip that opens a person keeps the chip's look; only the button's own face is taken away. */
+button.chat-mn {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    border: 0;
+}
 
 .chat-lnk {
     color: var(--chat-brand-ink);
@@ -146,6 +159,9 @@
         name?: string;
         initial?: string;
         hue?: string;
+
+        /** A person's chip: the alias it names, as the server sent it. */
+        guid?: string;
     };
 
     /** A block's button, and whether the client may call the action it names. */
@@ -199,8 +215,22 @@
         runAction: {
             type: Function as PropType<(button: MessageAction) => Promise<void>>,
             default: null
+        },
+
+        /**
+         * Draws a person's chip as a button that asks for their card. Off where the body sits in a
+         * row that is itself a button, as in the mentions and threads lists, since a button inside
+         * a button is no control at all.
+         */
+        isPersonOpenable: {
+            type: Boolean,
+            default: false
         }
     });
+
+    const emit = defineEmits<{
+        (e: "person", personAliasGuid: string, anchor: HTMLElement): void;
+    }>();
 
     // #region Values
 
@@ -245,9 +275,19 @@
         }
     }
 
+    /** Asks for the person a chip names, with the chip, so the card opens beside it. */
+    function onPerson(piece: DrawnPiece, event: MouseEvent): void {
+        emit("person", piece.guid ?? "", event.currentTarget as HTMLElement);
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Whether a chip opens a card: a person's, the reader's own included; @all names no one. */
+    function isOpenable(piece: DrawnPiece): boolean {
+        return props.isPersonOpenable && piece.mention !== "all" && !!piece.guid;
+    }
 
     /** Whether an address may be opened as a link: only the web, never script or another scheme. */
     function isWebAddress(value: unknown): value is string {
@@ -318,7 +358,8 @@
             name,
             label: isReader ? `@${name}, you` : undefined,
             initial: Array.from(name.trim())[0]?.toUpperCase() ?? "",
-            hue: String(avatarHue(name))
+            hue: String(avatarHue(name)),
+            guid: textOf(piece.person_alias_guid)
         };
     }
 
