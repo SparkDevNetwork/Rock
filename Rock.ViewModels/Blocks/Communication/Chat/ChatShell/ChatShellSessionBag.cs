@@ -75,5 +75,11 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// one. Null otherwise, so the chat draws their initials rather than Rock's placeholder.
         /// </summary>
         public string PersonPhotoUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the guid of the person's own campus, when the gates passed and they have
+        /// one, so the chat can offer it first among the campuses.
+        /// </summary>
+        public Guid? PersonCampusGuid { get; set; }
     }
 }

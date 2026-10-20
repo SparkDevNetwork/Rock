@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 using Rock.ViewModels.Blocks;
 
@@ -59,5 +60,11 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// message posted by the church.
         /// </summary>
         public string OrganizationName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the church's active campuses, which the chat names every campus a room
+        /// or a person carries from. A campus renamed shows at the next page load.
+        /// </summary>
+        public List<ChatCampusBag> Campuses { get; set; }
     }
 }

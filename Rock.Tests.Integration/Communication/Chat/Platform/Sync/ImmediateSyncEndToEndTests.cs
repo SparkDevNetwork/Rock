@@ -143,6 +143,38 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void AChannelDescriptionEditedInsideARequestReachesThePlatformWithItsGroupTypesName()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Described channel" );
+
+                // A description edit changes nothing about who is in the room, so the save pushes
+                // the channel row alone.
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var group = new GroupService( rockContext ).Queryable().First( g => g.Guid == channel );
+                    group.Description = "Where the youth team plans each week.";
+                    rockContext.SaveChanges();
+                }
+
+                var row = platform.WaitForChannel( configuration.TenantId.Value, channel,
+                    r => r != null && ( string ) r["description"] == "Where the youth team plans each week." );
+                Assert.IsNotNull( row, "the description edited in Rock never reached the platform" );
+                Assert.AreEqual( "Chat Shared Channel Fixture", ( string ) row["group_type_name"],
+                    "the platform did not store the name of the channel's group type" );
+            }
+        }
+
+        [TestMethod]
         public void ABanListAddSetsTheGloballyBannedFlagOnThePlatform()
         {
             var platform = LocalChatPlatform.FromEnvironment();

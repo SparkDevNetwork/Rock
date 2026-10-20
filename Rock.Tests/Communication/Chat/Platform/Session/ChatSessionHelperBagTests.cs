@@ -25,7 +25,9 @@ using Newtonsoft.Json;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
+using Rock.Web.Cache;
 
 using static Rock.Tests.Communication.Chat.Platform.Session.ChatSessionFixture;
 
@@ -110,6 +112,51 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             var bag = ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
 
             Assert.IsNull( bag.PersonPhotoUrl, "Rock's placeholder avatar would hide the initials the chat draws" );
+        }
+
+        [TestMethod]
+        public void OpenSession_Ok_CarriesThePersonsOwnCampus()
+        {
+            // The chat names the person's campus first among the directory's campus filters.
+            using var app = TestHelper.CreateScopedRockApp();
+            _rockContext.Set<Campus>().Add( TestCampus( 9201, "c9201000-0000-4000-8000-000000000001", "North Campus", "NTH", true ) );
+
+            var person = Adult();
+            person.PrimaryCampusId = 9201;
+
+            var bag = ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
+
+            Assert.AreEqual( Guid.Parse( "c9201000-0000-4000-8000-000000000001" ), bag.PersonCampusGuid );
+        }
+
+        [TestMethod]
+        public void OpenSession_Ok_PersonWithNoCampus_CarriesNone()
+        {
+            var person = Adult();
+            person.PrimaryCampusId = null;
+
+            var bag = ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
+
+            Assert.IsNull( bag.PersonCampusGuid );
+        }
+
+        [TestMethod]
+        public void ListActiveCampuses_ListsEachActiveCampusByItsGuidNameAndShortCode_AndNoInactiveOne()
+        {
+            // The chat resolves every campus a room or a person names from this list, so a
+            // closed campus is left out rather than offered as a filter.
+            using var app = TestHelper.CreateScopedRockApp();
+            _rockContext.Set<Campus>().Add( TestCampus( 9301, "c9301000-0000-4000-8000-000000000001", "Main Campus", "MAIN", true ) );
+            _rockContext.Set<Campus>().Add( TestCampus( 9302, "c9302000-0000-4000-8000-000000000001", "Closed Campus", "OLD", false ) );
+            _rockContext.Set<Campus>().Add( TestCampus( 9303, "c9303000-0000-4000-8000-000000000001", "East Campus", null, true ) );
+
+            var campuses = new[] { 9301, 9302, 9303 }.Select( id => CampusCache.Get( id, _rockContext ) ).ToList();
+
+            var listed = ChatSessionHelper.ListActiveCampuses( campuses );
+
+            CollectionAssert.AreEqual(
+                new[] { "c9301000-0000-4000-8000-000000000001|Main Campus|MAIN", "c9303000-0000-4000-8000-000000000001|East Campus|" },
+                listed.Select( c => $"{c.Guid}|{c.Name}|{c.ShortCode}" ).ToArray() );
         }
 
         [TestMethod]
@@ -320,5 +367,21 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         #endregion
+
+        #region Support
+
+        private static Campus TestCampus( int id, string guid, string name, string shortCode, bool isActive )
+        {
+            return new Campus
+            {
+                Id = id,
+                Guid = Guid.Parse( guid ),
+                Name = name,
+                ShortCode = shortCode,
+                IsActive = isActive
+            };
+        }
+
+        #endregion Support
     }
 }

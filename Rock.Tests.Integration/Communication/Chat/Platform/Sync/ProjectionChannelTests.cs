@@ -157,7 +157,110 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         #endregion Icon
 
+        #region Description and group type
+
+        [TestMethod]
+        public void AChannelDescription_IsSentWithoutTheSpacesAndLineBreaksAtItsEdges()
+        {
+            var description = ProjectedDescription( "\r\n  Where the youth team plans each week.\n\t " );
+
+            Assert.AreEqual( "Where the youth team plans each week.", description,
+                "a description typed into a text box keeps its edges, and the far side shows them" );
+        }
+
+        [TestMethod]
+        public void AChannelDescriptionPast500Characters_IsCutTo500()
+        {
+            var description = ProjectedDescription( new string( 'a', 600 ) );
+
+            Assert.AreEqual( new string( 'a', 500 ), description,
+                "a description longer than the far side takes fails the church's whole submission" );
+        }
+
+        [TestMethod]
+        public void AChannelDescription_IsCutShortOfACharacterThatTakesTwoUnitsRatherThanThroughIt()
+        {
+            // The 500th unit is the first half of the emoji, so a cut at 500 would leave half a
+            // character the far side cannot read.
+            var description = ProjectedDescription( new string( 'a', 499 ) + "\U0001F600" + "bbb" );
+
+            Assert.AreEqual( new string( 'a', 499 ), description );
+        }
+
+        [TestMethod]
+        public void AChannelDescriptionOfOnlyWhitespace_IsSentAsNone()
+        {
+            Assert.IsNull( ProjectedDescription( "  \r\n\t " ), "the far side refuses a blank description" );
+        }
+
+        [TestMethod]
+        public void AChannelWithNoDescription_IsSentWithNone()
+        {
+            Assert.IsNull( ProjectedDescription( null ) );
+        }
+
+        [TestMethod]
+        public void AChannel_CarriesItsGroupTypesName()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Typed channel" );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.IsNotNull( row, "the channel was not projected at all" );
+                Assert.AreEqual( "Chat Shared Channel Fixture", ( string ) payload.Value( "channels", row, "group_type_name" ) );
+            }
+        }
+
+        [TestMethod]
+        public void ADirectMessage_CarriesNoDescriptionAndNoGroupTypeName()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.DirectMessageGroupTypeId, "Described direct message", group =>
+                {
+                    group.Description = "A description set on a direct message";
+                } );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.IsNotNull( row, "the direct message was not projected at all" );
+                Assert.AreEqual( Newtonsoft.Json.Linq.JTokenType.Null, payload.Value( "channels", row, "description" ).Type,
+                    "a direct message is titled by its people and drawn with no description" );
+                Assert.AreEqual( Newtonsoft.Json.Linq.JTokenType.Null, payload.Value( "channels", row, "group_type_name" ).Type,
+                    "a direct message's type is Rock's own, not a name anyone chose to show" );
+            }
+        }
+
+        #endregion Description and group type
+
         #region Support
+
+        /// <summary>
+        /// The description a shared channel with the given one is projected with.
+        /// </summary>
+        /// <param name="groupDescription">The group's description as Rock stores it.</param>
+        /// <returns>The description on the wire, or null when it carries none.</returns>
+        private static string ProjectedDescription( string groupDescription )
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Described channel", group =>
+                {
+                    group.Description = groupDescription;
+                } );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.IsNotNull( row, "the channel was not projected at all" );
+
+                return ( string ) payload.Value( "channels", row, "description" );
+            }
+        }
 
         private static void AssertChannelIsProjectedWithoutReach( Action<Group> makeUnreachable )
         {

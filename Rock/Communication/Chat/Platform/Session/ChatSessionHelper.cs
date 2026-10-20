@@ -320,6 +320,16 @@ namespace Rock.Communication.Chat.Platform.Session
         }
 
         /// <summary>
+        /// The church's active campuses, as the chat names them.
+        /// </summary>
+        /// <param name="campuses">Every campus, as Rock caches them.</param>
+        /// <returns>The active ones, in the order given.</returns>
+        internal static List<ChatCampusBag> ListActiveCampuses( IEnumerable<CampusCache> campuses )
+        {
+            return new List<ChatCampusBag>();
+        }
+
+        /// <summary>
         /// Reads a message id from a link: a positive whole number in plain digits, else null.
         /// </summary>
         /// <param name="value">The page parameter as the link spelled it.</param>
