@@ -2946,6 +2946,11 @@ namespace Rock.Rest.v2
                     return Unauthorized();
                 }
 
+                // Make the current person available to Lava so badges that
+                // check security (such as the Attribute filter) evaluate it
+                // against the person viewing the badge.
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+
                 return Ok( badge.RenderBadge( entity ) );
             }
         }
@@ -3030,6 +3035,11 @@ namespace Rock.Rest.v2
                 badges = badges.Where( b => b.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
                         || grant?.IsAccessGranted( b, Security.Authorization.VIEW ) == true )
                     .ToList();
+
+                // Make the current person available to Lava so badges that
+                // check security (such as the Attribute filter) evaluate it
+                // against the person viewing the badge.
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
 
                 // Render all the badges and then filter out any that are empty.
                 var badgeResults = badges.Select( b => b.RenderBadge( entity ) )
