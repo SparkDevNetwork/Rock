@@ -196,8 +196,13 @@ const namedOptions: Record<string, HtmlSanitizeOptions> = {
     "SimpleUnwrapBlink": new HtmlSanitizeOptions(HtmlSanitizeOptions.simple)
         .setRemovalMode("blink", HtmlTagRemovalMode.Unwrap)
         .makeReadOnly(),
-    "NotesMention": new HtmlSanitizeOptions(HtmlSanitizeOptions.simple)
+    "NoteText": new HtmlSanitizeOptions()
+        .allowTag("br")
+        .allowTag("div")
+        .allowTag("span")
+        .allowAttribute("span", "class")
         .allowAttribute("span", "data-identifier")
+        .setDefaultRemovalMode(HtmlTagRemovalMode.Unwrap)
         .makeReadOnly(),
     "SimpleFont": new HtmlSanitizeOptions(HtmlSanitizeOptions.simple)
         .allowTag("font")
