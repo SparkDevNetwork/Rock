@@ -108,6 +108,7 @@ namespace Rock.Blocks.Communication.Chat
                 PageParameter( PageParameterKey.Message ) );
 
             box.AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean();
+            box.Campuses = ChatSessionHelper.ListActiveCampuses( CampusCache.All( RockContext ) );
 
             return box;
         }

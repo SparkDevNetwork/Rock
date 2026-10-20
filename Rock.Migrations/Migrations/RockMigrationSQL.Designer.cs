@@ -2271,6 +2271,15 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202610091200000_FoldChatColumnsOnPersonMerge_spCrm_PersonMerge", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to the [spChat_SyncProjection] stored procedure carrying each channel's description and its group type's name..
+        /// </summary>
+        public static string _202610201200000_AddChatChannelDescriptionAndGroupType_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202610201200000_AddChatChannelDescriptionAndGroupType_spChat_SyncProjection", resourceCulture);
+            }
+        }
 
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].

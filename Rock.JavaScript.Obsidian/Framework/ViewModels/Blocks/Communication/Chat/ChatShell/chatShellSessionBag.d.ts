@@ -73,4 +73,10 @@ export type ChatShellSessionBag = {
      * one. Null otherwise, so the chat draws their initials rather than Rock's placeholder.
      */
     personPhotoUrl?: string | null;
+
+    /**
+     * Gets or sets the guid of the person's own campus, when the gates passed and they have
+     * one, so the chat can offer it first among the campuses.
+     */
+    personCampusGuid?: Guid | null;
 };

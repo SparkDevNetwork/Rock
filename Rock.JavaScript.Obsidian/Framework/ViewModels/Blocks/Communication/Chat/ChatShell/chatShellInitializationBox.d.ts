@@ -22,6 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ChatCampusBag } from "./chatCampusBag";
 import { ChatShellSessionBag } from "./chatShellSessionBag";
 
 /** What the chat shell is given when it opens. */
@@ -67,4 +68,10 @@ export type ChatShellInitializationBox = {
      * message posted by the church.
      */
     organizationName?: string | null;
+
+    /**
+     * Gets or sets the church's active campuses, which the chat names every campus a room
+     * or a person carries from. A campus renamed shows at the next page load.
+     */
+    campuses?: ChatCampusBag[] | null;
 };

@@ -276,7 +276,8 @@ namespace Rock.Communication.Chat.Platform.Session
                 PersonLastName = person.LastName,
                 // Rock's photo address draws a placeholder for a person with none, which would
                 // hide the initials the chat draws in the person's own color.
-                PersonPhotoUrl = person.PhotoId.HasValue ? person.PhotoUrl : null
+                PersonPhotoUrl = person.PhotoId.HasValue ? person.PhotoUrl : null,
+                PersonCampusGuid = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value, rockContext )?.Guid : null
             };
         }
 
@@ -326,7 +327,16 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <returns>The active ones, in the order given.</returns>
         internal static List<ChatCampusBag> ListActiveCampuses( IEnumerable<CampusCache> campuses )
         {
-            return new List<ChatCampusBag>();
+            // A closed campus is left out, so it is never offered as a place to browse.
+            return campuses
+                .Where( c => c.IsActive == true )
+                .Select( c => new ChatCampusBag
+                {
+                    Guid = c.Guid,
+                    Name = c.Name,
+                    ShortCode = c.ShortCode.IsNullOrWhiteSpace() ? null : c.ShortCode
+                } )
+                .ToList();
         }
 
         /// <summary>
