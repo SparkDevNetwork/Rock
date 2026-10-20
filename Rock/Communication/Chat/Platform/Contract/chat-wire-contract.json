@@ -410,6 +410,7 @@
       "rpc.message_hidden",
       "rpc.message_not_found",
       "rpc.not_editable",
+      "rpc.person_not_found",
       "rpc.rate_limited",
       "rpc.read_only",
       "rpc.system_author_missing",
