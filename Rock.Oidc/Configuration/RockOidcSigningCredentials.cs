@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
+using Rock.Model;
 using Rock.SystemKey;
 using Rock.Web;
 
@@ -52,20 +53,36 @@ namespace Rock.Oidc.Configuration
 
         private List<SerializedRockRsaKey> GetSerializedParametersList()
         {
-            var jsonParameters = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
+            var storedValue = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
             List<SerializedRockRsaKey> keys = null;
 
-            if ( jsonParameters.IsNotNullOrWhiteSpace() )
+            if ( storedValue.IsNotNullOrWhiteSpace() )
             {
-                keys = JsonConvert.DeserializeObject<List<SerializedRockRsaKey>>(
-                            jsonParameters
-                            , new JsonSerializerSettings { ContractResolver = new RockOidcSigningCredentialCollectionContractResolver() }
-                        ).OrderByDescending( k => k.KeyCreatedDate ).ToList();
+                // A value that can't be decrypted (plain text, or a different DataEncryptionKey) is discarded
+                // so a new key gets generated and saved encrypted.
+                var keysJson = Rock.Security.Encryption.DecryptString( storedValue );
+
+                if ( keysJson == null )
+                {
+                    ExceptionLogService.LogException( new Exception( "The OIDC signing keys could not be decrypted. New signing keys will be generated." ) );
+                }
+                else
+                {
+                    try
+                    {
+                        keys = JsonConvert.DeserializeObject<List<SerializedRockRsaKey>>(
+                                    keysJson
+                                    , new JsonSerializerSettings { ContractResolver = new RockOidcSigningCredentialCollectionContractResolver() }
+                                ).OrderByDescending( k => k.KeyCreatedDate ).ToList();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( "The OIDC signing keys could not be read. New signing keys will be generated.", ex ) );
+                    }
+                }
             }
-            else
-            {
-                keys = new List<SerializedRockRsaKey>( 1 );
-            }
+
+            keys = keys ?? new List<SerializedRockRsaKey>( 1 );
 
             // Remove old expired keys.
             keys.RemoveAll( k => k.KeyCreatedDate.AddSeconds( _rockOidcSettings.SigningKeyLifetime + GetMaxTokenAge() ) < DateTime.UtcNow );
@@ -79,7 +96,7 @@ namespace Rock.Oidc.Configuration
                             serializedRsaKeys
                             , new JsonSerializerSettings { ContractResolver = new RockOidcSigningCredentialCollectionContractResolver() } );
 
-            SystemSettings.SetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS, rsaKeys );
+            SystemSettings.SetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS, Rock.Security.Encryption.EncryptString( rsaKeys ) );
         }
 
         private int GetMaxTokenAge()
