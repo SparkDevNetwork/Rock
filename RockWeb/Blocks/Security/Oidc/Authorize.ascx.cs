@@ -168,6 +168,19 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            // On a development site the OIDC server lets this page display its errors, so a request it already
+            // rejected (e.g. a redirect URI that isn't allowed) still reaches this block and must stop here.
+            var rejectedResponse = Context.GetOwinContext().GetOpenIdConnectResponse();
+            if ( rejectedResponse != null && rejectedResponse.Error.IsNotNullOrWhiteSpace() )
+            {
+                divContent.Visible = false;
+                ShowError( rejectedResponse.ErrorDescription.IsNotNullOrWhiteSpace()
+                    ? rejectedResponse.ErrorDescription.EncodeHtml()
+                    : "The application requesting access could not be verified." );
+                base.OnLoad( e );
+                return;
+            }
+
             // Get the auth client for the request
             var authClient = GetAuthClient();
             if ( authClient == null )
