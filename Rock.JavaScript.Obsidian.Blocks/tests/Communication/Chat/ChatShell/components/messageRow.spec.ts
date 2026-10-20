@@ -1030,3 +1030,52 @@ describe("the profile card's openers", () => {
         expect(requests[0].anchor).toBe(lee.element);
     });
 });
+
+describe("the Leader pill", () => {
+    test("a channel's row marks a sender who leads the room, beside the name, in the one pill recipe", () => {
+        const w = draw({ message: message({ sender_is_leader: true }), isChannel: true, position: "first" });
+
+        const pill = w.get("[data-testid='message-head'] [data-testid='leader-pill']");
+        expect(pill.text()).toBe("Leader");
+        expect(pill.classes()).toContain("chat-pill");
+        expect(pill.element.previousElementSibling?.getAttribute("data-testid")).toBe("sender-name");
+    });
+
+    test("the pill sits before an announcement's own pill", () => {
+        const w = draw({ message: message({ sender_is_leader: true, message_type: "announcement" }), isChannel: true });
+
+        const pills = w.findAll("[data-testid='message-head'] .chat-pill").map(p => p.text());
+        expect(pills).toEqual(["Leader", "Announcement"]);
+    });
+
+    test("a block card from a leader in a channel carries the pill too", () => {
+        const blocks = [{ type: "text", text: "Sign up", fallback: { type: "text", text: "Sign up" } }] as unknown as TimelineMessage["blocks"];
+        const w = draw({ message: message({ sender_is_leader: true, blocks }), isChannel: true });
+
+        expect(w.get("[data-testid='message-head'] [data-testid='leader-pill']").text()).toBe("Leader");
+    });
+
+    test("a sender who does not lead the room, or a message that does not say, draws none", () => {
+        expect(draw({ message: message({ sender_is_leader: false }), isChannel: true }).find("[data-testid='leader-pill']").exists()).toBe(false);
+        expect(draw({ message: message(), isChannel: true }).find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
+    test("a direct message never draws it, in its bubbles or its card", () => {
+        const blocks = [{ type: "text", text: "Sign up", fallback: { type: "text", text: "Sign up" } }] as unknown as TimelineMessage["blocks"];
+
+        expect(draw({ message: message({ sender_is_leader: true }), isChannel: false }).find("[data-testid='leader-pill']").exists()).toBe(false);
+        expect(draw({ message: message({ sender_is_leader: true, blocks }), isChannel: false }).find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
+    test("a system line never draws it", () => {
+        const w = draw({ message: message({ sender_is_leader: true, message_type: "system", body: "Tom Hale joined." }), isChannel: true });
+
+        expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
+    test("a continuation row has no head and so no pill", () => {
+        const w = draw({ message: message({ sender_is_leader: true }), isChannel: true, position: "middle" });
+
+        expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+});

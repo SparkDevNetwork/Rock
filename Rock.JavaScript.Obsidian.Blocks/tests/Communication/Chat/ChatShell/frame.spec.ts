@@ -218,6 +218,7 @@ function fakeShell(): Record<string, unknown> {
         threads,
         mentions,
         rooms,
+        members: fakeMembers(),
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -296,6 +297,32 @@ function fakeRooms(): Record<string, unknown> {
         openCard: jest.fn(),
         closeCard: jest.fn(() => {
             state.card = null;
+        }),
+        stop: jest.fn()
+    };
+}
+
+/**
+ * The roster the shell holds, as useMembers' createMembers answers it, reduced to state the panel
+ * reads and the calls the block makes.
+ */
+function fakeMembers(): Record<string, unknown> {
+    const state = reactive({
+        channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isLoadingMore: false,
+        error: null, moreError: null, refusal: null, query: "",
+        search: { query: null, rows: [], hasMore: false, isSearching: false, error: null }
+    });
+    return {
+        state,
+        open: jest.fn(async (channelId: string) => {
+            state.channelId = channelId;
+        }),
+        loadMore: jest.fn(async () => undefined),
+        retry: jest.fn(async () => undefined),
+        setQuery: jest.fn(),
+        retrySearch: jest.fn(async () => undefined),
+        close: jest.fn(() => {
+            state.channelId = null;
         }),
         stop: jest.fn()
     };
@@ -3045,5 +3072,35 @@ describe("the conversation's details", () => {
 
         expect(detailsDialog()).toBeNull();
         expect(document.activeElement).toBe(w.get("[data-testid='header-details']").element);
+    });
+});
+
+// Until the header's facepile and Members button arrive, the members panel opens from a keyboard
+// shortcut on the block, Alt+Shift+M, for the open conversation; a second press closes it.
+describe("the members panel", () => {
+    test("opens for the open conversation and closes again on a second press", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const members = (mockShell as { members: { open: jest.Mock, close: jest.Mock } }).members;
+
+        await w.get("[data-testid='chat-shell']").trigger("keydown", { key: "M", altKey: true, shiftKey: true });
+        await settle();
+        expect(members.open).toHaveBeenCalledWith(team.channel_id);
+        expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+
+        await w.get("[data-testid='chat-shell']").trigger("keydown", { key: "M", altKey: true, shiftKey: true });
+        await settle();
+        expect(members.close).toHaveBeenCalled();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
+    test("does nothing with no conversation open", async () => {
+        const w = await mountBlock(1200);
+        const members = (mockShell as { members: { open: jest.Mock } }).members;
+
+        await w.get("[data-testid='chat-shell']").trigger("keydown", { key: "M", altKey: true, shiftKey: true });
+        await settle();
+        expect(members.open).not.toHaveBeenCalled();
     });
 });

@@ -1484,6 +1484,36 @@ describe("the person's own live copy while the channel's first page loads", () =
     });
 });
 
+// The bootstrap carries the church's chat badges, which a profile card names a person's keys by.
+describe("badges", () => {
+    const serving = { badge_key: "b0000001-0000-4000-8000-000000000000", name: "Serving", icon_css: "fa fa-hands-helping", bg_color: "#E8F5E9", fg_color: "#1B5E20", sort_order: 1 };
+    const baptized = { badge_key: "b0000002-0000-4000-8000-000000000000", name: "Baptized", icon_css: null, bg_color: null, fg_color: null, sort_order: 2 };
+
+    test("the bootstrap's badges are held in the store, in the order it lists them", async () => {
+        const h = build();
+        h.bootstrap.value = { channels: [], reactions: [], badges: [serving, baptized] };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.channels.badges).toEqual([serving, baptized]);
+    });
+
+    test("a church with no badges holds none", async () => {
+        const h = build();
+        h.bootstrap.value = { channels: [], reactions: [], badges: [] };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.channels.badges).toEqual([]);
+    });
+});
+
 // The bootstrap carries the church's favorites; a channel topic carries everyone's reactions.
 describe("reactions", () => {
     const thumbsUp = { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null };

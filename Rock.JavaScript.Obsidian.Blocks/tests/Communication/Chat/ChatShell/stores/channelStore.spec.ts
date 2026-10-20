@@ -486,3 +486,14 @@ describe("a replayed channel.mention", () => {
         expect(s.rows[0].mention_count).toBe(2);
     });
 });
+
+describe("badges", () => {
+    test("the store starts with no badges and holds the ones it is given", () => {
+        const s = createChannelStore({ reloadSidebar: () => undefined });
+        expect(s.badges).toEqual([]);
+
+        const badge = { badge_key: "b0000001-0000-4000-8000-000000000000", name: "Serving", icon_css: "fa fa-hands-helping", bg_color: "#E8F5E9", fg_color: "#1B5E20", sort_order: 1 };
+        s.setBadges([badge]);
+        expect(s.badges).toEqual([badge]);
+    });
+});
