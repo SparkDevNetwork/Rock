@@ -76,7 +76,7 @@ export type ChatShellSessionBag = {
 
     /**
      * Gets or sets the guid of the person's own campus, when the gates passed and they have
-     * one, so the chat can offer it first among the campuses.
+     * an active one, so the chat can offer it first among the campuses.
      */
     personCampusGuid?: Guid | null;
 };

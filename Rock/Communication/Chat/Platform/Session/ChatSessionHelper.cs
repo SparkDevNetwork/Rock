@@ -263,6 +263,7 @@ namespace Rock.Communication.Chat.Platform.Session
             }
 
             var configuration = context.Configuration;
+            var campus = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value, rockContext ) : null;
 
             return new ChatShellSessionBag
             {
@@ -277,7 +278,9 @@ namespace Rock.Communication.Chat.Platform.Session
                 // Rock's photo address draws a placeholder for a person with none, which would
                 // hide the initials the chat draws in the person's own color.
                 PersonPhotoUrl = person.PhotoId.HasValue ? person.PhotoUrl : null,
-                PersonCampusGuid = person.PrimaryCampusId.HasValue ? CampusCache.Get( person.PrimaryCampusId.Value, rockContext )?.Guid : null
+                // Only an active campus, by the rule the campus list is built on, so the chat is
+                // never handed a campus it cannot name.
+                PersonCampusGuid = campus?.IsActive == true ? campus.Guid : ( Guid? ) null
             };
         }
 
