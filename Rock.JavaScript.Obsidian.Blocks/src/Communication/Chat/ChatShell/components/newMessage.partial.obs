@@ -1238,8 +1238,11 @@
         isListClosed.value = true;
         activeIndex.value = 0;
         newChipId.value = person.person_alias_guid;
+        // Counted before the choice goes out, since the owner may add the person to the same list
+        // before this reads it again.
+        const count = props.chosen.length + 1;
         emit("choose", person);
-        announce(`Added ${nameOf(person)}. ${props.chosen.length + 1} ${props.chosen.length === 0 ? "person" : "people"} chosen.`);
+        announce(`Added ${nameOf(person)}. ${count} ${count === 1 ? "person" : "people"} chosen.`);
     }
 
     function editorElement(): HTMLElement | null {

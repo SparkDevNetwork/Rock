@@ -28,7 +28,7 @@
 // and reads what it asks for from its events.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, reactive } from "vue";
 import NewMessage from "../../../../../src/Communication/Chat/ChatShell/components/newMessage.partial.obs";
 import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
@@ -570,5 +570,22 @@ describe("the first message", () => {
 
         expect(w.get("[data-testid='nd-refused']").text()).toContain("The conversation could not be started. Try again.");
         expect(w.find("[data-testid='nd-refused-remove']").exists()).toBe(false);
+    });
+});
+
+describe("what a screen reader is told", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    test("the first person chosen is one person chosen, though the list already holds them as the choice is told", async () => {
+        const chosen = reactive<PersonRow[]>([]);
+        const w = mountView({ chosen, onChoose: (picked: PersonRow) => chosen.push(picked) });
+        await typeName(w, "an");
+        await afterPause();
+
+        await press(w, "Enter");
+
+        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Added Anna Reyes. 1 person chosen.");
     });
 });
