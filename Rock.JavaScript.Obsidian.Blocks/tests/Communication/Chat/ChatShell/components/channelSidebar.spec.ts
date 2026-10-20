@@ -173,6 +173,19 @@ describe("the sidebar's top", () => {
         await w.setProps({ isNewMessageShown: false });
         expect(w.find("[data-testid='new-message']").exists()).toBe(false);
     });
+
+    // New message is a full view over the conversation, as Browse channels is, so the row of the
+    // conversation under it is not the current one while it is open.
+    test("takes the current mark from the conversation under it while New message is open, and gives it back", async () => {
+        const w = mountSidebar({ activeChannelId: team.channel_id, isNewMessageOpen: true });
+
+        expect(rowOf(w, team.channel_id).attributes("aria-current")).toBeUndefined();
+        expect(w.get("[data-testid='new-message']").attributes("aria-pressed")).toBe("true");
+
+        await w.setProps({ isNewMessageOpen: false });
+        expect(rowOf(w, team.channel_id).attributes("aria-current")).toBe("true");
+        expect(w.get("[data-testid='new-message']").attributes("aria-pressed")).toBe("false");
+    });
 });
 
 describe("the sections", () => {

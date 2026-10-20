@@ -375,6 +375,44 @@ describe("the Mentions button", () => {
     });
 });
 
+// The room's mark and title are one button that opens the conversation's details, named for the
+// room and its kind with no "#"; on a phone the overflow menu offers the same details last.
+describe("the details", () => {
+    test.each([
+        ["a channel", { title: "Worship Team", kind: "channel", isPublic: true }, "Worship Team, channel details"],
+        ["a direct message", { title: "Anna Kim", kind: "person", people: ["Anna Kim"] }, "Anna Kim, conversation details"],
+        ["a group", { title: "Hike planning", kind: "group", people: ["Caleb Brooks", "Hannah Diaz"] }, "Hike planning, conversation details"]
+    ])("open from the title, a button naming %s's details", async (_kind, props, label) => {
+        const w = mountHeader(props);
+
+        const details = w.get("[data-testid='header-details']");
+        expect(details.element.tagName).toBe("BUTTON");
+        expect(details.attributes("aria-haspopup")).toBe("dialog");
+        expect(details.attributes("aria-label")).toBe(label);
+        expect(details.get("[data-testid='header-title']").text()).toBe(props.title);
+
+        await details.trigger("click");
+        expect(w.emitted("details")).toHaveLength(1);
+    });
+
+    test.each([
+        ["channel", "Channel details"],
+        ["person", "Conversation details"],
+        ["group", "Conversation details"]
+    ])("are the phone's last overflow item for a %s", async (kind, label) => {
+        const w = mountHeader({ isPhone: true, kind, isThreadsOffered: true, people: ["Anna Kim"] });
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads", label]);
+
+        items[items.length - 1].click();
+        await settle();
+        expect(w.emitted("details")).toHaveLength(1);
+    });
+});
+
 describe("the end of an outage", () => {
     test("is told once the connection is back and the catch-up after it is done, so the shell can say it", async () => {
         const w = mountHeader({ connection: lostConnection });

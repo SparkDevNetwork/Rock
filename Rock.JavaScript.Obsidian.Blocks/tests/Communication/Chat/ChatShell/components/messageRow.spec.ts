@@ -949,3 +949,84 @@ describe("the reactions row", () => {
         expect(w.get("[data-testid='reaction-chip']").classes()).toContain("is-popping");
     });
 });
+
+// A message's author, by name or face, and a person's chip in its body each open that person's
+// profile card: the row asks for it as one more message action, naming the person and the element
+// the card opens beside. The room's @all chip names no one, so it opens nothing.
+describe("the profile card's openers", () => {
+    type PersonRequest = { kind: string, personAliasGuid: string, anchor: HTMLElement };
+
+    function personRequests(wrapper: VueWrapper): PersonRequest[] {
+        return ((wrapper.emitted("messageAction") ?? []) as Array<[PersonRequest]>).map(([request]) => request).filter(request => request.kind === "person");
+    }
+
+    test("in Community, the head's name and face are buttons asking for the author's card", async () => {
+        const wrapper = draw({ message: message(), isChannel: true, position: "first" });
+
+        const name = wrapper.get("[data-testid='sender-name']");
+        expect(name.element.tagName).toBe("BUTTON");
+        expect(name.text()).toBe("Anna Reyes");
+        await name.trigger("click");
+
+        const face = wrapper.get("[data-testid='sender-avatar']");
+        expect(face.element.tagName).toBe("BUTTON");
+        expect(face.attributes("aria-label")).toBe("Anna Reyes");
+        expect(face.findComponent(Avatar).exists()).toBe(true);
+        await face.trigger("click");
+
+        const requests = personRequests(wrapper);
+        expect(requests.map(r => r.personAliasGuid)).toEqual([anna, anna]);
+        expect(requests[0].anchor).toBe(name.element);
+        expect(requests[1].anchor).toBe(face.element);
+
+        // a row still sending is not stored yet, so it names no one to open
+        const sending = mount(MessageRow, {
+            props: { personAliasGuid: me, pending: pendingRow(), isOwn: true, isChannel: true, position: "single", personName: "Jordan Lee" }
+        });
+        expect(sending.get("[data-testid='sender-name']").element.tagName).not.toBe("BUTTON");
+        expect(sending.find("[data-testid='sender-avatar']").exists()).toBe(false);
+    });
+
+    test("in Conversational, the name over a group and the face at its end are the openers", async () => {
+        const first = draw({ message: message(), position: "first" });
+        const name = first.get("[data-testid='sender-name']");
+        expect(name.element.tagName).toBe("BUTTON");
+        await name.trigger("click");
+        expect(personRequests(first).map(r => r.personAliasGuid)).toEqual([anna]);
+
+        const last = draw({ message: message(), position: "last", isDirectMessage: true });
+        const face = last.get("[data-testid='sender-avatar']");
+        expect(face.attributes("aria-label")).toBe("Anna Reyes");
+        await face.trigger("click");
+        expect(personRequests(last).map(r => r.personAliasGuid)).toEqual([anna]);
+    });
+
+    test("a tap on the author on a phone asks for the card and never opens the action sheet", async () => {
+        const wrapper = mount(MessageRow, { props: { personAliasGuid: me, message: message(), isChannel: true, position: "first", isPhone: true }, attachTo: document.body });
+
+        await wrapper.get("[data-testid='sender-name']").trigger("click");
+
+        expect(personRequests(wrapper)).toHaveLength(1);
+        expect(document.querySelector("[data-testid='action-sheet']")).toBeNull();
+        wrapper.unmount();
+        document.body.innerHTML = "";
+    });
+
+    test("a person's chip in the body is a button asking for that person's card; the @all chip is not", async () => {
+        const wrapper = draw({
+            message: message({ body: "x", pieces: [mentionLee, { type: "text", text: " and " }, mentionAll] }),
+            isChannel: true,
+            position: "first"
+        });
+
+        const [lee, all] = wrapper.findAll("[data-testid='piece-mention']");
+        expect(lee.element.tagName).toBe("BUTTON");
+        expect(all.element.tagName).not.toBe("BUTTON");
+        await lee.trigger("click");
+        await all.trigger("click");
+
+        const requests = personRequests(wrapper);
+        expect(requests.map(r => r.personAliasGuid)).toEqual([mentionLee.person_alias_guid]);
+        expect(requests[0].anchor).toBe(lee.element);
+    });
+});

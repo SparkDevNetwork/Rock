@@ -174,7 +174,22 @@ function fakeShell(): Record<string, unknown> {
             state: timelineOf
         },
         sender: { pending: () => [], retry: jest.fn(), discard: jest.fn() },
-        directMessages: reactive({ draft: null, held: null, chosen: [], error: null, search: jest.fn(), choose: jest.fn(), unchoose: jest.fn(), edit: jest.fn() }),
+        directMessages: reactive({
+            draft: null,
+            held: null,
+            chosen: [],
+            error: null,
+            refused: null,
+            lookup: { status: "idle", channelId: null, isSlow: false },
+            search: jest.fn(async () => []),
+            choose: jest.fn(),
+            unchoose: jest.fn(),
+            edit: jest.fn(),
+            begin: jest.fn(),
+            close: jest.fn(),
+            sendFirst: jest.fn(async () => true),
+            discardFailed: jest.fn()
+        }),
         isNewMessageShown: true,
         openDirectMessage: jest.fn(),
         // The page load opens the channel a link named, as the shell's start does.
@@ -248,6 +263,9 @@ function fakeRooms(): Record<string, unknown> {
         },
         facts: {} as Record<string, ChannelFacts>,
         joins: {} as Record<string, unknown>,
+        leaves: {} as Record<string, unknown>,
+        renames: {} as Record<string, unknown>,
+        card: null as Record<string, unknown> | null,
         announcement: null
     });
 
@@ -270,6 +288,14 @@ function fakeRooms(): Record<string, unknown> {
         joinOf: (channelId: string) => state.joins[channelId] ?? { kind: "idle" },
         factsOf: (channelId: string) => state.facts[channelId] ?? null,
         previewRoom: jest.fn(),
+        leave: jest.fn(async () => undefined),
+        leaveOf: (channelId: string) => state.leaves[channelId] ?? { kind: "idle" },
+        rename: jest.fn(async () => undefined),
+        renameOf: (channelId: string) => state.renames[channelId] ?? { kind: "idle" },
+        openCard: jest.fn(),
+        closeCard: jest.fn(() => {
+            state.card = null;
+        }),
         stop: jest.fn()
     };
 }
@@ -685,17 +711,20 @@ describe("focus across the phone panes", () => {
         expect(document.activeElement).toBe(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).element);
     });
 
-    test("returns on Back from a New message draft, which has no row, to the New message button", async () => {
+    test("returns on Back from New message, which has no row, to the New message button", async () => {
         const w = await mountBlock(390);
-        (mockShell!.directMessages as { draft: unknown }).draft = { people: [{ nick_name: "Anna", last_name: "Kim" }], status: "draft", body: "" };
+        const button = w.get("[data-testid='new-message']");
+        (button.element as HTMLElement).focus();
+        await button.trigger("click");
         await settle();
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
 
-        const back = w.get("[data-testid='header-back']");
+        const back = w.get("[data-testid='nd-back']");
         (back.element as HTMLElement).focus();
         await back.trigger("click");
         await settle();
 
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("list");
         expect(document.activeElement).toBe(w.get("[data-testid='new-message']").element);
     });
 
@@ -840,16 +869,23 @@ describe("the look, by the open conversation's kind", () => {
         expect(isFeedCommunity(w)).toBe(false);
     });
 
-    test("a New message draft is Conversational", async () => {
+    test("New message draws its first message in Conversational, and the conversation under it keeps its own look", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
 
-        (mockShell!.state as { activeChannelId: string | null }).activeChannelId = null;
-        (mockShell!.directMessages as { draft: unknown }).draft = { people: [{ nick_name: "Anna", last_name: "Kim" }], status: "draft", body: "" };
+        await w.get("[data-testid='new-message']").trigger("click");
+        const anna = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null };
+        Object.assign(mockShell!.directMessages as Record<string, unknown>, {
+            chosen: [anna],
+            lookup: { status: "new", channelId: null, isSlow: false },
+            draft: { people: [anna], status: "starting", body: "hello", channelGuid: null, phase: "asking" }
+        });
         await settle();
 
-        expect(w.find("[data-testid='dm-draft']").exists()).toBe(true);
-        expect(lookOf(w)).toBe("conversational");
+        expect(w.find("[data-testid='dm-draft']").exists()).toBe(false);
+        expect(w.get("[data-testid='new-message-view']").attributes("data-look")).toBe("conversational");
+        expect(w.find("[data-testid='nd-pending']").exists()).toBe(true);
+        expect(lookOf(w)).toBe("community");
     });
 
     test("the sidebar draws each row by its room's kind, the channel's Community and the direct message's Conversational", async () => {
@@ -2540,5 +2576,311 @@ describe("the channel intro", () => {
         await openRow(w, dmAnna.channel_id);
 
         expect(w.find("[data-testid='channel-intro']").exists()).toBe(false);
+    });
+});
+
+/** The direct messages the mounted block's shell holds, as useDirectMessage keeps them. */
+function directMessagesOf(): Record<string, unknown> & Record<"begin" | "close" | "choose" | "unchoose" | "sendFirst" | "discardFailed", jest.Mock> {
+    return mockShell!.directMessages as ReturnType<typeof directMessagesOf>;
+}
+
+/** Anna as the people search answers her. */
+const annaPerson = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null };
+
+// New message is a full view in the conversation's place, opened from the sidebar, never a dialog
+// over the page; it hands what the person does to the shell's direct messages.
+describe("New message", () => {
+    async function openNewMessage(w: VueWrapper): Promise<void> {
+        await w.get("[data-testid='new-message']").trigger("click");
+        await settle();
+    }
+
+    test("opens from the sidebar in the conversation's place, beginning afresh, the conversation inert under it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        await openNewMessage(w);
+
+        const view = w.get("[data-testid='frame-main'] [data-testid='main-view']");
+        expect(view.attributes("data-kind")).toBe("newdm");
+        expect(view.find("[data-testid='new-message-view']").exists()).toBe(true);
+        expect(w.get("[data-testid='frame-conversation']").attributes("inert")).toBeDefined();
+        expect(directMessagesOf().begin).toHaveBeenCalledTimes(1);
+        expect(document.querySelector("[data-testid='picker-search']")).toBeNull();
+        expect(w.get("[data-testid='new-message']").attributes("aria-pressed")).toBe("true");
+        expect(document.activeElement).toBe(view.get("[data-testid='nd-to-input']").element);
+    });
+
+    test("opens from the Direct messages heading's plus too", async () => {
+        const w = await mountBlock(1200);
+
+        await w.get("[data-testid='section-new-message']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='main-view']").attributes("data-kind")).toBe("newdm");
+    });
+
+    test("closes from its X, letting go of New message and giving the conversation back", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await openNewMessage(w);
+
+        await w.get("[data-testid='nd-close']").trigger("click");
+        await settle();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(directMessagesOf().close).toHaveBeenCalled();
+        expect(w.get("[data-testid='frame-conversation']").attributes("inert")).toBeUndefined();
+    });
+
+    test("hands a chip's remove and the message sent to the direct messages", async () => {
+        const w = await mountBlock(1200);
+        await openNewMessage(w);
+        Object.assign(directMessagesOf(), {
+            chosen: [annaPerson],
+            lookup: { status: "new", channelId: null, isSlow: false },
+            draft: { people: [annaPerson], status: "draft", body: "", channelGuid: null, phase: null }
+        });
+        await settle();
+
+        await w.get("[data-testid='nd-chip-remove']").trigger("click");
+        expect(directMessagesOf().unchoose).toHaveBeenCalledWith(annaPerson.person_alias_guid);
+
+        const editor = w.get("[data-testid='new-message-view'] [data-testid='composer-input']").element as HTMLElement;
+        editor.replaceChildren(document.createTextNode("hello"));
+        editor.dispatchEvent(new Event("input", { bubbles: true }));
+        await settle();
+        await w.get("[data-testid='new-message-view'] form").trigger("submit");
+        await settle();
+
+        expect(directMessagesOf().sendFirst).toHaveBeenCalledWith("hello");
+    });
+
+    test("a failed first message's Try again sends its text again, and Delete discards it", async () => {
+        const w = await mountBlock(1200);
+        await openNewMessage(w);
+        Object.assign(directMessagesOf(), {
+            chosen: [annaPerson],
+            lookup: { status: "new", channelId: null, isSlow: false },
+            draft: { people: [annaPerson], status: "draft", body: "hello", channelGuid: "c0000009-0000-4000-8000-000000000000", phase: "failed" }
+        });
+        await settle();
+
+        await w.get("[data-testid='nd-retry']").trigger("click");
+        await w.get("[data-testid='nd-discard']").trigger("click");
+
+        expect(directMessagesOf().sendFirst).toHaveBeenCalledWith("hello");
+        expect(directMessagesOf().discardFailed).toHaveBeenCalledTimes(1);
+    });
+
+    test("the conversation found opens from its strip, closing the view", async () => {
+        const w = await mountBlock(1200);
+        await openNewMessage(w);
+        Object.assign(directMessagesOf(), {
+            chosen: [annaPerson],
+            lookup: { status: "found", channelId: dmAnna.channel_id, isSlow: false }
+        });
+        await settle();
+
+        expect(w.get("[data-testid='nd-found']").text()).toContain("Anna Kim. What you send goes there.");
+        await w.get("[data-testid='nd-open']").trigger("click");
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenCalledWith(dmAnna.channel_id);
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+    });
+});
+
+// A message's author or a person's chip asks for that person's card, in the room it was opened
+// from; the card is drawn once the shell's rooms have read the person, and its Message opens the
+// conversation the two already have, or New message with that person chosen.
+describe("the profile card", () => {
+    /** chat_get_person's answer for Anna, exactly its keys. */
+    function annaProfile(extra: Record<string, unknown> = {}): Record<string, unknown> {
+        return {
+            person_alias_guid: annaPerson.person_alias_guid,
+            nick_name: "Anna",
+            last_name: "Kim",
+            avatar_url: null,
+            is_self: false,
+            is_leader: false,
+            details: null,
+            can_message: true,
+            dm_channel_id: null,
+            ...extra
+        };
+    }
+
+    async function cardFor(w: VueWrapper, profile: Record<string, unknown>): Promise<HTMLElement> {
+        const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
+        await settle();
+        roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: profile } as never;
+        await settle();
+        const card = document.querySelector<HTMLElement>("[data-testid='profile-card']");
+        if (!card) {
+            throw new Error("No profile card was drawn");
+        }
+        return card;
+    }
+
+    test("is asked for in the room open when an author or a chip asks, and drawn once the person is read", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+
+        const card = await cardFor(w, annaProfile());
+
+        expect(roomsOf().openCard).toHaveBeenCalledWith(annaPerson.person_alias_guid, team.channel_id);
+        expect(card.getAttribute("aria-label")).toBe("Profile, Anna Kim");
+    });
+
+    test("is not drawn while the person is still being read", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
+        roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: null } as never;
+        await settle();
+
+        expect(roomsOf().openCard).toHaveBeenCalledTimes(1);
+        expect(document.querySelector("[data-testid='profile-card']")).toBeNull();
+    });
+
+    test("Message opens the conversation the two already have, closing the card", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const card = await cardFor(w, annaProfile({ dm_channel_id: dmAnna.channel_id }));
+
+        card.querySelector<HTMLElement>("[data-testid='profile-message']")!.click();
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenCalledWith(dmAnna.channel_id);
+        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(document.querySelector("[data-testid='profile-card']")).toBeNull();
+    });
+
+    test("Message opens New message with the person chosen when they have no conversation yet", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const card = await cardFor(w, annaProfile());
+
+        card.querySelector<HTMLElement>("[data-testid='profile-message']")!.click();
+        await settle();
+
+        expect(w.get("[data-testid='main-view']").attributes("data-kind")).toBe("newdm");
+        expect(directMessagesOf().begin).toHaveBeenCalledWith([annaPerson]);
+        expect(roomsOf().closeCard).toHaveBeenCalled();
+    });
+
+    test("closes on Escape, letting go of the person", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const card = await cardFor(w, annaProfile());
+
+        card.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+
+        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(document.querySelector("[data-testid='profile-card']")).toBeNull();
+    });
+});
+
+// The header's title opens the conversation's details, as does the phone's overflow; Leave and a
+// group's Rename go to the shell's rooms, and the dialog closes once the person has left.
+describe("the conversation's details", () => {
+    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", dm_names: ["Caleb", "Hannah"], dm_other_count: 2 });
+
+    function detailsDialog(): HTMLElement | null {
+        return document.querySelector<HTMLElement>("[data-testid='details-close']")?.closest<HTMLElement>("[role='dialog']") ?? null;
+    }
+
+    function dialogName(dialog: HTMLElement): string {
+        const labelledBy = dialog.getAttribute("aria-labelledby");
+        return labelledBy ? document.getElementById(labelledBy)?.textContent?.trim() ?? "" : dialog.getAttribute("aria-label") ?? "";
+    }
+
+    async function openTeamDetails(w: VueWrapper): Promise<void> {
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+    }
+
+    test("open from the header's title, titled by the room's kind", async () => {
+        const w = await mountBlock(1200);
+        await openTeamDetails(w);
+
+        const dialog = detailsDialog();
+        expect(dialog).not.toBeNull();
+        expect(dialogName(dialog!)).toBe("Channel details");
+    });
+
+    test("open from the phone's overflow menu too", async () => {
+        const w = await mountBlock(390);
+        roomsOf().state.facts[dmAnna.channel_id] = roomFacts({ channel_id: dmAnna.channel_id, channel_type: "dm", can_leave: false, member_count: 2 });
+        await openRow(w, dmAnna.channel_id);
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        const item = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Conversation details");
+        item!.click();
+        await settle();
+
+        expect(dialogName(detailsDialog()!)).toBe("Conversation details");
+    });
+
+    test("Leave goes to the rooms, and the dialog closes once the person has left", async () => {
+        const w = await mountBlock(1200);
+        await openTeamDetails(w);
+
+        document.querySelector<HTMLElement>("[data-testid='details-leave']")!.click();
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='leave-go']")!.click();
+        await settle();
+        expect(roomsOf().leave).toHaveBeenCalledWith(team.channel_id);
+
+        roomsOf().state.leaves[team.channel_id] = { kind: "left" };
+        await settle();
+        expect(detailsDialog()).toBeNull();
+    });
+
+    test("a group's Rename goes to the rooms with the name typed", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(hike);
+        roomsOf().state.facts[hike.channel_id] = roomFacts({
+            channel_id: hike.channel_id,
+            channel_type: "dm",
+            is_public: false,
+            member_count: 3,
+            people: [
+                { person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Caleb", last_name: "Brooks", avatar_url: null, details: null },
+                { person_alias_guid: "a0000006-0000-4000-8000-000000000000", nick_name: "Hannah", last_name: "Diaz", avatar_url: null, details: null }
+            ]
+        });
+        await settle();
+        await openRow(w, hike.channel_id);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+
+        const input = document.querySelector<HTMLInputElement>("[data-testid='rename-input']")!;
+        input.value = "Trail crew";
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='rename-save']")!.click();
+        await settle();
+
+        expect(roomsOf().rename).toHaveBeenCalledWith(hike.channel_id, "Trail crew");
+    });
+
+    test("close from their close button, giving focus back to the title", async () => {
+        const w = await mountBlock(1200);
+        await openTeamDetails(w);
+
+        document.querySelector<HTMLElement>("[data-testid='details-close']")!.click();
+        await settle();
+
+        expect(detailsDialog()).toBeNull();
+        expect(document.activeElement).toBe(w.get("[data-testid='header-details']").element);
     });
 });

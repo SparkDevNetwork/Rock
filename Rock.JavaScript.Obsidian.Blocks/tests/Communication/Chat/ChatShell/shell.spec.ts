@@ -76,6 +76,8 @@ function build(options: {
     startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult>,
     mentionViews?: ShellOptions["mentionViews"],
     joinChannel?: ShellOptions["joinChannel"],
+    leaveChannel?: ShellOptions["leaveChannel"],
+    renameConversation?: ShellOptions["renameConversation"],
     areSharedChannelsFilteredByCampus?: boolean
 } = {}): {
     shell: ReturnType<typeof createChatShell>,
@@ -98,7 +100,9 @@ function build(options: {
     channelReads: string[],
     channelFacts: Record<string, unknown>,
     directoryCalls: Array<Record<string, unknown>>,
-    sendRefusals: { value: Array<{ status: number, body: unknown }> }
+    sendRefusals: { value: Array<{ status: number, body: unknown }> },
+    personCalls: Array<Record<string, unknown>>,
+    personAnswer: { value: { status: number, body: unknown } }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -123,6 +127,9 @@ function build(options: {
     const directoryCalls: Array<Record<string, unknown>> = [];
     // Refusals the next sends answer, in order, before the sends that post.
     const sendRefusals: { value: Array<{ status: number, body: unknown }> } = { value: [] };
+    // What chat_get_person answers next, and every call it was asked.
+    const personCalls: Array<Record<string, unknown>> = [];
+    const personAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: null } };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -202,6 +209,10 @@ function build(options: {
                 directoryCalls.push(body);
                 return fakeResponse(200, { channels: [], total: 0 });
             }
+            if (url.endsWith("/rest/v1/rpc/chat_get_person")) {
+                personCalls.push(body);
+                return fakeResponse(personAnswer.value.status, personAnswer.value.body);
+            }
             if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
                 sent.push({ channelId: body.p_channel_id, body: body.p_body, args: body });
                 const refusal = sendRefusals.value.shift();
@@ -240,6 +251,8 @@ function build(options: {
         mark: () => undefined,
         startDirectMessage: options.startDirectMessage,
         joinChannel: options.joinChannel,
+        leaveChannel: options.leaveChannel,
+        renameConversation: options.renameConversation,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mentionViews: options.mentionViews,
         reloadPage: () => {
@@ -249,7 +262,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -1005,9 +1018,9 @@ describe("a direct message's first message", () => {
             }
         });
 
-        h.shell.directMessages.choose(other);
-        await h.shell.openDirectMessage();
-        await h.shell.send("hello");
+        h.shell.directMessages.begin([other]);
+        await settle();
+        await h.shell.directMessages.sendFirst("hello");
         await settle();
 
         const toB = h.shell.selectChannel(channelB);
@@ -1028,9 +1041,9 @@ describe("a direct message's first message", () => {
             startDirectMessage: async () => ({ code: "ok", channelGuid: created, isPending: false, message: null, personAliasGuid: null })
         });
 
-        h.shell.directMessages.choose(other);
-        await h.shell.openDirectMessage();
-        const sending = h.shell.send("hello");
+        h.shell.directMessages.begin([other]);
+        await settle();
+        const sending = h.shell.directMessages.sendFirst("hello");
         await settle();
 
         h.history[created]?.shift()?.resolve(fakeResponse(403, { code: "42501", message: "authz.not_readable" }));
@@ -1053,8 +1066,8 @@ describe("a direct message's first message", () => {
             }
         });
 
-        h.shell.directMessages.choose(other);
-        await h.shell.openDirectMessage();
+        h.shell.directMessages.begin([other]);
+        await settle();
         const toB = h.shell.selectChannel(channelB);
         await settle();
         answerHistory(h, channelB, 20);
@@ -1072,9 +1085,9 @@ describe("a direct message's first message", () => {
             startDirectMessage: () => new Promise<DoorResult>(resolve => answer = resolve)
         });
 
-        h.shell.directMessages.choose(other);
-        await h.shell.openDirectMessage();
-        const sending = h.shell.send("hello");
+        h.shell.directMessages.begin([other]);
+        await settle();
+        const sending = h.shell.directMessages.sendFirst("hello");
         await settle();
 
         const toB = h.shell.selectChannel(channelB);
@@ -1088,6 +1101,20 @@ describe("a direct message's first message", () => {
 
         expect(h.shell.state.errors.filter(e => e.text?.includes("Bo can't be messaged.")).length).toBe(1);
         expect(h.sent).toEqual([]);
+    });
+
+    // New message is a full view over the conversation, so the conversation stays open under it,
+    // as it does under Browse channels, until the first message's conversation takes its place.
+    test("begun over an open conversation leaves it open, looking up the people with chat_find_dm", async () => {
+        const h = await started();
+
+        h.shell.directMessages.begin([other]);
+        await settle();
+
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(h.shell.directMessages.lookup).toEqual({ status: "new", channelId: null, isSlow: false });
+        expect(h.shell.directMessages.draft?.people).toEqual([other]);
+        await h.shell.stop();
     });
 });
 
@@ -1544,17 +1571,22 @@ describe("a page's report after the shell stops", () => {
 });
 
 // The editor and the delete confirm belong to the conversation they were opened in: a switch to
-// another, or to a new direct message's draft, closes both, and an edit's answer still out when
-// the person left has nothing left to touch.
+// another, or to a new direct message's conversation as its first message opens it, closes both,
+// and an edit's answer still out when the person left has nothing left to touch.
 describe("a conversation switch with a message's editor or delete confirm open", () => {
+    const created = "c0000009-0000-4000-8000-000000000000";
+
     test.each([
-        ["opening another channel", (h: ReturnType<typeof build>) => void h.shell.selectChannel(channelB)],
-        ["opening a new direct message's draft", (h: ReturnType<typeof build>) => {
-            h.shell.directMessages.choose({ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null });
-            void h.shell.openDirectMessage();
+        ["opening another channel", async (h: ReturnType<typeof build>) => void h.shell.selectChannel(channelB)],
+        ["a new direct message's first message opening its conversation", async (h: ReturnType<typeof build>) => {
+            h.shell.directMessages.begin([{ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null }]);
+            await settle();
+            void h.shell.directMessages.sendFirst("hello");
         }]
     ])("%s closes the editor, drops the edit's late answer and closes the delete confirm", async (_what, leave) => {
-        const h = await started();
+        const h = await started({
+            startDirectMessage: async () => ({ code: "ok", channelGuid: created, isPending: false, message: null, personAliasGuid: null })
+        });
         const message = h.shell.timelines.state(channelA).messages[0];
 
         h.shell.messageActions.startEdit(channelA, message.id);
@@ -1564,7 +1596,7 @@ describe("a conversation switch with a message's editor or delete confirm open",
         expect(edit).toBeDefined();
         h.shell.messageActions.askDelete(channelA, message);
 
-        leave(h);
+        await leave(h);
         await settle();
 
         expect(h.shell.messageActions.state.editing).toBeNull();
@@ -2163,6 +2195,93 @@ describe("the live sidebar", () => {
             expect(h.sent.map(s => s.channelId)).toEqual([channelA, channelA]);
             expect(h.sent[1].args.p_client_key).toBe(h.sent[0].args.p_client_key);
             expect(h.shell.sender.pending(channelA)).toEqual([]);
+        });
+    });
+
+    // The conversations' doors and the profile card's read, through the shell: Leave and Rename
+    // reach Rock's doors as the block hands them in, a leave of the conversation on screen opens
+    // the next one in the sidebar, and the card reads chat_get_person through the one call path.
+    describe("conversations", () => {
+        const anna = "a0000002-0000-4000-8000-000000000000";
+
+        /** chat_get_person's answer for Anna, exactly its keys. */
+        const annaProfile = {
+            person_alias_guid: anna,
+            nick_name: "Anna",
+            last_name: "Reyes",
+            avatar_url: null,
+            is_self: false,
+            is_leader: true,
+            details: { campus_id: null, badge_keys: [] },
+            can_message: true,
+            dm_channel_id: dmD
+        };
+
+        test("the card reads chat_get_person for the person and the room, and holds its answer", async () => {
+            const h = await startedLive();
+            h.personAnswer.value = { status: 200, body: annaProfile };
+
+            h.shell.rooms.openCard(anna, channelA);
+            await settle();
+
+            expect(h.personCalls).toEqual([{ p_person_alias_guid: anna, p_channel_id: channelA }]);
+            expect(h.shell.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: channelA, person: annaProfile });
+        });
+
+        test("a person the platform does not list opens no card", async () => {
+            const h = await startedLive();
+            h.personAnswer.value = { status: 400, body: { code: "P0001", message: "rpc.person_not_found", hint: "This person isn't available in chat." } };
+
+            h.shell.rooms.openCard(anna, channelA);
+            await settle();
+
+            expect(h.personCalls).toHaveLength(1);
+            expect(h.shell.rooms.state.card).toBeNull();
+        });
+
+        test("Leave goes through Rock's door, and leaving the conversation on screen opens the next one", async () => {
+            const doorCalls: string[] = [];
+            const h = await startedLive({
+                leaveChannel: async channelId => {
+                    doorCalls.push(channelId);
+                    return { code: "ok", message: null, isPending: false, personAliasGuid: person } as never;
+                }
+            });
+
+            await h.shell.rooms.leave(channelA);
+            await settle();
+
+            expect(doorCalls).toEqual([channelA]);
+            expect(h.shell.rooms.leaveOf(channelA)).toEqual({ kind: "left" });
+            expect(h.shell.state.activeChannelId).toBe(channelB);
+            expect(h.history[channelB]).toHaveLength(1);
+        });
+
+        test("Rename goes through Rock's door with the room and the name", async () => {
+            const doorCalls: Array<[string, string]> = [];
+            const h = await startedLive({
+                renameConversation: async (channelId, name) => {
+                    doorCalls.push([channelId, name]);
+                    return { code: "ok", message: null, isPending: true, personAliasGuid: person } as never;
+                }
+            });
+
+            await h.shell.rooms.rename(dmD, "Trail crew");
+            await settle();
+
+            expect(doorCalls).toEqual([[dmD, "Trail crew"]]);
+            expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "pending" });
+        });
+
+        test("without the doors, Leave and Rename are refused with a sentence and nothing else changes", async () => {
+            const h = await startedLive();
+
+            await h.shell.rooms.leave(channelA);
+            await h.shell.rooms.rename(dmD, "Trail crew");
+
+            expect(h.shell.rooms.leaveOf(channelA)).toEqual({ kind: "refused", text: expect.any(String) });
+            expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "refused", text: expect.any(String) });
+            expect(h.shell.state.activeChannelId).toBe(channelA);
         });
     });
 });

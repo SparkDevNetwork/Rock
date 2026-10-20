@@ -24,17 +24,18 @@
 // row as a member, or refused with the door's own sentence, or failed, saying why, with Join to
 // press again. A room opened with no
 // sidebar row keeps a muted row after the channels, across any sidebar reload, until another
-// conversation opens or the reload brings its real row. Once stopped, nothing more is asked and no
-// answer still on its way reaches the screen.
+// conversation opens or the reload brings its real row. Leave and a group's Rename go through
+// Rock's doors too, and the profile card reads its person for the room it was opened from. Once
+// stopped, nothing more is asked and no answer still on its way reaches the screen.
 //
 // The fakes answer in the platform's and the door's own shapes: chat_get_channel's object,
-// chat_list_directory's {channels, total}, and ChatMembershipResultBag's {code, message,
-// isPending, personAliasGuid}.
+// chat_list_directory's {channels, total}, chat_get_person's object, and
+// ChatMembershipResultBag's {code, message, isPending, personAliasGuid}.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, directoryPageSize, directorySearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, directoryPageSize, directorySearchPause, PersonProfileResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { JoinResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
-import { ChannelFacts, DirectoryRow, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChannelFacts, DirectoryRow, PersonProfile, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
 
@@ -158,6 +159,10 @@ type Setup = {
     directoryCalls: Array<{ request: DirectoryRequest, answer: Deferred<DirectoryPageResult> }>;
     channelCalls: Array<{ channelId: string, answer: Deferred<ChannelFactsResult> }>;
     joinCalls: Array<{ channelId: string, answer: Deferred<JoinResult> }>;
+    leaveCalls: Array<{ channelId: string, answer: Deferred<JoinResult> }>;
+    renameCalls: Array<{ channelId: string, name: string, answer: Deferred<JoinResult> }>;
+    personCalls: Array<{ personAliasGuid: string, channelId: string, answer: Deferred<PersonProfileResult> }>;
+    opened: string[];
     toasts: Array<{ code: string, text: string, icon: string }>;
     active: { value: string | null };
     offline: { value: boolean };
@@ -167,6 +172,10 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
     const directoryCalls: Setup["directoryCalls"] = [];
     const channelCalls: Setup["channelCalls"] = [];
     const joinCalls: Setup["joinCalls"] = [];
+    const leaveCalls: Setup["leaveCalls"] = [];
+    const renameCalls: Setup["renameCalls"] = [];
+    const personCalls: Setup["personCalls"] = [];
+    const opened: string[] = [];
     const toasts: Setup["toasts"] = [];
     const active = { value: null as string | null };
     const offline = { value: false };
@@ -188,6 +197,24 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
             joinCalls.push({ channelId, answer });
             return answer.promise;
         },
+        leaveChannel: channelId => {
+            const answer = deferred<JoinResult>();
+            leaveCalls.push({ channelId, answer });
+            return answer.promise;
+        },
+        renameConversation: (channelId, name) => {
+            const answer = deferred<JoinResult>();
+            renameCalls.push({ channelId, name, answer });
+            return answer.promise;
+        },
+        getPerson: (personAliasGuid, channelId) => {
+            const answer = deferred<PersonProfileResult>();
+            personCalls.push({ personAliasGuid, channelId, answer });
+            return answer.promise;
+        },
+        openChannel: channelId => {
+            opened.push(channelId);
+        },
         channels,
         activeChannelId: () => active.value,
         isOffline: () => offline.value,
@@ -195,7 +222,7 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
         notify: notice => toasts.push(notice)
     });
 
-    return { rooms, channels, directoryCalls, channelCalls, joinCalls, toasts, active, offline };
+    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, personCalls, opened, toasts, active, offline };
 }
 
 /** Opens Browse channels and answers its first page. */
@@ -856,5 +883,348 @@ describe("once stopped", () => {
         expect(s.directoryCalls).toHaveLength(1);
         expect(s.channelCalls).toHaveLength(1);
         expect(s.joinCalls).toHaveLength(1);
+    });
+});
+
+// The membership doors the details dialog asks: Leave and a group's Rename, each through Rock's
+// door and answered in ChatMembershipResultBag's shape. A leave that went through, pending
+// included since Rock has made the change, toasts and announces the room by its title and opens
+// the next conversation in the sidebar when the one left was on screen. A refusal keeps the door's
+// sentence, and the person may ask again.
+const group = "c0000004-0000-4000-8000-000000000000";
+
+/** The sidebar as the leave tests hold it: two channels, then a group with no name of its own. */
+function sidebarOfThree(s: Setup): void {
+    s.channels.setSidebar([
+        sidebarRow(team, { name: "Tech Team" }),
+        sidebarRow(volunteers, { name: "Volunteers" }),
+        sidebarRow(group, { name: null, channel_type: "dm", is_public: false, dm_names: ["Caleb", "Hannah"], dm_other_count: 2 })
+    ]);
+}
+
+describe("Leave", () => {
+    test("leaving, then left: the toast and the announcement name the room, and the next conversation opens", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = volunteers;
+
+        void s.rooms.leave(volunteers);
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "leaving" });
+        expect(s.leaveCalls.map(c => c.channelId)).toEqual([volunteers]);
+
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+        expect(s.toasts).toEqual([{ code: "room.left", text: "You left Volunteers", icon: "door" }]);
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "You left Volunteers.", isAssertive: false }));
+        expect(s.opened).toEqual([group]);
+    });
+
+    test("leaving the last conversation in the sidebar opens the one before it", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = group;
+
+        void s.rooms.leave(group);
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.opened).toEqual([volunteers]);
+    });
+
+    test("names a group with no name of its own by its people, as the sidebar does", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = group;
+
+        void s.rooms.leave(group);
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.toasts).toEqual([{ code: "room.left", text: "You left Caleb and Hannah", icon: "door" }]);
+    });
+
+    test("a room left while another is on screen opens nothing", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = team;
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.opened).toEqual([]);
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+    });
+
+    test("pending is left too, since Rock has made the change", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = volunteers;
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
+        expect(s.toasts).toEqual([{ code: "room.left", text: "You left Volunteers", icon: "door" }]);
+        expect(s.opened).toEqual([group]);
+    });
+
+    test("a second press while leaving asks the door once", () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.leave(volunteers);
+        void s.rooms.leave(volunteers);
+
+        expect(s.leaveCalls).toHaveLength(1);
+    });
+
+    test("refused keeps the door's own sentence, announced assertively, opens nothing, and may be asked again", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = volunteers;
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("door.not_allowed", "Leaving Volunteers is turned off. A leader can remove you if you need to step away."));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "refused", text: "Leaving Volunteers is turned off. A leader can remove you if you need to step away." });
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ isAssertive: true }));
+        expect(s.toasts).toEqual([]);
+        expect(s.opened).toEqual([]);
+
+        void s.rooms.leave(volunteers);
+        expect(s.leaveCalls).toHaveLength(2);
+    });
+
+    test("offline asks no door, and a door that cannot be reached is offline too", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.offline.value = true;
+
+        await s.rooms.leave(volunteers);
+        expect(s.leaveCalls).toEqual([]);
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
+
+        s.offline.value = false;
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.reject(new Error("network"));
+        await settle();
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
+    });
+
+    test("a room never asked about is idle", () => {
+        const s = setup();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "idle" });
+    });
+});
+
+describe("Rename", () => {
+    test("saving, then saved: the door is asked for the trimmed name, and the new name is announced", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "  Trail crew ");
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "saving" });
+        expect(s.renameCalls.map(c => [c.channelId, c.name])).toEqual([[group, "Trail crew"]]);
+
+        s.renameCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "saved" });
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
+    });
+
+    test("a blank name goes back to everyone's names, and says so", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "   ");
+        expect(s.renameCalls.map(c => c.name)).toEqual([""]);
+        s.renameCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Name removed. Showing everyone's names." }));
+    });
+
+    test("pending says it can take a minute, by its own state", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "pending" });
+    });
+
+    test("refused keeps the door's own sentence", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.resolve(door("door.not_allowed", "Chat is read only for a few minutes while Cedar Hill updates it. Try again soon."));
+        await settle();
+
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "refused", text: "Chat is read only for a few minutes while Cedar Hill updates it. Try again soon." });
+    });
+
+    test("offline asks no door, and a door that cannot be reached is offline too", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.offline.value = true;
+
+        await s.rooms.rename(group, "Trail crew");
+        expect(s.renameCalls).toEqual([]);
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
+
+        s.offline.value = false;
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.reject(new Error("network"));
+        await settle();
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
+    });
+
+    test("a second save while one is out asks the door once", () => {
+        const s = setup();
+
+        void s.rooms.rename(group, "Trail crew");
+        void s.rooms.rename(group, "Trail crew");
+
+        expect(s.renameCalls).toHaveLength(1);
+    });
+});
+
+// The profile card's person, read by chat_get_person for the room the card was opened from. One
+// card is open at a time, so a card opened over another drops the first's answer whenever it
+// lands; a person the platform does not list draws no card at all.
+describe("the profile card", () => {
+    const anna = "a0000002-0000-4000-8000-000000000000";
+    const ben = "a0000003-0000-4000-8000-000000000000";
+
+    /** chat_get_person's answer, exactly its keys. */
+    function profile(personAliasGuid: string, nickName: string, extra: Partial<PersonProfile> = {}): PersonProfile {
+        return {
+            person_alias_guid: personAliasGuid,
+            nick_name: nickName,
+            last_name: "Reyes",
+            avatar_url: null,
+            is_self: false,
+            is_leader: false,
+            details: null,
+            can_message: true,
+            dm_channel_id: null,
+            ...extra
+        };
+    }
+
+    test("opening asks for the person in that room, and the card is drawn once they are read", async () => {
+        const s = setup();
+
+        s.rooms.openCard(anna, team);
+        expect(s.personCalls.map(c => [c.personAliasGuid, c.channelId])).toEqual([[anna, team]]);
+        expect(s.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: team, person: null });
+
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_leader: true }) });
+        await settle();
+
+        expect(s.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: team, person: profile(anna, "Anna", { is_leader: true }) });
+    });
+
+    test("a card opened over another drops the first one's answer, whichever lands first", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.rooms.openCard(ben, team);
+        const [first, second] = s.personCalls;
+
+        first.answer.resolve({ ok: true, person: profile(anna, "Anna") });
+        await settle();
+        expect(s.rooms.state.card).toEqual({ personAliasGuid: ben, channelId: team, person: null });
+
+        second.answer.resolve({ ok: true, person: profile(ben, "Ben") });
+        await settle();
+        expect(s.rooms.state.card?.person?.nick_name).toBe("Ben");
+    });
+
+    test("an older card's answer landing after the newer one's changes nothing", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.rooms.openCard(ben, team);
+        const [first, second] = s.personCalls;
+
+        second.answer.resolve({ ok: true, person: profile(ben, "Ben") });
+        await settle();
+        first.answer.resolve({ ok: true, person: profile(anna, "Anna") });
+        await settle();
+
+        expect(s.rooms.state.card?.person?.nick_name).toBe("Ben");
+    });
+
+    test("a person the platform does not list draws no card", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+
+        s.personCalls[0].answer.resolve({ ok: false, error: { code: "rpc.person_not_found", severity: "failed", text: "This person isn't available." } });
+        await settle();
+
+        expect(s.rooms.state.card).toBeNull();
+    });
+
+    test("a read that fails draws no card either", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+
+        s.personCalls[0].answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
+        await settle();
+
+        expect(s.rooms.state.card).toBeNull();
+    });
+
+    test("closing drops an answer still on its way", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+
+        s.rooms.closeCard();
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna") });
+        await settle();
+
+        expect(s.rooms.state.card).toBeNull();
+    });
+});
+
+describe("the doors and the card once stopped", () => {
+    test("nothing still on its way reaches the screen and nothing more is asked", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = volunteers;
+        void s.rooms.leave(volunteers);
+        void s.rooms.rename(group, "Trail crew");
+        s.rooms.openCard("a0000002-0000-4000-8000-000000000000", team);
+
+        s.rooms.stop();
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        s.renameCalls[0].answer.resolve(door("ok"));
+        s.personCalls[0].answer.resolve({
+            ok: true,
+            person: { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Reyes", avatar_url: null, is_self: false, is_leader: false, details: null, can_message: true, dm_channel_id: null }
+        });
+        await settle();
+
+        expect(s.toasts).toEqual([]);
+        expect(s.opened).toEqual([]);
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "leaving" });
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "saving" });
+        expect(s.rooms.state.card?.person ?? null).toBeNull();
+
+        await s.rooms.leave(team);
+        await s.rooms.rename(group, "Hike crew");
+        s.rooms.openCard("a0000003-0000-4000-8000-000000000000", team);
+        expect(s.leaveCalls).toHaveLength(1);
+        expect(s.renameCalls).toHaveLength(1);
+        expect(s.personCalls).toHaveLength(1);
     });
 });

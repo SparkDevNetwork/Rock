@@ -77,6 +77,14 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             previewRoom: jest.fn((channelId: string) => {
                 calls.push(`rooms.previewRoom:${channelId}`);
             })
+        },
+        directMessages: {
+            begin: jest.fn((people?: Array<{ nick_name: string }>) => {
+                calls.push(`directMessages.begin:${(people ?? []).map(p => p.nick_name).join(",")}`);
+            }),
+            close: jest.fn(() => {
+                calls.push("directMessages.close");
+            })
         }
     };
 
@@ -315,6 +323,102 @@ describe("a full view", () => {
 
         expect(frame.mainView.value).toBeNull();
         expect(calls).toEqual(["rooms.openDirectory", "rooms.closeDirectory"]);
+    });
+});
+
+// New message is the second full view: it takes the conversation's place as Browse channels does,
+// begins afresh or with the person a profile card's Message chose, and lets go of the direct
+// messages' New message whenever it closes, by its X or by any conversation opening.
+describe("New message as a full view", () => {
+    const anna = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Reyes", avatar_url: null };
+
+    test("takes the main column, beginning afresh, the conversation left open underneath and out of view", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+
+        await frame.openMainView("newdm");
+
+        expect(frame.mainView.value).toBe("newdm");
+        expect(calls).toEqual(["directMessages.begin:"]);
+        expect(state.activeChannelId).toBe(team);
+        expect(state.hiddenPanes.conversation).toBe(true);
+        expect(focused()).toBe("autofocus");
+    });
+
+    test("begins with the person chosen when a profile card's Message opens it", async () => {
+        mounted = mountFrame();
+        const { frame, calls } = mounted;
+
+        await frame.openMainView("newdm", [anna]);
+
+        expect(frame.mainView.value).toBe("newdm");
+        expect(calls).toEqual(["directMessages.begin:Anna"]);
+    });
+
+    test("closing it lets go of New message and gives the conversation back", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.openMainView("newdm");
+
+        frame.closeMainView();
+        await settle();
+
+        expect(frame.mainView.value).toBeNull();
+        expect(calls).toEqual(["directMessages.begin:", "directMessages.close"]);
+        expect(focused()).toBe("composer-input");
+    });
+
+    test("takes Browse channels' place, which closes first", async () => {
+        mounted = mountFrame();
+        const { frame, calls } = mounted;
+        await frame.openMainView("directory");
+
+        await frame.openMainView("newdm");
+
+        expect(frame.mainView.value).toBe("newdm");
+        expect(calls).toEqual(["rooms.openDirectory", "rooms.closeDirectory", "directMessages.begin:"]);
+    });
+
+    test("Browse channels taking its place lets go of New message", async () => {
+        mounted = mountFrame();
+        const { frame, calls } = mounted;
+        await frame.openMainView("newdm");
+
+        await frame.openMainView("directory");
+
+        expect(calls).toEqual(["directMessages.begin:", "directMessages.close", "rooms.openDirectory"]);
+    });
+
+    test("a conversation opening, as the first message's does, closes it", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        await frame.openMainView("newdm");
+
+        state.activeChannelId = volunteers;
+        await settle();
+
+        expect(frame.mainView.value).toBeNull();
+        expect(calls).toEqual(["directMessages.begin:", "directMessages.close"]);
+    });
+
+    test("on a phone, is the conversation pane, and Back gives focus to what opened it", async () => {
+        mounted = mountFrame();
+        const { frame, wrapper, calls } = mounted;
+        resize(frame, 390);
+        (wrapper.find("[data-testid='browse-channels']").element as HTMLElement).focus();
+
+        await frame.openMainView("newdm");
+        expect(calls).toEqual(["directMessages.begin:"]);
+        expect(frame.pane.value).toBe("conversation");
+        expect(focused()).not.toBe("autofocus");
+
+        await frame.onBack();
+        expect(frame.pane.value).toBe("list");
+        expect(focused()).toBe("browse-channels");
     });
 });
 

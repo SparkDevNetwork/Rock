@@ -1310,3 +1310,387 @@ describe("kept text for the same people", () => {
         expect(sends(calls)).toEqual([]);
     });
 });
+
+// New message as a full view: begun afresh, or with a person chosen, every change to the people
+// chosen looks up the conversation they already have. The newest lookup alone lands, however the
+// answers arrive, and the view says it is looking only once a lookup has taken 300 ms. People who
+// have a conversation send to it; new people get a draft, whose first message moves through the
+// phases above, each drawn on the draft.
+describe("New message's lookup", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    /** Lets every answer already given land, without the timers a fake clock holds. */
+    async function flush(): Promise<void> {
+        for (let i = 0; i < 20; i++) {
+            await Promise.resolve();
+        }
+    }
+
+    /** A lookup the test answers by hand, one per call, in the order they were asked. */
+    function handLookups(calls: string[]): { findConversation: DirectMessageDependencies["findConversation"], answers: Array<Deferred<{ ok: true, channelId: string | null }>> } {
+        const answers: Array<Deferred<{ ok: true, channelId: string | null }>> = [];
+        return {
+            answers,
+            findConversation: people => {
+                calls.push(`find ${people.length}`);
+                const answer = deferred<{ ok: true, channelId: string | null }>();
+                answers.push(answer);
+                return answer.promise;
+            }
+        };
+    }
+
+    test("looks nothing up until someone is chosen, then looks up the people chosen at each change", async () => {
+        const { calls, dependencies } = setup();
+        const dm = createDirectMessages(dependencies);
+
+        dm.begin();
+        expect(dm.lookup).toEqual({ status: "idle", channelId: null, isSlow: false });
+        expect(calls).toEqual([]);
+
+        dm.choose(person(1));
+        expect(dm.lookup.status).toBe("waiting");
+        await flush();
+        dm.choose(person(2));
+        await flush();
+
+        expect(calls).toEqual(["find 1", "find 2"]);
+        expect(dm.lookup.status).toBe("new");
+    });
+
+    test("says it is looking only once the lookup has taken 300 ms", async () => {
+        const { calls, dependencies } = setup();
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+
+        jest.advanceTimersByTime(299);
+        expect(dm.lookup.isSlow).toBe(false);
+        jest.advanceTimersByTime(1);
+        expect(dm.lookup.isSlow).toBe(true);
+
+        lookups.answers[0].resolve({ ok: true, channelId: null });
+        await flush();
+        expect(dm.lookup).toEqual({ status: "new", channelId: null, isSlow: false });
+    });
+
+    test("an answer inside 300 ms never says it is looking", async () => {
+        const { calls, dependencies } = setup();
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+
+        jest.advanceTimersByTime(100);
+        lookups.answers[0].resolve({ ok: true, channelId: existing });
+        await flush();
+        jest.advanceTimersByTime(300);
+
+        expect(dm.lookup).toEqual({ status: "found", channelId: existing, isSlow: false });
+    });
+
+    test("an older lookup answering after a newer one is dropped", async () => {
+        const { calls, dependencies } = setup();
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+        dm.choose(person(2));
+        const [older, newer] = lookups.answers;
+
+        newer.resolve({ ok: true, channelId: existing });
+        await flush();
+        older.resolve({ ok: true, channelId: null });
+        await flush();
+
+        expect(dm.lookup).toEqual({ status: "found", channelId: existing, isSlow: false });
+        expect(dm.draft).toBeNull();
+    });
+
+    test("an older lookup answering first changes nothing, and the newer one lands", async () => {
+        const { calls, dependencies } = setup();
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+        dm.choose(person(2));
+        const [older, newer] = lookups.answers;
+
+        older.resolve({ ok: true, channelId: existing });
+        await flush();
+        expect(dm.lookup.status).toBe("waiting");
+
+        newer.resolve({ ok: true, channelId: null });
+        await flush();
+        expect(dm.lookup.status).toBe("new");
+        expect(dm.draft?.people).toEqual([person(1), person(2)]);
+    });
+
+    test("people who have a conversation find it, with no draft and nothing opened", async () => {
+        const { calls, dependencies } = setup({
+            findConversation: async people => {
+                calls.push(`find ${people.length}`);
+                return { ok: true, channelId: existing };
+            }
+        });
+        const dm = createDirectMessages(dependencies);
+        dm.begin();
+        dm.choose(person(1));
+        await flush();
+
+        expect(dm.lookup).toEqual({ status: "found", channelId: existing, isSlow: false });
+        expect(dm.draft).toBeNull();
+        expect(calls).toEqual(["find 1"]);
+    });
+
+    test("new people get a draft for exactly the people chosen, and nothing is asked of Rock", async () => {
+        const { calls, dependencies } = setup();
+        const dm = createDirectMessages(dependencies);
+        dm.begin();
+        dm.choose(person(1));
+        dm.choose(person(2));
+        await flush();
+
+        expect(dm.draft?.people).toEqual([person(1), person(2)]);
+        expect(dm.draft?.status).toBe("draft");
+        expect(dm.draft?.phase ?? null).toBeNull();
+        expect(starts(calls)).toEqual([]);
+    });
+
+    test("taking everyone back out goes back to nothing chosen, looking nothing up", async () => {
+        const { calls, dependencies } = setup();
+        const dm = createDirectMessages(dependencies);
+        dm.begin();
+        dm.choose(person(1));
+        await flush();
+
+        dm.unchoose(person(1).person_alias_guid);
+        await flush();
+
+        expect(dm.lookup).toEqual({ status: "idle", channelId: null, isSlow: false });
+        expect(dm.draft).toBeNull();
+        expect(calls).toEqual(["find 1"]);
+    });
+
+    test("the conversation found takes the send: it opens, then the message goes there, and Rock is asked nothing", async () => {
+        const { calls, dependencies } = setup({
+            findConversation: async people => {
+                calls.push(`find ${people.length}`);
+                return { ok: true, channelId: existing };
+            }
+        });
+        const dm = createDirectMessages(dependencies);
+        dm.begin();
+        dm.choose(person(1));
+        await flush();
+
+        expect(await dm.sendFirst("hello")).toBe(true);
+
+        expect(calls).toEqual(["find 1", `open ${existing}`, `send ${existing} hello`]);
+    });
+
+    test("a send while the lookup is still out sends nothing", async () => {
+        const { calls, dependencies } = setup();
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+
+        expect(await dm.sendFirst("hello")).toBe(false);
+
+        expect(calls).toEqual(["find 1"]);
+    });
+
+    test("begun with a person chosen, as the profile card's Message does, looks them up at once", async () => {
+        const { calls, dependencies } = setup();
+        const dm = createDirectMessages(dependencies);
+
+        dm.begin([person(3)]);
+        await flush();
+
+        expect(dm.chosen).toEqual([person(3)]);
+        expect(calls).toEqual(["find 1"]);
+        expect(dm.draft?.people).toEqual([person(3)]);
+    });
+
+    test("begun again starts afresh, forgetting the people chosen before", async () => {
+        const { dependencies } = setup();
+        const dm = createDirectMessages(dependencies);
+        dm.begin([person(1), person(2)]);
+        await flush();
+
+        dm.begin();
+
+        expect(dm.chosen).toEqual([]);
+        expect(dm.lookup).toEqual({ status: "idle", channelId: null, isSlow: false });
+        expect(dm.draft).toBeNull();
+    });
+
+    test("text Rock refused after the person left is in the draft a new lookup for the same people opens", async () => {
+        const answer = deferred<DoorResult>();
+        const { dependencies } = setup({ startConversation: () => answer.promise });
+        const dm = createDirectMessages(dependencies);
+        dm.begin([person(1)]);
+        await flush();
+        const first = dm.sendFirst("hello");
+        dm.close();
+        answer.resolve({ code: "door.unavailable", channelGuid: null, isPending: false, message: "Try again.", personAliasGuid: null });
+        await first;
+        await flush();
+
+        dm.begin([person(1)]);
+        await flush();
+
+        expect(dm.draft?.body).toBe("hello");
+    });
+
+    test("once stopped, no lookup still out lands and the looking state never comes", async () => {
+        const { calls, dependencies } = setup();
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+
+        dm.stop();
+        jest.advanceTimersByTime(300);
+        lookups.answers[0].resolve({ ok: true, channelId: existing });
+        await flush();
+
+        expect(dm.lookup.isSlow).toBe(false);
+        expect(dm.lookup.status).not.toBe("found");
+        expect(dm.draft).toBeNull();
+    });
+});
+
+describe("the first message's phase, as New message draws it on the draft", () => {
+    /** New message for these people, looked up as new, so its draft is on screen. */
+    async function newDraft(dependencies: DirectMessageDependencies, people: PersonRow[] = [person(1)]): Promise<ReturnType<typeof createDirectMessages>> {
+        const dm = createDirectMessages(dependencies);
+        dm.begin(people);
+        await settle();
+        return dm;
+    }
+
+    test("is asking while Rock is asked, then waiting while the platform takes the conversation", async () => {
+        const answer = deferred<DoorResult>();
+        const { dependencies } = setup({ ...waits(), startConversation: () => answer.promise });
+        const dm = await newDraft(dependencies);
+        expect(dm.draft?.phase ?? null).toBeNull();
+
+        void dm.sendFirst("hello");
+        await settle();
+        expect(dm.draft?.phase).toBe("asking");
+        expect(dm.draft?.status).toBe("starting");
+
+        answer.resolve({ code: "ok", channelGuid: created, isPending: true, message: null, personAliasGuid: null });
+        await settle();
+        expect(dm.draft?.phase).toBe("waiting");
+    });
+
+    test("is trying while a send is on its way into a conversation not yet shown", async () => {
+        const sending = deferred<boolean>();
+        const { calls, dependencies } = setup({ ...waits(), send: () => sending.promise });
+        dependencies.startConversation = pendingDoor(calls);
+        dependencies.openChannel = () => false;
+        const dm = await newDraft(dependencies);
+        await dm.sendFirst("hello");
+        await settle();
+
+        void dm.membershipChanged(created);
+        await settle();
+
+        expect(dm.draft?.phase).toBe("trying");
+    });
+
+    test("is failed once the last try fails, the draft ready for Try again", async () => {
+        const backoff = waits();
+        const { calls, dependencies } = setup({ ...backoff, send: async () => false });
+        dependencies.startConversation = pendingDoor(calls);
+        dependencies.openChannel = () => false;
+        const dm = await newDraft(dependencies);
+        await dm.sendFirst("hello");
+        await settle();
+
+        for (let attempt = 1; attempt <= 5; attempt++) {
+            backoff.list.shift()?.resolve();
+            await settle();
+        }
+
+        expect(dm.draft?.phase).toBe("failed");
+        expect(dm.draft?.status).toBe("draft");
+        expect(dm.draft?.body).toBe("hello");
+    });
+
+    test("Delete on a failed first message empties the draft and keeps nothing for later", async () => {
+        const backoff = waits();
+        const { calls, dependencies } = setup({
+            ...backoff,
+            send: async (channelId, body) => {
+                calls.push(`send ${channelId} ${body}`);
+                return false;
+            }
+        });
+        dependencies.startConversation = pendingDoor(calls);
+        dependencies.openChannel = () => false;
+        const dm = await newDraft(dependencies);
+        await dm.sendFirst("hello");
+        await settle();
+        for (let attempt = 1; attempt <= 5; attempt++) {
+            backoff.list.shift()?.resolve();
+            await settle();
+        }
+
+        dm.discardFailed();
+
+        expect(dm.draft?.body).toBe("");
+        expect(dm.draft?.phase ?? null).toBeNull();
+        expect(dm.error).toBeNull();
+
+        dm.close();
+        dm.begin([person(1)]);
+        await settle();
+        expect(dm.draft?.body).toBe("");
+        expect(sends(calls)).toHaveLength(5);
+    });
+
+    test("a refusal naming one of the people carries that person for the strip, until they are taken out", async () => {
+        const { dependencies } = setup({
+            startConversation: async () => ({
+                code: "door.target_not_eligible",
+                channelGuid: null,
+                isPending: false,
+                message: "Person2 isn't taking new conversations right now.",
+                personAliasGuid: person(2).person_alias_guid.toUpperCase()
+            })
+        });
+        const dm = await newDraft(dependencies, [person(1), person(2)]);
+
+        expect(await dm.sendFirst("hello")).toBe(false);
+
+        expect(dm.refused).toEqual({ person: person(2), text: "Person2 isn't taking new conversations right now." });
+        expect(dm.draft?.body).toBe("hello");
+        expect(dm.draft?.phase ?? null).toBeNull();
+
+        dm.unchoose(person(2).person_alias_guid);
+        expect(dm.refused).toBeNull();
+    });
+
+    test("a refusal naming no one carries no person, only its sentence", async () => {
+        const { dependencies } = setup({
+            startConversation: async () => ({ code: "door.unavailable", channelGuid: null, isPending: false, message: "Try again.", personAliasGuid: null })
+        });
+        const dm = await newDraft(dependencies);
+
+        await dm.sendFirst("hello");
+
+        expect(dm.refused).toBeNull();
+        expect(dm.error).toBe("Try again.");
+    });
+});

@@ -258,3 +258,41 @@ describe("a buttons block", () => {
         expect(body.findAll("[data-testid='block-button']")).toHaveLength(2);
     });
 });
+
+// In a message, a chip that names a person opens their profile card. Elsewhere a chip sits inside
+// a row that is a button of its own, as in the mentions and threads lists, where a button inside a
+// button would be no control at all, so a chip is a button only where the body is told it may be.
+describe("a person's chip, where people can be opened", () => {
+    const lee = "a0000007-0000-4000-8000-000000000000";
+    const reader = "a0000001-0000-4000-8000-000000000000";
+    const pieces = [
+        { type: "mention", text: "@Lee Leader", person_alias_guid: lee },
+        { type: "text", text: " and " },
+        { type: "mention", text: "@Jordan Lee", person_alias_guid: reader },
+        { type: "text", text: " and " },
+        { type: "mention", text: "@all", all: true }
+    ];
+
+    test("is a button asking for that person, the reader's own chip included, while the @all chip names no one", async () => {
+        const body = mount(MessageBody, { props: { text: "raw", pieces, personAliasGuid: reader, isPersonOpenable: true } });
+
+        const [person, you, all] = body.findAll("[data-testid='piece-mention']");
+        expect(person.element.tagName).toBe("BUTTON");
+        expect(person.attributes("type")).toBe("button");
+        expect(you.element.tagName).toBe("BUTTON");
+        expect(all.element.tagName).not.toBe("BUTTON");
+        expect(body.text()).toBe("@Lee Leader and @Jordan Lee and @all");
+
+        await person.trigger("click");
+        await you.trigger("click");
+        await all.trigger("click");
+
+        const asked = (body.emitted("person") ?? []) as Array<[string, HTMLElement]>;
+        expect(asked.map(([guid]) => guid)).toEqual([lee, reader]);
+        expect(asked[0][1]).toBe(person.element);
+
+        // the same body in a list row draws plain chips
+        const listed = mount(MessageBody, { props: { text: "raw", pieces, personAliasGuid: reader } });
+        expect(listed.findAll("[data-testid='piece-mention']").some(chip => chip.element.tagName === "BUTTON")).toBe(false);
+    });
+});
