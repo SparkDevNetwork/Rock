@@ -130,6 +130,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
+        public void OpenSession_Ok_PersonWhoseCampusIsInactive_CarriesNone()
+        {
+            // The box lists only active campuses, so a closed one would reach the chat as a campus
+            // it cannot name.
+            using var app = TestHelper.CreateScopedRockApp();
+            _rockContext.Set<Campus>().Add( TestCampus( 9202, "c9202000-0000-4000-8000-000000000001", "Closed Campus", "OLD", false ) );
+
+            var person = Adult();
+            person.PrimaryCampusId = 9202;
+
+            var bag = ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
+
+            Assert.IsNull( bag.PersonCampusGuid );
+        }
+
+        [TestMethod]
         public void OpenSession_Ok_PersonWithNoCampus_CarriesNone()
         {
             var person = Adult();
