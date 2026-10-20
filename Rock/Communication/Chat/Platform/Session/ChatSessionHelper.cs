@@ -741,7 +741,20 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <returns>True for an active, unarchived membership of the group.</returns>
         internal static bool IsChatAdministrator( int personId, RockContext rockContext )
         {
-            return false;
+            var administratorsGuid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS );
+            var administrators = rockContext.Set<Group>().FirstOrDefault( g => g.Guid == administratorsGuid );
+
+            // Without the group nobody holds what it grants, so the answer is no rather than a failure.
+            if ( administrators == null )
+            {
+                return false;
+            }
+
+            return rockContext.Set<GroupMember>().Any( m =>
+                m.GroupId == administrators.Id
+                && m.PersonId == personId
+                && m.GroupMemberStatus == GroupMemberStatus.Active
+                && !m.IsArchived );
         }
 
         /// <summary>

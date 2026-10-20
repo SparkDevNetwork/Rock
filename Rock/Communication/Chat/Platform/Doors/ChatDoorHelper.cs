@@ -514,7 +514,24 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.bad_request", "Leave the conversation instead." );
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id, targetId.Value } );
+            // Who would lead next is read with the other two, so one projection call answers for all.
+            var people = new List<int> { caller.Id, targetId.Value };
+            int? replacementId = null;
+            if ( replacementPersonAliasGuid.HasValue )
+            {
+                replacementId = new PersonAliasService( rockContext ).Queryable()
+                    .Where( a => a.Guid == replacementPersonAliasGuid.Value )
+                    .Select( a => ( int? ) a.PersonId )
+                    .FirstOrDefault();
+                if ( !replacementId.HasValue )
+                {
+                    return Membership( "door.not_found", "The person chosen to lead next could not be found." );
+                }
+
+                people.Add( replacementId.Value );
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, people );
             if ( room == null )
             {
                 return Membership( "door.not_found", "That channel could not be found." );
@@ -537,6 +554,33 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.not_member", "That person isn't in this conversation." );
             }
 
+            // Only a shared channel has leaders; a conversation's members are all alike.
+            if ( room.Channel.ChannelType == SharedChannelType )
+            {
+                var leaders = ReadLeaderRows( rockContext, room.GroupId );
+                var heldRoleId = leaders.Where( l => l.PersonId == targetId.Value ).Select( l => ( int? ) l.RoleId ).FirstOrDefault();
+                var isLastLeader = heldRoleId.HasValue && leaders.All( l => l.PersonId == targetId.Value );
+
+                var leaderRefusal = RefuseLeaderRemoval( heldRoleId.HasValue, ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ), isLastLeader, replacementId.HasValue );
+                if ( leaderRefusal != null )
+                {
+                    return leaderRefusal;
+                }
+
+                // A replacement is acted on only where it is needed: if someone else came to lead
+                // the channel since the screen asked, the removal goes ahead without it.
+                if ( isLastLeader )
+                {
+                    var promotion = PromoteToLeader( rockContext, room, targetId.Value, replacementId.Value, heldRoleId );
+                    if ( promotion != null )
+                    {
+                        return promotion;
+                    }
+                }
+            }
+
+            // The removal and any new leader are saved together, so the one push carries both and
+            // the platform never sees the channel with nobody leading it.
             var targetName = new PersonService( rockContext ).Get( targetId.Value ).FullName;
             RemoveMember( rockContext, room.GroupId, targetId.Value );
             rockContext.SaveChanges();
@@ -556,7 +600,18 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The caller's rights in the room; none where chat refuses them or the room is not a channel.</returns>
         internal static ChatMemberRightsBag GetMemberRights( Person caller, Guid channelGuid, ChatSessionContext context, RockContext rockContext )
         {
-            return new ChatMemberRightsBag();
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return new ChatMemberRightsBag();
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+
+            return new ChatMemberRightsBag
+            {
+                CanManageMembers = room != null && RefuseManaging( rockContext, room, caller, null ) == null
+            };
         }
 
         /// <summary>
@@ -570,7 +625,20 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The refusal, or null where the removal may go ahead.</returns>
         internal static ChatMembershipResultBag RefuseLeaderRemoval( bool targetLeads, bool callerIsChatAdministrator, bool isLastLeader, bool hasReplacement )
         {
-            return null;
+            if ( !targetLeads )
+            {
+                return null;
+            }
+
+            // Managing a room's members is not enough: who leads a room is the church's call.
+            if ( !callerIsChatAdministrator )
+            {
+                return Membership( "door.not_allowed", "Only Chat Administrators can remove a leader." );
+            }
+
+            return isLastLeader && !hasReplacement
+                ? Membership( "door.bad_request", "Choose who leads this channel next before removing its last leader." )
+                : null;
         }
 
         /// <summary>
@@ -583,7 +651,13 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The role, or null when the type has no leader role.</returns>
         internal static int? PickLeaderRoleId( int? heldRoleId, IEnumerable<(int Id, bool IsLeader, int Order)> typeRoles )
         {
-            return null;
+            var leaderRoles = typeRoles.Where( r => r.IsLeader ).ToList();
+            if ( heldRoleId.HasValue && leaderRoles.Any( r => r.Id == heldRoleId.Value ) )
+            {
+                return heldRoleId;
+            }
+
+            return leaderRoles.OrderBy( r => r.Order ).ThenBy( r => r.Id ).Select( r => ( int? ) r.Id ).FirstOrDefault();
         }
 
         /// <summary>
@@ -1062,6 +1136,12 @@ namespace Rock.Communication.Chat.Platform.Doors
             public HashSet<int> BannedPersonIds { get; } = new HashSet<int>();
 
             /// <summary>
+            /// The people asked about whom chat does not list: left out of chat, on the Chat Ban
+            /// List or inactive.
+            /// </summary>
+            public HashSet<int> UnlistedPersonIds { get; } = new HashSet<int>();
+
+            /// <summary>
             /// How many people a conversation holds; zero for a channel, which is never counted.
             /// </summary>
             public int PersonCount { get; set; }
@@ -1119,6 +1199,14 @@ namespace Rock.Communication.Chat.Platform.Doors
                 }
             }
 
+            foreach ( var personId in personIds )
+            {
+                if ( !projection.People.TryGetValue( personId, out var person ) || person == null || person.IsGloballyBanned || person.IsInactive )
+                {
+                    room.UnlistedPersonIds.Add( personId );
+                }
+            }
+
             // A conversation's size decides what may be done to it; it holds nine at most, so
             // Rock's own count costs nothing.
             if ( channel.ChannelType == DirectChannelType )
@@ -1153,13 +1241,84 @@ namespace Rock.Communication.Chat.Platform.Doors
                     : null;
             }
 
-            // Rock's own rule for who manages a group's members: security, or a group role that
-            // may manage members or edit.
-            var group = new GroupService( rockContext ).Get( room.GroupId );
-            var isManager = room.Channel.ChannelType == SharedChannelType
-                && group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller );
+            if ( room.Channel.ChannelType != SharedChannelType )
+            {
+                return Membership( "door.not_allowed", channelRefusal );
+            }
+
+            // A Chat Administrator manages every shared channel. Otherwise Rock's own rule for who
+            // manages a group's members: security, or a group role that may manage members or edit.
+            var isManager = ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext )
+                || new GroupService( rockContext ).Get( room.GroupId ).IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller );
 
             return isManager ? null : Membership( "door.not_allowed", channelRefusal );
+        }
+
+        /// <summary>
+        /// Each live leader membership of a group, by person and role: an active, unarchived row
+        /// in a leader role, under no ban in force.
+        /// </summary>
+        private static List<(int PersonId, int RoleId)> ReadLeaderRows( RockContext rockContext, int groupId )
+        {
+            var now = RockDateTime.Now;
+
+            return new GroupMemberService( rockContext ).Queryable()
+                .Where( m => m.GroupId == groupId
+                    && m.GroupMemberStatus == GroupMemberStatus.Active
+                    && m.GroupRole.IsLeader
+                    && !( m.IsChatBanned && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) ) )
+                .Select( m => new { m.PersonId, m.GroupRoleId } )
+                .ToList()
+                .Select( m => (m.PersonId, m.GroupRoleId) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Moves the person named to lead a channel next into a leader role, in place of the leader
+        /// removed. Unsaved, so it is saved with the removal.
+        /// </summary>
+        /// <returns>The refusal when they cannot lead it, or null once the change is made.</returns>
+        private static ChatMembershipResultBag PromoteToLeader( RockContext rockContext, RoomRead room, int removedPersonId, int replacementPersonId, int? heldRoleId )
+        {
+            // The same standing a roster row needs: in the room now, listed, and not banned on any row.
+            var isEligible = replacementPersonId != removedPersonId
+                && room.LivePersonIds.Contains( replacementPersonId )
+                && !room.UnlistedPersonIds.Contains( replacementPersonId )
+                && !room.BannedPersonIds.Contains( replacementPersonId )
+                && !HoldsBannedRow( rockContext, room.GroupId, replacementPersonId );
+            if ( !isEligible )
+            {
+                return Membership( "door.bad_request", "Choose someone in this channel to lead it next." );
+            }
+
+            var groupTypeId = new GroupService( rockContext ).GetSelect( room.GroupId, g => g.GroupTypeId );
+            var roleId = PickLeaderRoleId( heldRoleId, GroupTypeCache.Get( groupTypeId ).Roles.Select( r => (r.Id, r.IsLeader, r.Order) ) );
+            if ( !roleId.HasValue )
+            {
+                return Membership( "door.bad_request", "This channel's group type has no leader role to give." );
+            }
+
+            var service = new GroupMemberService( rockContext );
+            var rows = service.AsNoFilter().Where( m => m.GroupId == room.GroupId && m.PersonId == replacementPersonId ).ToList();
+
+            // Rock holds one row per person and role, so a row they already hold in that role,
+            // archived or inactive, is brought back rather than a second one made.
+            var row = rows.FirstOrDefault( m => m.GroupRoleId == roleId.Value )
+                ?? rows.Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Active ).OrderBy( m => m.Id ).FirstOrDefault();
+            if ( row == null )
+            {
+                return Membership( "door.bad_request", "Choose someone in this channel to lead it next." );
+            }
+
+            if ( row.IsArchived )
+            {
+                service.Restore( row );
+            }
+
+            row.GroupRoleId = roleId.Value;
+            row.GroupMemberStatus = GroupMemberStatus.Active;
+
+            return null;
         }
 
         /// <summary>
