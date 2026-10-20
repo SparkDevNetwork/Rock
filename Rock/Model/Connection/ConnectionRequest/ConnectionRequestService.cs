@@ -1094,8 +1094,6 @@ namespace Rock.Model
             };
 
             mergeFields.Add( "IndicatorOptions", indicatorOptions );
-            mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
-            mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", connectionType.DaysUntilRequestIdle ) );
 
             /*
                 10/20/26 - JMH
