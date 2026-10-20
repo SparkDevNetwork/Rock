@@ -116,7 +116,6 @@ function mountFrame(): Mounted {
             frame = useFrame({
                 shell: shallowRef(shell),
                 activeChannelId: computed(() => state.activeChannelId),
-                draft: ref(null),
                 rootElement,
                 linkedReply: null,
                 landOnReply: async () => undefined,

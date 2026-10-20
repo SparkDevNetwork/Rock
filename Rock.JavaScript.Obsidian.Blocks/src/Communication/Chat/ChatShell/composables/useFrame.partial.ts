@@ -29,7 +29,6 @@ import { ChatShell } from "../shell.partial";
 import { PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/tooltip.partial";
-import { DirectMessageDraft } from "./useDirectMessage.partial";
 import { ReplyLanding, ThreadOrigin } from "./useJump.partial";
 import { OpenThreadState } from "./useThreads.partial";
 
@@ -48,8 +47,6 @@ export type FrameDependencies = {
     shell: Readonly<Ref<ChatShell>>;
 
     activeChannelId: Readonly<Ref<string | null>>;
-
-    draft: Readonly<Ref<DirectMessageDraft | null>>;
 
     /** The block's root element, which focus is looked for in and the motion tokens are read from. */
     rootElement: Readonly<Ref<HTMLElement | undefined>>;
@@ -165,7 +162,7 @@ const fallbackPaneSlideMs = 300;
  * @returns What the template draws and the ways to move between the columns.
  */
 export function useFrame(dependencies: FrameDependencies): Frame {
-    const { shell, activeChannelId, draft, rootElement } = dependencies;
+    const { shell, activeChannelId, rootElement } = dependencies;
 
     const isPhone = ref(false);
 
@@ -220,7 +217,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * until Back asks for the list, and an open panel over the conversation.
      */
     const pane = computed((): FramePane => {
-        if (!(activeChannelId.value || draft.value || mainView.value) || isListChosen.value) {
+        if (!(activeChannelId.value || mainView.value) || isListChosen.value) {
             return "list";
         }
 
@@ -265,9 +262,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         isPaneMotionOn.value = true;
 
         // Back on a phone hides the button that had focus, so focus returns to the row of the
-        // conversation just left, where the person was in the list. A New message draft has no
-        // row yet, so focus goes to the New message button that opened it. A full view stays
-        // behind the list, as the prototype keeps it, and focus goes to the row that opened it.
+        // conversation just left, where the person was in the list, or with none to the New
+        // message button. A full view stays behind the list, as the prototype keeps it, and focus
+        // goes to what opened it.
         if (isPhone.value) {
             await nextTick();
             if (mainView.value && mainViewOpener?.isConnected) {
@@ -685,12 +682,12 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
     });
 
-    // A thread belongs to its own conversation, so another conversation or a draft closes it. A
+    // A thread belongs to its own conversation, so another conversation closes it. A
     // thread opened from the list switches to its conversation first, which keeps it open. Focus
     // inside the closing drawer would drop to the page as it leaves reach, so it goes to the title
     // of what replaced it, as a phone's row does when it opens a conversation.
-    watch([activeChannelId, draft], ([channelId, openDraft]) => {
-        if (panelKind.value === "thread" && (openDraft || channelId !== threadChannelId)) {
+    watch(activeChannelId, channelId => {
+        if (panelKind.value === "thread" && channelId !== threadChannelId) {
             const hadFocus = !!panelElement.value?.contains(document.activeElement);
             leaveThread();
             finishClosing();
@@ -701,7 +698,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
     });
 
-    // The threads list follows the open conversation; a draft has no threads, so it closes.
+    // The threads list follows the open conversation, and closes with none open.
     watch(activeChannelId, channelId => {
         if (panelKind.value !== "threads") {
             return;

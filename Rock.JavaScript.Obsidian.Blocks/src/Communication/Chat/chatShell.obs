@@ -31,8 +31,9 @@
                                 :organizationName="organizationName"
                                 :isPhone="isPhone"
                                 :isBrowseOpen="mainView === 'directory'"
+                                :isNewMessageOpen="mainView === 'newdm'"
                                 @select="onSelect"
-                                @newMessage="isPickerShown = true"
+                                @newMessage="openMainView('newdm')"
                                 @browse="openMainView('directory')" />
             </div>
 
@@ -65,7 +66,7 @@
                                 :isBehind="isActiveBehind"
                                 :isPushOffered="shell.state.isPushOffered"
                                 :isPhone="isPhone"
-                                :isEmpty="!activeChannelId && !draft"
+                                :isEmpty="!activeChannelId"
                                 :isThreadsOffered="!!activeChannelId"
                                 :isThreadsOpen="panelKind === 'threads'"
                                 :isMentionsOffered="shell.state.phase === 'ready'"
@@ -75,7 +76,8 @@
                                 @mentions="onListPanel('mentions')"
                                 @turnOnPush="onTurnOnPush"
                                 @back="onBack"
-                                @backOnline="onBackOnline" />
+                                @backOnline="onBackOnline"
+                                @details="isDetailsOpen = true" />
 
                     <MessageFeed v-if="activeChannelId"
                                  :key="activeChannelId"
@@ -109,10 +111,6 @@
                                  @openThread="onOpenThread"
                                  @jump="onJump($event, false)"
                                  @messageAction="onMessageAction($event, null)" />
-                    <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
-                        {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
-                        <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
-                    </div>
                     <div v-else class="chat-shell-empty">
                         {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
                     </div>
@@ -126,24 +124,21 @@
                              @join="onJoin"
                              @browse="openMainView('directory')" />
 
-                    <Composer v-else-if="activeChannelId || draft"
+                    <Composer v-else-if="activeChannelId"
                               :class="{ 'is-entering': isComposerEntering }"
-                              :isDisabled="isComposerDisabled"
                               :title="activeKind ? activeTitle : null"
                               :isChannel="activeKind === 'channel'"
                               :isPhone="isPhone"
                               :isLocked="!shell.state.isComposerOpen"
-                              :heldText="draft?.body ?? held?.body ?? ''"
-                              :heldBy="draft ?? held"
-                              :isTextKeptOnSend="isTextKeptOnSend(draft)"
+                              :heldText="held?.body ?? ''"
+                              :heldBy="held"
                               :quote="conversationQuote"
                               :isQuoteOwn="isOwnQuote(conversationQuote)"
                               :emojiSource="emojiSource"
                               :mentionSource="mentionSourceFor(activeRow)"
-                              :conversationKey="composerConversationKey"
+                              :conversationKey="activeChannelId"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
                               @send="shell.send"
-                              @edit="shell.directMessages.edit"
                               @editLast="onEditLast"
                               @cancelQuote="onCancelQuote(conversationQuoteKey)"
                               @emojiPickerOpen="onEmojiPickerOpen"
@@ -172,6 +167,30 @@
                                       @retry="shell.rooms.retry"
                                       @join="shell.rooms.join"
                                       @open="openFromMainView" />
+
+                    <!-- Its first message is drawn as a direct message is, whatever the conversation under it. -->
+                    <NewMessage v-else-if="mainView === 'newdm'"
+                                data-look="conversational"
+                                :chosen="shell.directMessages.chosen"
+                                :search="shell.directMessages.search"
+                                :lookup="shell.directMessages.lookup"
+                                :foundTitle="foundTitle"
+                                :draft="draft"
+                                :error="shell.directMessages.error"
+                                :refused="shell.directMessages.refused"
+                                :isPhone="isPhone"
+                                :emojiSource="emojiSource"
+                                @back="onBack"
+                                @close="closeMainView"
+                                @choose="shell.directMessages.choose"
+                                @unchoose="shell.directMessages.unchoose"
+                                @open="openFromMainView"
+                                @send="onSendFirst"
+                                @edit="shell.directMessages.edit"
+                                @retry="onSendFirst(draft?.body ?? '')"
+                                @discard="shell.directMessages.discardFailed"
+                                @emojiPickerOpen="onEmojiPickerOpen"
+                                @emojiChosen="onEmojiChosen" />
                 </div>
 
                 <!-- Centred over the conversation it reports on, so a panel open beside it never pulls a toast off it. -->
@@ -300,15 +319,35 @@
                          :opener="reactionPicker.opener"
                          @react="onPickerReact"
                          @close="closeReactionPicker" />
-        </div>
 
-        <DirectMessagePicker v-model="isPickerShown"
-                             :chosen="shell.directMessages.chosen"
-                             :search="shell.directMessages.search"
-                             :error="shell.directMessages.error"
-                             @choose="shell.directMessages.choose"
-                             @unchoose="shell.directMessages.unchoose"
-                             @open="onOpenDirectMessage" />
+            <!-- The profile card, one at a time, beside the author or chip that asked, once its person is read. -->
+            <ProfileCard v-if="shell.rooms.state.card?.person"
+                         :key="cardOpenCount"
+                         :person="shell.rooms.state.card.person"
+                         :campuses="campuses"
+                         :anchor="cardAnchor"
+                         @close="shell.rooms.closeCard"
+                         @message="onCardMessage" />
+
+            <!-- Kept mounted while the room's facts are held, so closing plays the dialog's exit. -->
+            <ConversationDetails v-if="activeChannelId && activeFacts && activeKind"
+                                 :key="activeChannelId"
+                                 :isOpen="isDetailsOpen"
+                                 :kind="activeKind"
+                                 :title="activeTitle"
+                                 :facts="activeFacts"
+                                 :groupName="activeRow?.name ?? null"
+                                 :campuses="campuses"
+                                 :organizationName="organizationName"
+                                 :personName="personName"
+                                 :personPhotoUrl="personPhotoUrl"
+                                 :leave="shell.rooms.leaveOf(activeChannelId)"
+                                 :rename="shell.rooms.renameOf(activeChannelId)"
+                                 :isPhone="isPhone"
+                                 @close="closeDetails"
+                                 @leave="onLeave"
+                                 @rename="onRename" />
+        </div>
 
         <!-- A phone shows one pane at a time, so its toasts sit over the whole block; so do those of a block with no frame. -->
         <ErrorToast v-if="isPhone || isPromptShown || isRefused" :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
@@ -496,11 +535,6 @@
     justify-content: center;
     color: var(--chat-muted);
 }
-
-.chat-shell-draft {
-    flex-direction: column;
-    gap: 8px;
-}
 </style>
 
 <script setup lang="ts">
@@ -519,8 +553,8 @@
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
-    import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
-    import { DirectMessageDraft, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
+    import ConversationDetails from "./ChatShell/components/conversationDetails.partial.obs";
+    import { DirectMessageDraft } from "./ChatShell/composables/useDirectMessage.partial";
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
@@ -528,6 +562,8 @@
     import JoinBar from "./ChatShell/components/joinBar.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
+    import NewMessage from "./ChatShell/components/newMessage.partial.obs";
+    import ProfileCard from "./ChatShell/components/profileCard.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
@@ -538,7 +574,7 @@
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
-    import { ChannelFacts, ChatError, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
+    import { ChannelFacts, ChatError, PersonProfile, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
@@ -592,7 +628,12 @@
     const birthdateMessage = ref<string | null>(null);
     const isSavingBirthdate = ref(false);
 
-    const isPickerShown = ref(false);
+    /** Whether the open conversation's details dialog is open. */
+    const isDetailsOpen = ref(false);
+
+    /** What asked for the profile card, which it is placed beside, and a count that draws each card afresh. */
+    const cardAnchor = shallowRef<HTMLElement | null>(null);
+    const cardOpenCount = ref(0);
 
     /** Toasts that are not failures, such as being back online after an outage. */
     const notices = ref<ToastNotice[]>([]);
@@ -605,7 +646,7 @@
 
     /**
      * Whether the open conversation replaced another, so its feed rises into view. The first one
-     * the page draws, or one a New message draft becomes, is simply there.
+     * the page draws is simply there.
      */
     const isFeedEntering = ref(false);
 
@@ -634,7 +675,6 @@
     } = useFrame({
         shell,
         activeChannelId,
-        draft,
         rootElement,
         linkedReply: config.channelGuid && config.threadRootId
             ? { channelId: config.channelGuid.toLowerCase(), rootId: config.threadRootId, messageId: config.messageId ?? null }
@@ -666,48 +706,28 @@
 
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
 
-    /** The conversation the composer types into: the open channel, else the draft's people. */
-    const composerConversationKey = computed((): string | null => activeChannelId.value
-        ?? (draft.value ? draft.value.people.map(person => person.person_alias_guid).join(",") : null));
-
     /** Text Rock refused earlier, for the box of the conversation the same people now share. */
     const held = computed((): { body: string } | null => shell.value.directMessages.held);
-
-    /**
-     * Closed while a draft's first message is on its way; with nothing open there is no composer at
-     * all. Read only and maintenance lock the composer instead, which says why.
-     */
-    const isComposerDisabled = computed((): boolean => draft.value?.status === "starting");
 
     /** The sidebar row of the open conversation, which carries everything the header draws. */
     const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
 
     /** What chat_get_channel last answered about the open conversation, or null before it lands. */
-    const activeFacts = computed((): ChannelFacts | null => activeChannelId.value && !draft.value ? shell.value.rooms.factsOf(activeChannelId.value) : null);
+    const activeFacts = computed((): ChannelFacts | null => activeChannelId.value ? shell.value.rooms.factsOf(activeChannelId.value) : null);
 
     /**
      * Whether the open channel is one the person is not in, where the join bar stands in the
      * composer's place. A join stays here while pending, until the sidebar shows them a member.
      */
-    const isJoinBarShown = computed((): boolean => !draft.value && activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
+    const isJoinBarShown = computed((): boolean => activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
 
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
     const isActiveDirectMessage = computed((): boolean => !!activeRow.value && isTwoPersonDirectMessage(activeRow.value));
 
-    /** The other people of the open direct message or draft, by the names the sidebar shows. */
-    const activePeople = computed((): string[] => {
-        if (draft.value) {
-            return draft.value.people.map(p => `${p.nick_name} ${p.last_name}`);
-        }
-
-        return activeRow.value?.dm_names ?? [];
-    });
+    /** The other people of the open direct message, by the names the sidebar shows. */
+    const activePeople = computed((): string[] => activeRow.value?.dm_names ?? []);
 
     const activeKind = computed((): HeaderRoomKind | null => {
-        if (draft.value) {
-            return draft.value.people.length > 1 ? "group" : "person";
-        }
-
         if (!activeRow.value) {
             return null;
         }
@@ -725,13 +745,13 @@
         }
 
         // A group the platform names only its first few people for says how many more there are.
-        const others = draft.value ? draft.value.people.length : (activeRow.value?.dm_other_count ?? activePeople.value.length);
+        const others = activeRow.value?.dm_other_count ?? activePeople.value.length;
         return joinNames(activePeople.value, others - activePeople.value.length);
     });
 
     /**
      * The look the open conversation is drawn in, by its kind alone: a channel in Community's flat
-     * rows, a direct message or a New message draft in Conversational's bubbles.
+     * rows, a direct message in Conversational's bubbles.
      */
     const look = computed((): FeedLayout | null => {
         if (!activeKind.value) {
@@ -743,7 +763,7 @@
 
     /**
      * The header's line until the room's facts are read, which the header then takes its subtitle
-     * from: a draft's or an unnamed group's head count.
+     * from: an unnamed group's head count.
      */
     const activeSubtitle = computed((): string | null => {
         if (activeKind.value !== "group") {
@@ -752,7 +772,7 @@
 
         // The platform counts a room's people only when it has no name, so a named group arrives
         // with 0 and has no count to show until the member count gets a field of its own.
-        const others = draft.value ? draft.value.people.length : (activeRow.value?.dm_other_count ?? activePeople.value.length);
+        const others = activeRow.value?.dm_other_count ?? activePeople.value.length;
         if (others < 1) {
             return null;
         }
@@ -800,8 +820,8 @@
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
     const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
 
-    /** Where the conversation composer's quote waits; a draft has no messages to quote. */
-    const conversationQuoteKey = computed((): string | null => activeChannelId.value && !draft.value ? quoteKey(activeChannelId.value) : null);
+    /** Where the conversation composer's quote waits. */
+    const conversationQuoteKey = computed((): string | null => activeChannelId.value ? quoteKey(activeChannelId.value) : null);
 
     /** Where the open thread's quote waits, apart from its conversation's. */
     const threadQuoteKey = computed((): string | null => drawnThread.value ? quoteKey(drawnThread.value.channelId, drawnThread.value.rootId) : null);
@@ -820,17 +840,62 @@
         return `It will be removed for everyone in ${where}. You can't undo this.`;
     });
 
+    /**
+     * The title New message's found strip names: the conversation's as the sidebar writes it, or
+     * the people chosen when it is not in the sidebar.
+     */
+    const foundTitle = computed((): string | null => {
+        const { lookup, chosen } = shell.value.directMessages;
+        if (!lookup.channelId) {
+            return null;
+        }
+
+        return roomTitles.value[lookup.channelId] ?? joinNames(chosen.map(person => `${person.nick_name} ${person.last_name}`), 0);
+    });
+
     // #endregion Computed Values
 
     // #region Event Handlers
 
-    /** The picker closes once a conversation or a draft is open, and stays to show a failure. */
-    async function onOpenDirectMessage(): Promise<void> {
+    /** New message's send: to the conversation found, or the first message of a new one. */
+    function onSendFirst(body: string): void {
         isPaneMotionOn.value = true;
-        await shell.value.openDirectMessage();
-        if (!shell.value.directMessages.error) {
-            isPickerShown.value = false;
+        void shell.value.directMessages.sendFirst(body);
+    }
+
+    /**
+     * The card's Message: the conversation the two already have, else New message with the person
+     * chosen. The card goes first, so it never stands over what opens.
+     */
+    function onCardMessage(person: PersonProfile): void {
+        shell.value.rooms.closeCard();
+        if (person.dm_channel_id) {
+            void openFromMainView(person.dm_channel_id);
+            return;
         }
+
+        void openMainView("newdm", [{ person_alias_guid: person.person_alias_guid, nick_name: person.nick_name, last_name: person.last_name, avatar_url: person.avatar_url }]);
+    }
+
+    function onLeave(): void {
+        if (activeChannelId.value) {
+            void shell.value.rooms.leave(activeChannelId.value);
+        }
+    }
+
+    function onRename(name: string): void {
+        if (activeChannelId.value) {
+            void shell.value.rooms.rename(activeChannelId.value, name);
+        }
+    }
+
+    /**
+     * Closes the details dialog. Focus goes to the title button, since the phone's overflow item
+     * that may have opened it has left with its menu.
+     */
+    function closeDetails(): void {
+        isDetailsOpen.value = false;
+        void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='header-details']")?.focus());
     }
 
     function onJoin(): void {
@@ -941,7 +1006,7 @@
 
     /** Up in the empty conversation composer: the newest message the person could edit opens in place. */
     function onEditLast(): void {
-        if (activeChannelId.value && !draft.value) {
+        if (activeChannelId.value) {
             shell.value.messageActions.startEditNewest(activeChannelId.value);
         }
     }
@@ -1017,6 +1082,13 @@
 
             case "openPicker":
                 openReactionPicker(channelId, request.message, request.anchor, request.opener);
+                break;
+
+            // the person is read for the room the author or chip was pressed in
+            case "person":
+                cardAnchor.value = request.anchor;
+                cardOpenCount.value++;
+                shell.value.rooms.openCard(request.personAliasGuid, channelId);
                 break;
         }
     }
@@ -1132,7 +1204,7 @@
 
     /**
      * What a composer's @ picker lists in a conversation: the people found for the newest query,
-     * and @all where the room's right and the query offer it. A draft has no room yet, so none.
+     * and @all where the room's right and the query offer it; with no room, none.
      */
     function mentionSourceFor(row: SidebarRow | null): MentionPickerSource | null {
         const picker = shell.value.mentions.state.picker;
@@ -1209,9 +1281,21 @@
         void done?.catch(() => undefined);
     });
 
-    // A picker belongs to a message on screen, so another conversation or a draft closes it.
-    watch([activeChannelId, draft], () => {
+    // A picker or a card belongs to a message on screen, so another conversation or a full view
+    // over it closes them; so are the details, which belong to the conversation.
+    watch([activeChannelId, mainView], () => {
         closeReactionPicker();
+        if (shell.value.rooms.state.card) {
+            shell.value.rooms.closeCard();
+        }
+        isDetailsOpen.value = false;
+    });
+
+    // Once the person has left, the room's details have nothing left to show.
+    watch(() => activeChannelId.value ? shell.value.rooms.leaveOf(activeChannelId.value).kind : null, kind => {
+        if (kind === "left" && isDetailsOpen.value) {
+            closeDetails();
+        }
     });
 
     // The panel column keeps drawing a closing drawer while it narrows, so a picker opened from

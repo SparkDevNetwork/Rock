@@ -206,9 +206,6 @@ export type ChatShell = {
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
 
-    /** Opens the conversation the picked people share, or a draft for them in place of the open channel. */
-    openDirectMessage: () => Promise<void>;
-
     /** Signs in and runs the page load. */
     start: () => Promise<void>;
 
@@ -983,13 +980,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mentions,
         rooms,
         isNewMessageShown: isNewMessageShown(options.session),
-
-        openDirectMessage: async (): Promise<void> => {
-            await directMessages.open();
-            if (directMessages.draft) {
-                closeActive();
-            }
-        },
 
         start: async (): Promise<void> => {
             if (state.gate !== "ok") {
