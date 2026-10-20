@@ -1719,6 +1719,29 @@ describe("the live sidebar", () => {
         topicOf(h, personalTopic(tenant, person)).status?.(status);
     }
 
+    test("a channel whose unread newest message was deleted is read once its save answers with the message before", async () => {
+        const h = await startedLive();
+        personal(h, "channel.unread", { channel_id: channelB, message_id: 12, id: "5e000021-0000-4000-8000-000000000000" });
+        await settle();
+        expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ last_message_id: 12, is_unread: true }));
+
+        // 12 is deleted, which a channel's row hears nothing of; the person reads to 11 and leaves
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelB, 11);
+        await toB;
+        await settle();
+        h.shell.seen(11);
+        const before = h.saves.length;
+        void h.shell.selectChannel(channelA);
+        await settle();
+        expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelB}:11`]);
+        h.saves[before].answer.resolve(fakeResponse(200, { read_cursor: 11, last_message_id: 11 }));
+        await settle();
+
+        expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ last_message_id: 11, read_cursor: 11, is_unread: false }));
+    });
+
     afterEach(() => {
         jest.useRealTimers();
         jest.restoreAllMocks();

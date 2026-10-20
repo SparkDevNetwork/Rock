@@ -141,6 +141,30 @@ describe("createChannelStore", () => {
         expect(s.rows.find(r => r.channel_id === two)?.is_unread).toBe(false);
     });
 
+    test("a save sent after the row heard of a message since deleted takes the answer's walked-back pointer and clears the bold and mentions", () => {
+        const { store: s } = store();
+        s.setSidebar([row(one, { last_message_id: 11, read_cursor: 11 }), row(two)]);
+        s.applyPersonalEvent("channel.unread", { channel_id: one, message_id: 12 });
+        s.applyPersonalEvent("channel.mention", { channel_id: one, message_id: 12, parent_id: null, in_channel: true, all: false });
+
+        // 12 is deleted; the person opens the room, reads to 11 and leaves
+        const sentAt = s.saveSent();
+        s.applyMarkRead(one, { read_cursor: 11, last_message_id: 11 }, sentAt);
+
+        expect(s.rows.find(r => r.channel_id === one)).toEqual(expect.objectContaining({ last_message_id: 11, is_unread: false, mention_count: 0 }));
+    });
+
+    test("a save sent before a newer message reached the row keeps that message and its bold", () => {
+        const { store: s } = store();
+        s.setSidebar([row(one, { last_message_id: 11, read_cursor: 10 }), row(two)]);
+
+        const sentAt = s.saveSent();
+        s.applyPersonalEvent("channel.unread", { channel_id: one, message_id: 12 });
+        s.applyMarkRead(one, { read_cursor: 11, last_message_id: 11 }, sentAt);
+
+        expect(s.rows.find(r => r.channel_id === one)).toEqual(expect.objectContaining({ last_message_id: 12, read_cursor: 11, is_unread: true }));
+    });
+
     test("a mention by name in the conversation adds one to the row's mentions", () => {
         const { store: s } = store();
 
