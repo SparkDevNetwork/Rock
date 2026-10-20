@@ -409,7 +409,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, StyleValue, watch, watchEffect } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -434,21 +434,18 @@
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
+    import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
-    import { ReplyLanding, ThreadOrigin, useJump } from "./ChatShell/composables/useJump.partial";
-    import { followNotice, OpenThreadState, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
+    import { useJump } from "./ChatShell/composables/useJump.partial";
+    import { followNotice, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
     import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
     import { ChatError, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
-    import { applyChatTheme, tokenDuration } from "./ChatShell/ui/brand.partial";
+    import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
-    import { focusQuietly } from "./ChatShell/ui/tooltip.partial";
 
     // #region Types
-
-    /** What the panel column can hold: the threads list, the mentions inbox, or one thread in its drawer. */
-    type PanelKind = "threads" | "mentions" | "thread";
 
     /** What the push worker posts to a window of the site, in the worker's own names. */
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -498,66 +495,6 @@
 
     const rootElement = ref<HTMLElement>();
 
-    /** Below this width the block shows one pane at a time, as on a phone. */
-    const phoneWidth = 760;
-
-    /** Whether the block itself is narrower than a phone's layout allows, wherever it sits in the window. */
-    const isPhone = ref(false);
-
-    /** Set by Back on a phone, so the list shows while the conversation stays open behind it. */
-    const isListChosen = ref(false);
-
-    /** Turned on by the person's first move between panes, so the pane a page load opens does not slide in. */
-    const isPaneMotionOn = ref(false);
-
-    // A pane that has slid out of view is also hidden, once its slide is over, because the oldest
-    // Safari Rock supports ignores inert and would still let Tab walk into it.
-    const isSidebarGone = ref(false);
-    const isConversationGone = ref(false);
-    const isPanelGone = ref(true);
-    const goneStyle: StyleValue = { visibility: "hidden" };
-
-    /** The design's pane slide, used when the sheet is not on the page. */
-    const fallbackPaneSlideMs = 300;
-
-    let paneGoneTimer: number | undefined;
-
-    /** The panel open in the right-hand column, or null while it is closed. */
-    const panelKind = ref<PanelKind | null>(null);
-
-    /** What the column draws: the open panel, kept through its close so it narrows over its content. */
-    const shownPanel = ref<PanelKind | null>(null);
-
-    const panelElement = ref<HTMLElement>();
-
-    let panelClearTimer: number | undefined;
-
-    /**
-     * The thread the drawer draws, kept after the threads let it go so the drawer narrows over its
-     * content as it closes rather than over nothing.
-     */
-    const drawnThread = shallowRef<OpenThreadState | null>(null);
-
-    /** The list the open thread came from, which its back chevron and Escape return to, or null. */
-    const threadOrigin = ref<ThreadOrigin>(null);
-
-    /** The conversation the open thread belongs to, which the drawer stays open over. */
-    let threadChannelId: string | null = null;
-
-    /**
-     * Counts every thread opened or left, so a landing on a reply that awaited an older page can
-     * tell the drawer it started in is gone and stop.
-     */
-    let threadOpenCount = 0;
-
-    /**
-     * The reply a link to this page named, until the first conversation opens: its thread opens
-     * over that conversation, and over no other the page load falls back to.
-     */
-    let linkedReply: ReplyLanding | null = config.channelGuid && config.threadRootId
-        ? { channelId: config.channelGuid.toLowerCase(), rootId: config.threadRootId, messageId: config.messageId ?? null }
-        : null;
-
     // The block's own width, not the window's or a container query's, since the oldest Safari Rock
     // supports has no container queries and a narrow zone of a wide window is still narrow.
     let resizeObserver: ResizeObserver | null = null;
@@ -577,12 +514,34 @@
 
     const activeChannelId = computed((): string | null => shell.value.state.activeChannelId);
 
-    // Created here rather than with the values, since it reads the open conversation above.
+    const draft = computed((): DirectMessageDraft | null => shell.value.directMessages.draft);
+
+    // Created here rather than with the values, since they read the open conversation above. The
+    // frame's landing is the jump's, made just after it, so the frame reaches it only once called.
+    const {
+        isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
+        panelKind, shownPanel, panelElement, drawnThread, threadOrigin, threadOpenCount,
+        onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        openThreadFromMentions, openFromTap, openThreadDrawer, closeThreadDrawer, closePanel
+    } = useFrame({
+        shell,
+        activeChannelId,
+        draft,
+        rootElement,
+        linkedReply: config.channelGuid && config.threadRootId
+            ? { channelId: config.channelGuid.toLowerCase(), rootId: config.threadRootId, messageId: config.messageId ?? null }
+            : null,
+        landOnReply: (landing, origin) => landOnReply(landing, origin),
+        forgetReplyLanding: () => {
+            landingReplyId.value = null;
+        }
+    });
+
     const { landingReplyId, landingMessageId, landOnReply, onJump } = useJump({
         shell,
         activeChannelId,
         isPhone,
-        threadOpenCount: () => threadOpenCount,
+        threadOpenCount,
         openThreadDrawer,
         closeThreadDrawer
     });
@@ -598,8 +557,6 @@
     const isRefused = computed((): boolean => shell.value.state.phase === "refused" || shell.value.state.phase === "failed");
 
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
-
-    const draft = computed((): DirectMessageDraft | null => shell.value.directMessages.draft);
 
     /** The conversation the composer types into: the open channel, else the draft's people. */
     const composerConversationKey = computed((): string | null => activeChannelId.value
@@ -684,18 +641,6 @@
         return `${others + 1} people`;
     });
 
-    /**
-     * Which pane a phone shows: the conversation once one is open, until Back asks for the list,
-     * and an open panel over it.
-     */
-    const pane = computed((): "list" | "conversation" | "panel" => {
-        if (!(activeChannelId.value || draft.value) || isListChosen.value) {
-            return "list";
-        }
-
-        return panelKind.value ? "panel" : "conversation";
-    });
-
     /** The threads list the panel draws, as the shell's threads hold it. */
     const threadList = computed((): ThreadListState => shell.value.threads.state.list);
 
@@ -735,13 +680,6 @@
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
     const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
 
-    const isSidebarHidden = computed((): boolean => isPhone.value && pane.value !== "list");
-
-    const isConversationHidden = computed((): boolean => isPhone.value && pane.value !== "conversation");
-
-    /** A closed panel is out of reach everywhere; an open one only while a phone shows another pane. */
-    const isPanelHidden = computed((): boolean => !panelKind.value || (isPhone.value && pane.value !== "panel"));
-
     /** Where the conversation composer's quote waits; a draft has no messages to quote. */
     const conversationQuoteKey = computed((): string | null => activeChannelId.value && !draft.value ? quoteKey(activeChannelId.value) : null);
 
@@ -766,44 +704,6 @@
 
     // #region Event Handlers
 
-    async function onSelect(channelId: string): Promise<void> {
-        // Choosing the conversation already open behind the list brings it back too.
-        isListChosen.value = false;
-        isPaneMotionOn.value = true;
-        void shell.value.selectChannel(channelId);
-
-        // The row that had focus has slid out of view and out of reach, so focus goes to what
-        // slid in: the conversation's title, never its composer, which would raise the keyboard.
-        if (isPhone.value) {
-            await nextTick();
-            rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus();
-        }
-    }
-
-    async function onBack(): Promise<void> {
-        const leftChannelId = activeChannelId.value;
-        isListChosen.value = true;
-        isPaneMotionOn.value = true;
-
-        // Back on a phone hides the button that had focus, so focus returns to the row of the
-        // conversation just left, where the person was in the list. A New message draft has no
-        // row yet, so focus goes to the New message button that opened it.
-        if (isPhone.value) {
-            await nextTick();
-            const row = leftChannelId
-                ? rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)
-                : null;
-            (row ?? rootElement.value?.querySelector<HTMLElement>("[data-testid='new-message']"))?.focus();
-        }
-    }
-
-    function onResize(entries: ResizeObserverEntry[]): void {
-        const width = entries[entries.length - 1]?.contentRect.width;
-        if (width !== undefined) {
-            isPhone.value = width < phoneWidth;
-        }
-    }
-
     /** The picker closes once a conversation or a draft is open, and stays to show a failure. */
     async function onOpenDirectMessage(): Promise<void> {
         isPaneMotionOn.value = true;
@@ -822,43 +722,6 @@
 
     function onDismissNotice(notice: ToastNotice): void {
         notices.value = notices.value.filter(n => n.code !== notice.code);
-    }
-
-    /**
-     * The header's Threads opens the open conversation's threads, and its Mentions the inbox; each
-     * closes its list when it is the one open.
-     */
-    async function onListPanel(kind: "threads" | "mentions"): Promise<void> {
-        if (panelKind.value === kind) {
-            closePanel();
-            return;
-        }
-
-        const channelId = activeChannelId.value;
-        if (kind === "threads" && !channelId) {
-            return;
-        }
-
-        // The column holds one panel at a time, so the list takes an open thread's or list's place.
-        releasePanel();
-        window.clearTimeout(panelClearTimer);
-        isPaneMotionOn.value = true;
-        panelKind.value = kind;
-        shownPanel.value = kind;
-        void (channelId && kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.mentions.openInbox());
-
-        // Focus goes to the panel's first control, or its X or back chevron when it has none yet,
-        // without that button's tooltip, as a list whose first control is a tab shows none.
-        await nextTick();
-        const panel = panelElement.value;
-        const first = panel?.querySelector<HTMLElement>("[data-autofocus]");
-        const exit = panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']");
-        if (first) {
-            first.focus();
-        }
-        else if (exit) {
-            focusQuietly(exit);
-        }
     }
 
     function onThreadsTab(tab: ThreadListTab): void {
@@ -889,58 +752,6 @@
         // one follow toast at a time: a quick follow then unfollow shows only where it ended
         const notice = followNotice(isFollowing);
         notices.value = [...notices.value.filter(n => n.code !== "thread-followed" && n.code !== "thread-unfollowed"), notice];
-    }
-
-    /**
-     * A row of the threads list chose its thread: its conversation opens behind the drawer, as a
-     * sidebar row would open it, and the thread opens in the panel column in the list's place,
-     * with a back chevron that returns to the list and the row that opened it.
-     */
-    function openThreadFromList(rootId: number, channelId: string): void {
-        if (channelId !== activeChannelId.value) {
-            void shell.value.selectChannel(channelId);
-        }
-        void openThreadDrawer(channelId, rootId, "threads");
-    }
-
-    /** A thread pill, or the "Replied to a thread" label over a reply, in the open conversation. */
-    function onOpenThread(rootId: number): void {
-        if (activeChannelId.value) {
-            void openThreadDrawer(activeChannelId.value, rootId, null);
-        }
-    }
-
-    /** Back to the list the thread was opened from, with focus on the row that opened it. */
-    async function onThreadBack(): Promise<void> {
-        const rootId = drawnThread.value?.rootId;
-        const origin = threadOrigin.value ?? "threads";
-        leaveThread();
-        panelKind.value = origin;
-        shownPanel.value = origin;
-
-        // The inbox marks the row opened as its current one.
-        await nextTick();
-        panelElement.value?.querySelector<HTMLElement>(origin === "threads"
-            ? `[data-testid='thread-row-open'][data-root-id='${rootId}']`
-            : "[data-testid='mention-row-open'][aria-current='true']")?.focus();
-    }
-
-    /**
-     * A row of the mentions inbox: the shell's jump marks it opened and lands on its message, in its
-     * conversation beside the inbox, or in its thread with a way back. A phone shows one pane, so a
-     * channel mention closes the inbox to bring its conversation forward.
-     */
-    function onMentionOpen(messageId: number): void {
-        const row = shell.value.mentions.state.inbox.rows.find(r => r.message.id === messageId);
-        if (!row) {
-            return;
-        }
-
-        void shell.value.mentions.jump(row);
-        if (row.parent_id === null && isPhone.value) {
-            isListChosen.value = false;
-            closePanel();
-        }
     }
 
     /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
@@ -991,28 +802,7 @@
             event.ports[0]?.postMessage({ open: isOpen });
         }
         else if (message.type === "chat.push.open" && message.channel_id) {
-            // A tap brings what it was for to the front, even when its conversation is already
-            // the one open behind a phone's list: the thread for a reply, else the conversation,
-            // which a phone's panel would cover. A desktop shows a panel beside it, so keeps it.
-            const channelId = message.channel_id.toLowerCase();
-            const isOpenConversation = channelId === activeChannelId.value;
-            isListChosen.value = false;
-            isPaneMotionOn.value = true;
-            void shell.value.selectChannel(channelId);
-            if (rootId !== null) {
-                void landOnReply({ channelId, rootId, messageId: messageIdOf(message.message_id) });
-            }
-            else if (isPhone.value && panelKind.value === "thread") {
-                // Only the open conversation's thread is closed here, so focus never aims at a root
-                // in a feed about to be replaced, however late the switch lands; another
-                // conversation's arrival closes the thread itself and moves focus.
-                if (isOpenConversation) {
-                    closeThreadDrawer();
-                }
-            }
-            else if (isPhone.value) {
-                closePanel();
-            }
+            openFromTap(message.channel_id.toLowerCase(), rootId, messageIdOf(message.message_id));
         }
     }
 
@@ -1225,26 +1015,6 @@
         });
     }
 
-    /** Opens a mention's thread at the reply over its conversation, with a way back to the inbox. */
-    async function openThreadFromMentions(channelId: string, rootId: number, messageId: number): Promise<void> {
-        if (channelId !== activeChannelId.value) {
-            void shell.value.selectChannel(channelId);
-        }
-        await landOnReply({ channelId, rootId, messageId }, "mentions");
-    }
-
-    /** Lets go of whatever the column holds: an open thread, and the list it was opened from or the list open. */
-    function releasePanel(): void {
-        const list = panelKind.value === "thread" ? threadOrigin.value : panelKind.value;
-        leaveThread();
-        if (list === "threads") {
-            shell.value.threads.closeList();
-        }
-        else if (list === "mentions") {
-            shell.value.mentions.closeInbox();
-        }
-    }
-
     /** The message quoted under a key, if any. */
     function quoteAt(key: string | null): TimelineMessage | null {
         return key ? shell.value.messageActions.state.quotes[key] ?? null : null;
@@ -1255,114 +1025,15 @@
         return !!quote && isOwnMessage(quote, personAliasGuid.value);
     }
 
-    /**
-     * Closes the panel column. Focus returns to the header button that opened it, or on a phone
-     * to the overflow button it was chosen from, else the conversation's title.
-     */
-    function closePanel(): void {
-        if (!panelKind.value) {
-            return;
-        }
-
-        const closed = panelKind.value;
-        releasePanel();
-        panelKind.value = null;
-        finishClosing();
-
-        void nextTick(() => {
-            const root = rootElement.value;
-            (root?.querySelector<HTMLElement>(`[data-testid='header-${closed}']`)
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-more'] button")
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
-        });
-    }
-
     /** A message id the worker posted as a string, or null when it is not one. */
     function messageIdOf(value: string | undefined): number | null {
         const id = Number(value);
         return value && Number.isSafeInteger(id) && id > 0 ? id : null;
     }
 
-    /**
-     * Opens a thread in the drawer. One opened from the conversation replaces whatever the column
-     * held; one opened from a list keeps the list to go back to. Its mentions stop lighting the
-     * header's dot, as the thread is where they are read.
-     */
-    async function openThreadDrawer(channelId: string, rootId: number, origin: ThreadOrigin): Promise<void> {
-        if (origin === null && (panelKind.value === "threads" || panelKind.value === "mentions")) {
-            releasePanel();
-        }
-        shell.value.mentions.threadOpened(channelId, rootId);
-
-        threadOpenCount++;
-        landingReplyId.value = null;
-        window.clearTimeout(panelClearTimer);
-        isPaneMotionOn.value = true;
-        threadOrigin.value = origin;
-        threadChannelId = channelId;
-        panelKind.value = "thread";
-        shownPanel.value = "thread";
-        await shell.value.threads.openThread(channelId, rootId);
-    }
-
-    /** Lets go of the open thread, which saves where the reader got to, without moving focus. */
-    function leaveThread(): void {
-        if (panelKind.value === "thread") {
-            threadOpenCount++;
-            panelKind.value = null;
-            void shell.value.threads.closeThread();
-        }
-    }
-
-    /**
-     * Closes the drawer. Focus returns to the thread pill that opened it, else the root message,
-     * else the conversation's title.
-     */
-    function closeThreadDrawer(): void {
-        const rootId = drawnThread.value?.rootId;
-        releasePanel();
-        finishClosing();
-
-        void nextTick(() => {
-            const root = rootElement.value;
-            const message = root?.querySelector<HTMLElement>(`[data-testid='frame-main'] [data-message-id='${rootId}']`);
-            (message?.querySelector<HTMLElement>("[data-testid='thread-summary']")
-                ?? message
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
-        });
-    }
-
-    /** Keeps what the column drew until it has finished narrowing, then lets it go. */
-    function finishClosing(): void {
-        window.clearTimeout(panelClearTimer);
-        panelClearTimer = window.setTimeout(() => {
-            shownPanel.value = panelKind.value ? shownPanel.value : null;
-        }, panelSlideMs());
-    }
-
     /** The person's name as the chat shows it, from the session Rock opened. */
     function fullName(session: ChatShellSessionBag | null | undefined): string {
         return [session?.personNickName, session?.personLastName].filter(part => !!part).join(" ");
-    }
-
-    /** How long a pane slides: none for a move the person did not make, or when they ask for reduced motion. */
-    function paneSlideMs(): number {
-        const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-        if (!isPaneMotionOn.value || isReduced || !rootElement.value) {
-            return 0;
-        }
-
-        return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
-    }
-
-    /** How long the panel column takes to close, which its content stays drawn through. */
-    function panelSlideMs(): number {
-        const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-        if (isReduced || !rootElement.value) {
-            return 0;
-        }
-
-        return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
     }
 
     // #endregion Functions
@@ -1387,79 +1058,6 @@
         void done?.catch(() => undefined);
     });
 
-    // A pane coming into view is reachable at once; one leaving is hidden after it has slid away.
-    watch([isSidebarHidden, isConversationHidden, isPanelHidden], () => {
-        window.clearTimeout(paneGoneTimer);
-        isSidebarGone.value &&= isSidebarHidden.value;
-        isConversationGone.value &&= isConversationHidden.value;
-        isPanelGone.value &&= isPanelHidden.value;
-
-        const finish = (): void => {
-            isSidebarGone.value = isSidebarHidden.value;
-            isConversationGone.value = isConversationHidden.value;
-            isPanelGone.value = isPanelHidden.value;
-        };
-
-        const slideMs = paneSlideMs();
-        if (slideMs === 0) {
-            finish();
-        }
-        else {
-            paneGoneTimer = window.setTimeout(finish, slideMs);
-        }
-    });
-
-    // The push worker's asks are answered by the shell, which cannot see the panes: a thread is
-    // out of view unless the panel shows it, and a phone shows only one pane.
-    watchEffect(() => {
-        shell.value.state.hiddenPanes = {
-            conversation: isConversationHidden.value,
-            thread: isPanelHidden.value || panelKind.value !== "thread"
-        };
-    });
-
-    // Any conversation that opens, from a row, a push or a new message, comes forward on a phone.
-    watch([activeChannelId, draft], () => {
-        isListChosen.value = false;
-    });
-
-    // The drawer keeps the thread it last drew, so a closing drawer still has its content.
-    watch(() => shell.value.threads.state.thread, thread => {
-        if (thread) {
-            drawnThread.value = thread;
-        }
-    });
-
-    // A link to a reply opens its thread once the conversation it names is the first to open; a
-    // page load that fell back to another conversation, or a person who chose one first, drops it.
-    watch(activeChannelId, channelId => {
-        const landing = linkedReply;
-        if (!landing || !channelId) {
-            return;
-        }
-
-        linkedReply = null;
-        if (channelId === landing.channelId) {
-            void landOnReply(landing);
-        }
-    });
-
-    // A thread belongs to its own conversation, so another conversation or a draft closes it. A
-    // thread opened from the list switches to its conversation first, which keeps it open. Focus
-    // inside the closing drawer would drop to the page as it leaves reach, so it goes to the title
-    // of what replaced it, as a phone's row does when it opens a conversation.
-    watch([activeChannelId, draft], ([channelId, openDraft]) => {
-        if (panelKind.value === "thread" && (openDraft || channelId !== threadChannelId)) {
-            const hadFocus = !!panelElement.value?.contains(document.activeElement);
-            leaveThread();
-            finishClosing();
-
-            if (hadFocus) {
-                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus());
-            }
-        }
-    });
-
     // A picker belongs to a message on screen, so another conversation or a draft closes it.
     watch([activeChannelId, draft], () => {
         closeReactionPicker();
@@ -1471,20 +1069,6 @@
         const anchor = reactionPicker.value?.anchor;
         if (anchor && panelElement.value?.contains(anchor)) {
             closeReactionPicker();
-        }
-    });
-
-    // The threads list follows the open conversation; a draft has no threads, so it closes.
-    watch(activeChannelId, channelId => {
-        if (panelKind.value !== "threads") {
-            return;
-        }
-
-        if (channelId) {
-            void shell.value.threads.openList(channelId);
-        }
-        else {
-            closePanel();
         }
     });
 
@@ -1509,8 +1093,6 @@
 
     onBeforeUnmount(() => {
         resizeObserver?.disconnect();
-        window.clearTimeout(paneGoneTimer);
-        window.clearTimeout(panelClearTimer);
         navigator.serviceWorker?.removeEventListener("message", onWorkerMessage);
         void shell.value.stop();
     });
