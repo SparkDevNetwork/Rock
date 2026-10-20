@@ -285,34 +285,6 @@ const knownDifferences: KnownDifference[] = [
         optionsName: "RichUnwrap",
         expected: "",
         reason: "noscript: DOMParser parses with scripting off, so the whole payload stays inside noscript."
-    },
-    {
-        method: "Sanitize_ForeignContentVectors_GiveVerifiedOutput",
-        input: "<svg></p><style><a id=\"</style><img src=1 onerror=alert(1)>\">",
-        optionsName: "Simple",
-        expected: "<p></p>\"&gt;",
-        reason: "Newer parser rules: </p> in foreign content now ends the svg, so style is HTML raw text and img is a real element."
-    },
-    {
-        method: "Sanitize_ForeignContentVectors_GiveVerifiedOutput",
-        input: "<svg></p><style><a id=\"</style><img src=1 onerror=alert(1)>\">",
-        optionsName: "Rich",
-        expected: "<svg></svg><p></p><img src=\"1\">\"&gt;",
-        reason: "Newer parser rules: </p> in foreign content now ends the svg, so style is HTML raw text and img is a real element."
-    },
-    {
-        method: "Sanitize_ForeignContentVectors_GiveVerifiedOutput",
-        input: "<svg></p><style><a id=\"</style><img src=1 onerror=alert(1)>\">",
-        optionsName: "RichUnwrap",
-        expected: "<svg></svg><p></p><img src=\"1\">\"&gt;",
-        reason: "Newer parser rules: </p> in foreign content now ends the svg, so style is HTML raw text and img is a real element."
-    },
-    {
-        method: "Sanitize_ForeignContent_PassesTheNamespaceCheck",
-        input: "<math><mrow></p></mrow></math>",
-        optionsName: "RichMath",
-        expected: "<math><mrow></mrow></math><p></p>",
-        reason: "Newer parser rules: </p> in foreign content now ends the math element and creates an empty HTML p."
     }
 ];
 
