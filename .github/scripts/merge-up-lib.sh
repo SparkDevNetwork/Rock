@@ -30,7 +30,7 @@
 # public branches, TOKEN (the Ship Bot token).
 
 MU_CHECK_MARKER="<!-- merge-up-check -->"
-MU_AI_MARKER="<!-- ai-resolution -->"
+# AI resolution comments have one marker per conflict; see mu_ai_marker.
 MU_PUBLIC_COMMIT_URL="https://github.com/SparkDevNetwork/Rock/commit/"
 
 # Sets the paths every helper uses. Call it at the top of each step.
@@ -378,6 +378,7 @@ mu_all_content_conflicts() {
 # so an approved proposal can be recorded and replayed.
 mu_can_propose() {
   mu_all_content_conflicts "$1" || return 1
+  ! mu_has_protected_file "$1" || return 1
   [ -z "$(cut -f2 "$1/merge-rr" 2> /dev/null | grep -vxF -f - "$1/files" || true)" ]
 }
 
@@ -736,8 +737,20 @@ mu_render_ways_forward() {
   elif ! mu_all_content_conflicts "$d"; then
     echo "- Ship with \`ship-only\`, then do the merge-up by hand in SmartGit. These conflicts have no conflicting lines git can record, so Claude can't propose a resolution and none can be recorded."
     return 0
+  elif mu_has_protected_file "$d"; then
+    echo "- Ship with \`ship-only\`, then do the merge-up by hand in SmartGit. Claude can't propose a resolution here, because one of the files is AI configuration (such as \`CLAUDE.md\` or \`.claude/\`), which the AI action replaces before Claude runs."
+    return 0
   fi
 
+  mu_ai_status_line "$pr" "$ai_pr" "$ai_status"
+  echo "- Or add \`ship-only\` to ship to \`$base\` without merging up, then do the merge-up by hand in SmartGit. When that merge reaches public, its resolution is recorded, and Ship it replays it if the identical conflict comes up again."
+}
+
+# The "ways forward" line for where Claude's proposal stands: for PR $1, the
+# proposal is on PR $2 with status $3 (queued, pending or failed; anything
+# else gives the general line).
+mu_ai_status_line() {
+  local pr=$1 ai_pr=$2 ai_status=$3
   case "$ai_status" in
     queued)
       if [ "$ai_pr" = "$pr" ]; then
@@ -760,7 +773,74 @@ mu_render_ways_forward() {
     *)
       echo "- The merge-up check has Claude propose a resolution for this conflict automatically. Approve it with the \`approve-resolution\` label, then add \`ship\` again." ;;
   esac
-  echo "- Or add \`ship-only\` to ship to \`$base\` without merging up, then do the merge-up by hand in SmartGit. When that merge reaches public, its resolution is recorded, and Ship it replays it if the identical conflict comes up again."
+}
+
+# After a proposal for PR $1 finishes with status $2 (pending or failed),
+# updates the merge-up check comment, which still says Claude is proposing one.
+# Best effort: the next check rewrites the whole comment anyway.
+mu_refresh_check_comment() {
+  local pr=$1 status=$2 body="$RUNNER_TEMP/check-comment.md" queued new
+  gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$pr/comments?per_page=100" \
+    -q ".[] | select(.body | contains(\"$MU_CHECK_MARKER\")) | .body" > "$body" 2> /dev/null || return 0
+  [ -s "$body" ] || return 0
+  queued=$(mu_ai_status_line "$pr" "$pr" queued)
+  new=$(mu_ai_status_line "$pr" "$pr" "$status")
+  grep -qxF -- "$queued" "$body" || return 0
+  awk -v old="$queued" -v new="$new" '$0 == old { print new; next } { print }' "$body" > "$body.tmp"
+  mv "$body.tmp" "$body"
+  mu_set_comment "$pr" "$MU_CHECK_MARKER" "$body" || true
+}
+
+# The marker for the AI resolution comment about conflict key $1. One comment
+# per conflict, so a later proposal or failure for another conflict on the
+# same PR never replaces an earlier one (or its approval).
+mu_ai_marker() {
+  echo "<!-- ai-resolution key=$1 -->"
+}
+
+# Files that claude-code-action replaces, before Claude runs, with their
+# version from the PR's target branch (it treats the PR as untrusted). In the
+# middle of a merge-up the working files are another branch's, so the action
+# would change these files itself.
+MU_AI_PROTECTED_PATHS=".claude .mcp.json .claude.json .gitmodules .ripgreprc CLAUDE.md CLAUDE.local.md .husky"
+
+# True when a conflicted file in the step folder $1 is one of those files, so
+# whatever Claude saw of it wasn't the conflict.
+mu_has_protected_file() {
+  local f p
+  while IFS= read -r f; do
+    for p in $MU_AI_PROTECTED_PATHS; do
+      case "$f" in "$p"|"$p"/*) return 0 ;; esac
+    done
+  done < "$1/files"
+  return 1
+}
+
+# Saves the protected files as they are now (in the folder $1), so
+# mu_restore_protected can undo whatever the AI action does to them.
+mu_save_protected() {
+  local dir=$1 p present=""
+  mkdir -p "$dir"
+  for p in $MU_AI_PROTECTED_PATHS; do
+    if [ -e "$p" ]; then present="$present $p"; fi
+  done
+  echo "$present" > "$dir/present"
+  if [ -n "$present" ]; then
+    # Unquoted on purpose: one argument per path.
+    tar -cf "$dir/protected.tar" $present
+  fi
+}
+
+# Puts the protected files back exactly as mu_save_protected saw them,
+# including removing any the AI action added.
+mu_restore_protected() {
+  local dir=$1 p
+  for p in $MU_AI_PROTECTED_PATHS; do
+    rm -rf -- "$p"
+  done
+  if [ -f "$dir/protected.tar" ]; then
+    tar -xf "$dir/protected.tar"
+  fi
 }
 
 # Writes the merge-up check comment for PR $1 (into $2) from the dry run in $3.

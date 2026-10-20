@@ -226,6 +226,7 @@ jobs:
                 "$out/resolutions.json" > "$out/resolutions.tmp"
               mv "$out/resolutions.tmp" "$out/resolutions.json"
             done < "$RUNNER_TEMP/approved.txt"
+            jq -r '.key // empty' "$proposal/proposal.json" > "$RUNNER_TEMP/approved-key"
             rm -rf "$proposal"
           }
           mu_save_cache "- Approved an AI-proposed conflict resolution for PR #$PR." approve_proposal
@@ -234,12 +235,15 @@ jobs:
             gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
               -b "No AI-proposed resolution is waiting for this PR, so there was nothing to approve. Claude proposes one automatically when the merge-up check finds a conflict it can resolve; see the merge-up check comment."
           else
-            # Mark the proposal comment as approved.
+            # Mark that conflict's proposal comment as approved.
+            marker=$(mu_ai_marker "$(cat "$RUNNER_TEMP/approved-key")")
             body="$RUNNER_TEMP/ai-comment.md"
             gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR/comments?per_page=100" \
-              -q ".[] | select(.body | contains(\"$MU_AI_MARKER\")) | .body" > "$body"
-            printf '\n\n**Approved by `%s`.** Ship it will now replay this resolution when the identical conflict comes up.\n' "$APPROVER" >> "$body"
-            mu_set_comment "$PR" "$MU_AI_MARKER" "$body"
+              -q ".[] | select(.body | contains(\"$marker\")) | .body" > "$body"
+            if [ -s "$body" ]; then
+              printf '\n\n**Approved by `%s`.** Ship it will now replay this resolution when the identical conflict comes up.\n' "$APPROVER" >> "$body"
+              mu_set_comment "$PR" "$marker" "$body"
+            fi
           fi
           mu_set_label "$PR" approve-resolution false
 
@@ -354,6 +358,9 @@ jobs:
             [ -n "$f" ] || continue
             printf '%s\t%s\n' "$(git hash-object -- "$f" 2> /dev/null || echo missing)" "$f" >> "$ai/resolved-hashes"
           done < "$c/resolved"
+          # And the AI configuration files, which the action replaces with the
+          # target branch's version before Claude runs; they're put back after.
+          mu_save_protected "$ai/protected"
           {
             echo "ready=true"
             echo "from=$(cat "$c/from")"
@@ -396,6 +403,11 @@ jobs:
           ai="$RUNNER_TEMP/ai"
           c="$ai/work/run/conflict"
           from=$(cat "$c/from") into=$(cat "$c/into")
+
+          # Undo what the action did to the AI configuration files (see
+          # MU_AI_PROTECTED_PATHS). It isn't part of the proposal, and without
+          # this the check below would throw a good proposal away.
+          mu_restore_protected "$ai/protected"
 
           # No conflicted file changed at all: Claude didn't run, or gave up.
           # claude-code-action skips itself (and still reports success) when
@@ -465,9 +477,10 @@ jobs:
           }
           mu_save_cache "- Saved an AI-proposed conflict resolution for PR #$PR." save_proposal
 
+          marker=$(mu_ai_marker "$(cat "$c/key")")
           body="$ai/comment.md"
           {
-            echo "$MU_AI_MARKER"
+            echo "$marker"
             echo "### AI-proposed resolution: merging \`$from\` into \`$into\`"
             echo
             echo "Claude proposed this automatically when the merge-up check found the conflict. **Nothing uses it until a person approves it** by adding the \`approve-resolution\` label. After that, Ship it replays it whenever this exact conflict comes up, on this PR or any other, and explains it on the PR again when it does. If it's wrong, don't approve it: ship with \`ship-only\` and do the merge-up by hand instead."
@@ -495,7 +508,8 @@ jobs:
             echo
             echo "<sub>It only applies while the conflict stays exactly the same. If this PR or a public branch changes the conflict, Claude proposes again for the new one. [Workflow log]($MU_LOG_URL)</sub>"
           } > "$body"
-          mu_set_comment "$PR" "$MU_AI_MARKER" "$body"
+          mu_set_comment "$PR" "$marker" "$body"
+          mu_refresh_check_comment "$PR" pending
 
       - name: Report failure
         # Recorded as a failed attempt for this conflict, so the next check
@@ -517,16 +531,23 @@ jobs:
           }
           mu_save_cache "- Recorded a failed AI conflict resolution for PR #$PR." record_failure || true
 
+          c="$RUNNER_TEMP/ai/work/run/conflict"
+          marker=$(mu_ai_marker "$KEY")
           body="$RUNNER_TEMP/ai-failed.md"
           {
-            echo "$MU_AI_MARKER"
-            echo "**Claude couldn't propose a resolution for this merge-up conflict.** $reason"
+            echo "$marker"
+            if [ -f "$c/from" ]; then
+              echo "**Claude couldn't propose a resolution for the conflict merging \`$(cat "$c/from")\` into \`$(cat "$c/into")\`.** $reason"
+            else
+              echo "**Claude couldn't propose a resolution for this merge-up conflict.** $reason"
+            fi
             echo
             echo "It won't try again for this same conflict. Ship with \`ship-only\` and do the merge-up by hand in SmartGit; once that merge reaches public, its resolution is recorded."
             echo
             echo "[Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
           } > "$body"
-          mu_set_comment "$PR" "$MU_AI_MARKER" "$body"
+          mu_set_comment "$PR" "$marker" "$body"
+          mu_refresh_check_comment "$PR" failed
 
   check:
     needs: [learn, approve]
