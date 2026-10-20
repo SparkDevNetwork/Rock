@@ -1076,7 +1076,18 @@ namespace Rock.Model
             }
 
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", connectionType.DaysUntilRequestIdle ) );
-            return template.ResolveMergeFields( mergeFields );
+            /*
+                10/20/26 - JMH
+
+                The template can come from a REST request, so it renders with no Lava
+                commands and with person tokens turned off. The status icons only need the request flags.
+
+                Reason: The caller controls the template.
+            */
+            using ( Rock.Security.PersonTokenScope.RestrictTo( null ) )
+            {
+                return template.ResolveMergeFields( mergeFields, new List<string>() );
+            }
         }
 
         /// <summary>
