@@ -179,49 +179,6 @@
     padding: 12px 14px 6px;
 }
 
-.chat-mb-search {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    height: 36px;
-    padding: 0 12px;
-    margin: 0;
-    font-weight: 400;
-    color: var(--chat-muted);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-mb-search:focus-within {
-    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
-    box-shadow: 0 0 0 3px var(--chat-brand-ring);
-}
-
-.chat-mb-search input {
-    flex: 1;
-    min-width: 0;
-    font: inherit;
-    font-size: 13.5px;
-    color: var(--chat-text);
-    background: none;
-    border: 0;
-    outline: 0;
-}
-
-.chat-mb-search input::placeholder {
-    color: var(--chat-muted);
-}
-
-/* The filter draws its own clear button, never the browser's. */
-.chat-mb-search input::-webkit-search-cancel-button,
-.chat-mb-search input::-webkit-search-decoration {
-    display: none;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
 .chat-mb-clear {
     display: grid;
     flex: none;

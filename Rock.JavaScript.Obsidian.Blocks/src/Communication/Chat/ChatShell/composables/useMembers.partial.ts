@@ -30,6 +30,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
+import { joinNames } from "../stores/channelStore.partial";
 import { ChatError, PersonRow, RosterMember, RosterPage } from "../types.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 
@@ -259,11 +260,6 @@ export function successorChoices(state: MembersState): RosterMember[] {
 /** A person's name as the panel writes it. */
 function fullNameOf(person: { nick_name: string | null, last_name: string | null }): string {
     return `${person.nick_name ?? ""} ${person.last_name ?? ""}`.trim() || "Someone";
-}
-
-/** Names joined as "A", "A and B", or "A, B and C". */
-function joinFirstNames(names: string[]): string {
-    return names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
 /** No Add people dialog. */
@@ -858,7 +854,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             }
 
             state.adding = noAdding();
-            const text = people.length === 1 ? `Added ${fullNameOf(people[0])}` : `Added ${joinFirstNames(people.map(person => person.nick_name || fullNameOf(person)))}`;
+            const text = people.length === 1 ? `Added ${fullNameOf(people[0])}` : `Added ${joinNames(people.map(person => person.nick_name || fullNameOf(person)), 0)}`;
             notify({ code: "member.added", text, icon: "user-plus" });
             await refreshRoster(channelId);
         }
