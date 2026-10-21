@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- The words beside a switch toggle it too, as a label would. -->
     <div class="chat-set-row" :data-testid="`switch-${name}`" @click="onRowClick">
+        <!-- The words beside a switch toggle it too, as a label would. Kept inside the root, since a
+             comment beside it makes a fragment that the dialog's own styles for the row cannot reach. -->
         <span class="chat-set-txt">
             <b :id="`${baseId}-l`">{{ title }}</b> <span :id="`${baseId}-d`">{{ description }} <span v-if="extra" class="chat-set-x">{{ extra }}</span></span>
             <span v-if="note"
@@ -100,6 +101,11 @@
     border: 0;
     border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-base) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* On a phone, where a settings dialog is a sheet, the switch sits level with its title. */
+.chat-modal.is-sheet .chat-switch {
+    margin-top: 0;
 }
 
 .chat-switch:hover {
