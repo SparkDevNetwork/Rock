@@ -1291,6 +1291,26 @@
         isDetailsOpen.value = false;
     });
 
+    // A conversation that opens in place of what had focus, New message after its first message
+    // or the details of a room just left, would leave focus on the page as those go: it moves to
+    // the composer of what opened, or on a phone, where that would raise the keyboard, its title.
+    // Read before the screen changes, while what had focus is still there.
+    watch(activeChannelId, (now, before) => {
+        const active = document.activeElement;
+        const root = rootElement.value;
+        const isFocusGoing = !!now && now !== before && !!active && !!root?.contains(active)
+            && (!!active.closest("[data-testid='main-view']") || !!active.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']"));
+        if (!isFocusGoing) {
+            return;
+        }
+
+        void nextTick(() => {
+            const main = rootElement.value?.querySelector("[data-testid='frame-main']");
+            const composer = isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']");
+            (composer ?? main?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+        });
+    });
+
     // Once the person has left, the room's details have nothing left to show.
     watch(() => activeChannelId.value ? shell.value.rooms.leaveOf(activeChannelId.value).kind : null, kind => {
         if (kind === "left" && isDetailsOpen.value) {

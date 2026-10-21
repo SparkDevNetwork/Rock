@@ -2704,6 +2704,28 @@ describe("New message", () => {
         expect(directMessagesOf().discardFailed).toHaveBeenCalledTimes(1);
     });
 
+    test.each([
+        ["a wide block", 1200, "[data-testid='frame-main'] [data-testid='composer-input']"],
+        ["a phone", 390, "[data-testid='frame-main'] [data-testid='header-details']"]
+    ])("on %s, the first message opening its new conversation takes focus there, from the view going away", async (_kind, width, target) => {
+        const w = await mountBlock(width);
+        await openNewMessage(w);
+        Object.assign(directMessagesOf(), {
+            chosen: [annaPerson],
+            lookup: { status: "new", channelId: null, isSlow: false },
+            draft: { people: [annaPerson], status: "starting", body: "hello", channelGuid: null, phase: "asking" }
+        });
+        await settle();
+        (w.get("[data-testid='new-message-view'] [data-testid='composer-input']").element as HTMLElement).focus();
+
+        // as the first message's send does: the conversation Rock made opens in the view's place
+        mockShell!.state.activeChannelId = dmAnna.channel_id;
+        await settle();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get(target).element);
+    });
+
     test("the conversation found opens from its strip, closing the view", async () => {
         const w = await mountBlock(1200);
         await openNewMessage(w);
@@ -2874,6 +2896,28 @@ describe("the conversation's details", () => {
         roomsOf().state.leaves[team.channel_id] = { kind: "left" };
         await settle();
         expect(detailsDialog()).toBeNull();
+    });
+
+    test.each([
+        ["a wide block", 1200, "[data-testid='frame-main'] [data-testid='composer-input']"],
+        ["a phone", 390, "[data-testid='frame-main'] [data-testid='header-details']"]
+    ])("on %s, the next conversation a leave opens takes focus, from the dialog going away", async (_kind, width, target) => {
+        const w = await mountBlock(width);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='details-leave']")!.click();
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='leave-go']")!.focus();
+
+        // as the rooms' leave does: left, and the next conversation opened in the same turn
+        roomsOf().state.leaves[team.channel_id] = { kind: "left" };
+        mockShell!.state.activeChannelId = dmAnna.channel_id;
+        await settle();
+
+        expect(detailsDialog()).toBeNull();
+        expect(document.activeElement).toBe(w.get(target).element);
     });
 
     test("a group's Rename goes to the rooms with the name typed", async () => {
