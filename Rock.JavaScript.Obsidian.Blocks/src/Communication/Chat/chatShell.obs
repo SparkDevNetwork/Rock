@@ -1131,11 +1131,7 @@
             return;
         }
 
-        const directMessages = shell.value.directMessages;
-        [...directMessages.chosen].forEach(person => directMessages.unchoose(person.person_alias_guid));
-        directMessages.choose({ person_alias_guid: member.person_alias_guid, nick_name: member.nick_name ?? "", last_name: member.last_name ?? "", avatar_url: member.avatar_url });
-        closePanel();
-        await onOpenDirectMessage();
+        await openMainView("newdm", [{ person_alias_guid: member.person_alias_guid, nick_name: member.nick_name ?? "", last_name: member.last_name ?? "", avatar_url: member.avatar_url }]);
     }
 
     /**

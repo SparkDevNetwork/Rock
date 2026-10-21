@@ -19,7 +19,7 @@
 // All three read the same roster and the same room, by its title, its kind and its head count, so
 // they are worked out in one place.
 
-import { computed, ComputedRef, Ref } from "vue";
+import { computed, Ref } from "vue";
 import { ChatShell } from "../shell.partial";
 import { isLastLeader, searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
 
@@ -38,13 +38,6 @@ export type MembersPanelDependencies = {
     campuses: Array<{ guid: string, name?: string | null }>;
 };
 
-/** The props each part draws, bound whole. */
-export type MembersPanelViews = {
-    membersView: ComputedRef<Record<string, unknown>>;
-    removeView: ComputedRef<Record<string, unknown>>;
-    addView: ComputedRef<Record<string, unknown>>;
-};
-
 /**
  * Works out what the members panel, the remove confirm and Add people draw.
  *
@@ -52,7 +45,7 @@ export type MembersPanelViews = {
  *
  * @returns Each part's props.
  */
-export function useMembersPanel(dependencies: MembersPanelDependencies): MembersPanelViews {
+export function useMembersPanel(dependencies: MembersPanelDependencies) {
     const { shell, roomTitles, roomKinds } = dependencies;
 
     /** The church's campus names by guid in lower case, for a person's campus. */

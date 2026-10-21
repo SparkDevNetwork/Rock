@@ -3208,7 +3208,7 @@ describe("the members panel", () => {
     test.each([1200, 390])("a member's Message opens New message with that person chosen at width %i", async width => {
         const w = await mountBlock(width);
         await openTeam(w);
-        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await w.get("[data-testid='intro-members-button']").trigger("click");
         await settle();
         membersOf().state.rows = [annaMember];
         await settle();
