@@ -522,8 +522,10 @@
     color: var(--chat-danger-ink);
 }
 
+/* Stated here too, since the box's own paragraph color would otherwise win over the sentence's danger. */
 .chat-leave-box .chat-set-err {
     margin: 0 0 12px;
+    color: var(--chat-danger-ink);
 }
 
 .chat-rd-actions {
