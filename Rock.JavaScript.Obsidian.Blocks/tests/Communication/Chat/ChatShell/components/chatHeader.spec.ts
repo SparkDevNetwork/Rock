@@ -395,6 +395,23 @@ describe("the details", () => {
         expect(w.emitted("details")).toHaveLength(1);
     });
 
+    test("holds nothing focusable inside the button, which is what takes focus", () => {
+        const w = mountHeader({ title: "Worship Team", kind: "channel", isPublic: true });
+
+        const details = w.get("[data-testid='header-details']");
+        expect(details.findAll("[tabindex], button, a, input").length).toBe(0);
+        expect(details.attributes("data-header-focus")).toBeDefined();
+        expect(w.findAll("[data-header-focus]")).toHaveLength(1);
+    });
+
+    test("with no room to open, the title itself takes focus", () => {
+        const w = mountHeader({ title: "Opening chat", kind: null });
+
+        expect(w.find("[data-testid='header-details']").exists()).toBe(false);
+        expect(w.get("[data-testid='header-title']").attributes("tabindex")).toBe("-1");
+        expect(w.get("[data-testid='header-title']").attributes("data-header-focus")).toBeDefined();
+    });
+
     test.each([
         ["channel", "Channel details"],
         ["person", "Conversation details"],

@@ -125,7 +125,7 @@ function mountFrame(): Mounted {
             return () => h("div", { ref: rootElement }, [
                 h("button", { "data-testid": "browse-channels" }, "Browse channels"),
                 h("section", { "data-testid": "frame-main" }, [
-                    h("button", { "data-testid": "header-title" }, "Title"),
+                    h("button", { "data-testid": "header-title", "data-header-focus": "" }, "Title"),
                     h("button", { "data-testid": "header-threads" }, "Threads"),
                     hasJoinBar.value
                         ? h("button", { "data-testid": "join-channel" }, "Join channel")

@@ -252,7 +252,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         // slid in: the conversation's title, never its composer, which would raise the keyboard.
         if (isPhone.value) {
             await nextTick();
-            rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus();
+            rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus();
         }
     }
 
@@ -425,7 +425,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             const composer = isPhone.value ? null : root?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='composer-input']");
             (composer
                 ?? (opener?.isConnected ? opener : null)
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
         });
     }
 
@@ -446,7 +446,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         const main = rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main']");
         (main?.querySelector<HTMLElement>("[data-testid='join-channel']")
             ?? (isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']"))
-            ?? main?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+            ?? main?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
     }
 
     // #endregion Event Handlers
@@ -535,7 +535,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             const root = rootElement.value;
             (root?.querySelector<HTMLElement>(`[data-testid='header-${closed}']`)
                 ?? root?.querySelector<HTMLElement>("[data-testid='header-more'] button")
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
         });
     }
 
@@ -584,7 +584,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             const message = root?.querySelector<HTMLElement>(`[data-testid='frame-main'] [data-message-id='${rootId}']`);
             (message?.querySelector<HTMLElement>("[data-testid='thread-summary']")
                 ?? message
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-title']"))?.focus();
+                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
         });
     }
 
@@ -693,7 +693,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             finishClosing();
 
             if (hadFocus) {
-                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-testid='header-title']")?.focus());
+                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus());
             }
         }
     });

@@ -1264,7 +1264,7 @@
 
         void nextTick(() => {
             const main = rootElement.value?.querySelector("[data-testid='frame-main']");
-            main?.querySelector<HTMLElement>(isPhone.value ? "[data-testid='header-title']" : "[data-testid='composer-input']")?.focus();
+            main?.querySelector<HTMLElement>(isPhone.value ? "[data-header-focus]" : "[data-testid='composer-input']")?.focus();
         });
     });
 

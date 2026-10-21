@@ -20,8 +20,14 @@
 
             <span class="chat-header-title">
                 <span class="chat-header-name-row">
-                    <!-- Focusable from script, so a phone can move focus here when a conversation slides in. -->
-                    <b class="chat-header-name" data-testid="header-title" tabindex="-1">{{ title }}</b>
+                    <!--
+                        Where focus goes when a conversation slides in on a phone: the button around
+                        it, which holds nothing focusable, or with no room to open, the title itself.
+                    -->
+                    <b class="chat-header-name"
+                       data-testid="header-title"
+                       :tabindex="kind ? undefined : -1"
+                       :data-header-focus="kind ? undefined : ''">{{ title }}</b>
                     <span v-if="kind" class="chat-header-chev"><Icon name="down" size="xs" /></span>
                 </span>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
@@ -578,7 +584,8 @@ button.chat-header-id:hover .chat-header-chev {
             "type": "button",
             "aria-haspopup": "dialog",
             "aria-label": `${props.title}, ${props.kind === "channel" ? "channel" : "conversation"} details`,
-            "data-testid": "header-details"
+            "data-testid": "header-details",
+            "data-header-focus": ""
         }
         : {});
 

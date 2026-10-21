@@ -698,7 +698,7 @@ describe("focus across the phone panes", () => {
 
         await openRow(w, team.channel_id);
 
-        expect(document.activeElement).toBe(w.get("[data-testid='header-title']").element);
+        expect(document.activeElement).toBe(w.get("[data-testid='header-details']").element);
     });
 
     test("returns on Back to the row of the conversation just left", async () => {
@@ -1910,7 +1910,7 @@ describe("a push about a thread reply", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
         expect(threadsOf().closeThread).toHaveBeenCalled();
         expect(document.activeElement).not.toBe(document.body);
-        expect(document.activeElement).toBe(w.get("[data-testid='header-title']").element);
+        expect(document.activeElement).toBe(w.get("[data-testid='header-details']").element);
     });
 
     test("on a desktop, a root's tap leaves an open thread's drawer beside the conversation", async () => {
@@ -2476,7 +2476,7 @@ describe("a channel the person has not joined", () => {
         rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true });
         await settle();
 
-        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-title']").element);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-details']").element);
     });
 
     test("leaves focus alone after a join when the person was elsewhere", async () => {
