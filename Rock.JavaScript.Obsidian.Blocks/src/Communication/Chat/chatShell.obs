@@ -1228,6 +1228,12 @@
 
     // #region Watchers
 
+    // A Message belongs to this opening of Members, even if the same room's panel is closed
+    // and reopened before Vue's next render. Invalidate it at each change, not after batching.
+    watch([shell, activeChannelId, panelKind], () => {
+        memberMessageGeneration++;
+    }, { flush: "sync" });
+
     // Before the new feed mounts, which reads it once.
     watch(activeChannelId, (now, before) => {
         isFeedEntering.value = !!now && !!before && now !== before;
@@ -1347,6 +1353,7 @@
     });
 
     onBeforeUnmount(() => {
+        memberMessageGeneration++;
         resizeObserver?.disconnect();
         navigator.serviceWorker?.removeEventListener("message", onWorkerMessage);
         void shell.value.stop();
