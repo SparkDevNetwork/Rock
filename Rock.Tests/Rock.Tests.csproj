@@ -340,6 +340,7 @@
     <Compile Include="Model\PageTests.cs" />
     <Compile Include="Model\PersonalLinkServiceTests.cs" />
     <Compile Include="Model\BinaryFileTypeTests.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateDocumentTests.cs" />
     <Compile Include="Model\ModelAuditHtmlTests.cs" />
     <Compile Include="Model\LocationFormattedHtmlAddressTests.cs" />
     <Compile Include="Reporting\ReportingHelperTests.cs" />
