@@ -13,7 +13,8 @@
              tabindex="-1"
              data-testid="profile-card"
              :style="cardStyles"
-             @keydown="onKeydown">
+             @keydown="onKeydown"
+             @focusout="onFocusOut">
             <div class="chat-pc-band" aria-hidden="true"></div>
             <div class="chat-pc-body">
                 <span class="chat-pc-av"><Avatar :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" /></span>
@@ -334,6 +335,31 @@
         }
     }
 
+    /**
+     * Focus leaving for somewhere outside the card, as Tab past its last control takes it, closes
+     * the card, leaving focus there; the card is not modal, so it does not hold Tab inside.
+     * Focus leaving the window says nothing about the card.
+     */
+    function onFocusOut(event: FocusEvent): void {
+        const next = event.relatedTarget;
+        if (next instanceof Node && !cardElement.value?.contains(next)) {
+            void close(false);
+        }
+    }
+
+    /**
+     * Escape closes the card wherever focus is, as on the page after a press that put focus
+     * nowhere. Taken first, so nothing behind the card closes with it; inside, the card's own
+     * handler has it.
+     */
+    function onDocumentKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape" && !cardElement.value?.contains(event.target as Node)) {
+            event.preventDefault();
+            event.stopPropagation();
+            void close(true);
+        }
+    }
+
     /** A press anywhere outside the card closes it, leaving focus where the press put it. */
     function onDocumentPress(event: Event): void {
         const target = event.target as Node;
@@ -387,12 +413,14 @@
     onMounted(async () => {
         // mousedown rather than click, so a press that starts a text selection elsewhere still closes it.
         document.addEventListener("mousedown", onDocumentPress, true);
+        document.addEventListener("keydown", onDocumentKeydown, true);
         await nextTick();
         cardElement.value?.focus({ preventScroll: true });
     });
 
     onBeforeUnmount(() => {
         document.removeEventListener("mousedown", onDocumentPress, true);
+        document.removeEventListener("keydown", onDocumentKeydown, true);
     });
 
     // #endregion Lifecycle Hooks

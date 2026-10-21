@@ -128,6 +128,51 @@ describe("the card", () => {
         expect(document.activeElement).toBe(opener);
     });
 
+    test("closes when Tab takes focus out of it, leaving focus where Tab put it", async () => {
+        const before = document.createElement("button");
+        const after = document.createElement("button");
+        document.body.append(before, after);
+        before.focus();
+        const w = mountCard();
+        await settle();
+        const message = w.get("[data-testid='profile-message']").element as HTMLElement;
+        message.focus();
+
+        // as a browser moves focus on Tab past the card's last control
+        message.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: after }));
+        after.focus();
+        await settle();
+
+        expect(w.emitted("close")).toHaveLength(1);
+        expect(document.activeElement).toBe(after);
+    });
+
+    test("stays open as focus moves between its own parts", async () => {
+        const w = mountCard();
+        await settle();
+        const message = w.get("[data-testid='profile-message']").element as HTMLElement;
+
+        card(w).dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: message }));
+        await settle();
+
+        expect(w.emitted("close")).toBeUndefined();
+    });
+
+    test("closes on Escape wherever focus is, giving focus back to what opened it", async () => {
+        const opener = document.createElement("button");
+        document.body.appendChild(opener);
+        opener.focus();
+        const w = mountCard();
+        await settle();
+
+        // a key that reaches the page outside the card, as one with focus nowhere does
+        document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+
+        expect(w.emitted("close")).toHaveLength(1);
+        expect(document.activeElement).toBe(opener);
+    });
+
     test("closes on a press outside it", async () => {
         const outside = document.createElement("div");
         document.body.appendChild(outside);
