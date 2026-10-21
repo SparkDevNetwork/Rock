@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- Always on the page, so a screen reader is already listening when a toast is added to it. -->
     <div ref="toastsElement" class="chat-toasts" data-testid="error-toast" role="status">
+        <!-- Always on the page, so a screen reader is already listening when a toast is added to it. -->
         <TransitionGroup name="chat-toast">
             <div v-for="toast in toasts"
                  :key="toast.key"

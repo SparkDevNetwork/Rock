@@ -203,6 +203,29 @@ test('it refuses a literal inside a bound style value and in a static style in s
   assert.deepEqual(linesOf(hits), [2, 3, 4], hits.join(' | '));
 });
 
+// A comment beside a template's root makes the built component a fragment, which drops the
+// attributes and scoped rules a parent gives it; the test renderer keeps one root, so only the
+// built block shows it, and only this gate catches it before then.
+test('it refuses a comment beside a template root and passes one inside it', () => {
+  const planted = [
+    '<template>',
+    '    <!-- beside the root -->',
+    '    <div class="chat-row">',
+    '        <!-- inside the root -->',
+    '        <template v-if="isShown">',
+    '            <!-- inside a slot template -->',
+    '        </template>',
+    '    </div>',
+    '    <!-- after the root -->',
+    '</template>',
+  ].join('\n');
+
+  const hits = scan(`${shell}/components/example.partial.obs`, planted);
+
+  assert.deepEqual(linesOf(hits), [2, 9], hits.join(' | '));
+  assert.match(hits[0], /comment beside the template's root/);
+});
+
 test('run on the red fixtures, it names each hole a whole-string check would miss', () => {
   const result = run('--root', 'check-styles-fixtures/red');
 

@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- A channel: one reply line above the head, joined to the face below by a spine. -->
     <div v-if="isCommunity" class="chat-quote-row is-community" :class="{ 'is-gone': isGone }" data-testid="message-quote">
+        <!-- A channel: one reply line above the head, joined to the face below by a spine. -->
         <span class="chat-quote-spine" data-testid="quote-spine" aria-hidden="true"></span>
         <span v-if="isGone" class="chat-quote-line is-gone">
             <span class="chat-sr-only">{{ label }}. </span>
@@ -15,8 +15,8 @@
         </button>
     </div>
 
-    <!-- A direct message: a quiet ghost of the original, its fill matching whose bubble it came from. -->
     <span v-else-if="isGone" class="chat-quote is-gone" :class="{ 'is-own': isOwn }" data-testid="message-quote">
+        <!-- A direct message: a quiet ghost of the original, its fill matching whose bubble it came from. -->
         <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" />{{ label }}</span>
         <span class="chat-quote-body" data-testid="quote-body"><Icon :name="goneIcon" size="xs" />{{ goneText }}</span>
     </span>

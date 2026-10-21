@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- A block post's card. In bubbles it carries its own head; in Community the row's head stands over it. -->
     <div class="chat-card" data-testid="block-card">
+        <!-- A block post's card. In bubbles it carries its own head; in Community the row's head stands over it. -->
         <template v-if="head">
             <div class="chat-card-head">
                 <Avatar :people="[head.face]" :size="22" />

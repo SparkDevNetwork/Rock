@@ -3,7 +3,9 @@
 // a literal of its own: a hex, rgb(), rgba(), hsl(), hsla() or named color, a duration in ms or s,
 // or a cubic-bezier() curve. It reads a component's style block, its inline styles, bound or not,
 // and its script, where a style object, a style property or an animation can carry the same
-// literal by another road. The keywords transparent, currentColor and inherit are not colors, and
+// literal by another road. It also refuses a comment beside a template's root: the built block
+// keeps template comments, so one there makes the component a fragment, and the classes, test ids
+// and scoped rules its parent gives it are dropped, which the test renderer never shows. The keywords transparent, currentColor and inherit are not colors, and
 // a color-mix() of tokens is allowed; a color-mix() with a literal in it is caught by the literal.
 //
 // Two places are exempt, because they are where the values live: the token sheet, chat.css, which
@@ -205,9 +207,19 @@ function scanScript(file, text, start, end, hits) {
   }
 }
 
-/** Reads a template's style attributes: a static one as CSS, a bound one as script. */
+/** Reads a template's style attributes, a static one as CSS and a bound one as script, and its root comments. */
 function scanTemplate(file, text, start, end, hits) {
   const template = text.slice(start, end);
+  // The root's own indent is the first element's; a comment at that indent sits beside it.
+  const rootIndent = /\n([ \t]*)<(?!!--)/.exec(template)?.[1];
+  if (rootIndent !== undefined) {
+    for (const match of template.matchAll(/\n([ \t]*)<!--/g)) {
+      if (match[1] === rootIndent) {
+        hits.push(`${file}:${lineAt(text, start + match.index + 1)}: a comment beside the template's root, which makes the built component a fragment; put it inside the root`);
+      }
+    }
+  }
+
   // Either quote may wrap an attribute, so the value runs to the quote that opened it.
   for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
     const value = match[4];
@@ -288,9 +300,9 @@ if (invokedDirectly) {
   }
 
   if (hits.length > 0) {
-    console.error('style literals in chat components:');
+    console.error('style literals or root comments in chat components:');
     for (const hit of hits) console.error(`  ${hit}`);
-    console.error('\nName the value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token.');
+    console.error('\nName a value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token; move a root comment inside the root.');
     process.exit(1);
   }
 

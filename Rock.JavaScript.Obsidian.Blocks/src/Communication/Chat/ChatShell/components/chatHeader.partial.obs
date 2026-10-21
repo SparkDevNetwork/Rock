@@ -136,8 +136,8 @@
         <span>{{ banner }}</span>
     </div>
 
-    <!-- A line of no height at the feed's top, so the sweep sits over the messages rather than pushing them down. -->
     <div class="chat-conn-bar-host">
+        <!-- A line of no height at the feed's top, so the sweep sits over the messages rather than pushing them down. -->
         <Transition name="chat-fade">
             <div v-if="connection" class="chat-conn-bar" data-testid="connection-sweep"></div>
         </Transition>

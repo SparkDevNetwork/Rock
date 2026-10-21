@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- A button in words where the menu names its choice, as the intro's notify mode; else an icon. -->
     <button v-if="buttonText"
             ref="textAnchor"
             v-bind="anchorAttrs"
@@ -9,6 +8,7 @@
             aria-haspopup="menu"
             :aria-expanded="isOpen ? 'true' : 'false'"
             @click="onAnchorClick">
+        <!-- A button in words where the menu names its choice, as the intro's notify mode; else an icon. -->
         <Icon :name="icon" size="xs" />{{ buttonText }}
     </button>
     <IconButton v-else
@@ -21,11 +21,11 @@
                 :isTooltipDisabled="isOpen"
                 @click="onAnchorClick" />
 
-    <!--
-        Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
-        a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
-    -->
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <!--
+            Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+            a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
+        -->
         <Transition name="chat-pop">
             <div v-if="isOpen"
                  ref="menuElement"
