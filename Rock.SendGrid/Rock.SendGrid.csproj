@@ -72,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Communications\Transport\SendGridHttp.cs" />
     <Compile Include="Webhook\SendGridEvent.cs" />
+    <Compile Include="Webhook\SendGridEventWebhookSignature.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
