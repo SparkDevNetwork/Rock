@@ -732,12 +732,10 @@ namespace Rock.Communication
             // To
             var toEmailAddress = new RockEmailMessageRecipient( null, null )
             {
-                To = rockMessageRecipient
-                    .To
-                    .ResolveMergeFields( rockMessageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
-                Name = rockMessageRecipient
-                    .Name
-                    .ResolveMergeFields( rockMessageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands )
+                To = rockMessageRecipient.IsToLavaTemplate
+                    ? rockMessageRecipient.To.ResolveMergeFields( rockMessageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands )
+                    : rockMessageRecipient.To,
+                Name = rockMessageRecipient.Name
             };
 
             recipientEmail.SetRecipients( new List<RockEmailMessageRecipient> { toEmailAddress } );

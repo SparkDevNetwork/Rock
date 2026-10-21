@@ -1982,6 +1982,72 @@ namespace Rock.Tests.Integration.Communications
             };
         }
 
+        
+        [TestMethod]
+        public void SendRockMessageShouldRenderSystemCommunicationToAsLava()
+        {
+            var systemCommunication = new SystemCommunication
+            {
+                From = "system@test.com",
+                FromName = "System",
+                To = "{{RecipientEmail}}",
+                Subject = "Test",
+                Body = "Test"
+            };
+
+            var actualEmail = new RockEmailMessage( systemCommunication )
+            {
+                AdditionalMergeFields = { { "RecipientEmail", "admin@test.com" } }
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>() { CallBase = true };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( new EmailSendResponse { Status = CommunicationRecipientStatus.Delivered } );
+
+            emailTransport.Object.Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            Assert.That.IsEmpty( errorMessages );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem => rem.GetRecipients().Single().To == "admin@test.com" ) );
+        }
+
+        [TestMethod]
+        public void SendRockMessageShouldNotRenderRecipientSuppliedToAsLava()
+        {
+            var actualEmail = new RockEmailMessage
+            {
+                FromEmail = "system@test.com",
+                FromName = "System",
+                Subject = "Test",
+                Message = "Test",
+                AdditionalMergeFields = { { "RecipientEmail", "admin@test.com" } }
+            };
+
+            actualEmail.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( "{{RecipientEmail}}", null ) );
+
+            var emailTransport = new Mock<EmailTransportComponent>() { CallBase = true };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( new EmailSendResponse { Status = CommunicationRecipientStatus.Delivered } );
+
+            emailTransport.Object.Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem => rem.GetRecipients().Single().To == "{{RecipientEmail}}" ) );
+        }
+
         [TestCleanup]
         public void TestCleanUp()
         {
@@ -2008,3 +2074,4 @@ namespace Rock.Tests.Integration.Communications
         }
     }
 }
+
