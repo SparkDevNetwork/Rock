@@ -345,20 +345,28 @@ namespace Rock.Field.Types
         #region Value Hinting
 
         /// <inheritdoc/>
-        /// <remarks>
-        /// The displayed value is a full profile link, but what is stored is only the
-        /// part after the configured base url. Said explicitly because the display and
-        /// the storage differ, and a caller copying the link stores the base url twice.
-        /// </remarks>
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
+            /*
+                10/21/26 - CLAUDE
+
+                This hint used to say to store only the handle, on the belief that Rock
+                adds the base url when it builds the link. It does not. The editor adds
+                the base url on save, in GetPrivateEditValue, so the stored value is the
+                full profile url. GetHtmlValue passes the stored value straight to the
+                display template, and the default template uses it as the href. A value
+                written directly, as an agent does, skips GetPrivateEditValue, so a bare
+                handle was stored as is and shown as a broken relative link.
+
+                Reason: The stored value must be the full profile url the editor writes.
+            */
             var baseUrl = privateConfigurationValues.GetValueOrNull( BASEURL );
 
-            var valueFormat = "The account name or handle on its own, not a full profile url. Rock builds the link by appending this to the base url configured on the field.";
+            var valueFormat = "The full profile url, as the editor stores it, not the account name or handle on its own. The stored value is used as the link exactly as written, so a bare handle becomes a broken link.";
 
             if ( baseUrl.IsNotNullOrWhiteSpace() )
             {
-                valueFormat += $" The base url here is '{baseUrl}', so store only what would follow it.";
+                valueFormat += $" The base url here is '{baseUrl}', so store it followed by the handle, as in {baseUrl.TrimEnd( '/' )}/handle.";
             }
 
             valueFormat += " A value with a scheme other than http or https, or one containing an HTML character reference, is displayed as plain text and is not passed to the display template. HTML tags, Lava and event handler attributes such as onclick= are rejected on save.";
