@@ -413,6 +413,16 @@ describe("the person's own switches", () => {
         expect(s.prefs.state.meSave?.state).toBe("saved");
     });
 
+    test("a sidebar load while a switch's save is out leaves that switch as the person set it", () => {
+        const s = setup();
+        s.prefs.setMe({ show_profile_details: true, is_open_dm_allowed: false, reaction_push: true });
+
+        void s.prefs.setPersonSetting("open_dm", true);
+        s.prefs.setMe({ show_profile_details: false, is_open_dm_allowed: false, reaction_push: false });
+
+        expect(s.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false });
+    });
+
     test("a privacy switch goes through Rock's door, one setting a call", async () => {
         const s = setup();
         s.prefs.setMe({ show_profile_details: true, is_open_dm_allowed: false, reaction_push: true });

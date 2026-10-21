@@ -321,11 +321,18 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 return;
             }
 
-            state.me = {
+            const read: MeSettings = {
                 show_profile_details: me.show_profile_details === true,
                 is_open_dm_allowed: me.is_open_dm_allowed === true,
                 reaction_push: me.reaction_push !== false
             };
+
+            // A switch whose save is out keeps what the person chose; its own answer settles it.
+            for (const key of Object.keys(meFields) as MeKey[]) {
+                if (!state.meSaving[key]) {
+                    state.me[meFields[key]] = read[meFields[key]];
+                }
+            }
         },
 
         roomOf: (channelId: string): RoomPrefs => state.rooms[channelId] ?? { save: null, notes: {} },
