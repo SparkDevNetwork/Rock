@@ -777,7 +777,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( hasSearchGroup && attendance.SearchResultGroup != null )
             {
-                lSearchResultGroupName.Text = attendance.SearchResultGroup.Name;
+                lSearchResultGroupName.Text = attendance.SearchResultGroup.Name.EncodeHtml();
 
                 rptSearchGroupAdults.DataSource = GetSearchGroupAdults( rockContext, attendance.SearchResultGroupId.Value );
                 rptSearchGroupAdults.DataBind();
@@ -801,7 +801,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( hasSearchValue )
             {
-                lSearchValue.Text = attendance.SearchValue;
+                lSearchValue.Text = attendance.SearchValue.EncodeHtml();
                 lSearchValue.Visible = true;
             }
             else
@@ -851,7 +851,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     return new SearchGroupAdult
                     {
-                        FullName = gm.Person.FullName,
+                        FullName = gm.Person.FullName.EncodeHtml(),
                         ProfileUrl = LinkedPageUrl( AttributeKey.PersonProfilePage, profileParams ),
                         MobileNumberFormatted = mobile?.NumberFormatted ?? string.Empty
                     };
