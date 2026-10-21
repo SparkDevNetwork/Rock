@@ -95,6 +95,12 @@ export type MembersState = {
     successor: MemberSearchState;
     successorRefusal: string | null;
 
+    /**
+     * Rock said the person asked about is the room's last leader, though the loaded roster showed
+     * another, so the confirm becomes the dialog that asks who leads next.
+     */
+    isSuccessorAsked: boolean;
+
     /** The Add people dialog. */
     adding: AddPeopleState;
 };
@@ -216,6 +222,7 @@ function emptyState(): MembersState {
         successorQuery: "",
         successor: noSearch(),
         successorRefusal: null,
+        isSuccessorAsked: false,
         adding: noAdding()
     };
 }
@@ -240,6 +247,10 @@ function matchesFor(rows: RosterMember[], search: MemberSearchState, query: stri
  * @returns True when they lead and nobody else loaded does.
  */
 export function isLastLeader(state: MembersState, personAliasGuid: string): boolean {
+    if (state.isSuccessorAsked && state.confirming?.person_alias_guid === personAliasGuid) {
+        return true;
+    }
+
     const leaders = state.rows.filter(member => member.is_leader);
     return leaders.some(member => member.person_alias_guid === personAliasGuid) && leaders.length === 1;
 }
@@ -675,6 +686,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             state.successorQuery = "";
             state.successor = noSearch();
             state.successorRefusal = null;
+            state.isSuccessorAsked = false;
         },
 
         cancelRemove: (): void => {
@@ -683,6 +695,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             state.successorQuery = "";
             state.successor = noSearch();
             state.successorRefusal = null;
+            state.isSuccessorAsked = false;
         },
 
         remove: async (replacementPersonAliasGuid): Promise<void> => {
@@ -738,6 +751,18 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
+            // A leader removed with no one named, whom the loaded roster did not show as the last,
+            // is the last to Rock: the confirm comes back as the dialog that asks who leads next.
+            if (answer.code === "door.bad_request" && !replacement && target.is_leader) {
+                delete state.removals[personAliasGuid];
+                cancelSearch("successor");
+                state.confirming = target;
+                state.successorQuery = "";
+                state.successor = noSearch();
+                state.isSuccessorAsked = true;
+                return;
+            }
+
             if (answer.code !== "ok") {
                 // The person was gone before the door looked: the row is stale and leaves once read.
                 refuse(answer.message || `Couldn't remove ${firstName}. Try again in a moment.`, answer.code === "door.not_member");
@@ -747,6 +772,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             // Pending is done as well: Rock has made the change, and the platform takes it in a moment.
             if (state.confirming?.person_alias_guid === personAliasGuid) {
                 state.confirming = null;
+                state.isSuccessorAsked = false;
             }
             dropRow(personAliasGuid);
             if (!replacement) {

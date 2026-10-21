@@ -446,7 +446,7 @@ describe("stopping", () => {
 //                   titleOf?, isChatAdministrator?, campusOnly? })
 //   state += canManageMembers, isChatAdministrator, removals: { [guid]: { kind: "removing" } |
 //            { kind: "refused", text, isStale } }, confirming: RosterMember | null,
-//            successorQuery, successor: MemberSearchState, successorRefusal: string | null,
+//            successorQuery, successor: MemberSearchState, successorRefusal: string | null, isSuccessorAsked,
 //            adding: { isOpen, query, people: PersonRow[] | null, isSearching, error, isAdding,
 //                      refusal: { text, personAliasGuid } | null }
 //   askRemove(guid), cancelRemove(), remove(replacementGuid?), dismissRemoval(guid),
@@ -795,6 +795,40 @@ describe("removing a leader", () => {
 
         members.cancelRemove();
         expect(members.state.successorRefusal).toBeNull();
+    });
+
+    test("a leader the roster showed beside another, whom Rock calls the last, gets the dialog that asks who leads next", async () => {
+        const lastLeader: Answer = { code: "door.bad_request", message: "Choose who leads this channel next before removing its last leader.", isPending: false };
+        const { members, doorCalls } = doorHarness({ calls: [page([tom, grace, anna]), page([grace, anna])], answers: [lastLeader, ok], isChatAdministrator: true });
+        await members.open(channel);
+        members.askRemove(guid(1));
+        expect(isLastLeader(members.state, guid(1))).toBe(false);
+
+        await members.remove();
+
+        expect(members.state.confirming?.nick_name).toBe("Tom");
+        expect(isLastLeader(members.state, guid(1))).toBe(true);
+        expect(members.state.removals[guid(1)]).toBeUndefined();
+        expect(members.state.successorRefusal).toBeNull();
+
+        await members.remove(guid(2));
+        expect(doorCalls.filter(c => c.door === "removeMember").map(c => c.args[2])).toEqual([null, guid(2)]);
+        expect(members.state.confirming).toBeNull();
+
+        members.askRemove(guid(5));
+        expect(isLastLeader(members.state, guid(5))).toBe(false);
+    });
+
+    test("a refusal of a member who does not lead stays under their row", async () => {
+        const refused: Answer = { code: "door.bad_request", message: "Choose who leads this channel next before removing its last leader.", isPending: false };
+        const { members } = doorHarness({ calls: [page([tom, anna])], answers: [refused] });
+        await members.open(channel);
+        members.askRemove(guid(2));
+
+        await members.remove();
+
+        expect(members.state.confirming).toBeNull();
+        expect(members.state.removals[guid(2)]).toEqual({ kind: "refused", text: "Choose who leads this channel next before removing its last leader.", isStale: false });
     });
 });
 
