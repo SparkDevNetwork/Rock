@@ -151,7 +151,9 @@ namespace RockWeb.Blocks.Finance
 
         /// <summary>
         /// Gets the person context, but only if the current person is allowed to view that
-        /// person's contribution statements.
+        /// person's contribution statements. This is allowed if the person is the current
+        /// person, shares the same giving unit, is one of the current person's businesses,
+        /// or the current person is authorized to view financial transactions.
         /// </summary>
         /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
         private Person GetAuthorizedContextPerson()
@@ -164,10 +166,16 @@ namespace RockWeb.Blocks.Finance
                 return null;
             }
 
+            var isCurrentPerson = contextPerson.Id == currentPerson.Id;
             var isInGivingUnit = contextPerson.GivingId.IsNotNullOrWhiteSpace()
                 && contextPerson.GivingId == currentPerson.GivingId;
 
-            if ( isInGivingUnit || currentPerson.GetBusinesses().Any( b => b.Id == contextPerson.Id ) )
+            if ( isCurrentPerson || isInGivingUnit || currentPerson.GetBusinesses().Any( b => b.Id == contextPerson.Id ) )
+            {
+                return contextPerson;
+            }
+
+            if ( new FinancialTransaction().IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
                 return contextPerson;
             }
@@ -224,7 +232,7 @@ namespace RockWeb.Blocks.Finance
             {
                 mergeFields.Add( "PersonGuid", TargetPerson.Guid );
             }
-            
+
             var template = GetAttributeValue( "LavaTemplate" );
 
             lResults.Text = template.ResolveMergeFields( mergeFields );
