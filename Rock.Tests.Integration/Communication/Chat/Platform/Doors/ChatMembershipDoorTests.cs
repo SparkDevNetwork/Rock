@@ -16,11 +16,20 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.Entity.Infrastructure.Interception;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Communication.Chat.Platform.Doors;
+using Rock.Communication.Chat.Platform.Session;
+using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.Communication.Chat.Platform.Sync;
 using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
@@ -682,6 +691,179 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 var row = payload.Rows( "members" ).Single( r => ( Guid ) r[0] == room && ( Guid ) r[1] == scene.Alias( bo ) );
                 Assert.IsTrue( ( bool ) payload.Value( "members", row, "is_leader" ), "the platform is told the replacement leads" );
                 Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        [Timeout( 60000 )]
+        public async Task TwoAdministratorsRemovingDifferentLeadersCannotLeaveTheChannelWithoutALeader()
+        {
+            using ( var scene = new ChatDoorScene() )
+            using ( var firstContext = new RockContext() )
+            using ( var secondContext = new RockContext() )
+            using ( var overlap = new PausedMembershipWrite( firstContext ) )
+            {
+                var firstAdmin = scene.AddChatPerson( "First admin" );
+                var secondAdmin = scene.AddChatPerson( "Second admin" );
+                scene.MakeChatAdministrator( firstAdmin );
+                scene.MakeChatAdministrator( secondAdmin );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var leaderRole = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Two leaders" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leaderRole );
+                scene.Fixture.AddMember( room, bo, m => m.GroupRoleId = leaderRole );
+                scene.WaitForPushes();
+                var adaAlias = scene.Alias( ada );
+                var boAlias = scene.Alias( bo );
+
+                Task<Rock.ViewModels.Blocks.Communication.Chat.ChatShell.ChatMembershipResultBag> RemoveAsync( RockContext rockContext, int adminId, Guid target )
+                {
+                    return Task.Run( async () =>
+                    {
+                        using ( ChatSyncProjectionFixture.InsideRequest() )
+                        {
+                            var caller = new PersonService( rockContext ).Get( adminId );
+                            var session = ChatSessionHelper.BuildSessionContext( caller, scene.Configuration, rockContext );
+                            return await ChatDoorHelper.RemoveMemberAsync( caller, room, target, null, session, rockContext );
+                        }
+                    } );
+                }
+
+                var first = RemoveAsync( firstContext, firstAdmin, adaAlias );
+                Task<Rock.ViewModels.Blocks.Communication.Chat.ChatShell.ChatMembershipResultBag> second = null;
+                try
+                {
+                    Assert.IsTrue( overlap.WriteReached.Wait( TimeSpan.FromSeconds( 15 ) ), "the first request reached its actual membership write" );
+                    second = RemoveAsync( secondContext, secondAdmin, boAlias );
+
+                    // Keep the first write suspended until the second request either commits its
+                    // stale decision, or SQL proves it is waiting for the room's application lock.
+                    // Merely sleeping here would let a slow request hide the race.
+                    var wait = Stopwatch.StartNew();
+                    var isWaitingForLock = false;
+                    using ( var observer = new RockContext() )
+                    {
+                        while ( !second.IsCompleted && !isWaitingForLock && wait.Elapsed < TimeSpan.FromSeconds( 10 ) )
+                        {
+                            isWaitingForLock = observer.Database.SqlQuery<int>(
+                                "SELECT COUNT(*) FROM sys.dm_tran_locks WHERE resource_type = 'APPLICATION'"
+                                + " AND resource_database_id = DB_ID() AND request_status = 'WAIT'"
+                                + " AND resource_description LIKE 'Rock.Communication.Chat.Platform%'" ).Single() > 0;
+                            if ( !isWaitingForLock )
+                            {
+                                await Task.Delay( 20 );
+                            }
+                        }
+                    }
+
+                    Assert.IsTrue( second.IsCompleted || isWaitingForLock, "the second request overlapped the first write, rather than starting after it" );
+                }
+                finally
+                {
+                    overlap.ReleaseWrite.Set();
+                    await first;
+                    if ( second != null )
+                    {
+                        await second;
+                    }
+                }
+
+                TestContext.WriteLine( $"First removal: {first.Result.Code}; second removal: {second.Result.Code}; remaining members: {scene.ActiveMembers( room ).Count}." );
+                Assert.AreEqual( "ok", first.Result.Code, first.Result.Message );
+                Assert.AreEqual( "door.bad_request", second.Result.Code, "after the first removal, the remaining leader needs a replacement" );
+                CollectionAssert.AreEquivalent( new[] { bo }, scene.ActiveMembers( room ), "one live leader remains" );
+            }
+        }
+
+        [TestMethod]
+        [Timeout( 30000 )]
+        public void ARemovalWhoseChannelLockIsHeldAnswersTryAgainAndChangesNothing()
+        {
+            using ( var scene = new ChatDoorScene() )
+            using ( var holder = new RockContext() )
+            {
+                var admin = scene.AddChatPerson( "Admin" );
+                scene.MakeChatAdministrator( admin );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var leaderRole = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Busy room" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leaderRole );
+                scene.Fixture.AddMember( room, bo );
+                scene.WaitForPushes();
+
+                // A separate SQL session represents another server holding this room's lock.
+                // It cannot be bypassed by a process-local lock or a second provider instance.
+                holder.Database.Connection.Open();
+                var acquired = holder.Database.SqlQuery<int>(
+                    "DECLARE @result int; EXEC @result = sys.sp_getapplock @Resource = @p0,"
+                    + " @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = 0; SELECT @result;",
+                    typeof( ChatDoorHelper ).FullName + ":" + room.ToString( "N" ) ).Single();
+                Assert.IsTrue( acquired >= 0, "the competing server holds the room's SQL application lock" );
+
+                var result = scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( bo ) );
+
+                Assert.AreEqual( "door.not_allowed", result.Code );
+                StringAssert.Contains( result.Message, "Try again" );
+                CollectionAssert.AreEquivalent( new[] { ada, bo }, scene.ActiveMembers( room ), "nothing changed without the lock" );
+                Assert.IsTrue( scene.Memberships( room, ada ).Single().GroupRoleId == leaderRole );
+                Assert.IsTrue( scene.Memberships( room, bo ).Single().GroupRoleId != leaderRole );
+            }
+        }
+
+        /// <summary>
+        /// Owns an EF command interceptor that pauses one request immediately before its first
+        /// membership write, after its leader and projection reads have completed.
+        /// </summary>
+        private sealed class PausedMembershipWrite : DbCommandInterceptor, IDisposable
+        {
+            private readonly RockContext _context;
+
+            private int _hasPaused;
+
+            public ManualResetEventSlim WriteReached { get; } = new ManualResetEventSlim();
+
+            public ManualResetEventSlim ReleaseWrite { get; } = new ManualResetEventSlim();
+
+            public PausedMembershipWrite( RockContext context )
+            {
+                _context = context;
+                DbInterception.Add( this );
+            }
+
+            public override void NonQueryExecuting( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
+            {
+                PauseWrite( command, interceptionContext );
+            }
+
+            public override void ReaderExecuting( DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext )
+            {
+                PauseWrite( command, interceptionContext );
+            }
+
+            private void PauseWrite( DbCommand command, DbInterceptionContext interceptionContext )
+            {
+                var isMembershipWrite = command.CommandText.Contains( "[GroupMember]" )
+                    && ( command.CommandText.Contains( "DELETE " ) || command.CommandText.Contains( "UPDATE " ) );
+                if ( !interceptionContext.DbContexts.Contains( _context ) || !isMembershipWrite || Interlocked.Exchange( ref _hasPaused, 1 ) != 0 )
+                {
+                    return;
+                }
+
+                WriteReached.Set();
+                if ( !ReleaseWrite.Wait( TimeSpan.FromSeconds( 30 ) ) )
+                {
+                    throw new TimeoutException( "The test did not release the membership write." );
+                }
+            }
+
+            public void Dispose()
+            {
+                ReleaseWrite.Set();
+                DbInterception.Remove( this );
+                WriteReached.Dispose();
+                ReleaseWrite.Dispose();
             }
         }
 
