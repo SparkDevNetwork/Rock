@@ -106,18 +106,19 @@
                         <b :id="`${renameId}-leave`" data-testid="leave-question">Leave {{ title }}?</b>
                         <p data-testid="leave-body">{{ leaveBody }}</p>
                     </template>
+                    <!-- Held while leaving, not disabled, since a disabled button drops the focus it holds to the page. -->
                     <div class="chat-rd-actions">
                         <button ref="leaveCancelElement"
                                 type="button"
                                 class="chat-rd-btn is-line"
                                 data-testid="leave-cancel"
-                                :disabled="isLeaving"
+                                :aria-disabled="isLeaving ? 'true' : undefined"
                                 @click="onLeaveCancel">{{ leaveError ? "OK" : "Cancel" }}</button>
                         <button v-if="!leaveError"
                                 type="button"
                                 class="chat-rd-btn is-danger"
                                 data-testid="leave-go"
-                                :disabled="isLeaving"
+                                :aria-disabled="isLeaving ? 'true' : undefined"
                                 @click="onLeaveGo">
                             <template v-if="isLeaving"><span class="chat-spinner"></span>Leaving</template>
                             <template v-else>Leave</template>
@@ -352,7 +353,7 @@
     border: 1px solid var(--chat-line-strong);
 }
 
-.chat-rd-btn.is-line:hover:not(:disabled) {
+.chat-rd-btn.is-line:hover:not(:disabled, [aria-disabled="true"]) {
     border-color: var(--chat-icon);
 }
 
@@ -366,7 +367,7 @@
     background: var(--chat-danger);
 }
 
-.chat-rd-btn.is-danger:hover:not(:disabled) {
+.chat-rd-btn.is-danger:hover:not(:disabled, [aria-disabled="true"]) {
     background: var(--chat-danger-hover);
 }
 
@@ -381,7 +382,8 @@
     border-color: color-mix(in srgb, var(--chat-danger) 60%, var(--chat-line));
 }
 
-.chat-rd-btn:disabled {
+.chat-rd-btn:disabled,
+.chat-rd-btn[aria-disabled="true"] {
     cursor: default;
     opacity: .5;
 }
@@ -881,6 +883,10 @@
     }
 
     function onLeaveGo(): void {
+        if (isLeaving.value) {
+            return;
+        }
+
         hasAskedLeave.value = true;
         emit("leave");
     }

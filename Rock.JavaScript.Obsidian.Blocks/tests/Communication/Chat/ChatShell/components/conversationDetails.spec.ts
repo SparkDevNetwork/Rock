@@ -396,18 +396,27 @@ describe("Leave", () => {
         expect(w.emitted("leave")).toBeUndefined();
     });
 
-    test("Leave asks the door, and reads Leaving with both buttons held while it is out", async () => {
+    test("Leave asks the door, and reads Leaving with both buttons held while it is out, focus kept on Leave", async () => {
         const w = mountDetails();
         await askToLeave(w);
+        const go = w.get("[data-testid='leave-go']");
+        (go.element as HTMLElement).focus();
 
-        await w.get("[data-testid='leave-go']").trigger("click");
+        await go.trigger("click");
         expect(w.emitted("leave")).toHaveLength(1);
 
         await w.setProps({ leave: { kind: "leaving" } });
-        const go = w.get("[data-testid='leave-go']");
         expect(plain(go.text())).toBe("Leaving");
-        expect(go.attributes("disabled")).toBeDefined();
-        expect(w.get("[data-testid='leave-cancel']").attributes("disabled")).toBeDefined();
+        // Held, not disabled, since a disabled button drops the focus it holds to the page.
+        expect(go.attributes("disabled")).toBeUndefined();
+        expect(go.attributes("aria-disabled")).toBe("true");
+        expect(w.get("[data-testid='leave-cancel']").attributes("aria-disabled")).toBe("true");
+        expect(document.activeElement).toBe(go.element);
+
+        await go.trigger("click");
+        await w.get("[data-testid='leave-cancel']").trigger("click");
+        expect(w.emitted("leave")).toHaveLength(1);
+        expect(w.find("[data-testid='leave-confirm']").exists()).toBe(true);
     });
 
     test("Escape in the confirm cancels the confirm only, and the dialog stays", async () => {
