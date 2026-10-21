@@ -1263,8 +1263,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         turnOffPush: async (): Promise<void> => {
-            await push?.turnOff();
+            const failure = await push?.turnOff() ?? null;
             state.push = push?.state() ?? "unavailable";
+            if (failure) {
+                report(failure);
+            }
         },
 
         // Only while its pane is the one in view: a phone's list or thread can cover it.

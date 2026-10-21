@@ -23,12 +23,14 @@
 // cookie: the Chat block is not on the page where a person signs out of Rock, so Rock reads the
 // cookie there and takes this browser out of push itself.
 //
-// Chat settings shows this browser's push as one state and offers Turn on whatever the church's
-// prompt timing, since the person came to the setting themselves. Turn off takes the device out
-// and is remembered on this browser, because the browser keeps allowing notifications and the
-// next load would otherwise register it again.
+// The church's prompt timing decides only when the header offers push unasked. Chat settings shows
+// this browser's push as one state and offers Turn on whatever that timing, since the person came
+// to the setting themselves. Turn off takes the device out and is remembered on this browser,
+// because the browser keeps allowing notifications and the next load would otherwise register it
+// again; an unregister that fails keeps the cookie, so the next load asks again.
 import { ChatSettings } from "./useSession.partial";
 import { CallResult } from "../platformCall.partial";
+import { ChatError } from "../types.partial";
 
 /** What push reaches outside itself. */
 export type PushDependencies = {
@@ -55,6 +57,9 @@ export type PushDependencies = {
 
     /** Keeps this browser's token for Rock's sign-out, or clears it with null. */
     writeCookie: (token: string | null) => void;
+
+    /** The token the cookie keeps from an earlier load, or null. */
+    readCookie: () => string | null;
 
     /** Whether the person turned push off on this browser, kept in its storage; none keeps nothing. */
     offFlag?: { read: () => boolean, write: (isOff: boolean) => void };
@@ -89,8 +94,8 @@ export type PushRegistration = {
     /** The button was clicked: asks the browser, and registers on a yes. */
     turnOn: () => Promise<void>;
 
-    /** Takes this browser's device out of push and remembers it here. */
-    turnOff: () => Promise<void>;
+    /** Takes this browser's device out of push and remembers it here; answers why it could not, or null. */
+    turnOff: () => Promise<ChatError | null>;
 
     /** This browser's push as Chat settings draws it. */
     state: () => PushState;
@@ -135,6 +140,15 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         }
     };
 
+    const readCookie = (): string | null => {
+        try {
+            return dependencies.readCookie() || null;
+        }
+        catch {
+            return null;
+        }
+    };
+
     /** Whether the platform sent the Firebase values push needs. */
     const isAvailable = (): boolean => dependencies.settings().web !== null && dependencies.settings().vapid_key !== null;
 
@@ -173,6 +187,57 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
             // Push is extra: a browser that blocks it, or a Firebase that will not answer, leaves
             // chat working as before, and the next load tries again.
         }
+    }
+
+    /**
+     * The token the platform holds for this browser: the one this load registered, else the one
+     * an earlier load kept in the cookie, else the browser's own, which a load that never
+     * registered still has from an earlier one. Null where none can be had.
+     */
+    async function heldToken(): Promise<string | null> {
+        const kept = registeredToken ?? readCookie();
+        if (kept || !isAvailable() || dependencies.permission() !== "granted") {
+            return kept;
+        }
+
+        try {
+            const registration = await dependencies.registerWorker(dependencies.pagePath);
+            await whenActive(registration);
+            const push = dependencies.settings();
+            return await dependencies.getToken(push.web as Record<string, unknown>, push.vapid_key as string, registration);
+        }
+        catch {
+            return null;
+        }
+    }
+
+    /**
+     * Takes the held device out. A failure keeps the token in the cookie, so the next load, which
+     * finds this browser turned off, asks again, and Rock's sign-out still reaches it.
+     */
+    async function unregister(): Promise<ChatError | null> {
+        const token = await heldToken();
+        if (!token || isStopped) {
+            return null;
+        }
+
+        const result = await dependencies.call("chat_unregister_device", { p_token: token }).catch(() => null);
+        if (isStopped) {
+            return null;
+        }
+
+        if (result?.ok) {
+            registeredToken = null;
+            dependencies.writeCookie(null);
+            return null;
+        }
+
+        dependencies.writeCookie(token);
+        return {
+            code: "push.unregister_failed",
+            severity: "failed",
+            text: (result && !result.ok ? result.error.text : null) ?? "Notifications couldn't be turned off on this browser. Try again in a moment."
+        };
     }
 
     /**
@@ -221,7 +286,20 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
 
     return {
         start: async (): Promise<void> => {
-            if (isStopped || !isAvailable() || dependencies.permission() !== "granted" || isTurnedOff()) {
+            if (isStopped || !isAvailable()) {
+                return;
+            }
+
+            // An earlier Turn off whose unregister failed left its token in the cookie.
+            if (isTurnedOff()) {
+                if (readCookie()) {
+                    await unregister();
+                }
+
+                return;
+            }
+
+            if (dependencies.permission() !== "granted") {
                 return;
             }
 
@@ -261,19 +339,13 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
             await register();
         },
 
-        turnOff: async (): Promise<void> => {
+        turnOff: async (): Promise<ChatError | null> => {
             if (isStopped) {
-                return;
+                return null;
             }
 
             setTurnedOff(true);
-            const token = registeredToken;
-            registeredToken = null;
-            dependencies.writeCookie(null);
-            if (token) {
-                // A failed call leaves the device until the platform prunes it; this browser stays off.
-                await dependencies.call("chat_unregister_device", { p_token: token }).catch(() => undefined);
-            }
+            return unregister();
         },
 
         state: (): PushState => {

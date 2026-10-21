@@ -104,7 +104,9 @@ function dependencies(overrides: Partial<PushDependencies> & { prompt?: string, 
         }),
         writeCookie: (token: string | null) => {
             cookies.push(token);
-        }
+        },
+        // the cookie as the last write left it
+        readCookie: () => cookies.length > 0 ? cookies[cookies.length - 1] : null
     };
 
     // prompt and permission seed the fakes above; only real dependencies replace the base ones
@@ -432,6 +434,58 @@ describe("the browser row's state", () => {
         expect(cookies).toEqual(["fcm-token-1", null]);
         expect(flag.write).toHaveBeenCalledWith(true);
         expect(push.state()).toBe("offered");
+    });
+
+    test("Turn off on a load that registered nothing takes out the device the cookie keeps", async () => {
+        const { deps, calls, cookies } = dependencies({ permission: "default", readCookie: () => "fcm-earlier" });
+        const push = createPushRegistration(deps);
+        await push.start();
+
+        expect(await push.turnOff()).toBeNull();
+
+        expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-earlier" } }]);
+        expect(cookies).toEqual([null]);
+    });
+
+    test("Turn off with no cookie takes out the browser's own token", async () => {
+        const { deps, calls } = dependencies({ permission: "granted", offFlag: offFlag(true) });
+        const push = createPushRegistration(deps);
+        await push.start();
+        expect(calls).toEqual([]);
+
+        await push.turnOff();
+
+        expect(deps.getToken).toHaveBeenCalledTimes(1);
+        expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-token-1" } }]);
+    });
+
+    test("an unregister that fails keeps the cookie and the off flag, answers a refusal, and the next load asks again", async () => {
+        const flag = offFlag();
+        let isRefused = true;
+        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: flag });
+        deps.call = jest.fn(async (name: string, args: Record<string, unknown>) => {
+            calls.push({ name, args });
+            return name === "chat_unregister_device" && isRefused
+                ? { ok: false, status: 503, error: { code: "rpc.unavailable", severity: "degraded", text: null }, retryAfterSeconds: null } as CallResult
+                : registered;
+        });
+        const push = createPushRegistration(deps);
+        await push.start();
+
+        const refusal = await push.turnOff();
+
+        expect(refusal?.code).toBe("push.unregister_failed");
+        expect(refusal?.text).toBe("Notifications couldn't be turned off on this browser. Try again in a moment.");
+        expect(cookies[cookies.length - 1]).toBe("fcm-token-1");
+        expect(flag.write).not.toHaveBeenCalledWith(false);
+        expect(push.state()).toBe("offered");
+
+        isRefused = false;
+        const nextLoad = createPushRegistration({ ...deps, readCookie: () => cookies[cookies.length - 1] });
+        await nextLoad.start();
+
+        expect(calls.map(c => c.name)).toEqual(["chat_register_device", "chat_unregister_device", "chat_unregister_device"]);
+        expect(cookies[cookies.length - 1]).toBeNull();
     });
 
     test("a browser turned off here does not register on the next load, and Turn on registers it without asking", async () => {

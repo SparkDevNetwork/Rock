@@ -95,6 +95,10 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
                 read: () => window.localStorage.getItem(pushOffKey) === "true",
                 write: isOff => isOff ? window.localStorage.setItem(pushOffKey, "true") : window.localStorage.removeItem(pushOffKey)
             },
+            readCookie: () => {
+                const pair = document.cookie.split("; ").find(part => part.startsWith(`${pushCookieName}=`));
+                return pair ? decodeURIComponent(pair.slice(pushCookieName.length + 1)) : null;
+            },
             writeCookie: token => {
                 const secure = window.location.protocol === "https:" ? "; Secure" : "";
                 // a year, a choice: the block writes it again on every load while push is on
