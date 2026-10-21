@@ -644,7 +644,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     /**
      * Asks one of Rock's membership doors, marking the room offline where the connection is lost
-     * or the door cannot be reached. Null when there is no answer to act on: offline, or stopped.
+     * or the door cannot be reached, its result missing included. Null when there is no answer to
+     * act on: offline, or stopped.
      */
     async function askDoor(ask: () => Promise<JoinResult>, offline: () => void): Promise<JoinResult | null> {
         if (dependencies.isOffline()) {
@@ -654,7 +655,18 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
         try {
             const answer = await ask();
-            return isStopped ? null : answer;
+            if (isStopped) {
+                return null;
+            }
+
+            // Rock answered without its door's result, as when the request was lost on the way:
+            // the door decided nothing, so it is unreachable like a call that threw.
+            if (answer.code === "door.unavailable") {
+                offline();
+                return null;
+            }
+
+            return answer;
         }
         catch {
             if (!isStopped) {

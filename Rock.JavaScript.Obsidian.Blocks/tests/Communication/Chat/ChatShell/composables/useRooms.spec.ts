@@ -1033,6 +1033,21 @@ describe("Leave", () => {
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
     });
 
+    test("a door Rock answered without its result is unreachable, as one the network lost, and may be asked again", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = volunteers;
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("door.unavailable"));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
+        expect(s.opened).toEqual([]);
+        void s.rooms.leave(volunteers);
+        expect(s.leaveCalls).toHaveLength(2);
+    });
+
     test("a room never asked about is idle", () => {
         const s = setup();
 
@@ -1163,6 +1178,17 @@ describe("Rename", () => {
         void s.rooms.rename(group, "Trail crew");
         s.renameCalls[0].answer.reject(new Error("network"));
         await settle();
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
+    });
+
+    test("a door Rock answered without its result is unreachable, as one the network lost", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.resolve(door("door.unavailable"));
+        await settle();
+
         expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
     });
 
