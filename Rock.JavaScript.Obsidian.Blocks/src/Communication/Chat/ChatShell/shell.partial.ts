@@ -46,7 +46,7 @@ import {
     StorageLike,
     writeRememberedChannel
 } from "./pageLoad.partial";
-import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
+import { ChannelStore, createChannelStore, roomTitle } from "./stores/channelStore.partial";
 import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
@@ -713,7 +713,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isCampusLimited: options.areSharedChannelsFilteredByCampus ?? false,
         notify: notice => options.notify?.(notice)
     });
-    const members = createMembers({ call });
+    const members = createMembers({
+        call,
+        doors: { getRights: options.getMemberRights, addMembers: options.addMembers, removeMember: options.removeMember },
+        // a lost connection is told by its banner, and a door asked then would not be reached
+        isOffline: () => state.connection !== null,
+        notify: notice => options.notify?.(notice),
+        titleOf: channelId => {
+            const row = channels.rows.find(r => r.channel_id === channelId);
+            return row ? roomTitle(row) : "";
+        },
+        isChatAdministrator: options.session.isChatAdministrator ?? false,
+        campusOnly: options.areSharedChannelsFilteredByCampus ?? false
+    });
 
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId) => {

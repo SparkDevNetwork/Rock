@@ -21,6 +21,7 @@
 import { createClient } from "@Obsidian/Libs/supabase";
 import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
 import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
+import { ChatMemberRightsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMemberRightsBag";
 import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMembershipResultBag";
 import { DoorResult } from "./composables/useDirectMessage.partial";
 import { ChatShell, createChatShell, PlatformClientLike, ShellOptions } from "./shell.partial";
@@ -147,6 +148,13 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         },
         leaveChannel: channelId => membershipDoor("LeaveChannel", { channelGuid: channelId }),
         renameConversation: (channelId, name) => membershipDoor("RenameConversation", { channelGuid: channelId, name }),
+        getMemberRights: async channelId => {
+            const result = await invokeBlockAction<ChatMemberRightsBag>("GetMemberRights", { channelGuid: channelId });
+            // Without Rock's answer nothing is offered; the doors still decide every change.
+            return { canManageMembers: result.isSuccess && result.data?.canManageMembers === true };
+        },
+        addMembers: (channelId, personAliasGuids) => membershipDoor("AddMembers", { channelGuid: channelId, personAliasGuids }),
+        removeMember: (channelId, personAliasGuid, replacementPersonAliasGuid) => membershipDoor("RemoveMember", { channelGuid: channelId, personAliasGuid, replacementPersonAliasGuid }),
         createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
         fetch: (url, init) => window.fetch(url, init),
         storage: safeLocalStorage(),

@@ -22,6 +22,11 @@
 // platform for the whole room, while the rows already loaded that match show at once; an answer
 // older than the newest query is dropped, as is a page meant for a room since closed. Once
 // stopped, nothing more is fetched and no answer still on its way reaches the screen.
+//
+// It also changes who is in the room, through Rock's doors, which decide every change: the
+// rights the panel offers are asked on each open, a remove is confirmed and then works on its row,
+// and Add people searches the people the room may take. The doors answer in their own words,
+// which are shown as they come.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
@@ -33,6 +38,9 @@ export const memberSearchPause = 250;
 
 /** How many people a page holds; a shorter page is the last. */
 export const memberPageSize = 50;
+
+/** The room's two searches: the panel's filter, and the last leader's dialog's "Find a member". */
+type RoomSearchKey = "search" | "successor";
 
 /** Why the platform will not list a room's people for the reader, each drawn as its own state. */
 export type RosterRefusal = "not_member" | "no_roster_right";
@@ -122,11 +130,11 @@ export type MembershipAnswer = {
     personAliasGuid?: string | null;
 };
 
-/** Rock's doors that change who is in a room, and the one that says whether the reader may. */
+/** Rock's doors that change who is in a room, and the one that says whether the reader may; a page without one offers none of it. */
 export type MemberDoors = {
-    getRights: (channelId: string) => Promise<{ canManageMembers: boolean }>;
-    addMembers: (channelId: string, personAliasGuids: string[]) => Promise<MembershipAnswer>;
-    removeMember: (channelId: string, personAliasGuid: string, replacementPersonAliasGuid: string | null) => Promise<MembershipAnswer>;
+    getRights?: (channelId: string) => Promise<{ canManageMembers: boolean }>;
+    addMembers?: (channelId: string, personAliasGuids: string[]) => Promise<MembershipAnswer>;
+    removeMember?: (channelId: string, personAliasGuid: string, replacementPersonAliasGuid: string | null) => Promise<MembershipAnswer>;
 };
 
 /** What the roster reaches outside itself. */
@@ -207,18 +215,60 @@ function emptyState(): MembersState {
         successorQuery: "",
         successor: noSearch(),
         successorRefusal: null,
-        adding: { isOpen: false, query: "", people: null, isSearching: false, error: null, isAdding: false, refusal: null }
+        adding: noAdding()
     };
 }
 
-/** Whether a person is the room's only leader in the loaded roster, which lists every leader first. */
-export function isLastLeader(_state: MembersState, _personAliasGuid: string): boolean {
-    return false;
+/** The search answered for a query: the matches the loaded rows hold until the platform's answer comes. */
+function matchesFor(rows: RosterMember[], search: MemberSearchState, query: string): RosterMember[] {
+    const trimmed = query.trim();
+    if (!trimmed) {
+        return rows;
+    }
+
+    return search.query === trimmed && !search.isSearching && !search.error ? search.rows : rows.filter(member => isMatch(member, trimmed));
 }
 
-/** Who the last leader's dialog offers to lead next. */
-export function successorChoices(_state: MembersState): RosterMember[] {
-    return [];
+/**
+ * Whether a person is the room's only leader. The roster lists leaders first and lists only people
+ * chat shows, so the loaded rows hold every leader who counts.
+ *
+ * @param state The roster.
+ * @param personAliasGuid The person.
+ *
+ * @returns True when they lead and nobody else loaded does.
+ */
+export function isLastLeader(state: MembersState, personAliasGuid: string): boolean {
+    const leaders = state.rows.filter(member => member.is_leader);
+    return leaders.some(member => member.person_alias_guid === personAliasGuid) && leaders.length === 1;
+}
+
+/**
+ * Who the last leader's dialog offers to lead next: the room's other members, under its search the
+ * whole room's matches once the platform answers, and the loaded matches until then.
+ *
+ * @param state The roster.
+ *
+ * @returns The people to choose from.
+ */
+export function successorChoices(state: MembersState): RosterMember[] {
+    const leaving = state.confirming?.person_alias_guid;
+    return matchesFor(state.rows, state.successor, state.successorQuery).filter(member => member.person_alias_guid !== leaving);
+}
+
+/** A person's name as the panel writes it. */
+function fullNameOf(person: { nick_name: string | null, last_name: string | null }): string {
+    return `${person.nick_name ?? ""} ${person.last_name ?? ""}`.trim() || "Someone";
+}
+
+/** Names joined as "A", "A and B", or "A, B and C". */
+function joinFirstNames(names: string[]): string {
+    return names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+/** No Add people dialog. */
+function noAdding(): AddPeopleState {
+    return { isOpen: false, query: "", people: null, isSearching: false, error: null, isAdding: false, refusal: null };
 }
 
 /**
@@ -246,12 +296,7 @@ function isMatch(member: RosterMember, query: string): boolean {
  * @returns The rows to list.
  */
 export function shownMembers(state: MembersState): RosterMember[] {
-    const query = state.query.trim();
-    if (!query) {
-        return state.rows;
-    }
-
-    return searchStatus(state) === "answered" ? state.search.rows : state.rows.filter(member => isMatch(member, query));
+    return matchesFor(state.rows, state.search, state.query);
 }
 
 /**
@@ -274,6 +319,7 @@ export function searchStatus(state: MembersState): "searching" | "answered" | "f
     return state.search.error ? "failed" : "answered";
 }
 
+
 /**
  * Creates the roster.
  *
@@ -282,16 +328,29 @@ export function searchStatus(state: MembersState): "searching" | "answered" | "f
  * @returns The roster.
  */
 export function createMembers(dependencies: MembersDependencies): Members {
-    const state = reactive<MembersState>(emptyState()) as MembersState;
+    const isChatAdministrator = dependencies.isChatAdministrator ?? false;
+    const state = reactive<MembersState>({ ...emptyState(), isChatAdministrator }) as MembersState;
+    const isOffline = (): boolean => dependencies.isOffline?.() ?? false;
+    const notify = (notice: ActionNotice): void => dependencies.notify?.(notice);
 
     let isStopped = false;
 
-    // Each open, close and stop moves this on, so a page meant for a room since left is dropped.
+    // Each open, close and stop moves this on, so a page, a right or a door's answer meant for a
+    // room since left is dropped.
     let rosterGeneration = 0;
 
-    // Each query, close and stop moves this on, so an answer to an older query is dropped.
-    let searchGeneration = 0;
-    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+    // The panel's filter and the last leader's dialog each search the room, each with its own
+    // pause; each query, close and stop moves its count on, so an answer to an older query is dropped.
+    const searches: Record<RoomSearchKey, { generation: number, timer: ReturnType<typeof setTimeout> | null }> = {
+        search: { generation: 0, timer: null },
+        successor: { generation: 0, timer: null }
+    };
+
+    // The Add people dialog: its search's pause and count, and a count every open, close and stop
+    // moves on, so an add answered after the dialog closed reaches nothing.
+    let addSearchGeneration = 0;
+    let addSearchTimer: ReturnType<typeof setTimeout> | null = null;
+    let addGeneration = 0;
 
     /** One page of the room's people after a person given, for a query or none. */
     function fetchPage(channelId: string, after: RosterMember | undefined, query: string | null): Promise<CallResult> {
@@ -341,37 +400,92 @@ export function createMembers(dependencies: MembersDependencies): Members {
         state.hasMore = members.length >= memberPageSize;
     }
 
-    /** Asks the platform for the whole room's matches to the query typed, if it is still the newest. */
-    async function runSearch(): Promise<void> {
-        searchTimer = null;
-        const channelId = state.channelId;
-        const query = state.query.trim();
-        if (isStopped || !channelId || !query) {
-            return;
-        }
-
-        const generation = searchGeneration;
-        state.search = { query, rows: [], hasMore: false, isSearching: true, error: null };
-        const result = await fetchPage(channelId, undefined, query);
-        if (isStopped || generation !== searchGeneration) {
-            return;
-        }
-
-        if (!result.ok) {
-            state.search = { query, rows: [], hasMore: false, isSearching: false, error: result.error };
+    /**
+     * Reads the first page again in place, with no loading state, so the list and the Add people
+     * row focus returns to stay drawn; a failure keeps what is shown.
+     */
+    async function refreshRoster(channelId: string): Promise<void> {
+        const generation = rosterGeneration;
+        const result = await fetchPage(channelId, undefined, null);
+        if (isStopped || generation !== rosterGeneration || !result.ok) {
             return;
         }
 
         const members = membersOf(result);
-        state.search = { query, rows: members, hasMore: members.length >= memberPageSize, isSearching: false, error: null };
+        state.rows = members;
+        state.hasMore = members.length >= memberPageSize;
     }
 
-    /** Drops a pause still running, so no search is asked for a query already replaced. */
-    function cancelPause(): void {
-        if (searchTimer !== null) {
-            clearTimeout(searchTimer);
-            searchTimer = null;
+    /** Asks Rock whether the reader may change who is in the room; anything but a yes is a no. */
+    async function loadRights(channelId: string): Promise<void> {
+        const door = dependencies.doors?.getRights;
+        if (!door) {
+            return;
         }
+
+        const generation = rosterGeneration;
+        try {
+            const rights = await door(channelId);
+            if (!isStopped && generation === rosterGeneration) {
+                state.canManageMembers = rights.canManageMembers === true;
+            }
+        }
+        catch {
+            // Intentionally ignored: with no answer nothing is offered, and the doors still decide.
+        }
+    }
+
+    /** The query typed for one of the room's searches. */
+    function typedQuery(key: RoomSearchKey): string {
+        return key === "search" ? state.query : state.successorQuery;
+    }
+
+    /** Asks the platform for the whole room's matches to a query typed, if it is still the newest. */
+    async function runSearch(key: RoomSearchKey): Promise<void> {
+        const search = searches[key];
+        search.timer = null;
+        const channelId = state.channelId;
+        const query = typedQuery(key).trim();
+        if (isStopped || !channelId || !query) {
+            return;
+        }
+
+        const generation = search.generation;
+        state[key] = { query, rows: [], hasMore: false, isSearching: true, error: null };
+        const result = await fetchPage(channelId, undefined, query);
+        if (isStopped || generation !== search.generation) {
+            return;
+        }
+
+        if (!result.ok) {
+            state[key] = { query, rows: [], hasMore: false, isSearching: false, error: result.error };
+            return;
+        }
+
+        const members = membersOf(result);
+        state[key] = { query, rows: members, hasMore: members.length >= memberPageSize, isSearching: false, error: null };
+    }
+
+    /** Drops a search's answer still on its way and its pause still running. */
+    function cancelSearch(key: RoomSearchKey): void {
+        const search = searches[key];
+        search.generation++;
+        if (search.timer !== null) {
+            clearTimeout(search.timer);
+            search.timer = null;
+        }
+    }
+
+    /** Starts a search's pause for the query just typed, or empties it for a blank one. */
+    function typeQuery(key: RoomSearchKey): void {
+        cancelSearch(key);
+        // A query of only spaces is the plain roster, which is already loaded.
+        if (!typedQuery(key).trim() || !state.channelId) {
+            state[key] = noSearch();
+            return;
+        }
+
+        searches[key].timer = setTimeout(() => void runSearch(key), memberSearchPause);
     }
 
     /** The next page of the search answered, after its last row. */
@@ -382,11 +496,11 @@ export function createMembers(dependencies: MembersDependencies): Members {
             return;
         }
 
-        const generation = searchGeneration;
+        const generation = searches.search.generation;
         state.isLoadingMore = true;
         state.moreError = null;
         const result = await fetchPage(channelId, search.rows[search.rows.length - 1], query);
-        if (isStopped || generation !== searchGeneration) {
+        if (isStopped || generation !== searches.search.generation) {
             return;
         }
 
@@ -400,12 +514,75 @@ export function createMembers(dependencies: MembersDependencies): Members {
         state.search = { ...search, rows: [...search.rows, ...members], hasMore: members.length >= memberPageSize };
     }
 
+    /** Drops the Add people search's answer still on its way and its pause still running. */
+    function cancelAddSearch(): void {
+        addSearchGeneration++;
+        if (addSearchTimer !== null) {
+            clearTimeout(addSearchTimer);
+            addSearchTimer = null;
+        }
+    }
+
+    /** Asks the people search for the name typed in Add people, naming the room so each person says whether they are in it. */
+    async function runAddSearch(): Promise<void> {
+        addSearchTimer = null;
+        const channelId = state.channelId;
+        const query = state.adding.query.trim();
+        if (isStopped || !channelId || !query) {
+            return;
+        }
+
+        const generation = addSearchGeneration;
+        const result = await dependencies.call("chat_search_people", {
+            p_query: query,
+            p_limit: 10,
+            p_campus_only: dependencies.campusOnly ?? false,
+            p_channel_id: channelId
+        });
+        if (isStopped || generation !== addSearchGeneration) {
+            return;
+        }
+
+        state.adding.isSearching = false;
+        if (!result.ok) {
+            state.adding.error = result.error;
+            state.adding.people = null;
+            return;
+        }
+
+        state.adding.people = (result.data as { people?: PersonRow[] } | null)?.people ?? [];
+    }
+
+    /**
+     * Asks one of Rock's doors. Rock answering without the door's result, or not at all, decided
+     * nothing, so it is null: unreached, which the caller words as offline or failed.
+     */
+    async function askDoor(ask: () => Promise<MembershipAnswer>): Promise<MembershipAnswer | null> {
+        try {
+            const answer = await ask();
+            return answer.code === "door.unavailable" ? null : answer;
+        }
+        catch {
+            return null;
+        }
+    }
+
+    /** Takes a person off the roster and any search showing them, as the door has taken them out of the room. */
+    function dropRow(personAliasGuid: string): void {
+        const isOther = (member: RosterMember): boolean => member.person_alias_guid !== personAliasGuid;
+        state.rows = state.rows.filter(isOther);
+        state.search = { ...state.search, rows: state.search.rows.filter(isOther) };
+        delete state.removals[personAliasGuid];
+    }
+
     /** Empties the roster and drops anything still on its way. */
     function reset(): void {
         rosterGeneration++;
-        searchGeneration++;
-        cancelPause();
-        Object.assign(state, emptyState());
+        addGeneration++;
+        cancelSearch("search");
+        cancelSearch("successor");
+        cancelAddSearch();
+        Object.assign(state, emptyState(), { isChatAdministrator });
     }
 
     return {
@@ -416,10 +593,10 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            // Every open reads the roster afresh.
+            // Every open reads the roster and the reader's rights afresh, side by side.
             reset();
             state.channelId = channelId;
-            await loadFirstPage();
+            await Promise.all([loadFirstPage(), loadRights(channelId)]);
         },
 
         loadMore: async (): Promise<void> => {
@@ -465,19 +642,10 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            searchGeneration++;
-            cancelPause();
             state.query = query;
             state.isLoadingMore = false;
             state.moreError = null;
-
-            // A query of only spaces is the plain roster, which is already loaded.
-            if (!query.trim() || !state.channelId) {
-                state.search = noSearch();
-                return;
-            }
-
-            searchTimer = setTimeout(() => void runSearch(), memberSearchPause);
+            typeQuery("search");
         },
 
         retrySearch: async (): Promise<void> => {
@@ -485,9 +653,8 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            searchGeneration++;
-            cancelPause();
-            await runSearch();
+            cancelSearch("search");
+            await runSearch("search");
         },
 
         close: reset,
@@ -495,18 +662,205 @@ export function createMembers(dependencies: MembersDependencies): Members {
         stop: (): void => {
             isStopped = true;
             rosterGeneration++;
-            searchGeneration++;
-            cancelPause();
+            addGeneration++;
+            cancelSearch("search");
+            cancelSearch("successor");
+            cancelAddSearch();
         },
 
-        askRemove: () => undefined,
-        cancelRemove: () => undefined,
-        remove: async () => undefined,
-        dismissRemoval: () => undefined,
-        setSuccessorQuery: () => undefined,
-        openAdd: () => undefined,
-        closeAdd: () => undefined,
-        setAddQuery: () => undefined,
-        add: async () => undefined
+        askRemove: (personAliasGuid): void => {
+            const member = [...state.rows, ...state.search.rows].find(m => m.person_alias_guid === personAliasGuid);
+            if (isStopped || !member) {
+                return;
+            }
+
+            cancelSearch("successor");
+            state.confirming = member;
+            state.successorQuery = "";
+            state.successor = noSearch();
+            state.successorRefusal = null;
+        },
+
+        cancelRemove: (): void => {
+            cancelSearch("successor");
+            state.confirming = null;
+            state.successorQuery = "";
+            state.successor = noSearch();
+            state.successorRefusal = null;
+        },
+
+        remove: async (replacementPersonAliasGuid): Promise<void> => {
+            const target = state.confirming;
+            const channelId = state.channelId;
+            if (isStopped || !target || !channelId) {
+                return;
+            }
+
+            const personAliasGuid = target.person_alias_guid;
+            if (state.removals[personAliasGuid]?.kind === "removing") {
+                return;
+            }
+
+            // The plain confirm gives way to the row at once; the last leader's dialog stays open
+            // until the door answers, since its refusal is said there.
+            const replacement = replacementPersonAliasGuid ?? null;
+            if (!replacement) {
+                state.confirming = null;
+            }
+            state.successorRefusal = null;
+
+            const firstName = target.nick_name || fullNameOf(target);
+            const unreachedText = (): string => isOffline()
+                ? `Couldn't remove ${firstName}. You're offline; try again when you're back.`
+                : `Couldn't remove ${firstName}. Try again in a moment.`;
+            const refuse = (text: string, isStale = false): void => {
+                const isAskedInDialog = !!replacement && state.confirming?.person_alias_guid === personAliasGuid;
+                if (isAskedInDialog) {
+                    delete state.removals[personAliasGuid];
+                    state.successorRefusal = text;
+                }
+                else {
+                    state.removals[personAliasGuid] = { kind: "refused", text, isStale };
+                }
+            };
+
+            const door = dependencies.doors?.removeMember;
+            if (!door || isOffline()) {
+                refuse(unreachedText());
+                return;
+            }
+
+            const generation = rosterGeneration;
+            state.removals[personAliasGuid] = { kind: "removing" };
+            const answer = await askDoor(() => door(channelId, personAliasGuid, replacement));
+            if (isStopped || generation !== rosterGeneration) {
+                return;
+            }
+
+            if (!answer) {
+                refuse(unreachedText());
+                return;
+            }
+
+            if (answer.code !== "ok") {
+                // The person was gone before the door looked: the row is stale and leaves once read.
+                refuse(answer.message || `Couldn't remove ${firstName}. Try again in a moment.`, answer.code === "door.not_member");
+                return;
+            }
+
+            // Pending is done as well: Rock has made the change, and the platform takes it in a moment.
+            if (state.confirming?.person_alias_guid === personAliasGuid) {
+                state.confirming = null;
+            }
+            dropRow(personAliasGuid);
+            if (!replacement) {
+                notify({ code: "member.removed", text: `Removed ${fullNameOf(target)}`, icon: "user-minus" });
+                return;
+            }
+
+            const successor = [...state.rows, ...state.successor.rows].find(m => m.person_alias_guid === replacement);
+            state.rows = state.rows.map(m => m.person_alias_guid === replacement ? { ...m, is_leader: true } : m);
+            const title = dependencies.titleOf?.(channelId) ?? "";
+            notify({ code: "member.leader", text: `${successor ? fullNameOf(successor) : "Someone"} is now the leader of ${title}`, icon: "users" });
+        },
+
+        dismissRemoval: (personAliasGuid): void => {
+            const removal = state.removals[personAliasGuid];
+            if (removal?.kind === "refused" && removal.isStale) {
+                dropRow(personAliasGuid);
+            }
+            else if (removal?.kind === "refused") {
+                delete state.removals[personAliasGuid];
+            }
+        },
+
+        setSuccessorQuery: (query): void => {
+            if (isStopped) {
+                return;
+            }
+
+            state.successorQuery = query;
+            typeQuery("successor");
+        },
+
+        openAdd: (): void => {
+            if (isStopped || !state.channelId) {
+                return;
+            }
+
+            addGeneration++;
+            cancelAddSearch();
+            state.adding = { ...noAdding(), isOpen: true };
+        },
+
+        closeAdd: (): void => {
+            addGeneration++;
+            cancelAddSearch();
+            state.adding = noAdding();
+        },
+
+        setAddQuery: (query): void => {
+            if (isStopped) {
+                return;
+            }
+
+            cancelAddSearch();
+            state.adding.query = query;
+            state.adding.error = null;
+            if (!query.trim() || !state.channelId) {
+                state.adding.people = null;
+                state.adding.isSearching = false;
+                return;
+            }
+
+            state.adding.isSearching = true;
+            addSearchTimer = setTimeout(() => void runAddSearch(), memberSearchPause);
+        },
+
+        add: async (people): Promise<void> => {
+            const channelId = state.channelId;
+            if (isStopped || !channelId || state.adding.isAdding || people.length === 0) {
+                return;
+            }
+
+            const unreachedText = (): string => isOffline()
+                ? "Couldn't add people. You're offline; try again when you're back."
+                : "Couldn't add people. Try again in a moment.";
+            state.adding.refusal = null;
+            const door = dependencies.doors?.addMembers;
+            if (!door || isOffline()) {
+                state.adding.refusal = { text: unreachedText(), personAliasGuid: null };
+                return;
+            }
+
+            const generation = addGeneration;
+            state.adding.isAdding = true;
+            const answer = await askDoor(() => door(channelId, people.map(person => person.person_alias_guid)));
+            if (isStopped || generation !== addGeneration) {
+                return;
+            }
+
+            state.adding.isAdding = false;
+            if (!answer) {
+                state.adding.refusal = { text: unreachedText(), personAliasGuid: null };
+                return;
+            }
+
+            if (answer.code !== "ok") {
+                // A refusal naming one of the people chosen says who to take out, so the rest can go.
+                const named = answer.personAliasGuid?.toLowerCase();
+                const refused = named ? people.find(person => person.person_alias_guid.toLowerCase() === named) : undefined;
+                const text = answer.message || unreachedText();
+                state.adding.refusal = refused
+                    ? { text: `${text} Remove ${refused.nick_name || fullNameOf(refused)} and try again.`, personAliasGuid: refused.person_alias_guid }
+                    : { text, personAliasGuid: null };
+                return;
+            }
+
+            state.adding = noAdding();
+            const text = people.length === 1 ? `Added ${fullNameOf(people[0])}` : `Added ${joinFirstNames(people.map(person => person.nick_name || fullNameOf(person)))}`;
+            notify({ code: "member.added", text, icon: "user-plus" });
+            await refreshRoster(channelId);
+        }
     };
 }

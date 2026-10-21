@@ -28,6 +28,7 @@
                             class="chat-menu-item"
                             :class="{ 'is-danger': item.isDanger }"
                             role="menuitem"
+                            :data-key="item.key"
                             tabindex="-1"
                             :aria-disabled="item.isDisabled || undefined"
                             @click="choose(item)">
@@ -36,6 +37,11 @@
                         <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
                         <span v-if="item.hasDot" class="chat-menu-dot"><span class="chat-sr-only">new</span></span>
                     </button>
+                </template>
+                <!-- Why an action is missing, read in its place after the others. -->
+                <template v-if="note">
+                    <div class="chat-menu-sep" role="separator"></div>
+                    <div class="chat-menu-note" data-testid="menu-note"><Icon name="lock" size="xs" />{{ note }}</div>
                 </template>
             </div>
         </Transition>
@@ -102,6 +108,20 @@
     height: 1px;
     margin: 5px 6px;
     background: var(--chat-line);
+}
+
+.chat-menu-note {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+.chat-menu-note .chat-ic {
+    flex: none;
+    color: var(--chat-icon);
 }
 
 /*
@@ -198,6 +218,12 @@
         items: {
             type: Array as PropType<MenuItem[]>,
             required: true
+        },
+
+        /** A line drawn after the items, with a lock, saying why an action is not offered. */
+        note: {
+            type: String,
+            default: ""
         },
 
         /** Attributes for the button, such as a toolbar's class and its roving tab stop. */

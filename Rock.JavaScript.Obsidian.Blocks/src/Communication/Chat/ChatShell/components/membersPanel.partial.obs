@@ -60,6 +60,21 @@
             </div>
 
             <div v-else class="chat-mb-list">
+                <!-- Offered only where Rock lets the reader add; a full group shows why it cannot take more. -->
+                <template v-if="canManageMembers && !isQuery">
+                    <div v-if="isGroupFull" class="chat-mb-add is-full" aria-disabled="true" data-testid="members-add-full">
+                        <span class="chat-mb-add-ic" aria-hidden="true"><Icon name="plus" /></span>
+                        <span class="chat-mb-add-t">Add people<span>Full, 9 of 9</span></span>
+                    </div>
+                    <button v-else
+                            type="button"
+                            class="chat-mb-add"
+                            data-testid="members-add"
+                            @click="emit('addPeople')">
+                        <span class="chat-mb-add-ic" aria-hidden="true"><Icon name="plus" /></span>Add people
+                    </button>
+                </template>
+
                 <p v-if="searchStatus === 'failed'" class="chat-mb-hint is-error" data-testid="members-hint">
                     <Icon name="alert" size="xs" />Couldn't search right now.
                     <button type="button" class="chat-mb-link" data-testid="members-search-retry" @click="emit('retrySearch')">Try again</button>
@@ -71,11 +86,17 @@
 
                 <section v-for="section in sections" :key="section.title" :aria-label="section.title">
                     <h4 class="chat-mb-sec" data-testid="members-section">{{ section.title }}<span v-if="section.count !== null" data-testid="members-section-count">{{ section.count }}</span></h4>
-                    <ul class="chat-mb-rows" :class="{ 'is-phone': isPhone }" role="list">
+                    <!-- A removed row collapses as it leaves. -->
+                    <TransitionGroup tag="ul"
+                                     class="chat-mb-rows"
+                                     :class="{ 'is-phone': isPhone }"
+                                     role="list"
+                                     leave-active-class="is-leaving"
+                                     @beforeLeave="onRowBeforeLeave">
                         <li v-for="row in section.rows"
                             :key="row.guid"
                             class="chat-mb-row"
-                            :class="{ 'is-in': freshIds.has(row.guid) }"
+                            :class="{ 'is-in': freshIds.has(row.guid), 'is-busy': row.isRemoving }"
                             data-testid="member-row">
                             <button type="button"
                                     class="chat-mb-who"
@@ -93,17 +114,39 @@
                                     <span v-if="row.campus" class="chat-mb-sub" data-testid="member-campus">{{ row.campus }}</span>
                                 </span>
                             </button>
-                            <span v-if="row.canMessage" class="chat-mb-acts">
-                                <button type="button"
+                            <span v-if="row.isRemoving" class="chat-mb-acts">
+                                <span class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
+                            </span>
+                            <span v-else-if="row.canMessage || row.menu" class="chat-mb-acts">
+                                <button v-if="row.canMessage"
+                                        type="button"
                                         class="chat-mb-msg"
                                         data-testid="member-message"
                                         :aria-label="`Message ${row.name}`"
                                         @click="emit('message', row.guid)">
                                     <Icon name="message" size="xs" />Message
                                 </button>
+                                <Menu v-if="row.menu"
+                                      icon="dots"
+                                      :label="`More for ${row.name}`"
+                                      :items="row.menu.items"
+                                      :note="row.menu.note"
+                                      :anchorAttrs="{ class: 'chat-mb-more', 'data-testid': 'member-more', 'data-person': row.guid }"
+                                      @select="onMenuSelect(row.guid, $event)" />
                             </span>
+                            <div v-if="row.refusal" class="chat-mb-err" role="alert" data-testid="member-refusal">
+                                <Icon name="alert" size="xs" />
+                                <span>{{ row.refusal }}</span>
+                                <button type="button"
+                                        class="chat-mb-err-x"
+                                        aria-label="Dismiss"
+                                        data-testid="member-refusal-dismiss"
+                                        @click="onDismiss(row.guid)">
+                                    <Icon name="x" size="xs" />
+                                </button>
+                            </div>
                         </li>
-                    </ul>
+                    </TransitionGroup>
                 </section>
 
                 <div v-if="isNoneShown" class="chat-mb-none" data-testid="members-none">No one in {{ channelName }} matches &ldquo;{{ query.trim() }}&rdquo;.</div>
@@ -333,8 +376,160 @@
 
 .chat-mb-row:hover .chat-mb-acts,
 .chat-mb-row:focus-within .chat-mb-acts,
+.chat-mb-row.is-busy .chat-mb-acts,
+.chat-mb-row:has([aria-expanded="true"]) .chat-mb-acts,
 .chat-mb-rows.is-phone .chat-mb-acts {
     opacity: 1;
+}
+
+.chat-mb-acts :deep(.chat-mb-more) {
+    width: 30px;
+    height: 30px;
+}
+
+.chat-mb-busy {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+.chat-mb-busy .chat-spinner {
+    width: 12px;
+    height: 12px;
+}
+
+/* A row the door is working on dims and takes no presses until it answers. */
+.chat-mb-row.is-busy .chat-mb-who {
+    pointer-events: none;
+    opacity: .55;
+}
+
+.chat-mb-err {
+    display: flex;
+    flex-basis: 100%;
+    gap: 7px;
+    align-items: flex-start;
+    padding: 7px 6px 7px 10px;
+    margin: 0 8px 8px 54px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--chat-danger-ink);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-md);
+    animation: chat-mb-in var(--chat-t-base) var(--chat-ease-in) both;
+}
+
+.chat-mb-err > .chat-ic {
+    flex: none;
+    margin-top: 2px;
+}
+
+.chat-mb-err span {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-mb-err-x {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+}
+
+.chat-mb-err-x:hover {
+    background: color-mix(in srgb, var(--chat-danger) 12%, transparent);
+}
+
+/* A removed row collapses, from the height measured as it starts to leave. */
+.chat-mb-row.is-leaving {
+    overflow: hidden;
+    animation: chat-mb-collapse var(--chat-d-row-collapse) var(--chat-ease-out) forwards;
+}
+
+@keyframes chat-mb-collapse {
+    from {
+        height: var(--chat-mb-row-h);
+        opacity: 1;
+    }
+
+    to {
+        height: 0;
+        opacity: 0;
+    }
+}
+
+.chat-mb-add {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 6px 8px;
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-add:hover {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+}
+
+.chat-mb-add-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--chat-brand-ink);
+    border: 1.5px dashed var(--chat-line-strong);
+    border-radius: 50%;
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-add:hover .chat-mb-add-ic {
+    background: var(--chat-brand-wash);
+    border-color: color-mix(in srgb, var(--chat-brand) 60%, var(--chat-line));
+}
+
+.chat-mb-add.is-full {
+    cursor: default;
+    color: var(--chat-muted);
+}
+
+.chat-mb-add.is-full:hover {
+    background: none;
+}
+
+.chat-mb-add.is-full .chat-mb-add-ic {
+    color: var(--chat-icon);
+    opacity: .6;
+}
+
+.chat-mb-add-t {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.chat-mb-add-t span {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--chat-muted);
 }
 
 @media (hover: none) {
@@ -510,7 +705,9 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import { MemberRemoval } from "../composables/useMembers.partial";
     import { ChatError, RosterMember } from "../types.partial";
 
     // #region Types
@@ -525,6 +722,13 @@
         campus: string;
         canMessage: boolean;
         label: string;
+
+        /** The row's More menu, for someone who may manage the room, or null. */
+        menu: { items: MenuItem[], note: string } | null;
+        isRemoving: boolean;
+
+        /** The door's refusal under the row, or null. */
+        refusal: string | null;
     };
 
     /** One heading and its rows. */
@@ -627,6 +831,24 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether Rock lets the reader add and remove people here. */
+        canManageMembers: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the reader is a Chat Administrator, the only one who may remove a channel's leader. */
+        isChatAdministrator: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Each row's removal while the door works or after it refused, by person. */
+        removals: {
+            type: Object as PropType<Record<string, MemberRemoval>>,
+            default: () => ({})
         }
     });
 
@@ -638,6 +860,9 @@
         (e: "message", personAliasGuid: string): void;
         (e: "person", personAliasGuid: string): void;
         (e: "close"): void;
+        (e: "addPeople"): void;
+        (e: "remove", personAliasGuid: string): void;
+        (e: "dismissRemoval", personAliasGuid: string): void;
     }>();
 
     // #region Values
@@ -654,6 +879,12 @@
 
     /** How many rows were drawn when a later page was asked for, until it lands. */
     let moreFrom: number | null = null;
+
+    /** The row each removal started from, and the row after it, which takes focus once it leaves. */
+    const leaving = new Map<string, string | null>();
+
+    /** A group holds at most nine people, so a full one takes nobody more. */
+    const groupCapacity = 9;
 
     // #endregion Values
 
@@ -707,6 +938,8 @@
 
     const isEndShown = computed((): boolean => props.isChannel && !isQuery.value && !props.hasMore);
 
+    const isGroupFull = computed((): boolean => !props.isChannel && (props.memberCount ?? 0) >= groupCapacity);
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -728,6 +961,36 @@
         filterElement.value?.focus();
     }
 
+    function onMenuSelect(personAliasGuid: string, key: string): void {
+        if (key === "profile") {
+            emit("person", personAliasGuid);
+        }
+        else if (key === "message") {
+            emit("message", personAliasGuid);
+        }
+        else if (key === "remove") {
+            emit("remove", personAliasGuid);
+        }
+    }
+
+    /** A dismissed refusal gives focus back to its row, or to the row after a stale one that leaves. */
+    function onDismiss(personAliasGuid: string): void {
+        leaving.set(personAliasGuid, nextRowOf(personAliasGuid));
+        emit("dismissRemoval", personAliasGuid);
+        void nextTick(() => {
+            if (props.members.some(member => member.person_alias_guid === personAliasGuid)) {
+                leaving.delete(personAliasGuid);
+                whoOf(personAliasGuid)?.focus({ preventScroll: true });
+            }
+        });
+    }
+
+    /** A leaving row's height is measured as it starts, so its collapse runs from its own height. */
+    function onRowBeforeLeave(element: Element): void {
+        const row = element as HTMLElement;
+        row.style.setProperty("--chat-mb-row-h", `${row.offsetHeight}px`);
+    }
+
     function onLoadMore(): void {
         // the page already on its way answers for this press too
         if (!props.isLoadingMore) {
@@ -747,6 +1010,9 @@
         const campus = campusId ? props.campusNames[campusId.toLowerCase()] ?? "" : "";
         const parts = [name, isSelf ? "you" : "", isLeader ? "leader" : "", campus].filter(p => !!p);
 
+        const canMessage = member.can_message && !isSelf;
+        const removal = props.removals[member.person_alias_guid];
+
         return {
             guid: member.person_alias_guid,
             name,
@@ -754,9 +1020,42 @@
             isSelf,
             isLeader,
             campus,
-            canMessage: member.can_message && !isSelf,
-            label: `${parts.join(", ")}. View profile`
+            canMessage,
+            label: `${parts.join(", ")}. View profile`,
+            menu: isSelf || !props.canManageMembers ? null : menuOf(isLeader, canMessage),
+            isRemoving: removal?.kind === "removing",
+            refusal: removal?.kind === "refused" ? removal.text : null
         };
+    }
+
+    /**
+     * A row's More menu: the profile, Message where the person can be messaged, then Remove, or
+     * for a channel's leader seen by someone who is not a Chat Administrator, why there is none.
+     */
+    function menuOf(isLeader: boolean, canMessage: boolean): { items: MenuItem[], note: string } {
+        const items: MenuItem[] = [{ key: "profile", label: "View profile", icon: "users" }];
+        if (canMessage) {
+            items.push({ key: "message", label: "Message", icon: "message" });
+        }
+
+        if (isLeader && !props.isChatAdministrator) {
+            return { items, note: "Only Chat Administrators can remove a leader" };
+        }
+
+        const room = props.isChannel ? props.channelName : "this conversation";
+        items.push({ key: "remove", label: `Remove from ${room}`, icon: "user-minus", isDanger: true, isSeparatorBefore: true });
+        return { items, note: "" };
+    }
+
+    /** The row drawn after a person's, else the one before it, else none. */
+    function nextRowOf(personAliasGuid: string): string | null {
+        const order = sections.value.flatMap(section => section.rows.map(row => row.guid));
+        const at = order.indexOf(personAliasGuid);
+        return at < 0 ? null : order[at + 1] ?? order[at - 1] ?? null;
+    }
+
+    function whoOf(personAliasGuid: string): HTMLElement | null {
+        return listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${personAliasGuid}']`) ?? null;
     }
 
     // #endregion Functions
@@ -792,6 +1091,32 @@
             listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${added[0].person_alias_guid}']`)?.focus({ preventScroll: true });
         }
     });
+
+    // A row the door starts removing remembers the row after it; a refused one keeps focus on itself.
+    watch(() => props.removals, (removals, was) => {
+        for (const [guid, removal] of Object.entries(removals)) {
+            if (removal.kind === "removing" && was?.[guid]?.kind !== "removing") {
+                leaving.set(guid, nextRowOf(guid));
+            }
+            else if (removal.kind === "refused" && was?.[guid]?.kind === "removing") {
+                leaving.delete(guid);
+                void nextTick(() => whoOf(guid)?.focus({ preventScroll: true }));
+            }
+        }
+    });
+
+    // Once a removed row leaves, focus moves on to the row after it, or the filter when none is left.
+    watch(() => props.members, members => {
+        const shown = new Set(members.map(member => member.person_alias_guid));
+        const gone = Array.from(leaving.keys()).filter(guid => !shown.has(guid));
+        if (gone.length === 0) {
+            return;
+        }
+
+        const next = leaving.get(gone[0]) ?? null;
+        gone.forEach(guid => leaving.delete(guid));
+        ((next ? whoOf(next) : null) ?? filterElement.value)?.focus({ preventScroll: true });
+    }, { flush: "post" });
 
     // A screen reader hears what the first page brought.
     watch(() => props.isLoading, (isLoading, wasLoading) => {

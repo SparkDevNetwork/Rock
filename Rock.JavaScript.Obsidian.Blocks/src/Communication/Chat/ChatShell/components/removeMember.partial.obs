@@ -1,7 +1,430 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div></div>
+    <!-- No box of its own, so the frame's grid never gives it a column; the dialog places itself over the frame. -->
+    <div class="chat-rm" data-testid="remove-member">
+        <Dialog v-if="!isLeaderShown"
+                :isOpen="!!member"
+                :title="title"
+                :body="plainBody"
+                confirmLabel="Remove"
+                isDestructive
+                @close="emit('close')"
+                @confirm="emit('confirm', null)">
+            <template v-if="shown" #preview>
+                <span class="chat-rm-prev" data-testid="remove-preview">
+                    <Avatar :people="[faceOf(shown)]" :size="28" />
+                    <b>{{ nameOf(shown) }}</b>
+                    <span v-if="campusOf(shown)" class="chat-rm-prev-campus">{{ campusOf(shown) }}</span>
+                </span>
+            </template>
+        </Dialog>
+
+        <!-- The last leader: who leads next is chosen in the same step, so the room is never left unled. -->
+        <Dialog v-else
+                :isOpen="!!member"
+                :title="title"
+                :body="leaderBody"
+                isWide
+                @close="emit('close')">
+            <label class="chat-rm-search">
+                <Icon name="search" size="sm" />
+                <input type="search"
+                       placeholder="Find a member"
+                       aria-label="Find a member to lead"
+                       autocomplete="off"
+                       spellcheck="false"
+                       data-autofocus
+                       data-testid="leader-search"
+                       :value="query"
+                       @input="emit('query', ($event.target as HTMLInputElement).value)" />
+            </label>
+
+            <div class="chat-rm-list" role="radiogroup" aria-label="New leader" data-testid="leader-choices">
+                <label v-for="choice in choices"
+                       :key="choice.person_alias_guid"
+                       class="chat-rm-opt"
+                       :class="{ 'is-on': pick === choice.person_alias_guid }"
+                       data-testid="leader-choice">
+                    <input type="radio"
+                           :name="groupName"
+                           :value="choice.person_alias_guid"
+                           :checked="pick === choice.person_alias_guid"
+                           data-testid="leader-radio"
+                           @change="pick = choice.person_alias_guid" />
+                    <Avatar :people="[faceOf(choice)]" :size="28" />
+                    <span class="chat-rm-n">
+                        <b>{{ nameOf(choice) }}<template v-if="isSelf(choice)"> (you)</template></b>
+                        <span v-if="campusOf(choice)">{{ campusOf(choice) }}</span>
+                    </span>
+                    <span class="chat-rm-dot" aria-hidden="true"></span>
+                </label>
+                <div v-if="choices.length === 0 && query.trim()" class="chat-rm-none" data-testid="leader-none">No one in {{ channelName }} matches “{{ query.trim() }}”.</div>
+            </div>
+
+            <div v-if="refusal" class="chat-rm-err" role="alert" data-testid="leader-refusal">
+                <Icon name="alert" size="sm" />
+                <span>{{ refusal }}</span>
+            </div>
+
+            <template #actions>
+                <button type="button" class="chat-dialog-btn is-line" data-testid="dialog-cancel" @click="emit('close')">Cancel</button>
+                <button type="button"
+                        class="chat-dialog-btn is-danger"
+                        data-testid="leader-confirm"
+                        :disabled="!pick || undefined"
+                        :aria-busy="isRemoving ? 'true' : undefined"
+                        @click="onLeaderConfirm">
+                    <template v-if="isRemoving"><span class="chat-spinner" aria-hidden="true"></span>Removing</template>
+                    <template v-else>{{ leaderConfirmLabel }}</template>
+                </button>
+            </template>
+        </Dialog>
+    </div>
 </template>
 
+<style scoped>
+/* Ported from the design's remove confirm and its last leader's dialog. */
+.chat-rm {
+    display: contents;
+}
+
+.chat-rm-prev {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.chat-rm-prev b {
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-rm-prev-campus {
+    margin-left: auto;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+/* The members panel's filter, as the design reuses it for "Find a member". */
+.chat-rm-search {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    margin: 0 0 8px;
+    font-weight: 400;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-rm-search:focus-within {
+    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-rm-search input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 13.5px;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.chat-rm-search input::placeholder {
+    color: var(--chat-muted);
+}
+
+.chat-rm-search input::-webkit-search-cancel-button,
+.chat-rm-search input::-webkit-search-decoration {
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.chat-rm-list {
+    max-height: 248px;
+    padding: 2px 6px;
+    margin: 0 -6px 16px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.chat-rm-opt {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 10px;
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+    border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-rm-opt:hover {
+    background: var(--chat-hover);
+}
+
+.chat-rm-opt.is-on {
+    background: var(--chat-brand-wash);
+}
+
+/* The radio is the row's own, drawn as the ring at its end; it keeps the keyboard's arrows. */
+.chat-rm-opt input {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.chat-rm-opt:has(input:focus-visible) {
+    outline: 2px solid var(--chat-brand);
+    outline-offset: -2px;
+}
+
+.chat-rm-n {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-rm-n b {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-rm-n span {
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-rm-dot {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--chat-line-strong);
+    border-radius: 50%;
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-rm-opt.is-on .chat-rm-dot {
+    border-color: var(--chat-brand);
+    box-shadow: inset 0 0 0 4px var(--chat-raised), inset 0 0 0 9px var(--chat-brand-fill);
+}
+
+.chat-rm-none {
+    padding: 14px 10px;
+    font-size: 13px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+.chat-rm-err {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    margin: -4px 0 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--chat-text);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-md);
+    animation: chat-rm-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-rm-err .chat-ic {
+    flex: none;
+    margin-top: 1px;
+    color: var(--chat-danger-ink);
+}
+
+@keyframes chat-rm-strip-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+/* Reduced motion: the refusal only fades in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-rm-err {
+        animation-name: chat-rm-fade-in;
+    }
+}
+
+@keyframes chat-rm-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+</style>
+
 <script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Dialog from "../ui/dialog.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import { RosterMember } from "../types.partial";
+
+    const props = defineProps({
+        /** The person being removed; null while nobody is, which draws nothing. */
+        member: {
+            type: Object as PropType<RosterMember | null>,
+            default: null
+        },
+
+        isChannel: {
+            type: Boolean,
+            default: true
+        },
+
+        /** The room's name as the header shows it, a channel's written with no "#". */
+        channelName: {
+            type: String,
+            required: true
+        },
+
+        /** Whether the person is the room's only leader, who goes only with someone named to lead next. */
+        isLastLeader: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Who may lead next: the room's other members, as the search shows them. */
+        choices: {
+            type: Array as PropType<RosterMember[]>,
+            default: () => []
+        },
+
+        /** The "Find a member" search as typed. */
+        query: {
+            type: String,
+            default: ""
+        },
+
+        /** The door's refusal of the last leader's removal, in its own words, or null. */
+        refusal: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        isRemoving: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The reader, who is "(you)" among the choices. */
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        /** The church's campus names by guid in lower case, from the init box. */
+        campusNames: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "confirm", replacementPersonAliasGuid: string | null): void;
+        (e: "query", text: string): void;
+    }>();
+
+    // #region Values
+
+    /** The person last asked about, kept while the dialog plays its close. */
+    const shown = ref<RosterMember | null>(props.member);
+
+    /** Who was chosen to lead next. */
+    const pick = ref<string | null>(null);
+
+    const groupName = `chat-rm-${newGuid()}`;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The leader's dialog only for a channel's last leader; a group has no leaders. */
+    const isLeaderShown = computed((): boolean => props.isChannel && props.isLastLeader);
+
+    const title = computed((): string => shown.value ? `Remove ${nameOf(shown.value)}?` : "");
+
+    const plainBody = computed((): string => {
+        const first = firstOf(shown.value);
+        return props.isChannel
+            ? `${first} will leave ${props.channelName} and its group in Rock, and won't see new messages here unless someone adds them back.`
+            : `${first} will leave this conversation and won't see new messages unless someone adds them back.`;
+    });
+
+    const leaderBody = computed((): string => `${firstOf(shown.value)} is the only leader of ${props.channelName}. Choose who leads it next; they'll get the leader role in Rock.`);
+
+    const leaderConfirmLabel = computed((): string => {
+        const chosen = props.choices.find(choice => choice.person_alias_guid === pick.value);
+        return chosen ? `Remove and make ${firstOf(chosen)} leader` : "Remove";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onLeaderConfirm(): void {
+        // the answer still on its way stands for this press too
+        if (pick.value && !props.isRemoving) {
+            emit("confirm", pick.value);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function nameOf(person: RosterMember): string {
+        return `${person.nick_name ?? ""} ${person.last_name ?? ""}`.trim() || "Someone";
+    }
+
+    function firstOf(person: RosterMember | null): string {
+        return person ? person.nick_name || nameOf(person) : "";
+    }
+
+    function faceOf(person: RosterMember): AvatarPerson {
+        return { name: nameOf(person), photoUrl: person.avatar_url };
+    }
+
+    /** The campus, only for a person who shows their details. */
+    function campusOf(person: RosterMember): string {
+        const campusId = person.details?.campus_id;
+        return campusId ? props.campusNames[campusId.toLowerCase()] ?? "" : "";
+    }
+
+    function isSelf(person: RosterMember): boolean {
+        return person.person_alias_guid.toLowerCase() === props.personAliasGuid.toLowerCase();
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Each person asked about starts with nobody chosen to lead next.
+    watch(() => props.member, member => {
+        if (member) {
+            shown.value = member;
+            pick.value = null;
+        }
+    });
+
+    // #endregion Watchers
 </script>

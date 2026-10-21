@@ -356,7 +356,7 @@ describe("the notes under the field", () => {
 // chosen and says what happens: a new group starts, and the conversation stays.
 describe("opened from a conversation's Add people", () => {
     test("says a new group starts and the conversation stays", () => {
-        const w = mountView({ chosen: [anna], lookup: fresh, draft: draftFor([anna]), note: "Adding people starts a new group. Your conversation with Anna stays as it is." });
+        const w = mountView({ chosen: [anna], lookup: fresh, draft: draftFor([anna]), pairNote: "Adding people starts a new group. Your conversation with Anna stays as it is." });
 
         const note = w.get("[data-testid='nd-pair-note']");
         expect(plain(note.text())).toBe("Adding people starts a new group. Your conversation with Anna stays as it is.");

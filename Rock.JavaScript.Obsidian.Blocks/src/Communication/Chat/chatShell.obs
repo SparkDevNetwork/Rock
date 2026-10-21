@@ -188,6 +188,7 @@
                                 :refused="shell.directMessages.refused"
                                 :isPhone="isPhone"
                                 :emojiSource="emojiSource"
+                                :pairNote="newMessageNote"
                                 @back="onBack"
                                 @close="closeMainView"
                                 @choose="shell.directMessages.choose"
@@ -270,7 +271,6 @@
 
                     <MembersPanel v-else-if="shownPanel === 'members'"
                                   v-bind="membersView"
-                                  :campusNames="campusNames"
                                   :isPhone="isPhone"
                                   :personAliasGuid="personAliasGuid"
                                   @query="shell.members.setQuery"
@@ -279,6 +279,9 @@
                                   @retrySearch="shell.members.retrySearch"
                                   @message="onMemberMessage"
                                   @person="onMemberPerson"
+                                  @addPeople="openAddPeople(shell.members.state.channelId ?? '')"
+                                  @remove="shell.members.askRemove"
+                                  @dismissRemoval="shell.members.dismissRemoval"
                                   @close="closePanel" />
 
                     <ThreadDrawer v-else-if="shownPanel === 'thread' && drawnThread"
@@ -344,6 +347,10 @@
                                  :personAliasGuid="personAliasGuid" />
                 </template>
             </Dialog>
+
+            <!-- Changing who is in the room, asked from the members panel and drawn over the frame. -->
+            <RemoveMember v-bind="removeView" :personAliasGuid="personAliasGuid" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
+            <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @add="shell.members.add" />
 
             <!-- The reaction picker, one at a time, placed beside what opened it and drawn in the chat's root. -->
             <EmojiPicker v-if="reactionPicker"
@@ -600,7 +607,10 @@
     import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
-    import { searchStatus, shownMembers } from "./ChatShell/composables/useMembers.partial";
+    import { shownMembers } from "./ChatShell/composables/useMembers.partial";
+    import { useMembersPanel } from "./ChatShell/composables/useMembersPanel.partial";
+    import AddPeople from "./ChatShell/components/addPeople.partial.obs";
+    import RemoveMember from "./ChatShell/components/removeMember.partial.obs";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
     import JoinBar from "./ChatShell/components/joinBar.partial.obs";
     import MessageBody from "./ChatShell/components/messageBody.partial.obs";
@@ -717,7 +727,7 @@
         panelKind, shownPanel, panelElement, drawnThread, threadOrigin, threadOpenCount,
         onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, openThreadDrawer, closeThreadDrawer, closePanel,
-        mainView, openMainView, closeMainView, openFromMainView
+        mainView, openMainView, closeMainView, openFromMainView, openAddPeople, newMessageNote
     } = useFrame({
         shell,
         activeChannelId,
@@ -850,29 +860,8 @@
         return kinds;
     });
 
-    /** What the members panel draws of the roster: the rows the query shows and where its search is. */
-    const membersView = computed(() => {
-        const members = shell.value.members.state;
-        const channelId = members.channelId ?? "";
-        const isQuery = members.query.trim() !== "";
-        return {
-            channelName: roomTitles.value[channelId] ?? "",
-            memberCount: shell.value.rooms.factsOf(channelId)?.member_count ?? null,
-            isChannel: roomKinds.value[channelId] === "channel",
-            members: shownMembers(members),
-            hasMore: isQuery ? members.search.hasMore : members.hasMore,
-            isLoading: members.isLoading,
-            isLoadingMore: members.isLoadingMore,
-            error: members.error,
-            moreError: members.moreError,
-            refusal: members.refusal,
-            query: members.query,
-            searchStatus: searchStatus(members)
-        };
-    });
-
-    /** The church's campus names by guid in lower case, from the init box, for a member's campus. */
-    const campusNames: Record<string, string> = Object.fromEntries((config.campuses ?? []).map(campus => [campus.guid.toLowerCase(), campus.name ?? ""]));
+    /** What the members panel, the remove confirm and Add people draw of the roster. */
+    const { membersView, removeView, addView } = useMembersPanel({ shell, roomTitles, roomKinds, campuses: config.campuses ?? [] });
 
     /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
     const publicRooms = computed((): Record<string, boolean> => {

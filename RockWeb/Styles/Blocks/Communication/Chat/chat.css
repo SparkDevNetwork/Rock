@@ -1007,3 +1007,299 @@
 .chat-shell .chat-ls-sk-lines i:last-child {
     margin-bottom: 0;
 }
+
+/*
+    The people picker, shared by New message's To field and Add people's inline search: chips for
+    the people chosen, a field to type in, and a list of who matches. Under the root, so each rule
+    outranks the base focus.
+*/
+.chat-shell .chat-pk {
+    position: relative;
+}
+
+.chat-shell .chat-pk-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    min-height: 46px;
+    padding: 7px 10px 7px 14px;
+    cursor: text;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-lg);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-field:focus-within {
+    border-color: var(--chat-focus-line);
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-shell .chat-pk-label {
+    margin-right: 4px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+/* The chips flow with the input as one wrapping line. */
+.chat-shell .chat-pk-chips {
+    display: contents;
+}
+
+.chat-shell .chat-pk-chip {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    max-width: 100%;
+    height: 30px;
+    padding: 0 3px 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-full);
+}
+
+/* Only the chip just chosen enters, so the others stay still as one is added. */
+.chat-shell .chat-pk-chip.is-new {
+    animation: chat-pk-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+@keyframes chat-pk-in {
+    from {
+        opacity: 0;
+        transform: scale(var(--chat-pop-scale));
+    }
+}
+
+.chat-shell .chat-pk-chip-n {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-shell .chat-pk-x {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--chat-text-2);
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-x:hover:not(:disabled) {
+    color: var(--chat-text);
+    background: var(--chat-brand-ring);
+}
+
+.chat-shell .chat-pk-x:disabled {
+    opacity: .4;
+}
+
+/*
+    The field shows focus, so the input inside it draws no outline of its own. It keeps the
+    browser's own 1px by 2px inset, and focus rounds it as focus rounds anything else.
+*/
+.chat-shell .chat-pk-input {
+    flex: 1;
+    min-width: 120px;
+    height: 30px;
+    padding: 1px 2px;
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+}
+
+.chat-shell .chat-pk-input:focus-visible {
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-shell .chat-pk-input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+.chat-shell .chat-pk-input:disabled {
+    cursor: default;
+}
+
+.chat-shell .chat-pk-busy {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-busy .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+
+.chat-shell .chat-pk-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    z-index: 6;
+    max-height: 340px;
+    padding: 6px;
+    overflow-y: auto;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-pk-pop-in var(--chat-t-base) var(--chat-ease-in);
+    scrollbar-width: thin;
+}
+
+@keyframes chat-pk-pop-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(var(--chat-pop-scale));
+    }
+}
+
+.chat-shell .chat-pk-opt {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 10px 7px 8px;
+    cursor: pointer;
+    border-radius: var(--chat-r-option);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-opt:hover {
+    background: var(--chat-hover);
+}
+
+.chat-shell .chat-pk-opt.is-active {
+    background: var(--chat-brand-tint);
+}
+
+.chat-shell .chat-pk-o-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-shell .chat-pk-o-main b {
+    overflow: hidden;
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The campus under the name, for a person who shows it. */
+.chat-shell .chat-pk-o-main span {
+    overflow: hidden;
+    font-size: 12px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-shell .chat-pk-o-main mark {
+    padding: 0;
+    color: inherit;
+    background: var(--chat-brand-tint);
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px var(--chat-brand-tint);
+}
+
+/* The plus shows on the row Enter would pick, and under the pointer. */
+.chat-shell .chat-pk-enter {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    color: var(--chat-brand-ink);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-opt.is-active .chat-pk-enter,
+.chat-shell .chat-pk-opt:hover .chat-pk-enter {
+    opacity: 1;
+}
+
+.chat-shell .chat-pk-msg {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-msg.is-error {
+    color: var(--chat-danger-ink);
+}
+
+.chat-shell .chat-pk-note {
+    padding: 6px 4px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-note:empty {
+    display: none;
+}
+
+/* Inline, as Add people draws it: the results listed under the field rather than over the view. */
+.chat-shell .chat-pk.is-inline .chat-pk-list {
+    position: static;
+    max-height: 248px;
+    padding: 0;
+    margin-top: 8px;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+}
+
+/* Someone the room cannot take, such as a person already in it, is listed dimmed with the reason. */
+.chat-shell .chat-pk-opt[aria-disabled="true"] {
+    cursor: default;
+    background: none;
+}
+
+.chat-shell .chat-pk-opt[aria-disabled="true"] .chat-pile {
+    opacity: .45;
+}
+
+.chat-shell .chat-pk-opt[aria-disabled="true"] b {
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-o-main .chat-pk-why {
+    font-style: italic;
+}
+
+.chat-shell .chat-pk-msg .chat-ic {
+    flex: none;
+    margin-top: 2px;
+    color: var(--chat-info-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-shell .chat-pk-chip.is-new,
+    .chat-shell .chat-pk-list {
+        animation: none;
+    }
+}

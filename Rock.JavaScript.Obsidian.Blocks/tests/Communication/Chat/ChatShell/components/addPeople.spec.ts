@@ -76,7 +76,11 @@ afterEach(() => {
     wrapper = null;
 });
 
+/** What a person reads of an element, each element's words apart; a face's initials and icons are hidden from them. */
 function spaced(node: Node): string {
+    if (node instanceof Element && node.getAttribute("aria-hidden") === "true") {
+        return "";
+    }
     return node.nodeType === Node.TEXT_NODE ? node.textContent ?? "" : Array.from(node.childNodes).map(child => ` ${spaced(child)} `).join("");
 }
 

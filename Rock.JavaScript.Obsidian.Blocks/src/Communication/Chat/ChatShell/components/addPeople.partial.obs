@@ -1,7 +1,528 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div></div>
+    <!-- No box of its own, so the frame's grid never gives it a column; the dialog places itself over the frame. -->
+    <div class="chat-ap" data-testid="add-people">
+        <Dialog :isOpen="isOpen"
+                :title="`Add people to ${channelName}`"
+                isWide
+                @close="emit('close')">
+            <template #tools>
+                <IconButton icon="x" label="Close" data-testid="ap-close" @click="emit('close')" />
+            </template>
+
+            <p class="chat-ap-sub" data-testid="ap-sub">{{ subtitle }}</p>
+
+            <div class="chat-pk is-inline">
+                <div class="chat-pk-field" @mousedown="onFieldMousedown">
+                    <span :id="labelId" class="chat-pk-label">Add</span>
+                    <span class="chat-pk-chips" role="list" aria-label="Chosen people">
+                        <span v-for="person in chosen"
+                              :key="person.person_alias_guid"
+                              class="chat-pk-chip"
+                              :class="{ 'is-new': newChipId === person.person_alias_guid }"
+                              role="listitem"
+                              data-testid="ap-chip">
+                            <Avatar :people="[faceOf(person)]" :size="22" />
+                            <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
+                            <button type="button"
+                                    class="chat-pk-x"
+                                    :aria-label="`Remove ${nameOf(person)}`"
+                                    :disabled="isAdding"
+                                    data-testid="ap-chip-remove"
+                                    @click="unchoose(person)">
+                                <Icon name="x" size="xs" />
+                            </button>
+                        </span>
+                    </span>
+                    <input ref="inputElement"
+                           class="chat-pk-input"
+                           type="text"
+                           role="combobox"
+                           aria-autocomplete="list"
+                           aria-expanded="true"
+                           :aria-controls="listId"
+                           :aria-labelledby="labelId"
+                           :aria-describedby="noteId"
+                           :aria-activedescendant="activeOptionId"
+                           autocomplete="off"
+                           spellcheck="false"
+                           :placeholder="chosen.length > 0 ? '' : 'Search for people'"
+                           :value="query"
+                           :disabled="isAdding"
+                           data-autofocus
+                           data-testid="ap-input"
+                           @input="onInput"
+                           @keydown="onKeydown" />
+                    <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
+                </div>
+
+                <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
+                <div :id="listId"
+                     class="chat-pk-list"
+                     role="listbox"
+                     aria-label="People"
+                     data-testid="ap-results"
+                     @mousedown.prevent>
+                    <template v-if="!isAdding">
+                        <div v-if="isFull" class="chat-pk-msg" data-testid="ap-cap"><Icon name="info" size="xs" />{{ capText }}</div>
+                        <template v-else-if="query.trim()">
+                            <div v-if="error" class="chat-pk-msg is-error" data-testid="ap-search-error">Couldn't search right now.</div>
+                            <div v-else-if="people === null" class="chat-pk-msg" data-testid="ap-searching">Searching…</div>
+                            <div v-else-if="options.length === 0" class="chat-pk-msg" data-testid="ap-none">{{ noneText }}</div>
+                            <div v-for="(option, index) in options"
+                                 v-else
+                                 :id="optionId(option.person)"
+                                 :key="option.person.person_alias_guid"
+                                 class="chat-pk-opt"
+                                 :class="{ 'is-active': index === activeIndex }"
+                                 role="option"
+                                 :aria-selected="index === activeIndex ? 'true' : 'false'"
+                                 :aria-disabled="option.why ? 'true' : undefined"
+                                 :data-person="option.person.person_alias_guid"
+                                 data-testid="ap-option"
+                                 @mousedown.prevent="choose(option.person)"
+                                 @mouseenter="onOptionEnter(index)">
+                                <Avatar :people="[faceOf(option.person)]" :size="32" />
+                                <span class="chat-pk-o-main">
+                                    <b>{{ nameOf(option.person) }}</b>
+                                    <span v-if="option.why" class="chat-pk-why" data-testid="ap-option-why">{{ option.why }}</span>
+                                    <span v-else-if="option.campus">{{ option.campus }}</span>
+                                </span>
+                                <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                            </div>
+                        </template>
+                        <div v-else class="chat-pk-msg" data-testid="ap-idle">{{ idleText }}</div>
+                    </template>
+                </div>
+
+                <div :id="noteId" class="chat-pk-note" data-testid="ap-note">{{ note }}</div>
+            </div>
+
+            <div class="chat-ap-warn" data-testid="ap-warn">
+                <Icon name="history" size="sm" />
+                <span>{{ isChannel ? `New members will see the history of ${channelName}.` : "New people will see this conversation's history, back to the first message." }}</span>
+            </div>
+
+            <div v-if="shownRefusal" class="chat-ap-err" role="alert" data-testid="ap-refusal">
+                <Icon name="alert" size="sm" />
+                <span>{{ shownRefusal }}</span>
+            </div>
+
+            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
+
+            <template #actions>
+                <button type="button" class="chat-dialog-btn is-ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</button>
+                <button type="button"
+                        class="chat-dialog-btn is-brand"
+                        data-testid="ap-add"
+                        :disabled="chosen.length === 0 || isAdding || undefined"
+                        :aria-busy="isAdding ? 'true' : undefined"
+                        @click="onAdd">
+                    <template v-if="isAdding"><span class="chat-spinner" aria-hidden="true"></span>Adding</template>
+                    <template v-else>{{ addLabel }}</template>
+                </button>
+            </template>
+        </Dialog>
+    </div>
 </template>
 
+<style scoped>
+/* Ported from the design's Add people dialog; the picker's parts are the sheet's, shared with New message. */
+.chat-ap {
+    display: contents;
+}
+
+.chat-ap-sub {
+    margin: -4px 0 14px;
+    font-size: 13.5px;
+    color: var(--chat-muted);
+}
+
+.chat-ap .chat-pk-label {
+    min-width: 0;
+}
+
+.chat-ap-warn,
+.chat-ap-err {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    border-radius: var(--chat-r-md);
+}
+
+.chat-ap-warn {
+    margin: 12px 0 14px;
+    color: var(--chat-text-2);
+    background: var(--chat-warning-soft);
+}
+
+.chat-ap-warn .chat-ic {
+    flex: none;
+    margin-top: 1px;
+    color: var(--chat-warning-ink);
+}
+
+.chat-ap-err {
+    margin: -4px 0 14px;
+    color: var(--chat-text);
+    background: var(--chat-danger-soft);
+    animation: chat-ap-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-ap-err .chat-ic {
+    flex: none;
+    margin-top: 1px;
+    color: var(--chat-danger-ink);
+}
+
+@keyframes chat-ap-strip-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+/* Reduced motion: the refusal only fades in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-ap-err {
+        animation-name: chat-ap-fade-in;
+    }
+}
+
+@keyframes chat-ap-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+</style>
+
 <script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Dialog from "../ui/dialog.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import { ChatError, PersonRow } from "../types.partial";
+
+    // #region Types
+
+    /** One result as it is drawn: why the person cannot be picked, or their campus. */
+    type DrawnOption = {
+        person: PersonRow;
+        why: string;
+        campus: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A channel takes up to eight at a time; a group holds nine people in all. */
+        isChannel: {
+            type: Boolean,
+            default: true
+        },
+
+        /** The room's name as the header shows it, a channel's written with no "#". */
+        channelName: {
+            type: String,
+            required: true
+        },
+
+        /** How many are in the room, from its facts; null until they are read. */
+        memberCount: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The name as typed. */
+        query: {
+            type: String,
+            default: ""
+        },
+
+        /** The people search's answer for the name, or null before one comes. */
+        people: {
+            type: Array as PropType<PersonRow[] | null>,
+            default: null
+        },
+
+        isSearching: {
+            type: Boolean,
+            default: false
+        },
+
+        error: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        isAdding: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why the door added nobody, naming the person it would not take when it named one. */
+        refusal: {
+            type: Object as PropType<{ text: string, personAliasGuid: string | null } | null>,
+            default: null
+        },
+
+        /** The church's campus names by guid in lower case, from the init box. */
+        campusNames: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "query", text: string): void;
+        (e: "add", people: PersonRow[]): void;
+    }>();
+
+    // #region Values
+
+    /** The most people one add takes, as the door allows. */
+    const maxPerAdd = 8;
+
+    /** The most people a group conversation holds. */
+    const maxInGroup = 9;
+
+    const inputElement = ref<HTMLInputElement>();
+    const chosen = ref<PersonRow[]>([]);
+    const activeIndex = ref(0);
+
+    /** The chip just chosen, which alone plays its entrance. */
+    const newChipId = ref<string | null>(null);
+
+    const announcement = ref("");
+
+    const idBase = `chat-ap-${newGuid()}`;
+    const labelId = `${idBase}-label`;
+    const listId = `${idBase}-list`;
+    const noteId = `${idBase}-note`;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** How many more a group can hold, the reader included in its count. */
+    const groupRoom = computed((): number => maxInGroup - (props.memberCount ?? 1));
+
+    const max = computed((): number => props.isChannel ? maxPerAdd : Math.max(0, Math.min(maxPerAdd, groupRoom.value)));
+
+    const isFull = computed((): boolean => chosen.value.length >= max.value);
+
+    const subtitle = computed((): string => {
+        if (!props.isChannel) {
+            return `${props.channelName} has ${props.memberCount ?? 1} people. A group can have up to ${maxInGroup}.`;
+        }
+
+        const members = props.memberCount === null ? "its members" : `${props.memberCount.toLocaleString()} ${props.memberCount === 1 ? "member" : "members"}`;
+        return `${props.channelName} has ${members}. A leader can add up to ${maxPerAdd} people at a time.`;
+    });
+
+    const idleText = computed((): string => props.isChannel
+        ? `Type a name to find someone to add to ${props.channelName}.`
+        : "Type a name. You can add people who accept messages from everyone, and people in your private groups.");
+
+    const capText = computed((): string => !props.isChannel && groupRoom.value < maxPerAdd
+        ? `A group can have up to ${maxInGroup} people, so ${props.channelName} has room for ${groupRoom.value}.`
+        : `You can add up to ${maxPerAdd} people at a time.`);
+
+    const noneText = computed((): string => {
+        const none = `No one found for “${props.query.trim()}”.`;
+        // A group reaches only people the reader could message, so someone missing may be why.
+        return props.isChannel ? none : `${none} Can't find someone? They may not accept messages from everyone.`;
+    });
+
+    const note = computed((): string => {
+        const count = chosen.value.length;
+        if (count >= max.value) {
+            return "";
+        }
+
+        if (!props.isChannel) {
+            return `Room for ${groupRoom.value - count} more`;
+        }
+
+        return count ? `${count} of ${maxPerAdd} at a time` : "";
+    });
+
+    /** The search's people not yet chosen, those already in the room last and drawn with the reason. */
+    const options = computed((): DrawnOption[] => {
+        const picked = new Set(chosen.value.map(person => person.person_alias_guid));
+        const why = props.isChannel ? `Already in ${props.channelName}` : "Already in this conversation";
+        return (props.people ?? [])
+            .filter(person => !picked.has(person.person_alias_guid))
+            .map(person => ({ person, why: person.in_room ? why : "", campus: campusOf(person) }))
+            .sort((a, b) => Number(!!a.why) - Number(!!b.why));
+    });
+
+    const activeOptionId = computed((): string | undefined => {
+        const option = options.value[activeIndex.value];
+        return option && !option.why ? optionId(option.person) : undefined;
+    });
+
+    const addLabel = computed((): string => {
+        const count = chosen.value.length;
+        if (count === 0) {
+            return "Add";
+        }
+
+        return count === 1 ? `Add ${chosen.value[0].nick_name || nameOf(chosen.value[0])}` : `Add ${count} people`;
+    });
+
+    /** The door's refusal, until the person it named is taken out. */
+    const shownRefusal = computed((): string | null => {
+        const refusal = props.refusal;
+        if (!refusal) {
+            return null;
+        }
+
+        const named = refusal.personAliasGuid?.toLowerCase();
+        return !named || chosen.value.some(person => person.person_alias_guid.toLowerCase() === named) ? refusal.text : null;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onInput(event: Event): void {
+        activeIndex.value = 0;
+        emit("query", (event.target as HTMLInputElement).value);
+    }
+
+    /** A press on the field's empty space puts the caret in the search, as a text field would. */
+    function onFieldMousedown(event: MouseEvent): void {
+        if (!(event.target as HTMLElement).closest("button, input")) {
+            event.preventDefault();
+            inputElement.value?.focus();
+        }
+    }
+
+    function onOptionEnter(index: number): void {
+        if (!options.value[index]?.why) {
+            activeIndex.value = index;
+        }
+    }
+
+    /**
+     * Up and Down move among the people who can be picked; Enter with a name picks one and never
+     * adds, while Enter on an empty field adds the people chosen; Backspace on an empty field takes
+     * out the last chip.
+     */
+    function onKeydown(event: KeyboardEvent): void {
+        const enabled = options.value.map((option, index) => option.why ? -1 : index).filter(index => index >= 0);
+        const isEmpty = (event.target as HTMLInputElement).value === "";
+
+        if ((event.key === "ArrowDown" || event.key === "ArrowUp") && enabled.length > 0 && !isFull.value) {
+            event.preventDefault();
+            const at = enabled.indexOf(activeIndex.value);
+            const step = event.key === "ArrowDown" ? 1 : -1;
+            activeIndex.value = enabled[at < 0 ? 0 : (at + step + enabled.length) % enabled.length];
+        }
+        else if (event.key === "Enter") {
+            event.preventDefault();
+            if (!isEmpty) {
+                const active = options.value[activeIndex.value];
+                const person = active && !active.why ? active.person : options.value.find(option => !option.why)?.person;
+                if (person && !isFull.value) {
+                    choose(person);
+                }
+                else {
+                    announcement.value = isFull.value ? capText.value : `No one to add for ${props.query.trim()}`;
+                }
+            }
+            else {
+                onAdd();
+            }
+        }
+        else if (event.key === "Backspace" && isEmpty && chosen.value.length > 0) {
+            event.preventDefault();
+            unchoose(chosen.value[chosen.value.length - 1]);
+        }
+    }
+
+    function onAdd(): void {
+        if (chosen.value.length > 0 && !props.isAdding) {
+            emit("add", [...chosen.value]);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function nameOf(person: PersonRow): string {
+        return `${person.nick_name ?? ""} ${person.last_name ?? ""}`.trim() || "Someone";
+    }
+
+    function faceOf(person: PersonRow): AvatarPerson {
+        return { name: nameOf(person), photoUrl: person.avatar_url };
+    }
+
+    /** The campus, which the search sends only for a person who shows their details. */
+    function campusOf(person: PersonRow): string {
+        return person.campus_id ? props.campusNames[person.campus_id.toLowerCase()] ?? "" : "";
+    }
+
+    function optionId(person: PersonRow): string {
+        return `${idBase}-o-${person.person_alias_guid}`;
+    }
+
+    /** Picks a person the room can take, clearing the name for the next. */
+    function choose(person: PersonRow): void {
+        const isPicked = chosen.value.some(p => p.person_alias_guid === person.person_alias_guid);
+        if (isPicked || person.in_room || isFull.value || props.isAdding) {
+            return;
+        }
+
+        chosen.value = [...chosen.value, person];
+        newChipId.value = person.person_alias_guid;
+        activeIndex.value = 0;
+        announcement.value = `Added ${nameOf(person)}. ${chosen.value.length} ${chosen.value.length === 1 ? "person" : "people"} chosen.`;
+        emit("query", "");
+        inputElement.value?.focus({ preventScroll: true });
+    }
+
+    function unchoose(person: PersonRow): void {
+        chosen.value = chosen.value.filter(p => p.person_alias_guid !== person.person_alias_guid);
+        newChipId.value = null;
+        announcement.value = `Removed ${nameOf(person)}`;
+        void nextTick(() => inputElement.value?.focus({ preventScroll: true }));
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Each open starts with nobody chosen.
+    watch(() => props.isOpen, isOpen => {
+        if (isOpen) {
+            chosen.value = [];
+            newChipId.value = null;
+            activeIndex.value = 0;
+            announcement.value = "";
+        }
+    });
+
+    // What a search found is said once it comes.
+    watch(() => props.people, people => {
+        if (people && props.query.trim()) {
+            const count = options.value.filter(option => !option.why).length;
+            announcement.value = count ? `${count} ${count === 1 ? "person" : "people"} found` : "No one found";
+        }
+    });
+
+    // #endregion Watchers
 </script>
