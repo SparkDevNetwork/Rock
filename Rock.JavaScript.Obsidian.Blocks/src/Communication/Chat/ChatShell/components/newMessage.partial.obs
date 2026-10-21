@@ -133,7 +133,17 @@
                     <button type="button" class="chat-nd-btn" data-testid="nd-open" @click="emit('open', lookup.channelId as string)">Open</button>
                 </div>
 
-                <div class="chat-nd-scroll">
+                <!--
+                    The conversation found, as a read-only look at its newest messages: acting on a
+                    message happens in the conversation itself, so the look is out of reach.
+                -->
+                <div v-if="isFound && recent && recent.length > 0" class="chat-nd-hist" inert data-testid="nd-history">
+                    <slot name="history" />
+                </div>
+
+                <div v-else class="chat-nd-scroll">
+                    <p v-if="isFound && recent && recent.length === 0" class="chat-nd-none" data-testid="nd-history-empty">No messages yet.</p>
+
                     <div v-if="!isFound" class="chat-nd-start" data-testid="nd-start">
                         <Avatar :people="startFaces" :size="chosen.length === 1 ? 56 : 48" />
                         <b data-testid="nd-start-title">{{ startTitle }}</b>
@@ -546,6 +556,21 @@
     scrollbar-width: thin;
 }
 
+/* The found conversation's feed fills the body as a conversation's does. */
+.chat-nd-hist {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chat-nd-none {
+    margin: 24px 0 0;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
 .chat-nd-start {
     display: flex;
     flex-direction: column;
@@ -842,6 +867,7 @@
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
     import { joinNames } from "../stores/channelStore.partial";
+    import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -878,6 +904,15 @@
         lookup: {
             type: Object as PropType<DirectMessageLookup>,
             required: true
+        },
+
+        /**
+         * The found conversation's last few messages, oldest first, which the history slot draws;
+         * null while they are read, or when the read failed.
+         */
+        recent: {
+            type: Array as PropType<TimelineMessage[] | null>,
+            default: null
         },
 
         /** The found conversation's title as the sidebar draws it, or null. */

@@ -57,6 +57,9 @@ export type PlatformClientLike = RealtimeClientLike;
 /** The realtime client's options: the pinned protocol and the reconnect waits. */
 export type RealtimeOptions = ReturnType<typeof realtimeOptions>;
 
+/** How many of the found conversation's newest messages New message shows, as the design draws them. */
+const foundHistoryLimit = 16;
+
 /** What the Rock token action answered. */
 export type MintActionResult = {
     isSuccess: boolean;
@@ -768,6 +771,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             return result.ok
                 ? { ok: true, channelId: (result.data as Partial<FindDmAnswer> | null)?.channel_id ?? null }
                 : { ok: false, error: result.error };
+        },
+        // New message shows the conversation found as a read-only look at its newest messages.
+        recentMessages: async channelId => {
+            const result = await call("chat_get_history", { p_channel_id: channelId, p_limit: foundHistoryLimit, p_before_id: null, p_after_id: null });
+            if (!result.ok) {
+                throw thrown(result);
+            }
+            return [...((result.data as Partial<HistoryPage> | null)?.messages ?? [])].sort((a, b) => a.id - b.id);
         },
         startConversation: async personAliasGuids => options.startDirectMessage
             ? options.startDirectMessage(personAliasGuids)

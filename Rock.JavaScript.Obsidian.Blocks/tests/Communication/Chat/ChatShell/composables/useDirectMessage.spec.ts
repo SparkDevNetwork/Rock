@@ -26,7 +26,7 @@ import {
     maxOthers,
     PersonRow
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
-import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChatError, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
 
@@ -1456,6 +1456,74 @@ describe("New message's lookup", () => {
         expect(dm.lookup).toEqual({ status: "found", channelId: existing, isSlow: false });
         expect(dm.draft).toBeNull();
         expect(calls).toEqual(["find 1"]);
+    });
+
+    /** A message of the conversation found, as chat_get_history answers it. */
+    function said(id: number): TimelineMessage {
+        return { id, person_alias_guid: person(1).person_alias_guid, body: `Message ${id}`, message_type: "text", created_at: "2026-10-20T10:00:00Z" } as TimelineMessage;
+    }
+
+    test("the conversation found shows its last few messages, read from its history", async () => {
+        const reads: string[] = [];
+        const { dependencies } = setup({
+            findConversation: async () => ({ ok: true, channelId: existing }),
+            recentMessages: async channelId => {
+                reads.push(channelId);
+                return [said(1), said(2)];
+            }
+        });
+        const dm = createDirectMessages(dependencies);
+        dm.begin();
+        dm.choose(person(1));
+        expect(dm.recent).toBeNull();
+        await flush();
+
+        expect(reads).toEqual([existing]);
+        expect(dm.recent?.map(m => m.id)).toEqual([1, 2]);
+    });
+
+    test("the messages go as the people change, and a read for the people before lands nowhere", async () => {
+        const reads: Array<Deferred<TimelineMessage[]>> = [];
+        const { calls, dependencies } = setup({
+            recentMessages: () => {
+                const read = deferred<TimelineMessage[]>();
+                reads.push(read);
+                return read.promise;
+            }
+        });
+        const lookups = handLookups(calls);
+        const dm = createDirectMessages({ ...dependencies, findConversation: lookups.findConversation });
+        dm.begin();
+        dm.choose(person(1));
+        lookups.answers[0].resolve({ ok: true, channelId: existing });
+        await flush();
+        expect(reads).toHaveLength(1);
+
+        dm.choose(person(2));
+        expect(dm.recent).toBeNull();
+        reads[0].resolve([said(1)]);
+        await flush();
+
+        expect(dm.recent).toBeNull();
+        lookups.answers[1].resolve({ ok: true, channelId: null });
+        await flush();
+        expect(dm.recent).toBeNull();
+    });
+
+    test("a read that fails shows no messages, the conversation still found", async () => {
+        const { dependencies } = setup({
+            findConversation: async () => ({ ok: true, channelId: existing }),
+            recentMessages: async () => {
+                throw new Error("offline");
+            }
+        });
+        const dm = createDirectMessages(dependencies);
+        dm.begin();
+        dm.choose(person(1));
+        await flush();
+
+        expect(dm.lookup.status).toBe("found");
+        expect(dm.recent).toBeNull();
     });
 
     test("new people get a draft for exactly the people chosen, and nothing is asked of Rock", async () => {

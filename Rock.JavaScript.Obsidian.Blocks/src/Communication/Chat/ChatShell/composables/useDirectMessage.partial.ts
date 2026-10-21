@@ -38,10 +38,12 @@
 // New message begins afresh or with people chosen, and from then on every change to the people
 // chosen looks up the conversation they already have. Only the newest lookup lands, however the
 // answers arrive, and the view says it is looking only once one has taken a moment, so a quick
-// answer never flashes it. People who have a conversation send to it; new people get a draft.
+// answer never flashes it. People who have a conversation send to it, and its last few messages
+// are read to show in place, so the person sees what they would be continuing; new people get a
+// draft.
 import { reactive, toRaw } from "vue";
 import { computeBackoff } from "../platformCall.partial";
-import { ChatError, PersonRow } from "../types.partial";
+import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
 import { defaultRetryDelay } from "./useHistory.partial";
 import { newLocalId, noKeySentence, SendTry } from "./useSend.partial";
 
@@ -127,6 +129,9 @@ export type DirectMessageDependencies = {
     /** Rock's door, which finds or creates the conversation. */
     startConversation: (personAliasGuids: string[]) => Promise<DoorResult>;
 
+    /** The newest few messages of a conversation, oldest first, read through its history; none here reads nothing. */
+    recentMessages?: (channelId: string) => Promise<TimelineMessage[]>;
+
     /** Opens a channel on screen. False when the platform refused it or it could not load. */
     openChannel: (channelId: string) => boolean | Promise<boolean>;
 
@@ -169,6 +174,9 @@ export type DirectMessages = {
 
     /** The conversation the people chosen already have, as New message last looked it up. */
     lookup: DirectMessageLookup;
+
+    /** The last few messages of the conversation found, oldest first; null until read, or when the read failed. */
+    recent: TimelineMessage[] | null;
 
     /** A refusal Rock gave about one of the people chosen, for the strip that offers to take them out. */
     refused: { person: PersonRow, text: string } | null;
@@ -285,6 +293,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         error: null as string | null,
         held: null as { body: string } | null,
         lookup: { status: "idle", channelId: null, isSlow: false } as DirectMessageLookup,
+        recent: null as TimelineMessage[] | null,
         refused: null as { person: PersonRow, text: string } | null
     });
 
@@ -661,6 +670,28 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         return sendOnce(message);
     }
 
+    /**
+     * Reads the found conversation's last few messages for its lookup, which only lands while
+     * that lookup is still the newest. A read that fails shows none; the conversation is still
+     * found, and what is sent still goes there.
+     */
+    async function readRecent(generation: number, channelId: string): Promise<void> {
+        if (!dependencies.recentMessages) {
+            return;
+        }
+
+        let messages: TimelineMessage[] | null;
+        try {
+            messages = await dependencies.recentMessages(channelId);
+        }
+        catch {
+            messages = null;
+        }
+        if (!isStopped && generation === lookupGeneration) {
+            state.recent = messages;
+        }
+    }
+
     /** Ends a lookup's wait, so no looking state comes for it. */
     function cancelSlow(): void {
         if (slowTimer !== null) {
@@ -735,6 +766,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         leaveDraft();
         state.refused = null;
         state.error = null;
+        state.recent = null;
 
         const people = [...state.chosen];
         if (people.length === 0) {
@@ -774,6 +806,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             // none get a draft and Rock is asked only once there is a message to send.
             if (result.channelId) {
                 state.lookup = { status: "found", channelId: result.channelId, isSlow: false };
+                void readRecent(generation, result.channelId);
                 return;
             }
 
@@ -791,6 +824,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         state.error = null;
         state.refused = null;
         state.lookup = { status: "idle", channelId: null, isSlow: false };
+        state.recent = null;
         boxText = "";
     }
 

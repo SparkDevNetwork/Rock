@@ -175,6 +175,7 @@
                                 :search="shell.directMessages.search"
                                 :lookup="shell.directMessages.lookup"
                                 :foundTitle="foundTitle"
+                                :recent="shell.directMessages.recent"
                                 :campuses="campuses"
                                 :draft="draft"
                                 :error="shell.directMessages.error"
@@ -191,7 +192,22 @@
                                 @retry="onSendFirst(draft?.body ?? '')"
                                 @discard="shell.directMessages.discardFailed"
                                 @emojiPickerOpen="onEmojiPickerOpen"
-                                @emojiChosen="onEmojiChosen" />
+                                @emojiChosen="onEmojiChosen">
+                        <!-- The conversation found, drawn as its own feed draws it, with nothing to act on. -->
+                        <template #history>
+                            <MessageFeed v-if="foundTimeline"
+                                         :key="shell.directMessages.lookup.channelId ?? ''"
+                                         :timeline="foundTimeline"
+                                         :pending="[]"
+                                         :personAliasGuid="personAliasGuid"
+                                         :personName="personName"
+                                         :personPhotoUrl="personPhotoUrl"
+                                         :organizationName="organizationName"
+                                         :isDirectMessage="foundRow ? isTwoPersonDirectMessage(foundRow) : shell.directMessages.chosen.length === 1"
+                                         :isPhone="isPhone"
+                                         isPreviewing />
+                        </template>
+                    </NewMessage>
                 </div>
 
                 <!-- Centred over the conversation it reports on, so a panel open beside it never pulls a toast off it. -->
@@ -557,6 +573,7 @@
     import Composer from "./ChatShell/components/composer.partial.obs";
     import ConversationDetails from "./ChatShell/components/conversationDetails.partial.obs";
     import { DirectMessageDraft } from "./ChatShell/composables/useDirectMessage.partial";
+    import { TimelineState } from "./ChatShell/composables/useHistory.partial";
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
@@ -853,6 +870,22 @@
         }
 
         return roomTitles.value[lookup.channelId] ?? joinNames(chosen.map(person => `${person.nick_name} ${person.last_name}`), 0);
+    });
+
+    /** The sidebar row of the conversation New message found, which says how its feed is drawn. */
+    const foundRow = computed((): SidebarRow | null => {
+        const channelId = shell.value.directMessages.lookup.channelId;
+        return channelId ? shell.value.channels.rows.find(r => r.channel_id === channelId) ?? null : null;
+    });
+
+    /** The found conversation's last few messages as a feed draws a timeline: all of it read, nothing unread. */
+    const foundTimeline = computed((): TimelineState | null => {
+        const messages = shell.value.directMessages.recent;
+        if (!messages || messages.length === 0) {
+            return null;
+        }
+
+        return { messages, isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: messages[messages.length - 1].id };
     });
 
     // #endregion Computed Values

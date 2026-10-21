@@ -31,6 +31,7 @@ import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import NewMessage from "../../../../../src/Communication/Chat/ChatShell/components/newMessage.partial.obs";
 import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
+import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 
 // #region Fixtures
@@ -661,6 +662,40 @@ describe("what a screen reader is told", () => {
         await settle();
 
         expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
+    });
+});
+
+describe("the conversation found", () => {
+    function said(id: number): TimelineMessage {
+        return { id, person_alias_guid: anna.person_alias_guid, body: `Message ${id}`, message_type: "text", created_at: "2026-10-20T10:00:00Z" } as TimelineMessage;
+    }
+
+    test("shows its last messages under the strip, out of reach, as the history slot draws them", () => {
+        const w = mount(NewMessage, {
+            props: { chosen: [anna], search: jest.fn(async () => []), lookup: found, foundTitle: "Anna Reyes", recent: [said(1), said(2)] },
+            slots: { history: "<p data-testid='drawn-history'>the feed</p>" },
+            attachTo: document.body
+        });
+        wrapper = w;
+
+        const history = w.get("[data-testid='nd-history']");
+        expect(history.attributes("inert")).toBeDefined();
+        expect(history.find("[data-testid='drawn-history']").exists()).toBe(true);
+        expect(w.find("[data-testid='nd-history-empty']").exists()).toBe(false);
+    });
+
+    test("says No messages yet for a conversation with none", () => {
+        const w = mountView({ chosen: [anna], lookup: found, foundTitle: "Anna Reyes", recent: [] });
+
+        expect(w.get("[data-testid='nd-history-empty']").text()).toBe("No messages yet.");
+    });
+
+    test("draws nothing in place while its messages are being read, or when the read failed", () => {
+        const w = mountView({ chosen: [anna], lookup: found, foundTitle: "Anna Reyes", recent: null });
+
+        expect(w.find("[data-testid='nd-history']").exists()).toBe(false);
+        expect(w.find("[data-testid='nd-history-empty']").exists()).toBe(false);
+        expect(w.find("[data-testid='nd-found']").exists()).toBe(true);
     });
 });
 

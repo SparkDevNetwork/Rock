@@ -181,6 +181,7 @@ function fakeShell(): Record<string, unknown> {
             error: null,
             refused: null,
             lookup: { status: "idle", channelId: null, isSlow: false },
+            recent: null,
             search: jest.fn(async () => []),
             choose: jest.fn(),
             unchoose: jest.fn(),
@@ -2724,6 +2725,25 @@ describe("New message", () => {
 
         expect(w.find("[data-testid='main-view']").exists()).toBe(false);
         expect(document.activeElement).toBe(w.get(target).element);
+    });
+
+    test("the conversation found shows its last messages under its strip, drawn as its feed is and out of reach", async () => {
+        const w = await mountBlock(1200);
+        await openNewMessage(w);
+        Object.assign(directMessagesOf(), {
+            chosen: [annaPerson],
+            lookup: { status: "found", channelId: dmAnna.channel_id, isSlow: false },
+            recent: [
+                { id: 41, person_alias_guid: annaPerson.person_alias_guid, sender_nick_name: "Anna", sender_last_name: "Kim", body: "See you Saturday", message_type: "text", created_at: "2026-10-20T10:00:00Z" },
+                { id: 42, person_alias_guid: "a0000001-0000-4000-8000-000000000000", body: "Sounds good", message_type: "text", created_at: "2026-10-20T10:01:00Z", is_own: true }
+            ]
+        });
+        await settle();
+
+        const history = w.get("[data-testid='main-view'] [data-testid='nd-history']");
+        expect(history.attributes("inert")).toBeDefined();
+        expect(history.findAll("[data-message-id]").map(row => row.attributes("data-message-id"))).toEqual(["41", "42"]);
+        expect(history.text()).toContain("See you Saturday");
     });
 
     test("the conversation found opens from its strip, closing the view", async () => {

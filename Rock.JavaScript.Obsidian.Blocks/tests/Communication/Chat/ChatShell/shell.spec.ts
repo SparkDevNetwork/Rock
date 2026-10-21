@@ -102,7 +102,9 @@ function build(options: {
     directoryCalls: Array<Record<string, unknown>>,
     sendRefusals: { value: Array<{ status: number, body: unknown }> },
     personCalls: Array<Record<string, unknown>>,
-    personAnswer: { value: { status: number, body: unknown } }
+    personAnswer: { value: { status: number, body: unknown } },
+    foundDm: { value: string | null },
+    historyCalls: Array<Record<string, unknown>>
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -130,6 +132,9 @@ function build(options: {
     // What chat_get_person answers next, and every call it was asked.
     const personCalls: Array<Record<string, unknown>> = [];
     const personAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: null } };
+    // The conversation chat_find_dm answers for any people, none by default; and every history read asked.
+    const foundDm: { value: string | null } = { value: null };
+    const historyCalls: Array<Record<string, unknown>> = [];
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -194,12 +199,13 @@ function build(options: {
                 return fakeResponse(200, bootstrap.value);
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_history")) {
+                historyCalls.push(body);
                 const pending = deferred<Response>();
                 (history[body.p_channel_id as string] ??= []).push(pending);
                 return pending.promise;
             }
             if (url.endsWith("/rest/v1/rpc/chat_find_dm")) {
-                return fakeResponse(200, { channel_id: null });
+                return fakeResponse(200, { channel_id: foundDm.value });
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_channel")) {
                 channelReads.push(body.p_channel_id);
@@ -262,7 +268,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -1114,6 +1120,23 @@ describe("a direct message's first message", () => {
         expect(h.shell.state.activeChannelId).toBe(channelA);
         expect(h.shell.directMessages.lookup).toEqual({ status: "new", channelId: null, isSlow: false });
         expect(h.shell.directMessages.draft?.people).toEqual([other]);
+        await h.shell.stop();
+    });
+
+    test("reads its last 16 messages through its history, oldest first, opening nothing", async () => {
+        const h = await started();
+        h.foundDm.value = channelB;
+        const before = h.historyCalls.length;
+
+        h.shell.directMessages.begin([other]);
+        await settle();
+        expect(h.historyCalls.slice(before)).toEqual([expect.objectContaining({ p_channel_id: channelB, p_limit: 16, p_before_id: null, p_after_id: null })]);
+        answerHistory(h, channelB, 20);
+        await settle();
+
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(h.shell.directMessages.lookup).toEqual({ status: "found", channelId: channelB, isSlow: false });
+        expect(h.shell.directMessages.recent?.map(m => m.id)).toEqual([20]);
         await h.shell.stop();
     });
 });
