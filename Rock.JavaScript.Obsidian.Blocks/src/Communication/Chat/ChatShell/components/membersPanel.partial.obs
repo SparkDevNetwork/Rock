@@ -1050,7 +1050,9 @@
     });
 
     // A row the door starts removing remembers the row after it; a refused one keeps focus on itself.
-    // Snapshot each kind because the roster mutates this dictionary's entries in place.
+    // Snapshot each kind because the roster mutates this dictionary's entries in place. Read after
+    // the render: an entry changed in place can reach this watcher before the members prop does,
+    // and a row just dropped with its entry would look still present and lose its focus intent.
     watch(() => Object.fromEntries(Object.entries(props.removals).map(([guid, removal]) => [guid, removal.kind])), (removals, was) => {
         // A removal can return to the leader dialog without losing its row. Its old focus
         // intent must not survive into a later search that happens to exclude that person.
@@ -1069,7 +1071,7 @@
                 void nextTick(() => whoOf(guid)?.focus({ preventScroll: true }));
             }
         }
-    });
+    }, { flush: "post" });
 
     // Once a removed row leaves, focus moves on to the row after it, or the filter when none is left.
     watch(() => props.members, members => {
