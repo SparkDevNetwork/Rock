@@ -1203,6 +1203,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         write: isOff => options.storage?.setItem(pushOffKey, isOff ? "true" : "false")
                     }
                 });
+                // drawn now, as a browser's first registration can take half a minute
+                state.isPushOffered = push.isOffered();
+                state.push = push.state();
                 await push.start();
                 state.isPushOffered = push.isOffered();
                 state.push = push.state();

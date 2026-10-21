@@ -2532,6 +2532,23 @@ describe("the browser row", () => {
         expect(h.shell.state.push).toBe("unavailable");
     });
 
+    test("is drawn before a slow first registration settles, never as not set up", async () => {
+        const token = deferred<string>();
+        const h = build({ push: fakeBrowserPush({ value: "granted" }, () => token.promise), pushSettings: pushSettings("off") });
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await settle();
+
+        // the token is still on its way, so the start has not settled
+        expect(h.deviceCalls).toEqual([]);
+        expect(h.shell.state.push).toBe("on");
+
+        token.resolve("fcm-1");
+        await starting;
+        expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
+    });
+
     test("Turn off is kept per church and person, so another person on the browser still registers", async () => {
         const stored: Record<string, string> = {};
         const ada = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
