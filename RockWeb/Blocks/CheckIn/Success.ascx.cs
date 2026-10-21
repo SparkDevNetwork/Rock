@@ -476,8 +476,8 @@ namespace RockWeb.Blocks.CheckIn
             var lCheckinResultsCheckinMessage = e.Item.FindControl( "lCheckinResultsCheckinMessage" ) as Literal;
             var pnlCheckinResultsAchievementsScoreboard = e.Item.FindControl( "pnlCheckinResultsAchievementsScoreboard" ) as Panel;
 
-            lCheckinResultsPersonName.Text = checkinResult.Person.ToString();
-            lCheckinResultsCheckinMessage.Text = $"{checkinResult.Group} in {checkinResult.Location.Name} at {checkinResult.Schedule}";
+            lCheckinResultsPersonName.Text = checkinResult.Person.ToString().EncodeHtml();
+            lCheckinResultsCheckinMessage.Text = $"{checkinResult.Group?.ToString().EncodeHtml()} in {checkinResult.Location.Name.EncodeHtml()} at {checkinResult.Schedule?.ToString().EncodeHtml()}";
 
             PersonAchievementType[] personAchievementTypes = checkinResult.GetPersonAchievementTypes( false );
 

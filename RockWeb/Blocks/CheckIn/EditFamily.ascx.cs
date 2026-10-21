@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 this.EditFamilyState = FamilyRegistrationState.FromGroup( checkInFamily.Group );
                 hfGroupId.Value = checkInFamily.Group.Id.ToString();
-                mdEditFamily.Title = checkInFamily.Group.Name;
+                mdEditFamily.Title = checkInFamily.Group.Name.EncodeHtml();
 
                 int groupId = hfGroupId.Value.AsInteger();
                 var rockContext = new RockContext();
@@ -796,7 +796,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             pnlEditPerson.Visible = false;
             pnlEditFamily.Visible = true;
-            mdEditFamily.Title = EditFamilyState.FamilyName;
+            mdEditFamily.Title = EditFamilyState.FamilyName.EncodeHtml();
             upContent.Update();
         }
 
@@ -957,7 +957,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             pnlEditFamily.Visible = false;
             pnlEditPerson.Visible = true;
-            mdEditFamily.Title = familyPersonState.FullName;
+            mdEditFamily.Title = familyPersonState.FullName.EncodeHtml();
             upContent.Update();
         }
 
