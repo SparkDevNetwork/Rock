@@ -921,6 +921,23 @@ describe("Leave", () => {
         expect(s.opened).toEqual([group]);
     });
 
+    test("the next conversation is the one beside it as the leave was asked, though the platform's signal took its row and closed it first", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = group;
+
+        void s.rooms.leave(group);
+        // The door's own sync reaches the person's topic before its answer: the sidebar reloads
+        // without the group, and the recheck that follows closes the room on screen.
+        s.channels.setSidebar(s.channels.rows.filter(row => row.channel_id !== group));
+        s.active.value = null;
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.opened).toEqual([volunteers]);
+        expect(s.toasts).toEqual([{ code: "room.left", text: "You left Caleb and Hannah", icon: "door" }]);
+    });
+
     test("leaving the last conversation in the sidebar opens the one before it", async () => {
         const s = setup();
         sidebarOfThree(s);

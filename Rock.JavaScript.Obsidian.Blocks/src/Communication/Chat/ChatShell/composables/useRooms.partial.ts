@@ -606,16 +606,15 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     }
 
     /**
-     * Opens the conversation after the one left in the sidebar, or the one before it when the
-     * last was left, so the person lands somewhere they still are rather than on an empty column.
+     * The conversation after a room in the sidebar, or the one before it when it is the last, so
+     * a person who leaves lands somewhere they still are rather than on an empty column; null when
+     * it has no neighbour or no row.
      */
-    function openNext(channelId: string): void {
+    function neighbourOf(channelId: string): string | null {
         const rows = channels.rows.filter(r => r.is_member || r.channel_id === channelId);
         const index = rows.findIndex(r => r.channel_id === channelId);
         const next = index < 0 ? undefined : rows[index + 1] ?? rows[index - 1];
-        if (next) {
-            dependencies.openChannel(next.channel_id);
-        }
+        return next?.channel_id ?? null;
     }
 
     /**
@@ -809,6 +808,12 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
 
+            // Where to go next, and the room's title, are read as the leave is asked: the door's
+            // own sync can reach the person's topic before its answer, taking the row out of the
+            // sidebar and closing the room on screen, and after that the room has neither a
+            // neighbour, nor a place on screen, nor the title its row gave it.
+            const next = dependencies.activeChannelId() === channelId ? neighbourOf(channelId) : null;
+            const title = titleOf(channelId);
             state.leaves[channelId] = { kind: "leaving" };
             const answer = await askDoor(() => door(channelId), () => {
                 state.leaves[channelId] = { kind: "offline" };
@@ -827,11 +832,13 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // Pending is left as well: Rock has removed the membership, and the platform's
             // signal takes the room out of the sidebar when it follows.
             state.leaves[channelId] = { kind: "left" };
-            const title = titleOf(channelId);
             dependencies.notify({ code: "room.left", text: `You left ${title}`, icon: "door" });
             announce(`You left ${title}.`);
-            if (dependencies.activeChannelId() === channelId) {
-                openNext(channelId);
+
+            // Unless the person has gone to another conversation meanwhile.
+            const now = dependencies.activeChannelId();
+            if (next && (now === channelId || now === null)) {
+                dependencies.openChannel(next);
             }
         },
 
