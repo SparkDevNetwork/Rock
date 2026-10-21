@@ -285,6 +285,9 @@ export type Rooms = {
     /** Opens the profile card for a person, read for the room it was opened from. */
     openCard: (personAliasGuid: string, channelId: string) => void;
 
+    /** Reads a person's current profile and the conversation they already share with the reader. */
+    readPerson: (personAliasGuid: string, channelId: string) => Promise<PersonProfile | null>;
+
     /** Closes the profile card; an answer still on its way is dropped. */
     closeCard: () => void;
 
@@ -407,6 +410,17 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     /** Puts a sentence in the live region. */
     function announce(text: string, isAssertive = false): void {
         state.announcement = { text, isAssertive, count: ++announcements };
+    }
+
+    /** The card and a member's Message share the platform's current profile and messaging rights. */
+    async function readPerson(personAliasGuid: string, channelId: string): Promise<PersonProfile | null> {
+        if (isStopped) {
+            return null;
+        }
+
+        const result = await dependencies.getPerson(personAliasGuid, channelId)
+            .catch((): PersonProfileResult => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }));
+        return !isStopped && result.ok ? result.person : null;
     }
 
     // #region The directory
@@ -934,19 +948,18 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
             const generation = ++cardGeneration;
             state.card = { personAliasGuid, channelId, person: null };
-            // A read that throws is a read that failed, so it draws no card either.
-            const read = dependencies.getPerson(personAliasGuid, channelId)
-                .catch((): PersonProfileResult => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }));
-            void read.then(result => {
+            void readPerson(personAliasGuid, channelId).then(person => {
                 if (isStopped || generation !== cardGeneration) {
                     return;
                 }
 
                 // A person the platform does not list, or a read that failed, draws no card: the
                 // opener stays as it was with nothing to show.
-                state.card = result.ok ? { personAliasGuid, channelId, person: result.person } : null;
+                state.card = person ? { personAliasGuid, channelId, person } : null;
             });
         },
+
+        readPerson,
 
         closeCard: (): void => {
             cardGeneration++;

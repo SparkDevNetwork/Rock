@@ -929,6 +929,7 @@
      */
     function onCardMessage(person: PersonProfile): void {
         shell.value.rooms.closeCard();
+        closePanel();
         if (person.dm_channel_id) {
             void openFromMainView(person.dm_channel_id);
             return;
@@ -1125,13 +1126,26 @@
      * Message from a member row: the conversation with that person, or a draft for them, in place
      * of the open room, as New message would open it.
      */
+    let memberMessageGeneration = 0;
+
     async function onMemberMessage(personAliasGuid: string): Promise<void> {
-        const member = shownMembers(shell.value.members.state).find(m => m.person_alias_guid === personAliasGuid);
-        if (!member) {
+        const askedShell = shell.value;
+        const channelId = askedShell.members.state.channelId;
+        const member = shownMembers(askedShell.members.state).find(m => m.person_alias_guid === personAliasGuid);
+        if (!member || !channelId) {
             return;
         }
 
-        await openMainView("newdm", [{ person_alias_guid: member.person_alias_guid, nick_name: member.nick_name ?? "", last_name: member.last_name ?? "", avatar_url: member.avatar_url }]);
+        const generation = ++memberMessageGeneration;
+        const person = await askedShell.rooms.readPerson(personAliasGuid, channelId);
+        // A slow answer must not replace another conversation or a newer member's Message.
+        if (generation !== memberMessageGeneration || shell.value !== askedShell || activeChannelId.value !== channelId || panelKind.value !== "members") {
+            return;
+        }
+
+        if (person?.can_message) {
+            onCardMessage(person);
+        }
     }
 
     /**
