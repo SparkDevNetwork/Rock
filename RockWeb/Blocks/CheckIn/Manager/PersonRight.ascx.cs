@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             lCode.Text = attendanceInfo.Code;
             if ( lSearchResultGroupName != null )
             {
-                lSearchResultGroupName.Text = attendanceInfo.SearchResultGroupName;
+                lSearchResultGroupName.Text = attendanceInfo.SearchResultGroupName.EncodeHtml();
             }
 
             if ( attendanceInfo.IsActive && lActiveLabel != null )
