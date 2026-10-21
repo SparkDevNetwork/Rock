@@ -229,6 +229,19 @@ namespace Rock.Security.Authentication
                 };
             }
 
+            // The address pattern allows braces and pipes, so IsValid alone
+            // still lets a Lava output expression through.
+            var isEmailRequested = sendOneTimePasscodeOptions.ShouldSendEmailCode || sendOneTimePasscodeOptions.ShouldSendEmailLink;
+            if ( isEmailRequested && ( sendOneTimePasscodeOptions.Email.IsLavaTemplate() || !EmailAddressFieldValidator.IsValid( sendOneTimePasscodeOptions.Email ) ) )
+            {
+                return new SendOneTimePasscodeResult
+                {
+                    IsSuccessful = false,
+                    ErrorMessage = "Please provide a valid email address.",
+                    State = null
+                };
+            }
+
             var securitySettings = new SecuritySettingsService().SecuritySettings;
 
             var passwordlessSystemCommunication = new SystemCommunicationService( rockContext ).Get( securitySettings.PasswordlessConfirmationCommunicationTemplateGuid );
