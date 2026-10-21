@@ -274,3 +274,82 @@ describe("the actions", () => {
         expect(w.find("button").exists()).toBe(false);
     });
 });
+
+// The intro's actions, for a member: Star, pressed while the room is starred, and in a room the
+// person cannot post in, its notify mode in words ("All posts", "Mentions only", "Off"), opening
+// the same notify menu as the header's bell. A person not in the room is offered neither.
+describe("the actions", () => {
+    beforeAll(() => {
+        // jsdom has no ResizeObserver, and the floating menu keeps its place with one.
+        if (typeof window.ResizeObserver === "undefined") {
+            window.ResizeObserver = class {
+                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
+                unobserve(): void { /* As above. */ }
+                disconnect(): void { /* As above. */ }
+            } as unknown as typeof ResizeObserver;
+        }
+    });
+
+    afterEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    function mountAttached(props: Record<string, unknown>): VueWrapper {
+        wrapper = mount(ChannelIntro, {
+            props: { facts: facts(), campuses: [downtown], notifyMode: "all", isEmpty: false, isPhone: false, ...props },
+            attachTo: document.body
+        });
+        return wrapper;
+    }
+
+    test("Star is pressed while the room is starred, and asks to change it", async () => {
+        const w = mountAttached({ isStarred: false });
+        const star = w.get("[data-testid='intro-star']");
+
+        expect(star.attributes("aria-pressed")).toBe("false");
+        expect(star.attributes("aria-label")).toBe("Star");
+
+        await w.setProps({ isStarred: true });
+        expect(w.get("[data-testid='intro-star']").attributes("aria-pressed")).toBe("true");
+        expect(w.get("[data-testid='intro-star']").attributes("aria-label")).toBe("Unstar");
+
+        await w.get("[data-testid='intro-star']").trigger("click");
+        expect(w.emitted("star")).toHaveLength(1);
+    });
+
+    test("a room the person cannot post in offers its notify mode in words, opening the notify menu", async () => {
+        const reason = "Only leaders can post in Announcements.";
+        const w = mountAttached({ facts: facts({ can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: reason }), notifyMode: "mentions" });
+
+        const notify = w.get("[data-testid='intro-notify'] button");
+        expect(notify.text()).toBe("Mentions only");
+        expect(notify.attributes("aria-haspopup")).toBe("menu");
+
+        await notify.trigger("click");
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const radios = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+        expect(radios.map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
+
+        radios[0].click();
+        expect(w.emitted("notify")).toEqual([["all"]]);
+
+        await w.setProps({ notifyMode: "silent" });
+        expect(w.get("[data-testid='intro-notify'] button").text()).toBe("Off");
+        await w.setProps({ notifyMode: "all" });
+        expect(w.get("[data-testid='intro-notify'] button").text()).toBe("All posts");
+    });
+
+    test("a room the person can post in offers no notify mode", () => {
+        const w = mountAttached({});
+
+        expect(w.find("[data-testid='intro-notify']").exists()).toBe(false);
+        expect(w.find("[data-testid='intro-star']").exists()).toBe(true);
+    });
+
+    test("a person not in the room is offered neither", () => {
+        const w = mountAttached({ facts: facts({ is_member: false, can_post: false, can_post_code: "authz.join_required", can_post_reason: "Join this channel to post." }) });
+
+        expect(w.find("[data-testid='intro-star']").exists()).toBe(false);
+        expect(w.find("[data-testid='intro-notify']").exists()).toBe(false);
+    });
+});

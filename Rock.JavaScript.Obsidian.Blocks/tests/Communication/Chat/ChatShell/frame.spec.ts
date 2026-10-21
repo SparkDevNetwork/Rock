@@ -164,7 +164,8 @@ function fakeShell(): Record<string, unknown> {
         activeChannelId: null as string | null,
         banner: null,
         isComposerOpen: true,
-        isPushOffered: false
+        isPushOffered: false,
+        push: "offered"
     });
 
     const threads = fakeThreads();
@@ -212,6 +213,7 @@ function fakeShell(): Record<string, unknown> {
         firstMessageShown: jest.fn(),
         send: jest.fn(),
         turnOnPush: jest.fn(),
+        turnOffPush: jest.fn(),
         isChannelOnScreen: () => false,
         // as the shell answers it: the thread open in the drawer, on a page the test calls visible
         isThreadOnScreen: (rootId: number) => (threads.state as { thread: { rootId: number } | null }).thread?.rootId === rootId,
@@ -223,6 +225,7 @@ function fakeShell(): Record<string, unknown> {
         mentions,
         rooms,
         members: fakeMembers(),
+        prefs: fakePrefs(),
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -243,6 +246,32 @@ function fakeShell(): Record<string, unknown> {
     };
 
     return mockShell;
+}
+
+/**
+ * The person's settings the shell holds, as usePrefs' createPrefs answers them, reduced to the
+ * state the block draws and the saves it asks for.
+ */
+function fakePrefs(): Record<string, unknown> {
+    const state = reactive({
+        me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true },
+        meSave: null,
+        meNotes: {},
+        rooms: {} as Record<string, unknown>,
+        announcement: null
+    });
+
+    return {
+        state,
+        roomOf: (channelId: string) => state.rooms[channelId] ?? { save: null, notes: {} },
+        setMe: jest.fn(),
+        setNotifyMode: jest.fn(async () => undefined),
+        setStarred: jest.fn(async () => undefined),
+        setHidden: jest.fn(async () => undefined),
+        setPersonSetting: jest.fn(async () => undefined),
+        setReactionPush: jest.fn(async () => undefined),
+        stop: jest.fn()
+    };
 }
 
 /**
@@ -3391,4 +3420,152 @@ describe("the members panel", () => {
         expect(await mockShellOptions!.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: false });
     });
 
+});
+
+// The person's settings across the block: the details' notify mode, Star and Hide, the header's
+// bell and Star, and Chat settings from the sidebar's foot or the person's own card, each asking
+// the shell's settings to save; the composer locked with the row's sentence where the person
+// cannot post, and counting down to the row's limit.
+describe("settings", () => {
+    function prefsOf(): Record<string, jest.Mock> & { state: Record<string, unknown> } {
+        return mockShell!.prefs as ReturnType<typeof prefsOf>;
+    }
+
+    function settingsDialog(): HTMLElement | null {
+        return document.querySelector<HTMLElement>("[data-testid='settings-close']")?.closest<HTMLElement>("[role='dialog']") ?? null;
+    }
+
+    async function openTeam(w: VueWrapper): Promise<void> {
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await openRow(w, team.channel_id);
+    }
+
+    test("the details' notify mode, Star and Hide ask the settings to save, for the open room", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+
+        document.querySelectorAll<HTMLElement>("[data-testid='notify-option']")[2].click();
+        document.querySelector<HTMLElement>("[data-testid='switch-star'] [role='switch']")!.click();
+        document.querySelector<HTMLElement>("[data-testid='switch-hide'] [role='switch']")!.click();
+        await settle();
+
+        expect(prefsOf().setNotifyMode).toHaveBeenCalledWith(team.channel_id, "silent", false);
+        expect(prefsOf().setStarred).toHaveBeenCalledWith(team.channel_id, true, false);
+        expect(prefsOf().setHidden).toHaveBeenCalledWith(team.channel_id, true);
+    });
+
+    test("the details show the room's mode and star from its sidebar row", async () => {
+        const w = await mountBlock(1200);
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(0, 1, { ...team, notify_mode: "mentions", is_favorite: true });
+        await settle();
+        await openTeam(w);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+
+        const checked = Array.from(document.querySelectorAll<HTMLElement>("[data-testid='notify-option']")).map(o => o.getAttribute("aria-checked"));
+        expect(checked).toEqual(["false", "true", "false"]);
+        expect(document.querySelector("[data-testid='switch-star'] [role='switch']")?.getAttribute("aria-checked")).toBe("true");
+    });
+
+    test("the header's bell and Star ask the settings to save, as from the header", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+
+        await w.get("[data-testid='header-notify'] button").trigger("click");
+        await settle();
+        document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']")[1].click();
+        await settle();
+        await w.get("[data-testid='header-star']").trigger("click");
+        await settle();
+
+        expect(prefsOf().setNotifyMode).toHaveBeenCalledWith(team.channel_id, "mentions", true);
+        expect(prefsOf().setStarred).toHaveBeenCalledWith(team.channel_id, true, true);
+    });
+
+    test("Chat settings opens from the sidebar's foot, and its switches and browser row reach the shell", async () => {
+        const w = await mountBlock(1200);
+
+        await w.get("[data-testid='sidebar-me']").trigger("click");
+        await settle();
+
+        const dialog = settingsDialog();
+        expect(dialog).not.toBeNull();
+        expect(document.getElementById(dialog!.getAttribute("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Chat settings");
+
+        document.querySelector<HTMLElement>("[data-testid='switch-open_dm'] [role='switch']")!.click();
+        document.querySelector<HTMLElement>("[data-testid='switch-reaction_push'] [role='switch']")!.click();
+        document.querySelector<HTMLElement>("[data-testid='push-row'] button")!.click();
+        await settle();
+
+        expect(prefsOf().setPersonSetting).toHaveBeenCalledWith("open_dm", true);
+        expect(prefsOf().setReactionPush).toHaveBeenCalledWith(false);
+        expect(mockShell!.turnOnPush).toHaveBeenCalled();
+
+        mockShell!.state.push = "on";
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='push-row'] button")!.click();
+        await settle();
+        expect(mockShell!.turnOffPush).toHaveBeenCalled();
+
+        document.querySelector<HTMLElement>("[data-testid='settings-close']")!.click();
+        await settle();
+        expect(settingsDialog()).toBeNull();
+        expect(document.activeElement).toBe(w.get("[data-testid='sidebar-me']").element);
+    });
+
+    test("Chat settings opens from the person's own card", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        roomsOf().state.card = {
+            personAliasGuid: "a0000001-0000-4000-8000-000000000000",
+            channelId: team.channel_id,
+            person: {
+                person_alias_guid: "a0000001-0000-4000-8000-000000000000",
+                nick_name: "Jordan",
+                last_name: "Ellis",
+                avatar_url: null,
+                is_self: true,
+                is_leader: false,
+                details: null,
+                can_message: false,
+                dm_channel_id: null
+            }
+        };
+        await settle();
+
+        document.querySelector<HTMLElement>("[data-testid='profile-settings']")!.click();
+        await settle();
+
+        expect(roomsOf().closeCard).toHaveBeenCalled();
+        expect(settingsDialog()).not.toBeNull();
+    });
+
+    test("the composer gives way to the locked bar with the row's sentence where the person cannot post", async () => {
+        const w = await mountBlock(1200);
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(0, 1, { ...team, can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: "Only leaders can post in Worship Team." });
+        await settle();
+        await openTeam(w);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='composer-locked']").text()).toBe("Only leaders can post in Worship Team.");
+    });
+
+    test("the composer counts down to the row's limit, and a send over it is toasted", async () => {
+        const w = await mountBlock(1200);
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(0, 1, { ...team, max_length: 5000 });
+        await settle();
+        await openTeam(w);
+
+        const composer = w.findComponent(ComposerComponent);
+        expect(composer.props("maxLength")).toBe(5000);
+
+        composer.vm.$emit("overLimit", 5000);
+        await settle();
+
+        expect(w.text()).toContain("This message is over the 5,000 character limit.");
+    });
 });

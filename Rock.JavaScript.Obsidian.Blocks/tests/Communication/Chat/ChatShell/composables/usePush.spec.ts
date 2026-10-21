@@ -348,3 +348,106 @@ describe("web push on this browser", () => {
         expect(calls).toEqual([]);
     });
 });
+
+// Chat settings' browser row reads push's state for this browser: offered, asking while the
+// browser's own box is up, on, blocked once the browser said no, or not set up where the platform
+// sent no Firebase values. The row offers Turn on whatever the church's prompt timing, since the
+// person came to the setting themselves. Turn off takes this browser's device out of push and
+// clears the sign-out cookie, and is remembered on this browser, so the next load does not
+// register it again while the browser still allows notifications; Turn on then needs no ask.
+describe("the browser row's state", () => {
+    /** The browser's remembered Turn off, as local storage holds it. */
+    function offFlag(initial = false): { read: () => boolean, write: jest.Mock } {
+        let isOff = initial;
+        return {
+            read: () => isOff,
+            write: jest.fn((value: boolean) => {
+                isOff = value;
+            })
+        };
+    }
+
+    test("is not set up with no Firebase values, and blocked once the browser said no", async () => {
+        const none = createPushRegistration(dependencies({ settings: () => ({ web: null, vapid_key: null, prompt: "offer" }) }).deps);
+        await none.start();
+        expect(none.state()).toBe("unavailable");
+
+        const blocked = createPushRegistration(dependencies({ permission: "denied" }).deps);
+        await blocked.start();
+        expect(blocked.state()).toBe("blocked");
+    });
+
+    test("is offered while the browser has not been asked, whatever the church's prompt timing", async () => {
+        const push = createPushRegistration(dependencies({ prompt: "off" }).deps);
+        await push.start();
+
+        expect(push.state()).toBe("offered");
+    });
+
+    test("is asking while the browser's own box is up, then on once allowed and registered", async () => {
+        const answer = deferred<string>();
+        const { deps, calls, setPermission } = dependencies();
+        deps.requestPermission = jest.fn(() => answer.promise);
+        const push = createPushRegistration(deps);
+        await push.start();
+
+        const turning = push.turnOn();
+        expect(push.state()).toBe("asking");
+
+        setPermission("granted");
+        answer.resolve("granted");
+        await turning;
+
+        expect(push.state()).toBe("on");
+        expect(calls.map(c => c.name)).toEqual(["chat_register_device"]);
+    });
+
+    test("is blocked when the browser's box is answered no", async () => {
+        const { deps, setPermission } = dependencies();
+        deps.requestPermission = jest.fn(async () => {
+            setPermission("denied");
+            return "denied";
+        });
+        const push = createPushRegistration(deps);
+        await push.start();
+
+        await push.turnOn();
+
+        expect(push.state()).toBe("blocked");
+    });
+
+    test("Turn off takes the device out, clears the cookie and is remembered", async () => {
+        const flag = offFlag();
+        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: flag });
+        const push = createPushRegistration(deps);
+        await push.start();
+        expect(push.state()).toBe("on");
+
+        await push.turnOff();
+
+        expect(calls.map(c => [c.name, c.args])).toEqual([
+            ["chat_register_device", { p_token: "fcm-token-1", p_platform: "web" }],
+            ["chat_unregister_device", { p_token: "fcm-token-1" }]
+        ]);
+        expect(cookies).toEqual(["fcm-token-1", null]);
+        expect(flag.write).toHaveBeenCalledWith(true);
+        expect(push.state()).toBe("offered");
+    });
+
+    test("a browser turned off here does not register on the next load, and Turn on registers it without asking", async () => {
+        const flag = offFlag(true);
+        const { deps, calls } = dependencies({ permission: "granted", offFlag: flag });
+        const push = createPushRegistration(deps);
+
+        await push.start();
+        expect(calls).toEqual([]);
+        expect(push.state()).toBe("offered");
+
+        await push.turnOn();
+
+        expect(deps.requestPermission).not.toHaveBeenCalled();
+        expect(flag.write).toHaveBeenCalledWith(false);
+        expect(calls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(push.state()).toBe("on");
+    });
+});

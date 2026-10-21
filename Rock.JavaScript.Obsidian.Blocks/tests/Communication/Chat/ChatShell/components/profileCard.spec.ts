@@ -20,7 +20,7 @@
 // when they do not. Message for someone the person may message, a quiet box for someone they may
 // not. The card is a dialog named for the person, takes focus as it opens, and Escape gives focus
 // back to what opened it. The person's badges, in the church's order with its colors, under a rule
-// when they show their details. The person's own Chat settings come later, so it is not drawn.
+// when they show their details. The person's own card offers Chat settings.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
@@ -186,11 +186,10 @@ describe("the card", () => {
         expect(w.emitted("close")).toHaveLength(1);
     });
 
-    test("draws no Chat settings, which come later, and no badges without the church's list", () => {
+    test("draws no badges without the church's list", () => {
         const own = mountCard(profile({ is_self: true }));
 
         expect(own.find("[data-testid='profile-badges']").exists()).toBe(false);
-        expect(own.text()).not.toContain("Chat settings");
         own.unmount();
 
         const other = mountCard();
@@ -366,5 +365,24 @@ describe("badges", () => {
 
         expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
         expect(w.get("[data-testid='profile-leader']").text()).toBe("Leader");
+    });
+});
+
+describe("Chat settings", () => {
+    test("is offered on the person's own card, and asks for the settings", async () => {
+        const w = mountCard(profile({ is_self: true, can_message: false }));
+
+        const settings = w.get("[data-testid='profile-settings']");
+        expect(settings.element.tagName).toBe("BUTTON");
+        expect(settings.text()).toBe("Chat settings");
+        await settings.trigger("click");
+
+        expect(w.emitted("settings")).toHaveLength(1);
+    });
+
+    test("is not offered on anyone else's card", () => {
+        const w = mountCard();
+
+        expect(w.find("[data-testid='profile-settings']").exists()).toBe(false);
     });
 });

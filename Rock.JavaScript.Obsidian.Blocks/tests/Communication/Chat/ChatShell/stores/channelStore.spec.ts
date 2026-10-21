@@ -497,3 +497,57 @@ describe("badges", () => {
         expect(s.badges).toEqual([badge]);
     });
 });
+
+// The person's own preferences show in the sidebar at once: a star moves a room into Starred,
+// sorted first as the platform sorts it, and a notify mode mutes or unmutes its row. A room hidden
+// from the conversation on screen stays in the list while it is open and leaves once another
+// conversation opens, as the platform's sidebar leaves it out from then on; a reload while it is
+// still open keeps it.
+describe("the person's own preferences", () => {
+    test("a star sorts the room first, and a mode is the row's at once", () => {
+        const { store: s } = store();
+
+        s.applyPrefs(two, { is_favorite: true, notify_mode: "silent" });
+
+        expect(s.rows.map(r => r.channel_id)).toEqual([two, one]);
+        expect(s.rows[0].is_favorite).toBe(true);
+        expect(s.rows[0].notify_mode).toBe("silent");
+
+        s.applyPrefs(two, { is_favorite: false });
+        expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+    });
+
+    test("a hidden room stays while it is open, through a reload, and leaves when another opens", () => {
+        const { store: s } = store();
+        s.setActive(two);
+
+        s.applyPrefs(two, { hidden: true });
+        expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+
+        // the platform's sidebar leaves a hidden room out
+        s.setSidebar([row(one)]);
+        expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+
+        s.setActive(one);
+        expect(s.rows.map(r => r.channel_id)).toEqual([one]);
+    });
+
+    test("a room shown again before another opens stays", () => {
+        const { store: s } = store();
+        s.setActive(two);
+
+        s.applyPrefs(two, { hidden: true });
+        s.applyPrefs(two, { hidden: false });
+        s.setActive(one);
+
+        expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+    });
+
+    test("a room the sidebar does not hold is left alone", () => {
+        const { store: s } = store();
+
+        s.applyPrefs(hidden, { is_favorite: true });
+
+        expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+    });
+});

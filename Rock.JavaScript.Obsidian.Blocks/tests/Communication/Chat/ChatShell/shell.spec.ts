@@ -82,6 +82,7 @@ function build(options: {
     addMembers?: ShellOptions["addMembers"],
     removeMember?: ShellOptions["removeMember"],
     isChatAdministrator?: boolean,
+    savePersonSetting?: ShellOptions["savePersonSetting"],
     areSharedChannelsFilteredByCampus?: boolean
 } = {}): {
     shell: ReturnType<typeof createChatShell>,
@@ -108,7 +109,9 @@ function build(options: {
     personCalls: Array<Record<string, unknown>>,
     personAnswer: { value: { status: number, body: unknown } },
     foundDm: { value: string | null },
-    historyCalls: Array<Record<string, unknown>>
+    historyCalls: Array<Record<string, unknown>>,
+    prefsCalls: Array<Record<string, unknown>>,
+    prefsAnswer: { value: { status: number, body: unknown } }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -139,6 +142,9 @@ function build(options: {
     // The conversation chat_find_dm answers for any people, none by default; and every history read asked.
     const foundDm: { value: string | null } = { value: null };
     const historyCalls: Array<Record<string, unknown>> = [];
+    // Every chat_set_prefs asked, and what it answers next.
+    const prefsCalls: Array<Record<string, unknown>> = [];
+    const prefsAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: { channel: null, me: {} } } };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -219,6 +225,10 @@ function build(options: {
                 directoryCalls.push(body);
                 return fakeResponse(200, { channels: [], total: 0 });
             }
+            if (url.endsWith("/rest/v1/rpc/chat_set_prefs")) {
+                prefsCalls.push(body);
+                return fakeResponse(prefsAnswer.value.status, prefsAnswer.value.body);
+            }
             if (url.endsWith("/rest/v1/rpc/chat_get_person")) {
                 personCalls.push(body);
                 return fakeResponse(personAnswer.value.status, personAnswer.value.body);
@@ -266,6 +276,7 @@ function build(options: {
         getMemberRights: options.getMemberRights,
         addMembers: options.addMembers,
         removeMember: options.removeMember,
+        savePersonSetting: options.savePersonSetting,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mentionViews: options.mentionViews,
         reloadPage: () => {
@@ -275,7 +286,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -2386,5 +2397,79 @@ describe("the live sidebar", () => {
             expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "refused", text: expect.any(String) });
             expect(h.shell.state.activeChannelId).toBe(channelA);
         });
+    });
+});
+
+// The person's settings ride the shell: the bootstrap's me is where the settings start, a room's
+// star, hide and notify mode and the reaction switch go to chat_set_prefs through the one call
+// path, the two privacy switches go to Rock's SavePersonSetting door, and stopping the shell stops
+// them.
+describe("settings", () => {
+    async function startedWith(bootstrap: unknown, options: Parameters<typeof build>[0] = {}): Promise<ReturnType<typeof build>> {
+        const h = build(options);
+        h.bootstrap.value = bootstrap;
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        return h;
+    }
+
+    test("the bootstrap's me is where the person's own switches start", async () => {
+        const h = await startedWith({ channels: [], me: { show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } });
+
+        expect(h.shell.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false });
+    });
+
+    test("a room's notify mode is one chat_set_prefs call with the room and the patch", async () => {
+        const h = await started();
+        h.prefsAnswer.value = { status: 200, body: { channel: { channel_id: channelB, is_favorite: false, hidden: false, notify_mode: "silent", notify_mode_effective: "silent" }, me: {} } };
+
+        await h.shell.prefs.setNotifyMode(channelB, "silent", false);
+
+        expect(h.prefsCalls).toEqual([{ p_channel_id: channelB, p_changes: { notify_mode: "silent" } }]);
+    });
+
+    test("the reaction switch is chat_set_prefs with no room", async () => {
+        const h = await startedWith({ channels: [], me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true, unread_mentions: [] } });
+
+        await h.shell.prefs.setReactionPush(false);
+
+        expect(h.prefsCalls).toEqual([{ p_channel_id: null, p_changes: { reaction_push: false } }]);
+    });
+
+    test("a privacy switch goes to Rock's door, not the platform", async () => {
+        const doorCalls: Array<[string, boolean]> = [];
+        const h = await started({
+            savePersonSetting: async (setting, value) => {
+                doorCalls.push([setting, value]);
+                return { code: "ok", isPending: false, message: null };
+            }
+        });
+
+        await h.shell.prefs.setPersonSetting("profile_details", false);
+
+        expect(doorCalls).toEqual([["profile_details", false]]);
+        expect(h.prefsCalls).toEqual([]);
+    });
+
+    test("stopping the shell stops the settings", async () => {
+        const h = await started();
+
+        await h.shell.stop();
+        await h.shell.prefs.setStarred(channelA, true, false);
+
+        expect(h.prefsCalls).toEqual([]);
+    });
+});
+
+// Chat settings' browser row reads the shell's push state; a browser with no push at all is not
+// set up, and Turn on and Turn off go to push.
+describe("the browser row", () => {
+    test("a browser with no push at all is not set up", async () => {
+        const h = await started();
+
+        expect(h.shell.state.push).toBe("unavailable");
     });
 });

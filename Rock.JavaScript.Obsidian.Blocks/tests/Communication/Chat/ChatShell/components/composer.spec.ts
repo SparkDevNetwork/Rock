@@ -474,3 +474,72 @@ describe("the composer's @ picker", () => {
         expect(mounted.emitted("mentionQuery")?.slice(-1)).toEqual([[null]]);
     });
 });
+
+// A room the person cannot post in gives the box way to a locked bar carrying the server's own
+// sentence, as the sidebar row's can_post_reason says it; the join case has its join bar instead,
+// which the block draws in the composer's place, and a paused service its own words above. The box counts down in the last 500 characters of
+// the room's max_length and over it, and a send over the limit is held back with a toast's word.
+describe("the composer where the person cannot post", () => {
+    test("is a locked bar carrying the server's sentence, with no box", () => {
+        const wrapper = mount(Composer, { props: { lockedReason: "Only leaders can post in Announcements." } });
+
+        const bar = wrapper.get("[data-testid='composer-locked']");
+        expect(bar.text()).toBe("Only leaders can post in Announcements.");
+        expect(wrapper.find("[data-testid='composer-input']").exists()).toBe(false);
+    });
+
+    test("is the box again once there is no reason", async () => {
+        const wrapper = mount(Composer, { props: { lockedReason: "Only leaders can post in Announcements." } });
+
+        await wrapper.setProps({ lockedReason: null });
+
+        expect(wrapper.find("[data-testid='composer-locked']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='composer-input']").exists()).toBe(true);
+    });
+});
+
+describe("the composer's counter", () => {
+    test("is silent until the last 500 characters of the limit", async () => {
+        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        await type(wrapper, "x".repeat(4500));
+
+        expect(wrapper.get("[data-testid='composer-count']").text()).toBe("");
+    });
+
+    test("counts down in the warning ink inside the last 500", async () => {
+        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        await type(wrapper, "x".repeat(4812));
+
+        const count = wrapper.get("[data-testid='composer-count']");
+        expect(count.text()).toBe("188 left");
+        expect(count.attributes("data-tone")).toBe("warn");
+    });
+
+    test("says how far over in the danger ink past the limit", async () => {
+        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        await type(wrapper, "x".repeat(5012));
+
+        const count = wrapper.get("[data-testid='composer-count']");
+        expect(count.text()).toBe("12 over the limit");
+        expect(count.attributes("data-tone")).toBe("over");
+    });
+
+    test("holds a send over the limit back, keeping the text, and says why", async () => {
+        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        await type(wrapper, "x".repeat(5001));
+        await wrapper.get("form").trigger("submit");
+
+        expect(wrapper.emitted("send")).toBeUndefined();
+        expect(wrapper.emitted("overLimit")).toEqual([[5000]]);
+        expect(boxText(wrapper)).toBe("x".repeat(5001));
+    });
+
+    test("sends at exactly the limit", async () => {
+        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        await type(wrapper, "x".repeat(5000));
+        await wrapper.get("form").trigger("submit");
+
+        expect(wrapper.emitted("send")).toHaveLength(1);
+        expect(wrapper.get("[data-testid='composer-count']").text()).toBe("");
+    });
+});

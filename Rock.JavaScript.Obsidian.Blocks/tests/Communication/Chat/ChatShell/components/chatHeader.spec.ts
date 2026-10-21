@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-// The conversation header, mounted: the room's title with the line under it, the offer to turn on
-// notifications, and what the header says while the connection is down. The subtitle gives way to
+// The conversation header, mounted: the room's title with the line under it, the room's notify
+// menu and Star, and what the header says while the connection is down. The subtitle gives way to
 // the connection's state while there is one, a sweeping bar and a banner say the same thing more
 // loudly, and the service's own sentence sits under the header in the tone its kind calls for. On a
-// phone the header leads with Back, and the offer moves into the overflow menu, which is left out
-// when it would hold nothing.
+// phone the header leads with Back, keeps the bell, and moves Star into the overflow menu, which is
+// left out when it would hold nothing.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChatHeader from "../../../../../src/Communication/Chat/ChatShell/components/chatHeader.partial.obs";
@@ -247,25 +247,20 @@ describe("the service banners", () => {
     });
 });
 
-describe("the push offer on a desktop", () => {
-    test("is a bell icon button labelled 'Turn on notifications'", async () => {
+// The offer to turn on notifications moved from the header's bell to Chat settings' browser row,
+// so the header's bell is the room's notify menu and nothing in the header asks the browser.
+describe("the push offer", () => {
+    test("is no longer in the header, on a desktop or a phone, and there is no overflow on a desktop", () => {
         const w = mountHeader({ isPushOffered: true });
-        const offer = w.get("[data-testid='push-offer']");
-
-        expect(offer.classes()).toContain("chat-icon-btn");
-        expect(offer.attributes("aria-label")).toBe("Turn on notifications");
-        expect(hasIcon(w, offer, "bell")).toBe(true);
-
-        await offer.trigger("click");
-        expect(w.emitted("turnOnPush")).toHaveLength(1);
-    });
-
-    test("is gone when not offered, and there is no overflow on a desktop", () => {
-        const w = mountHeader({ isPushOffered: false });
 
         expect(w.find("[data-testid='push-offer']").exists()).toBe(false);
         expect(w.find("[data-testid='header-more']").exists()).toBe(false);
         expect(w.find("[data-testid='header-back']").exists()).toBe(false);
+        w.unmount();
+
+        const phone = mountHeader({ isPhone: true, isPushOffered: true });
+        expect(phone.find("[data-testid='push-offer']").exists()).toBe(false);
+        expect(phone.find("[data-testid='header-more']").exists()).toBe(false);
     });
 });
 
@@ -281,26 +276,25 @@ describe("the header on a phone", () => {
         expect(w.emitted("back")).toHaveLength(1);
     });
 
-    test("moves the push offer into the overflow menu as its one item", async () => {
-        const w = mountHeader({ isPhone: true, isPushOffered: true });
+    test("keeps the notify bell and moves Star into the overflow menu", async () => {
+        const w = mountHeader({ isPhone: true, kind: "channel", isPrefsOffered: true, notifyMode: "all", isStarred: false });
 
-        expect(w.find("[data-testid='push-offer']").exists()).toBe(false);
+        expect(w.find("[data-testid='header-notify']").exists()).toBe(true);
+        expect(w.find("[data-testid='header-star']").exists()).toBe(false);
 
-        const more = w.get("[data-testid='header-more'] button");
-        expect(more.attributes("aria-label")).toBe("More");
-        await more.trigger("click");
+        await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
 
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.textContent?.trim())).toEqual(["Turn on notifications"]);
+        expect(items.map(i => i.textContent?.trim())).toEqual(["Star", "Channel details"]);
 
         items[0].click();
         await settle();
-        expect(w.emitted("turnOnPush")).toHaveLength(1);
+        expect(w.emitted("star")).toHaveLength(1);
     });
 
     test("leaves the overflow out when it would hold nothing", () => {
-        const w = mountHeader({ isPhone: true, isPushOffered: false });
+        const w = mountHeader({ isPhone: true, isPushOffered: true });
 
         expect(w.find("[data-testid='header-more']").exists()).toBe(false);
     });
@@ -562,5 +556,118 @@ describe("the way into the members panel", () => {
         items[0].click();
         await settle();
         expect(w.emitted("members")).toHaveLength(1);
+    });
+});
+
+// The bell is the room's notify menu: "Notify me about" over the three modes, each with what it
+// means, the chosen one checked, and the room's details last. Its icon is the room's mode. Star
+// sits beside it, pressed while the room is starred. Both are offered only in a room the person
+// is a member of; a choice is told to the block, which saves it.
+describe("the notify menu and Star", () => {
+    function menuItems(): HTMLElement[] {
+        return Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio'], [role='menu'] [role='menuitem']"));
+    }
+
+    test("draws the room's mode as the bell's icon", async () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all" });
+        const bell = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-notify'] button");
+
+        expect(bell().attributes("aria-label")).toBe("Notifications");
+        expect(bell().attributes("aria-haspopup")).toBe("menu");
+        expect(hasIcon(w, bell(), "bell")).toBe(true);
+
+        await w.setProps({ notifyMode: "mentions" });
+        expect(hasIcon(w, bell(), "at-bell")).toBe(true);
+
+        await w.setProps({ notifyMode: "silent" });
+        expect(hasIcon(w, bell(), "bell-off")).toBe(true);
+    });
+
+    test("opens Notify me about with the three modes and what each means, the chosen one checked", async () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "mentions" });
+
+        await w.get("[data-testid='header-notify'] button").trigger("click");
+        await settle();
+
+        expect(document.querySelector("[role='menu'] .chat-menu-head")?.textContent?.trim()).toBe("Notify me about");
+        const radios = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+        expect(radios.map(r => r.querySelector(".chat-menu-title")?.textContent?.trim())).toEqual(["All messages", "Mentions only", "Off"]);
+        expect(radios.map(r => r.querySelector(".chat-menu-desc")?.textContent?.trim())).toEqual([
+            "Every new message in this channel.",
+            "When someone mentions you by name or uses @all.",
+            "Nothing, unless someone mentions you by name."
+        ]);
+        expect(radios.map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
+        expect(radios[1].querySelector("[data-testid='menu-check']")).not.toBeNull();
+        expect(radios[0].querySelector("[data-testid='menu-check']")).toBeNull();
+        expect(menuItems().map(i => i.textContent?.trim()).slice(-1)).toEqual(["Channel details"]);
+    });
+
+    test("says conversation outside a channel", async () => {
+        const w = mountHeader({ kind: "group", isPrefsOffered: true, notifyMode: "all" });
+
+        await w.get("[data-testid='header-notify'] button").trigger("click");
+        await settle();
+
+        expect(document.querySelector("[role='menu'] .chat-menu-desc")?.textContent?.trim()).toBe("Every new message in this conversation.");
+        expect(menuItems().map(i => i.textContent?.trim()).slice(-1)).toEqual(["Conversation details"]);
+    });
+
+    test("tells the block the mode chosen, and nothing for the one already chosen", async () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all" });
+
+        await w.get("[data-testid='header-notify'] button").trigger("click");
+        await settle();
+        menuItems()[2].click();
+        await settle();
+
+        await w.get("[data-testid='header-notify'] button").trigger("click");
+        await settle();
+        menuItems()[0].click();
+        await settle();
+
+        expect(w.emitted("notify")).toEqual([["silent"]]);
+    });
+
+    test("opens the details from its last item", async () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all" });
+
+        await w.get("[data-testid='header-notify'] button").trigger("click");
+        await settle();
+        menuItems()[3].click();
+        await settle();
+
+        expect(w.emitted("details")).toHaveLength(1);
+    });
+
+    test("Star is pressed while the room is starred, and asks to change it", async () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all", isStarred: false });
+        const star = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-star']");
+
+        expect(star().attributes("aria-pressed")).toBe("false");
+        expect(star().attributes("aria-label")).toBe("Star");
+        expect(hasIcon(w, star(), "star")).toBe(true);
+
+        await w.setProps({ isStarred: true });
+        expect(star().attributes("aria-pressed")).toBe("true");
+        expect(star().attributes("aria-label")).toBe("Unstar");
+        expect(hasIcon(w, star(), "star-f")).toBe(true);
+
+        await star().trigger("click");
+        expect(w.emitted("star")).toHaveLength(1);
+    });
+
+    test("are not offered in a room the person is not a member of", () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: false, notifyMode: "all" });
+
+        expect(w.find("[data-testid='header-notify']").exists()).toBe(false);
+        expect(w.find("[data-testid='header-star']").exists()).toBe(false);
+    });
+
+    test("sit after Mentions, the bell then Star", () => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all", isThreadsOffered: true, isMentionsOffered: true });
+
+        const order = w.findAll(".chat-header-actions > [data-testid]").map(b => b.attributes("data-testid"));
+        expect(order).toEqual(["header-threads", "header-mentions", "header-notify", "header-star"]);
     });
 });

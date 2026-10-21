@@ -713,3 +713,155 @@ describe("the conversation name", () => {
         expect(w.find("[data-testid='rename-input']").exists()).toBe(false);
     });
 });
+
+// The person's settings for the room, for a member: "Notify me about" as three radio cards, the
+// room's mode chosen, with what each means in words chosen by the room's kind and the foot about
+// threads and badges; "In your sidebar" as the Star and Hide switches, the words beside a switch
+// toggling it too. Each change is told to the block at once, which saves it; the head's indicator
+// and the notes under a switch or the choices show what the save came to, a refusal in the
+// server's own words.
+describe("Notify me about", () => {
+    function radios(w: VueWrapper): HTMLElement[] {
+        return w.findAll("[data-testid='notify-option']").map(option => option.element as HTMLElement);
+    }
+
+    test("is a radio group of three cards under its heading, the room's mode chosen", () => {
+        const w = mountDetails({ notifyMode: "mentions" });
+
+        const group = w.get("[data-testid='details-notify'] [role='radiogroup']");
+        expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Notify me about");
+        expect(radios(w).map(r => r.getAttribute("role"))).toEqual(["radio", "radio", "radio"]);
+        expect(radios(w).map(r => plain(r.querySelector("b")?.textContent ?? ""))).toEqual(["All messages", "Mentions only", "Off"]);
+        expect(radios(w).map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
+        // one stop for Tab, on the choice made
+        expect(radios(w).map(r => r.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
+    });
+
+    test("says what each mode means, channel or conversation by the room's kind, and the foot", () => {
+        const channel = mountDetails({ notifyMode: "all" });
+        expect(channel.findAll("[data-testid='notify-option'] .chat-nopt-desc").map(d => d.text())).toEqual([
+            "Every new message in this channel.",
+            "When someone mentions you by name or uses @all.",
+            "Nothing, unless someone mentions you by name."
+        ]);
+        expect(channel.get("[data-testid='notify-foot']").text()).toBe("Threads you follow notify you about every reply. Unread mentions always show a badge.");
+        channel.unmount();
+
+        const group = mountGroup({ notifyMode: "all" });
+        expect(group.findAll("[data-testid='notify-option'] .chat-nopt-desc")[0].text()).toBe("Every new message in this conversation.");
+    });
+
+    test("tells the block the mode chosen", async () => {
+        const w = mountDetails({ notifyMode: "all" });
+
+        radios(w)[2].click();
+        await settle();
+        radios(w)[0].click();
+        await settle();
+
+        expect(w.emitted("notify")).toEqual([["silent"]]);
+    });
+
+    test("moves and chooses with the arrow keys, wrapping round", async () => {
+        const w = mountDetails({ notifyMode: "all" });
+        // after the dialog has taken focus itself as it opened
+        await settle();
+
+        radios(w)[0].focus();
+        keydown(radios(w)[0], "ArrowDown");
+        await settle();
+        expect(document.activeElement).toBe(radios(w)[1]);
+        expect(w.emitted("notify")).toEqual([["mentions"]]);
+
+        await w.setProps({ notifyMode: "mentions" });
+        keydown(radios(w)[1], "ArrowUp");
+        await settle();
+        keydown(radios(w)[0], "ArrowUp");
+        await settle();
+        expect(document.activeElement).toBe(radios(w)[2]);
+        expect(w.emitted("notify")?.slice(-2)).toEqual([["all"], ["silent"]]);
+    });
+
+    test("shows a refusal's sentence under the choices", () => {
+        const w = mountDetails({ notifyMode: "all", prefsNotes: { notify: { kind: "error", text: "Chat is read only tonight." } } });
+
+        expect(w.get("[data-testid='notify-error']").text()).toBe("Chat is read only tonight.");
+    });
+
+    test("is offered in a direct message too, and not in a room the person is not in", () => {
+        const dm = mountDetails({ kind: "person", title: "Anna Reyes", facts: personFacts(), notifyMode: "all" });
+        expect(dm.find("[data-testid='details-notify']").exists()).toBe(true);
+        expect(dm.find("[data-testid='details-sidebar']").exists()).toBe(true);
+        dm.unmount();
+
+        const out = mountDetails({ facts: channelFacts({ is_member: false, can_leave: false }) });
+        expect(out.find("[data-testid='details-notify']").exists()).toBe(false);
+        expect(out.find("[data-testid='details-sidebar']").exists()).toBe(false);
+    });
+});
+
+describe("In your sidebar", () => {
+    function switchOf(w: VueWrapper, key: string): ReturnType<VueWrapper["get"]> {
+        return w.get(`[data-testid='switch-${key}'] [role='switch']`);
+    }
+
+    test("is the Star and Hide switches with what each does", () => {
+        const w = mountDetails({ isStarred: true, isHidden: false });
+
+        expect(w.get("[data-testid='details-sidebar'] h4").text()).toBe("In your sidebar");
+        expect(switchOf(w, "star").attributes("aria-checked")).toBe("true");
+        expect(switchOf(w, "hide").attributes("aria-checked")).toBe("false");
+        expect(w.get("[data-testid='switch-star']").text()).toContain("Keep it at the top of your list.");
+        expect(w.get("[data-testid='switch-hide']").text()).toContain("Take it out of your list until there's a new message.");
+        expect(document.getElementById(switchOf(w, "star").attributes("aria-labelledby") ?? "")?.textContent).toBe("Star");
+    });
+
+    test("tells the block each switch pressed, the words beside a switch toggling it too", async () => {
+        const w = mountDetails({ isStarred: false, isHidden: false });
+
+        await switchOf(w, "star").trigger("click");
+        await w.get("[data-testid='switch-hide'] .chat-set-txt").trigger("click");
+
+        expect(w.emitted("star")).toEqual([[true]]);
+        expect(w.emitted("hide")).toEqual([[true]]);
+    });
+
+    test("carries each note under its own switch", () => {
+        const w = mountDetails({
+            isStarred: false,
+            isHidden: true,
+            prefsNotes: {
+                hide: { kind: "info", text: "Hidden, and taken out of Starred. It leaves your list when you open another conversation." },
+                star: { kind: "error", text: "Chat is read only tonight." }
+            }
+        });
+
+        expect(w.get("[data-testid='switch-hide'] [data-testid='switch-note']").text()).toBe("Hidden, and taken out of Starred. It leaves your list when you open another conversation.");
+        expect(w.get("[data-testid='switch-star'] [data-testid='switch-note']").attributes("data-kind")).toBe("error");
+        expect(w.get("[data-testid='switch-star'] [data-testid='switch-note']").text()).toBe("Chat is read only tonight.");
+    });
+});
+
+describe("the save indicator for the room's settings", () => {
+    test("says Saving, Saved and Not saved as the newest save goes", async () => {
+        const w = mountDetails({ prefsSave: { state: "saving", count: 1 } });
+        const indicator = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='details-save']");
+
+        expect(indicator().attributes("data-state")).toBe("saving");
+        expect(plain(indicator().text())).toBe("Saving");
+
+        await w.setProps({ prefsSave: { state: "saved", count: 1 } });
+        expect(plain(indicator().text())).toBe("Saved");
+
+        await w.setProps({ prefsSave: { state: "refused", count: 2 } });
+        expect(plain(indicator().text())).toBe("Not saved");
+    });
+
+    test("reads the room's settings' news in the dialog's live region", async () => {
+        const w = mountDetails({ prefsAnnouncement: null });
+
+        await w.setProps({ prefsAnnouncement: { text: "Mentions only. Saved.", isAssertive: false, count: 4 } });
+
+        expect(w.get("[data-testid='details-announcement']").text()).toBe("Mentions only. Saved.");
+    });
+});

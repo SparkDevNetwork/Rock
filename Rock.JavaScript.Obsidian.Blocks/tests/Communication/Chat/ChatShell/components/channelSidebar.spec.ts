@@ -670,3 +670,34 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, team.channel_id).classes()).toContain("is-flash");
     });
 });
+
+// The sidebar's foot is one button for who the person is and their settings: their face, name and
+// campus, and a gear, opening Chat settings.
+describe("the sidebar's foot", () => {
+    test("names the person, their campus, and opens Chat settings", async () => {
+        const w = mountSidebar({ personName: "Jordan Lee", personPhotoUrl: null, personCampusName: "Downtown Campus" });
+
+        const me = w.get("[data-testid='sidebar-me']");
+        expect(me.element.tagName).toBe("BUTTON");
+        expect(me.attributes("aria-label")).toBe("Chat settings, Jordan Lee");
+        expect(me.attributes("aria-haspopup")).toBe("dialog");
+        expect(me.get("[data-testid='sidebar-me-name']").text()).toBe("Jordan Lee");
+        expect(me.get("[data-testid='sidebar-me-campus']").text()).toBe("Downtown Campus");
+
+        await me.trigger("click");
+        expect(w.emitted("settings")).toHaveLength(1);
+    });
+
+    test("leaves the campus line out for a person with none", () => {
+        const w = mountSidebar({ personName: "Jordan Lee", personCampusName: null });
+
+        expect(w.find("[data-testid='sidebar-me-campus']").exists()).toBe(false);
+    });
+
+    test("is below the list, with the empty sidebar too", () => {
+        const w = mountSidebar({ rows: [], personName: "Jordan Lee" });
+
+        const side = w.get("[data-testid='channel-sidebar']").element;
+        expect(side.lastElementChild?.contains(w.get("[data-testid='sidebar-me']").element)).toBe(true);
+    });
+});
