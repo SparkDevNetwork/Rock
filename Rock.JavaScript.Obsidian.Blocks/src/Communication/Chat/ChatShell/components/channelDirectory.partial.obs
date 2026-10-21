@@ -41,7 +41,8 @@
                        data-autofocus
                        data-testid="directory-search"
                        @input="onInput" />
-                <span v-if="directory.isSearching" class="chat-fd-busy" data-testid="directory-search-busy"><span class="chat-spinner"></span></span>
+                <!-- Only words typed wait in the field; a filter asked again with none waits in the rows it keeps drawn. -->
+                <span v-if="directory.isSearching && directory.query.trim() !== ''" class="chat-fd-busy" data-testid="directory-search-busy"><span class="chat-spinner"></span></span>
                 <IconButton v-if="directory.query"
                             class="chat-fd-clear"
                             icon="x"

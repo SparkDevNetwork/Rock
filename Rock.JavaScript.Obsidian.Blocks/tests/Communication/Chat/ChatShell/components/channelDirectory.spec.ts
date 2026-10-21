@@ -207,6 +207,18 @@ describe("the search", () => {
         expect(w.get("[data-testid='directory-search-busy']").find(".chat-spinner").exists()).toBe(true);
     });
 
+    test("shows no spinner in the search while a filter alone is asked again, with nothing typed", () => {
+        const w = mountDirectory({ directory: directory({ query: "", show: "notJoined", isSearching: true }) });
+
+        expect(w.find("[data-testid='directory-search-busy']").exists()).toBe(false);
+    });
+
+    test("shows no spinner for a search of spaces, which asks for every room", () => {
+        const w = mountDirectory({ directory: directory({ query: "   ", isSearching: true }) });
+
+        expect(w.find("[data-testid='directory-search-busy']").exists()).toBe(false);
+    });
+
     test("offers a clear X once something is typed, which clears and keeps focus in the field", async () => {
         const w = mountDirectory({ directory: directory({ query: "vol" }) });
 
