@@ -677,3 +677,21 @@ describe("a people search that fails", () => {
         expect(w.findAll("[data-testid='nd-option']").map(besideFace)).toEqual(["Anna Reyes"]);
     });
 });
+
+describe("a refused start", () => {
+    test("puts the typed text back in the box, as the box handed it over and the door said no", async () => {
+        const draft = reactive(draftFor([luis]));
+        const w = mountView({ chosen: [luis], lookup: fresh, draft, onEdit: (body: string) => draft.body = body });
+        await settle();
+
+        await typeMessage(w, "Want to help Saturday?");
+        await w.get("[data-testid='new-message-view'] form").trigger("submit");
+        // as the shell's sendFirst does: the draft takes the text and starts, then Rock refuses
+        Object.assign(draft, { body: "Want to help Saturday?", status: "starting", phase: "asking" });
+        await settle();
+        Object.assign(draft, { status: "draft", phase: null });
+        await settle();
+
+        expect(editor(w).textContent).toBe("Want to help Saturday?");
+    });
+});

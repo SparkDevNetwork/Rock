@@ -181,7 +181,7 @@
                           conversationKey="new-message"
                           @vue:mounted="onComposerMounted"
                           @send="onSend"
-                          @edit="emit('edit', $event)"
+                          @edit="onEdit"
                           @emojiPickerOpen="emit('emojiPickerOpen')"
                           @emojiChosen="emit('emojiChosen', $event)" />
                 <div class="chat-nd-foot">
@@ -1207,6 +1207,17 @@
                     focusEditor();
                 }
             });
+        }
+    }
+
+    /**
+     * The box's text changed. While the first message is starting the box is locked and clears as
+     * its text moves onto the pending message, so that clearing is no edit of the person's: taken
+     * as one, it would empty the draft and a refusal would have no text to put back.
+     */
+    function onEdit(body: string): void {
+        if (!isLocked.value) {
+            emit("edit", body);
         }
     }
 
