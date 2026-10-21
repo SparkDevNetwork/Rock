@@ -112,12 +112,6 @@
         </div>
 
         <div class="chat-nd-body">
-            <!-- Opened from a conversation of two's Add people: what the person is about to start. -->
-            <div v-if="pairNote" class="chat-nd-note" data-testid="nd-pair-note">
-                <Icon name="info" size="sm" />
-                <span>{{ pairNote }}</span>
-            </div>
-
             <div v-if="chosen.length === 0" class="chat-nd-scroll">
                 <div class="chat-nd-start is-empty" data-testid="nd-empty">
                     <span class="chat-nd-empty-ic" aria-hidden="true"><Icon name="compose" /></span>
@@ -436,32 +430,6 @@
     margin-left: 12px;
 }
 
-.chat-nd-note {
-    display: flex;
-    flex: none;
-    gap: 8px;
-    align-items: flex-start;
-    max-width: 732px;
-    padding: 9px 12px;
-    margin: 8px max(24px, calc(50% - 366px)) 0;
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--chat-text-2);
-    background: var(--chat-info-soft);
-    border-radius: var(--chat-r-md);
-}
-
-.chat-nd-note .chat-ic {
-    flex: none;
-    margin-top: 1px;
-    color: var(--chat-info-ink);
-}
-
-.chat-nd.is-phone .chat-nd-note {
-    margin-right: 12px;
-    margin-left: 12px;
-}
-
 .chat-nd-found :deep(.chat-pile.is-pile .chat-av) {
     box-shadow: 0 0 0 2px var(--chat-sidebar);
 }
@@ -756,12 +724,6 @@
         isPhone: {
             type: Boolean,
             default: false
-        },
-
-        /** What the view was opened for, such as starting a group from a conversation of two; null for none. */
-        pairNote: {
-            type: String as PropType<string | null>,
-            default: null
         }
     });
 

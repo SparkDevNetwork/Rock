@@ -140,10 +140,9 @@ export type Frame = {
 
     /**
      * Opens a full view in the conversation's place, or brings the one open back to the front.
-     * New message begins with the people given, as a profile card's Message chooses its person,
-     * and says the note given, as Add people's does.
+     * New message begins with the people given, as a profile card's Message chooses its person.
      */
-    openMainView: (kind: MainViewKind, people?: PersonRow[], note?: string) => Promise<void>;
+    openMainView: (kind: MainViewKind, people?: PersonRow[]) => Promise<void>;
 
     /** Closes the full view: its X or Escape. The conversation underneath comes back. */
     closeMainView: () => void;
@@ -151,14 +150,8 @@ export type Frame = {
     /** A room chosen in the full view: previewed if it has no sidebar row, opened, and the view closed. */
     openFromMainView: (channelId: string) => Promise<void>;
 
-    /**
-     * Add people for a room: its dialog, or for a conversation of two, which Rock keeps as it is,
-     * New message with that person chosen.
-     */
-    openAddPeople: (channelId: string) => Promise<void>;
-
-    /** What New message says it was opened for, when Add people opened it; else null. */
-    newMessageNote: Ref<string | null>;
+    /** Add people for a room: its dialog, never for a conversation of two, which Rock keeps as it is. */
+    openAddPeople: (channelId: string) => void;
 };
 
 /** Below this width the block shows one pane at a time, as on a phone. */
@@ -201,9 +194,6 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     const panelElement = ref<HTMLElement>();
 
     const mainView = ref<MainViewKind | null>(null);
-
-    /** What New message says it was opened for, set by Add people in a conversation of two. */
-    const newMessageNote = ref<string | null>(null);
 
     /** What had focus as the full view opened, which its close and a phone's Back return to. */
     let mainViewOpener: HTMLElement | null = null;
@@ -393,7 +383,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * New message's To field is the exception, since choosing people is all there is to do, and
      * the button that opened the view has slid away with the list.
      */
-    async function openMainView(kind: MainViewKind, people?: PersonRow[], note?: string): Promise<void> {
+    async function openMainView(kind: MainViewKind, people?: PersonRow[]): Promise<void> {
         isListChosen.value = false;
         isPaneMotionOn.value = true;
         if (mainView.value !== kind) {
@@ -422,8 +412,6 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             shell.value.directMessages.begin(people);
         }
 
-        // Set once any view it replaced has let go, which clears it.
-        newMessageNote.value = note ?? null;
         await nextTick();
         if (!isPhone.value || kind === "newdm") {
             rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus();
@@ -479,21 +467,16 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     // #region Functions
 
     /**
-     * Add people for a room. Rock keeps a conversation of two as it is, so there it opens New
-     * message with that person chosen, saying a new group starts; anywhere else its dialog, whose
-     * door refuses a conversation of two whose people are not read yet.
+     * Add people for a room. Rock keeps a conversation of two as it is, so one never opens there,
+     * whatever asks.
      */
-    async function openAddPeople(channelId: string): Promise<void> {
+    function openAddPeople(channelId: string): void {
         const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
-        const other = row && isTwoPersonDirectMessage(row) ? shell.value.rooms.factsOf(channelId)?.people[0] : undefined;
-        if (!other) {
-            shell.value.members.openAdd();
+        if (row && isTwoPersonDirectMessage(row)) {
             return;
         }
 
-        const person: PersonRow = { person_alias_guid: other.person_alias_guid, nick_name: other.nick_name ?? "", last_name: other.last_name ?? "", avatar_url: other.avatar_url };
-        const firstName = person.nick_name || person.last_name;
-        await openMainView("newdm", [person], `Adding people starts a new group. Your conversation with ${firstName} stays as it is.`);
+        shell.value.members.openAdd();
     }
 
     /** Lets go of the full view, without moving focus. */
@@ -504,7 +487,6 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
 
         mainView.value = null;
-        newMessageNote.value = null;
         mainViewOpener = null;
         if (kind === "directory") {
             shell.value.rooms.closeDirectory();
@@ -780,7 +762,6 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         panelKind,
         mainView,
         openAddPeople,
-        newMessageNote,
         shownPanel,
         panelElement,
         drawnThread,

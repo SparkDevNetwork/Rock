@@ -188,7 +188,6 @@
                                 :refused="shell.directMessages.refused"
                                 :isPhone="isPhone"
                                 :emojiSource="emojiSource"
-                                :pairNote="newMessageNote"
                                 @back="onBack"
                                 @close="closeMainView"
                                 @choose="shell.directMessages.choose"
@@ -727,7 +726,7 @@
         panelKind, shownPanel, panelElement, drawnThread, threadOrigin, threadOpenCount,
         onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, openThreadDrawer, closeThreadDrawer, closePanel,
-        mainView, openMainView, closeMainView, openFromMainView, openAddPeople, newMessageNote
+        mainView, openMainView, closeMainView, openFromMainView, openAddPeople
     } = useFrame({
         shell,
         activeChannelId,
