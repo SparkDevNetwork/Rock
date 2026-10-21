@@ -534,6 +534,15 @@ describe("the composer's counter", () => {
         expect(boxText(wrapper)).toBe("x".repeat(5001));
     });
 
+    test("counts an emoji as one character, as the platform does", async () => {
+        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        await type(wrapper, "x".repeat(4998) + "\u{1F600}\u{1F600}");
+
+        expect(wrapper.get("[data-testid='composer-count']").text()).toBe("0 left");
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")).toHaveLength(1);
+    });
+
     test("sends at exactly the limit", async () => {
         const wrapper = mount(Composer, { props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(5000));

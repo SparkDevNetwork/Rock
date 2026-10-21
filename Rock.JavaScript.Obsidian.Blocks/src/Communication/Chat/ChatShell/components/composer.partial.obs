@@ -494,13 +494,16 @@
         return text.replace(/\s+/g, " ").trim();
     });
 
+    /** The text's length as the platform counts it, by code point, so an emoji is one. */
+    const length = computed((): number => Array.from(text.value).length);
+
     /** How the counter reads near and past the limit, or null while it has nothing to say. */
     const count = computed((): { text: string, tone: "warn" | "over" } | null => {
         if (props.maxLength <= 0) {
             return null;
         }
 
-        const left = props.maxLength - text.value.length;
+        const left = props.maxLength - length.value;
         if (left >= countdownFrom) {
             return null;
         }
@@ -538,7 +541,7 @@
         }
 
         // The send would be refused, so the text stays in the box to be cut, and the block says why.
-        if (props.maxLength > 0 && text.value.length > props.maxLength) {
+        if (props.maxLength > 0 && length.value > props.maxLength) {
             emit("overLimit", props.maxLength);
             return;
         }
