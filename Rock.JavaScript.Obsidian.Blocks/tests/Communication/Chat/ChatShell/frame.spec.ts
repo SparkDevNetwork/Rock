@@ -299,6 +299,7 @@ function fakeRooms(): Record<string, unknown> {
         rename: jest.fn(async () => undefined),
         renameOf: (channelId: string) => state.renames[channelId] ?? { kind: "idle" },
         openCard: jest.fn(),
+        readPerson: jest.fn(async () => null),
         closeCard: jest.fn(() => {
             state.card = null;
         }),
@@ -3211,6 +3212,7 @@ describe("the members panel", () => {
         await w.get("[data-testid='intro-members-button']").trigger("click");
         await settle();
         membersOf().state.rows = [annaMember];
+        roomsOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: null });
         await settle();
 
         await w.get("[data-testid='member-message']").trigger("click");
@@ -3224,6 +3226,44 @@ describe("the members panel", () => {
         }]);
         expect(w.get("[data-testid='main-view']").attributes("data-kind")).toBe("newdm");
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
+    test.each([1200, 390])("a member's Message opens their existing conversation at width %i", async width => {
+        const w = await mountBlock(width);
+        await openTeam(w);
+        await w.get("[data-testid='intro-members-button']").trigger("click");
+        await settle();
+        membersOf().state.rows = [annaMember];
+        roomsOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: dmAnna.channel_id });
+        await settle();
+
+        await w.get("[data-testid='member-message']").trigger("click");
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenLastCalledWith(dmAnna.channel_id);
+        expect(roomsOf().readPerson).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
+        expect(directMessagesOf().begin).not.toHaveBeenCalled();
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
+    test("a member's Message drops a profile answer after another conversation was selected", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        await w.get("[data-testid='intro-members-button']").trigger("click");
+        await settle();
+        membersOf().state.rows = [annaMember];
+        let resolvePerson!: (person: unknown) => void;
+        roomsOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
+        await settle();
+
+        await w.get("[data-testid='member-message']").trigger("click");
+        await openRow(w, dmAnna.channel_id);
+        resolvePerson({ ...annaMember, is_self: false, dm_channel_id: "c0000009-0000-4000-8000-000000000000" });
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenLastCalledWith(dmAnna.channel_id);
+        expect(directMessagesOf().begin).not.toHaveBeenCalled();
     });
 
     test("no longer opens from a keyboard shortcut", async () => {
