@@ -59,6 +59,13 @@ namespace Rock.Communication.Chat.Platform.Doors
         // A conversation holds nine people, the one starting it included.
         internal const int MaxOthers = 8;
 
+        // How many of a channel's other leaders a leader's removal asks the projection about. Rock's
+        // own read has already applied every part of the listed rule Rock can see, so nearly every
+        // one it returns is live in the room; a few cover the rare one that is not, and keep the
+        // read the size of a small room however many lead. Should every one asked fail, the door
+        // only asks who leads next, which adds a leader and never leaves the channel with none.
+        internal const int MaxOtherLeadersConfirmed = 10;
+
         // The platform's names for the kinds of channel a door tells apart.
         private const string SharedChannelType = "shared";
 
@@ -514,11 +521,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.bad_request", "Leave the conversation instead." );
             }
 
-            // Who would lead next and who leads now are read with the other two, so one projection
-            // call says which of them chat still shows in the room. A room has a few leaders.
-            var leaders = ReadLeaderRows( rockContext, channelGuid );
-            var people = new List<int> { caller.Id, targetId.Value };
-            people.AddRange( leaders.Select( l => l.PersonId ).Where( id => !people.Contains( id ) ).Distinct() );
+            var leaders = ReadLeaders( rockContext, channelGuid, targetId.Value );
             int? replacementId = null;
             if ( replacementPersonAliasGuid.HasValue )
             {
@@ -530,14 +533,10 @@ namespace Rock.Communication.Chat.Platform.Doors
                 {
                     return Membership( "door.not_found", "The person chosen to lead next could not be found." );
                 }
-
-                if ( !people.Contains( replacementId.Value ) )
-                {
-                    people.Add( replacementId.Value );
-                }
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, people );
+            // One projection call says which of these people chat still shows in the room.
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
             if ( room == null )
             {
                 return Membership( "door.not_found", "That channel could not be found." );
@@ -563,8 +562,9 @@ namespace Rock.Communication.Chat.Platform.Doors
             // Only a shared channel has leaders; a conversation's members are all alike.
             if ( room.Channel.ChannelType == SharedChannelType )
             {
-                var heldRoleId = leaders.Where( l => l.PersonId == targetId.Value ).Select( l => ( int? ) l.RoleId ).FirstOrDefault();
-                var isLastLeader = IsLastLeader( targetId.Value, leaders.Select( l => l.PersonId ), room.LivePersonIds, room.UnlistedPersonIds );
+                var heldRoleId = leaders.TargetRoleId;
+                var leaderIds = heldRoleId.HasValue ? leaders.OtherLeaderIds.Concat( new[] { targetId.Value } ) : leaders.OtherLeaderIds;
+                var isLastLeader = IsLastLeader( targetId.Value, leaderIds, room.LivePersonIds, room.UnlistedPersonIds );
 
                 var leaderRefusal = RefuseLeaderRemoval( heldRoleId.HasValue, ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ), isLastLeader, replacementId.HasValue );
                 if ( leaderRefusal != null )
@@ -662,6 +662,35 @@ namespace Rock.Communication.Chat.Platform.Doors
             var leaders = leaderPersonIds.ToList();
             return leaders.Contains( targetPersonId )
                 && !leaders.Any( id => id != targetPersonId && live.Contains( id ) && !unlisted.Contains( id ) );
+        }
+
+        /// <summary>
+        /// The people a removal asks the projection about: the caller, the person removed and
+        /// whoever was named to lead next, and, only when the person removed leads the channel,
+        /// a few of its other leaders, so the projection can say whether one of them still leads
+        /// anyone in chat.
+        /// </summary>
+        /// <param name="callerId">The person removing.</param>
+        /// <param name="targetId">The person removed.</param>
+        /// <param name="replacementId">Who leads next, when someone was named.</param>
+        /// <param name="leaders">What Rock read of the channel's leaders.</param>
+        /// <returns>Each person once.</returns>
+        internal static List<int> PeopleToReadForRemoval( int callerId, int targetId, int? replacementId, ChannelLeaders leaders )
+        {
+            var people = new List<int> { callerId, targetId };
+
+            if ( replacementId.HasValue )
+            {
+                people.Add( replacementId.Value );
+            }
+
+            // Someone who does not lead leaves the channel led as it was, so nobody else is asked.
+            if ( leaders.TargetRoleId.HasValue )
+            {
+                people.AddRange( leaders.OtherLeaderIds.Take( MaxOtherLeadersConfirmed ) );
+            }
+
+            return people.Distinct().ToList();
         }
 
         /// <summary>
@@ -1171,6 +1200,22 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
+        /// What Rock reads of a channel's leaders for a removal.
+        /// </summary>
+        internal sealed class ChannelLeaders
+        {
+            /// <summary>
+            /// The leader role the person removed holds, or null when they do not lead the channel.
+            /// </summary>
+            public int? TargetRoleId { get; set; }
+
+            /// <summary>
+            /// A few of the channel's other leaders whom Rock still counts as listed.
+            /// </summary>
+            public List<int> OtherLeaderIds { get; set; } = new List<int>();
+        }
+
+        /// <summary>
         /// Reads a channel the browser named, and these people's memberships of it, through one
         /// scoped projection call.
         /// </summary>
@@ -1278,22 +1323,41 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
-        /// Each live leader membership of a group, by person and role: an active, unarchived row
-        /// in a leader role, under no ban in force.
+        /// The leader role the person removed holds in a group, and who else may still lead it, in
+        /// one read. A leader is an active, unarchived row in a leader role under no ban in force;
+        /// another leader also needs what Rock itself knows of chat's listed rule, an active
+        /// record and no active place on the Chat Ban List. No more others are read than the
+        /// projection is then asked about.
         /// </summary>
-        private static List<(int PersonId, int RoleId)> ReadLeaderRows( RockContext rockContext, Guid groupGuid )
+        private static ChannelLeaders ReadLeaders( RockContext rockContext, Guid groupGuid, int targetPersonId )
         {
             var now = RockDateTime.Now;
+            var activeRecordStatusId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            var banListGuid = Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid();
+            var banned = new GroupMemberService( rockContext ).Queryable()
+                .Where( b => b.Group.Guid == banListGuid && b.GroupMemberStatus == GroupMemberStatus.Active )
+                .Select( b => b.PersonId );
 
-            return new GroupMemberService( rockContext ).Queryable()
+            // The person removed is ordered first, so the bound never cuts their own row off.
+            var rows = new GroupMemberService( rockContext ).Queryable()
                 .Where( m => m.Group.Guid == groupGuid
                     && m.GroupMemberStatus == GroupMemberStatus.Active
                     && m.GroupRole.IsLeader
-                    && !( m.IsChatBanned && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) ) )
-                .Select( m => new { m.PersonId, m.GroupRoleId } )
-                .ToList()
-                .Select( m => (m.PersonId, m.GroupRoleId) )
+                    && !( m.IsChatBanned && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) )
+                    && ( m.PersonId == targetPersonId
+                        || ( m.Person.RecordStatusValueId == activeRecordStatusId && !banned.Contains( m.PersonId ) ) ) )
+                .GroupBy( m => m.PersonId )
+                .Select( g => new { PersonId = g.Key, RoleId = g.Min( m => m.GroupRoleId ) } )
+                .OrderBy( l => l.PersonId == targetPersonId ? 0 : 1 )
+                .ThenBy( l => l.PersonId )
+                .Take( MaxOtherLeadersConfirmed + 1 )
                 .ToList();
+
+            return new ChannelLeaders
+            {
+                TargetRoleId = rows.Where( l => l.PersonId == targetPersonId ).Select( l => ( int? ) l.RoleId ).FirstOrDefault(),
+                OtherLeaderIds = rows.Where( l => l.PersonId != targetPersonId ).Select( l => l.PersonId ).ToList()
+            };
         }
 
         /// <summary>

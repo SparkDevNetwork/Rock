@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -152,5 +153,43 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         }
 
         #endregion The role the next leader takes
+
+        #region Who a removal asks the projection about
+
+        // Caller 1 removes 2, naming 3 to lead next; 10 to 59 lead the channel too.
+        private static readonly List<int> ManyOtherLeaders = Enumerable.Range( 10, 50 ).ToList();
+
+        [TestMethod]
+        public void RemovingSomeoneWhoDoesNotLeadAsksOnlyAboutTheCallerTheirTargetAndTheNextLeader()
+        {
+            var leaders = new ChatDoorHelper.ChannelLeaders { TargetRoleId = null, OtherLeaderIds = ManyOtherLeaders };
+
+            CollectionAssert.AreEquivalent( new[] { 1, 2, 3 }, ChatDoorHelper.PeopleToReadForRemoval( 1, 2, 3, leaders ),
+                "a removal that leaves the channel led as it was read the room's leaders through the projection" );
+            CollectionAssert.AreEquivalent( new[] { 1, 2 }, ChatDoorHelper.PeopleToReadForRemoval( 1, 2, null, leaders ) );
+        }
+
+        [TestMethod]
+        public void RemovingALeaderAsksAboutAtMostTheBoundOfOtherLeaders()
+        {
+            var leaders = new ChatDoorHelper.ChannelLeaders { TargetRoleId = 7, OtherLeaderIds = ManyOtherLeaders };
+
+            var people = ChatDoorHelper.PeopleToReadForRemoval( 1, 2, 3, leaders );
+
+            CollectionAssert.IsSubsetOf( new[] { 1, 2, 3 }, people );
+            Assert.AreEqual( 3 + ChatDoorHelper.MaxOtherLeadersConfirmed, people.Count,
+                "a channel with many leaders sent every one of them through the projection" );
+            CollectionAssert.IsSubsetOf( people.Except( new[] { 1, 2, 3 } ).ToList(), ManyOtherLeaders );
+        }
+
+        [TestMethod]
+        public void SomeoneAskedAboutTwiceIsAskedAboutOnce()
+        {
+            var leaders = new ChatDoorHelper.ChannelLeaders { TargetRoleId = 7, OtherLeaderIds = new List<int> { 1, 3, 4 } };
+
+            CollectionAssert.AreEquivalent( new[] { 1, 2, 3, 4 }, ChatDoorHelper.PeopleToReadForRemoval( 1, 2, 3, leaders ) );
+        }
+
+        #endregion Who a removal asks the projection about
     }
 }
