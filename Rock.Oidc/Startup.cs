@@ -80,6 +80,10 @@ namespace Rock.Oidc
             var legacyProvider = DataProtectionProvider.Create( appName );
             var dataProtectionProvider = new RockEncryptionDataProtectionProvider( legacyProvider );
 
+            // This must run before the OIDC server so the cache policy is in
+            // place before any OIDC endpoint writes its response.
+            app.Use<PreventCachingMiddleware>();
+
             app.UseOpenIdConnectServer( options =>
             {
                 options.Provider = new AuthorizationProvider();

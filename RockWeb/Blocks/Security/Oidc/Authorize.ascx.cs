@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Security.Oidc
                 return;
             }
 
-            lNickName.Text = CurrentPerson.NickName;
+            lNickName.Text = CurrentPerson.NickName.EncodeHtml();
 
             // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
             var scopesApprovalCookieValue = RockPage.GetCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ) )?.Value;
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
             if ( authClient != null )
             {
-                lClientName.Text = authClient.Name;
+                lClientName.Text = authClient.Name.EncodeHtml();
             }
         }
 
