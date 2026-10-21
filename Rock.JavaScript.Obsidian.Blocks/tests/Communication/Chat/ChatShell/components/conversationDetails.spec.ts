@@ -28,6 +28,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ConversationDetails from "../../../../../src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
+import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -297,7 +298,7 @@ describe("a channel's identity", () => {
         expect(w.find("[data-testid='details-leaders']").exists()).toBe(false);
     });
 
-    test("counts its members as plain text, the singular for one", async () => {
+    test("counts its members as plain text where the reader may not see who is here, the singular for one", async () => {
         const w = mountDetails({ facts: channelFacts({ member_count: 1204 }) });
         const members = w.get("[data-testid='details-members']");
         expect(plain(members.text())).toBe(`${(1204).toLocaleString()} members`);
@@ -306,6 +307,18 @@ describe("a channel's identity", () => {
 
         await w.setProps({ facts: channelFacts({ member_count: 1 }) });
         expect(plain(w.get("[data-testid='details-members']").text())).toBe("1 member");
+    });
+
+    test("makes the count a link to the members panel where the reader may see who is here", async () => {
+        const w = mountDetails({ facts: channelFacts({ member_count: 42 }), canSeeRoster: true });
+
+        const members = w.get("[data-testid='details-members']");
+        expect(members.element.tagName).toBe("BUTTON");
+        expect(plain(members.text())).toBe("42 members");
+        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "right" && members.element.contains(icon.element))).toBe(true);
+
+        await members.trigger("click");
+        expect(w.emitted("members")).toHaveLength(1);
     });
 });
 

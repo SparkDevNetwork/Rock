@@ -19,12 +19,13 @@
 // own card, the campus by its name from the init box only when they show their details, and a note
 // when they do not. Message for someone the person may message, a quiet box for someone they may
 // not. The card is a dialog named for the person, takes focus as it opens, and Escape gives focus
-// back to what opened it. Badges and the person's own Chat settings come later, so neither is drawn.
+// back to what opened it. The person's badges, in the church's order with its colors, under a rule
+// when they show their details. The person's own Chat settings come later, so it is not drawn.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ProfileCard from "../../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
-import { PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChatBadge, PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
 
@@ -185,7 +186,7 @@ describe("the card", () => {
         expect(w.emitted("close")).toHaveLength(1);
     });
 
-    test("draws no badges and no Chat settings, which come later", () => {
+    test("draws no Chat settings, which come later, and no badges without the church's list", () => {
         const own = mountCard(profile({ is_self: true }));
 
         expect(own.find("[data-testid='profile-badges']").exists()).toBe(false);
@@ -296,5 +297,74 @@ describe("Message", () => {
 
         expect(w.find("[data-testid='profile-message']").exists()).toBe(false);
         expect(w.find("[data-testid='profile-cannot-message']").exists()).toBe(false);
+    });
+});
+
+// The church's badges as the bootstrap lists them; a person's details name theirs by key.
+describe("badges", () => {
+    /** One row of the bootstrap's badges, exactly its keys. */
+    function badge(key: string, name: string, sortOrder: number, extra: Partial<ChatBadge> = {}): ChatBadge {
+        return { badge_key: key, name, icon_css: null, bg_color: null, fg_color: null, sort_order: sortOrder, ...extra };
+    }
+
+    const member = badge("member", "Member", 2, { icon_css: "fa fa-home", bg_color: "#fdf1d8", fg_color: "#6b4a07" });
+    const baptized = badge("baptized", "Baptized", 1, { icon_css: "fa fa-tint", bg_color: "#dceefb", fg_color: "#0b4f7a" });
+    const serving = badge("serving", "Serving", 3);
+
+    /** The pills' names, in the order drawn. */
+    function pillNames(w: VueWrapper): string[] {
+        return w.findAll("[data-testid='profile-badge']").map(pill => pill.text().trim());
+    }
+
+    test("lists the person's badges under a rule in the church's order", () => {
+        const w = mountCard(profile({ details: { campus_id: downtown.guid, badge_keys: ["member", "serving", "baptized"] } }), { badges: [member, baptized, serving] });
+
+        const list = w.get("[data-testid='profile-badges']");
+        expect(list.element.tagName).toBe("UL");
+        expect(list.attributes("aria-label")).toBe("Badges");
+        expect(pillNames(w)).toEqual(["Baptized", "Member", "Serving"]);
+    });
+
+    test("drops a key the church's list does not know, and draws no list when none is left", async () => {
+        const w = mountCard(profile({ details: { campus_id: null, badge_keys: ["retired", "member"] } }), { badges: [member] });
+        expect(pillNames(w)).toEqual(["Member"]);
+
+        await w.setProps({ person: profile({ details: { campus_id: null, badge_keys: ["retired"] } }) });
+        expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
+    });
+
+    test("draws none for someone who keeps their details private", () => {
+        const w = mountCard(profile({ details: null }), { badges: [member, baptized] });
+
+        expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
+    });
+
+    test("tints each pill by its badge's colors, and leaves a badge with none plain", () => {
+        const w = mountCard(profile({ details: { campus_id: null, badge_keys: ["member", "serving"] } }), { badges: [member, serving] });
+
+        const [tinted, plain] = w.findAll("[data-testid='profile-badge']").map(pill => pill.element as HTMLElement);
+        expect(tinted.style.getPropertyValue("--chat-badge-bg")).toBe("#fdf1d8");
+        expect(tinted.style.getPropertyValue("--chat-badge-fg")).toBe("#6b4a07");
+        expect(tinted.classList.contains("is-toned")).toBe(true);
+        expect(plain.style.getPropertyValue("--chat-badge-bg")).toBe("");
+        expect(plain.style.getPropertyValue("--chat-badge-fg")).toBe("");
+        expect(plain.classList.contains("is-toned")).toBe(false);
+    });
+
+    test("draws the badge's own icon class, and no icon where it has none", () => {
+        const w = mountCard(profile({ details: { campus_id: null, badge_keys: ["member", "serving"] } }), { badges: [member, { ...serving, icon_css: "  " }] });
+
+        const [withIcon, without] = w.findAll("[data-testid='profile-badge']");
+        const icon = withIcon.get("i");
+        expect(icon.classes()).toEqual(expect.arrayContaining(["fa", "fa-home"]));
+        expect(icon.attributes("aria-hidden")).toBe("true");
+        expect(without.find("i").exists()).toBe(false);
+    });
+
+    test("never draws a badge for leading the room", () => {
+        const w = mountCard(profile({ is_leader: true, details: { campus_id: null, badge_keys: [] } }), { badges: [member] });
+
+        expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
+        expect(w.get("[data-testid='profile-leader']").text()).toBe("Leader");
     });
 });

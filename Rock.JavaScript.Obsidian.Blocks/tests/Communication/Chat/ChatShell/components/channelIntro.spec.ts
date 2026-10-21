@@ -251,9 +251,24 @@ describe("an empty room's foot", () => {
     });
 });
 
+// Members opens the members panel, offered only to someone in the room; Star and the notify mode
+// come with the room's settings.
 describe("the actions", () => {
-    test("are not drawn, since the members panel and the room's settings come later", () => {
+    test("are Members, a button with the people icon, for someone in the room", async () => {
         const w = mountIntro();
+
+        const actions = w.get("[data-testid='intro-actions']");
+        expect(actions.findAll("button")).toHaveLength(1);
+        const members = w.get("[data-testid='intro-members-button']");
+        expect(members.text()).toBe("Members");
+        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "users" && members.element.contains(icon.element))).toBe(true);
+
+        await members.trigger("click");
+        expect(w.emitted("members")).toHaveLength(1);
+    });
+
+    test("are not drawn for someone not in the room", () => {
+        const w = mountIntro({ facts: facts({ is_member: false }) });
 
         expect(w.find("[data-testid='intro-actions']").exists()).toBe(false);
         expect(w.find("button").exists()).toBe(false);

@@ -449,3 +449,118 @@ describe("the end of an outage", () => {
         expect(w.emitted("backOnline")).toBeUndefined();
     });
 });
+
+// A channel's facepile and a group's Members button open the members panel, before Threads. The
+// facepile draws up to three of the room's leaders over the head count, or the people icon where
+// there are none to show; a conversation of two has neither. On a phone they fold into the menu.
+describe("the way into the members panel", () => {
+    /** A room's facts in the exact shape chat_get_channel answers. */
+    function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
+        return {
+            channel_id: "c0000001-0000-4000-8000-000000000000",
+            name: "young-adults",
+            icon_url: null,
+            channel_type: "shared",
+            is_member: true,
+            can_post: true,
+            can_post_code: null,
+            can_post_reason: null,
+            max_length: 5000,
+            can_leave: true,
+            description: null,
+            group_type_name: null,
+            campus_id: null,
+            is_public: true,
+            member_count: 42,
+            leaders: [],
+            people: [],
+            ...overrides
+        };
+    }
+
+    function leader(n: number, nick: string, last: string): ChannelFacts["leaders"][number] {
+        return { person_alias_guid: `a000000${n}-0000-4000-8000-000000000000`, nick_name: nick, last_name: last, avatar_url: null };
+    }
+
+    const tom = leader(1, "Tom", "Hale");
+    const grace = leader(2, "Grace", "Kim");
+    const jordan = leader(3, "Jordan", "Lee");
+
+    test("is a channel's facepile of its leaders' faces then the count, before Threads", async () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts({ leaders: [tom, grace, jordan] }) });
+
+        const pile = w.get("[data-testid='header-members']");
+        expect(pile.element.tagName).toBe("BUTTON");
+        expect(pile.attributes("aria-label")).toBe("42 members");
+        expect(pile.text()).toContain("42");
+        expect(pile.findAll(".chat-av").map(face => face.attributes("style"))).toHaveLength(3);
+        expect(pile.findAll(".chat-av").every(face => face.attributes("style")?.includes("width: 26px"))).toBe(true);
+        expect(hasIcon(w, pile, "users")).toBe(false);
+
+        const buttons = w.findAll(".chat-header-actions button");
+        expect(buttons.findIndex(b => b.element === pile.element)).toBe(buttons.findIndex(b => b.attributes("data-testid") === "header-threads") - 1);
+
+        await pile.trigger("click");
+        expect(w.emitted("members")).toHaveLength(1);
+    });
+
+    test("draws the people icon and the count where no leader can be shown, and says one member", () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 1 }) });
+
+        const pile = w.get("[data-testid='header-members']");
+        expect(pile.attributes("aria-label")).toBe("1 member");
+        expect(pile.findAll(".chat-av")).toHaveLength(0);
+        expect(hasIcon(w, pile, "users")).toBe(true);
+    });
+
+    test("shows no faces to someone not in the room, only the icon and the count", () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ is_member: false, leaders: [tom] }) });
+
+        const pile = w.get("[data-testid='header-members']");
+        expect(pile.findAll(".chat-av")).toHaveLength(0);
+        expect(hasIcon(w, pile, "users")).toBe(true);
+    });
+
+    test("is a group's Members button naming its head count, and nothing for a conversation of two", async () => {
+        const group = mountHeader({ title: "Hike planning", kind: "group", people: ["Caleb Brooks", "Hannah Diaz"], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
+
+        const members = group.get("[data-testid='header-members']");
+        expect(members.classes()).toContain("chat-icon-btn");
+        expect(members.attributes("aria-label")).toBe("Members, 4 people");
+        expect(hasIcon(group, members, "users")).toBe(true);
+        await members.trigger("click");
+        expect(group.emitted("members")).toHaveLength(1);
+        group.unmount();
+
+        const pair = mountHeader({ title: "Anna Kim", kind: "person", people: ["Anna Kim"], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });
+        expect(pair.find("[data-testid='header-members']").exists()).toBe(false);
+    });
+
+    test("shows as expanded while the members panel is open", async () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts() });
+        expect(w.get("[data-testid='header-members']").attributes("aria-expanded")).toBe("false");
+
+        await w.setProps({ isMembersOpen: true });
+        expect(w.get("[data-testid='header-members']").attributes("aria-expanded")).toBe("true");
+    });
+
+    test("is not drawn unless offered", () => {
+        const w = mountHeader({ kind: "channel", facts: facts() });
+
+        expect(w.find("[data-testid='header-members']").exists()).toBe(false);
+    });
+
+    test("moves into the phone's overflow menu as Members, before Threads", async () => {
+        const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts() });
+
+        expect(w.find("[data-testid='header-members']").exists()).toBe(false);
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Members", "Threads", "Channel details"]);
+
+        items[0].click();
+        await settle();
+        expect(w.emitted("members")).toHaveLength(1);
+    });
+});

@@ -320,3 +320,35 @@ describe("the search", () => {
         expect(w.find("[data-testid='members-more']").exists()).toBe(true);
     });
 });
+
+// Under "Members" the panel names the room and how many are in it, once the room's facts are read:
+// a channel by name with no "#" and its members, a group by its title and its people.
+describe("the subtitle", () => {
+    test("names a channel and its members", () => {
+        const w = draw({ memberCount: 42 });
+
+        expect(text(w, "panel-subtitle")).toBe("young-adults · 42 members");
+    });
+
+    test("names a group and its people, one person as one", async () => {
+        const w = draw({ channelName: "Hike planning", isChannel: false, memberCount: 4 });
+        expect(text(w, "panel-subtitle")).toBe("Hike planning · 4 people");
+
+        await w.setProps({ memberCount: 1 });
+        expect(text(w, "panel-subtitle")).toBe("Hike planning · 1 person");
+    });
+
+    test("counts a large room the way the page writes numbers, and one member as one", async () => {
+        const w = draw({ memberCount: 13536 });
+        expect(text(w, "panel-subtitle")).toBe(`young-adults · ${(13536).toLocaleString()} members`);
+
+        await w.setProps({ memberCount: 1 });
+        expect(text(w, "panel-subtitle")).toBe("young-adults · 1 member");
+    });
+
+    test("is the name alone until the room's facts are read", () => {
+        const w = draw({ memberCount: null });
+
+        expect(text(w, "panel-subtitle")).toBe("young-adults");
+    });
+});

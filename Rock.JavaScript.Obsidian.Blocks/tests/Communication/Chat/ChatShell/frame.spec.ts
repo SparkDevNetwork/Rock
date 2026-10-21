@@ -31,6 +31,7 @@ import { ChannelFacts, MentionRow, SidebarRow, TimelineMessage } from "../../../
 import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 
 // #region Stand-ins
@@ -3075,32 +3076,126 @@ describe("the conversation's details", () => {
     });
 });
 
-// Until the header's facepile and Members button arrive, the members panel opens from a keyboard
-// shortcut on the block, Alt+Shift+M, for the open conversation; a second press closes it.
+// The members panel opens for the open conversation from a channel's facepile, a group's Members
+// button, the intro's Members and the details dialog's member count; a second press closes it.
+// A member row opens the person's card beside the panel, and Escape gives focus back to the row.
 describe("the members panel", () => {
-    test("opens for the open conversation and closes again on a second press", async () => {
-        const w = await mountBlock(1200);
+    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_names: ["Caleb", "Hannah"], dm_other_count: 2 });
+
+    /** Anna as chat_list_members answers her, exactly its keys. */
+    const annaMember = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, is_leader: false, details: { campus_id: null, badge_keys: ["serving"] }, can_message: true };
+
+    function membersOf(): { state: { channelId: string | null, rows: unknown[] }, open: jest.Mock, close: jest.Mock } {
+        return mockShell!.members as ReturnType<typeof membersOf>;
+    }
+
+    async function openTeam(w: VueWrapper): Promise<void> {
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
         await openRow(w, team.channel_id);
-        const members = (mockShell as { members: { open: jest.Mock, close: jest.Mock } }).members;
+    }
 
-        await w.get("[data-testid='chat-shell']").trigger("keydown", { key: "M", altKey: true, shiftKey: true });
+    test("opens from a channel's facepile, named with its count, and closes on a second press", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+
+        const pile = w.get("[data-testid='frame-main'] [data-testid='header-members']");
+        await pile.trigger("click");
         await settle();
-        expect(members.open).toHaveBeenCalledWith(team.channel_id);
-        expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
+        expect(membersOf().open).toHaveBeenCalledWith(team.channel_id);
+        expect(w.get("[data-testid='members-panel'] [data-testid='panel-subtitle']").text()).toBe("Worship Team · 12 members");
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-members']").attributes("aria-expanded")).toBe("true");
 
-        await w.get("[data-testid='chat-shell']").trigger("keydown", { key: "M", altKey: true, shiftKey: true });
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
         await settle();
-        expect(members.close).toHaveBeenCalled();
+        expect(membersOf().close).toHaveBeenCalled();
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
     });
 
-    test("does nothing with no conversation open", async () => {
+    test("opens from a group's Members button, counting its people", async () => {
         const w = await mountBlock(1200);
-        const members = (mockShell as { members: { open: jest.Mock } }).members;
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(hike);
+        roomsOf().state.facts[hike.channel_id] = roomFacts({ channel_id: hike.channel_id, channel_type: "dm", name: "Hike planning", member_count: 3 });
+        await settle();
+        await openRow(w, hike.channel_id);
+
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        expect(membersOf().open).toHaveBeenCalledWith(hike.channel_id);
+        expect(w.get("[data-testid='members-panel'] [data-testid='panel-subtitle']").text()).toBe("Hike planning · 3 people");
+    });
+
+    test("is not offered in a conversation of two", async () => {
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[dmAnna.channel_id] = roomFacts({ channel_id: dmAnna.channel_id, channel_type: "dm", member_count: 2 });
+        await openRow(w, dmAnna.channel_id);
+
+        expect(w.find("[data-testid='header-members']").exists()).toBe(false);
+    });
+
+    test("opens from the intro's Members and closes on a second press", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+
+        await w.get("[data-testid='intro-members-button']").trigger("click");
+        await settle();
+        expect(membersOf().open).toHaveBeenCalledWith(team.channel_id);
+        expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
+
+        await w.get("[data-testid='intro-members-button']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
+    test("opens from the details dialog's member count, closing the dialog", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+
+        document.querySelector<HTMLElement>("[data-testid='details-members']")!.click();
+        await settle();
+
+        expect(membersOf().open).toHaveBeenCalledWith(team.channel_id);
+        expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
+        expect(document.querySelector("[data-testid='details-close']")).toBeNull();
+    });
+
+    test("opens a member's card in the panel's room, beside the panel, with the church's badges, and Escape gives focus back to the row", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.channels as Record<string, unknown>).badges = [{ badge_key: "serving", name: "Serving", icon_css: null, bg_color: null, fg_color: null, sort_order: 1 }];
+        await openTeam(w);
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        membersOf().state.rows = [annaMember];
+        await settle();
+
+        const who = w.get("[data-testid='members-panel'] [data-testid='member-who']");
+        await who.trigger("click");
+        await settle();
+        expect(roomsOf().openCard).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
+
+        roomsOf().state.card = { personAliasGuid: annaMember.person_alias_guid, channelId: team.channel_id, person: { ...annaMember, is_self: false, dm_channel_id: null } } as never;
+        await settle();
+        const card = document.querySelector<HTMLElement>("[data-testid='profile-card']")!;
+        expect(card).not.toBeNull();
+        // the row is the card's anchor, inside the panel, which is what sets the card beside it
+        expect(w.findComponent(ProfileCardComponent).props("anchor")).toBe(who.element);
+        expect(who.element.closest(".chat-panel")).not.toBeNull();
+        expect(Array.from(card.querySelectorAll("[data-testid='profile-badge']")).map(pill => pill.textContent?.trim())).toEqual(["Serving"]);
+
+        card.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+        expect(document.activeElement).toBe(who.element);
+    });
+
+    test("no longer opens from a keyboard shortcut", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
 
         await w.get("[data-testid='chat-shell']").trigger("keydown", { key: "M", altKey: true, shiftKey: true });
         await settle();
-        expect(members.open).not.toHaveBeenCalled();
+        expect(membersOf().open).not.toHaveBeenCalled();
+        expect(w.find("[data-testid='members-panel']").exists()).toBe(false);
     });
 });
