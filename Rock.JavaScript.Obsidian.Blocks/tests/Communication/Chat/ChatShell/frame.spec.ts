@@ -2611,6 +2611,37 @@ describe("New message", () => {
         expect(document.activeElement).toBe(view.get("[data-testid='nd-to-input']").element);
     });
 
+    test("on a phone opens with focus in the To field, since the button that opened it has slid away", async () => {
+        const w = await mountBlock(390);
+        const button = w.get("[data-testid='new-message']");
+        (button.element as HTMLElement).focus();
+
+        await button.trigger("click");
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='main-view'] [data-testid='nd-to-input']").element);
+    });
+
+    test("on a phone, Escape closing the empty view over a conversation leaves focus on that conversation's header", async () => {
+        const w = await mountBlock(390);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-back']").trigger("click");
+        await settle();
+        const button = w.get("[data-testid='new-message']");
+        (button.element as HTMLElement).focus();
+        await button.trigger("click");
+        await settle();
+
+        const input = w.get("[data-testid='nd-to-input']");
+        (input.element as HTMLElement).focus();
+        await input.trigger("keydown", { key: "Escape" });
+        await settle();
+
+        expect(w.find("[data-testid='main-view']").exists()).toBe(false);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("conversation");
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-details']").element);
+    });
+
     test("opens from the Direct messages heading's plus too", async () => {
         const w = await mountBlock(1200);
 

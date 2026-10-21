@@ -371,7 +371,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     /**
      * Opens a full view in the conversation's place, closing the panel column, since its buttons
      * sit in the header the view covers. The view open behind a phone's list comes back as it was.
-     * Focus goes to the view's first field, except on a phone, where it would raise the keyboard.
+     * Focus goes to the view's first field, except on a phone, where it would raise the keyboard;
+     * New message's To field is the exception, since choosing people is all there is to do, and
+     * the button that opened the view has slid away with the list.
      */
     async function openMainView(kind: MainViewKind, people?: PersonRow[]): Promise<void> {
         isListChosen.value = false;
@@ -403,14 +405,16 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
 
         await nextTick();
-        if (!isPhone.value) {
+        if (!isPhone.value || kind === "newdm") {
             rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus();
         }
     }
 
     /**
      * Closes the full view. Focus goes to the composer of the conversation it gave back, or on a
-     * phone or with none, to what opened the view, else the conversation's title.
+     * phone or with none, to what opened the view, else the conversation's title. A phone that
+     * gives a conversation back shows it in place of the list, so what opened the view is out of
+     * reach there and focus goes to the conversation's title.
      */
     function closeMainView(): void {
         if (!mainView.value) {
@@ -423,8 +427,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         void nextTick(() => {
             const root = rootElement.value;
             const composer = isPhone.value ? null : root?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='composer-input']");
+            const isOpenerShown = !!opener?.isConnected && !(isPhone.value && pane.value !== "list");
             (composer
-                ?? (opener?.isConnected ? opener : null)
+                ?? (isOpenerShown ? opener : null)
                 ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
         });
     }

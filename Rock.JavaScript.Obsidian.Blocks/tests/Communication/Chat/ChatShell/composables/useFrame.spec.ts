@@ -404,7 +404,7 @@ describe("New message as a full view", () => {
         expect(calls).toEqual(["directMessages.begin:", "directMessages.close"]);
     });
 
-    test("on a phone, is the conversation pane, and Back gives focus to what opened it", async () => {
+    test("on a phone, is the conversation pane with focus in its To field, and Back gives focus to what opened it", async () => {
         mounted = mountFrame();
         const { frame, wrapper, calls } = mounted;
         resize(frame, 390);
@@ -413,11 +413,23 @@ describe("New message as a full view", () => {
         await frame.openMainView("newdm");
         expect(calls).toEqual(["directMessages.begin:"]);
         expect(frame.pane.value).toBe("conversation");
-        expect(focused()).not.toBe("autofocus");
+        expect(focused()).toBe("autofocus");
 
         await frame.onBack();
         expect(frame.pane.value).toBe("list");
         expect(focused()).toBe("browse-channels");
+    });
+
+    test("on a phone, Browse channels takes no first focus, which would raise the keyboard over its list", async () => {
+        mounted = mountFrame();
+        const { frame, wrapper } = mounted;
+        resize(frame, 390);
+        (wrapper.find("[data-testid='browse-channels']").element as HTMLElement).focus();
+
+        await frame.openMainView("directory");
+
+        expect(frame.pane.value).toBe("conversation");
+        expect(focused()).not.toBe("autofocus");
     });
 });
 
