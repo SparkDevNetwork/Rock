@@ -447,6 +447,66 @@ describe("the browser row's state", () => {
         expect(cookies).toEqual([null]);
     });
 
+    test("Turn off overtakes a startup token and leaves the earlier device removed", async () => {
+        const token = deferred<string>();
+        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: offFlag() });
+        cookies.push("fcm-earlier");
+        deps.getToken = jest.fn(() => token.promise);
+        const push = createPushRegistration(deps);
+
+        const started = push.start();
+        await settle();
+        expect(deps.getToken).toHaveBeenCalledTimes(1);
+        expect(await push.turnOff()).toBeNull();
+        token.resolve("fcm-new");
+        await started;
+
+        expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-earlier" } }]);
+        expect(cookies[cookies.length - 1]).toBeNull();
+        expect(push.state()).toBe("offered");
+    });
+
+    test("Turn off waits for a sent register and removes its device after it succeeds", async () => {
+        const answer = deferred<CallResult>();
+        const enabled = new Set(["fcm-earlier"]);
+        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: offFlag() });
+        cookies.push("fcm-earlier");
+        deps.getToken = jest.fn(async () => "fcm-new");
+        deps.call = jest.fn(async (name, args) => {
+            calls.push({ name, args });
+            if (name === "chat_register_device") {
+                const result = await answer.promise;
+                if (result.ok) {
+                    enabled.add(args.p_token as string);
+                }
+                return result;
+            }
+            enabled.delete(args.p_token as string);
+            return registered;
+        });
+        const push = createPushRegistration(deps);
+        const started = push.start();
+        await settle();
+        expect(calls[0].name).toBe("chat_register_device");
+
+        let hasTurnedOff = false;
+        const turningOff = push.turnOff().then(result => {
+            hasTurnedOff = true;
+            return result;
+        });
+        await settle();
+        expect(enabled.has("fcm-earlier")).toBe(false);
+        expect(hasTurnedOff).toBe(false);
+
+        answer.resolve(registered);
+        await started;
+        expect(await turningOff).toBeNull();
+        expect([...enabled]).toEqual([]);
+        expect(calls[calls.length - 1]).toEqual({ name: "chat_unregister_device", args: { p_token: "fcm-new" } });
+        expect(cookies[cookies.length - 1]).toBeNull();
+        expect(push.state()).toBe("offered");
+    });
+
     test("Turn off with no cookie takes out the browser's own token", async () => {
         const { deps, calls } = dependencies({ permission: "granted", offFlag: offFlag(true) });
         const push = createPushRegistration(deps);
