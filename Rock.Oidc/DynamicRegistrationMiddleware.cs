@@ -22,6 +22,7 @@ using System.Text;
 using Microsoft.Owin;
 
 using Rock.Model;
+using Rock.Oidc.Configuration;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -108,7 +109,7 @@ namespace Rock.Oidc
 
                 return;
             }
-            else if ( context.Request.Path == new PathString( "/Auth/Register" ) && context.Request.Method == "POST" )
+            else if ( context.Request.Path == new PathString( Paths.RegisterPath ) && context.Request.Method == "POST" )
             {
                 // The request is to dynamically register a new client
                 // application. This is used by legacy MCP clients to create
