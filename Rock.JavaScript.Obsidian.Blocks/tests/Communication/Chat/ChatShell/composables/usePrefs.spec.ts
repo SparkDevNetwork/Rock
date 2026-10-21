@@ -392,6 +392,27 @@ describe("the person's own switches", () => {
         expect(s.prefs.state.announcement?.text).toBe("Reactions to my messages off. Saved.");
     });
 
+    test("one switch's answer leaves another's Saving standing, and the head says Saving until both are in", async () => {
+        const s = setup();
+        s.prefs.setMe({ show_profile_details: true, is_open_dm_allowed: false, reaction_push: true });
+
+        void s.prefs.setReactionPush(false);
+        void s.prefs.setPersonSetting("open_dm", true);
+        expect(s.prefs.state.meSaving).toEqual({ reaction_push: true, open_dm: true });
+
+        s.doorCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.prefs.state.meSaving).toEqual({ reaction_push: true });
+        expect(s.prefs.state.meSave?.state).toBe("saving");
+
+        s.prefCalls[0].answer.resolve(writtenMe({ reaction_push: false }));
+        await settle();
+
+        expect(s.prefs.state.meSaving).toEqual({});
+        expect(s.prefs.state.meSave?.state).toBe("saved");
+    });
+
     test("a privacy switch goes through Rock's door, one setting a call", async () => {
         const s = setup();
         s.prefs.setMe({ show_profile_details: true, is_open_dm_allowed: false, reaction_push: true });

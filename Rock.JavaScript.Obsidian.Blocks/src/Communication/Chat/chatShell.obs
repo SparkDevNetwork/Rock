@@ -429,6 +429,7 @@
                           :organizationName="organizationName"
                           :me="shell.prefs.state.me"
                           :save="shell.prefs.state.meSave"
+                          :saving="shell.prefs.state.meSaving"
                           :notes="shell.prefs.state.meNotes"
                           :announcement="shell.prefs.state.announcement"
                           :push="shell.state.push"

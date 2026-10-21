@@ -70,8 +70,11 @@ export type MeKey = PersonSettingKey | "reaction_push";
 export type PrefsState = {
     me: MeSettings;
 
-    /** Chat settings' newest save. */
+    /** Chat settings' newest save; Saving while any switch's save is out. */
     meSave: SaveMark | null;
+
+    /** The switches whose save is out, each its own Saving. */
+    meSaving: Partial<Record<MeKey, boolean>>;
     meNotes: Partial<Record<MeKey, SettingNote>>;
 
     /** Each room's place, by its id; a room not here has saved nothing this visit. */
@@ -201,6 +204,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
     const state = reactive<PrefsState>({
         me: { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true },
         meSave: null,
+        meSaving: {},
         meNotes: {},
         rooms: {},
         announcement: null
@@ -274,9 +278,12 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             return;
         }
 
+        // Another switch's save still out keeps the head at Saving; its own answer settles it.
+        delete state.meSaving[key];
+        const isOtherOut = Object.keys(state.meSaving).length > 0;
         if ("refused" in outcome) {
             state.me[meFields[key]] = was;
-            state.meSave = { state: "refused", count };
+            state.meSave = isOtherOut ? state.meSave : { state: "refused", count };
             state.meNotes[key] = { kind: "error", text: outcome.refused };
             announce(`Not saved. ${outcome.refused}`);
             return;
@@ -284,12 +291,12 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
         const now = state.me[meFields[key]] ? "on" : "off";
         if (outcome.pending) {
-            state.meSave = { state: "pending", count };
+            state.meSave = isOtherOut ? state.meSave : { state: "pending", count };
             state.meNotes[key] = { kind: "pending", text: pendingSentence };
             announce(pendingSentence);
         }
         else {
-            state.meSave = { state: "saved", count };
+            state.meSave = isOtherOut ? state.meSave : { state: "saved", count };
             announce(`${meTitles[key]} ${now}. Saved.`);
         }
     }
@@ -301,6 +308,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         state.me[field] = value;
         const count = begin(`me:${key}`);
         state.meSave = { state: "saving", count };
+        state.meSaving[key] = true;
         delete state.meNotes[key];
         return { count, was };
     }

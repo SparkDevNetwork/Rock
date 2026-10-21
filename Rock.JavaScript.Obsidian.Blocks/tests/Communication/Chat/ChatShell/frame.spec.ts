@@ -256,6 +256,7 @@ function fakePrefs(): Record<string, unknown> {
     const state = reactive({
         me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true },
         meSave: null,
+        meSaving: {},
         meNotes: {},
         rooms: {} as Record<string, unknown>,
         announcement: null

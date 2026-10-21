@@ -141,6 +141,17 @@ describe("Privacy", () => {
     });
 });
 
+describe("each switch's Saving", () => {
+    test("marks busy every switch whose save is out, not only the one pressed last", () => {
+        const w = mountSettings({ save: { state: "saving", count: 2 }, saving: { reaction_push: true, open_dm: true } });
+        const busy = (name: string): string | undefined => w.get(`[data-testid='switch-${name}'] [role='switch']`).attributes("aria-busy");
+
+        expect(busy("reaction_push")).toBe("true");
+        expect(busy("open_dm")).toBe("true");
+        expect(busy("profile_details")).not.toBe("true");
+    });
+});
+
 describe("the save indicator", () => {
     test("says Saving, Saved, Saved, syncing and Not saved", async () => {
         const w = mountSettings({ save: { state: "saving", count: 1 } });

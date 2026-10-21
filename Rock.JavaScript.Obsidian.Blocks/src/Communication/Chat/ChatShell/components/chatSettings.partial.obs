@@ -275,6 +275,12 @@
             default: null
         },
 
+        /** The switches whose save is out. */
+        saving: {
+            type: Object as PropType<Partial<Record<MeKey, boolean>>>,
+            default: () => ({})
+        },
+
         /** The note under each switch. */
         notes: {
             type: Object as PropType<Partial<Record<MeKey, SettingNote>>>,
@@ -316,9 +322,6 @@
     /** The settings' announcement count as the dialog opened, so only news said since is read. */
     const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
 
-    /** The switch pressed last, whose save the head's Saving is. */
-    const pressedKey = ref<MeKey | null>(null);
-
     // #endregion Values
 
     // #region Computed Values
@@ -355,9 +358,9 @@
 
     // #region Functions
 
-    /** Whether a switch's save is the one out, which marks it busy. */
+    /** Whether a switch's save is out, which marks it busy. */
     function isSaving(key: MeKey): boolean {
-        return props.save?.state === "saving" && pressedKey.value === key;
+        return props.saving[key] === true;
     }
 
     // #endregion Functions
@@ -365,7 +368,6 @@
     // #region Event Handlers
 
     function onToggle(key: MeKey, value: boolean): void {
-        pressedKey.value = key;
         emit("toggle", key, value);
     }
 
