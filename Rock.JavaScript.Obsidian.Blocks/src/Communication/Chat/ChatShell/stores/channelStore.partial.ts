@@ -27,6 +27,10 @@
 //
 // A direct message's row is kept whole instead: its preview, time and order follow every change
 // to the room's last message, on the sender's own devices too. A channel's row only bolds.
+//
+// The person's own star, hide and notify mode show on the row the moment they are chosen. A room
+// hidden from the conversation on screen stays while it is open, since the person is still in it,
+// and leaves once another opens, as the platform's sidebar leaves it out from then on.
 import { reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
 import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
@@ -83,7 +87,13 @@ export type ChannelStore = {
 
     /** A save of the read position is setting out; the answer to hand back with its result. */
     saveSent: () => number;
+
+    /** The person's own star, hide or notify mode on a room, shown at once and sorted as the platform sorts. */
+    applyPrefs: (channelId: string, changes: RowPrefs) => void;
 };
+
+/** What the person's own settings change on a row. */
+export type RowPrefs = Partial<Pick<SidebarRow, "is_favorite" | "hidden" | "notify_mode">>;
 
 /**
  * Whether the row's last message is one the reader typed. Their send never moves their read
@@ -323,14 +333,15 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
     return Object.assign(store, {
         setSidebar: (rows: SidebarRow[]): void => {
             const preview = store.rows.find(row => row.channel_id === store.previewChannelId);
+            // A room hidden from the screen it is open on is still the person's to look at, though
+            // the fresh rows leave it out.
+            const hidden = store.rows.find(row => row.hidden && row.channel_id === store.activeChannelId && row.channel_id !== preview?.channel_id);
+            const kept = [preview, hidden].filter((row): row is SidebarRow => !!row && !rows.some(fresh => fresh.channel_id === row.channel_id));
             // the fresh rows' own copy of the room, once it has one, ends the preview
-            if (preview && !rows.some(row => row.channel_id === preview.channel_id)) {
-                store.rows = [...rows, preview];
-            }
-            else {
+            if (!preview || !kept.includes(preview)) {
                 store.previewChannelId = null;
-                store.rows = rows;
             }
+            store.rows = [...rows, ...kept];
             answerPointers = new Map(rows.map(row => [row.channel_id, row.last_message_id]));
             const at = ++moves;
             movedAt.clear();
@@ -345,6 +356,22 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
         setActive: (channelId: string | null): void => {
             store.activeChannelId = channelId;
+            // a room hidden while it was open leaves once another opens
+            if (store.rows.some(row => row.hidden && row.channel_id !== channelId)) {
+                store.rows = store.rows.filter(row => !row.hidden || row.channel_id === channelId);
+            }
+        },
+
+        applyPrefs: (channelId: string, changes: RowPrefs): void => {
+            const row = find(channelId);
+            if (!row) {
+                return;
+            }
+
+            Object.assign(row, changes);
+            if (changes.is_favorite !== undefined) {
+                sortRows();
+            }
         },
 
         applyPersonalEvent: (event: string, payload: unknown, isReplay?: boolean): void => {

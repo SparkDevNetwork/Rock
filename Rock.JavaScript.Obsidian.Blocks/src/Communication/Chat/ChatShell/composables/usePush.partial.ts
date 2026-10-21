@@ -22,6 +22,11 @@
 // The token goes to the platform under the person's token, through the one call path, and into a
 // cookie: the Chat block is not on the page where a person signs out of Rock, so Rock reads the
 // cookie there and takes this browser out of push itself.
+//
+// Chat settings shows this browser's push as one state and offers Turn on whatever the church's
+// prompt timing, since the person came to the setting themselves. Turn off takes the device out
+// and is remembered on this browser, because the browser keeps allowing notifications and the
+// next load would otherwise register it again.
 import { ChatSettings } from "./useSession.partial";
 import { CallResult } from "../platformCall.partial";
 
@@ -50,7 +55,16 @@ export type PushDependencies = {
 
     /** Keeps this browser's token for Rock's sign-out, or clears it with null. */
     writeCookie: (token: string | null) => void;
+
+    /** Whether the person turned push off on this browser, kept in its storage; none keeps nothing. */
+    offFlag?: { read: () => boolean, write: (isOff: boolean) => void };
 };
+
+/**
+ * This browser's push as Chat settings draws it: offered, the browser's own box up, on, refused by
+ * the browser, or not set up where the platform sent no Firebase values.
+ */
+export type PushState = "offered" | "asking" | "on" | "blocked" | "unavailable";
 
 /** The part of a ServiceWorkerRegistration push reads: the worker in each slot. */
 export type WorkerRegistration = Pick<ServiceWorkerRegistration, "installing" | "waiting" | "active">;
@@ -75,6 +89,12 @@ export type PushRegistration = {
     /** The button was clicked: asks the browser, and registers on a yes. */
     turnOn: () => Promise<void>;
 
+    /** Takes this browser's device out of push and remembers it here. */
+    turnOff: () => Promise<void>;
+
+    /** This browser's push as Chat settings draws it. */
+    state: () => PushState;
+
     /** Stops: nothing on its way registers, and nothing new starts. */
     stop: () => void;
 };
@@ -89,6 +109,31 @@ export type PushRegistration = {
 export function createPushRegistration(dependencies: PushDependencies): PushRegistration {
     let isStopped = false;
     let hasSent = false;
+
+    /** Set while the browser's own permission box is up. */
+    let isAsking = false;
+
+    /** The token this browser registered under on this load, which Turn off takes out. */
+    let registeredToken: string | null = null;
+
+    const isTurnedOff = (): boolean => {
+        try {
+            return dependencies.offFlag?.read() ?? false;
+        }
+        catch {
+            // a browser that blocks its storage remembers nothing, so push follows its permission
+            return false;
+        }
+    };
+
+    const setTurnedOff = (isOff: boolean): void => {
+        try {
+            dependencies.offFlag?.write(isOff);
+        }
+        catch {
+            // as above
+        }
+    };
 
     /** Whether the platform sent the Firebase values push needs. */
     const isAvailable = (): boolean => dependencies.settings().web !== null && dependencies.settings().vapid_key !== null;
@@ -121,6 +166,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return;
             }
 
+            registeredToken = token;
             dependencies.writeCookie(token);
         }
         catch {
@@ -175,7 +221,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
 
     return {
         start: async (): Promise<void> => {
-            if (isStopped || !isAvailable() || dependencies.permission() !== "granted") {
+            if (isStopped || !isAvailable() || dependencies.permission() !== "granted" || isTurnedOff()) {
                 return;
             }
 
@@ -200,12 +246,51 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return;
             }
 
-            const answer = await dependencies.requestPermission();
-            if (isStopped || answer !== "granted") {
+            // A browser that still allows notifications after a Turn off here needs no asking.
+            if (dependencies.permission() !== "granted") {
+                isAsking = true;
+                const answer = await dependencies.requestPermission().finally(() => {
+                    isAsking = false;
+                });
+                if (isStopped || answer !== "granted") {
+                    return;
+                }
+            }
+
+            setTurnedOff(false);
+            await register();
+        },
+
+        turnOff: async (): Promise<void> => {
+            if (isStopped) {
                 return;
             }
 
-            await register();
+            setTurnedOff(true);
+            const token = registeredToken;
+            registeredToken = null;
+            dependencies.writeCookie(null);
+            if (token) {
+                // A failed call leaves the device until the platform prunes it; this browser stays off.
+                await dependencies.call("chat_unregister_device", { p_token: token }).catch(() => undefined);
+            }
+        },
+
+        state: (): PushState => {
+            if (!isAvailable()) {
+                return "unavailable";
+            }
+
+            if (isAsking) {
+                return "asking";
+            }
+
+            const permission = dependencies.permission();
+            if (permission === "denied") {
+                return "blocked";
+            }
+
+            return permission === "granted" && !isTurnedOff() ? "on" : "offered";
         },
 
         stop: (): void => {

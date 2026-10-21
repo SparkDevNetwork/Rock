@@ -15,7 +15,8 @@
 // </copyright>
 //
 // The shell's wiring: one place that builds the session, the live connection, the timelines,
-// the sender, the read tracker, the threads, the mentions, the rooms and the sidebar, and joins them. Each of those is its own tested
+// the sender, the read tracker, the threads, the mentions, the rooms, the person's settings and the
+// sidebar, and joins them. Each of those is its own tested
 // module; what is here decides only which one hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
@@ -28,7 +29,8 @@ import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } f
 import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
-import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
+import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
+import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
@@ -107,6 +109,8 @@ export type ShellOptions = {
 
     /** Asks Rock's door to remove someone from a room, naming who leads next for a last leader. */
     removeMember?: MemberDoors["removeMember"];
+    /** Asks Rock's door to save one of the person's two privacy switches; without it, they are refused. */
+    savePersonSetting?: (setting: PersonSettingKey, value: boolean) => Promise<PersonSettingResult>;
 
     /**
      * Whether the page narrows the sidebar's pinned rooms and the people search to the person's
@@ -184,8 +188,11 @@ export type ShellState = {
     /** Whether the composer takes a message in the service state the platform last named. */
     isComposerOpen: boolean;
 
-    /** Whether the "Turn on notifications" button shows. */
+    /** Whether the church's prompt timing would offer push now. */
     isPushOffered: boolean;
+
+    /** This browser's push as Chat settings draws it. */
+    push: PushState;
 
     /**
      * Which of the panes that draw the open conversation and the open thread are out of view, as
@@ -219,6 +226,9 @@ export type ChatShell = {
     /** The members panel's roster and its search. */
     members: Members;
 
+    /** Each room's notify mode, star and hide, and the person's own switches. */
+    prefs: Prefs;
+
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
 
@@ -246,8 +256,11 @@ export type ChatShell = {
      */
     sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void>;
 
-    /** The person clicked "Turn on notifications". */
+    /** The person turned on notifications for this browser. */
     turnOnPush: () => Promise<void>;
+
+    /** The person turned off notifications for this browser. */
+    turnOffPush: () => Promise<void>;
 
     /** Whether a channel is the one on screen while the page is visible, for the push worker. */
     isChannelOnScreen: (channelId: string) => boolean;
@@ -352,6 +365,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isUpdateRequired: false,
         isComposerOpen: true,
         isPushOffered: false,
+        // known once push starts after the first channel is on screen
+        push: "unavailable",
         hiddenPanes: { conversation: false, thread: false }
     }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
@@ -472,6 +487,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mentions.stop();
         rooms.stop();
         members.stop();
+        prefs.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -727,6 +743,17 @@ export function createChatShell(options: ShellOptions): ChatShell {
         campusOnly: options.areSharedChannelsFilteredByCampus ?? false
     });
 
+    const prefs = createPrefs({
+        setPrefs: async (channelId, changes) => {
+            const result = await call("chat_set_prefs", { p_channel_id: channelId, p_changes: changes });
+            return result.ok ? { ok: true, data: result.data } : { ok: false, error: result.error };
+        },
+        savePersonSetting: options.savePersonSetting,
+        channels,
+        isOffline: () => state.connection !== null,
+        notify: notice => options.notify?.(notice)
+    });
+
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId) => {
             const result = await call("chat_send_message", {
@@ -851,11 +878,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         // the bootstrap's own key names
         /* eslint-disable-next-line @typescript-eslint/naming-convention */
-        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: { unread_mentions?: UnreadMention[] } } | null;
+        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[] } } | null;
         const rows = answer?.channels ?? [];
         channels.setSidebar(rows);
         // every load restates the unread mentions, so one read elsewhere stops lighting the dot
         mentions.setUnread(answer?.me?.unread_mentions ?? []);
+        // the person's own switches, as another device may have changed them since
+        prefs.setMe(answer?.me);
         if (Array.isArray(answer?.reactions)) {
             favorites.splice(0, favorites.length, ...answer.reactions);
         }
@@ -1020,6 +1049,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mentions,
         rooms,
         members,
+        prefs,
         isNewMessageShown: isNewMessageShown(options.session),
 
         start: async (): Promise<void> => {
@@ -1169,6 +1199,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 });
                 await push.start();
                 state.isPushOffered = push.isOffered();
+                state.push = push.state();
             }
         },
 
@@ -1219,8 +1250,21 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         turnOnPush: async (): Promise<void> => {
-            await push?.turnOn();
-            state.isPushOffered = push?.isOffered() ?? false;
+            if (!push) {
+                return;
+            }
+
+            // the browser's own box is up until the turn on settles
+            const turning = push.turnOn();
+            state.push = push.state();
+            await turning;
+            state.isPushOffered = push.isOffered();
+            state.push = push.state();
+        },
+
+        turnOffPush: async (): Promise<void> => {
+            await push?.turnOff();
+            state.push = push?.state() ?? "unavailable";
         },
 
         // Only while its pane is the one in view: a phone's list or thread can cover it.
@@ -1275,6 +1319,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             mentions.stop();
             rooms.stop();
             members.stop();
+            prefs.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.

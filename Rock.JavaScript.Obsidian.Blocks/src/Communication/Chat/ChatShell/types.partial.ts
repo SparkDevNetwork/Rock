@@ -63,6 +63,23 @@ export type SidebarRow = {
     can_mention: boolean;
     dm_names: string[] | null;
     dm_other_count: number | null;
+
+    /**
+     * Whether a send here would be taken, and if not its code and the server's sentence, as the
+     * sidebar call reads them for each row; a row the client made itself carries none.
+     */
+    can_post?: boolean;
+    can_post_code?: string | null;
+    can_post_reason?: string | null;
+
+    /** The longest message the send takes here, in characters. */
+    max_length?: number;
+
+    /**
+     * Whether the person hid the room from this screen. The platform's sidebar leaves a hidden room
+     * out, so only a row the person hid here, while it is open, carries it.
+     */
+    hidden?: boolean;
 };
 
 /** A leader of a channel, as chat_get_channel lists up to three of them by name. */

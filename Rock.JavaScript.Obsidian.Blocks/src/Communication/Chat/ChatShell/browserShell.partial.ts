@@ -23,6 +23,7 @@ import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
 import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
 import { ChatMemberRightsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMemberRightsBag";
 import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMembershipResultBag";
+import { ChatPersonSettingResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatPersonSettingResultBag";
 import { DoorResult } from "./composables/useDirectMessage.partial";
 import { ChatShell, createChatShell, PlatformClientLike, ShellOptions } from "./shell.partial";
 
@@ -45,6 +46,9 @@ export type BrowserShellOptions = {
 
 /** The cookie Rock reads at sign-out to take this browser out of push. */
 const pushCookieName = "rock_chat_push";
+
+/** Where this browser remembers that the person turned its notifications off in Chat settings. */
+const pushOffKey = "rock-chat-push-off";
 
 /**
  * Makes the block's shell builder. A birthdate save replaces the shell with one for the session
@@ -86,6 +90,10 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
                     vapidKey,
                     serviceWorkerRegistration: registration as ServiceWorkerRegistration
                 });
+            },
+            offFlag: {
+                read: () => window.localStorage.getItem(pushOffKey) === "true",
+                write: isOff => isOff ? window.localStorage.setItem(pushOffKey, "true") : window.localStorage.removeItem(pushOffKey)
             },
             writeCookie: token => {
                 const secure = window.location.protocol === "https:" ? "; Secure" : "";
@@ -155,6 +163,15 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         },
         addMembers: (channelId, personAliasGuids) => membershipDoor("AddMembers", { channelGuid: channelId, personAliasGuids }),
         removeMember: (channelId, personAliasGuid, replacementPersonAliasGuid) => membershipDoor("RemoveMember", { channelGuid: channelId, personAliasGuid, replacementPersonAliasGuid }),
+        savePersonSetting: async (setting, value) => {
+            const result = await invokeBlockAction<ChatPersonSettingResultBag>("SavePersonSetting", { setting, value });
+            if (result.isSuccess && result.data) {
+                return { code: result.data.code ?? "door.unavailable", isPending: result.data.isPending, message: result.data.message ?? null };
+            }
+
+            // Rock answered without the door's result, which decided nothing; the switch goes back.
+            return { code: "door.unavailable", isPending: false, message: result.errorMessage ?? null };
+        },
         createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
         fetch: (url, init) => window.fetch(url, init),
         storage: safeLocalStorage(),

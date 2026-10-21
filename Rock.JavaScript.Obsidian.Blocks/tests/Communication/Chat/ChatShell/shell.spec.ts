@@ -2423,7 +2423,15 @@ describe("settings", () => {
     });
 
     test("a room's notify mode is one chat_set_prefs call with the room and the patch", async () => {
-        const h = await started();
+        // the room in the sidebar, as the bootstrap lists it, where its mode shows
+        const row = {
+            channel_id: channelB, name: "Room", icon_url: null, channel_type: "shared", is_public: false, always_shown: false, is_member: true,
+            is_favorite: false, notify_mode: "all", is_leader: false, can_post_announcements: false, can_mention_all: false, last_message_id: 10,
+            last_message_at: "2026-10-19T09:00:00Z", last_message_type: "text", last_sender_nick_name: "Ada", last_sender_last_name: "Member",
+            last_sender_listed: true, last_message_preview: "old", last_message_is_own: false, last_message_posted_by_rock: false, read_cursor: 10,
+            is_unread: false, mention_count: 0, all_mention_count: 0, can_mention: true, dm_names: null, dm_other_count: null
+        };
+        const h = await startedWith({ channels: [row], me: { unread_mentions: [] } });
         h.prefsAnswer.value = { status: 200, body: { channel: { channel_id: channelB, is_favorite: false, hidden: false, notify_mode: "silent", notify_mode_effective: "silent" }, me: {} } };
 
         await h.shell.prefs.setNotifyMode(channelB, "silent", false);
