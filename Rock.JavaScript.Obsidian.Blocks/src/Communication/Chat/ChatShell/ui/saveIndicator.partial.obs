@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- Seen, not read: what each save comes to is said in the dialog's own live region. -->
     <span class="chat-save-ind" :data-state="shownState" aria-hidden="true">
+        <!-- Seen, not read: what each save comes to is said in the dialog's own live region. Kept
+             inside the root, since a comment beside it makes a fragment that drops the caller's attributes. -->
         <template v-if="state === 'saving'"><span class="chat-spinner"></span><span>Saving</span></template>
         <template v-else-if="state === 'saved'"><Icon name="check" size="xs" /><span>Saved</span></template>
         <template v-else-if="state === 'pending'"><Icon name="clock" size="xs" /><span>Saved, syncing</span></template>
