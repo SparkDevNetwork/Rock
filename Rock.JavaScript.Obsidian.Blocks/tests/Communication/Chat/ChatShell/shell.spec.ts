@@ -2549,6 +2549,24 @@ describe("the browser row", () => {
         expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
     });
 
+    test("Turn on with the browser already allowing shows on only once the register settles", async () => {
+        const token = deferred<string>();
+        const h = await started({
+            stored: { [pushOffKey(person)]: "true" },
+            push: fakeBrowserPush({ value: "granted" }, () => token.promise),
+            pushSettings: pushSettings("off")
+        });
+        expect(h.shell.state.push).toBe("offered");
+
+        const turning = h.shell.turnOnPush();
+        await settle();
+        expect(h.shell.state.push).toBe("offered");
+
+        token.resolve("fcm-1");
+        await turning;
+        expect(h.shell.state.push).toBe("on");
+    });
+
     test("Turn off is kept per church and person, so another person on the browser still registers", async () => {
         const stored: Record<string, string> = {};
         const ada = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });

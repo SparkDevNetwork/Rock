@@ -1263,9 +1263,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            // the browser's own box is up until the turn on settles
+            // only the browser's own box shows at once; on waits for the register to settle
             const turning = push.turnOn();
-            state.push = push.state();
+            if (push.state() === "asking") {
+                state.push = "asking";
+            }
             await turning;
             state.isPushOffered = push.isOffered();
             state.push = push.state();
