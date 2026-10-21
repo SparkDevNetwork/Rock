@@ -34,7 +34,7 @@ import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, Time
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
-import { readOnlySentence } from "./useSession.partial";
+import { ChatSettings, readOnlySentence } from "./useSession.partial";
 
 /** What Rock's Join door answers. */
 export type JoinResult = {
@@ -72,20 +72,21 @@ export function isComposerOpen(serviceState: string): boolean {
 
 /**
  * Why the person cannot post in a room, in the server's words, which locks its composer; null
- * where they can. Read only says the row's sentence, the church's banner where it set one. The
- * join case has the join bar and maintenance the composer's own sentence, so neither is said here.
+ * where they can. Refreshed service settings can close every composer before its sidebar row
+ * catches up. The join bar and maintenance keep their own sentences.
  *
  * @param row The room's sidebar row, or null with no room.
+ * @param service The latest service state and its banner, including for a new conversation.
  *
  * @returns The sentence, or null.
  */
-export function lockedReason(row: SidebarRow | null): string | null {
+export function lockedReason(row: SidebarRow | null, service?: ChatSettings["service"]): string | null {
     const code = row?.can_post_code ?? null;
-    if (!row || row.can_post !== false || code === "authz.join_required" || code === "rpc.maintenance") {
-        return null;
+    if (row?.can_post === false && code !== "authz.join_required" && code !== "rpc.maintenance") {
+        return row.can_post_reason?.trim() || (code === "rpc.read_only" ? readOnlySentence : "You can't post in this conversation.");
     }
 
-    return row.can_post_reason?.trim() || (code === "rpc.read_only" ? readOnlySentence : "You can't post in this conversation.");
+    return service?.state === "read_only" ? service.banner?.trim() || readOnlySentence : null;
 }
 
 /**

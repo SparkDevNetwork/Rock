@@ -32,7 +32,7 @@ import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } f
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
-import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
+import { ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
@@ -181,6 +181,9 @@ export type ShellState = {
 
     /** The platform's banner for the service state, or null when there is none to show. */
     banner: string | null;
+
+    /** The latest service state and its own banner, independent of an older sidebar row. */
+    service: ChatSettings["service"];
 
     /** Whether the banner says this Rock is too old for the platform, which is told in its own tone. */
     isUpdateRequired: boolean;
@@ -362,6 +365,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         errors: [],
         activeChannelId: null,
         banner: null,
+        service: { state: "normal", banner: null },
         isUpdateRequired: false,
         isComposerOpen: true,
         isPushOffered: false,
@@ -445,6 +449,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     function showSettings(): void {
         const settings = session.settings();
         state.banner = serviceBanner(settings);
+        state.service = { ...settings.service };
         state.isUpdateRequired = settings.client.update_required;
         state.isComposerOpen = isComposerOpen(settings.service.state);
     }

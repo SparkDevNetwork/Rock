@@ -136,6 +136,8 @@
                           :title="isFound ? foundTitle : startTitle"
                           :isPhone="isPhone"
                           :isDisabled="isLocked"
+                          :isLocked="isServiceLocked"
+                          :lockedReason="lockedReason"
                           :heldText="heldText"
                           :heldBy="heldBy"
                           :isTextKeptOnSend="isTextKeptOnSend(draft)"
@@ -591,6 +593,18 @@
     import PeoplePicker from "../ui/peoplePicker.partial.obs";
 
     const props = defineProps({
+        /** Whether the latest service settings prevent sending, even before a room exists. */
+        isServiceLocked: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The service's posting sentence, or null for the composer's maintenance sentence. */
+        lockedReason: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
         /** The people chosen so far, in the order they were chosen. */
         chosen: {
             type: Array as PropType<PersonRow[]>,
