@@ -647,7 +647,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .ToList()
                 .Select( h => new ChangeHistoryData
                 {
-                    CreatedPersonName = h.CreatedByPersonName,
+                    CreatedPersonName = h.CreatedByPersonName.EncodeHtml(),
                     CreatedPersonId = h.CreatedByPersonId.ToStringSafe(),
                     CreatedDateTime = h.CreatedDateTime.ToElapsedString( false, true ) ?? "",
                     Description = h.ToStringSafe()
@@ -689,7 +689,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var checkedInByPersonName = person.FullName;
             var checkedInByPersonPhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-            rockLiteral.Text = string.Format( "{0 } by {1} {2}", dateTime.Value.ToShortDateTimeString(), checkedInByPersonName, checkedInByPersonPhone );
+            rockLiteral.Text = string.Format( "{0 } by {1} {2}", dateTime.Value.ToShortDateTimeString(), checkedInByPersonName.EncodeHtml(), checkedInByPersonPhone?.ToString().EncodeHtml() );
         }
 
         /// <summary>
@@ -700,7 +700,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             var occurrence = attendance.Occurrence;
 
-            btnDelete.Attributes["onclick"] = $"javascript: return Rock.dialogs.confirmDelete(event, 'Check-in for {attendance.PersonAlias}');";
+            var deleteText = System.Web.HttpUtility.JavaScriptStringEncode( $"Check-in for {attendance.PersonAlias}".EncodeHtml() );
+            btnDelete.Attributes["onclick"] = $"javascript: return Rock.dialogs.confirmDelete(event, '{deleteText}');";
 
             var groupType = GroupTypeCache.Get( occurrence.Group.GroupTypeId );
             var rockContext = new RockContext();
