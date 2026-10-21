@@ -358,6 +358,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether a client name supplied by a client during dynamic registration passes the validation
+        /// rules of <see cref="AuthClient.Name"/>, such as having no HTML or Lava. A missing name is valid.
+        /// </summary>
+        /// <param name="clientName">The <c>client_name</c> supplied by the client.</param>
+        /// <returns><c>true</c> if the client name is valid; otherwise, <c>false</c>.</returns>
+        internal static bool IsClientNameValid( string clientName )
+        {
+            var nameProperty = typeof( AuthClient ).GetProperty( nameof( AuthClient.Name ) );
+
+            try
+            {
+                StringValueValidator.Validate( clientName, StringValueValidator.GetEffectiveRules( nameProperty ), typeof( AuthClient ), nameProperty.Name );
+
+                return true;
+            }
+            catch ( PropertyValidationException )
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Get the cache object used to store dynamically registered client metadata.
         /// </summary>
         /// <returns>A <see cref="ConcurrentDictionary{TKey, TValue}"/> used to store dynamically registered client metadata.</returns>
@@ -375,7 +397,7 @@ namespace Rock.Model
         /// <returns>An <see cref="AuthClient"/> constructed from the metadata, or null if the metadata is invalid.</returns>
         internal static AuthClient GetAuthClientFromMetadata( ClientMetadata metadata, string clientId )
         {
-            if ( metadata.ClientId != clientId )
+            if ( metadata.ClientId != clientId || !IsClientNameValid( metadata.ClientName ) )
             {
                 return null;
             }

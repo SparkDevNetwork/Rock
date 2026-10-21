@@ -22,6 +22,7 @@ using Microsoft.Owin;
 
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Oidc.Configuration;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -108,7 +109,7 @@ namespace Rock.Oidc
 
                 return;
             }
-            else if ( context.Request.Path == new PathString( "/Auth/Register" ) && context.Request.Method == "POST" )
+            else if ( context.Request.Path == new PathString( Paths.RegisterPath ) && context.Request.Method == "POST" )
             {
                 // The request is to dynamically register a new client
                 // application. This is used by legacy MCP clients to create
@@ -146,6 +147,20 @@ namespace Rock.Oidc
                     {
                         error = "invalid_redirect_uri",
                         error_description = "One or more redirect URIs are not allowed."
+                    }.ToJson() );
+
+                    return;
+                }
+
+                if ( !AuthClientService.IsClientNameValid( authClient.Name ) )
+                {
+                    // Error code from RFC 7591 section 3.2.2.
+                    context.Response.StatusCode = 400;
+                    context.Response.ContentType = "application/json";
+                    context.Response.Write( new
+                    {
+                        error = "invalid_client_metadata",
+                        error_description = "The client name is not allowed."
                     }.ToJson() );
 
                     return;
