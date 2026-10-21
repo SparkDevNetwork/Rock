@@ -1847,6 +1847,7 @@
     <Compile Include="Plugin\HotFixes\330_EscapeMapInfoWindowAndSignatureReceiptTemplates.cs" />
     <Compile Include="Plugin\HotFixes\331_AddSystemPhoneNumberViewSecurity.cs" />
     <Compile Include="Plugin\HotFixes\332_AllowSmartSearchRequestsOnResultsPage.cs" />
+    <Compile Include="Plugin\HotFixes\335_SecureDocumentTypeEntityTypeView.cs" />
     <Compile Include="Plugin\HotFixes\280_AuthFixForIssue6712.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
