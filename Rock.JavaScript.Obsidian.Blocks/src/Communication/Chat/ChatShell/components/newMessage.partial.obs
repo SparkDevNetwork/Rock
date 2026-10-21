@@ -96,7 +96,10 @@
                          @mousedown.prevent="pick(option.person)"
                          @mouseenter="activeIndex = index">
                         <Avatar :people="[faceOf(option.person)]" :size="32" />
-                        <span class="chat-pk-o-main"><b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b></span>
+                        <span class="chat-pk-o-main">
+                            <b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b>
+                            <span v-if="option.campus" data-testid="nd-option-campus">{{ option.campus }}</span>
+                        </span>
                         <span class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
                     </div>
                 </div>
@@ -468,6 +471,15 @@
     text-overflow: ellipsis;
 }
 
+/* The campus under the name, for a person who shows it. */
+.chat-pk-o-main span {
+    overflow: hidden;
+    font-size: 12px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .chat-pk-o-main mark {
     padding: 0;
     color: inherit;
@@ -825,6 +837,7 @@
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
@@ -841,6 +854,9 @@
         before: string;
         match: string;
         after: string;
+
+        /** The person's campus by its name, only when they show their details; empty otherwise. */
+        campus: string;
     };
 
     // #endregion Types
@@ -886,6 +902,12 @@
         refused: {
             type: Object as PropType<{ person: PersonRow, text: string } | null>,
             default: null
+        },
+
+        /** The church's campuses, which name the campus under each person found. */
+        campuses: {
+            type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
         },
 
         /** What the composer's emoji picker draws, or null for none. */
@@ -1039,7 +1061,8 @@
                     person,
                     before: at < 0 ? name : name.slice(0, at),
                     match: at < 0 ? "" : name.slice(at, at + needle.length),
-                    after: at < 0 ? "" : name.slice(at + needle.length)
+                    after: at < 0 ? "" : name.slice(at + needle.length),
+                    campus: campusOf(person)
                 };
             });
     });
@@ -1232,6 +1255,12 @@
 
     function nameOf(person: PersonRow): string {
         return `${person.nick_name} ${person.last_name}`;
+    }
+
+    /** A person's campus by its name, as the church lists it; the search sends it only for a person who shows their details. */
+    function campusOf(person: PersonRow): string {
+        const id = person.campus_id?.toLowerCase();
+        return id ? props.campuses.find(campus => campus.guid?.toLowerCase() === id)?.name ?? "" : "";
     }
 
     function faceOf(person: PersonRow): AvatarPerson {

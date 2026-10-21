@@ -393,6 +393,9 @@ export type PersonRow = {
     nick_name: string;
     last_name: string;
     avatar_url: string | null;
+
+    /** Their campus, which the people search sends only for a person who shows their details. */
+    campus_id?: string | null;
 };
 
 /** One person as chat_get_person answers for the profile card, in the room the card was opened from. */

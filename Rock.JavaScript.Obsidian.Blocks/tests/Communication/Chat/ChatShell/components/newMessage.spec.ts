@@ -246,6 +246,20 @@ describe("the suggestions", () => {
         expect(search).toHaveBeenCalledWith("an");
     });
 
+    test("name each person's campus under their name, from the church's campuses, where they show it", async () => {
+        const downtown = { guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "Downtown" };
+        const search = jest.fn(async () => [{ ...anna, campus_id: "D0000001-0000-4000-8000-000000000000" }, { ...andre, campus_id: null }, { ...caleb, campus_id: "d0000009-0000-4000-8000-000000000000" }]);
+        const w = mountView({ search, campuses: [downtown] });
+
+        await typeName(w, "a");
+        await afterPause();
+
+        const options = w.findAll("[data-testid='nd-option']");
+        expect(options.map(o => o.find("[data-testid='nd-option-campus']").exists() ? o.get("[data-testid='nd-option-campus']").text() : null))
+            .toEqual(["Downtown Campus", null, null]);
+        expect(options[0].get("b").text()).toBe("Anna Reyes");
+    });
+
     test("list the people found as options, the match marked, with nothing under the name", async () => {
         const w = mountView();
 

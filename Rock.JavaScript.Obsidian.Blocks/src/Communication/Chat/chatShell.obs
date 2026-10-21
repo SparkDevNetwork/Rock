@@ -175,6 +175,7 @@
                                 :search="shell.directMessages.search"
                                 :lookup="shell.directMessages.lookup"
                                 :foundTitle="foundTitle"
+                                :campuses="campuses"
                                 :draft="draft"
                                 :error="shell.directMessages.error"
                                 :refused="shell.directMessages.refused"
