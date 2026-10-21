@@ -628,6 +628,34 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void ALeaderOnTheBanListOrInactiveDoesNotKeepTheRoomLed()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // Bea and Cy hold leader rows in Rock, but chat lists neither of them, so Ada is
+                // the last leader anyone in chat sees and removing her names who leads next.
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bea = scene.AddChatPerson( "Bea" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var di = scene.AddChatPerson( "Di" );
+                scene.MakeChatAdministrator( admin );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bea, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, cy, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, di );
+                scene.AddToBanList( bea );
+                scene.MakeInactive( cy );
+
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, room, scene.Alias( ada ) ).Code, "nobody chat lists still leads" );
+                Assert.AreEqual( "ok", scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( di ) ).Code );
+                Assert.AreEqual( leader, scene.Memberships( room, di ).Single().GroupRoleId, "Di leads next" );
+            }
+        }
+
+        [TestMethod]
         public void RemovingTheLastLeaderWithAReplacementMovesTheReplacementToTheLeadersRoleInOnePush()
         {
             using ( var scene = new ChatDoorScene() )

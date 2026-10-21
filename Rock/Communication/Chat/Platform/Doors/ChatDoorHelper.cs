@@ -642,6 +642,20 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
+        /// Whether the person removed is the channel's last leader.
+        /// </summary>
+        /// <param name="targetPersonId">The person removed.</param>
+        /// <param name="leaderPersonIds">Everyone holding a live leader membership in Rock.</param>
+        /// <param name="live">Who the platform has in the room.</param>
+        /// <param name="unlisted">Who chat does not list.</param>
+        /// <returns>True when the person leads and nobody else does.</returns>
+        internal static bool IsLastLeader( int targetPersonId, IEnumerable<int> leaderPersonIds, ISet<int> live, ISet<int> unlisted )
+        {
+            var leaders = leaderPersonIds.ToList();
+            return leaders.Contains( targetPersonId ) && leaders.All( id => id == targetPersonId );
+        }
+
+        /// <summary>
         /// The role the person named to lead next is given: the removed leader's own role when it
         /// is a leader role of the channel's type, so a church's role name carries over, otherwise
         /// the type's first leader role by order.

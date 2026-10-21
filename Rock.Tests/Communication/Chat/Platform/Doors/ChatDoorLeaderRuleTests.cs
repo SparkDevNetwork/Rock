@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.Chat.Platform.Doors;
@@ -80,6 +82,39 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         }
 
         #endregion Who may remove a leader
+
+        #region Who counts as the last leader
+
+        // Ada (1) is removed; Bo (2), Cy (3) and Di (4) lead too, as their standing allows.
+        private static readonly int[] Leaders = { 1, 2, 3, 4 };
+
+        [TestMethod]
+        public void AnotherLeaderInTheRoomAndListedMeansNoneIsAsked()
+        {
+            Assert.IsFalse( ChatDoorHelper.IsLastLeader( 1, Leaders, live: new HashSet<int> { 1, 2 }, unlisted: new HashSet<int>() ) );
+        }
+
+        [TestMethod]
+        public void SomeoneWhoDoesNotLeadIsNeverTheLastLeader()
+        {
+            Assert.IsFalse( ChatDoorHelper.IsLastLeader( 9, Leaders, live: new HashSet<int> { 9 }, unlisted: new HashSet<int>() ) );
+        }
+
+        [TestMethod]
+        public void TheOnlyLeaderIsTheLast()
+        {
+            Assert.IsTrue( ChatDoorHelper.IsLastLeader( 1, new[] { 1 }, live: new HashSet<int> { 1 }, unlisted: new HashSet<int>() ) );
+        }
+
+        [TestMethod]
+        public void ALeaderChatDoesNotListOrWhoIsNotInTheRoomDoesNotCount()
+        {
+            // Bo is on the Chat Ban List or inactive, Cy is not in the room on the platform (banned
+            // there or left out of chat), and Di is both: none of them leads anyone in chat.
+            Assert.IsTrue( ChatDoorHelper.IsLastLeader( 1, Leaders, live: new HashSet<int> { 1, 2, 4 }, unlisted: new HashSet<int> { 2, 4 } ) );
+        }
+
+        #endregion Who counts as the last leader
 
         #region The role the next leader takes
 
