@@ -19,7 +19,9 @@
              :class="{ 'is-pane-motion-on': isPaneMotionOn }"
              data-testid="chat-frame"
              :data-pane="pane"
-             :data-panel-open="panelKind ? 'true' : 'false'">
+             :data-panel-open="panelKind ? 'true' : 'false'"
+             @focusin="onFrameFocusIn"
+             @focusout="onFrameFocusOut">
             <div class="chat-frame-side"
                  data-testid="frame-sidebar"
                  :aria-hidden="isSidebarHidden ? 'true' : undefined"
@@ -949,6 +951,22 @@
         }
     }
 
+    /**
+     * Focus that leaves New message or a room's details for nowhere, as a control that locks or
+     * goes away drops it, is owed to the next conversation that opens; focus the person puts
+     * anywhere in the chat pays it.
+     */
+    function onFrameFocusOut(event: FocusEvent): void {
+        const target = event.target as Element | null;
+        if (event.relatedTarget === null && target && isInViewOrDetails(target)) {
+            isFocusOwed = true;
+        }
+    }
+
+    function onFrameFocusIn(): void {
+        isFocusOwed = false;
+    }
+
     /** Says the outage is over, once, however many times the connection came and went. */
     function onBackOnline(): void {
         if (!notices.value.some(n => n.code === "back-online")) {
@@ -1206,6 +1224,11 @@
         return !!editing && editing.channelId === channelId && editing.isSaving;
     }
 
+    /** Whether an element is inside a full view in the conversation's place or the room's details. */
+    function isInViewOrDetails(element: Element): boolean {
+        return !!element.closest("[data-testid='main-view']") || !!element.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']");
+    }
+
     /** Focuses the composer of the conversation, or of the thread drawer for a root, once it is drawn. */
     function focusComposerIn(rootId: number | null): void {
         void nextTick(() => {
@@ -1338,8 +1361,7 @@
     watch(activeChannelId, (now, before) => {
         const active = document.activeElement;
         const root = rootElement.value;
-        const isFocusGoing = now !== before && !!active && !!root?.contains(active)
-            && (!!active.closest("[data-testid='main-view']") || !!active.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']"));
+        const isFocusGoing = now !== before && !!active && !!root?.contains(active) && isInViewOrDetails(active);
         if (!now) {
             isFocusOwed = isFocusOwed || isFocusGoing;
             return;
@@ -1363,7 +1385,7 @@
     // sync can bring before its door answers; focus they held is owed to what opens next.
     watch(() => !!(activeChannelId.value && activeFacts.value && activeKind.value), (isShown, wasShown) => {
         const active = document.activeElement;
-        if (wasShown && !isShown && !!active?.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']")) {
+        if (wasShown && !isShown && !!active && isInViewOrDetails(active)) {
             isFocusOwed = true;
         }
     });

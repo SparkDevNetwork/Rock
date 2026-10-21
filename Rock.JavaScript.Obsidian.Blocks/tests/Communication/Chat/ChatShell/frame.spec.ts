@@ -2727,6 +2727,29 @@ describe("New message", () => {
         expect(document.activeElement).toBe(w.get(target).element);
     });
 
+    test("the first message's conversation takes the focus its locked composer dropped while it started", async () => {
+        const w = await mountBlock(1200);
+        await openNewMessage(w);
+        Object.assign(directMessagesOf(), {
+            chosen: [annaPerson],
+            lookup: { status: "new", channelId: null, isSlow: false },
+            draft: { people: [annaPerson], status: "draft", body: "", channelGuid: null, phase: null }
+        });
+        await settle();
+        const editor = w.get("[data-testid='new-message-view'] [data-testid='composer-input']").element as HTMLElement;
+        editor.focus();
+
+        // the box locks as the message starts, and a browser drops the focus it held to the page
+        Object.assign(directMessagesOf().draft as Record<string, unknown>, { status: "starting", phase: "asking" });
+        await settle();
+        editor.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
+        editor.blur();
+        mockShell!.state.activeChannelId = dmAnna.channel_id;
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='composer-input']").element);
+    });
+
     test("the conversation found shows its last messages under its strip, drawn as its feed is and out of reach", async () => {
         const w = await mountBlock(1200);
         await openNewMessage(w);
