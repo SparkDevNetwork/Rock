@@ -3592,6 +3592,49 @@ describe("settings", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='composer-locked']").text()).toBe("Cedar Hill's chat is read only until 9.");
     });
 
+    test.each(["main", "thread", "draft"])("%s composer uses refreshed read only while its posting row is unchanged", async (site) => {
+        const w = await mountBlock(1200);
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(0, 1, { ...team, can_post: true, can_post_code: null, can_post_reason: null });
+        await openTeam(w);
+        let scope = "[data-testid='frame-main']";
+        if (site === "thread") {
+            timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2 }));
+            await settle();
+            await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+            scope = "[data-testid='frame-panel']";
+        }
+        else if (site === "draft") {
+            await w.get("[data-testid='new-message']").trigger("click");
+            Object.assign(directMessagesOf(), {
+                chosen: [annaPerson],
+                lookup: { status: "new", channelId: null, isSlow: false },
+                draft: { people: [annaPerson], status: "draft", body: "", channelGuid: null, phase: null }
+            });
+            scope = "[data-testid='new-message-view']";
+        }
+        await settle();
+        expect(w.find(`${scope} [data-testid='composer-locked']`).exists()).toBe(false);
+
+        // Only the refreshed settings change; the sidebar and the thread keep their old row.
+        Object.assign(mockShell!.state, {
+            isComposerOpen: false,
+            service: { state: "read_only", banner: "Chat is read only until 9." }
+        });
+        await settle();
+
+        expect(rows[0].can_post).toBe(true);
+        expect(w.get(`${scope} [data-testid='composer-locked']`).text()).toBe("Chat is read only until 9.");
+
+        Object.assign(mockShell!.state, { service: { state: "read_only", banner: null } });
+        await settle();
+        expect(w.get(`${scope} [data-testid='composer-locked']`).text()).toBe("Chat is read-only while we do some maintenance. You can read messages but not send them.");
+
+        Object.assign(mockShell!.state, { service: { state: "maintenance", banner: null } });
+        await settle();
+        expect(w.get(`${scope} [data-testid='composer-locked']`).text()).toBe("Sending is paused for maintenance.");
+    });
+
     test("the composer counts down to the row's limit, and a send over it is toasted", async () => {
         const w = await mountBlock(1200);
         const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;

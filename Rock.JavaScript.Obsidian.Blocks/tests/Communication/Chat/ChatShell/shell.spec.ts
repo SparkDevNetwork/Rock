@@ -117,7 +117,9 @@ function build(options: {
     prefsCalls: Array<Record<string, unknown>>,
     prefsAnswer: { value: { status: number, body: unknown } },
     deviceCalls: Array<{ name: string, body: Record<string, unknown> }>,
-    deviceAnswer: { value: { status: number, body: unknown } }
+    deviceAnswer: { value: { status: number, body: unknown } },
+    exchangeSettings: { value: Record<string, unknown> },
+    heldExchange: { value: Deferred<void> | null }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -154,6 +156,8 @@ function build(options: {
     // Every device register and unregister asked, and what an unregister answers.
     const deviceCalls: Array<{ name: string, body: Record<string, unknown> }> = [];
     const deviceAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: {} } };
+    const exchangeSettings = { value: options.pushSettings ? { push: options.pushSettings } as Record<string, unknown> : {} as Record<string, unknown> };
+    const heldExchange: { value: Deferred<void> | null } = { value: null };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -200,7 +204,8 @@ function build(options: {
         },
         fetch: async (url, init) => {
             if (url.endsWith("/functions/v1/token-exchange")) {
-                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: options.pushSettings ? { push: options.pushSettings } : undefined });
+                await heldExchange.value?.promise;
+                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value });
             }
             const body = JSON.parse(init.body as string);
             if (url.endsWith("/rest/v1/rpc/chat_register_device")) {
@@ -304,7 +309,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, deviceAnswer,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, deviceAnswer, exchangeSettings, heldExchange,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -2433,6 +2438,26 @@ describe("settings", () => {
         await settle();
         return h;
     }
+
+    test("a settings-only refresh carries read only independently of the unchanged posting row", async () => {
+        const row = { channel_id: channelA, channel_type: "shared", is_member: true, can_post: true, can_post_code: null, can_post_reason: null };
+        const h = await startedWith({ channels: [row], me: { unread_mentions: [] } });
+        const refresh = deferred<void>();
+        h.heldExchange.value = refresh;
+        h.exchangeSettings.value = { service: { state: "read_only", banner: "Chat is read only until 9." } };
+
+        personal(h, "session.recheck", {});
+        await settle();
+        expect(h.shell.state.isComposerOpen).toBe(true);
+        refresh.resolve();
+        await settle();
+
+        expect(h.shell.channels.rows[0]).toMatchObject({ can_post: true, can_post_code: null, can_post_reason: null });
+        expect(h.shell.state).toMatchObject({
+            isComposerOpen: false,
+            service: { state: "read_only", banner: "Chat is read only until 9." }
+        });
+    });
 
     test("the bootstrap's me is where the person's own switches start", async () => {
         const h = await startedWith({ channels: [], me: { show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } });
