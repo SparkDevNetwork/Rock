@@ -618,15 +618,15 @@
     import ProfileCard from "./ChatShell/components/profileCard.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
-    import { MessageActionRequest, MessageActionsState, quoteKey } from "./ChatShell/composables/useMessageActions.partial";
+    import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useJump } from "./ChatShell/composables/useJump.partial";
     import { followNotice, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
-    import { FeedLayout, isOwnMessage } from "./ChatShell/feedLayout.partial";
+    import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
-    import { ChannelFacts, ChatError, PersonProfile, SidebarRow, TimelineMessage } from "./ChatShell/types.partial";
+    import { ChannelFacts, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
@@ -862,6 +862,12 @@
     /** What the members panel, the remove confirm and Add people draw of the roster. */
     const { membersView, removeView, addView } = useMembersPanel({ shell, roomTitles, roomKinds, campuses: config.campuses ?? [] });
 
+    /** The quotes, the editor and the delete confirm, and where a message's bar and menu send their actions. */
+    const {
+        conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
+        editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete
+    } = useMessageActionsView({ shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker, openCard });
+
     /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
     const publicRooms = computed((): Record<string, boolean> => {
         const isPublic: Record<string, boolean> = {};
@@ -877,26 +883,6 @@
 
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
     const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
-
-    /** Where the conversation composer's quote waits. */
-    const conversationQuoteKey = computed((): string | null => activeChannelId.value ? quoteKey(activeChannelId.value) : null);
-
-    /** Where the open thread's quote waits, apart from its conversation's. */
-    const threadQuoteKey = computed((): string | null => drawnThread.value ? quoteKey(drawnThread.value.channelId, drawnThread.value.rootId) : null);
-
-    const conversationQuote = computed((): TimelineMessage | null => quoteAt(conversationQuoteKey.value));
-
-    const threadQuote = computed((): TimelineMessage | null => quoteAt(threadQuoteKey.value));
-
-    /** The message the delete confirm is open for, or null. */
-    const confirmingDelete = computed((): MessageActionsState["confirmingDelete"] => shell.value.messageActions.state.confirmingDelete);
-
-    /** Where the deleted message is removed from: a channel by its name, written with no "#", or this conversation. */
-    const deleteBody = computed((): string => {
-        const channelId = confirmingDelete.value?.channelId;
-        const where = channelId && roomKinds.value[channelId] === "channel" ? roomTitles.value[channelId] : "this conversation";
-        return `It will be removed for everyone in ${where}. You can't undo this.`;
-    });
 
     /**
      * The title New message's found strip names: the conversation's as the sidebar writes it, or
@@ -1094,95 +1080,6 @@
         }
     }
 
-    /** Up in the empty conversation composer: the newest message the person could edit opens in place. */
-    function onEditLast(): void {
-        if (activeChannelId.value) {
-            shell.value.messageActions.startEditNewest(activeChannelId.value);
-        }
-    }
-
-    /** Up in the empty thread composer: the newest of the person's replies in that thread opens in place. */
-    function onEditLastReply(): void {
-        const thread = drawnThread.value;
-        if (thread) {
-            shell.value.messageActions.startEditNewest(thread.channelId, thread.rootId);
-        }
-    }
-
-    function onCancelQuote(key: string | null): void {
-        if (key) {
-            shell.value.messageActions.cancelQuote(key);
-        }
-    }
-
-    /**
-     * A message's bar or menu asked for an action, in the conversation or, with its root, the open
-     * thread. A quote waits in the composer of the place it was asked in, which takes focus.
-     */
-    function onMessageAction(request: MessageActionRequest, rootId: number | null): void {
-        const channelId = rootId === null ? activeChannelId.value : drawnThread.value?.channelId ?? null;
-        if (!channelId) {
-            if (request.kind === "server") {
-                request.onSettled?.();
-            }
-            return;
-        }
-
-        const actions = shell.value.messageActions;
-        switch (request.kind) {
-            case "quote":
-                actions.startQuote(quoteKey(channelId, rootId), request.message);
-                focusComposerIn(rootId);
-                break;
-
-            case "edit":
-                actions.startEdit(channelId, request.message.id);
-                break;
-
-            // A closed editor hands focus back to the composer it was opened beside, so typing
-            // carries on there; a refused save keeps the editor and its focus.
-            case "saveEdit":
-                void actions.saveEdit(request.body).then(isSaved => {
-                    if (isSaved) {
-                        focusComposerIn(rootId);
-                    }
-                });
-                break;
-
-            case "cancelEdit":
-                actions.cancelEdit();
-                focusComposerIn(rootId);
-                break;
-
-            case "copy":
-                void actions.copy(request.message);
-                break;
-
-            case "delete":
-                actions.askDelete(channelId, request.message);
-                break;
-
-            case "server":
-                void actions.runAction(channelId, request.message.id, request.action).finally(() => request.onSettled?.());
-                break;
-
-            case "react":
-                void shell.value.reactions.toggleCode(channelId, request.message.id, request.code);
-                break;
-
-            case "openPicker":
-                openReactionPicker(channelId, request.message, request.anchor, request.opener);
-                break;
-
-            // the person is read for the room the author or chip was pressed in
-            case "person":
-                cardAnchor.value = request.anchor;
-                cardOpenCount.value++;
-                shell.value.rooms.openCard(request.personAliasGuid, channelId);
-                break;
-        }
-    }
-
     /** A composer's picker opened: its categories are fetched once for the page. */
     function onEmojiPickerOpen(): void {
         void shell.value.reactions.loadCatalog();
@@ -1190,18 +1087,6 @@
 
     function onEmojiChosen(code: string): void {
         shell.value.reactions.recordRecent(code);
-    }
-
-    function onCancelDelete(): void {
-        const messageId = confirmingDelete.value?.message.id ?? null;
-        shell.value.messageActions.cancelDelete();
-        refocusMessage(messageId);
-    }
-
-    function onConfirmDelete(): void {
-        const messageId = confirmingDelete.value?.message.id ?? null;
-        void shell.value.messageActions.confirmDelete();
-        refocusMessage(messageId);
     }
 
     function onRetry(localId: string): void {
@@ -1266,9 +1151,7 @@
 
         // Safari leaves a pressed button unfocused, and the card hands focus back to what held it.
         row.focus({ preventScroll: true });
-        cardAnchor.value = row;
-        cardOpenCount.value++;
-        shell.value.rooms.openCard(personAliasGuid, channelId);
+        openCard(row, personAliasGuid, channelId);
     }
 
     /** The details dialog's member count: the dialog gives way to the members panel, which takes focus. */
@@ -1283,22 +1166,11 @@
 
     // #region Functions
 
-    /** The message open in the editor when it belongs to a conversation, else null. */
-    function editingIdIn(channelId: string | null): number | null {
-        const editing = shell.value.messageActions.state.editing;
-        return editing && editing.channelId === channelId ? editing.messageId : null;
-    }
-
-    /** The refusal the open editor's last save met, when the editor belongs to a conversation. */
-    function editErrorIn(channelId: string | null): ChatError | null {
-        const editing = shell.value.messageActions.state.editing;
-        return editing && editing.channelId === channelId ? editing.error : null;
-    }
-
-    /** Whether the open editor's save is out, when the editor belongs to a conversation. */
-    function isEditSavingIn(channelId: string | null): boolean {
-        const editing = shell.value.messageActions.state.editing;
-        return !!editing && editing.channelId === channelId && editing.isSaving;
+    /** Opens a person's card for a room beside what asked, drawn afresh each time. */
+    function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {
+        cardAnchor.value = anchor;
+        cardOpenCount.value++;
+        shell.value.rooms.openCard(personAliasGuid, channelId);
     }
 
     /** Whether an element is inside a full view in the conversation's place or the room's details. */
@@ -1306,38 +1178,10 @@
         return !!element.closest("[data-testid='main-view']") || !!element.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']");
     }
 
-    /** Focuses the composer of the conversation, or of the thread drawer for a root, once it is drawn. */
-    function focusComposerIn(rootId: number | null): void {
-        void nextTick(() => {
-            const place = rootId === null ? rootElement.value?.querySelector("[data-testid='frame-main']") : panelElement.value;
-            place?.querySelector<HTMLElement>("[data-testid='composer-input']")?.focus();
-        });
-    }
-
     /** Whether the person is reading a channel they have not joined, where they cannot act on its messages. */
     function isPreviewingRoom(channelId: string): boolean {
         const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
         return !!row && !row.is_member;
-    }
-
-    /**
-     * The dialog gives focus back to the More button that opened it, but that button leaves with its
-     * bar, at once when focus moved into the dialog, or once a mouse's pointer has gone from the
-     * message, so focus goes to the message itself instead. Focus on the dialog's own buttons or on
-     * a message's bar is not kept: the dialog stays on the page while it fades out, the bar may
-     * leave a moment later, and either leaving would drop focus to the page.
-     */
-    function refocusMessage(messageId: number | null): void {
-        void nextTick(() => {
-            const root = rootElement.value;
-            const active = document.activeElement;
-            const isFocusKept = !!active && root?.contains(active) && !active.closest("[role='dialog'], [role='toolbar']");
-            if (messageId === null || !root || isFocusKept) {
-                return;
-            }
-
-            root.querySelector<HTMLElement>(`[data-message-id='${messageId}'], [data-reply-id='${messageId}']`)?.focus({ preventScroll: true });
-        });
     }
 
     /**
@@ -1357,16 +1201,6 @@
         void nextTick(() => {
             landingMessageId.value = messageId;
         });
-    }
-
-    /** The message quoted under a key, if any. */
-    function quoteAt(key: string | null): TimelineMessage | null {
-        return key ? shell.value.messageActions.state.quotes[key] ?? null : null;
-    }
-
-    /** Whether a quote is the person's own, under any of their aliases when the page said so. */
-    function isOwnQuote(quote: TimelineMessage | null): boolean {
-        return !!quote && isOwnMessage(quote, personAliasGuid.value);
     }
 
     /** A message id the worker posted as a string, or null when it is not one. */
