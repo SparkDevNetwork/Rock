@@ -1,0 +1,518 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-pk" :class="{ 'is-inline': isInline }">
+        <div class="chat-pk-field" @mousedown="onFieldMousedown">
+            <span :id="labelId" class="chat-pk-label" :data-testid="labelTestId">{{ label }}</span>
+            <span class="chat-pk-chips" role="list" aria-label="Chosen people">
+                <span v-for="person in chosen"
+                      :key="person.person_alias_guid"
+                      class="chat-pk-chip"
+                      :class="{ 'is-new': newChipId === person.person_alias_guid }"
+                      role="listitem"
+                      :data-testid="`${prefix}-chip`">
+                    <Avatar :people="[faceOf(person)]" :size="22" />
+                    <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
+                    <button type="button"
+                            class="chat-pk-x"
+                            :aria-label="`Remove ${nameOf(person)}`"
+                            :disabled="isDisabled"
+                            :data-testid="`${prefix}-chip-remove`"
+                            @click="unchoose(person)">
+                        <Icon name="x" size="xs" />
+                    </button>
+                </span>
+            </span>
+            <input ref="inputElement"
+                   class="chat-pk-input"
+                   type="text"
+                   role="combobox"
+                   aria-autocomplete="list"
+                   :aria-expanded="isListOpen ? 'true' : 'false'"
+                   :aria-controls="listId"
+                   :aria-labelledby="labelId"
+                   :aria-describedby="noteId"
+                   :aria-activedescendant="activeOptionId"
+                   autocomplete="off"
+                   spellcheck="false"
+                   :placeholder="chosen.length > 0 ? '' : placeholder"
+                   :value="query"
+                   :disabled="isDisabled"
+                   :data-autofocus="isAutofocus ? '' : undefined"
+                   :data-testid="inputTestId"
+                   @input="onInput"
+                   @focus="isFocused = true; isListClosed = false"
+                   @blur="isFocused = false"
+                   @keydown="onKeydown" />
+            <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
+        </div>
+
+        <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
+        <div v-if="isListOpen"
+             :id="listId"
+             class="chat-pk-list"
+             role="listbox"
+             aria-label="People"
+             :data-testid="listTestId"
+             @mousedown.prevent>
+            <template v-if="!isDisabled">
+                <div v-if="isFull" class="chat-pk-msg" :data-testid="`${prefix}-cap`"><Icon name="info" size="xs" />{{ capText }}</div>
+                <template v-else-if="query.trim()">
+                    <div v-if="searchError" class="chat-pk-msg is-error" :data-testid="`${prefix}-search-error`">{{ searchError }}</div>
+                    <div v-else-if="results === null" class="chat-pk-msg" :data-testid="`${prefix}-searching`">Searching…</div>
+                    <div v-else-if="options.length === 0" class="chat-pk-msg" :data-testid="`${prefix}-none`">{{ noneText }}</div>
+                    <div v-for="(option, index) in options"
+                         v-else
+                         :id="optionId(option.person)"
+                         :key="option.person.person_alias_guid"
+                         class="chat-pk-opt"
+                         :class="{ 'is-active': index === activeIndex }"
+                         role="option"
+                         :aria-selected="index === activeIndex ? 'true' : 'false'"
+                         :aria-disabled="option.why ? 'true' : undefined"
+                         :data-person="option.person.person_alias_guid"
+                         :data-testid="`${prefix}-option`"
+                         @mousedown.prevent="choose(option.person)"
+                         @mouseenter="onOptionEnter(index)">
+                        <Avatar :people="[faceOf(option.person)]" :size="32" />
+                        <span class="chat-pk-o-main">
+                            <b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b>
+                            <span v-if="option.why" class="chat-pk-why" :data-testid="`${prefix}-option-why`">{{ option.why }}</span>
+                            <span v-else-if="option.campus" :data-testid="`${prefix}-option-campus`">{{ option.campus }}</span>
+                        </span>
+                        <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                    </div>
+                </template>
+                <div v-else class="chat-pk-msg" :data-testid="`${prefix}-idle`">{{ idleText }}</div>
+            </template>
+        </div>
+
+        <!-- Read with the field it describes; its news is told in the owner's live region. -->
+        <div :id="noteId" class="chat-pk-note" :data-testid="`${prefix}-note`">{{ note }}</div>
+    </div>
+</template>
+
+<style scoped>
+/* The sheet draws the picker's parts; an inline label gives up its fixed width beside "Add". */
+.chat-pk.is-inline .chat-pk-label {
+    min-width: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Avatar, { AvatarPerson } from "./avatar.partial.obs";
+    import Icon from "./icon.partial.obs";
+    import { PersonRow } from "../types.partial";
+
+    // #region Types
+
+    /** A person found as drawn: the name split around the part matched, and why they cannot be picked or their campus. */
+    type Option = {
+        person: PersonRow;
+        before: string;
+        match: string;
+        after: string;
+        why: string;
+        campus: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The people chosen so far, in the order they were chosen; the owner keeps them. */
+        chosen: {
+            type: Array as PropType<PersonRow[]>,
+            required: true
+        },
+
+        /** The name as typed; the owner keeps it and runs the search after its pause. */
+        query: {
+            type: String,
+            default: ""
+        },
+
+        /** The search's answer for the name, or null before one comes. */
+        results: {
+            type: Array as PropType<PersonRow[] | null>,
+            default: null
+        },
+
+        /** Whether the pause is running or its search has not answered. */
+        isSearching: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why the last search failed, said in the list it would have filled; null for none. */
+        searchError: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The most people that can be chosen. */
+        max: {
+            type: Number,
+            required: true
+        },
+
+        /** Nothing can be chosen or taken out while the owner's work is under way. */
+        isDisabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Inline, the list is always under the field, saying what to type and when the cap is
+         * reached; otherwise it opens over the page only while a name is typed in the focused field.
+         */
+        isInline: {
+            type: Boolean,
+            default: false
+        },
+
+        label: {
+            type: String,
+            required: true
+        },
+
+        placeholder: {
+            type: String,
+            default: ""
+        },
+
+        /** Whether the field takes the view's first focus. */
+        isAutofocus: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Marks the part of each name the text typed matched. */
+        isMatchMarked: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why someone the search marks as in the room cannot be picked; null when no one is marked. */
+        inRoomReason: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        noneText: {
+            type: String,
+            default: ""
+        },
+
+        /** What an inline list says before a name is typed. */
+        idleText: {
+            type: String,
+            default: ""
+        },
+
+        /** What an inline list says once the cap is reached. */
+        capText: {
+            type: String,
+            default: ""
+        },
+
+        /** The line under the field, which the field is described by. */
+        note: {
+            type: String,
+            default: ""
+        },
+
+        /** The church's campus names by guid in lower case, which name each person's campus. */
+        campusNames: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        /** What every mark the picker draws starts with, so each owner's marks stay its own. */
+        prefix: {
+            type: String,
+            required: true
+        },
+
+        labelTestId: {
+            type: String as PropType<string | undefined>,
+            default: undefined
+        },
+
+        inputTestId: {
+            type: String,
+            required: true
+        },
+
+        listTestId: {
+            type: String,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "input", text: string): void;
+        (e: "choose", person: PersonRow): void;
+        (e: "unchoose", person: PersonRow): void;
+        /** Enter on an empty field. */
+        (e: "submit"): void;
+        /** Enter on a name at the cap. */
+        (e: "full"): void;
+        /** Enter on a name no one can be picked for, with the name. */
+        (e: "noMatch", text: string): void;
+        /** Tab, which the owner may take to move on. */
+        (e: "tab", event: KeyboardEvent): void;
+        /** Escape that no open list took. */
+        (e: "escape", event: KeyboardEvent): void;
+        /** A sentence for the owner's live region. */
+        (e: "announce", text: string): void;
+    }>();
+
+    // #region Values
+
+    const inputElement = ref<HTMLInputElement>();
+
+    /** The option Enter would pick, by its place in the list. */
+    const activeIndex = ref(0);
+
+    const isFocused = ref(false);
+
+    /** Escape or a pick closed the list; typing opens it again. */
+    const isListClosed = ref(false);
+
+    /** An Enter pressed before the answer came, which picks from it once it does. */
+    const isEnterWaiting = ref(false);
+
+    /** The person chosen last, whose chip plays its way in. */
+    const newChipId = ref<string | null>(null);
+
+    const idBase = `chat-pk-${newGuid()}`;
+    const labelId = `${idBase}-label`;
+    const listId = `${idBase}-list`;
+    const noteId = `${idBase}-note`;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isFull = computed((): boolean => props.chosen.length >= props.max);
+
+    /** The answer, less the people already chosen, those who cannot be picked last. */
+    const options = computed((): Option[] => {
+        const needle = props.isMatchMarked ? props.query.trim().toLowerCase() : "";
+        const picked = new Set(props.chosen.map(person => person.person_alias_guid));
+        return (props.results ?? [])
+            .filter(person => !picked.has(person.person_alias_guid))
+            .map(person => {
+                const name = nameOf(person);
+                const at = matchAt(name.toLowerCase(), needle);
+                return {
+                    person,
+                    before: at < 0 ? name : name.slice(0, at),
+                    match: at < 0 ? "" : name.slice(at, at + needle.length),
+                    after: at < 0 ? "" : name.slice(at + needle.length),
+                    why: person.in_room && props.inRoomReason ? props.inRoomReason : "",
+                    campus: campusOf(person)
+                };
+            })
+            .sort((a, b) => Number(!!a.why) - Number(!!b.why));
+    });
+
+    /** Inline, always; else on text typed in the focused field, and not once the cap is reached. */
+    const isListOpen = computed((): boolean => props.isInline || (isFocused.value
+        && !isListClosed.value
+        && !props.isDisabled
+        && props.query.trim() !== ""
+        && !isFull.value));
+
+    const activeOptionId = computed((): string | undefined => {
+        const option = isListOpen.value ? options.value[activeIndex.value] : undefined;
+        return option && !option.why ? optionId(option.person) : undefined;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** A press on the field's empty space puts the caret in the search, as a text field would. */
+    function onFieldMousedown(event: MouseEvent): void {
+        if (!(event.target as HTMLElement).closest("button, input")) {
+            event.preventDefault();
+            inputElement.value?.focus();
+        }
+    }
+
+    function onInput(event: Event): void {
+        const text = (event.target as HTMLInputElement).value;
+        activeIndex.value = 0;
+        isListClosed.value = false;
+        if (text.trim() === "") {
+            isEnterWaiting.value = false;
+        }
+        emit("input", text);
+    }
+
+    function onOptionEnter(index: number): void {
+        if (!options.value[index]?.why) {
+            activeIndex.value = index;
+        }
+    }
+
+    /**
+     * Up and Down move among the people who can be picked. Enter with a name only ever picks
+     * someone, waiting for the answer when the search is out, so a half-typed name is never taken
+     * as the owner's next step; Enter on an empty field is that step. Backspace on an empty field
+     * takes out the last chip, and Escape closes an open list before anything behind it closes.
+     */
+    function onKeydown(event: KeyboardEvent): void {
+        const enabled = options.value.map((option, index) => option.why ? -1 : index).filter(index => index >= 0);
+
+        if ((event.key === "ArrowDown" || event.key === "ArrowUp") && isListOpen.value && !isFull.value && enabled.length > 0) {
+            event.preventDefault();
+            const at = enabled.indexOf(activeIndex.value);
+            const step = event.key === "ArrowDown" ? 1 : -1;
+            activeIndex.value = enabled[at < 0 ? 0 : (at + step + enabled.length) % enabled.length];
+        }
+        else if (event.key === "Enter") {
+            event.preventDefault();
+            if (props.query.trim() === "") {
+                emit("submit");
+            }
+            else if (props.isSearching) {
+                isEnterWaiting.value = true;
+            }
+            else {
+                pickWithText();
+            }
+        }
+        else if (event.key === "Tab") {
+            emit("tab", event);
+        }
+        else if (event.key === "Backspace" && !props.query && props.chosen.length > 0) {
+            event.preventDefault();
+            unchoose(props.chosen[props.chosen.length - 1]);
+        }
+        else if (event.key === "Escape") {
+            if (!props.isInline && isListOpen.value) {
+                // Stopped here so nothing behind the picker closes with it.
+                event.preventDefault();
+                event.stopPropagation();
+                isListClosed.value = true;
+            }
+            else {
+                emit("escape", event);
+            }
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function nameOf(person: PersonRow): string {
+        return `${person.nick_name ?? ""} ${person.last_name ?? ""}`.trim() || "Someone";
+    }
+
+    function faceOf(person: PersonRow): AvatarPerson {
+        return { name: nameOf(person), photoUrl: person.avatar_url };
+    }
+
+    /** The campus, which the search sends only for a person who shows their details. */
+    function campusOf(person: PersonRow): string {
+        return person.campus_id ? props.campusNames[person.campus_id.toLowerCase()] ?? "" : "";
+    }
+
+    function optionId(person: PersonRow): string {
+        return `${idBase}-o-${person.person_alias_guid}`;
+    }
+
+    /** Where the text typed starts in a name: its start, else a word's start, else anywhere. */
+    function matchAt(name: string, needle: string): number {
+        if (!needle) {
+            return -1;
+        }
+
+        if (name.startsWith(needle)) {
+            return 0;
+        }
+
+        const word = name.indexOf(` ${needle}`);
+        return word < 0 ? name.indexOf(needle) : word + 1;
+    }
+
+    /** Picks the option marked, else the first that can be picked; the owner says why when none can. */
+    function pickWithText(): void {
+        if (isFull.value) {
+            emit("full");
+            return;
+        }
+
+        const active = options.value[activeIndex.value];
+        const person = active && !active.why ? active.person : options.value.find(option => !option.why)?.person;
+        if (person) {
+            choose(person);
+        }
+        else {
+            emit("noMatch", props.query.trim());
+        }
+    }
+
+    /** Picks someone who can be picked, closing the list until the next name is typed. */
+    function choose(person: PersonRow): void {
+        const isPicked = props.chosen.some(p => p.person_alias_guid === person.person_alias_guid);
+        if (isPicked || (person.in_room && props.inRoomReason) || isFull.value || props.isDisabled) {
+            return;
+        }
+
+        isListClosed.value = true;
+        activeIndex.value = 0;
+        newChipId.value = person.person_alias_guid;
+        emit("choose", person);
+        if (document.activeElement !== inputElement.value) {
+            inputElement.value?.focus({ preventScroll: true });
+        }
+    }
+
+    function unchoose(person: PersonRow): void {
+        newChipId.value = null;
+        emit("unchoose", person);
+    }
+
+    /** Puts the caret in the search. */
+    function focus(): void {
+        inputElement.value?.focus({ preventScroll: true });
+    }
+
+    function hasFocus(): boolean {
+        return !!inputElement.value && document.activeElement === inputElement.value;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // An answer moves the mark to its first person. An Enter that was waiting for it picks from it;
+    // otherwise what it found is said. A failed search says so through its owner.
+    watch(() => props.results, results => {
+        activeIndex.value = 0;
+        if (!results || props.searchError) {
+            isEnterWaiting.value = false;
+            return;
+        }
+
+        if (isEnterWaiting.value) {
+            isEnterWaiting.value = false;
+            pickWithText();
+            return;
+        }
+
+        if (props.query.trim()) {
+            const count = options.value.filter(option => !option.why).length;
+            emit("announce", count ? `${count} ${count === 1 ? "person" : "people"} found` : "No one found");
+        }
+    });
+
+    // #endregion Watchers
+
+    defineExpose({ focus, hasFocus });
+</script>

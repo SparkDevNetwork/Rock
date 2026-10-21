@@ -29,86 +29,33 @@
         </header>
 
         <div class="chat-nd-to">
-            <div class="chat-pk">
-                <div class="chat-pk-field" @mousedown="onFieldMousedown">
-                    <span :id="labelId" class="chat-pk-label" data-testid="nd-to-label">To:</span>
-                    <span class="chat-pk-chips" role="list" aria-label="Chosen people">
-                        <span v-for="person in chosen"
-                              :key="person.person_alias_guid"
-                              class="chat-pk-chip"
-                              :class="{ 'is-new': newChipId === person.person_alias_guid }"
-                              role="listitem"
-                              data-testid="nd-chip">
-                            <Avatar :people="[faceOf(person)]" :size="22" />
-                            <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
-                            <button type="button"
-                                    class="chat-pk-x"
-                                    :aria-label="`Remove ${nameOf(person)}`"
-                                    :disabled="isLocked"
-                                    data-testid="nd-chip-remove"
-                                    @click="unchoose(person)">
-                                <Icon name="x" size="xs" />
-                            </button>
-                        </span>
-                    </span>
-                    <input ref="inputElement"
-                           class="chat-pk-input"
-                           type="text"
-                           role="combobox"
-                           aria-autocomplete="list"
-                           :aria-expanded="isListOpen ? 'true' : 'false'"
-                           :aria-controls="listId"
-                           :aria-labelledby="labelId"
-                           :aria-describedby="noteId"
-                           :aria-activedescendant="activeOptionId"
-                           autocomplete="off"
-                           spellcheck="false"
-                           :placeholder="chosen.length > 0 ? '' : 'Type a name'"
-                           :value="query"
-                           :disabled="isLocked"
-                           :data-autofocus="isFieldFocusedFirst ? '' : undefined"
-                           data-testid="nd-to-input"
-                           @input="onInput"
-                           @focus="isFocused = true; isListClosed = false"
-                           @blur="isFocused = false"
-                           @keydown="onKeydown" />
-                    <span v-if="isSearching" class="chat-pk-busy"><span class="chat-spinner"></span></span>
-                </div>
-
-                <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
-                <div v-if="isListOpen"
-                     :id="listId"
-                     class="chat-pk-list"
-                     role="listbox"
-                     aria-label="People"
-                     data-testid="nd-suggestions"
-                     @mousedown.prevent>
-                    <div v-if="searchError" class="chat-pk-msg is-error" data-testid="nd-search-error">{{ searchError }}</div>
-                    <div v-else-if="results === null" class="chat-pk-msg" data-testid="nd-searching">Searching…</div>
-                    <div v-else-if="options.length === 0" class="chat-pk-msg" data-testid="nd-none">No one found for “{{ query.trim() }}”. Can't find someone? They may not accept messages from everyone.</div>
-                    <div v-for="(option, index) in options"
-                         v-else
-                         :id="optionId(option.person)"
-                         :key="option.person.person_alias_guid"
-                         class="chat-pk-opt"
-                         :class="{ 'is-active': index === activeIndex }"
-                         role="option"
-                         :aria-selected="index === activeIndex ? 'true' : 'false'"
-                         data-testid="nd-option"
-                         @mousedown.prevent="pick(option.person)"
-                         @mouseenter="activeIndex = index">
-                        <Avatar :people="[faceOf(option.person)]" :size="32" />
-                        <span class="chat-pk-o-main">
-                            <b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b>
-                            <span v-if="option.campus" data-testid="nd-option-campus">{{ option.campus }}</span>
-                        </span>
-                        <span class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
-                    </div>
-                </div>
-
-                <!-- Read with the field it describes; its news is told once, in the view's one live region. -->
-                <div :id="noteId" class="chat-pk-note" data-testid="nd-note">{{ note }}</div>
-            </div>
+            <PeoplePicker ref="pickerElement"
+                          :chosen="chosen"
+                          :query="query"
+                          :results="results"
+                          :isSearching="isSearching"
+                          :searchError="searchError"
+                          :max="maxOthers"
+                          :isDisabled="isLocked"
+                          label="To:"
+                          placeholder="Type a name"
+                          :isAutofocus="isFieldFocusedFirst"
+                          isMatchMarked
+                          :noneText="noneText"
+                          :note="note"
+                          :campusNames="campusNames"
+                          prefix="nd"
+                          labelTestId="nd-to-label"
+                          inputTestId="nd-to-input"
+                          listTestId="nd-suggestions"
+                          @input="onInput"
+                          @choose="onChoose"
+                          @unchoose="unchoose"
+                          @submit="onSubmit"
+                          @noMatch="onNoMatch"
+                          @tab="onTab"
+                          @escape="onEscape"
+                          @announce="announce" />
         </div>
 
         <div class="chat-nd-body">
@@ -641,21 +588,7 @@
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-
-    // #region Types
-
-    /** A person found, with their name split around the part the search matched. */
-    type Option = {
-        person: PersonRow;
-        before: string;
-        match: string;
-        after: string;
-
-        /** The person's campus by its name, only when they show their details; empty otherwise. */
-        campus: string;
-    };
-
-    // #endregion Types
+    import PeoplePicker from "../ui/peoplePicker.partial.obs";
 
     const props = defineProps({
         /** The people chosen so far, in the order they were chosen. */
@@ -748,9 +681,6 @@
     // #region Values
 
     const titleId = `chat-nd-title-${newGuid()}`;
-    const labelId = `chat-nd-label-${newGuid()}`;
-    const listId = `chat-nd-list-${newGuid()}`;
-    const noteId = `chat-nd-note-${newGuid()}`;
 
     /**
      * How long typing must pause before the search goes out, an estimate. A search per keystroke
@@ -759,7 +689,7 @@
     const searchPauseMs = 250;
 
     const viewElement = ref<HTMLElement>();
-    const inputElement = ref<HTMLInputElement>();
+    const pickerElement = ref<InstanceType<typeof PeoplePicker>>();
 
     const query = ref("");
 
@@ -769,25 +699,11 @@
     /** Why the last search for the text typed failed, in the platform's words, or null. */
     const searchError = ref<string | null>(null);
 
-    /** The option Enter would pick, by its place in the list. */
-    const activeIndex = ref(0);
-
-    const isFocused = ref(false);
-
-    /** Escape or a pick closed the list; typing opens it again. */
-    const isListClosed = ref(false);
-
     /** Whether the pause is running or its search has not answered. */
     const isSearching = ref(false);
 
-    /** An Enter pressed before the answer came, which picks from it once it does. */
-    const isEnterWaiting = ref(false);
-
     /** "No one to message for …", shown in the note until the text changes. */
     const noOneText = ref<string | null>(null);
-
-    /** The person chosen last, whose chip plays its way in. */
-    const newChipId = ref<string | null>(null);
 
     /** The text of the message sent, which the pending message draws while the box moves on. */
     const sentText = ref<string | null>(null);
@@ -854,35 +770,12 @@
 
     const foundFaces = computed((): AvatarPerson[] => props.chosen.slice(0, props.chosen.length === 1 ? 1 : 2).map(faceOf));
 
-    /** The answer, less the people already chosen, each with its match marked. */
-    const options = computed((): Option[] => {
-        const needle = query.value.trim().toLowerCase();
-        return (results.value ?? [])
-            .filter(person => !props.chosen.some(chosen => chosen.person_alias_guid === person.person_alias_guid))
-            .map(person => {
-                const name = nameOf(person);
-                const at = matchAt(name.toLowerCase(), needle);
-                return {
-                    person,
-                    before: at < 0 ? name : name.slice(0, at),
-                    match: at < 0 ? "" : name.slice(at, at + needle.length),
-                    after: at < 0 ? "" : name.slice(at + needle.length),
-                    campus: campusOf(person)
-                };
-            });
-    });
+    /** The church's campus names by guid in lower case, which name the campus under each person found. */
+    const campusNames = computed((): Record<string, string> => Object.fromEntries(props.campuses
+        .filter(campus => campus.guid)
+        .map(campus => [campus.guid!.toLowerCase(), campus.name ?? ""])));
 
-    /** The list opens on text typed, never on an empty field, and not once the conversation is full. */
-    const isListOpen = computed((): boolean => isFocused.value
-        && !isListClosed.value
-        && !isLocked.value
-        && query.value.trim() !== ""
-        && props.chosen.length < maxOthers);
-
-    const activeOptionId = computed((): string | undefined => {
-        const option = isListOpen.value ? options.value[activeIndex.value] : undefined;
-        return option ? optionId(option.person) : undefined;
-    });
+    const noneText = computed((): string => `No one found for “${query.value.trim()}”. Can't find someone? They may not accept messages from everyone.`);
 
     const note = computed((): string => {
         if (noOneText.value) {
@@ -910,17 +803,9 @@
 
     // #region Event Handlers
 
-    /** A press on the field's empty space puts the caret in the input, as a text field would. */
-    function onFieldMousedown(event: MouseEvent): void {
-        if (!(event.target as HTMLElement).closest("button, input")) {
-            event.preventDefault();
-            inputElement.value?.focus();
-        }
-    }
-
-    function onInput(event: Event): void {
-        query.value = (event.target as HTMLInputElement).value;
-        isListClosed.value = false;
+    /** The name typed: its search goes out once typing pauses. */
+    function onInput(typed: string): void {
+        query.value = typed;
         noOneText.value = null;
         cancelSearch();
         const thisSearch = ++searchCount;
@@ -930,7 +815,6 @@
             results.value = null;
             searchError.value = null;
             isSearching.value = false;
-            isEnterWaiting.value = false;
             return;
         }
 
@@ -949,75 +833,47 @@
                 return;
             }
 
-            // A failed search says so in the list it would have filled, until the next answer.
+            // A failed search says so in the list it would have filled, until the next answer;
+            // the picker says what an answer found, or picks from it for an Enter that waited.
             isSearching.value = false;
             searchError.value = failure;
             results.value = rows;
             if (failure) {
-                isEnterWaiting.value = false;
                 announce(failure);
-                return;
             }
-            activeIndex.value = 0;
-
-            if (isEnterWaiting.value) {
-                isEnterWaiting.value = false;
-                pickWithText();
-                return;
-            }
-
-            const count = options.value.length;
-            announce(count ? `${count} ${count === 1 ? "person" : "people"} found` : "No one found");
         }, searchPauseMs);
     }
 
-    function onKeydown(event: KeyboardEvent): void {
-        const hasText = query.value.trim() !== "";
+    /** Enter on an empty To field moves to the message, or at the cap says it is reached. */
+    function onSubmit(): void {
+        if (props.chosen.length >= maxOthers) {
+            // The note already says how to move on; focus stays so it is read.
+            announce(`${maxOthers} people is the most for one conversation.`);
+        }
+        else if (props.chosen.length > 0) {
+            focusEditor();
+        }
+    }
 
-        if ((event.key === "ArrowDown" || event.key === "ArrowUp") && isListOpen.value && options.value.length > 0) {
-            event.preventDefault();
-            const step = event.key === "ArrowDown" ? 1 : -1;
-            activeIndex.value = (activeIndex.value + step + options.value.length) % options.value.length;
-        }
-        else if (event.key === "Enter") {
-            // Enter with text only ever picks someone, so a half-typed name is never sent as the message.
-            event.preventDefault();
-            if (hasText) {
-                if (isSearching.value) {
-                    isEnterWaiting.value = true;
-                }
-                else {
-                    pickWithText();
-                }
-            }
-            else if (props.chosen.length >= maxOthers) {
-                // The note already says how to move on; focus stays so it is read.
-                announce(`${maxOthers} people is the most for one conversation.`);
-            }
-            else if (props.chosen.length > 0) {
-                focusEditor();
-            }
-        }
-        else if (event.key === "Tab" && !event.shiftKey && props.chosen.length > 0 && editorElement()) {
-            // The next field is the message, not the emoji button that sits before it.
+    /** Enter on a name no one matched: the note says so until the text changes. */
+    function onNoMatch(text: string): void {
+        noOneText.value = `No one to message for “${text}”`;
+        announce(`No one to message for ${text}`);
+    }
+
+    /** The next field is the message, not the emoji button that sits before it. */
+    function onTab(event: KeyboardEvent): void {
+        if (!event.shiftKey && props.chosen.length > 0 && editorElement()) {
             event.preventDefault();
             focusEditor();
         }
-        else if (event.key === "Backspace" && !query.value && props.chosen.length > 0) {
-            event.preventDefault();
-            unchoose(props.chosen[props.chosen.length - 1]);
-        }
-        else if (event.key === "Escape") {
-            // Stopped here so nothing behind the view closes with it.
-            if (isListOpen.value) {
-                event.preventDefault();
-                event.stopPropagation();
-                isListClosed.value = true;
-            }
-            else if (props.chosen.length === 0) {
-                event.stopPropagation();
-                emit("close");
-            }
+    }
+
+    /** Escape with the list closed and no one chosen closes the view, stopped so nothing behind it closes too. */
+    function onEscape(event: KeyboardEvent): void {
+        if (props.chosen.length === 0) {
+            event.stopPropagation();
+            emit("close");
         }
     }
 
@@ -1031,7 +887,7 @@
             // A phone's keyboard would cover the start block the person has not read yet, and a
             // person already typing in the To field keeps their place there.
             nextTick(() => {
-                if (!props.isPhone && document.activeElement !== inputElement.value) {
+                if (!props.isPhone && !pickerElement.value?.hasFocus()) {
                     focusEditor();
                 }
             });
@@ -1062,60 +918,18 @@
         return `${person.nick_name} ${person.last_name}`;
     }
 
-    /** A person's campus by its name, as the church lists it; the search sends it only for a person who shows their details. */
-    function campusOf(person: PersonRow): string {
-        const id = person.campus_id?.toLowerCase();
-        return id ? props.campuses.find(campus => campus.guid?.toLowerCase() === id)?.name ?? "" : "";
-    }
-
     function faceOf(person: PersonRow): AvatarPerson {
         return { name: nameOf(person), photoUrl: person.avatar_url };
     }
 
-    function optionId(person: PersonRow): string {
-        return `${listId}-${person.person_alias_guid}`;
-    }
-
-    /** Where the text typed starts in a name: its start, else a word's start, else anywhere. */
-    function matchAt(name: string, needle: string): number {
-        if (!needle) {
-            return -1;
-        }
-
-        if (name.startsWith(needle)) {
-            return 0;
-        }
-
-        const word = name.indexOf(` ${needle}`);
-        return word < 0 ? name.indexOf(needle) : word + 1;
-    }
-
-    /** Picks the option marked, else the first; with no one found, the note says so. */
-    function pickWithText(): void {
-        if (props.chosen.length >= maxOthers) {
-            return;
-        }
-
-        const option = options.value[activeIndex.value] ?? options.value[0];
-        if (option) {
-            pick(option.person);
-            return;
-        }
-
-        noOneText.value = `No one to message for “${query.value.trim()}”`;
-        announce(`No one to message for ${query.value.trim()}`);
-    }
-
-    function pick(person: PersonRow): void {
+    /** A person picked: the name and its search are cleared for the next. */
+    function onChoose(person: PersonRow): void {
         cancelSearch();
         searchCount++;
         query.value = "";
         results.value = null;
         searchError.value = null;
         isSearching.value = false;
-        isListClosed.value = true;
-        activeIndex.value = 0;
-        newChipId.value = person.person_alias_guid;
         // Counted before the choice goes out, since the owner may add the person to the same list
         // before this reads it again.
         const count = props.chosen.length + 1;
@@ -1178,7 +992,7 @@
         }
 
         await nextTick();
-        inputElement.value?.focus({ preventScroll: true });
+        pickerElement.value?.focus();
     });
 
     // #endregion Watchers

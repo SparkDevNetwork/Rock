@@ -12,91 +12,34 @@
 
             <p class="chat-ap-sub" data-testid="ap-sub">{{ subtitle }}</p>
 
-            <div class="chat-pk is-inline">
-                <div class="chat-pk-field" @mousedown="onFieldMousedown">
-                    <span :id="labelId" class="chat-pk-label">Add</span>
-                    <span class="chat-pk-chips" role="list" aria-label="Chosen people">
-                        <span v-for="person in chosen"
-                              :key="person.person_alias_guid"
-                              class="chat-pk-chip"
-                              :class="{ 'is-new': newChipId === person.person_alias_guid }"
-                              role="listitem"
-                              data-testid="ap-chip">
-                            <Avatar :people="[faceOf(person)]" :size="22" />
-                            <span class="chat-pk-chip-n">{{ nameOf(person) }}</span>
-                            <button type="button"
-                                    class="chat-pk-x"
-                                    :aria-label="`Remove ${nameOf(person)}`"
-                                    :disabled="isAdding"
-                                    data-testid="ap-chip-remove"
-                                    @click="unchoose(person)">
-                                <Icon name="x" size="xs" />
-                            </button>
-                        </span>
-                    </span>
-                    <input ref="inputElement"
-                           class="chat-pk-input"
-                           type="text"
-                           role="combobox"
-                           aria-autocomplete="list"
-                           aria-expanded="true"
-                           :aria-controls="listId"
-                           :aria-labelledby="labelId"
-                           :aria-describedby="noteId"
-                           :aria-activedescendant="activeOptionId"
-                           autocomplete="off"
-                           spellcheck="false"
-                           :placeholder="chosen.length > 0 ? '' : 'Search for people'"
-                           :value="query"
-                           :disabled="isAdding"
-                           data-autofocus
-                           data-testid="ap-input"
-                           @input="onInput"
-                           @keydown="onKeydown" />
-                    <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
-                </div>
-
-                <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
-                <div :id="listId"
-                     class="chat-pk-list"
-                     role="listbox"
-                     aria-label="People"
-                     data-testid="ap-results"
-                     @mousedown.prevent>
-                    <template v-if="!isAdding">
-                        <div v-if="isFull" class="chat-pk-msg" data-testid="ap-cap"><Icon name="info" size="xs" />{{ capText }}</div>
-                        <template v-else-if="query.trim()">
-                            <div v-if="error" class="chat-pk-msg is-error" data-testid="ap-search-error">Couldn't search right now.</div>
-                            <div v-else-if="people === null" class="chat-pk-msg" data-testid="ap-searching">Searching…</div>
-                            <div v-else-if="options.length === 0" class="chat-pk-msg" data-testid="ap-none">{{ noneText }}</div>
-                            <div v-for="(option, index) in options"
-                                 v-else
-                                 :id="optionId(option.person)"
-                                 :key="option.person.person_alias_guid"
-                                 class="chat-pk-opt"
-                                 :class="{ 'is-active': index === activeIndex }"
-                                 role="option"
-                                 :aria-selected="index === activeIndex ? 'true' : 'false'"
-                                 :aria-disabled="option.why ? 'true' : undefined"
-                                 :data-person="option.person.person_alias_guid"
-                                 data-testid="ap-option"
-                                 @mousedown.prevent="choose(option.person)"
-                                 @mouseenter="onOptionEnter(index)">
-                                <Avatar :people="[faceOf(option.person)]" :size="32" />
-                                <span class="chat-pk-o-main">
-                                    <b>{{ nameOf(option.person) }}</b>
-                                    <span v-if="option.why" class="chat-pk-why" data-testid="ap-option-why">{{ option.why }}</span>
-                                    <span v-else-if="option.campus">{{ option.campus }}</span>
-                                </span>
-                                <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
-                            </div>
-                        </template>
-                        <div v-else class="chat-pk-msg" data-testid="ap-idle">{{ idleText }}</div>
-                    </template>
-                </div>
-
-                <div :id="noteId" class="chat-pk-note" data-testid="ap-note">{{ note }}</div>
-            </div>
+            <PeoplePicker ref="pickerElement"
+                          :chosen="chosen"
+                          :query="query"
+                          :results="people"
+                          :isSearching="isSearching"
+                          :searchError="error ? searchErrorText : null"
+                          :max="max"
+                          :isDisabled="isAdding"
+                          isInline
+                          label="Add"
+                          placeholder="Search for people"
+                          isAutofocus
+                          :inRoomReason="isChannel ? `Already in ${channelName}` : 'Already in this conversation'"
+                          :noneText="noneText"
+                          :idleText="idleText"
+                          :capText="capText"
+                          :note="note"
+                          :campusNames="campusNames"
+                          prefix="ap"
+                          inputTestId="ap-input"
+                          listTestId="ap-results"
+                          @input="emit('query', $event)"
+                          @choose="choose"
+                          @unchoose="unchoose"
+                          @submit="onAdd"
+                          @full="announcement = capText"
+                          @noMatch="announcement = `No one to add for ${$event}`"
+                          @announce="announcement = $event" />
 
             <div class="chat-ap-warn" data-testid="ap-warn">
                 <Icon name="history" size="sm" />
@@ -136,10 +79,6 @@
     margin: -4px 0 14px;
     font-size: 13.5px;
     color: var(--chat-muted);
-}
-
-.chat-ap .chat-pk-label {
-    min-width: 0;
 }
 
 .chat-ap-warn,
@@ -201,23 +140,11 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import { newGuid } from "@Obsidian/Utility/guid";
-    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import PeoplePicker from "../ui/peoplePicker.partial.obs";
     import { ChatError, PersonRow } from "../types.partial";
-
-    // #region Types
-
-    /** One result as it is drawn: why the person cannot be picked, or their campus. */
-    type DrawnOption = {
-        person: PersonRow;
-        why: string;
-        campus: string;
-    };
-
-    // #endregion Types
 
     const props = defineProps({
         isOpen: {
@@ -297,19 +224,10 @@
     /** The most people a group conversation holds. */
     const maxInGroup = 9;
 
-    const inputElement = ref<HTMLInputElement>();
+    const pickerElement = ref<InstanceType<typeof PeoplePicker>>();
     const chosen = ref<PersonRow[]>([]);
-    const activeIndex = ref(0);
-
-    /** The chip just chosen, which alone plays its entrance. */
-    const newChipId = ref<string | null>(null);
 
     const announcement = ref("");
-
-    const idBase = `chat-ap-${newGuid()}`;
-    const labelId = `${idBase}-label`;
-    const listId = `${idBase}-list`;
-    const noteId = `${idBase}-note`;
 
     // #endregion Values
 
@@ -319,8 +237,6 @@
     const groupRoom = computed((): number => maxInGroup - (props.memberCount ?? 1));
 
     const max = computed((): number => props.isChannel ? maxPerAdd : Math.max(0, Math.min(maxPerAdd, groupRoom.value)));
-
-    const isFull = computed((): boolean => chosen.value.length >= max.value);
 
     const subtitle = computed((): string => {
         if (!props.isChannel) {
@@ -339,6 +255,8 @@
         ? `A group can have up to ${maxInGroup} people, so ${props.channelName} has room for ${groupRoom.value}.`
         : `You can add up to ${maxPerAdd} people at a time.`);
 
+    const searchErrorText = "Couldn't search right now.";
+
     const noneText = computed((): string => {
         const none = `No one found for “${props.query.trim()}”.`;
         // A group reaches only people the reader could message, so someone missing may be why.
@@ -356,21 +274,6 @@
         }
 
         return count ? `${count} of ${maxPerAdd} at a time` : "";
-    });
-
-    /** The search's people not yet chosen, those already in the room last and drawn with the reason. */
-    const options = computed((): DrawnOption[] => {
-        const picked = new Set(chosen.value.map(person => person.person_alias_guid));
-        const why = props.isChannel ? `Already in ${props.channelName}` : "Already in this conversation";
-        return (props.people ?? [])
-            .filter(person => !picked.has(person.person_alias_guid))
-            .map(person => ({ person, why: person.in_room ? why : "", campus: campusOf(person) }))
-            .sort((a, b) => Number(!!a.why) - Number(!!b.why));
-    });
-
-    const activeOptionId = computed((): string | undefined => {
-        const option = options.value[activeIndex.value];
-        return option && !option.why ? optionId(option.person) : undefined;
     });
 
     const addLabel = computed((): string => {
@@ -397,62 +300,6 @@
 
     // #region Event Handlers
 
-    function onInput(event: Event): void {
-        activeIndex.value = 0;
-        emit("query", (event.target as HTMLInputElement).value);
-    }
-
-    /** A press on the field's empty space puts the caret in the search, as a text field would. */
-    function onFieldMousedown(event: MouseEvent): void {
-        if (!(event.target as HTMLElement).closest("button, input")) {
-            event.preventDefault();
-            inputElement.value?.focus();
-        }
-    }
-
-    function onOptionEnter(index: number): void {
-        if (!options.value[index]?.why) {
-            activeIndex.value = index;
-        }
-    }
-
-    /**
-     * Up and Down move among the people who can be picked; Enter with a name picks one and never
-     * adds, while Enter on an empty field adds the people chosen; Backspace on an empty field takes
-     * out the last chip.
-     */
-    function onKeydown(event: KeyboardEvent): void {
-        const enabled = options.value.map((option, index) => option.why ? -1 : index).filter(index => index >= 0);
-        const isEmpty = (event.target as HTMLInputElement).value === "";
-
-        if ((event.key === "ArrowDown" || event.key === "ArrowUp") && enabled.length > 0 && !isFull.value) {
-            event.preventDefault();
-            const at = enabled.indexOf(activeIndex.value);
-            const step = event.key === "ArrowDown" ? 1 : -1;
-            activeIndex.value = enabled[at < 0 ? 0 : (at + step + enabled.length) % enabled.length];
-        }
-        else if (event.key === "Enter") {
-            event.preventDefault();
-            if (!isEmpty) {
-                const active = options.value[activeIndex.value];
-                const person = active && !active.why ? active.person : options.value.find(option => !option.why)?.person;
-                if (person && !isFull.value) {
-                    choose(person);
-                }
-                else {
-                    announcement.value = isFull.value ? capText.value : `No one to add for ${props.query.trim()}`;
-                }
-            }
-            else {
-                onAdd();
-            }
-        }
-        else if (event.key === "Backspace" && isEmpty && chosen.value.length > 0) {
-            event.preventDefault();
-            unchoose(chosen.value[chosen.value.length - 1]);
-        }
-    }
-
     function onAdd(): void {
         if (chosen.value.length > 0 && !props.isAdding) {
             emit("add", [...chosen.value]);
@@ -467,60 +314,28 @@
         return `${person.nick_name ?? ""} ${person.last_name ?? ""}`.trim() || "Someone";
     }
 
-    function faceOf(person: PersonRow): AvatarPerson {
-        return { name: nameOf(person), photoUrl: person.avatar_url };
-    }
-
-    /** The campus, which the search sends only for a person who shows their details. */
-    function campusOf(person: PersonRow): string {
-        return person.campus_id ? props.campusNames[person.campus_id.toLowerCase()] ?? "" : "";
-    }
-
-    function optionId(person: PersonRow): string {
-        return `${idBase}-o-${person.person_alias_guid}`;
-    }
-
-    /** Picks a person the room can take, clearing the name for the next. */
+    /** A person the room can take, picked by the picker: the name clears for the next. */
     function choose(person: PersonRow): void {
-        const isPicked = chosen.value.some(p => p.person_alias_guid === person.person_alias_guid);
-        if (isPicked || person.in_room || isFull.value || props.isAdding) {
-            return;
-        }
-
         chosen.value = [...chosen.value, person];
-        newChipId.value = person.person_alias_guid;
-        activeIndex.value = 0;
         announcement.value = `Added ${nameOf(person)}. ${chosen.value.length} ${chosen.value.length === 1 ? "person" : "people"} chosen.`;
         emit("query", "");
-        inputElement.value?.focus({ preventScroll: true });
     }
 
     function unchoose(person: PersonRow): void {
         chosen.value = chosen.value.filter(p => p.person_alias_guid !== person.person_alias_guid);
-        newChipId.value = null;
         announcement.value = `Removed ${nameOf(person)}`;
-        void nextTick(() => inputElement.value?.focus({ preventScroll: true }));
+        void nextTick(() => pickerElement.value?.focus());
     }
 
     // #endregion Functions
 
     // #region Watchers
 
-    // Each open starts with nobody chosen.
+    // Each open starts with nobody chosen; the picker is drawn afresh with the dialog.
     watch(() => props.isOpen, isOpen => {
         if (isOpen) {
             chosen.value = [];
-            newChipId.value = null;
-            activeIndex.value = 0;
             announcement.value = "";
-        }
-    });
-
-    // What a search found is said once it comes.
-    watch(() => props.people, people => {
-        if (people && props.query.trim()) {
-            const count = options.value.filter(option => !option.why).length;
-            announcement.value = count ? `${count} ${count === 1 ? "person" : "people"} found` : "No one found";
         }
     });
 

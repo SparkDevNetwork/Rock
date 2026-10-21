@@ -237,6 +237,17 @@ describe("picking", () => {
         await input.trigger("keydown", { key: "Backspace" });
         expect(w.findAll("[data-testid='ap-chip']")).toHaveLength(0);
     });
+
+    test("Enter on a name while its search is out waits, and picks the person once the answer comes", async () => {
+        const w = draw();
+        await w.setProps({ query: "aa", isSearching: true });
+
+        await w.get("[data-testid='ap-input']").trigger("keydown", { key: "Enter" });
+        expect(w.findAll("[data-testid='ap-chip']")).toHaveLength(0);
+
+        await answer(w, "aa", [aaron]);
+        expect(w.findAll("[data-testid='ap-chip']")).toHaveLength(1);
+    });
 });
 
 describe("adding", () => {
