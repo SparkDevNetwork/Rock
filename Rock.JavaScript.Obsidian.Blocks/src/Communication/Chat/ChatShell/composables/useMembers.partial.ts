@@ -784,6 +784,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
             state.rows = state.rows.map(m => m.person_alias_guid === replacement ? { ...m, is_leader: true } : m);
             const title = dependencies.titleOf?.(channelId) ?? "";
             notify({ code: "member.leader", text: `${successor ? fullNameOf(successor) : "Someone"} is now the leader of ${title}`, icon: "users" });
+
+            // Marked at once, then read again, since Rock may have given the role to more rows than the one shown.
+            await refreshRoster(channelId);
         },
 
         dismissRemoval: (personAliasGuid): void => {

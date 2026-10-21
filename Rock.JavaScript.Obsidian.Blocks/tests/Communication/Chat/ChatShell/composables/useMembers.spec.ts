@@ -764,7 +764,7 @@ describe("removing a leader", () => {
 
     test("removing with someone to lead next sends them, keeps the dialog while the door works, then makes them leader and says so", async () => {
         const held = deferred<Answer>();
-        const { members, doorCalls, notices } = doorHarness({ calls: [page([tom, anna, ben])], answers: [held], isChatAdministrator: true });
+        const { members, doorCalls, notices } = doorHarness({ calls: [page([tom, anna, ben]), page([{ ...anna, is_leader: true }, ben])], answers: [held], isChatAdministrator: true });
         await members.open(channel);
         members.askRemove(guid(1));
 
@@ -779,6 +779,17 @@ describe("removing a leader", () => {
         expect(names(members.state.rows)).toEqual(["Anna", "Ben"]);
         expect(members.state.rows[0].is_leader).toBe(true);
         expect(notices).toEqual([{ code: "member.leader", text: "Anna Reyes is now the leader of young-adults", icon: "users" }]);
+    });
+
+    test("after a leader is removed for someone to lead next, the roster is read again, so its leaders are Rock's", async () => {
+        const { members, calls } = doorHarness({ calls: [page([tom, anna, ben]), page([{ ...anna, is_leader: true }, { ...ben, is_leader: true }])], isChatAdministrator: true });
+        await members.open(channel);
+        members.askRemove(guid(1));
+
+        await members.remove(guid(2));
+
+        expect(calls.filter(c => c.name === "chat_list_members")).toHaveLength(2);
+        expect(members.state.rows.filter(m => m.is_leader).map(m => m.nick_name)).toEqual(["Anna", "Ben"]);
     });
 
     test("a refusal shows in the dialog in the door's words, and the row stays as it was", async () => {
@@ -799,7 +810,7 @@ describe("removing a leader", () => {
 
     test("a leader the roster showed beside another, whom Rock calls the last, gets the dialog that asks who leads next", async () => {
         const lastLeader: Answer = { code: "door.bad_request", message: "Choose who leads this channel next before removing its last leader.", isPending: false };
-        const { members, doorCalls } = doorHarness({ calls: [page([tom, grace, anna]), page([grace, anna])], answers: [lastLeader, ok], isChatAdministrator: true });
+        const { members, doorCalls } = doorHarness({ calls: [page([tom, grace, anna]), page([grace, { ...anna, is_leader: true }])], answers: [lastLeader, ok], isChatAdministrator: true });
         await members.open(channel);
         members.askRemove(guid(1));
         expect(isLastLeader(members.state, guid(1))).toBe(false);
