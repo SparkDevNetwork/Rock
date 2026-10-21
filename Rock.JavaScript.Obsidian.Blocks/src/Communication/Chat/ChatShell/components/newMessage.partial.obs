@@ -81,7 +81,8 @@
                      aria-label="People"
                      data-testid="nd-suggestions"
                      @mousedown.prevent>
-                    <div v-if="results === null" class="chat-pk-msg" data-testid="nd-searching">Searching…</div>
+                    <div v-if="searchError" class="chat-pk-msg is-error" data-testid="nd-search-error">{{ searchError }}</div>
+                    <div v-else-if="results === null" class="chat-pk-msg" data-testid="nd-searching">Searching…</div>
                     <div v-else-if="options.length === 0" class="chat-pk-msg" data-testid="nd-none">No one found for “{{ query.trim() }}”. Can't find someone? They may not accept messages from everyone.</div>
                     <div v-for="(option, index) in options"
                          v-else
@@ -500,6 +501,10 @@
     font-size: 13px;
     line-height: 1.45;
     color: var(--chat-muted);
+}
+
+.chat-pk-msg.is-error {
+    color: var(--chat-danger-ink);
 }
 
 .chat-pk-note {
@@ -934,6 +939,9 @@
     /** The last answer for the text typed, or null while none has come for it. */
     const results = ref<PersonRow[] | null>(null);
 
+    /** Why the last search for the text typed failed, in the platform's words, or null. */
+    const searchError = ref<string | null>(null);
+
     /** The option Enter would pick, by its place in the list. */
     const activeIndex = ref(0);
 
@@ -1092,6 +1100,7 @@
 
         if (text === "") {
             results.value = null;
+            searchError.value = null;
             isSearching.value = false;
             isEnterWaiting.value = false;
             return;
@@ -1100,13 +1109,27 @@
         isSearching.value = true;
         searchTimer = setTimeout(async () => {
             searchTimer = null;
-            const rows = await props.search(text);
+            let rows: PersonRow[] = [];
+            let failure: string | null = null;
+            try {
+                rows = await props.search(text);
+            }
+            catch (error) {
+                failure = error instanceof Error && error.message ? error.message : "People could not be searched. Try again.";
+            }
             if (thisSearch !== searchCount) {
                 return;
             }
 
+            // A failed search says so in the list it would have filled, until the next answer.
             isSearching.value = false;
+            searchError.value = failure;
             results.value = rows;
+            if (failure) {
+                isEnterWaiting.value = false;
+                announce(failure);
+                return;
+            }
             activeIndex.value = 0;
 
             if (isEnterWaiting.value) {
@@ -1243,6 +1266,7 @@
         searchCount++;
         query.value = "";
         results.value = null;
+        searchError.value = null;
         isSearching.value = false;
         isListClosed.value = true;
         activeIndex.value = 0;

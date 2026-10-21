@@ -179,7 +179,7 @@ export type DirectMessages = {
     /** Empties a draft whose first message failed, dropping that message for good. */
     discardFailed: () => void;
 
-    /** The people the platform's search answers for the text typed. */
+    /** The people the platform's search answers for the text typed; fails with the sentence to show when it cannot. */
     search: (query: string) => Promise<PersonRow[]>;
 
     /** Picks a person. False when eight are already picked. */
@@ -830,10 +830,11 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         },
 
         search: async (query: string): Promise<PersonRow[]> => {
+            // A failed search is the list's to show, where the person is looking; the refused strip
+            // is for the conversation.
             const result = await dependencies.search(query);
             if (!result.ok) {
-                state.error = result.error.text ?? "People could not be searched. Try again.";
-                return [];
+                throw new Error(result.error.text ?? "People could not be searched. Try again.");
             }
 
             return result.people;

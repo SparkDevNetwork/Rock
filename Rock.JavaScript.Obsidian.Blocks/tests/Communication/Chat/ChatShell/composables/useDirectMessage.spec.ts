@@ -108,6 +108,14 @@ describe("the picker", () => {
         expect(await dm.search("pe")).toEqual([person(1), person(2)]);
     });
 
+    test("a search the platform refused fails with its sentence and leaves the refused strip alone", async () => {
+        const { dependencies } = setup({ search: async () => ({ ok: false, error: { code: "rpc.transport", severity: "failed", text: "People could not be searched. Try again." } }) });
+        const dm = createDirectMessages(dependencies);
+
+        await expect(dm.search("pe")).rejects.toThrow("People could not be searched. Try again.");
+        expect(dm.error).toBeNull();
+    });
+
     test("takes at most eight people", () => {
         const { dependencies } = setup();
         const dm = createDirectMessages(dependencies);

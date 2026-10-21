@@ -649,3 +649,31 @@ describe("what a screen reader is told", () => {
         expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
     });
 });
+
+describe("a people search that fails", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    test("says so in the suggestions, not the refused strip, and the next answer takes its place", async () => {
+        const search = jest.fn()
+            .mockImplementationOnce(async () => {
+                throw new Error("People could not be searched. Try again.");
+            })
+            .mockImplementationOnce(async () => [anna]);
+        const w = mountView({ search, chosen: [caleb], lookup: fresh, draft: draftFor([caleb]) });
+
+        await typeName(w, "an");
+        await afterPause();
+
+        expect(w.get("[data-testid='nd-suggestions'] [data-testid='nd-search-error']").text()).toBe("People could not be searched. Try again.");
+        expect(w.find("[data-testid='nd-refused']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='nd-option']")).toHaveLength(0);
+
+        await typeName(w, "ann");
+        await afterPause();
+
+        expect(w.find("[data-testid='nd-search-error']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='nd-option']").map(besideFace)).toEqual(["Anna Reyes"]);
+    });
+});
