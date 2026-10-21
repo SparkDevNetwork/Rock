@@ -152,6 +152,7 @@ namespace Rock.Jobs
                 return new PersonAliasService( rockContext )
                     .Queryable()
                     .Where( a => a.PersonId == anonymousVisitorId.Value
+                        && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                         && string.IsNullOrEmpty( a.InternalMessage )
                         && a.LastVisitDateTime < cutoffDateTime
                         && !referencedPersonAliasIdQuery.Contains( a.Id ) )

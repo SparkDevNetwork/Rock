@@ -61,6 +61,10 @@ namespace Rock.Tasks
                     transaction.AuthorizedPersonAlias.Person != null )
                 {
                     var person = transaction.AuthorizedPersonAlias.Person;
+                    if ( string.IsNullOrWhiteSpace( person.Email ) || !person.IsEmailActive )
+                    {
+                        return;
+                    }
 
                     // setup merge fields
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
