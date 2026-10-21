@@ -560,6 +560,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // Only a shared channel has leaders; a conversation's members are all alike.
+            var isPromoting = false;
             if ( room.Channel.ChannelType == SharedChannelType )
             {
                 var heldRoleId = leaders.TargetRoleId;
@@ -581,6 +582,8 @@ namespace Rock.Communication.Chat.Platform.Doors
                     {
                         return promotion;
                     }
+
+                    isPromoting = true;
                 }
             }
 
@@ -588,7 +591,17 @@ namespace Rock.Communication.Chat.Platform.Doors
             // the platform never sees the channel with nobody leading it.
             var targetName = new PersonService( rockContext ).Get( targetId.Value ).FullName;
             RemoveMember( rockContext, room.GroupId, targetId.Value );
-            rockContext.SaveChanges();
+
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( GroupMemberValidationException ) when ( isPromoting )
+            {
+                // The church's own rules for the role, such as its most members or a requirement
+                // the person does not meet, are the group's call, and nothing was saved.
+                return Membership( "door.not_allowed", "That person can't lead this channel." );
+            }
 
             var isDirect = room.Channel.ChannelType == DirectChannelType;
             return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " removed " + targetName + "." : null ).ConfigureAwait( false );

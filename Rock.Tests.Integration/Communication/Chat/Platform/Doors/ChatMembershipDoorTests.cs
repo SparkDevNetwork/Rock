@@ -685,6 +685,61 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             }
         }
 
+        [TestMethod]
+        public void ANextLeaderTheRolesOwnRulesRefuseIsAnsweredWithASentenceAndChangesNothing()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // Bea holds the role too but is on the Chat Ban List, so Ada is the last leader chat
+                // shows, and the role allows one active holder, so Bo cannot take it beside Bea.
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bea = scene.AddChatPerson( "Bea" );
+                var bo = scene.AddChatPerson( "Bo" );
+                scene.MakeChatAdministrator( admin );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Pastor", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bea, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bo );
+                scene.AddToBanList( bea );
+                SetRoleMaxCount( leader, 1 );
+                var boRole = scene.Memberships( room, bo ).Single().GroupRoleId;
+
+                var result = scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( bo ) );
+
+                Assert.AreEqual( "door.not_allowed", result.Code, "the role's own limit was not answered as a refusal" );
+                Assert.AreEqual( "That person can't lead this channel.", result.Message );
+                CollectionAssert.Contains( scene.ActiveMembers( room ), ada, "the leader was removed although nobody could take the role" );
+                Assert.AreEqual( boRole, scene.Memberships( room, bo ).Single().GroupRoleId, "a refusal changes nobody's role" );
+            }
+        }
+
+        [TestMethod]
+        public void TheLastLeaderOfARoleForOneIsReplacedInIt()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // The removed leader's own place in the role is what the next leader takes, so a
+                // role that allows one holder does not stand in the way.
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                scene.MakeChatAdministrator( admin );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Pastor", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bo );
+                SetRoleMaxCount( leader, 1 );
+
+                var result = scene.Remove( admin, room, scene.Alias( ada ), scene.Alias( bo ) );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( room ), ada );
+                Assert.AreEqual( leader, scene.Memberships( room, bo ).Single().GroupRoleId );
+            }
+        }
+
         #endregion Removing a leader
 
         #region The screen's rights
@@ -994,5 +1049,21 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         #endregion Every door
+
+        #region Support
+
+        /// <summary>
+        /// Limits how many people may hold a role at once, saved through Rock so its cache knows.
+        /// </summary>
+        private static void SetRoleMaxCount( int roleId, int maxCount )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                rockContext.Set<GroupTypeRole>().Find( roleId ).MaxCount = maxCount;
+                rockContext.SaveChanges();
+            }
+        }
+
+        #endregion Support
     }
 }
