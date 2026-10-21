@@ -40,7 +40,7 @@
 //          members-retry, members-more, members-more-error, members-end, members-hint,
 //          members-search-retry, members-none
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, reactive } from "vue";
 import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/components/membersPanel.partial.obs";
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -489,6 +489,21 @@ describe("removing a row", () => {
 
         await w.setProps({ removals: { [anna.person_alias_guid]: { kind: "removing" } } });
         await w.setProps({ removals: {}, members: [tom, grace, ben, self] });
+        await nextTick();
+
+        expect(document.activeElement?.getAttribute("data-person")).toBe(ben.person_alias_guid);
+    });
+
+    test("an in-place removal change remembers the next row before the removed row leaves", async () => {
+        const removals = reactive<Record<string, { kind: "removing" }>>({});
+        const w = draw({ canManageMembers: true, removals });
+        (w.findAll("[data-testid='member-who']")[2].element as HTMLElement).focus();
+
+        // The roster keeps this dictionary and mutates its entries while a door is running.
+        removals[anna.person_alias_guid] = { kind: "removing" };
+        await nextTick();
+        delete removals[anna.person_alias_guid];
+        await w.setProps({ members: [tom, grace, ben, self] });
         await nextTick();
 
         expect(document.activeElement?.getAttribute("data-person")).toBe(ben.person_alias_guid);
