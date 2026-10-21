@@ -264,8 +264,8 @@ namespace RockWeb.Blocks.CheckIn
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
                             lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ),
-                                person.Person.NickName,
-                                person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time" );
+                                person.Person.NickName.EncodeHtml(),
+                                person.CurrentSchedule != null ? person.CurrentSchedule.ToString().EncodeHtml() : "this time" );
                         }
                     }
                 }
@@ -421,7 +421,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( person != null )
             {
-                string msg = string.Format( GetAttributeValue( AttributeKey.NoOptionAfterSelectMessage ), person.Person.FullName );
+                string msg = string.Format( GetAttributeValue( AttributeKey.NoOptionAfterSelectMessage ), person.Person.FullName.EncodeHtml() );
                 if ( !ProcessSelection(
                     maWarning,
                     () => person.SelectedGroupTypes( schedule )
