@@ -115,6 +115,12 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
     let isStopped = false;
     let hasSent = false;
 
+    /** Turn off invalidates every registration that has not yet reached the platform. */
+    let operationGeneration = 0;
+
+    /** Sent registrations must settle before Turn off can remove the devices they may enable. */
+    const registering = new Set<{ token: string, result: Promise<CallResult> }>();
+
     /** Set while the browser's own permission box is up. */
     let isAsking = false;
 
@@ -156,32 +162,40 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
      * Registers the worker, gets the token and gives it to the platform. Every await is checked
      * against the stop, so a page closed or signed out halfway registers nothing afterwards.
      */
-    async function register(): Promise<void> {
+    async function register(generation: number): Promise<void> {
         const push = dependencies.settings();
+        const isCurrent = (): boolean => !isStopped && generation === operationGeneration;
 
         try {
             const registration = await dependencies.registerWorker(dependencies.pagePath);
-            if (isStopped) {
+            if (!isCurrent()) {
                 return;
             }
 
             await whenActive(registration);
-            if (isStopped) {
+            if (!isCurrent()) {
                 return;
             }
 
             const token = await dependencies.getToken(push.web as Record<string, unknown>, push.vapid_key as string, registration);
-            if (isStopped) {
+            if (!isCurrent()) {
                 return;
             }
 
-            const result = await dependencies.call("chat_register_device", { p_token: token, p_platform: "web" });
-            if (isStopped || !result.ok) {
-                return;
-            }
+            const pending = { token, result: dependencies.call("chat_register_device", { p_token: token, p_platform: "web" }) };
+            registering.add(pending);
+            try {
+                const result = await pending.result;
+                if (!isCurrent() || !result.ok) {
+                    return;
+                }
 
-            registeredToken = token;
-            dependencies.writeCookie(token);
+                registeredToken = token;
+                dependencies.writeCookie(token);
+            }
+            finally {
+                registering.delete(pending);
+            }
         }
         catch {
             // Push is extra: a browser that blocks it, or a Firebase that will not answer, leaves
@@ -215,8 +229,8 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
      * Takes the held device out. A failure keeps the token in the cookie, so the next load, which
      * finds this browser turned off, asks again, and Rock's sign-out still reaches it.
      */
-    async function unregister(): Promise<ChatError | null> {
-        const token = await heldToken();
+    async function unregister(registered?: string): Promise<ChatError | null> {
+        const token = registered ?? await heldToken();
         if (!token || isStopped) {
             return null;
         }
@@ -303,7 +317,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return;
             }
 
-            await register();
+            await register(operationGeneration);
         },
 
         isOffered: (): boolean => {
@@ -324,19 +338,20 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return;
             }
 
+            const generation = ++operationGeneration;
             // A browser that still allows notifications after a Turn off here needs no asking.
             if (dependencies.permission() !== "granted") {
                 isAsking = true;
                 const answer = await dependencies.requestPermission().finally(() => {
                     isAsking = false;
                 });
-                if (isStopped || answer !== "granted") {
+                if (isStopped || generation !== operationGeneration || answer !== "granted") {
                     return;
                 }
             }
 
             setTurnedOff(false);
-            await register();
+            await register(generation);
         },
 
         turnOff: async (): Promise<ChatError | null> => {
@@ -344,8 +359,16 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return null;
             }
 
+            operationGeneration++;
             setTurnedOff(true);
-            return unregister();
+            const pending = [...registering];
+            let failure = await unregister();
+            for (const registration of pending) {
+                // Even a lost answer may have enabled the device. Removal must follow the RPC.
+                await registration.result.catch(() => null);
+                failure = await unregister(registration.token) ?? failure;
+            }
+            return failure;
         },
 
         state: (): PushState => {
