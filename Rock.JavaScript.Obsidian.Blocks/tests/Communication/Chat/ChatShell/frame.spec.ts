@@ -3205,6 +3205,27 @@ describe("the members panel", () => {
         expect(document.activeElement).toBe(who.element);
     });
 
+    test.each([1200, 390])("a member's Message opens New message with that person chosen at width %i", async width => {
+        const w = await mountBlock(width);
+        await openTeam(w);
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        membersOf().state.rows = [annaMember];
+        await settle();
+
+        await w.get("[data-testid='member-message']").trigger("click");
+        await settle();
+
+        expect(directMessagesOf().begin).toHaveBeenCalledWith([{
+            person_alias_guid: annaMember.person_alias_guid,
+            nick_name: annaMember.nick_name,
+            last_name: annaMember.last_name,
+            avatar_url: annaMember.avatar_url
+        }]);
+        expect(w.get("[data-testid='main-view']").attributes("data-kind")).toBe("newdm");
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
+    });
+
     test("no longer opens from a keyboard shortcut", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
