@@ -1,10 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <!--
-            Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
-            a card drawn inside it; left in place where there is no root, as when a part is drawn alone.
-        -->
         <div ref="cardElement"
              class="chat-pc"
              :class="{ 'is-leaving': isClosing }"
@@ -15,6 +11,10 @@
              :style="cardStyles"
              @keydown="onKeydown"
              @focusout="onFocusOut">
+            <!--
+                Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+                a card drawn inside it; left in place where there is no root, as when a part is drawn alone.
+            -->
             <div class="chat-pc-band" aria-hidden="true"></div>
             <div class="chat-pc-body">
                 <span class="chat-pc-av"><Avatar :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" /></span>
