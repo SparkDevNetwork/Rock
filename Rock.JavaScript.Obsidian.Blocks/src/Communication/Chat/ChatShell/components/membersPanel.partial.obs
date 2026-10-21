@@ -1052,6 +1052,14 @@
     // A row the door starts removing remembers the row after it; a refused one keeps focus on itself.
     // Snapshot each kind because the roster mutates this dictionary's entries in place.
     watch(() => Object.fromEntries(Object.entries(props.removals).map(([guid, removal]) => [guid, removal.kind])), (removals, was) => {
+        // A removal can return to the leader dialog without losing its row. Its old focus
+        // intent must not survive into a later search that happens to exclude that person.
+        for (const guid of Array.from(leaving.keys())) {
+            if (!removals[guid] && props.members.some(member => member.person_alias_guid === guid)) {
+                leaving.delete(guid);
+            }
+        }
+
         for (const [guid, kind] of Object.entries(removals)) {
             if (kind === "removing" && was?.[guid] !== "removing") {
                 leaving.set(guid, nextRowOf(guid));
