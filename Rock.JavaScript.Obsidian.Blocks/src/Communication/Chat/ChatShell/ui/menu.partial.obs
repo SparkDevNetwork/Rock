@@ -1,6 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <IconButton ref="anchor"
+    <!-- A button in words where the menu names its choice, as the intro's notify mode; else an icon. -->
+    <button v-if="buttonText"
+            ref="textAnchor"
+            v-bind="anchorAttrs"
+            type="button"
+            class="chat-menu-text-btn"
+            aria-haspopup="menu"
+            :aria-expanded="isOpen ? 'true' : 'false'"
+            @click="onAnchorClick">
+        <Icon :name="icon" size="xs" />{{ buttonText }}
+    </button>
+    <IconButton v-else
+                ref="anchor"
                 v-bind="anchorAttrs"
                 :icon="icon"
                 :label="label"
@@ -22,20 +34,28 @@
                  :aria-label="label"
                  :style="menuStyles"
                  @keydown="onKeydown">
+                <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
                 <template v-for="item in items" :key="item.key">
                     <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
+                    <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
                     <button type="button"
                             class="chat-menu-item"
                             :class="{ 'is-danger': item.isDanger }"
-                            role="menuitem"
+                            :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
+                            :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
                             :data-key="item.key"
                             tabindex="-1"
                             :aria-disabled="item.isDisabled || undefined"
                             @click="choose(item)">
                         <Icon v-if="item.icon" :name="item.icon" />
-                        <span class="chat-menu-label">{{ item.label }}</span>
+                        <span v-if="item.description" class="chat-menu-label is-stacked">
+                            <span class="chat-menu-title">{{ item.label }}</span>
+                            <span class="chat-menu-desc">{{ item.description }}</span>
+                        </span>
+                        <span v-else class="chat-menu-label">{{ item.label }}</span>
                         <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
                         <span v-if="item.hasDot" class="chat-menu-dot"><span class="chat-sr-only">new</span></span>
+                        <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
                     </button>
                 </template>
                 <!-- Why an action is missing, read in its place after the others. -->
@@ -84,6 +104,64 @@
     flex: 1;
     min-width: 0;
     line-height: 1.3;
+}
+
+/* A choice with what it means under it, as the notify menu's modes. */
+.chat-menu-label.is-stacked {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-menu-desc {
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-menu-check {
+    display: inline-flex;
+    flex: none;
+    color: var(--chat-brand-ink);
+}
+
+.chat-menu-item .chat-menu-check :deep(.chat-ic) {
+    color: inherit;
+}
+
+/* Rock's theme styles every heading, so the menu's own states its whole face. */
+.chat-menu-head {
+    padding: 6px 10px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+/* The small outlined button in words, as the intro draws its actions. */
+.chat-menu-text-btn {
+    display: inline-flex;
+    flex: none;
+    gap: 5px;
+    align-items: center;
+    height: 28px;
+    padding: 0 11px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-menu-text-btn:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-menu-text-btn :deep(.chat-ic) {
+    width: 14px;
+    height: 14px;
+    color: var(--chat-icon);
 }
 
 .chat-menu-hint {
@@ -192,6 +270,12 @@
         /** Draws a dot at the item's end, as the menu button that holds it does, for something new. */
         hasDot?: boolean;
 
+        /** A line under the label saying what the item means. */
+        description?: string;
+
+        /** Makes the item one of a set of choices, checked when it is the one chosen. */
+        isChecked?: boolean;
+
         /**
          * Drawn but never chosen. Marked rather than disabled, so the arrows still reach it and a
          * screen reader still reads it out.
@@ -230,6 +314,18 @@
         anchorAttrs: {
             type: Object as PropType<Record<string, unknown>>,
             default: () => ({})
+        },
+
+        /** A heading over the items, such as "Notify me about". */
+        heading: {
+            type: String,
+            default: ""
+        },
+
+        /** Draws the button in words with the icon before them, rather than as an icon alone. */
+        buttonText: {
+            type: String,
+            default: ""
         }
     });
 
@@ -241,6 +337,7 @@
     // #region Values
 
     const anchor = ref<InstanceType<typeof IconButton>>();
+    const textAnchor = ref<HTMLButtonElement>();
     const anchorElement = ref<HTMLElement>();
     const menuElement = ref<HTMLElement>();
     const isOpen = ref(false);
@@ -290,7 +387,7 @@
             return;
         }
 
-        anchorElement.value = anchor.value?.buttonElement ?? undefined;
+        anchorElement.value = anchor.value?.buttonElement ?? textAnchor.value ?? undefined;
         isOpen.value = true;
         await nextTick();
         menuItems()[0]?.focus();
@@ -339,7 +436,7 @@
     // #region Functions
 
     function menuItems(): HTMLElement[] {
-        return Array.from(menuElement.value?.querySelectorAll<HTMLElement>("[role='menuitem']") ?? []);
+        return Array.from(menuElement.value?.querySelectorAll<HTMLElement>("[role='menuitem'], [role='menuitemradio']") ?? []);
     }
 
     function choose(item: MenuItem): void {
@@ -354,7 +451,7 @@
     function close(isFocusReturned: boolean): void {
         isOpen.value = false;
         if (isFocusReturned) {
-            anchor.value?.focus();
+            (anchor.value ?? textAnchor.value)?.focus();
         }
     }
 
@@ -378,7 +475,7 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        overlayHost.value = overlayHostOf(anchor.value?.buttonElement);
+        overlayHost.value = overlayHostOf(anchor.value?.buttonElement ?? textAnchor.value);
     });
 
     onBeforeUnmount(() => {

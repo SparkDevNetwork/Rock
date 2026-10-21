@@ -34,9 +34,13 @@
                                 :isPhone="isPhone"
                                 :isBrowseOpen="mainView === 'directory'"
                                 :isNewMessageOpen="mainView === 'newdm'"
+                                :personName="personName"
+                                :personPhotoUrl="personPhotoUrl"
+                                :personCampusName="personCampusName"
                                 @select="onSelect"
                                 @newMessage="openMainView('newdm')"
-                                @browse="openMainView('directory')" />
+                                @browse="openMainView('directory')"
+                                @settings="isSettingsOpen = true" />
             </div>
 
             <section class="chat-frame-main"
@@ -66,7 +70,9 @@
                                 :banner="shell.state.banner"
                                 :isUpdateRequired="shell.state.isUpdateRequired"
                                 :isBehind="isActiveBehind"
-                                :isPushOffered="shell.state.isPushOffered"
+                                :isPrefsOffered="!!activeRow?.is_member"
+                                :notifyMode="activeRow?.notify_mode ?? null"
+                                :isStarred="!!activeRow?.is_favorite"
                                 :isPhone="isPhone"
                                 :isEmpty="!activeChannelId"
                                 :isThreadsOffered="!!activeChannelId"
@@ -79,7 +85,8 @@
                                 @threads="onListPanel('threads')"
                                 @mentions="onListPanel('mentions')"
                                 @members="onListPanel('members')"
-                                @turnOnPush="onTurnOnPush"
+                                @notify="onNotify($event, true)"
+                                @star="onStar(true)"
                                 @back="onBack"
                                 @backOnline="onBackOnline"
                                 @details="isDetailsOpen = true" />
@@ -102,6 +109,7 @@
                                  :facts="activeKind === 'channel' ? activeFacts : null"
                                  :campuses="campuses"
                                  :notifyMode="activeRow?.notify_mode ?? null"
+                                 :isStarred="!!activeRow?.is_favorite"
                                  :editingId="editingIdIn(activeChannelId)"
                                  :editError="editErrorIn(activeChannelId)"
                                  :isEditSaving="isEditSavingIn(activeChannelId)"
@@ -116,7 +124,8 @@
                                  @openThread="onOpenThread"
                                  @jump="onJump($event, false)"
                                  @messageAction="onMessageAction($event, null)"
-                                 @members="onListPanel('members')" />
+                                 @members="onListPanel('members')"
+                                 @introAction="onIntroAction" />
                     <div v-else class="chat-shell-empty">
                         {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
                     </div>
@@ -136,6 +145,8 @@
                               :isChannel="activeKind === 'channel'"
                               :isPhone="isPhone"
                               :isLocked="!shell.state.isComposerOpen"
+                              :lockedReason="lockedReasonFor(activeRow)"
+                              :maxLength="activeRow?.max_length ?? 0"
                               :heldText="held?.body ?? ''"
                               :heldBy="held"
                               :quote="conversationQuote"
@@ -149,6 +160,7 @@
                               @cancelQuote="onCancelQuote(conversationQuoteKey)"
                               @emojiPickerOpen="onEmojiPickerOpen"
                               @emojiChosen="onEmojiChosen"
+                              @overLimit="onOverLimit"
                               @animationend="onComposerAnimationEnd" />
                 </div>
 
@@ -303,6 +315,8 @@
                                   :olderError="drawnThread.olderError"
                                   :landOnId="landingReplyId"
                                   :isLocked="!shell.state.isComposerOpen"
+                                  :lockedReason="lockedReasonFor(threadRow)"
+                                  :maxLength="threadRow?.max_length ?? 0"
                                   :personName="personName"
                                   :personPhotoUrl="personPhotoUrl"
                                   :organizationName="organizationName"
@@ -329,7 +343,8 @@
                                   @jump="onJump($event, true)"
                                   @messageAction="onMessageAction($event, drawnThread.rootId)"
                                   @emojiPickerOpen="onEmojiPickerOpen"
-                                  @emojiChosen="onEmojiChosen" />
+                                  @emojiChosen="onEmojiChosen"
+                                  @overLimit="onOverLimit" />
                 </div>
             </aside>
 
@@ -370,7 +385,8 @@
                          :badges="shell.channels.badges"
                          :anchor="cardAnchor"
                          @close="shell.rooms.closeCard"
-                         @message="onCardMessage" />
+                         @message="onCardMessage"
+                         @settings="onCardSettings" />
 
             <!-- Kept mounted while the room's facts are held, so closing plays the dialog's exit. -->
             <ConversationDetails v-if="activeChannelId && activeFacts && activeKind"
@@ -389,10 +405,36 @@
                                  :announcement="shell.rooms.state.announcement"
                                  :canSeeRoster="activeRow?.can_mention ?? false"
                                  :isPhone="isPhone"
+                                 :notifyMode="activeRow?.notify_mode ?? null"
+                                 :isStarred="!!activeRow?.is_favorite"
+                                 :isHidden="!!activeRow?.hidden"
+                                 :prefsSave="shell.prefs.roomOf(activeChannelId).save"
+                                 :prefsNotes="shell.prefs.roomOf(activeChannelId).notes"
+                                 :prefsAnnouncement="shell.prefs.state.announcement"
                                  @close="closeDetails"
                                  @members="onDetailsMembers"
                                  @leave="onLeave"
-                                 @rename="onRename" />
+                                 @rename="onRename"
+                                 @notify="onNotify($event, false)"
+                                 @star="onStar(false, $event)"
+                                 @hide="onHide" />
+
+            <!-- The person's own settings, kept mounted so closing plays the dialog's exit. -->
+            <ChatSettings :isOpen="isSettingsOpen"
+                          :personName="personName"
+                          :personPhotoUrl="personPhotoUrl"
+                          :campusName="personCampusName"
+                          :organizationName="organizationName"
+                          :me="shell.prefs.state.me"
+                          :save="shell.prefs.state.meSave"
+                          :notes="shell.prefs.state.meNotes"
+                          :announcement="shell.prefs.state.announcement"
+                          :push="shell.state.push"
+                          :isPhone="isPhone"
+                          @close="closeSettings"
+                          @toggle="onSettingToggle"
+                          @pushOn="onTurnOnPush"
+                          @pushOff="onTurnOffPush" />
         </div>
 
         <!-- A phone shows one pane at a time, so its toasts sit over the whole block; so do those of a block with no frame. -->
@@ -598,6 +640,7 @@
     import ChannelDirectory from "./ChatShell/components/channelDirectory.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
+    import ChatSettings from "./ChatShell/components/chatSettings.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
     import ConversationDetails from "./ChatShell/components/conversationDetails.partial.obs";
     import { DirectMessageDraft } from "./ChatShell/composables/useDirectMessage.partial";
@@ -623,6 +666,7 @@
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useJump } from "./ChatShell/composables/useJump.partial";
     import { followNotice, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
+    import { MeKey, NotifyMode } from "./ChatShell/composables/usePrefs.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
@@ -685,6 +729,9 @@
 
     /** Whether the open conversation's details dialog is open. */
     const isDetailsOpen = ref(false);
+
+    /** Whether the person's Chat settings are open. */
+    const isSettingsOpen = ref(false);
 
     /** What asked for the profile card, which it is placed beside, and a count that draws each card afresh. */
     const cardAnchor = shallowRef<HTMLElement | null>(null);
@@ -760,6 +807,12 @@
     const isRefused = computed((): boolean => shell.value.state.phase === "refused" || shell.value.state.phase === "failed");
 
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
+
+    /** The person's own campus by its name, for the sidebar's foot and Chat settings. */
+    const personCampusName = computed((): string | null => {
+        const id = personCampusGuid.value?.toLowerCase();
+        return id ? campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
+    });
 
     /** Text Rock refused earlier, for the box of the conversation the same people now share. */
     const held = computed((): { body: string } | null => shell.value.directMessages.held);
@@ -1060,6 +1113,85 @@
         void shell.value.turnOnPush();
     }
 
+    function onTurnOffPush(): void {
+        void shell.value.turnOffPush();
+    }
+
+    /** A notify mode for the open room, from its details or from the header's or the intro's menu. */
+    function onNotify(mode: NotifyMode, isFromMenu: boolean): void {
+        if (activeChannelId.value) {
+            void shell.value.prefs.setNotifyMode(activeChannelId.value, mode, isFromMenu);
+        }
+    }
+
+    /** Star for the open room: the header's toggles it, the details' switch asks for a value. */
+    function onStar(isFromMenu: boolean, isStarred?: boolean): void {
+        if (activeChannelId.value) {
+            void shell.value.prefs.setStarred(activeChannelId.value, isStarred ?? !activeRow.value?.is_favorite, isFromMenu);
+        }
+    }
+
+    function onHide(isHidden: boolean): void {
+        if (activeChannelId.value) {
+            void shell.value.prefs.setHidden(activeChannelId.value, isHidden);
+        }
+    }
+
+    /** The intro's Star and notify mode save as the header's do; its menu's last item opens the details. */
+    function onIntroAction(action: { kind: "star" } | { kind: "notify", mode: NotifyMode } | { kind: "details" }): void {
+        if (action.kind === "star") {
+            onStar(true);
+        }
+        else if (action.kind === "notify") {
+            onNotify(action.mode, true);
+        }
+        else {
+            isDetailsOpen.value = true;
+        }
+    }
+
+    /** A Chat settings switch: the reaction switch is the platform's, the other two Rock's. */
+    function onSettingToggle(key: MeKey, value: boolean): void {
+        if (key === "reaction_push") {
+            void shell.value.prefs.setReactionPush(value);
+        }
+        else {
+            void shell.value.prefs.setPersonSetting(key, value);
+        }
+    }
+
+    /** The person's own card's Chat settings: the card goes first, so it never stands over the dialog. */
+    function onCardSettings(): void {
+        shell.value.rooms.closeCard();
+        isSettingsOpen.value = true;
+    }
+
+    /**
+     * Closes Chat settings. The dialog gives focus back to what opened it; the card that may have
+     * opened it has gone, so focus then goes to the sidebar's foot, or on a phone the title.
+     */
+    function closeSettings(): void {
+        isSettingsOpen.value = false;
+        void nextTick(() => {
+            const active = document.activeElement;
+            if (active && active !== document.body && rootElement.value?.contains(active)) {
+                return;
+            }
+
+            const target = isPhone.value ? "[data-testid='frame-main'] [data-header-focus]" : "[data-testid='sidebar-me']";
+            rootElement.value?.querySelector<HTMLElement>(target)?.focus();
+        });
+    }
+
+    /** A send over the room's limit was held back: the toast names the limit. */
+    function onOverLimit(maxLength: number): void {
+        notices.value = [...notices.value.filter(n => n.code !== "over-limit"), {
+            code: "over-limit",
+            text: `This message is over the ${maxLength.toLocaleString()} character limit.`,
+            icon: "alert"
+        }];
+    }
+
     /**
      * The push worker asks whether a push's channel is on screen, so it can leave the banner out,
      * and after a tap tells this window which channel to open. A reply's push names its root: the
@@ -1146,6 +1278,20 @@
         if (person?.can_message) {
             onCardMessage(person);
         }
+    }
+
+    /**
+     * Why the person cannot post in a room, in the server's words, which locks its composer; null
+     * where they can. The join case has the join bar and a paused service its own sentence, so
+     * neither is said here.
+     */
+    function lockedReasonFor(row: SidebarRow | null): string | null {
+        const code = row?.can_post_code ?? null;
+        if (!row || row.can_post !== false || code === "authz.join_required" || code === "rpc.read_only" || code === "rpc.maintenance") {
+            return null;
+        }
+
+        return row.can_post_reason?.trim() || "You can't post in this conversation.";
     }
 
     /**

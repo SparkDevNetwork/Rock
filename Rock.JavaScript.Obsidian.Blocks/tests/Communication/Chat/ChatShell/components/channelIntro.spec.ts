@@ -251,20 +251,27 @@ describe("an empty room's foot", () => {
     });
 });
 
-// Members opens the members panel, offered only to someone in the room; Star and the notify mode
-// come with the room's settings.
-describe("the actions", () => {
-    test("are Members, a button with the people icon, for someone in the room", async () => {
+// Members opens the members panel, offered to someone in the room beside Star; where they cannot
+// post, the room's notify mode takes its place.
+describe("the actions' Members", () => {
+    test("are Members, a button with the people icon, then Star, for someone in the room", async () => {
         const w = mountIntro();
 
         const actions = w.get("[data-testid='intro-actions']");
-        expect(actions.findAll("button")).toHaveLength(1);
+        expect(actions.findAll("button").map(b => b.attributes("data-testid"))).toEqual(["intro-members-button", "intro-star"]);
         const members = w.get("[data-testid='intro-members-button']");
         expect(members.text()).toBe("Members");
         expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "users" && members.element.contains(icon.element))).toBe(true);
 
         await members.trigger("click");
         expect(w.emitted("members")).toHaveLength(1);
+    });
+
+    test("give Members' place to the notify mode where the person cannot post", () => {
+        const w = mountIntro({ facts: facts({ can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: "Only leaders can post." }) });
+
+        expect(w.find("[data-testid='intro-members-button']").exists()).toBe(false);
+        expect(w.find("[data-testid='intro-notify']").exists()).toBe(true);
     });
 
     test("are not drawn for someone not in the room", () => {

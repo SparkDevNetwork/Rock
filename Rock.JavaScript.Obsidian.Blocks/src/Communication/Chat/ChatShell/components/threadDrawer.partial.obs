@@ -100,6 +100,8 @@
                       :isChannel="isChannel"
                       :isPhone="isPhone"
                       :isLocked="isLocked"
+                      :lockedReason="lockedReason"
+                      :maxLength="maxLength"
                       :quote="quote"
                       :isQuoteOwn="isQuoteOwn"
                       :emojiSource="emojiSource"
@@ -109,7 +111,8 @@
                       @cancelQuote="emit('cancelQuote')"
                       @emojiPickerOpen="emit('emojiPickerOpen')"
                       @emojiChosen="emit('emojiChosen', $event)"
-                      @mentionQuery="emit('mentionQuery', $event)" />
+                      @mentionQuery="emit('mentionQuery', $event)"
+                      @overLimit="emit('overLimit', $event)" />
         </template>
     </PanelHost>
 </template>
@@ -368,6 +371,18 @@
             default: false
         },
 
+        /** The server's sentence for why the person cannot post in the thread's room, or null. */
+        lockedReason: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The longest reply the room takes, which the composer counts down to; 0 for no limit. */
+        maxLength: {
+            type: Number,
+            default: 0
+        },
+
         /** The reader's own name and photo, for their messages the platform sent none with. */
         personName: {
             type: String as PropType<string>,
@@ -468,7 +483,9 @@
         (e: "emojiPickerOpen"): void,
         (e: "emojiChosen", code: string): void,
         /** The reply composer's @ query whenever it changes, for the search; null for none. */
-        (e: "mentionQuery", query: string | null): void
+        (e: "mentionQuery", query: string | null): void,
+        /** A reply over the room's limit was held back. */
+        (e: "overLimit", maxLength: number): void
     }>();
 
     // #region Values

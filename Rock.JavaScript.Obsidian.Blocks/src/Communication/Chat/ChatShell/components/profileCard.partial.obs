@@ -32,7 +32,14 @@
                         data-testid="profile-badge"><i v-if="badge.iconCss" :class="badge.iconCss" aria-hidden="true"></i>{{ badge.name }}</li>
                 </ul>
                 <p v-if="note" class="chat-pc-note" data-testid="profile-note"><Icon v-if="!person.is_self" name="eye-off" size="xs" />{{ note }}</p>
-                <div v-if="!person.is_self" class="chat-pc-acts">
+                <!-- The person's own card is the way to their settings. -->
+                <div v-if="person.is_self" class="chat-pc-acts">
+                    <button type="button"
+                            class="chat-pc-btn is-line"
+                            data-testid="profile-settings"
+                            @click="emit('settings')"><Icon name="settings" size="xs" />Chat settings</button>
+                </div>
+                <div v-else class="chat-pc-acts">
                     <button v-if="person.can_message"
                             type="button"
                             class="chat-pc-btn"
@@ -214,6 +221,22 @@
     box-shadow: inset 0 0 0 999px var(--chat-press);
 }
 
+/* The outlined button, as the person's own card's Chat settings. */
+.chat-pc-btn.is-line {
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+}
+
+.chat-pc-btn.is-line:hover {
+    border-color: var(--chat-icon);
+    box-shadow: none;
+}
+
+.chat-pc-btn.is-line :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
 .chat-pc-muted {
     display: flex;
     gap: 8px;
@@ -293,6 +316,8 @@
     const emit = defineEmits<{
         (e: "close"): void;
         (e: "message", person: PersonProfile): void;
+        /** The person's own card's Chat settings. */
+        (e: "settings"): void;
     }>();
 
     // #region Values

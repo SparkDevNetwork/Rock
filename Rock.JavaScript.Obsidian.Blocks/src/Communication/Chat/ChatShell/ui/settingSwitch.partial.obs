@@ -1,0 +1,255 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- The words beside a switch toggle it too, as a label would. -->
+    <div class="chat-set-row" :data-testid="`switch-${name}`" @click="onRowClick">
+        <span class="chat-set-txt">
+            <b :id="`${baseId}-l`">{{ title }}</b> <span :id="`${baseId}-d`">{{ description }} <span v-if="extra" class="chat-set-x">{{ extra }}</span></span>
+            <span v-if="note"
+                  :id="`${baseId}-n`"
+                  class="chat-set-note"
+                  :data-kind="note.kind"
+                  data-testid="switch-note">
+                <Icon :name="noteIcon" size="xs" /><span>{{ note.text }}</span>
+            </span>
+        </span>
+        <button ref="switchElement"
+                type="button"
+                class="chat-switch"
+                role="switch"
+                :aria-checked="isOn ? 'true' : 'false'"
+                :aria-labelledby="`${baseId}-l`"
+                :aria-describedby="note ? `${baseId}-d ${baseId}-n` : `${baseId}-d`"
+                :aria-busy="isBusy ? 'true' : undefined"
+                @click.stop="onToggle">
+            <span class="chat-switch-knob"></span>
+        </button>
+    </div>
+</template>
+
+<style scoped>
+.chat-set-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 10px 0;
+    cursor: pointer;
+}
+
+/* Rows in one section are ruled apart, as the browser row is from the reaction switch after it. */
+.chat-set-row + .chat-set-row {
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-set-txt {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    line-height: 1.35;
+}
+
+.chat-set-txt b {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.chat-set-txt > span {
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+/* A word added to the description, on its own line, as when this browser will not show what the switch turns on. */
+.chat-set-x {
+    display: block;
+    margin-top: 4px;
+}
+
+/* A note under the description: a word about the save, a pending save's, or a refusal in danger. */
+.chat-set-txt > .chat-set-note {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-top: 6px;
+    font-weight: 600;
+    animation: chat-set-note-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-set-txt > .chat-set-note[data-kind="error"] {
+    color: var(--chat-danger-ink);
+}
+
+.chat-set-txt > .chat-set-note[data-kind="pending"] {
+    font-weight: 500;
+}
+
+.chat-set-note :deep(.chat-ic) {
+    flex: none;
+    margin-top: 2px;
+}
+
+/* The switch: the line's color off and the church's fill on, its knob sliding across. */
+.chat-switch {
+    position: relative;
+    flex: none;
+    width: 36px;
+    height: 20px;
+    padding: 0;
+    margin-top: 2px;
+    background: var(--chat-line-strong);
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-base) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-switch:hover {
+    background: color-mix(in srgb, var(--chat-line-strong) 80%, var(--chat-text));
+}
+
+.chat-switch[aria-checked="true"] {
+    background: var(--chat-brand-fill);
+}
+
+.chat-switch[aria-checked="true"]:hover {
+    background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
+}
+
+.chat-switch[aria-busy="true"] {
+    cursor: progress;
+    opacity: .7;
+}
+
+.chat-switch:focus-visible {
+    outline-offset: 3px;
+}
+
+.chat-switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--chat-knob);
+    border-radius: 50%;
+    box-shadow: var(--chat-shadow-knob);
+    transition: transform var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-switch[aria-checked="true"] .chat-switch-knob {
+    transform: translateX(16px);
+}
+
+@keyframes chat-set-note-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+}
+
+/* Reduced motion: a note only fades in; the knob's slide stays, being the switch's state. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-set-txt > .chat-set-note {
+        animation-name: chat-set-note-fade;
+    }
+}
+
+@keyframes chat-set-note-fade {
+    from {
+        opacity: 0;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Icon from "./icon.partial.obs";
+
+    /** A line under a switch's description: a word about the save, a pending save's, or a refusal's sentence. */
+    export type SwitchNote = { kind: "info" | "pending" | "error", text: string };
+
+    const props = defineProps({
+        /** The setting's key, which names the row for tests and the dialog's own wiring. */
+        name: {
+            type: String,
+            required: true
+        },
+
+        title: {
+            type: String,
+            required: true
+        },
+
+        description: {
+            type: String,
+            required: true
+        },
+
+        /** A word added under the description, or null for none. */
+        extra: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        isOn: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether its save is out, which marks the switch busy. */
+        isBusy: {
+            type: Boolean,
+            default: false
+        },
+
+        note: {
+            type: Object as PropType<SwitchNote | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        /** The switch was pressed, or its words: the value it asks for. */
+        (e: "toggle", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    /** Ties the switch to its title, description and note, once per row. */
+    const baseId = `chat-set-${newGuid()}`;
+
+    const switchElement = ref<HTMLButtonElement>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const noteIcon = computed((): string => {
+        switch (props.note?.kind) {
+            case "error":
+                return "alert";
+
+            case "pending":
+                return "clock";
+
+            default:
+                return "info";
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onToggle(): void {
+        emit("toggle", !props.isOn);
+    }
+
+    /** A press on the words toggles the switch and gives it focus, as a label does. */
+    function onRowClick(): void {
+        switchElement.value?.focus();
+        onToggle();
+    }
+
+    // #endregion Event Handlers
+</script>

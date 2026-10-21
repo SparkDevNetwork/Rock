@@ -127,6 +127,23 @@
                 </div>
             </template>
         </nav>
+
+        <!-- Who the person is, and their settings. -->
+        <div class="chat-side-me">
+            <button type="button"
+                    class="chat-me-btn"
+                    aria-haspopup="dialog"
+                    :aria-label="`Chat settings, ${personName}`"
+                    data-testid="sidebar-me"
+                    @click="emit('settings')">
+                <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" />
+                <span class="chat-me-who">
+                    <b data-testid="sidebar-me-name">{{ personName }}</b>
+                    <span v-if="personCampusName" data-testid="sidebar-me-campus">{{ personCampusName }}</span>
+                </span>
+                <span class="chat-me-gear" aria-hidden="true"><Icon name="settings" /></span>
+            </button>
+        </div>
     </div>
 </template>
 
@@ -237,6 +254,84 @@
     padding: 4px 8px 12px;
     overflow-y: auto;
     scrollbar-width: thin;
+}
+
+/* The foot: one button for who the person is and their settings, its gear turning on hover. */
+.chat-side-me {
+    flex: none;
+    padding: 8px;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-me-btn {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    padding: 6px 8px;
+    font: inherit;
+    color: var(--chat-text);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-lg);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-me-btn:hover {
+    background: var(--chat-hover);
+}
+
+.chat-me-btn:active {
+    background: var(--chat-press);
+}
+
+.chat-me-who {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.chat-me-who b,
+.chat-me-who span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-me-who b {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.chat-me-who span {
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-me-gear {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: var(--chat-icon);
+    border-radius: 50%;
+    transition: color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-me-btn:hover .chat-me-gear {
+    color: var(--chat-text);
+    transform: rotate(30deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-me-btn:hover .chat-me-gear {
+        transform: none;
+    }
 }
 
 .chat-sec {
@@ -593,6 +688,22 @@
             default: ""
         },
 
+        /** The person's own name, photo and campus by its name, drawn in the foot. */
+        personName: {
+            type: String,
+            default: ""
+        },
+
+        personPhotoUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        personCampusName: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
         /** Whether the block is drawn one pane at a time, as on a phone. */
         isPhone: {
             type: Boolean,
@@ -621,7 +732,9 @@
     const emit = defineEmits<{
         (e: "select", channelId: string): void,
         (e: "newMessage"): void,
-        (e: "browse"): void
+        (e: "browse"): void,
+        /** The foot was pressed: Chat settings. */
+        (e: "settings"): void
     }>();
 
     // #region Values

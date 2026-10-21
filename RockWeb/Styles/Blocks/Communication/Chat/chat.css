@@ -97,6 +97,10 @@
     --chat-new-outline: rgba(215, 0, 21, .45);
     /* Only the alpha of a mask counts, so this is opaque, never a color seen. */
     --chat-mask-solid: #000;
+    /* A settings switch's knob, the same near-white in both themes. */
+    --chat-knob: #fdfdfd;
+    /* What a church fill is mixed toward to darken it under the pointer, as a switch that is on. */
+    --chat-shade: #000;
 
     /* An initials avatar's saturation and lightness; the hue is the person's own. */
     --chat-av-sat: 70%;

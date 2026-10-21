@@ -17,8 +17,23 @@
                 </div>
             </div>
 
+            <!-- A member's own: the notify mode in words where they read but cannot post, else Members, then Star. -->
             <div v-if="facts.is_member" class="chat-intro-actions" data-testid="intro-actions">
-                <button type="button" class="chat-intro-btn" data-testid="intro-members-button" @click="emit('members')"><Icon name="users" size="xs" />Members</button>
+                <span v-if="!canPostOnceIn" class="chat-intro-notify" data-testid="intro-notify">
+                    <Menu :icon="notifyIcon"
+                          :label="`Notifications, ${notifyLabel}`"
+                          :buttonText="notifyLabel"
+                          heading="Notify me about"
+                          :items="notifyItems"
+                          @select="onNotifySelect" />
+                </span>
+                <button v-else type="button" class="chat-intro-btn" data-testid="intro-members-button" @click="emit('members')"><Icon name="users" size="xs" />Members</button>
+                <IconButton :icon="isStarred ? 'star-f' : 'star'"
+                            :label="isStarred ? 'Unstar' : 'Star'"
+                            :aria-pressed="isStarred ? 'true' : 'false'"
+                            class="chat-intro-star"
+                            data-testid="intro-star"
+                            @click="emit('star')" />
             </div>
 
             <p class="chat-intro-desc" data-testid="intro-description">{{ description }}</p>
@@ -159,7 +174,7 @@
     color: var(--chat-icon);
 }
 
-/* Beside the heading on a desktop, on their own row on a phone. */
+/* Beside the heading on a wide block, on their own row on a phone. */
 .chat-intro-actions {
     display: flex;
     gap: 4px;
@@ -201,6 +216,15 @@
     width: 14px;
     height: 14px;
     color: var(--chat-icon);
+}
+
+.chat-intro-actions :deep(.chat-intro-star) {
+    width: 30px;
+    height: 30px;
+}
+
+.chat-intro-notify {
+    display: inline-flex;
 }
 
 .chat-intro-desc {
@@ -282,8 +306,11 @@
     import { computed, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { NotifyMode, notifyOptionsFor } from "../composables/usePrefs.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { ChannelFacts } from "../types.partial";
 
     const emit = defineEmits<{
@@ -325,8 +352,22 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether the room is in the person's Starred, which presses Star. */
+        isStarred: {
+            type: Boolean,
+            default: false
         }
     });
+
+    const emit = defineEmits<{
+        (e: "star"): void;
+        /** A notify mode other than the room's own was chosen. */
+        (e: "notify", mode: NotifyMode): void;
+        /** The menu's last item. */
+        (e: "details"): void;
+    }>();
 
     // #region Values
 
@@ -342,6 +383,13 @@
 
     /** The one reason to be unable to post that the join bar already says, so the note leaves it out. */
     const joinRequiredCode = "authz.join_required";
+
+    /** A room read but not posted in names its mode by the posts it notifies about. */
+    const notifyLabels: Record<string, string> = {
+        all: "All posts",
+        mentions: "Mentions only",
+        silent: "Off"
+    };
 
     // #endregion Values
 
@@ -398,7 +446,30 @@
         return text || null;
     });
 
+    const notifyLabel = computed((): string => notifyLabels[props.notifyMode ?? ""] ?? notifyLabels.all);
+
+    const notifyIcon = computed((): string => props.notifyMode === "silent" ? "bell-off" : props.notifyMode === "mentions" ? "at-bell" : "bell");
+
+    /** The header's notify menu, the same words and the same save. */
+    const notifyItems = computed((): MenuItem[] => [
+        ...notifyOptionsFor("channel").map(option => ({ key: option.value, label: option.title, description: option.description, isChecked: option.value === props.notifyMode })),
+        { key: "details", label: "Channel details", icon: "settings", isSeparatorBefore: true }
+    ]);
+
     // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onNotifySelect(key: string): void {
+        if (key === "details") {
+            emit("details");
+        }
+        else if (key !== props.notifyMode && (key === "all" || key === "mentions" || key === "silent")) {
+            emit("notify", key);
+        }
+    }
+
+    // #endregion Event Handlers
 
     // #region Functions
 

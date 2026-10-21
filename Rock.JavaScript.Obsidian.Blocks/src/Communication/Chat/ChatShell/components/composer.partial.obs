@@ -1,9 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-thread': isThread, 'is-phone': isPhone }">
-        <div v-if="isLocked" class="chat-composer-locked" data-testid="composer-locked">
+        <!-- A paused service, or a room the person cannot post in, in the server's own words. -->
+        <div v-if="isLocked || lockedReason" class="chat-composer-locked" data-testid="composer-locked">
             <Icon name="lock" />
-            <span>Sending is paused for maintenance.</span>
+            <span>{{ lockedReason || "Sending is paused for maintenance." }}</span>
         </div>
 
         <template v-else>
@@ -54,6 +55,7 @@
                     <input v-model="isAlsoSent" type="checkbox"> {{ alsoText }}
                 </label>
                 <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
+                <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
             </div>
 
             <!-- The picker in insert mode, mounted only while open, so it fetches and focuses as it opens. -->
@@ -242,6 +244,21 @@
     accent-color: var(--chat-brand);
 }
 
+/* The countdown in the last 500 characters of the limit, at the foot's end. */
+.chat-composer-count {
+    margin-left: auto;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.chat-composer-count[data-tone="warn"] {
+    color: var(--chat-warning-ink);
+}
+
+.chat-composer-count[data-tone="over"] {
+    color: var(--chat-danger-ink);
+}
+
 .chat-composer-locked {
     display: flex;
     gap: 10px;
@@ -312,6 +329,21 @@
         isLocked: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * The server's sentence for why the person cannot post here, which gives the box way to a
+         * locked bar saying it; null where they can.
+         */
+        lockedReason: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The longest message the room takes, in characters, counted down in its last 500; 0 for no limit. */
+        maxLength: {
+            type: Number,
+            default: 0
         },
 
         /**
@@ -398,7 +430,9 @@
         /** An emoji went into the box, for the recently used. */
         (e: "emojiChosen", code: string): void;
         /** The @ query at the caret whenever it changes, for the shell's search; null for none. */
-        (e: "mentionQuery", query: string | null): void
+        (e: "mentionQuery", query: string | null): void;
+        /** A send over the room's limit was held back; the block says why, naming the limit. */
+        (e: "overLimit", maxLength: number): void
     }>();
 
     // #region Values
@@ -421,6 +455,9 @@
 
     /** Escape or a press elsewhere closed the picker; the next change in the box may open it again. */
     const isMentionDismissed = ref(false);
+
+    /** The counter shows from this many characters short of the limit. */
+    const countdownFrom = 500;
 
     // #endregion Values
 
@@ -457,6 +494,20 @@
         return text.replace(/\s+/g, " ").trim();
     });
 
+    /** How the counter reads near and past the limit, or null while it has nothing to say. */
+    const count = computed((): { text: string, tone: "warn" | "over" } | null => {
+        if (props.maxLength <= 0) {
+            return null;
+        }
+
+        const left = props.maxLength - text.value.length;
+        if (left >= countdownFrom) {
+            return null;
+        }
+
+        return left < 0 ? { text: `${(-left).toLocaleString()} over the limit`, tone: "over" } : { text: `${left.toLocaleString()} left`, tone: "warn" };
+    });
+
     /** Whether there is something to send, which turns the send button to the church's fill. */
     const isReady = computed((): boolean => text.value.trim() !== "");
 
@@ -483,6 +534,12 @@
      */
     function onSubmit(): void {
         if (text.value.trim() === "") {
+            return;
+        }
+
+        // The send would be refused, so the text stays in the box to be cut, and the block says why.
+        if (props.maxLength > 0 && text.value.length > props.maxLength) {
+            emit("overLimit", props.maxLength);
             return;
         }
 

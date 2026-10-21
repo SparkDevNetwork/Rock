@@ -80,11 +80,21 @@
                 <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-mentions-dot" aria-hidden="true"></span>
             </IconButton>
 
-            <IconButton v-if="isPushOffered && !isPhone"
-                        icon="bell"
-                        label="Turn on notifications"
-                        data-testid="push-offer"
-                        @click="emit('turnOnPush')" />
+            <!-- The room's notify menu, the bell drawn as its mode; kept on a phone, where Star moves into More. -->
+            <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
+                <Menu :icon="notifyIcon"
+                      label="Notifications"
+                      heading="Notify me about"
+                      :items="notifyItems"
+                      @select="onNotifySelect" />
+            </span>
+
+            <IconButton v-if="isPrefsOffered && !isPhone"
+                        :icon="isStarred ? 'star-f' : 'star'"
+                        :label="isStarred ? 'Unstar' : 'Star'"
+                        :aria-pressed="isStarred ? 'true' : 'false'"
+                        data-testid="header-star"
+                        @click="emit('star')" />
 
             <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more">
                 <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" />
@@ -262,7 +272,8 @@ button.chat-header-id:hover .chat-header-chev {
     margin-left: auto;
 }
 
-.chat-header-more {
+.chat-header-more,
+.chat-header-menu {
     position: relative;
     display: inline-flex;
 }
@@ -457,6 +468,7 @@ button.chat-header-id:hover .chat-header-chev {
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { notifyOptionsFor } from "../composables/usePrefs.partial";
     import { ChannelFacts, ChatError } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -471,13 +483,16 @@ button.chat-header-id:hover .chat-header-chev {
     // #endregion Types
 
     const emit = defineEmits<{
-        (e: "turnOnPush"): void,
         (e: "back"): void,
         (e: "backOnline"): void,
         (e: "threads"): void,
         (e: "mentions"): void,
         (e: "members"): void,
-        (e: "details"): void
+        (e: "details"): void,
+        /** A notify mode other than the room's own was chosen from the bell's menu. */
+        (e: "notify", mode: "all" | "mentions" | "silent"): void,
+        /** Star or Unstar, from the header or the phone's More. */
+        (e: "star"): void
     }>();
 
     const props = defineProps({
@@ -549,8 +564,20 @@ button.chat-header-id:hover .chat-header-chev {
             default: false
         },
 
-        /** Whether to offer "Turn on notifications"; the click is what asks the browser. */
-        isPushOffered: {
+        /** Whether the room is the person's own, so its notify menu and Star are offered. */
+        isPrefsOffered: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The room's notify mode for the person, which the bell draws and its menu checks. */
+        notifyMode: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Whether the room is in the person's Starred, which presses Star. */
+        isStarred: {
             type: Boolean,
             default: false
         },
@@ -700,8 +727,8 @@ button.chat-header-id:hover .chat-header-chev {
             items.push({ key: "threads", label: "Threads", icon: "thread" });
         }
 
-        if (props.isPushOffered) {
-            items.push({ key: "push", label: "Turn on notifications", icon: "bell" });
+        if (props.isPrefsOffered) {
+            items.push({ key: "star", label: props.isStarred ? "Unstar" : "Star", icon: props.isStarred ? "star-f" : "star" });
         }
 
         // Last, as the title opens the same details on a phone too.
@@ -711,6 +738,20 @@ button.chat-header-id:hover .chat-header-chev {
 
         return items;
     });
+
+    /** The bell as the room's mode: on, mentions only, or off. */
+    const notifyIcon = computed((): string => props.notifyMode === "silent" ? "bell-off" : props.notifyMode === "mentions" ? "at-bell" : "bell");
+
+    /** "Notify me about": the three modes with what each means, the room's own checked, then its details. */
+    const notifyItems = computed((): MenuItem[] => [
+        ...notifyOptionsFor(props.kind).map(option => ({
+            key: option.value,
+            label: option.title,
+            description: option.description,
+            isChecked: option.value === props.notifyMode
+        })),
+        { key: "details", label: props.kind === "channel" ? "Channel details" : "Conversation details", icon: "settings", isSeparatorBefore: true }
+    ]);
 
     /** Which banner the connection opens: offline while lost, then back online while catching up after it. */
     const connectionBanner = computed((): "warning" | "info" | null => {
@@ -726,8 +767,8 @@ button.chat-header-id:hover .chat-header-chev {
     // #region Event Handlers
 
     function onMoreSelect(key: string): void {
-        if (key === "push") {
-            emit("turnOnPush");
+        if (key === "star") {
+            emit("star");
         }
         else if (key === "threads") {
             emit("threads");
@@ -740,6 +781,15 @@ button.chat-header-id:hover .chat-header-chev {
         }
         else if (key === "details") {
             emit("details");
+        }
+    }
+
+    function onNotifySelect(key: string): void {
+        if (key === "details") {
+            emit("details");
+        }
+        else if (key !== props.notifyMode && (key === "all" || key === "mentions" || key === "silent")) {
+            emit("notify", key);
         }
     }
 

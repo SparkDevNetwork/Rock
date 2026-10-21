@@ -6,13 +6,7 @@
             :isPhone="isPhone"
             @close="emit('close')">
         <template #tools>
-            <!-- Seen, not read: what each save comes to is said once, in the live region below. -->
-            <span class="chat-save-ind" :data-state="saveState" data-testid="details-save" aria-hidden="true">
-                <template v-if="saveState === 'saving'"><span class="chat-spinner"></span><span>Saving</span></template>
-                <template v-else-if="saveState === 'saved' || saveState === 'fade'"><Icon name="check" size="xs" /><span>Saved</span></template>
-                <template v-else-if="saveState === 'pending'"><Icon name="clock" size="xs" /><span>Saved, syncing</span></template>
-                <template v-else-if="saveState === 'refused'"><Icon name="alert" size="xs" /><span>Not saved</span></template>
-            </span>
+            <SaveIndicator :state="headSave.state" :mark="headSave.mark" data-testid="details-save" />
             <IconButton icon="x" label="Close" data-testid="details-close" @click="emit('close')" />
         </template>
 
@@ -68,6 +62,48 @@
         <section v-if="!facts.is_member && kind === 'channel'" class="chat-rd-sec">
             <p class="chat-rd-callout" data-testid="details-callout"><Icon name="info" size="sm" /><span>Join {{ title }} to choose its notifications and keep it in your sidebar.</span></p>
         </section>
+
+        <!-- The person's own settings for the room, each saved at once. -->
+        <template v-if="facts.is_member">
+            <section class="chat-rd-sec" data-testid="details-notify">
+                <h4 :id="`${renameId}-notify`">Notify me about</h4>
+                <div class="chat-nopts" role="radiogroup" :aria-labelledby="`${renameId}-notify`" @keydown="onNotifyKeydown">
+                    <button v-for="option in notifyOptions"
+                            :key="option.value"
+                            ref="notifyElements"
+                            type="button"
+                            class="chat-nopt"
+                            role="radio"
+                            :aria-checked="option.value === notifyMode ? 'true' : 'false'"
+                            :tabindex="option.value === shownNotifyMode ? 0 : -1"
+                            data-testid="notify-option"
+                            :data-value="option.value"
+                            @click="onNotify(option.value)">
+                        <span class="chat-nopt-ic"><Icon :name="option.icon" size="sm" /></span>
+                        <span class="chat-nopt-txt"><b>{{ option.title }}</b><span class="chat-nopt-desc">{{ option.description }}</span></span>
+                        <span class="chat-nopt-dot" aria-hidden="true"></span>
+                    </button>
+                </div>
+                <p v-if="prefsNotes.notify" class="chat-set-err chat-nopts-err" data-testid="notify-error"><Icon name="alert" size="xs" /><span>{{ prefsNotes.notify.text }}</span></p>
+                <p class="chat-nopts-foot" data-testid="notify-foot">Threads you follow notify you about every reply. Unread mentions always show a badge.</p>
+            </section>
+
+            <section class="chat-rd-sec" data-testid="details-sidebar">
+                <h4>In your sidebar</h4>
+                <SettingSwitch name="star"
+                               title="Star"
+                               description="Keep it at the top of your list."
+                               :isOn="isStarred"
+                               :note="prefsNotes.star ?? null"
+                               @toggle="emit('star', $event)" />
+                <SettingSwitch name="hide"
+                               title="Hide"
+                               description="Take it out of your list until there's a new message."
+                               :isOn="isHidden"
+                               :note="prefsNotes.hide ?? null"
+                               @toggle="emit('hide', $event)" />
+            </section>
+        </template>
 
         <section v-if="isRenameOffered" class="chat-rd-sec">
             <h4><label :for="renameId">Conversation name</label></h4>
@@ -150,9 +186,9 @@
             </section>
         </template>
 
-        <!-- The rooms' news said while the dialog is open, keyed by count so the same words are read twice. -->
-        <span class="chat-sr-only" aria-live="polite" data-testid="details-announcement"><span v-if="shownAnnouncement && !shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
-        <span class="chat-sr-only" aria-live="assertive" data-testid="details-alert"><span v-if="shownAnnouncement && shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
+        <!-- The news said while the dialog is open, the rooms' or the settings', keyed so the same words are read twice. -->
+        <span class="chat-sr-only" aria-live="polite" data-testid="details-announcement"><span v-if="said && !said.isAssertive" :key="said.key">{{ said.text }}</span></span>
+        <span class="chat-sr-only" aria-live="assertive" data-testid="details-alert"><span v-if="said && said.isAssertive" :key="said.key">{{ said.text }}</span></span>
     </Dialog>
 </template>
 
@@ -451,39 +487,112 @@
     color: var(--chat-text-2);
 }
 
-/* The head's save indicator: Saving, Saved in success that fades, Saved, syncing, or Not saved. */
-.chat-save-ind {
-    display: inline-flex;
-    gap: 5px;
+/* Notify me about: three quiet cards, the chosen one in the church's color, its dot filling in. */
+.chat-nopts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chat-nopt {
+    display: flex;
+    gap: 12px;
     align-items: center;
-    margin-left: auto;
-    font-size: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--chat-text);
+    text-align: left;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-lg);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-nopt:hover {
+    background: var(--chat-hover);
+    border-color: var(--chat-line-strong);
+}
+
+.chat-nopt[aria-checked="true"] {
+    background: var(--chat-brand-wash);
+    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chat-brand) 35%, transparent);
+}
+
+.chat-nopt-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: var(--chat-icon);
+    background: var(--chat-sidebar);
+    border-radius: var(--chat-r-radio-ic);
+    transition: color var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-nopt[aria-checked="true"] .chat-nopt-ic {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+}
+
+.chat-nopt-txt {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-nopt-txt b {
+    font-size: 13.5px;
     font-weight: 600;
+}
+
+.chat-nopt-desc {
+    font-size: 12.5px;
     color: var(--chat-muted);
-    white-space: nowrap;
-    transition: opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
-.chat-save-ind[data-state="saved"] {
-    color: var(--chat-success);
+.chat-nopt-dot {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--chat-line-strong);
+    border-radius: 50%;
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-save-ind[data-state="fade"] {
-    color: var(--chat-success);
-    opacity: 0;
+.chat-nopt-dot::after {
+    width: 8px;
+    height: 8px;
+    content: "";
+    background: var(--chat-brand-fill);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-save-ind[data-state="refused"] {
-    color: var(--chat-danger-ink);
+.chat-nopt[aria-checked="true"] .chat-nopt-dot {
+    border-color: var(--chat-brand-fill);
 }
 
-.chat-save-ind .chat-spinner {
-    width: 11px;
-    height: 11px;
+.chat-nopt[aria-checked="true"] .chat-nopt-dot::after {
+    transform: scale(1);
 }
 
-.chat-save-ind > * {
-    animation: chat-save-in var(--chat-t-base) var(--chat-ease-in);
+.chat-nopts-err {
+    margin: 8px 0 0;
+}
+
+.chat-nopts-foot {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--chat-muted);
 }
 
 .chat-rn .chat-rd-btn {
@@ -571,8 +680,7 @@
 /* Reduced motion: the notes and the leave box only fade in. */
 @media (prefers-reduced-motion: reduce) {
     .chat-set-note,
-    .chat-leave-box,
-    .chat-save-ind > * {
+    .chat-leave-box {
         animation-name: chat-rd-fade-in;
     }
 }
@@ -585,9 +693,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs, SaveMark } from "../composables/usePrefs.partial";
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
     import { joinNames } from "../stores/channelStore.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
@@ -595,6 +704,8 @@
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import SaveIndicator, { SaveIndicatorState } from "../ui/saveIndicator.partial.obs";
+    import SettingSwitch from "../ui/settingSwitch.partial.obs";
     import { HeaderRoomKind } from "./chatHeader.partial.obs";
 
     const props = defineProps({
@@ -678,6 +789,41 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /** The room's notify mode for the person, as their sidebar row holds it. */
+        notifyMode: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Whether the room is in the person's Starred, and whether they hid it from this screen. */
+        isStarred: {
+            type: Boolean,
+            default: false
+        },
+
+        isHidden: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The newest save of the room's settings, which the head's indicator shows when it is the newest. */
+        prefsSave: {
+            type: Object as PropType<SaveMark | null>,
+            default: null
+        },
+
+        /** The note under each of the room's settings. */
+        prefsNotes: {
+            type: Object as PropType<RoomPrefs["notes"]>,
+            default: () => ({})
+        },
+
+        /** The settings' newest sentence for screen readers. */
+        prefsAnnouncement: {
+            type: Object as PropType<PrefsState["announcement"]>,
+            default: null
         }
     });
 
@@ -687,6 +833,12 @@
 
         /** The member count, which opens the members panel. */
         (e: "members"): void;
+        /** A notify mode was chosen other than the room's own. */
+        (e: "notify", mode: NotifyMode): void;
+
+        /** The Star or Hide switch, with the value it asks for. */
+        (e: "star", isStarred: boolean): void;
+        (e: "hide", isHidden: boolean): void;
 
         /** Leave was confirmed. */
         (e: "leave"): void;
@@ -719,12 +871,13 @@
     /** The rooms' announcement count as the dialog opened, so only news said since is read here. */
     const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
 
-    /** "Saved" fades from the head after this long, as every settings dialog's does. */
-    const savedFadeMs = 1600;
+    /** What the head's indicator shows: the newest save, the rename's or a setting's, and its count. */
+    const headSave = ref<{ state: SaveIndicatorState | null, mark: number }>({ state: null, mark: 0 });
 
-    /** Whether the head's Saved has faded. */
-    const isSavedFaded = ref(false);
-    let savedFadeTimer: ReturnType<typeof setTimeout> | null = null;
+    /** The newest sentence said while the dialog is open, the rooms' or the settings'. */
+    const said = ref<{ text: string, isAssertive: boolean, key: string } | null>(null);
+
+    const notifyElements = ref<HTMLButtonElement[]>([]);
 
     /** The count shows from here, ten short of the 100 a name may hold. */
     const countFrom = 90;
@@ -829,16 +982,12 @@
     });
 
     /** What the head's save indicator shows for the rename, nothing before one is asked. */
-    const saveState = computed((): "saving" | "saved" | "fade" | "pending" | "refused" | null => {
+    const renameSaveState = computed((): SaveIndicatorState | null => {
         switch (props.rename.kind) {
             case "saving":
-                return "saving";
-
             case "saved":
-                return isSavedFaded.value ? "fade" : "saved";
-
             case "pending":
-                return "pending";
+                return props.rename.kind;
 
             case "refused":
             case "offline":
@@ -849,6 +998,12 @@
                 return null;
         }
     });
+
+    /** The three modes, in words chosen by the room's kind. */
+    const notifyOptions = computed(() => notifyOptionsFor(props.kind));
+
+    /** The mode Tab lands on: the room's own, or the first where it has none. */
+    const shownNotifyMode = computed((): string => notifyOptions.value.some(option => option.value === props.notifyMode) ? props.notifyMode ?? "all" : "all");
 
     /** The rooms' newest sentence, once it is one said since the dialog opened. */
     const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
@@ -906,6 +1061,26 @@
 
     // #region Event Handlers
 
+    function onNotify(mode: NotifyMode): void {
+        if (mode !== props.notifyMode) {
+            emit("notify", mode);
+        }
+    }
+
+    /** The arrows move between the modes and choose as they go, wrapping round, as a radio group does. */
+    function onNotifyKeydown(event: KeyboardEvent): void {
+        const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 0;
+        const at = notifyElements.value.indexOf(event.target as HTMLButtonElement);
+        if (step === 0 || at < 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const next = (at + step + notifyOptions.value.length) % notifyOptions.value.length;
+        notifyElements.value[next]?.focus();
+        onNotify(notifyOptions.value[next].value);
+    }
+
     function onRename(): void {
         if (canSaveName.value) {
             emit("rename", draftName.value.trim());
@@ -953,25 +1128,36 @@
 
     watch(() => props.rename.kind, kind => {
         isEditedSinceAnswer.value = false;
-        isSavedFaded.value = false;
-        if (savedFadeTimer !== null) {
-            clearTimeout(savedFadeTimer);
-            savedFadeTimer = null;
-        }
-        if (kind === "saved") {
-            savedFadeTimer = setTimeout(() => {
-                savedFadeTimer = null;
-                isSavedFaded.value = true;
-            }, savedFadeMs);
-        }
+        headSave.value = { state: renameSaveState.value, mark: headSave.value.mark + 1 };
         if (kind === "saved" || kind === "pending") {
             draftName.value = draftName.value.trim();
+        }
+    });
+
+    // The head shows whichever save moved last, the rename's or one of the room's settings.
+    watch(() => props.prefsSave, save => {
+        if (save) {
+            headSave.value = { state: save.state, mark: headSave.value.mark + 1 };
+        }
+    }, { immediate: true });
+
+    // The rooms' news and the settings' are read in the one live region, the newest last.
+    watch(shownAnnouncement, announcement => {
+        if (announcement) {
+            said.value = { text: announcement.text, isAssertive: announcement.isAssertive, key: `room-${announcement.count}` };
+        }
+    });
+
+    watch(() => props.prefsAnnouncement, announcement => {
+        if (announcement && props.isOpen) {
+            said.value = { text: announcement.text, isAssertive: announcement.isAssertive, key: `prefs-${announcement.count}` };
         }
     });
 
     // Each opening reads only the news said from then on.
     watch(() => props.isOpen, isOpen => {
         announcedBefore.value = isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY;
+        said.value = null;
     });
 
     // A name changed elsewhere, or saved here and read back, is what the field now holds.
@@ -981,9 +1167,4 @@
 
     // #endregion Watchers
 
-    onBeforeUnmount(() => {
-        if (savedFadeTimer !== null) {
-            clearTimeout(savedFadeTimer);
-        }
-    });
 </script>
