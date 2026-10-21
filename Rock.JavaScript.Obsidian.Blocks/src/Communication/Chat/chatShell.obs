@@ -1341,7 +1341,7 @@
         const isFocusGoing = now !== before && !!active && !!root?.contains(active)
             && (!!active.closest("[data-testid='main-view']") || !!active.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']"));
         if (!now) {
-            isFocusOwed = isFocusGoing;
+            isFocusOwed = isFocusOwed || isFocusGoing;
             return;
         }
 
@@ -1357,6 +1357,15 @@
             const composer = isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']");
             (composer ?? main?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
         });
+    });
+
+    // The details go with the room's row when a reload no longer lists it, which a leave's own
+    // sync can bring before its door answers; focus they held is owed to what opens next.
+    watch(() => !!(activeChannelId.value && activeFacts.value && activeKind.value), (isShown, wasShown) => {
+        const active = document.activeElement;
+        if (wasShown && !isShown && !!active?.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']")) {
+            isFocusOwed = true;
+        }
     });
 
     // Once the person has left, the room's details have nothing left to show.
