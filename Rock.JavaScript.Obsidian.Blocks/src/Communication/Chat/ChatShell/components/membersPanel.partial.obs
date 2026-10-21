@@ -1050,12 +1050,13 @@
     });
 
     // A row the door starts removing remembers the row after it; a refused one keeps focus on itself.
-    watch(() => props.removals, (removals, was) => {
-        for (const [guid, removal] of Object.entries(removals)) {
-            if (removal.kind === "removing" && was?.[guid]?.kind !== "removing") {
+    // Snapshot each kind because the roster mutates this dictionary's entries in place.
+    watch(() => Object.fromEntries(Object.entries(props.removals).map(([guid, removal]) => [guid, removal.kind])), (removals, was) => {
+        for (const [guid, kind] of Object.entries(removals)) {
+            if (kind === "removing" && was?.[guid] !== "removing") {
                 leaving.set(guid, nextRowOf(guid));
             }
-            else if (removal.kind === "refused" && was?.[guid]?.kind === "removing") {
+            else if (kind === "refused" && was?.[guid] === "removing") {
                 leaving.delete(guid);
                 void nextTick(() => whoOf(guid)?.focus({ preventScroll: true }));
             }
