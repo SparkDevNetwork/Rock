@@ -2542,11 +2542,12 @@ describe("the browser row", () => {
 
         // the token is still on its way, so the start has not settled
         expect(h.deviceCalls).toEqual([]);
-        expect(h.shell.state.push).toBe("on");
+        expect(h.shell.state.push).toBe("offered");
 
         token.resolve("fcm-1");
         await starting;
         expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(h.shell.state.push).toBe("on");
     });
 
     test("Turn on with the browser already allowing shows on only once the register settles", async () => {

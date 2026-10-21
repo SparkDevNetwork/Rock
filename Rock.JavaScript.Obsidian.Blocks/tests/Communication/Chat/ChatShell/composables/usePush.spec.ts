@@ -386,6 +386,52 @@ describe("the browser row's state", () => {
         expect(push.state()).toBe("offered");
     });
 
+    test.each(["startup", "Turn on"])("%s shows on only after its delayed register succeeds", async (mode) => {
+        const answer = deferred<CallResult>();
+        const { deps } = dependencies({ permission: "granted" });
+        deps.call = jest.fn(() => answer.promise);
+        const push = createPushRegistration(deps);
+
+        const registering = mode === "startup" ? push.start() : push.turnOn();
+        await settle();
+        expect(deps.call).toHaveBeenCalledWith("chat_register_device", expect.anything());
+        expect(push.state()).toBe("offered");
+
+        answer.resolve(registered);
+        await registering;
+        expect(push.state()).toBe("on");
+    });
+
+    test.each([
+        ["startup", "Firebase"], ["startup", "platform"],
+        ["Turn on", "Firebase"], ["Turn on", "platform"]
+    ])("%s remains retryable after %s refuses registration", async (mode, failure) => {
+        const token = deferred<string>();
+        const answer = deferred<CallResult>();
+        const { deps } = dependencies({ permission: "granted" });
+        deps.getToken = jest.fn(() => token.promise);
+        deps.call = jest.fn(() => answer.promise);
+        const push = createPushRegistration(deps);
+
+        const registering = mode === "startup" ? push.start() : push.turnOn();
+        await settle();
+        if (failure === "Firebase") {
+            token.reject(new Error("messaging/permission-blocked"));
+        }
+        else {
+            token.resolve("fcm-token-1");
+            await settle();
+            answer.resolve({ ok: false, status: 503, error: { code: "rpc.read_only", severity: "degraded", text: "Read only tonight." }, retryAfterSeconds: null });
+        }
+        await registering;
+        expect(push.state()).toBe("offered");
+
+        deps.getToken = jest.fn(async () => "fcm-token-1");
+        deps.call = jest.fn(async () => registered);
+        await push.turnOn();
+        expect(push.state()).toBe("on");
+    });
+
     test("is asking while the browser's own box is up, then on once allowed and registered", async () => {
         const answer = deferred<string>();
         const { deps, calls, setPermission } = dependencies();
