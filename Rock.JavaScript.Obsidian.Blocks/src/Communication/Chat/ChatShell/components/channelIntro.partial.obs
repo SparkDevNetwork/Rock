@@ -313,11 +313,6 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { ChannelFacts } from "../types.partial";
 
-    const emit = defineEmits<{
-        /** Members, which opens the members panel. */
-        (e: "members"): void;
-    }>();
-
     const props = defineProps({
         /** What chat_get_channel answered about the room. */
         facts: {
@@ -362,6 +357,8 @@
     });
 
     const emit = defineEmits<{
+        /** Members, which opens the members panel. */
+        (e: "members"): void;
         (e: "star"): void;
         /** A notify mode other than the room's own was chosen. */
         (e: "notify", mode: NotifyMode): void;

@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- No box of its own, so the frame's grid never gives it a column; the dialog places itself over the frame. -->
     <div class="chat-ap" data-testid="add-people">
+        <!-- No box of its own, so the frame's grid never gives it a column; the dialog places itself over the frame. -->
         <Dialog :isOpen="isOpen"
                 :title="`Add people to ${channelName}`"
                 isWide
