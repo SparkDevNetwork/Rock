@@ -1060,6 +1060,12 @@ describe("the Leader pill", () => {
         expect(draw({ message: message(), isChannel: true }).find("[data-testid='leader-pill']").exists()).toBe(false);
     });
 
+    test("a sender who is not listed draws none, even one who leads the room", () => {
+        const w = draw({ message: message({ sender_is_leader: true, sender_listed: false }), isChannel: true, position: "first" });
+
+        expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
     test("a direct message never draws it, in its bubbles or its card", () => {
         const blocks = [{ type: "text", text: "Sign up", fallback: { type: "text", text: "Sign up" } }] as unknown as TimelineMessage["blocks"];
 

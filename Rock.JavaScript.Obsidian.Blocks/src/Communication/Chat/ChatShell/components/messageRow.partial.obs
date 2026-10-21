@@ -1201,9 +1201,10 @@
 
     /**
      * The Leader pill beside the name: a fact about the sender in this channel now, so only a
-     * channel's rows draw it. Those are always Community rows, so the bubbles never need it.
+     * channel's rows draw it. Those are always Community rows, so the bubbles never need it. A
+     * sender who is not listed is drawn with no name, and a role would say who they are.
      */
-    const isLeaderShown = computed((): boolean => props.isChannel && props.message?.sender_is_leader === true);
+    const isLeaderShown = computed((): boolean => props.isChannel && props.message?.sender_is_leader === true && props.message.sender_listed !== false);
 
     const isEdited = computed((): boolean => !isTomb.value && !props.pending && !!props.message?.edited_at);
 
