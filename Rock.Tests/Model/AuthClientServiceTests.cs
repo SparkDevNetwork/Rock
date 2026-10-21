@@ -338,6 +338,41 @@ namespace Rock.Tests.Model
             Assert.IsNull( output );
         }
 
+        [TestMethod]
+        public void GetAuthClientFromMetadata_RejectsMarkupInClientName()
+        {
+            var metadata = CreateMetadata( new List<string> { "https://app.example.com/callback" } );
+            metadata.ClientName = "<img src=x onerror=alert(1)>";
+
+            var output = AuthClientService.GetAuthClientFromMetadata( metadata, MetadataClientId );
+
+            Assert.IsNull( output );
+        }
+
+        #endregion
+
+        #region IsClientNameValid
+
+        [TestMethod]
+        [DataRow( null )]
+        [DataRow( "" )]
+        [DataRow( "Example App" )]
+        [DataRow( "Smith & Sons' App, Ltd." )]
+        public void IsClientNameValid_AcceptsPlainNames( string clientName )
+        {
+            Assert.IsTrue( AuthClientService.IsClientNameValid( clientName ) );
+        }
+
+        [TestMethod]
+        [DataRow( "<img src=x onerror=alert(1)>" )]
+        [DataRow( "<script>alert(1)</script>" )]
+        [DataRow( "<b>App</b>" )]
+        [DataRow( "{{ CurrentPerson.FirstName }}" )]
+        public void IsClientNameValid_RejectsMarkup( string clientName )
+        {
+            Assert.IsFalse( AuthClientService.IsClientNameValid( clientName ) );
+        }
+
         #endregion
     }
 }
