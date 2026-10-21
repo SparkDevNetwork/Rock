@@ -30,7 +30,7 @@
 // the answer is lost. A key stands for one text from its first try, since that try may have been
 // stored with its answer lost; changed words are a new message under a new key.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
-import { ChatError, DisplayPiece, MessageBlock, PendingMessage, TimelineMessage } from "../types.partial";
+import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
@@ -67,6 +67,24 @@ export type SendResult =
  */
 export function isComposerOpen(serviceState: string): boolean {
     return serviceState !== "read_only" && serviceState !== "maintenance";
+}
+
+/**
+ * Why the person cannot post in a room, in the server's words, which locks its composer; null
+ * where they can. The join case has the join bar and a paused service its own sentence, so
+ * neither is said here.
+ *
+ * @param row The room's sidebar row, or null with no room.
+ *
+ * @returns The sentence, or null.
+ */
+export function lockedReason(row: SidebarRow | null): string | null {
+    const code = row?.can_post_code ?? null;
+    if (!row || row.can_post !== false || code === "authz.join_required" || code === "rpc.read_only" || code === "rpc.maintenance") {
+        return null;
+    }
+
+    return row.can_post_reason?.trim() || "You can't post in this conversation.";
 }
 
 /**

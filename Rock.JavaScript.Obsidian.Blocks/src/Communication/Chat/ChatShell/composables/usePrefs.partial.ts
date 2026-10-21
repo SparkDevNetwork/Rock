@@ -81,6 +81,15 @@ export type PrefsState = {
     announcement: { text: string, isAssertive: boolean, count: number } | null;
 };
 
+/**
+ * A choice from a room's controls: its details, or the header's and the intro's menus, which a
+ * missing isFromMenu means. Star with no value turns the room's star over.
+ */
+export type RoomChoice =
+    | { kind: "notify", mode: NotifyMode, isFromMenu?: boolean }
+    | { kind: "star", isStarred?: boolean, isFromMenu?: boolean }
+    | { kind: "hide", isHidden: boolean };
+
 /** What the settings reach outside themselves. */
 export type PrefsDependencies = {
     /** chat_set_prefs through the shell's call path: a room, or null for the reaction switch, and the patch. */
@@ -123,6 +132,12 @@ export type Prefs = {
 
     /** Writes whether reactions to the person's messages notify them. */
     setReactionPush: (value: boolean) => Promise<void>;
+
+    /** Saves a choice for a room; with no room, nothing. */
+    choose: (channelId: string | null, choice: RoomChoice) => Promise<void>;
+
+    /** A Chat settings switch: the reaction switch is the platform's, the other two Rock's. */
+    setSwitch: (key: MeKey, value: boolean) => Promise<void>;
 
     stop: () => void;
 };
@@ -290,7 +305,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         return { count, was };
     }
 
-    return {
+    const prefs: Prefs = {
         state,
 
         setMe: (me: Partial<MeSettings> | null | undefined): void => {
@@ -447,8 +462,30 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             settleMe("reaction_push", count, was, result.ok ? { pending: false } : { refused: refusalText(result.error) });
         },
 
+        choose: async (channelId: string | null, choice: RoomChoice): Promise<void> => {
+            if (!channelId) {
+                return;
+            }
+
+            const isFromMenu = choice.kind !== "hide" && choice.isFromMenu !== false;
+            if (choice.kind === "notify") {
+                await prefs.setNotifyMode(channelId, choice.mode, isFromMenu);
+            }
+            else if (choice.kind === "star") {
+                const isStarred = choice.isStarred ?? !dependencies.channels.rows.find(r => r.channel_id === channelId)?.is_favorite;
+                await prefs.setStarred(channelId, isStarred, isFromMenu);
+            }
+            else {
+                await prefs.setHidden(channelId, choice.isHidden);
+            }
+        },
+
+        setSwitch: (key: MeKey, value: boolean): Promise<void> => key === "reaction_push" ? prefs.setReactionPush(value) : prefs.setPersonSetting(key, value),
+
         stop: (): void => {
             isStopped = true;
         }
     };
+
+    return prefs;
 }

@@ -467,6 +467,60 @@ describe("the person's own switches", () => {
     });
 });
 
+// The block hands every room control's choice here as it came: the details say so, the header's
+// and the intro's menus leave it out, which tells the save in a toast; the header's Star turns the
+// room's star over from its row. Chat settings' switches go where each is owned.
+describe("a room's choice and Chat settings' switches", () => {
+    test("a menu's notify mode is told in a toast and the details' is not", async () => {
+        const s = setup();
+
+        void s.prefs.choose(team, { kind: "notify", mode: "mentions" });
+        s.prefCalls[0].answer.resolve(written(team, { notify_mode: "mentions" }));
+        await settle();
+        void s.prefs.choose(prayer, { kind: "notify", mode: "silent", isFromMenu: false });
+        s.prefCalls[1].answer.resolve(written(prayer, { notify_mode: "silent" }));
+        await settle();
+
+        expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([[team, { notify_mode: "mentions" }], [prayer, { notify_mode: "silent" }]]);
+        expect(s.toasts.map(t => t.text)).toEqual(["You'll be notified only when mentioned"]);
+        expect(s.prefs.roomOf(prayer).save?.state).toBe("saved");
+    });
+
+    test("Star with no value turns the room's star over, and a value is kept as given", () => {
+        const s = setup([sidebarRow(team, { is_favorite: true }), sidebarRow(prayer)]);
+
+        void s.prefs.choose(team, { kind: "star" });
+        void s.prefs.choose(prayer, { kind: "star" });
+        void s.prefs.choose(prayer, { kind: "star", isStarred: true, isFromMenu: false });
+
+        expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([
+            [team, { is_favorite: false }],
+            [prayer, { is_favorite: true }],
+            [prayer, { is_favorite: true }]
+        ]);
+    });
+
+    test("hide writes Hide, and with no room open nothing is asked", () => {
+        const s = setup();
+
+        void s.prefs.choose(null, { kind: "notify", mode: "silent" });
+        void s.prefs.choose(team, { kind: "hide", isHidden: true });
+
+        expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([[team, { hidden: true }]]);
+    });
+
+    test("the reaction switch goes to the platform and the privacy switches to Rock's door", () => {
+        const s = setup();
+
+        void s.prefs.setSwitch("reaction_push", false);
+        void s.prefs.setSwitch("open_dm", true);
+        void s.prefs.setSwitch("profile_details", false);
+
+        expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([[null, { reaction_push: false }]]);
+        expect(s.doorCalls.map(c => [c.setting, c.value])).toEqual([["open_dm", true], ["profile_details", false]]);
+    });
+});
+
 describe("once stopped", () => {
     test("no answer still on its way reaches the screen, and nothing more is asked", async () => {
         const s = setup();

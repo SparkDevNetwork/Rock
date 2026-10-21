@@ -270,6 +270,8 @@ function fakePrefs(): Record<string, unknown> {
         setHidden: jest.fn(async () => undefined),
         setPersonSetting: jest.fn(async () => undefined),
         setReactionPush: jest.fn(async () => undefined),
+        choose: jest.fn(async () => undefined),
+        setSwitch: jest.fn(async () => undefined),
         stop: jest.fn()
     };
 }
@@ -2645,6 +2647,16 @@ describe("the channel intro", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='intro-title']").text()).toBe("Worship Team");
     });
 
+    test("hands its Star to the settings as a menu's choice for the room", async () => {
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await openRow(w, team.channel_id);
+
+        await w.get("[data-testid='frame-main'] [data-testid='intro-star']").trigger("click");
+
+        expect((mockShell!.prefs as Record<string, jest.Mock>).choose).toHaveBeenCalledWith(team.channel_id, { kind: "star" });
+    });
+
     test("is never drawn in a direct message", async () => {
         const w = await mountBlock(1200);
         roomsOf().state.facts[dmAnna.channel_id] = roomFacts({ channel_id: dmAnna.channel_id, channel_type: "dm", member_count: 2 });
@@ -3451,9 +3463,11 @@ describe("settings", () => {
         document.querySelector<HTMLElement>("[data-testid='switch-hide'] [role='switch']")!.click();
         await settle();
 
-        expect(prefsOf().setNotifyMode).toHaveBeenCalledWith(team.channel_id, "silent", false);
-        expect(prefsOf().setStarred).toHaveBeenCalledWith(team.channel_id, true, false);
-        expect(prefsOf().setHidden).toHaveBeenCalledWith(team.channel_id, true);
+        expect(prefsOf().choose.mock.calls).toEqual([
+            [team.channel_id, { kind: "notify", mode: "silent", isFromMenu: false }],
+            [team.channel_id, { kind: "star", isStarred: true, isFromMenu: false }],
+            [team.channel_id, { kind: "hide", isHidden: true }]
+        ]);
     });
 
     test("the details show the room's mode and star from its sidebar row", async () => {
@@ -3481,8 +3495,10 @@ describe("settings", () => {
         await w.get("[data-testid='header-star']").trigger("click");
         await settle();
 
-        expect(prefsOf().setNotifyMode).toHaveBeenCalledWith(team.channel_id, "mentions", true);
-        expect(prefsOf().setStarred).toHaveBeenCalledWith(team.channel_id, true, true);
+        expect(prefsOf().choose.mock.calls).toEqual([
+            [team.channel_id, { kind: "notify", mode: "mentions" }],
+            [team.channel_id, { kind: "star" }]
+        ]);
     });
 
     test("the header offers Turn on notifications while the shell says the church's timing offers it", async () => {
@@ -3512,8 +3528,7 @@ describe("settings", () => {
         document.querySelector<HTMLElement>("[data-testid='push-row'] button")!.click();
         await settle();
 
-        expect(prefsOf().setPersonSetting).toHaveBeenCalledWith("open_dm", true);
-        expect(prefsOf().setReactionPush).toHaveBeenCalledWith(false);
+        expect(prefsOf().setSwitch.mock.calls).toEqual([["open_dm", true], ["reaction_push", false]]);
         expect(mockShell!.turnOnPush).toHaveBeenCalled();
 
         mockShell!.state.push = "on";
