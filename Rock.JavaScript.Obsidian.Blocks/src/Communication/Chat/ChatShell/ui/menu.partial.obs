@@ -22,10 +22,6 @@
                 @click="onAnchorClick" />
 
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <!--
-            Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
-            a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
-        -->
         <Transition name="chat-pop">
             <div v-if="isOpen"
                  ref="menuElement"
@@ -34,6 +30,10 @@
                  :aria-label="label"
                  :style="menuStyles"
                  @keydown="onKeydown">
+                <!--
+                    Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+                    a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
+                -->
                 <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
                 <template v-for="item in items" :key="item.key">
                     <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>

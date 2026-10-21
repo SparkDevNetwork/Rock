@@ -1,19 +1,19 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <!--
-            Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
-            popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
-            Hidden until the open's first answer, so it never flashes an empty line or grows under the
-            person; kept in place rather than left out, since its way in starts as it shows. The empty
-            line is said only once the answer for what was typed is in and empty.
-        -->
         <div ref="popElement"
              class="chat-mention-pop"
              :class="{ 'is-waiting': isAwaitingFirstAnswer }"
              data-testid="mention-picker"
              :aria-hidden="isAwaitingFirstAnswer ? 'true' : undefined"
              :style="popStyles">
+            <!--
+                Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
+                popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
+                Hidden until the open's first answer, so it never flashes an empty line or grows under the
+                person; kept in place rather than left out, since its way in starts as it shows. The empty
+                line is said only once the answer for what was typed is in and empty.
+            -->
             <template v-if="drawnRows.length > 0">
                 <div v-if="hasPeopleDrawn" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
                 <div :id="listId" role="listbox" aria-label="People to mention">

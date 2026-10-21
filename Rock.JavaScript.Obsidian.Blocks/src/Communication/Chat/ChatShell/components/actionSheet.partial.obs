@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <!--
-            Moved out to the chat's root when it has one, so the sheet covers the whole chat from its
-            bottom edge rather than the row that opened it; left in place where there is no root.
-        -->
         <Transition :duration="{ enter: enterMs, leave: leaveMs }" leave-active-class="is-leaving">
             <div v-if="isOpen && message"
                  class="chat-sheet-scrim"
                  data-testid="action-sheet-scrim"
                  @click.self="emit('close')">
+                <!--
+                    Moved out to the chat's root when it has one, so the sheet covers the whole chat from its
+                    bottom edge rather than the row that opened it; left in place where there is no root.
+                -->
                 <div ref="sheetElement"
                      class="chat-sheet"
                      role="dialog"

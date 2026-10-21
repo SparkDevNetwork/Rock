@@ -1,10 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <!--
-            Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
-            a picker drawn inside it; left in place where there is no root, as when a part is drawn alone.
-        -->
         <div ref="pickerElement"
              class="chat-picker"
              :class="{ 'is-leaving': isClosing }"
@@ -14,6 +10,10 @@
              :style="pickerStyles"
              @keydown="onKeydown"
              @focusout="onFocusOut">
+            <!--
+                Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
+                a picker drawn inside it; left in place where there is no root, as when a part is drawn alone.
+            -->
             <div class="chat-picker-head">
                 <label class="chat-picker-search">
                     <Icon name="search" size="sm" />
