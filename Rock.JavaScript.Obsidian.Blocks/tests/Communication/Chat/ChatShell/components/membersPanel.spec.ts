@@ -508,4 +508,22 @@ describe("removing a row", () => {
 
         expect(document.activeElement?.getAttribute("data-person")).toBe(ben.person_alias_guid);
     });
+
+    test("filtering keeps focus after a removal ends with its member still present", async () => {
+        const removals = reactive<Record<string, { kind: "removing" }>>({});
+        const w = draw({ canManageMembers: true, removals });
+        removals[tom.person_alias_guid] = { kind: "removing" };
+        await nextTick();
+
+        // A last-leader answer returns to its replacement dialog without removing the row.
+        delete removals[tom.person_alias_guid];
+        await nextTick();
+        const filter = w.get("[data-testid='members-filter']").element as HTMLInputElement;
+        filter.focus();
+        expect(document.activeElement).toBe(filter);
+        await w.setProps({ query: "Grace", searchStatus: "searching", members: [grace] });
+        await nextTick();
+
+        expect(document.activeElement).toBe(filter);
+    });
 });
