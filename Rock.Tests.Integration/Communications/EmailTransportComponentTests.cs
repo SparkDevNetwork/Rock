@@ -2010,7 +2010,7 @@ namespace Rock.Tests.Integration.Communications
 
             emailTransport.Object.Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.That.IsEmpty( errorMessages );
+            Assert.IsEmpty( errorMessages );
 
             emailTransport
                 .Protected()
