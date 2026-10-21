@@ -12,6 +12,7 @@
                  :class="{ 'is-wide': isWide || isSettings, 'is-settings': isSettings }"
                  role="dialog"
                  aria-modal="true"
+                 :tabindex="isSettings ? -1 : undefined"
                  :aria-labelledby="titleId"
                  data-testid="dialog"
                  @keydown="onKeydown">
@@ -80,6 +81,11 @@
     to {
         opacity: 0;
     }
+}
+
+/* A settings dialog holds focus itself as it opens, which draws no ring around the whole dialog. */
+.chat-dialog:focus {
+    outline: none;
 }
 
 .chat-dialog {
@@ -354,10 +360,16 @@
         return Array.from(dialogElement.value?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
     }
 
-    /** A destructive confirm starts on Cancel, so Enter never deletes by accident; any other starts on its first control. */
+    /**
+     * A destructive confirm starts on Cancel, so Enter never deletes by accident; a settings
+     * dialog on itself, since its first control is the close button in its head, whose tooltip
+     * would show unasked; any other starts on its first control.
+     */
     function focusFirst(): void {
         const marked = dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]");
-        const first = props.isDestructive && cancelElement.value ? cancelElement.value : marked ?? focusables()[0];
+        const first = props.isDestructive && cancelElement.value
+            ? cancelElement.value
+            : marked ?? (props.isSettings ? dialogElement.value : focusables()[0]);
         (first ?? dialogElement.value)?.focus({ preventScroll: true });
     }
 

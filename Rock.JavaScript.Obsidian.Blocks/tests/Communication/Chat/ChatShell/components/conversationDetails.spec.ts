@@ -221,6 +221,27 @@ describe("the dialog", () => {
         expect(w.emitted("close")).toHaveLength(2);
     });
 
+    test("takes focus itself as it opens, so its Close button's tooltip does not show unasked", async () => {
+        const w = mountDetails();
+        await settle();
+
+        expect(document.activeElement).toBe(dialogOf(w));
+        expect(document.querySelector("[role='tooltip']")).toBeNull();
+    });
+
+    test("reads the rooms' news said while it is open in its own live region, the assertive apart", async () => {
+        const w = mountGroup({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 3 } });
+        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("");
+
+        await w.setProps({ announcement: { text: "Renamed to Trail crew.", isAssertive: false, count: 4 } });
+        expect(w.get("[data-testid='details-announcement']").attributes("aria-live")).toBe("polite");
+        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("Renamed to Trail crew.");
+
+        await w.setProps({ announcement: { text: "No.", isAssertive: true, count: 5 } });
+        expect(spoken(w.get("[data-testid='details-alert']"))).toBe("No.");
+        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("");
+    });
+
     test("writes no sentence with a hash, whatever the room", async () => {
         const channel = mountDetails({ facts: channelFacts({ is_public: false }) });
         await askToLeave(channel);
@@ -540,15 +561,74 @@ describe("the conversation name", () => {
         expect(w.emitted("rename")).toEqual([[""]]);
     });
 
-    test("reads Saving with the field and Save held while the door is out", async () => {
+    test("reads Saving with Save held and the field read only while the door is out, focus kept in the field", async () => {
         const w = mountGroup();
-        await w.get("[data-testid='rename-input']").setValue("Trail crew");
+        const input = w.get("[data-testid='rename-input']");
+        await input.setValue("Trail crew");
+        (input.element as HTMLElement).focus();
 
         await w.setProps({ rename: { kind: "saving" } });
 
         expect(plain(w.get("[data-testid='rename-save']").text())).toBe("Saving");
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeDefined();
-        expect(w.get("[data-testid='rename-input']").attributes("disabled")).toBeDefined();
+        expect(input.attributes("disabled")).toBeUndefined();
+        expect(input.attributes("readonly")).toBeDefined();
+        expect(document.activeElement).toBe(input.element);
+    });
+
+    test("leaves focus in the field once saved, where Escape still closes the dialog", async () => {
+        const w = mountGroup();
+        const input = w.get("[data-testid='rename-input']");
+        await input.setValue("Trail crew");
+        (input.element as HTMLElement).focus();
+        await w.setProps({ rename: { kind: "saving" } });
+
+        await w.setProps({ rename: { kind: "saved" }, groupName: "Trail crew" });
+        await settle();
+
+        expect(document.activeElement).toBe(input.element);
+        keydown(input.element, "Escape");
+        await settle();
+        expect(w.emitted("close")).toHaveLength(1);
+    });
+
+    test.each([
+        ["saving", { kind: "saving" }, "Saving"],
+        ["saved", { kind: "saved" }, "Saved"],
+        ["pending", { kind: "pending" }, "Saved, syncing"],
+        ["refused", { kind: "refused", text: "No." }, "Not saved"],
+        ["offline", { kind: "offline" }, "Not saved"]
+    ])("the head's save indicator reads the rename %s", async (_kind, rename, words) => {
+        const w = mountGroup();
+
+        await w.setProps({ rename });
+
+        const indicator = w.get("[data-testid='details-save']");
+        expect(plain(indicator.text())).toBe(words);
+        expect(indicator.attributes("data-state")).toBe(_kind === "offline" ? "refused" : _kind);
+    });
+
+    test("the head's Saved fades after 1.6 seconds", async () => {
+        jest.useFakeTimers();
+        try {
+            const w = mountGroup();
+            await w.setProps({ rename: { kind: "saved" } });
+            expect(w.get("[data-testid='details-save']").attributes("data-state")).toBe("saved");
+
+            jest.advanceTimersByTime(1600);
+            await settle();
+
+            expect(w.get("[data-testid='details-save']").attributes("data-state")).toBe("fade");
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("the head shows nothing before a save", () => {
+        const w = mountGroup();
+
+        expect(plain(w.get("[data-testid='details-save']").text())).toBe("");
     });
 
     test("counts the characters from 90", async () => {

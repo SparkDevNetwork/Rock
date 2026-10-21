@@ -343,6 +343,7 @@
                                  :personPhotoUrl="personPhotoUrl"
                                  :leave="shell.rooms.leaveOf(activeChannelId)"
                                  :rename="shell.rooms.renameOf(activeChannelId)"
+                                 :announcement="shell.rooms.state.announcement"
                                  :isPhone="isPhone"
                                  @close="closeDetails"
                                  @leave="onLeave"

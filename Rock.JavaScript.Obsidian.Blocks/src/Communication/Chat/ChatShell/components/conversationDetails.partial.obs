@@ -6,6 +6,13 @@
             :isPhone="isPhone"
             @close="emit('close')">
         <template #tools>
+            <!-- Seen, not read: what each save comes to is said once, in the live region below. -->
+            <span class="chat-save-ind" :data-state="saveState" data-testid="details-save" aria-hidden="true">
+                <template v-if="saveState === 'saving'"><span class="chat-spinner"></span><span>Saving</span></template>
+                <template v-else-if="saveState === 'saved' || saveState === 'fade'"><Icon name="check" size="xs" /><span>Saved</span></template>
+                <template v-else-if="saveState === 'pending'"><Icon name="clock" size="xs" /><span>Saved, syncing</span></template>
+                <template v-else-if="saveState === 'refused'"><Icon name="alert" size="xs" /><span>Not saved</span></template>
+            </span>
             <IconButton icon="x" label="Close" data-testid="details-close" @click="emit('close')" />
         </template>
 
@@ -62,7 +69,7 @@
                        maxlength="100"
                        autocomplete="off"
                        :placeholder="namesPlaceholder"
-                       :disabled="rename.kind === 'saving'"
+                       :readonly="rename.kind === 'saving'"
                        :aria-describedby="`${renameId}-help ${renameId}-note`"
                        @input="isEditedSinceAnswer = true"
                        @keydown.enter.prevent="onRename" />
@@ -131,6 +138,10 @@
                 <p class="chat-rd-callout" data-testid="details-callout"><Icon name="info" size="sm" /><span>{{ cannotLeaveText }}</span></p>
             </section>
         </template>
+
+        <!-- The rooms' news said while the dialog is open, keyed by count so the same words are read twice. -->
+        <span class="chat-sr-only" aria-live="polite" data-testid="details-announcement"><span v-if="shownAnnouncement && !shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
+        <span class="chat-sr-only" aria-live="assertive" data-testid="details-alert"><span v-if="shownAnnouncement && shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
     </Dialog>
 </template>
 
@@ -407,8 +418,43 @@
     color: var(--chat-muted);
 }
 
-.chat-rn-in:disabled {
-    opacity: .6;
+.chat-rn-in:read-only {
+    color: var(--chat-text-2);
+}
+
+/* The head's save indicator: Saving, Saved in success that fades, Saved, syncing, or Not saved. */
+.chat-save-ind {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    transition: opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-save-ind[data-state="saved"] {
+    color: var(--chat-success);
+}
+
+.chat-save-ind[data-state="fade"] {
+    color: var(--chat-success);
+    opacity: 0;
+}
+
+.chat-save-ind[data-state="refused"] {
+    color: var(--chat-danger-ink);
+}
+
+.chat-save-ind .chat-spinner {
+    width: 11px;
+    height: 11px;
+}
+
+.chat-save-ind > * {
+    animation: chat-save-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-rn .chat-rd-btn {
@@ -494,7 +540,8 @@
 /* Reduced motion: the notes and the leave box only fade in. */
 @media (prefers-reduced-motion: reduce) {
     .chat-set-note,
-    .chat-leave-box {
+    .chat-leave-box,
+    .chat-save-ind > * {
         animation-name: chat-rd-fade-in;
     }
 }
@@ -507,10 +554,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
-    import { LeaveState, RenameState } from "../composables/useRooms.partial";
+    import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
     import { joinNames } from "../stores/channelStore.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -585,6 +632,12 @@
             required: true
         },
 
+        /** The rooms' newest sentence for screen readers; only one said while the dialog is open is read here. */
+        announcement: {
+            type: Object as PropType<RoomAnnouncement | null>,
+            default: null
+        },
+
         isPhone: {
             type: Boolean,
             default: false
@@ -622,6 +675,16 @@
 
     const leaveElement = ref<HTMLButtonElement>();
     const leaveCancelElement = ref<HTMLButtonElement>();
+
+    /** The rooms' announcement count as the dialog opened, so only news said since is read here. */
+    const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
+
+    /** "Saved" fades from the head after this long, as every settings dialog's does. */
+    const savedFadeMs = 1600;
+
+    /** Whether the head's Saved has faded. */
+    const isSavedFaded = ref(false);
+    let savedFadeTimer: ReturnType<typeof setTimeout> | null = null;
 
     /** The count shows from here, ten short of the 100 a name may hold. */
     const countFrom = 90;
@@ -720,6 +783,30 @@
         }
     });
 
+    /** What the head's save indicator shows for the rename, nothing before one is asked. */
+    const saveState = computed((): "saving" | "saved" | "fade" | "pending" | "refused" | null => {
+        switch (props.rename.kind) {
+            case "saving":
+                return "saving";
+
+            case "saved":
+                return isSavedFaded.value ? "fade" : "saved";
+
+            case "pending":
+                return "pending";
+
+            case "refused":
+            case "offline":
+                return "refused";
+
+            default:
+                return null;
+        }
+    });
+
+    /** The rooms' newest sentence, once it is one said since the dialog opened. */
+    const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
+
     const countText = computed((): string | null => draftName.value.length >= countFrom ? `${draftName.value.length} of 100 characters` : null);
 
     /** The leave as this confirm sees it: idle until it asks, so an earlier answer is never shown. */
@@ -812,9 +899,25 @@
 
     watch(() => props.rename.kind, kind => {
         isEditedSinceAnswer.value = false;
+        isSavedFaded.value = false;
+        if (savedFadeTimer !== null) {
+            clearTimeout(savedFadeTimer);
+            savedFadeTimer = null;
+        }
+        if (kind === "saved") {
+            savedFadeTimer = setTimeout(() => {
+                savedFadeTimer = null;
+                isSavedFaded.value = true;
+            }, savedFadeMs);
+        }
         if (kind === "saved" || kind === "pending") {
             draftName.value = draftName.value.trim();
         }
+    });
+
+    // Each opening reads only the news said from then on.
+    watch(() => props.isOpen, isOpen => {
+        announcedBefore.value = isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY;
     });
 
     // A name changed elsewhere, or saved here and read back, is what the field now holds.
@@ -823,4 +926,10 @@
     });
 
     // #endregion Watchers
+
+    onBeforeUnmount(() => {
+        if (savedFadeTimer !== null) {
+            clearTimeout(savedFadeTimer);
+        }
+    });
 </script>
