@@ -18,12 +18,14 @@
                 <b :id="titleId" data-testid="nd-title">New message</b>
                 <span class="chat-nd-hdr-sub" data-testid="nd-subtitle">{{ subtitle }}</span>
             </div>
-            <IconButton v-if="!isPhone"
-                        icon="x"
-                        label="Close New message"
-                        tooltip="Close"
-                        data-testid="nd-close"
-                        @click="emit('close')" />
+            <div class="chat-nd-hdr-actions">
+                <IconButton v-if="!isPhone"
+                            icon="x"
+                            label="Close New message"
+                            tooltip="Close"
+                            data-testid="nd-close"
+                            @click="emit('close')" />
+            </div>
         </header>
 
         <div class="chat-nd-to">
@@ -283,6 +285,14 @@
     text-overflow: ellipsis;
 }
 
+/* Close's place; kept on a phone, where Back stands in for Close, so the title keeps the same room. */
+.chat-nd-hdr-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    margin-left: auto;
+}
+
 /* Above the body, so the suggestions it drops over the start block stay on top. */
 .chat-nd-to {
     position: relative;
@@ -389,18 +399,25 @@
     opacity: .4;
 }
 
-/* The field shows focus, so the input inside it draws no outline of its own. */
+/*
+    The field shows focus, so the input inside it draws no outline of its own. It keeps the
+    browser's own 1px by 2px inset, and focus rounds it as focus rounds anything else.
+*/
 .chat-pk-input {
     flex: 1;
     min-width: 120px;
     height: 30px;
-    padding: 0;
+    padding: 1px 2px;
     font: inherit;
     font-size: 14.5px;
     color: var(--chat-text);
     background: none;
     border: 0;
     outline: 0;
+}
+
+.chat-pk-input:focus-visible {
+    border-radius: var(--chat-r-sm);
 }
 
 .chat-pk-input::placeholder {
@@ -705,19 +722,17 @@
     border-color: var(--chat-icon);
 }
 
-/* The pending message: the person's own bubble at the right, its phase under it. */
+/* The pending message: the person's own bubble at the right, its phase under it, set as the feed sets its own messages. */
 .chat-nd-pend {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    max-width: 780px;
-    padding: 12px 24px 0;
-    margin: 0 auto;
+    padding: 14px 20px 0 64px;
 }
 
 .chat-nd.is-phone .chat-nd-pend {
     padding-right: 12px;
-    padding-left: 12px;
+    padding-left: 44px;
 }
 
 .chat-nd-bubble {
@@ -779,8 +794,8 @@
 }
 
 .chat-nd.is-phone .chat-nd-refused-wrap {
-    padding-right: 12px;
-    padding-left: 12px;
+    padding-right: 10px;
+    padding-left: 10px;
 }
 
 .chat-nd-refused {
@@ -828,6 +843,11 @@
 .chat-nd.is-phone .chat-nd-foot {
     padding-right: 26px;
     padding-left: 26px;
+}
+
+/* A phone has no room for the key hint under the box. */
+.chat-nd.is-phone .chat-nd-hint {
+    display: none;
 }
 
 /* Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight. */

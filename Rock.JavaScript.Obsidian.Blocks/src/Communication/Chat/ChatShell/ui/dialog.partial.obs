@@ -146,6 +146,15 @@
     padding: 0;
 }
 
+.chat-modal.is-sheet .chat-dialog-head {
+    padding-left: 16px;
+}
+
+/* The sheet's body runs nearer the phone's edges, with more room above the home bar. */
+.chat-modal.is-sheet .chat-dialog-scroll {
+    padding: 16px 16px 24px;
+}
+
 .chat-modal.is-sheet .chat-dialog {
     width: 100%;
     max-height: 90%;

@@ -20,7 +20,7 @@
                 <span class="chat-pc-av"><Avatar :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" /></span>
                 <div class="chat-pc-name">
                     <b data-testid="profile-name">{{ fullName }}</b>
-                    <span v-if="person.is_leader" class="chat-pc-tag" data-testid="profile-leader">Leader</span>
+                    <span v-if="person.is_leader" class="chat-pill" data-testid="profile-leader">Leader</span>
                     <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">This is you</span>
                 </div>
                 <div v-if="campusName" class="chat-pc-line" data-testid="profile-campus"><Icon name="pin" size="xs" />{{ campusName }}</div>
@@ -72,11 +72,14 @@
     padding: 0 18px 16px;
 }
 
-/* Overlaps the band by 30px, ringed in the card's own fill so the band never touches the face. */
+/*
+    Overlaps the band by 30px, ringed in the card's own fill so the band never touches the face.
+    Set at the top of its line, so the line is the face's own height and no text's baseline moves it.
+*/
 .chat-pc-av {
     display: inline-block;
     margin-top: -30px;
-    line-height: 0;
+    vertical-align: top;
     border-radius: 50%;
     box-shadow: 0 0 0 4px var(--chat-raised);
 }
@@ -94,19 +97,6 @@
     font-weight: 700;
     line-height: 1.25;
     letter-spacing: -.01em;
-}
-
-.chat-pc-tag {
-    display: inline-flex;
-    align-items: center;
-    height: 18px;
-    padding: 0 7px;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--chat-info-ink);
-    letter-spacing: .02em;
-    background: var(--chat-info-soft);
-    border-radius: var(--chat-r-sm);
 }
 
 .chat-pc-you {
@@ -285,12 +275,18 @@
         : props.anchor;
 
     // Placed by left and top, since a transform here would override the pop's own and the card
-    // would only fade; kept 8px inside the window.
+    // would only fade. It flips to whichever side the window has room on, then is kept 8px inside
+    // the chat's frame both ways, overlapping its opener rather than leaving the chat.
+    const frame = props.anchor?.closest<HTMLElement>(".chat-frame") ?? null;
     const { floatingStyles, placement } = useFloating(ref(reference), cardElement, {
         placement: panel ? "left-start" : "bottom-start",
         strategy: "fixed",
         transform: false,
-        middleware: [offset(panel ? 10 : 8), flip({ fallbackPlacements: ["bottom-start", "top-start"] }), shift({ padding: 8 })],
+        middleware: [
+            offset(panel ? 10 : 8),
+            flip({ fallbackPlacements: ["bottom-start", "top-start"] }),
+            shift({ padding: 8, crossAxis: true, ...(frame ? { boundary: frame } : {}) })
+        ],
         whileElementsMounted: autoUpdate
     });
 
