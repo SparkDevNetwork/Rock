@@ -749,7 +749,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                             isWaitingForLock = observer.Database.SqlQuery<int>(
                                 "SELECT COUNT(*) FROM sys.dm_tran_locks WHERE resource_type = 'APPLICATION'"
                                 + " AND resource_database_id = DB_ID() AND request_status = 'WAIT'"
-                                + " AND resource_description LIKE 'Rock.Communication.Chat.Platform%'" ).Single() > 0;
+                                + " AND resource_description LIKE '%Rock.Communication.Chat.Platform%'" ).Single() > 0;
                             if ( !isWaitingForLock )
                             {
                                 await Task.Delay( 20 );

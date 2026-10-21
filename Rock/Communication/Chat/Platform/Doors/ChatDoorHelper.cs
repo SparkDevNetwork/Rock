@@ -24,11 +24,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Rock.Bus.Locking;
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -521,90 +524,106 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.bad_request", "Leave the conversation instead." );
             }
 
-            var leaders = ReadLeaders( rockContext, channelGuid, targetId.Value );
-            int? replacementId = null;
-            if ( replacementPersonAliasGuid.HasValue )
+            string line;
+            var lockProvider = RockApp.Current.GetRequiredService<IDistributedLockProvider>();
+
+            // The leader decision and removal share the room's lock across every Rock server.
+            // Separate saves of different leaders otherwise both see someone else still leading.
+            using ( var removalLock = await lockProvider.TryAcquireAsync( typeof( ChatDoorHelper ), channelGuid.ToString( "N" ), TimeSpan.FromSeconds( 2 ) ).ConfigureAwait( false ) )
             {
-                replacementId = new PersonAliasService( rockContext ).Queryable()
-                    .Where( a => a.Guid == replacementPersonAliasGuid.Value )
-                    .Select( a => ( int? ) a.PersonId )
-                    .FirstOrDefault();
-                if ( !replacementId.HasValue )
+                if ( !removalLock.IsAcquired )
                 {
-                    return Membership( "door.not_found", "The person chosen to lead next could not be found." );
-                }
-            }
-
-            // One projection call says which of these people chat still shows in the room.
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
-            if ( room == null )
-            {
-                return Membership( "door.not_found", "That channel could not be found." );
-            }
-
-            var refusal = RefuseManaging( rockContext, room, caller, "You can't remove people from this channel." );
-            if ( refusal != null )
-            {
-                return refusal;
-            }
-
-            // Removing a banned row would lift the ban, which is a moderator's act and not this one.
-            if ( room.BannedPersonIds.Contains( targetId.Value ) || HoldsBannedRow( rockContext, room.GroupId, targetId.Value ) )
-            {
-                return Membership( "door.not_allowed", "That person is banned here; lift the ban instead." );
-            }
-
-            if ( !room.LivePersonIds.Contains( targetId.Value ) )
-            {
-                return Membership( "door.not_member", "That person isn't in this conversation." );
-            }
-
-            // Only a shared channel has leaders; a conversation's members are all alike.
-            var isPromoting = false;
-            if ( room.Channel.ChannelType == SharedChannelType )
-            {
-                var heldRoleId = leaders.TargetRoleId;
-                var leaderIds = heldRoleId.HasValue ? leaders.OtherLeaderIds.Concat( new[] { targetId.Value } ) : leaders.OtherLeaderIds;
-                var isLastLeader = IsLastLeader( targetId.Value, leaderIds, room.LivePersonIds, room.UnlistedPersonIds );
-
-                var leaderRefusal = RefuseLeaderRemoval( heldRoleId.HasValue, ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ), isLastLeader, replacementId.HasValue );
-                if ( leaderRefusal != null )
-                {
-                    return leaderRefusal;
+                    return Membership( "door.not_allowed", "This channel is being changed. Try again." );
                 }
 
-                // A replacement is acted on only where it is needed: if someone else came to lead
-                // the channel since the screen asked, the removal goes ahead without it.
-                if ( isLastLeader )
+                var leaders = ReadLeaders( rockContext, channelGuid, targetId.Value );
+                int? replacementId = null;
+                if ( replacementPersonAliasGuid.HasValue )
                 {
-                    var promotion = PromoteToLeader( rockContext, room, targetId.Value, replacementId.Value, heldRoleId );
-                    if ( promotion != null )
+                    replacementId = new PersonAliasService( rockContext ).Queryable()
+                        .Where( a => a.Guid == replacementPersonAliasGuid.Value )
+                        .Select( a => ( int? ) a.PersonId )
+                        .FirstOrDefault();
+                    if ( !replacementId.HasValue )
                     {
-                        return promotion;
+                        return Membership( "door.not_found", "The person chosen to lead next could not be found." );
+                    }
+                }
+
+                // One projection call says which of these people chat still shows in the room.
+                var room = ReadRoom( rockContext, context.Configuration, channelGuid, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
+                if ( room == null )
+                {
+                    return Membership( "door.not_found", "That channel could not be found." );
+                }
+
+                var refusal = RefuseManaging( rockContext, room, caller, "You can't remove people from this channel." );
+                if ( refusal != null )
+                {
+                    return refusal;
+                }
+
+                // Removing a banned row would lift the ban, which is a moderator's act and not this one.
+                if ( room.BannedPersonIds.Contains( targetId.Value ) || HoldsBannedRow( rockContext, room.GroupId, targetId.Value ) )
+                {
+                    return Membership( "door.not_allowed", "That person is banned here; lift the ban instead." );
+                }
+
+                if ( !room.LivePersonIds.Contains( targetId.Value ) )
+                {
+                    return Membership( "door.not_member", "That person isn't in this conversation." );
+                }
+
+                // Only a shared channel has leaders; a conversation's members are all alike.
+                var isPromoting = false;
+                if ( room.Channel.ChannelType == SharedChannelType )
+                {
+                    var heldRoleId = leaders.TargetRoleId;
+                    var leaderIds = heldRoleId.HasValue ? leaders.OtherLeaderIds.Concat( new[] { targetId.Value } ) : leaders.OtherLeaderIds;
+                    var isLastLeader = IsLastLeader( targetId.Value, leaderIds, room.LivePersonIds, room.UnlistedPersonIds );
+
+                    var leaderRefusal = RefuseLeaderRemoval( heldRoleId.HasValue, ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ), isLastLeader, replacementId.HasValue );
+                    if ( leaderRefusal != null )
+                    {
+                        return leaderRefusal;
                     }
 
-                    isPromoting = true;
+                    // A replacement is acted on only where it is needed: if someone else came to lead
+                    // the channel since the screen asked, the removal goes ahead without it.
+                    if ( isLastLeader )
+                    {
+                        var promotion = PromoteToLeader( rockContext, room, targetId.Value, replacementId.Value, heldRoleId );
+                        if ( promotion != null )
+                        {
+                            return promotion;
+                        }
+
+                        isPromoting = true;
+                    }
                 }
+
+                // The removal and any new leader are saved together, so the one push carries both and
+                // the platform never sees the channel with nobody leading it.
+                var targetName = new PersonService( rockContext ).Get( targetId.Value ).FullName;
+                RemoveMember( rockContext, room.GroupId, targetId.Value );
+
+                try
+                {
+                    rockContext.SaveChanges();
+                }
+                catch ( GroupMemberValidationException ) when ( isPromoting )
+                {
+                    // The church's own rules for the role, such as its most members or a requirement
+                    // the person does not meet, are the group's call, and nothing was saved.
+                    return Membership( "door.not_allowed", "That person can't lead this channel." );
+                }
+
+                var isDirect = room.Channel.ChannelType == DirectChannelType;
+                line = isDirect ? caller.FullName + " removed " + targetName + "." : null;
             }
 
-            // The removal and any new leader are saved together, so the one push carries both and
-            // the platform never sees the channel with nobody leading it.
-            var targetName = new PersonService( rockContext ).Get( targetId.Value ).FullName;
-            RemoveMember( rockContext, room.GroupId, targetId.Value );
-
-            try
-            {
-                rockContext.SaveChanges();
-            }
-            catch ( GroupMemberValidationException ) when ( isPromoting )
-            {
-                // The church's own rules for the role, such as its most members or a requirement
-                // the person does not meet, are the group's call, and nothing was saved.
-                return Membership( "door.not_allowed", "That person can't lead this channel." );
-            }
-
-            var isDirect = room.Channel.ChannelType == DirectChannelType;
-            return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " removed " + targetName + "." : null ).ConfigureAwait( false );
+            // The database change is complete; a slow platform must not hold the room's lock.
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, line ).ConfigureAwait( false );
         }
 
         /// <summary>

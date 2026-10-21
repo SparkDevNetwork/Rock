@@ -134,6 +134,8 @@ namespace Rock.Tests.Shared.TestFramework
             hostingMock.Setup( a => a.NodeName ).Returns( "TestNode" );
 
             sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
+            // The test host uses the same cross-server database lock as requests and jobs.
+            sc.AddSingleton<Rock.Bus.Locking.IDistributedLockProvider, Rock.Bus.Locking.SqlServerDistributedLockProvider>();
             sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IUserAgentParser, UserAgentParser>();
