@@ -647,6 +647,9 @@
     const birthdateMessage = ref<string | null>(null);
     const isSavingBirthdate = ref(false);
 
+    /** Focus that went with a room closing under it, owed to the next conversation that opens. */
+    let isFocusOwed = false;
+
     /** Whether the open conversation's details dialog is open. */
     const isDetailsOpen = ref(false);
 
@@ -1329,13 +1332,23 @@
     // A conversation that opens in place of what had focus, New message after its first message
     // or the details of a room just left, would leave focus on the page as those go: it moves to
     // the composer of what opened, or on a phone, where that would raise the keyboard, its title.
-    // Read before the screen changes, while what had focus is still there.
+    // Read before the screen changes, while what had focus is still there. A leave's own sync can
+    // close the room before its door answers and opens the next, so focus that went with the
+    // closing is owed to the next conversation that opens, unless the person has put it somewhere.
     watch(activeChannelId, (now, before) => {
         const active = document.activeElement;
         const root = rootElement.value;
-        const isFocusGoing = !!now && now !== before && !!active && !!root?.contains(active)
+        const isFocusGoing = now !== before && !!active && !!root?.contains(active)
             && (!!active.closest("[data-testid='main-view']") || !!active.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']"));
-        if (!isFocusGoing) {
+        if (!now) {
+            isFocusOwed = isFocusGoing;
+            return;
+        }
+
+        const isFocusLost = !active || active === document.body;
+        const isOwed = isFocusOwed && isFocusLost;
+        isFocusOwed = false;
+        if (!isFocusGoing && !isOwed) {
             return;
         }
 

@@ -2940,6 +2940,27 @@ describe("the conversation's details", () => {
         expect(document.activeElement).toBe(w.get(target).element);
     });
 
+    test("the next conversation a leave opens takes focus though the platform's signal closed the room first", async () => {
+        const w = await mountBlock(1200);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-details']").trigger("click");
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='details-leave']")!.click();
+        await settle();
+        document.querySelector<HTMLElement>("[data-testid='leave-go']")!.focus();
+
+        // the door's own sync reaches the person's topic first, and its recheck closes the room
+        mockShell!.state.activeChannelId = null;
+        await settle();
+        // then the door answers, and the rooms open the conversation beside it
+        roomsOf().state.leaves[team.channel_id] = { kind: "left" };
+        mockShell!.state.activeChannelId = dmAnna.channel_id;
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='composer-input']").element);
+    });
+
     test("a group's Rename goes to the rooms with the name typed", async () => {
         const w = await mountBlock(1200);
         (mockShell!.channels as { rows: SidebarRow[] }).rows.push(hike);
