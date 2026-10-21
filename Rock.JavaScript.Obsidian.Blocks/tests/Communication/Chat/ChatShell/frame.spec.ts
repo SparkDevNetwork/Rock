@@ -3485,6 +3485,18 @@ describe("settings", () => {
         expect(prefsOf().setStarred).toHaveBeenCalledWith(team.channel_id, true, true);
     });
 
+    test("the header offers Turn on notifications while the shell says the church's timing offers it", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        expect(w.find("[data-testid='push-offer']").exists()).toBe(false);
+
+        mockShell!.state.isPushOffered = true;
+        await settle();
+        await w.get("[data-testid='push-offer']").trigger("click");
+
+        expect(mockShell!.turnOnPush).toHaveBeenCalled();
+    });
+
     test("Chat settings opens from the sidebar's foot, and its switches and browser row reach the shell", async () => {
         const w = await mountBlock(1200);
 

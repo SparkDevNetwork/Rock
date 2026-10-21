@@ -80,6 +80,12 @@
                 <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-mentions-dot" aria-hidden="true"></span>
             </IconButton>
 
+            <IconButton v-if="isPushOffered && !isPhone"
+                        icon="bell"
+                        label="Turn on notifications"
+                        data-testid="push-offer"
+                        @click="emit('turnOnPush')" />
+
             <!-- The room's notify menu, the bell drawn as its mode; kept on a phone, where Star moves into More. -->
             <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
                 <Menu :icon="notifyIcon"
@@ -483,6 +489,7 @@ button.chat-header-id:hover .chat-header-chev {
     // #endregion Types
 
     const emit = defineEmits<{
+        (e: "turnOnPush"): void,
         (e: "back"): void,
         (e: "backOnline"): void,
         (e: "threads"): void,
@@ -560,6 +567,12 @@ button.chat-header-id:hover .chat-header-chev {
 
         /** Whether the channel's catch-up failed and is trying again, so messages may be missing. */
         isBehind: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether to offer "Turn on notifications", as the church's prompt timing says; the click is what asks the browser. */
+        isPushOffered: {
             type: Boolean,
             default: false
         },
@@ -727,6 +740,10 @@ button.chat-header-id:hover .chat-header-chev {
             items.push({ key: "threads", label: "Threads", icon: "thread" });
         }
 
+        if (props.isPushOffered) {
+            items.push({ key: "push", label: "Turn on notifications", icon: "bell" });
+        }
+
         if (props.isPrefsOffered) {
             items.push({ key: "star", label: props.isStarred ? "Unstar" : "Star", icon: props.isStarred ? "star-f" : "star" });
         }
@@ -767,7 +784,10 @@ button.chat-header-id:hover .chat-header-chev {
     // #region Event Handlers
 
     function onMoreSelect(key: string): void {
-        if (key === "star") {
+        if (key === "push") {
+            emit("turnOnPush");
+        }
+        else if (key === "star") {
             emit("star");
         }
         else if (key === "threads") {

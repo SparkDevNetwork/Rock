@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-// The conversation header, mounted: the room's title with the line under it, the room's notify
-// menu and Star, and what the header says while the connection is down. The subtitle gives way to
+// The conversation header, mounted: the room's title with the line under it, the offer to turn on
+// notifications, the room's notify menu and Star, and what the header says while the connection is
+// down. The subtitle gives way to
 // the connection's state while there is one, a sweeping bar and a banner say the same thing more
 // loudly, and the service's own sentence sits under the header in the tone its kind calls for. On a
-// phone the header leads with Back, keeps the bell, and moves Star into the overflow menu, which is
-// left out when it would hold nothing.
+// phone the header leads with Back, keeps the notify bell, and moves the offer and Star into the
+// overflow menu, which is left out when it would hold nothing.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChatHeader from "../../../../../src/Communication/Chat/ChatShell/components/chatHeader.partial.obs";
@@ -247,20 +248,33 @@ describe("the service banners", () => {
     });
 });
 
-// The offer to turn on notifications moved from the header's bell to Chat settings' browser row,
-// so the header's bell is the room's notify menu and nothing in the header asks the browser.
-describe("the push offer", () => {
-    test("is no longer in the header, on a desktop or a phone, and there is no overflow on a desktop", () => {
+// The church's prompt timing decides when the header offers push; Chat settings offers it always.
+describe("the push offer on a desktop", () => {
+    test("is a bell icon button labelled 'Turn on notifications'", async () => {
         const w = mountHeader({ isPushOffered: true });
+        const offer = w.get("[data-testid='push-offer']");
+
+        expect(offer.classes()).toContain("chat-icon-btn");
+        expect(offer.attributes("aria-label")).toBe("Turn on notifications");
+        expect(hasIcon(w, offer, "bell")).toBe(true);
+
+        await offer.trigger("click");
+        expect(w.emitted("turnOnPush")).toHaveLength(1);
+    });
+
+    test("is gone when not offered, and there is no overflow on a desktop", () => {
+        const w = mountHeader({ isPushOffered: false });
 
         expect(w.find("[data-testid='push-offer']").exists()).toBe(false);
         expect(w.find("[data-testid='header-more']").exists()).toBe(false);
         expect(w.find("[data-testid='header-back']").exists()).toBe(false);
-        w.unmount();
+    });
 
-        const phone = mountHeader({ isPhone: true, isPushOffered: true });
-        expect(phone.find("[data-testid='push-offer']").exists()).toBe(false);
-        expect(phone.find("[data-testid='header-more']").exists()).toBe(false);
+    test("sits after Mentions and before the room's notify menu", () => {
+        const w = mountHeader({ kind: "channel", isPushOffered: true, isPrefsOffered: true, notifyMode: "all", isThreadsOffered: true, isMentionsOffered: true });
+
+        const order = w.findAll(".chat-header-actions > [data-testid]").map(b => b.attributes("data-testid"));
+        expect(order).toEqual(["header-threads", "header-mentions", "push-offer", "header-notify", "header-star"]);
     });
 });
 
@@ -274,6 +288,24 @@ describe("the header on a phone", () => {
 
         await back.trigger("click");
         expect(w.emitted("back")).toHaveLength(1);
+    });
+
+    test("moves the push offer into the overflow menu as its one item", async () => {
+        const w = mountHeader({ isPhone: true, isPushOffered: true });
+
+        expect(w.find("[data-testid='push-offer']").exists()).toBe(false);
+
+        const more = w.get("[data-testid='header-more'] button");
+        expect(more.attributes("aria-label")).toBe("More");
+        await more.trigger("click");
+        await settle();
+
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
+        expect(items.map(i => i.textContent?.trim())).toEqual(["Turn on notifications"]);
+
+        items[0].click();
+        await settle();
+        expect(w.emitted("turnOnPush")).toHaveLength(1);
     });
 
     test("keeps the notify bell and moves Star into the overflow menu", async () => {
@@ -294,7 +326,7 @@ describe("the header on a phone", () => {
     });
 
     test("leaves the overflow out when it would hold nothing", () => {
-        const w = mountHeader({ isPhone: true, isPushOffered: true });
+        const w = mountHeader({ isPhone: true, isPushOffered: false });
 
         expect(w.find("[data-testid='header-more']").exists()).toBe(false);
     });
