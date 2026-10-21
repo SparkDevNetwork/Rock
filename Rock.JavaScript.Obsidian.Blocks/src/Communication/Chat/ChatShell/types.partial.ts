@@ -402,6 +402,9 @@ export type PersonRow = {
 
     /** Their campus, which the people search sends only for a person who shows their details. */
     campus_id?: string | null;
+
+    /** Whether they are in the room the search was asked for; sent only when one was named. */
+    in_room?: boolean;
 };
 
 /** One person as chat_get_person answers for the profile card, in the room the card was opened from. */

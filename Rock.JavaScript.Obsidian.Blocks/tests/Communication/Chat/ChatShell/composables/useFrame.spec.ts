@@ -29,6 +29,7 @@ import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell
 
 const team = "c0000001-0000-4000-8000-000000000000";
 const volunteers = "c0000002-0000-4000-8000-000000000000";
+const pairWithAnna = "c0000003-0000-4000-8000-000000000000";
 
 type Calls = string[];
 
@@ -76,6 +77,21 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             }),
             previewRoom: jest.fn((channelId: string) => {
                 calls.push(`rooms.previewRoom:${channelId}`);
+            }),
+            factsOf: (channelId: string) => channelId === pairWithAnna
+                ? { people: [{ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Reyes", avatar_url: null, details: null }] }
+                : null
+        },
+        // A channel and a conversation of two with Anna, with what the room's facts say of her.
+        channels: {
+            rows: [
+                { channel_id: team, channel_type: "shared", name: "Team", dm_names: null, dm_other_count: null },
+                { channel_id: pairWithAnna, channel_type: "dm", name: null, dm_names: ["Anna Reyes"], dm_other_count: 1 }
+            ]
+        },
+        members: {
+            openAdd: jest.fn(() => {
+                calls.push("members.openAdd");
             })
         },
         directMessages: {
@@ -430,6 +446,44 @@ describe("New message as a full view", () => {
 
         expect(frame.pane.value).toBe("conversation");
         expect(focused()).not.toBe("autofocus");
+    });
+});
+
+// Add people, wherever it is asked from: a channel or a group opens its dialog; a conversation of
+// two cannot take anyone, since Rock keeps it as it is, so New message opens with that person chosen
+// and a note that a new group starts and the conversation stays.
+describe("Add people", () => {
+    test("in a channel or a group opens the dialog", async () => {
+        mounted = mountFrame();
+        const { frame, calls } = mounted;
+
+        await frame.openAddPeople(team);
+
+        expect(calls).toEqual(["members.openAdd"]);
+        expect(frame.mainView.value).toBeNull();
+    });
+
+    test("in a conversation of two opens New message with that person and says the conversation stays", async () => {
+        mounted = mountFrame();
+        const { frame, calls } = mounted;
+
+        await frame.openAddPeople(pairWithAnna);
+
+        expect(calls).toEqual(["directMessages.begin:Anna"]);
+        expect(frame.mainView.value).toBe("newdm");
+        expect(frame.newMessageNote.value).toBe("Adding people starts a new group. Your conversation with Anna stays as it is.");
+    });
+
+    test("the note goes with New message, and New message opened another way has none", async () => {
+        mounted = mountFrame();
+        const { frame } = mounted;
+        await frame.openAddPeople(pairWithAnna);
+
+        frame.closeMainView();
+        expect(frame.newMessageNote.value).toBeNull();
+
+        await frame.openMainView("newdm");
+        expect(frame.newMessageNote.value).toBeNull();
     });
 });
 

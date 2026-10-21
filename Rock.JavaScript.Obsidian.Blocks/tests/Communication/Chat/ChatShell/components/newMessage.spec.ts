@@ -352,6 +352,23 @@ describe("the notes under the field", () => {
     });
 });
 
+// A conversation of two cannot take anyone, so its Add people opens New message with that person
+// chosen and says what happens: a new group starts, and the conversation stays.
+describe("opened from a conversation's Add people", () => {
+    test("says a new group starts and the conversation stays", () => {
+        const w = mountView({ chosen: [anna], lookup: fresh, draft: draftFor([anna]), note: "Adding people starts a new group. Your conversation with Anna stays as it is." });
+
+        const note = w.get("[data-testid='nd-pair-note']");
+        expect(plain(note.text())).toBe("Adding people starts a new group. Your conversation with Anna stays as it is.");
+    });
+
+    test("opened any other way, says nothing of the kind", () => {
+        const w = mountView({ chosen: [anna], lookup: fresh, draft: draftFor([anna]) });
+
+        expect(w.find("[data-testid='nd-pair-note']").exists()).toBe(false);
+    });
+});
+
 describe("the keys in the To field", () => {
     beforeEach(() => {
         jest.useFakeTimers();

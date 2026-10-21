@@ -148,6 +148,15 @@ export type Frame = {
 
     /** A room chosen in the full view: previewed if it has no sidebar row, opened, and the view closed. */
     openFromMainView: (channelId: string) => Promise<void>;
+
+    /**
+     * Add people for a room: its dialog, or for a conversation of two, which Rock keeps as it is,
+     * New message with that person chosen.
+     */
+    openAddPeople: (channelId: string) => Promise<void>;
+
+    /** What New message says it was opened for, when Add people opened it; else null. */
+    newMessageNote: Ref<string | null>;
 };
 
 /** Below this width the block shows one pane at a time, as on a phone. */
@@ -744,6 +753,8 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         goneStyle,
         panelKind,
         mainView,
+        openAddPeople: async () => undefined,
+        newMessageNote: ref<string | null>(null),
         shownPanel,
         panelElement,
         drawnThread,

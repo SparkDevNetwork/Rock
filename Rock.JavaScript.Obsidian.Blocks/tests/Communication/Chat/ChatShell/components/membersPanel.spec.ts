@@ -353,3 +353,144 @@ describe("the subtitle", () => {
         expect(text(w, "panel-subtitle")).toBe("young-adults");
     });
 });
+
+// Changing who is in the room. Where Rock lets the reader manage the room's people, the list opens
+// with an Add people row (a group of nine draws it disabled, "Full, 9 of 9"), and each other row
+// gains a More menu: View profile, Message where the person can be messaged, then Remove, or for a
+// leader's row seen by someone who is not a Chat Administrator, a lock note in Remove's place. A
+// row being removed dims with "Removing"; a refusal shows under the row in the door's words with a
+// dismiss X.
+//
+//   props += canManageMembers: boolean, isChatAdministrator: boolean,
+//            removals: Record<string, { kind: "removing" } | { kind: "refused", text, isStale }>
+//   emits += addPeople, remove(personAliasGuid), dismissRemoval(personAliasGuid)
+//   marks += members-add, members-add-full, member-more, member-removing, member-refusal,
+//            member-refusal-dismiss; the menu's items by data-key (profile, message, remove) and
+//            its menu-note
+
+/** The open menu's items, as a person reads them. */
+const menuItems = (): string[] => Array.from(document.querySelectorAll("[role='menuitem']")).map(e => read(e));
+
+async function openMenu(w: VueWrapper, index: number): Promise<void> {
+    await w.findAll("[data-testid='member-more']")[index].trigger("click");
+    await nextTick();
+}
+
+describe("Add people", () => {
+    test("the row opens the list for those who may add, and asks for the dialog", async () => {
+        const w = draw({ canManageMembers: true });
+
+        expect(text(w, "members-add")).toBe("Add people");
+        await w.get("[data-testid='members-add']").trigger("click");
+        expect(w.emitted("addPeople")).toHaveLength(1);
+    });
+
+    test("is not offered to someone who may not add, nor under a query", async () => {
+        expect(draw().find("[data-testid='members-add']").exists()).toBe(false);
+        wrapper?.unmount();
+
+        const w = draw({ canManageMembers: true, query: "an", searchStatus: "answered" });
+        expect(w.find("[data-testid='members-add']").exists()).toBe(false);
+    });
+
+    test("a full group draws it disabled, as Full, 9 of 9", () => {
+        const w = draw({ canManageMembers: true, isChannel: false, channelName: "Hike planning", memberCount: 9, members: [anna, self] });
+
+        expect(w.find("[data-testid='members-add']").exists()).toBe(false);
+        const full = w.get("[data-testid='members-add-full']");
+        expect(read(full.element)).toBe("Add people Full, 9 of 9");
+        expect(full.attributes("aria-disabled")).toBe("true");
+    });
+});
+
+describe("the row menu", () => {
+    test("offers no More to someone who may not manage the room", () => {
+        expect(draw().find("[data-testid='member-more']").exists()).toBe(false);
+    });
+
+    test("a manager's More on another person's row offers View profile, Message, then Remove from the channel", async () => {
+        const w = draw({ canManageMembers: true, isChatAdministrator: true });
+
+        const mores = w.findAll("[data-testid='member-more']");
+        expect(mores.map(m => m.attributes("aria-label"))).toEqual(["More for Tom Hale", "More for Grace Kim", "More for Anna Reyes", "More for Ben Okafor"]);
+
+        await openMenu(w, 2);
+        expect(menuItems()).toEqual(["View profile", "Message", "Remove from young-adults"]);
+        expect(document.querySelector("[data-key='remove']")?.classList.contains("is-danger")).toBe(true);
+    });
+
+    test("leaves out Message where the person cannot be messaged, and a group says this conversation", async () => {
+        const w = draw({ canManageMembers: true, isChannel: false, channelName: "Hike planning", members: [ben, anna, self] });
+
+        await openMenu(w, 0);
+        expect(menuItems()).toEqual(["View profile", "Remove from this conversation"]);
+    });
+
+    test("each item asks for what it says", async () => {
+        const w = draw({ canManageMembers: true });
+
+        await openMenu(w, 2);
+        document.querySelector<HTMLElement>("[data-key='profile']")!.click();
+        expect(w.emitted("person")).toEqual([[anna.person_alias_guid]]);
+
+        await openMenu(w, 2);
+        document.querySelector<HTMLElement>("[data-key='message']")!.click();
+        expect(w.emitted("message")).toEqual([[anna.person_alias_guid]]);
+
+        await openMenu(w, 2);
+        document.querySelector<HTMLElement>("[data-key='remove']")!.click();
+        expect(w.emitted("remove")).toEqual([[anna.person_alias_guid]]);
+    });
+
+    test("a leader's row seen by someone who is not a Chat Administrator shows the lock note in Remove's place", async () => {
+        const w = draw({ canManageMembers: true, isChatAdministrator: false });
+
+        await openMenu(w, 0);
+        expect(menuItems()).toEqual(["View profile", "Message"]);
+        expect(document.querySelector("[data-key='remove']")).toBeNull();
+        expect(read(document.querySelector("[data-testid='menu-note']")!)).toBe("Only Chat Administrators can remove a leader");
+    });
+
+    test("a Chat Administrator may remove a leader", async () => {
+        const w = draw({ canManageMembers: true, isChatAdministrator: true });
+
+        await openMenu(w, 0);
+        expect(menuItems()).toEqual(["View profile", "Message", "Remove from young-adults"]);
+        expect(document.querySelector("[data-testid='menu-note']")).toBeNull();
+    });
+});
+
+describe("removing a row", () => {
+    test("a row being removed dims, says Removing, and offers nothing else", () => {
+        const w = draw({ canManageMembers: true, removals: { [anna.person_alias_guid]: { kind: "removing" } } });
+
+        const row = w.findAll("[data-testid='member-row']")[2];
+        expect(row.classes()).toContain("is-busy");
+        expect(read(row.get("[data-testid='member-removing']").element)).toBe("Removing");
+        expect(row.find("[data-testid='member-more']").exists()).toBe(false);
+        expect(row.find("[data-testid='member-message']").exists()).toBe(false);
+    });
+
+    test("a refusal shows under the row in the door's words, and its X dismisses it", async () => {
+        const text = "Couldn't remove Anna. You're offline; try again when you're back.";
+        const w = draw({ canManageMembers: true, removals: { [anna.person_alias_guid]: { kind: "refused", text, isStale: false } } });
+
+        const refusal = w.findAll("[data-testid='member-row']")[2].get("[data-testid='member-refusal']");
+        expect(read(refusal.element)).toBe(text);
+        expect(refusal.attributes("role")).toBe("alert");
+
+        await refusal.get("[data-testid='member-refusal-dismiss']").trigger("click");
+        expect(w.emitted("dismissRemoval")).toEqual([[anna.person_alias_guid]]);
+    });
+
+    test("once a removed row leaves, focus moves to the row after it", async () => {
+        const w = draw({ canManageMembers: true });
+        (w.findAll("[data-testid='member-who']")[2].element as HTMLElement).focus();
+
+        await w.setProps({ removals: { [anna.person_alias_guid]: { kind: "removing" } } });
+        await w.setProps({ removals: {}, members: [tom, grace, ben, self] });
+        await nextTick();
+
+        expect(document.activeElement?.getAttribute("data-person")).toBe(ben.person_alias_guid);
+    });
+});

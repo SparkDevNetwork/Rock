@@ -25,7 +25,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
-import { ChatError, RosterMember, RosterPage } from "../types.partial";
+import { ChatError, PersonRow, RosterMember, RosterPage } from "../types.partial";
+import { ActionNotice } from "./useMessageActions.partial";
 
 /** The people search's pause after the last keystroke before it asks the platform. */
 export const memberSearchPause = 250;
@@ -67,11 +68,87 @@ export type MembersState = {
     /** The filter as typed. */
     query: string;
     search: MemberSearchState;
+
+    /** Whether Rock lets the reader add and remove people here, asked on every open; false until it answers. */
+    canManageMembers: boolean;
+
+    /** Whether the reader is a Chat Administrator, the only person who may remove a channel's leader. */
+    isChatAdministrator: boolean;
+
+    /** Each row's removal while the door works or after it refused, by person. */
+    removals: Record<string, MemberRemoval>;
+
+    /** The person a remove confirm or the last leader's dialog asks about, or null. */
+    confirming: RosterMember | null;
+
+    /** The last leader's dialog: its search as typed, the platform's answer, and the door's refusal. */
+    successorQuery: string;
+    successor: MemberSearchState;
+    successorRefusal: string | null;
+
+    /** The Add people dialog. */
+    adding: AddPeopleState;
+};
+
+/** A row's removal: the door at work, or its refusal, which for a person already gone leaves on dismiss. */
+export type MemberRemoval =
+    | { kind: "removing" }
+    | { kind: "refused", text: string, isStale: boolean };
+
+/** What the Add people dialog holds. */
+export type AddPeopleState = {
+    isOpen: boolean;
+
+    /** The name as typed. */
+    query: string;
+
+    /** The people search's answer for the newest name, or null before one comes. */
+    people: PersonRow[] | null;
+    isSearching: boolean;
+    error: ChatError | null;
+    isAdding: boolean;
+
+    /** Why the door added nobody, naming the person it would not take when it named one. */
+    refusal: { text: string, personAliasGuid: string | null } | null;
+};
+
+/** What one of Rock's membership doors answers. */
+export type MembershipAnswer = {
+    code?: string | null;
+    message?: string | null;
+    isPending: boolean;
+
+    /** The person the door would not add, when that is its refusal. */
+    personAliasGuid?: string | null;
+};
+
+/** Rock's doors that change who is in a room, and the one that says whether the reader may. */
+export type MemberDoors = {
+    getRights: (channelId: string) => Promise<{ canManageMembers: boolean }>;
+    addMembers: (channelId: string, personAliasGuids: string[]) => Promise<MembershipAnswer>;
+    removeMember: (channelId: string, personAliasGuid: string, replacementPersonAliasGuid: string | null) => Promise<MembershipAnswer>;
 };
 
 /** What the roster reaches outside itself. */
 export type MembersDependencies = {
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
+
+    /** Rock's doors; without them nothing is offered and nothing changes. */
+    doors?: MemberDoors;
+
+    /** Whether the connection is lost, so a door is not asked and the reason is said plainly. */
+    isOffline?: () => boolean;
+
+    /** Shows a toast that is not a failure. */
+    notify?: (notice: ActionNotice) => void;
+
+    /** A room's name as the screen shows it, for a toast. */
+    titleOf?: (channelId: string) => string;
+
+    isChatAdministrator?: boolean;
+
+    /** Whether the people search keeps to the reader's campus, as the page's setting says. */
+    campusOnly?: boolean;
 };
 
 /** The roster a shell holds. */
@@ -84,6 +161,19 @@ export type Members = {
     retrySearch: () => Promise<void>;
     close: () => void;
     stop: () => void;
+
+    /** Opens the remove confirm, or the last leader's dialog, for a person on the roster. */
+    askRemove: (personAliasGuid: string) => void;
+    cancelRemove: () => void;
+
+    /** Removes the person confirmed, naming who leads next when they are the last leader. */
+    remove: (replacementPersonAliasGuid?: string | null) => Promise<void>;
+    dismissRemoval: (personAliasGuid: string) => void;
+    setSuccessorQuery: (query: string) => void;
+    openAdd: () => void;
+    closeAdd: () => void;
+    setAddQuery: (query: string) => void;
+    add: (people: PersonRow[]) => Promise<void>;
 };
 
 /** The refusals that are states of the panel rather than failures, by the platform's codes. */
@@ -109,8 +199,26 @@ function emptyState(): MembersState {
         moreError: null,
         refusal: null,
         query: "",
-        search: noSearch()
+        search: noSearch(),
+        canManageMembers: false,
+        isChatAdministrator: false,
+        removals: {},
+        confirming: null,
+        successorQuery: "",
+        successor: noSearch(),
+        successorRefusal: null,
+        adding: { isOpen: false, query: "", people: null, isSearching: false, error: null, isAdding: false, refusal: null }
     };
+}
+
+/** Whether a person is the room's only leader in the loaded roster, which lists every leader first. */
+export function isLastLeader(_state: MembersState, _personAliasGuid: string): boolean {
+    return false;
+}
+
+/** Who the last leader's dialog offers to lead next. */
+export function successorChoices(_state: MembersState): RosterMember[] {
+    return [];
 }
 
 /**
@@ -389,6 +497,16 @@ export function createMembers(dependencies: MembersDependencies): Members {
             rosterGeneration++;
             searchGeneration++;
             cancelPause();
-        }
+        },
+
+        askRemove: () => undefined,
+        cancelRemove: () => undefined,
+        remove: async () => undefined,
+        dismissRemoval: () => undefined,
+        setSuccessorQuery: () => undefined,
+        openAdd: () => undefined,
+        closeAdd: () => undefined,
+        setAddQuery: () => undefined,
+        add: async () => undefined
     };
 }

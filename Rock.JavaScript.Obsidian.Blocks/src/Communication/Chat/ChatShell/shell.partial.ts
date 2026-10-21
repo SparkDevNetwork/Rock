@@ -36,7 +36,7 @@ import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
 import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms } from "./composables/useRooms.partial";
-import { createMembers, Members } from "./composables/useMembers.partial";
+import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -78,6 +78,7 @@ export type ShellOptions = {
         tenantId?: string | null;
         personAliasGuid?: string | null;
         canStartDm?: boolean | null;
+        isChatAdministrator?: boolean | null;
     };
 
     /** The channel a link named, or null. */
@@ -97,6 +98,15 @@ export type ShellOptions = {
 
     /** Asks Rock's door to rename a group; a blank name goes back to its people's names. Without it, Rename is refused. */
     renameConversation?: (channelId: string, name: string) => Promise<JoinResult>;
+
+    /** Asks Rock whether the person may add and remove people in a room; without it, they may not. */
+    getMemberRights?: MemberDoors["getRights"];
+
+    /** Asks Rock's door to add people to a room; without it, nobody is added. */
+    addMembers?: MemberDoors["addMembers"];
+
+    /** Asks Rock's door to remove someone from a room, naming who leads next for a last leader. */
+    removeMember?: MemberDoors["removeMember"];
 
     /**
      * Whether the page narrows the sidebar's pinned rooms and the people search to the person's

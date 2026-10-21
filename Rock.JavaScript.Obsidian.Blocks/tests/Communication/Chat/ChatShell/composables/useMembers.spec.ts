@@ -46,8 +46,9 @@
 //   shownMembers(state): RosterMember[]      what the panel lists for the query typed
 //   searchStatus(state): "searching" | "answered" | "failed" | null
 //   memberSearchPause: 250, memberPageSize: 50
-import { createMembers, memberPageSize, memberSearchPause, searchStatus, shownMembers } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
+import { createMembers, isLastLeader, memberPageSize, memberSearchPause, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
+import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
 
@@ -429,3 +430,495 @@ describe("stopping", () => {
         expect(members.state.isLoading).toBe(false);
     });
 });
+
+// #region Changing who is in a room
+
+// The panel also changes who is in the room through Rock's doors. Opening it asks Rock, beside the
+// roster, whether the reader may add and remove people there, and Add people and Remove are offered
+// only where they may. A remove is confirmed first; the row is busy while the door works; on
+// success the row leaves and a toast names the person, and a leader removed in favour of someone
+// named to lead next makes that person the room's leader on the roster. A refusal stays under the
+// row in the door's own words, and a row whose person had already gone leaves once its refusal is
+// dismissed. A door not reached is told as offline or as failed, as a Leave is. Adding searches
+// the people the room may take, marking who is in it already, and adds up to eight at a time.
+//
+//   createMembers({ call, doors?: { getRights, addMembers, removeMember }, isOffline?, notify?,
+//                   titleOf?, isChatAdministrator?, campusOnly? })
+//   state += canManageMembers, isChatAdministrator, removals: { [guid]: { kind: "removing" } |
+//            { kind: "refused", text, isStale } }, confirming: RosterMember | null,
+//            successorQuery, successor: MemberSearchState, successorRefusal: string | null,
+//            adding: { isOpen, query, people: PersonRow[] | null, isSearching, error, isAdding,
+//                      refusal: { text, personAliasGuid } | null }
+//   askRemove(guid), cancelRemove(), remove(replacementGuid?), dismissRemoval(guid),
+//   setSuccessorQuery(query), openAdd(), closeAdd(), setAddQuery(query), add(people)
+//   isLastLeader(state, guid), successorChoices(state)
+
+type Answer = { code?: string | null, message?: string | null, isPending: boolean, personAliasGuid?: string | null };
+
+type DoorCall = { door: string, args: unknown[] };
+
+type Rights = { canManageMembers: boolean };
+
+/** The roster with Rock's doors, each answering what the test hands it, in order, given or held. */
+function doorHarness(options: {
+    calls?: Array<CallResult | Deferred<CallResult>>,
+    rights?: Array<Rights | Deferred<Rights>>,
+    answers?: Array<Answer | Deferred<Answer> | Error>,
+    isOffline?: boolean,
+    isChatAdministrator?: boolean
+}): { members: ReturnType<typeof createMembers>, calls: Call[], doorCalls: DoorCall[], notices: Array<{ code: string, text: string, icon: string }>, offline: { value: boolean } } {
+    const calls: Call[] = [];
+    const doorCalls: DoorCall[] = [];
+    const notices: Array<{ code: string, text: string, icon: string }> = [];
+    const callQueue = [...(options.calls ?? [])];
+    const rightsQueue = [...(options.rights ?? [])];
+    const answerQueue = [...(options.answers ?? [])];
+    const offline = { value: options.isOffline ?? false };
+
+    const answerNext = (): Promise<Answer> => {
+        const next = answerQueue.shift() ?? { code: "ok", message: null, isPending: false };
+        if (next instanceof Error) {
+            return Promise.reject(next);
+        }
+        return "promise" in next ? next.promise : Promise.resolve(next);
+    };
+
+    const members = createMembers({
+        call: (name, args) => {
+            calls.push({ name, args });
+            const next = callQueue.shift() ?? page([]);
+            return "promise" in next ? next.promise : Promise.resolve(next);
+        },
+        doors: {
+            getRights: channelId => {
+                doorCalls.push({ door: "getRights", args: [channelId] });
+                const next = rightsQueue.shift() ?? { canManageMembers: false };
+                return "promise" in next ? next.promise : Promise.resolve(next);
+            },
+            addMembers: (channelId, personAliasGuids) => {
+                doorCalls.push({ door: "addMembers", args: [channelId, personAliasGuids] });
+                return answerNext();
+            },
+            removeMember: (channelId, personAliasGuid, replacementPersonAliasGuid) => {
+                doorCalls.push({ door: "removeMember", args: [channelId, personAliasGuid, replacementPersonAliasGuid] });
+                return answerNext();
+            }
+        },
+        isOffline: () => offline.value,
+        notify: notice => notices.push(notice),
+        titleOf: id => id === channel ? "young-adults" : "Hike planning",
+        isChatAdministrator: options.isChatAdministrator ?? false,
+        campusOnly: false
+    });
+
+    return { members, calls, doorCalls, notices, offline };
+}
+
+/** The door's answers, as ChatMembershipResultBag carries them. */
+const ok: Answer = { code: "ok", message: null, isPending: false };
+const pendingOk: Answer = { code: "ok", message: null, isPending: true };
+const unreached: Answer = { code: "door.unavailable", message: null, isPending: false };
+const notMemberAnswer: Answer = { code: "door.not_member", message: "That person isn't in this conversation.", isPending: false };
+const notAllowed: Answer = { code: "door.not_allowed", message: "Only Chat Administrators can remove a leader.", isPending: false };
+
+/** One person as chat_search_people answers them for a room, exactly its keys. */
+function found(n: number, nickName: string, lastName: string, inRoom: boolean): PersonRow {
+    return { person_alias_guid: guid(n), nick_name: nickName, last_name: lastName, avatar_url: null, campus_id: null, in_room: inRoom } as PersonRow;
+}
+
+const aaron = found(20, "Aaron", "Park", false);
+const luis = found(21, "Luis", "Romero", false);
+const annaFound = found(2, "Anna", "Reyes", true);
+
+describe("the reader's rights in the room", () => {
+    test("opening asks Rock beside the roster, and draws Add and Remove only where it says so", async () => {
+        const { members, calls, doorCalls } = doorHarness({ calls: [page([tom, anna])], rights: [{ canManageMembers: true }] });
+
+        const opened = members.open(channel);
+        expect(members.state.canManageMembers).toBe(false);
+        expect(calls).toHaveLength(1);
+        expect(doorCalls).toEqual([{ door: "getRights", args: [channel] }]);
+        await opened;
+        await settle();
+
+        expect(members.state.canManageMembers).toBe(true);
+    });
+
+    test("following to another room asks again, and nothing carries over from the first", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([ben])], rights: [{ canManageMembers: true }, { canManageMembers: false }] });
+
+        await members.open(channel);
+        await settle();
+        expect(members.state.canManageMembers).toBe(true);
+
+        const opened = members.open(otherChannel);
+        expect(members.state.canManageMembers).toBe(false);
+        await opened;
+        await settle();
+
+        expect(doorCalls.map(c => c.args[0])).toEqual([channel, otherChannel]);
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
+    test("an answer for a room since left is dropped", async () => {
+        const first = deferred<Rights>();
+        const { members } = doorHarness({ calls: [page([tom]), page([ben])], rights: [first, { canManageMembers: false }] });
+
+        void members.open(channel);
+        await members.open(otherChannel);
+        first.resolve({ canManageMembers: true });
+        await settle();
+
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
+    test("nothing resolves into the state after stop", async () => {
+        const held = deferred<Rights>();
+        const { members } = doorHarness({ calls: [page([tom])], rights: [held] });
+
+        void members.open(channel);
+        members.stop();
+        held.resolve({ canManageMembers: true });
+        await settle();
+
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
+    test("a page with no doors offers nothing, and whether the reader is a Chat Administrator comes from Rock's page load", async () => {
+        const bare = createMembers({ call: () => Promise.resolve(page([tom])) });
+        await bare.open(channel);
+        expect(bare.state.canManageMembers).toBe(false);
+        expect(bare.state.isChatAdministrator).toBe(false);
+
+        const { members } = doorHarness({ isChatAdministrator: true });
+        expect(members.state.isChatAdministrator).toBe(true);
+    });
+});
+
+describe("removing someone", () => {
+    test("the confirm names the person, and confirming asks the door with no one to lead next", async () => {
+        const held = deferred<Answer>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom, anna, ben])], answers: [held] });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        expect(members.state.confirming?.nick_name).toBe("Anna");
+
+        const removing = members.remove();
+        expect(members.state.confirming).toBeNull();
+        expect(members.state.removals[guid(2)]).toEqual({ kind: "removing" });
+        expect(doorCalls.filter(c => c.door === "removeMember")).toEqual([{ door: "removeMember", args: [channel, guid(2), null] }]);
+
+        held.resolve(ok);
+        await removing;
+        expect(names(members.state.rows)).toEqual(["Tom", "Ben"]);
+        expect(members.state.removals[guid(2)]).toBeUndefined();
+    });
+
+    test("a removal the platform has yet to take is done too: the row leaves and the toast names the person", async () => {
+        const { members, notices } = doorHarness({ calls: [page([tom, anna])], answers: [pendingOk] });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        await members.remove();
+
+        expect(names(members.state.rows)).toEqual(["Tom"]);
+        expect(notices).toEqual([{ code: "member.removed", text: "Removed Anna Reyes", icon: "user-minus" }]);
+    });
+
+    test("a person removed under a query leaves the search's rows as well", async () => {
+        jest.useFakeTimers();
+        try {
+            const { members } = doorHarness({ calls: [page([tom, anna]), page([anna, annie])] });
+            await members.open(channel);
+            members.setQuery("an");
+            jest.advanceTimersByTime(memberSearchPause);
+            await settle();
+
+            members.askRemove(guid(4));
+            await members.remove();
+
+            expect(names(shownMembers(members.state))).toEqual(["Anna"]);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("cancelling the confirm asks nothing", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom, anna])] });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        members.cancelRemove();
+
+        expect(members.state.confirming).toBeNull();
+        expect(doorCalls.filter(c => c.door === "removeMember")).toEqual([]);
+    });
+
+    test("a refusal stays under the row in the door's words, and dismissing it keeps the row", async () => {
+        const { members, notices } = doorHarness({ calls: [page([tom, anna])], answers: [notAllowed] });
+        await members.open(channel);
+
+        members.askRemove(guid(1));
+        await members.remove();
+
+        expect(members.state.removals[guid(1)]).toEqual({ kind: "refused", text: "Only Chat Administrators can remove a leader.", isStale: false });
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna"]);
+        expect(notices).toEqual([]);
+
+        members.dismissRemoval(guid(1));
+        expect(members.state.removals[guid(1)]).toBeUndefined();
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna"]);
+    });
+
+    test("a person who had already gone is a stale row, which leaves once its refusal is dismissed", async () => {
+        const { members } = doorHarness({ calls: [page([tom, anna])], answers: [notMemberAnswer] });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        await members.remove();
+        expect(members.state.removals[guid(2)]).toEqual({ kind: "refused", text: "That person isn't in this conversation.", isStale: true });
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna"]);
+
+        members.dismissRemoval(guid(2));
+        expect(names(members.state.rows)).toEqual(["Tom"]);
+    });
+
+    test("offline, the door is not asked and the row says so", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom, anna])], isOffline: true });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        await members.remove();
+
+        expect(doorCalls.filter(c => c.door === "removeMember")).toEqual([]);
+        expect(members.state.removals[guid(2)]).toEqual({ kind: "refused", text: "Couldn't remove Anna. You're offline; try again when you're back.", isStale: false });
+    });
+
+    test("a door Rock answered without, or one that threw, is offline once the connection is lost and otherwise a failure", async () => {
+        const { members, offline } = doorHarness({ calls: [page([tom, anna, ben])], answers: [unreached, new Error("lost")] });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        await members.remove();
+        expect(members.state.removals[guid(2)]).toEqual({ kind: "refused", text: "Couldn't remove Anna. Try again in a moment.", isStale: false });
+
+        members.askRemove(guid(3));
+        const removing = members.remove();
+        offline.value = true;
+        await removing;
+        expect(members.state.removals[guid(3)]).toEqual({ kind: "refused", text: "Couldn't remove Ben. You're offline; try again when you're back.", isStale: false });
+    });
+
+    test("an answer that comes after the panel stopped reaches nothing", async () => {
+        const held = deferred<Answer>();
+        const { members, notices } = doorHarness({ calls: [page([tom, anna])], answers: [held] });
+        await members.open(channel);
+
+        members.askRemove(guid(2));
+        const removing = members.remove();
+        members.stop();
+        held.resolve(ok);
+        await removing;
+
+        expect(notices).toEqual([]);
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna"]);
+    });
+});
+
+describe("removing a leader", () => {
+    const grace = member(5, "Grace", "Kim", { is_leader: true });
+
+    test("a leader is the last one only while no other leader is in the loaded roster", async () => {
+        const { members } = doorHarness({ calls: [page([tom, grace, anna])] });
+        await members.open(channel);
+        expect(isLastLeader(members.state, guid(1))).toBe(false);
+        expect(isLastLeader(members.state, guid(2))).toBe(false);
+
+        const alone = doorHarness({ calls: [page([tom, anna])] });
+        await alone.members.open(channel);
+        expect(isLastLeader(alone.members.state, guid(1))).toBe(true);
+    });
+
+    test("the last leader's dialog lists the room's other members, and its search asks the roster for the whole room", async () => {
+        jest.useFakeTimers();
+        try {
+            const { members, calls } = doorHarness({ calls: [page([tom, anna, ben]), page([tom, annie])] });
+            await members.open(channel);
+            members.askRemove(guid(1));
+            expect(names(successorChoices(members.state))).toEqual(["Anna", "Ben"]);
+
+            members.setSuccessorQuery("an");
+            expect(names(successorChoices(members.state))).toEqual(["Anna"]);
+            jest.advanceTimersByTime(memberSearchPause);
+            expect(calls[1]).toEqual({ name: "chat_list_members", args: { p_channel_id: channel, p_after: null, p_limit: memberPageSize, p_query: "an" } });
+
+            await settle();
+            expect(names(successorChoices(members.state))).toEqual(["Annie"]);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("removing with someone to lead next sends them, keeps the dialog while the door works, then makes them leader and says so", async () => {
+        const held = deferred<Answer>();
+        const { members, doorCalls, notices } = doorHarness({ calls: [page([tom, anna, ben])], answers: [held], isChatAdministrator: true });
+        await members.open(channel);
+        members.askRemove(guid(1));
+
+        const removing = members.remove(guid(2));
+        expect(members.state.confirming?.nick_name).toBe("Tom");
+        expect(members.state.removals[guid(1)]).toEqual({ kind: "removing" });
+        expect(doorCalls.filter(c => c.door === "removeMember")).toEqual([{ door: "removeMember", args: [channel, guid(1), guid(2)] }]);
+
+        held.resolve(ok);
+        await removing;
+        expect(members.state.confirming).toBeNull();
+        expect(names(members.state.rows)).toEqual(["Anna", "Ben"]);
+        expect(members.state.rows[0].is_leader).toBe(true);
+        expect(notices).toEqual([{ code: "member.leader", text: "Anna Reyes is now the leader of young-adults", icon: "users" }]);
+    });
+
+    test("a refusal shows in the dialog in the door's words, and the row stays as it was", async () => {
+        const refused: Answer = { code: "door.bad_request", message: "Choose who leads this channel next before removing its last leader.", isPending: false };
+        const { members } = doorHarness({ calls: [page([tom, anna])], answers: [refused] });
+        await members.open(channel);
+        members.askRemove(guid(1));
+
+        await members.remove(guid(2));
+
+        expect(members.state.confirming?.nick_name).toBe("Tom");
+        expect(members.state.successorRefusal).toBe("Choose who leads this channel next before removing its last leader.");
+        expect(members.state.removals[guid(1)]).toBeUndefined();
+
+        members.cancelRemove();
+        expect(members.state.successorRefusal).toBeNull();
+    });
+});
+
+describe("adding people", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("a name waits for the pause, then asks the people search for this room, which marks who is in it", async () => {
+        const { members, calls } = doorHarness({ calls: [page([tom, anna]), { ok: true, data: { people: [aaron, annaFound] } }] });
+        await members.open(channel);
+        members.openAdd();
+        expect(members.state.adding.isOpen).toBe(true);
+
+        members.setAddQuery(" a ");
+        expect(members.state.adding.isSearching).toBe(true);
+        jest.advanceTimersByTime(memberSearchPause);
+        expect(calls[1]).toEqual({ name: "chat_search_people", args: { p_query: "a", p_limit: 10, p_campus_only: false, p_channel_id: channel } });
+
+        await settle();
+        expect(members.state.adding.people?.map(p => [p.nick_name, p.in_room])).toEqual([["Aaron", false], ["Anna", true]]);
+        expect(members.state.adding.isSearching).toBe(false);
+    });
+
+    test("an answer to an older name is dropped, and clearing the name asks nothing", async () => {
+        const forA = deferred<CallResult>();
+        const { members, calls } = doorHarness({ calls: [page([tom]), forA, { ok: true, data: { people: [luis] } }] });
+        await members.open(channel);
+        members.openAdd();
+
+        members.setAddQuery("a");
+        jest.advanceTimersByTime(memberSearchPause);
+        members.setAddQuery("lu");
+        jest.advanceTimersByTime(memberSearchPause);
+        await settle();
+        forA.resolve({ ok: true, data: { people: [aaron] } });
+        await settle();
+        expect(members.state.adding.people?.map(p => p.nick_name)).toEqual(["Luis"]);
+
+        members.setAddQuery("");
+        jest.advanceTimersByTime(memberSearchPause);
+        expect(calls).toHaveLength(3);
+        expect(members.state.adding.people).toBeNull();
+    });
+
+    test("adding asks the door for everyone chosen, busy until it answers, then closes, says who was added and reads the roster again", async () => {
+        const held = deferred<Answer>();
+        const { members, calls, doorCalls, notices } = doorHarness({ calls: [page([tom]), page([tom, member(20, "Aaron", "Park")])], answers: [held] });
+        await members.open(channel);
+        members.openAdd();
+
+        const adding = members.add([aaron]);
+        expect(members.state.adding.isAdding).toBe(true);
+        expect(doorCalls.filter(c => c.door === "addMembers")).toEqual([{ door: "addMembers", args: [channel, [guid(20)]] }]);
+
+        held.resolve(ok);
+        await adding;
+        await settle();
+        expect(members.state.adding.isOpen).toBe(false);
+        expect(notices).toEqual([{ code: "member.added", text: "Added Aaron Park", icon: "user-plus" }]);
+        expect(calls[1].name).toBe("chat_list_members");
+        expect(names(members.state.rows)).toEqual(["Tom", "Aaron"]);
+        expect(members.state.isLoading).toBe(false);
+    });
+
+    test("several people added are named by first name", async () => {
+        const { members, notices } = doorHarness({ calls: [page([tom])], answers: [pendingOk] });
+        await members.open(channel);
+        members.openAdd();
+
+        await members.add([aaron, luis, found(22, "Mia", "Chen", false)]);
+
+        expect(notices[0].text).toBe("Added Aaron, Luis and Mia");
+    });
+
+    test("a refusal naming someone chosen asks for them to be taken out, and the dialog stays open", async () => {
+        const refusal: Answer = { code: "door.target_not_eligible", message: "Luis Romero cannot be added.", isPending: false, personAliasGuid: guid(21) };
+        const { members, notices } = doorHarness({ calls: [page([tom])], answers: [refusal] });
+        await members.open(channel);
+        members.openAdd();
+
+        await members.add([aaron, luis]);
+
+        expect(members.state.adding.isOpen).toBe(true);
+        expect(members.state.adding.isAdding).toBe(false);
+        expect(members.state.adding.refusal).toEqual({ text: "Luis Romero cannot be added. Remove Luis and try again.", personAliasGuid: guid(21) });
+        expect(notices).toEqual([]);
+    });
+
+    test("any other refusal is the door's sentence, and a door not reached says offline or failed", async () => {
+        const full: Answer = { code: "door.bad_request", message: "A conversation holds at most nine people.", isPending: false };
+        const { members, offline } = doorHarness({ calls: [page([tom])], answers: [full, unreached] });
+        await members.open(channel);
+        members.openAdd();
+
+        await members.add([aaron]);
+        expect(members.state.adding.refusal).toEqual({ text: "A conversation holds at most nine people.", personAliasGuid: null });
+
+        await members.add([aaron]);
+        expect(members.state.adding.refusal?.text).toBe("Couldn't add people. Try again in a moment.");
+
+        offline.value = true;
+        await members.add([aaron]);
+        expect(members.state.adding.refusal?.text).toBe("Couldn't add people. You're offline; try again when you're back.");
+    });
+
+    test("nothing resolves after stop", async () => {
+        const held = deferred<Answer>();
+        const { members, notices } = doorHarness({ calls: [page([tom])], answers: [held] });
+        await members.open(channel);
+        members.openAdd();
+
+        const adding = members.add([aaron]);
+        members.stop();
+        held.resolve(ok);
+        await adding;
+
+        expect(notices).toEqual([]);
+        expect(members.state.adding.isOpen).toBe(true);
+    });
+});
+
+// #endregion Changing who is in a room

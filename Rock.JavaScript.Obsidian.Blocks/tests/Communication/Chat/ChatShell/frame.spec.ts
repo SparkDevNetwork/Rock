@@ -93,6 +93,9 @@ let mockShell: Record<string, unknown> | null = null;
 /** What the block built its last shell with, which carries the frame's views for a mention's jump. */
 let mockShellOptions: ShellOptions | null = null;
 
+/** The block's actions, as the page asks Rock for them; answered by each test that asks. */
+const mockInvoke = jest.fn();
+
 /** Each conversation's timeline as the stand-in holds it, so a test can put messages in one. */
 const mockTimelines = new Map<string, { messages: TimelineMessage[] }>();
 
@@ -311,7 +314,10 @@ function fakeMembers(): Record<string, unknown> {
     const state = reactive({
         channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isLoadingMore: false,
         error: null, moreError: null, refusal: null, query: "",
-        search: { query: null, rows: [], hasMore: false, isSearching: false, error: null }
+        search: { query: null, rows: [], hasMore: false, isSearching: false, error: null },
+        canManageMembers: false, isChatAdministrator: false, removals: {}, confirming: null as unknown,
+        successorQuery: "", successor: { query: null, rows: [], hasMore: false, isSearching: false, error: null }, successorRefusal: null,
+        adding: { isOpen: false, query: "", people: null, isSearching: false, error: null, isAdding: false, refusal: null }
     });
     return {
         state,
@@ -325,7 +331,16 @@ function fakeMembers(): Record<string, unknown> {
         close: jest.fn(() => {
             state.channelId = null;
         }),
-        stop: jest.fn()
+        stop: jest.fn(),
+        askRemove: jest.fn(),
+        cancelRemove: jest.fn(),
+        remove: jest.fn(async () => undefined),
+        dismissRemoval: jest.fn(),
+        setSuccessorQuery: jest.fn(),
+        openAdd: jest.fn(),
+        closeAdd: jest.fn(),
+        setAddQuery: jest.fn(),
+        add: jest.fn(async () => undefined)
     };
 }
 
@@ -428,7 +443,7 @@ function fakeMentions(shellState: { activeChannelId: string | null }): Record<st
 
 jest.mock("@Obsidian/Utility/block", () => ({
     useConfigurationValues: () => mockConfig,
-    useInvokeBlockAction: () => jest.fn()
+    useInvokeBlockAction: () => mockInvoke
 }));
 
 jest.mock("@Obsidian/Libs/supabase", () => ({ createClient: jest.fn() }));
@@ -600,6 +615,7 @@ afterEach(() => {
     wrapper = null;
     mockShell = null;
     mockShellOptions = null;
+    mockInvoke.mockReset();
     mockThreadPages = null;
     mockOlderAnswers.length = 0;
     mockTimelines.clear();
@@ -3198,4 +3214,97 @@ describe("the members panel", () => {
         expect(membersOf().open).not.toHaveBeenCalled();
         expect(w.find("[data-testid='members-panel']").exists()).toBe(false);
     });
+
+    /** Opens the members panel on the team channel, with Anna loaded and the rights given. */
+    async function openManaged(w: VueWrapper): Promise<Record<string, unknown> & { state: Record<string, unknown> }> {
+        await openTeam(w);
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        const members = mockShell!.members as Record<string, unknown> & { state: Record<string, unknown> };
+        members.state.rows = [annaMember];
+        members.state.canManageMembers = true;
+        await settle();
+        return members;
+    }
+
+    test("the panel's Add people opens the dialog over the frame, which searches, adds and closes through the roster", async () => {
+        const w = await mountBlock(1200);
+        const members = await openManaged(w);
+
+        await w.get("[data-testid='members-add']").trigger("click");
+        await settle();
+        expect(members.openAdd).toHaveBeenCalled();
+        (members.state.adding as Record<string, unknown>).isOpen = true;
+        await settle();
+
+        const dialog = w.get("[data-testid='add-people']");
+        expect(dialog.element.closest("[data-testid='chat-frame']")).not.toBeNull();
+        expect(dialog.element.closest(".chat-panel")).toBeNull();
+        expect(w.get("[data-testid='add-people'] .chat-dialog-title").text()).toBe("Add people to Worship Team");
+
+        await w.get("[data-testid='ap-input']").setValue("aa");
+        expect(members.setAddQuery).toHaveBeenCalledWith("aa");
+
+        await w.get("[data-testid='ap-cancel']").trigger("click");
+        expect(members.closeAdd).toHaveBeenCalled();
+    });
+
+    test("Remove in a row's menu opens the confirm over the frame, which removes and cancels through the roster", async () => {
+        const w = await mountBlock(1200);
+        const members = await openManaged(w);
+
+        await w.get("[data-testid='member-more']").trigger("click");
+        await settle();
+        document.querySelector<HTMLElement>("[data-key='remove']")!.click();
+        await settle();
+        expect(members.askRemove).toHaveBeenCalledWith(annaMember.person_alias_guid);
+
+        members.state.confirming = annaMember;
+        await settle();
+        const confirm = document.querySelector<HTMLElement>("[data-testid='remove-member'] [data-testid='dialog-confirm']")!;
+        expect(confirm.closest(".chat-panel")).toBeNull();
+        confirm.click();
+        await settle();
+        expect(members.remove).toHaveBeenCalledWith(null);
+
+        document.querySelector<HTMLElement>("[data-testid='remove-member'] [data-testid='dialog-cancel']")!.click();
+        await settle();
+        expect(members.cancelRemove).toHaveBeenCalled();
+    });
+
+    test("a row's refusal is dismissed through the roster", async () => {
+        const w = await mountBlock(1200);
+        const members = await openManaged(w);
+        members.state.removals = { [annaMember.person_alias_guid]: { kind: "refused", text: "That person isn't in this conversation.", isStale: true } };
+        await settle();
+
+        await w.get("[data-testid='member-refusal-dismiss']").trigger("click");
+        expect(members.dismissRemoval).toHaveBeenCalledWith(annaMember.person_alias_guid);
+    });
+
+    test("the page asks Rock's doors for the rights, an add and a remove, and a door Rock answered without is unreached", async () => {
+        await mountBlock(1200);
+        const options = mockShellOptions!;
+        mockInvoke.mockResolvedValueOnce({ isSuccess: true, data: { canManageMembers: true } });
+        mockInvoke.mockResolvedValueOnce({ isSuccess: true, data: { code: "ok", message: null, isPending: true } });
+        mockInvoke.mockResolvedValueOnce({ isSuccess: false, errorMessage: "Request failed", data: null });
+
+        expect(await options.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: true });
+        expect(await options.addMembers!(team.channel_id, [annaMember.person_alias_guid])).toEqual({ code: "ok", message: null, isPending: true });
+        expect(await options.removeMember!(team.channel_id, annaMember.person_alias_guid, null)).toEqual({ code: "door.unavailable", message: "Request failed", isPending: false });
+
+        expect(mockInvoke.mock.calls).toEqual([
+            ["GetMemberRights", { channelGuid: team.channel_id }],
+            ["AddMembers", { channelGuid: team.channel_id, personAliasGuids: [annaMember.person_alias_guid] }],
+            ["RemoveMember", { channelGuid: team.channel_id, personAliasGuid: annaMember.person_alias_guid, replacementPersonAliasGuid: null }]
+        ]);
+    });
+
+    test("rights Rock answered without are none", async () => {
+        await mountBlock(1200);
+        mockInvoke.mockResolvedValueOnce({ isSuccess: false, errorMessage: "Request failed", data: null });
+
+        expect(await mockShellOptions!.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: false });
+    });
+
 });

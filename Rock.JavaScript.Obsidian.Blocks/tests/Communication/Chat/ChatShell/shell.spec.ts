@@ -78,6 +78,10 @@ function build(options: {
     joinChannel?: ShellOptions["joinChannel"],
     leaveChannel?: ShellOptions["leaveChannel"],
     renameConversation?: ShellOptions["renameConversation"],
+    getMemberRights?: ShellOptions["getMemberRights"],
+    addMembers?: ShellOptions["addMembers"],
+    removeMember?: ShellOptions["removeMember"],
+    isChatAdministrator?: boolean,
     areSharedChannelsFilteredByCampus?: boolean
 } = {}): {
     shell: ReturnType<typeof createChatShell>,
@@ -168,7 +172,7 @@ function build(options: {
     };
 
     const shell = createChatShell({
-        session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: person },
+        session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: person, isChatAdministrator: options.isChatAdministrator },
         linkedChannelId: channelA,
         mintChurchToken: async () => {
             counts.mints++;
@@ -259,6 +263,9 @@ function build(options: {
         joinChannel: options.joinChannel,
         leaveChannel: options.leaveChannel,
         renameConversation: options.renameConversation,
+        getMemberRights: options.getMemberRights,
+        addMembers: options.addMembers,
+        removeMember: options.removeMember,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mentionViews: options.mentionViews,
         reloadPage: () => {
@@ -2340,6 +2347,33 @@ describe("the live sidebar", () => {
 
             expect(doorCalls).toEqual([[dmD, "Trail crew"]]);
             expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "pending" });
+        });
+
+        test("the members panel asks Rock's doors: its rights on open, and a remove of someone on the roster", async () => {
+            const doorCalls: unknown[][] = [];
+            const h = await startedLive({
+                isChatAdministrator: true,
+                getMemberRights: async channelId => {
+                    doorCalls.push(["rights", channelId]);
+                    return { canManageMembers: true };
+                },
+                removeMember: async (channelId, personAliasGuid, replacement) => {
+                    doorCalls.push(["remove", channelId, personAliasGuid, replacement]);
+                    return { code: "ok", message: null, isPending: false };
+                }
+            });
+
+            void h.shell.members.open(channelA);
+            await settle();
+            expect(h.shell.members.state.canManageMembers).toBe(true);
+            expect(h.shell.members.state.isChatAdministrator).toBe(true);
+
+            h.shell.members.state.rows = [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null, is_leader: false, details: null, can_message: true }];
+            h.shell.members.askRemove(anna);
+            await h.shell.members.remove();
+
+            expect(doorCalls).toEqual([["rights", channelA], ["remove", channelA, anna, null]]);
+            expect(h.shell.members.state.rows).toEqual([]);
         });
 
         test("without the doors, Leave and Rename are refused with a sentence and nothing else changes", async () => {
