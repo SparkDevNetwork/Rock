@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "Person", attendanceInfo.CheckInByPersonGuid.ToString() );
                 var urlWithPersonParameter = GetCurrentPageUrl( queryParams );
-                lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">by: {1}</a>", urlWithPersonParameter, attendanceInfo.CheckInByPersonName );
+                lWhoCheckedIn.Text = string.Format( "<br /><a href=\"{0}\">by: {1}</a>", urlWithPersonParameter, attendanceInfo.CheckInByPersonName.EncodeHtml() );
             }
 
             var lLocationName = ( Literal ) e.Row.FindControl( "lLocationName" );
