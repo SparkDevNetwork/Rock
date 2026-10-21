@@ -83,7 +83,11 @@ function build(options: {
     removeMember?: ShellOptions["removeMember"],
     isChatAdministrator?: boolean,
     savePersonSetting?: ShellOptions["savePersonSetting"],
-    areSharedChannelsFilteredByCampus?: boolean
+    areSharedChannelsFilteredByCampus?: boolean,
+    push?: ShellOptions["push"],
+    pushSettings?: Record<string, unknown>,
+    personAliasGuid?: string,
+    stored?: Record<string, string>
 } = {}): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<Response>[]>,
@@ -111,7 +115,9 @@ function build(options: {
     foundDm: { value: string | null },
     historyCalls: Array<Record<string, unknown>>,
     prefsCalls: Array<Record<string, unknown>>,
-    prefsAnswer: { value: { status: number, body: unknown } }
+    prefsAnswer: { value: { status: number, body: unknown } },
+    deviceCalls: Array<{ name: string, body: Record<string, unknown> }>,
+    deviceAnswer: { value: { status: number, body: unknown } }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -121,7 +127,7 @@ function build(options: {
     const saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }> = [];
     const joined: string[] = [];
     const removed: string[] = [];
-    const stored: Record<string, string> = {};
+    const stored: Record<string, string> = options.stored ?? {};
     const sent: Array<{ channelId: string, body: string, args: Record<string, unknown> }> = [];
     // The person the platform token names; null hands out a token that is not a JWT.
     const tokenPerson: { value: string | null } = { value: null };
@@ -145,6 +151,9 @@ function build(options: {
     // Every chat_set_prefs asked, and what it answers next.
     const prefsCalls: Array<Record<string, unknown>> = [];
     const prefsAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: { channel: null, me: {} } } };
+    // Every device register and unregister asked, and what an unregister answers.
+    const deviceCalls: Array<{ name: string, body: Record<string, unknown> }> = [];
+    const deviceAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: {} } };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -178,7 +187,7 @@ function build(options: {
     };
 
     const shell = createChatShell({
-        session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: person, isChatAdministrator: options.isChatAdministrator },
+        session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
         linkedChannelId: channelA,
         mintChurchToken: async () => {
             counts.mints++;
@@ -191,9 +200,17 @@ function build(options: {
         },
         fetch: async (url, init) => {
             if (url.endsWith("/functions/v1/token-exchange")) {
-                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300 });
+                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: options.pushSettings ? { push: options.pushSettings } : undefined });
             }
             const body = JSON.parse(init.body as string);
+            if (url.endsWith("/rest/v1/rpc/chat_register_device")) {
+                deviceCalls.push({ name: "chat_register_device", body });
+                return fakeResponse(200, {});
+            }
+            if (url.endsWith("/rest/v1/rpc/chat_unregister_device")) {
+                deviceCalls.push({ name: "chat_unregister_device", body });
+                return fakeResponse(deviceAnswer.value.status, deviceAnswer.value.body);
+            }
             // Every platform call is a POST through the shell's one call path.
             if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
                 counts.bootstraps++;
@@ -277,6 +294,7 @@ function build(options: {
         addMembers: options.addMembers,
         removeMember: options.removeMember,
         savePersonSetting: options.savePersonSetting,
+        push: options.push,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mentionViews: options.mentionViews,
         reloadPage: () => {
@@ -286,7 +304,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, deviceAnswer,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -2472,6 +2490,39 @@ describe("settings", () => {
     });
 });
 
+// A browser's push as the shell is handed it: the permission and the token held by the test, and
+// a worker already active. Firebase's values come from the token exchange's settings.
+function fakeBrowserPush(permission: { value: string }, token: () => Promise<string> = async () => "fcm-1"): NonNullable<ShellOptions["push"]> {
+    const cookie: { value: string | null } = { value: null };
+    const worker = { state: "activated", addEventListener: () => undefined, removeEventListener: () => undefined } as unknown as ServiceWorker;
+    return {
+        pagePath: "/chat",
+        permission: () => permission.value,
+        requestPermission: async () => {
+            permission.value = "granted";
+            return permission.value;
+        },
+        registerWorker: async () => ({ installing: null, waiting: null, active: worker }),
+        getToken: token,
+        writeCookie: value => {
+            cookie.value = value;
+        },
+        readCookie: () => cookie.value
+    };
+}
+
+const firebaseWeb = { apiKey: "k", projectId: "p", messagingSenderId: "1", appId: "1:1:web:1" };
+
+/** Push settings as the token exchange answers them, with the church's prompt timing. */
+function pushSettings(prompt: string): Record<string, unknown> {
+    return { web: firebaseWeb, vapid_key: "v", prompt };
+}
+
+/** The key a person's Turn off is kept under on this browser. */
+function pushOffKey(personAliasGuid: string): string {
+    return `rock-chat:push-off:${tenant}:${personAliasGuid}`;
+}
+
 // Chat settings' browser row reads the shell's push state; a browser with no push at all is not
 // set up, and Turn on and Turn off go to push.
 describe("the browser row", () => {
@@ -2479,5 +2530,72 @@ describe("the browser row", () => {
         const h = await started();
 
         expect(h.shell.state.push).toBe("unavailable");
+    });
+
+    test("Turn off is kept per church and person, so another person on the browser still registers", async () => {
+        const stored: Record<string, string> = {};
+        const ada = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        await ada.shell.turnOffPush();
+        expect(ada.shell.state.push).toBe("offered");
+        ada.shell.stop();
+
+        const other = "a0000009-0000-4000-8000-000000000000";
+        const ben = await started({ stored, personAliasGuid: other, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+
+        expect(ben.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(ben.shell.state.push).toBe("on");
+        expect(stored[pushOffKey(person)]).toBe("true");
+    });
+
+    test("an unregister the platform refuses is told, and the browser stays turned off", async () => {
+        const h = await started({ push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        h.deviceAnswer.value = { status: 500, body: { code: "rpc.unavailable", message: "x" } };
+
+        await h.shell.turnOffPush();
+
+        expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_register_device", "chat_unregister_device"]);
+        expect(h.shell.state.errors.map(e => e.code)).toContain("push.unregister_failed");
+        expect(h.shell.state.push).toBe("offered");
+    });
+});
+
+// The header offers push unasked as the church's prompt timing says: never with off, from the
+// first load with offer, and after the person's first send with after_send. Chat settings offers
+// it whatever the timing.
+describe("the header's push offer", () => {
+    async function withPrompt(prompt: string): Promise<ReturnType<typeof build>> {
+        return started({ push: fakeBrowserPush({ value: "default" }), pushSettings: pushSettings(prompt) });
+    }
+
+    test("off never offers it, even after a send, while Chat settings still does", async () => {
+        const h = await withPrompt("off");
+        expect(h.shell.state.isPushOffered).toBe(false);
+
+        await h.shell.send("on my way");
+        expect(h.shell.state.isPushOffered).toBe(false);
+        expect(h.shell.state.push).toBe("offered");
+    });
+
+    test("offer offers it from the first load", async () => {
+        const h = await withPrompt("offer");
+
+        expect(h.shell.state.isPushOffered).toBe(true);
+    });
+
+    test("after_send offers it only once the person has sent", async () => {
+        const h = await withPrompt("after_send");
+        expect(h.shell.state.isPushOffered).toBe(false);
+
+        await h.shell.send("on my way");
+        expect(h.shell.state.isPushOffered).toBe(true);
+    });
+
+    test("a yes at the browser takes the offer away", async () => {
+        const h = await withPrompt("offer");
+
+        await h.shell.turnOnPush();
+
+        expect(h.shell.state.isPushOffered).toBe(false);
+        expect(h.shell.state.push).toBe("on");
     });
 });

@@ -47,9 +47,6 @@ export type BrowserShellOptions = {
 /** The cookie Rock reads at sign-out to take this browser out of push. */
 const pushCookieName = "rock_chat_push";
 
-/** Where this browser remembers that the person turned its notifications off in Chat settings. */
-const pushOffKey = "rock-chat-push-off";
-
 /**
  * Makes the block's shell builder. A birthdate save replaces the shell with one for the session
  * it answers with, so the builder is kept for the block's life and every shell it builds shares
@@ -90,10 +87,6 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
                     vapidKey,
                     serviceWorkerRegistration: registration as ServiceWorkerRegistration
                 });
-            },
-            offFlag: {
-                read: () => window.localStorage.getItem(pushOffKey) === "true",
-                write: isOff => isOff ? window.localStorage.setItem(pushOffKey, "true") : window.localStorage.removeItem(pushOffKey)
             },
             readCookie: () => {
                 const pair = document.cookie.split("; ").find(part => part.startsWith(`${pushCookieName}=`));

@@ -127,7 +127,7 @@ export type ShellOptions = {
     mark: (name: string) => void;
 
     /** The browser's push, or nothing where this browser has none. */
-    push?: Omit<PushDependencies, "settings" | "call">;
+    push?: Omit<PushDependencies, "settings" | "call" | "offFlag">;
 
     /** Loads the page again; the browser's own reload when not given. */
     reloadPage?: () => void;
@@ -954,6 +954,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }
 
     const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
+    const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 
     /**
      * Takes the open channel off the screen: its position is saved, its catch-up stops, and an
@@ -1195,7 +1196,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 push = createPushRegistration({
                     ...options.push,
                     settings: () => session.settings().push,
-                    call: (name, args) => platform.call(name, args)
+                    call: (name, args) => platform.call(name, args),
+                    // per church and person, so each person on a shared browser keeps their own Turn off
+                    offFlag: {
+                        read: () => options.storage?.getItem(pushOffKey) === "true",
+                        write: isOff => options.storage?.setItem(pushOffKey, isOff ? "true" : "false")
+                    }
                 });
                 await push.start();
                 state.isPushOffered = push.isOffered();
