@@ -2075,6 +2075,22 @@ describe("the live sidebar", () => {
             expect(h.channelReads).toEqual([channelA, channelA]);
         });
 
+        test("a room renamed elsewhere reads its row and its facts again, and asks no new token", async () => {
+            const h = await startedLive();
+            const before = { ...h.counts };
+            const renamed = snapshot();
+            renamed.channels = renamed.channels.map(row => row.channel_id === channelA ? { ...row, name: "Trail crew" } : row);
+            h.bootstrap.value = renamed;
+
+            personal(h, "channel.updated", { channel_id: channelA, id: "5e0000f2-0000-4000-8000-000000000000" });
+            await settle();
+
+            expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+            expect(h.counts.mints).toBe(before.mints);
+            expect(h.channelReads).toEqual([channelA, channelA]);
+            expect(h.shell.channels.rows.find(r => r.channel_id === channelA)?.name).toBe("Trail crew");
+        });
+
         test("the directory asks chat_list_directory with the church's campus limit and the chosen filters", async () => {
             const h = await startedLive({ areSharedChannelsFilteredByCampus: true });
 

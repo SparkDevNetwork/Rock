@@ -101,6 +101,14 @@ describe("createChannelStore", () => {
         expect(reloads()).toBe(1);
     });
 
+    test("a room's name, description or kind changed reloads the sidebar", () => {
+        const { store: s, reloads } = store();
+
+        s.applyPersonalEvent("channel.updated", { channel_id: one });
+
+        expect(reloads()).toBe(1);
+    });
+
     test("an event name it does not know is ignored", () => {
         const { store: s, reloads } = store();
 

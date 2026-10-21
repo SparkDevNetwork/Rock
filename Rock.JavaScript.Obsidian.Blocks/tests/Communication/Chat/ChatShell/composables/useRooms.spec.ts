@@ -34,7 +34,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, directoryPageSize, directorySearchPause, PersonProfileResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { JoinResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
-import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
+import { createChannelStore, roomTitle } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
 import { ChannelFacts, DirectoryRow, PersonProfile, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
@@ -543,8 +543,8 @@ describe("a room's facts", () => {
         await settle();
 
         void s.rooms.channelOpened(volunteers);
-        s.rooms.membershipChanged(volunteers);
-        s.rooms.membershipChanged(outreach);
+        s.rooms.roomChanged(volunteers);
+        s.rooms.roomChanged(outreach);
 
         expect(s.channelCalls.map(c => c.channelId)).toEqual([volunteers, volunteers, volunteers]);
     });
@@ -552,7 +552,7 @@ describe("a room's facts", () => {
     test("an older read answering after a newer one is dropped", async () => {
         const s = setup();
         void s.rooms.channelOpened(volunteers);
-        s.rooms.membershipChanged(volunteers);
+        s.rooms.roomChanged(volunteers);
         const [older, newer] = s.channelCalls;
 
         newer.answer.resolve({ ok: true, facts: facts(volunteers, "Volunteers", { is_member: true, member_count: 59 }) });
@@ -569,7 +569,7 @@ describe("a room's facts", () => {
         s.channelCalls[0].answer.resolve({ ok: true, facts: facts(volunteers, "Volunteers") });
         await settle();
 
-        s.rooms.membershipChanged(volunteers);
+        s.rooms.roomChanged(volunteers);
         s.channelCalls[1].answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
         await settle();
 
@@ -876,7 +876,7 @@ describe("once stopped", () => {
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joining" });
 
         s.rooms.openDirectory();
-        s.rooms.membershipChanged(volunteers);
+        s.rooms.roomChanged(volunteers);
         void s.rooms.channelOpened(volunteers);
         await s.rooms.join(outreach);
         await s.rooms.loadMore();
@@ -1054,6 +1054,66 @@ describe("Rename", () => {
 
         expect(s.rooms.renameOf(group)).toEqual({ kind: "saved" });
         expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
+    });
+
+    test("saved names the group at once in the sidebar row and the facts, which the header and the dialog draw", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = group;
+        void s.rooms.channelOpened(group);
+        s.channelCalls[0].answer.resolve({ ok: true, facts: facts(group, null as unknown as string, { name: null, channel_type: "dm", is_public: false }) });
+        await settle();
+
+        void s.rooms.rename(group, "Trail crew");
+        await settle();
+        expect(s.channels.rows.find(r => r.channel_id === group)?.name).toBeNull();
+        s.renameCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        const row = s.channels.rows.find(r => r.channel_id === group)!;
+        expect(row.name).toBe("Trail crew");
+        expect(roomTitle(row)).toBe("Trail crew");
+        expect(s.rooms.factsOf(group)?.name).toBe("Trail crew");
+    });
+
+    test("a name removed and saved titles the group by its people again, from its facts", async () => {
+        const s = setup();
+        s.channels.setSidebar([sidebarRow(group, { name: "Trail crew", channel_type: "dm", is_public: false, dm_names: null, dm_other_count: 0 })]);
+        s.active.value = group;
+        void s.rooms.channelOpened(group);
+        s.channelCalls[0].answer.resolve({
+            ok: true,
+            facts: facts(group, "Trail crew", {
+                channel_type: "dm",
+                is_public: false,
+                member_count: 3,
+                people: [
+                    { person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Caleb", last_name: "Brooks", avatar_url: null, details: null },
+                    { person_alias_guid: "a0000006-0000-4000-8000-000000000000", nick_name: "Hannah", last_name: "Diaz", avatar_url: null, details: null }
+                ]
+            })
+        });
+        await settle();
+
+        void s.rooms.rename(group, "");
+        s.renameCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        const row = s.channels.rows.find(r => r.channel_id === group)!;
+        expect(row.name).toBeNull();
+        expect(roomTitle(row)).toBe("Caleb and Hannah");
+        expect(s.rooms.factsOf(group)?.name).toBeNull();
+    });
+
+    test("pending leaves the row as it was, for the platform's own signal to change", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        expect(s.channels.rows.find(r => r.channel_id === group)?.name).toBeNull();
     });
 
     test("a blank name goes back to everyone's names, and says so", async () => {

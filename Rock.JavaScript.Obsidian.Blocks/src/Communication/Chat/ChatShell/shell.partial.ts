@@ -1059,7 +1059,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // A conversation Rock made before the platform had taken it may have arrived.
                     if (event === "membership.changed") {
                         void directMessages.membershipChanged(typeof changed === "string" ? changed : null);
-                        rooms.membershipChanged(typeof changed === "string" ? changed : null);
+                    }
+                    // A room's facts change with its members and with its own name, description or kind.
+                    if (event === "membership.changed" || event === "channel.updated") {
+                        rooms.roomChanged(typeof changed === "string" ? changed : null);
                     }
                     if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
                         recheck();

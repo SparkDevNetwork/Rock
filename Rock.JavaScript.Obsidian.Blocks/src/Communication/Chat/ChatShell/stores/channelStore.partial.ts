@@ -349,7 +349,9 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             else if (event === "channel.read") {
                 applyRead(payload);
             }
-            else if (event === "membership.changed") {
+            // A membership, or a room's name, description or kind, changed: the signal carries
+            // only the room's id, so its row is read again with the rest.
+            else if (event === "membership.changed" || event === "channel.updated") {
                 dependencies.reloadSidebar();
             }
         },

@@ -297,8 +297,11 @@ export type Rooms = {
     /** The conversation on screen changed: a preview of any other room ends. */
     conversationShown: (channelId: string | null) => void;
 
-    /** A membership changed on the person's topic: the facts held for that room are read again. */
-    membershipChanged: (channelId: string | null) => void;
+    /**
+     * A membership, or the room's own name, description or kind, changed on the person's topic:
+     * the facts held for that room are read again.
+     */
+    roomChanged: (channelId: string | null) => void;
 
     /** A sidebar reload landed: a pending join it shows as a member is joined. */
     sidebarLoaded: () => void;
@@ -618,6 +621,28 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     }
 
     /**
+     * Draws a group's saved name at once in its sidebar row and its facts, which the header, the
+     * sidebar and the details read, rather than waiting for the platform's signal to reload them.
+     * With no name the group is titled by its people again, from the facts' own list of them. Only
+     * a saved answer does this: a pending one is not on the platform yet, which a reload would show.
+     */
+    function showName(channelId: string, name: string): void {
+        const facts = state.facts[channelId];
+        const row = channels.rows.find(r => r.channel_id === channelId);
+        if (row) {
+            row.name = name || null;
+            if (!name && facts) {
+                row.dm_names = facts.people.map(person => person.nick_name ?? "").filter(nickName => nickName !== "");
+                // the others, past the few the facts name, as the platform counts them for an unnamed room
+                row.dm_other_count = Math.max(facts.member_count - 1, facts.people.length);
+            }
+        }
+        if (facts) {
+            facts.name = name || null;
+        }
+    }
+
+    /**
      * Asks one of Rock's membership doors, marking the room offline where the connection is lost
      * or the door cannot be reached. Null when there is no answer to act on: offline, or stopped.
      */
@@ -873,6 +898,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
 
             state.renames[channelId] = { kind: answer.isPending ? "pending" : "saved" };
+            if (!answer.isPending) {
+                showName(channelId, trimmed);
+            }
             if (answer.isPending) {
                 announce("Saved. It can take a minute to reach everyone.");
             }
@@ -929,7 +957,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
         },
 
-        membershipChanged: (channelId: string | null): void => {
+        roomChanged: (channelId: string | null): void => {
             // Only a room this session has asked about is held, its first read perhaps still on
             // its way; any other is read when it opens.
             if (channelId && factsGeneration.has(channelId)) {
