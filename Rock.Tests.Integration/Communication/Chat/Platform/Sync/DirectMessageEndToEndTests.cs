@@ -173,6 +173,39 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void RemovingTheLastLeaderWithAReplacementLeavesTheRoomLedOnThePlatformWhenTheDoorAnswers()
+        {
+            using ( var scene = new Scene() )
+            {
+                var admin = scene.AddChatPerson( "Admin" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                scene.Fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid(), admin );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Pastor", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Push( room, ada, m => m.GroupRoleId = leader );
+                scene.Push( room, bo );
+                Assert.IsNotNull( scene.Platform.WaitForMember( scene.TenantId, room, scene.Fixture.PrimaryAliasGuid( ada ), r => r != null && ( bool? ) r["is_leader"] == true ),
+                    "the room's one leader is on the platform before the removal" );
+
+                var result = scene.Remove( admin, room, ada, bo );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                Assert.IsFalse( result.IsPending, "the push landed within the door's budget" );
+
+                // Read at once, not waited for: the door's answer is the promise that it is there.
+                var removed = scene.Platform.WaitForMember( scene.TenantId, room, scene.Fixture.PrimaryAliasGuid( ada ), r => true );
+                Assert.IsTrue( removed == null || removed["absent_since"].Type != Newtonsoft.Json.Linq.JTokenType.Null,
+                    "the leader removed is gone from the room on the platform" );
+
+                var next = scene.Platform.WaitForMember( scene.TenantId, room, scene.Fixture.PrimaryAliasGuid( bo ), r => true );
+                Assert.IsNotNull( next, "the person named to lead next is still in the room" );
+                Assert.IsTrue( next["absent_since"].Type == Newtonsoft.Json.Linq.JTokenType.Null );
+                Assert.AreEqual( true, ( bool ) next["is_leader"], "the platform has the room led by the person named, in the same push as the removal" );
+            }
+        }
+
         #endregion The membership doors
 
         #region Workflow posts
@@ -440,6 +473,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             public ChatMembershipResultBag Leave( int callerId, Guid channelGuid )
             {
                 return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.LeaveChannelAsync( caller, channelGuid, context, rockContext ) );
+            }
+
+            public ChatMembershipResultBag Remove( int callerId, Guid channelGuid, int personId, int? replacementPersonId = null )
+            {
+                var replacement = replacementPersonId.HasValue ? Fixture.PrimaryAliasGuid( replacementPersonId.Value ) : ( Guid? ) null;
+
+                return AsCaller( callerId, ( caller, context, rockContext ) =>
+                    ChatDoorHelper.RemoveMemberAsync( caller, channelGuid, Fixture.PrimaryAliasGuid( personId ), replacement, context, rockContext ) );
             }
 
             public ChatMembershipResultBag Rename( int callerId, Guid channelGuid, string name )
