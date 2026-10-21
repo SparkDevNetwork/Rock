@@ -245,6 +245,48 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void AChatAdministratorsAddAndRemovalReachThePlatformFromOutsideARequest()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var personId = fixture.AddPerson( "Administrator" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+                var administratorsGuid = Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid();
+
+                // Enrolled in chat, so the removal still pushes a row for the person.
+                fixture.EnsureChatPeopleGroup();
+                fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid(), personId );
+
+                // Outside a request, as a workflow the job engine runs would add it.
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, administratorsGuid, personId );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null && ( bool? ) r["is_chat_administrator"] == true ),
+                    "the Chat Administrator made in Rock never reached the platform" );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new GroupMemberService( rockContext );
+                    service.DeleteRange( service.Queryable().Where( m => m.Group.Guid == administratorsGuid && m.PersonId == personId ).ToList() );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null && ( bool? ) r["is_chat_administrator"] == false ),
+                    "the person taken out of Chat Administrators in Rock still manages every channel on the platform" );
+            }
+        }
+
+        [TestMethod]
         public void APersonsOwnOpenDmSettingSavedThroughTheDoorReachesThePlatform()
         {
             var platform = LocalChatPlatform.FromEnvironment();

@@ -2280,6 +2280,15 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202610201200000_AddChatChannelDescriptionAndGroupType_spChat_SyncProjection", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to the [spChat_SyncProjection] stored procedure carrying whether each person is a Chat Administrator..
+        /// </summary>
+        public static string _202610211200000_AddChatAdministratorToChatSync_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202610211200000_AddChatAdministratorToChatSync_spChat_SyncProjection", resourceCulture);
+            }
+        }
 
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].

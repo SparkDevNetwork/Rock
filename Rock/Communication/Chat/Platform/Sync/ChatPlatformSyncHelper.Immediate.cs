@@ -469,11 +469,13 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return;
             }
 
-            // A ban is pushed from every path, because a workflow the job engine runs is still a
-            // ban. Every other save is pushed only from a request, so a job or an import is left to
-            // the full sync rather than sending a push for each row it writes.
-            var isBanList = member.GroupId == SystemGroups().BanListId;
-            if ( !isBanList && RockRequestContextAccessor.Current == null )
+            // A ban, and a Chat Administrator's powers, are pushed from every path, because a
+            // workflow the job engine runs still bans someone or makes them an administrator. Every
+            // other save is pushed only from a request, so a job or an import is left to the full
+            // sync rather than sending a push for each row it writes.
+            var systemGroups = SystemGroups();
+            var isPushedFromEveryPath = member.GroupId == systemGroups.BanListId || member.GroupId == systemGroups.AdministratorsId;
+            if ( !isPushedFromEveryPath && RockRequestContextAccessor.Current == null )
             {
                 return;
             }

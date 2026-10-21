@@ -75,7 +75,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                     "the second alias does not point at the person who owns it now" );
 
                 foreach ( var column in new[] { "nick_name", "last_name", "avatar_url", "campus_id",
-                    "show_profile_details", "is_open_dm_allowed", "is_globally_banned", "is_inactive" } )
+                    "show_profile_details", "is_open_dm_allowed", "is_globally_banned", "is_inactive",
+                    "is_chat_administrator" } )
                 {
                     Assert.AreEqual( JTokenType.Null, payload.Value( "aliases", extra, column ).Type,
                         string.Format( "the second alias row carries {0}, which belongs on the primary row alone", column ) );
@@ -93,6 +94,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 Assert.AreEqual( primaryAliasGuid.ToString(), ( string ) payload.Value( "aliases", primary, "primary_person_alias_guid" ) );
                 Assert.AreNotEqual( JTokenType.Null, payload.Value( "aliases", primary, "show_profile_details" ).Type );
                 Assert.AreNotEqual( JTokenType.Null, payload.Value( "aliases", primary, "is_inactive" ).Type );
+                Assert.AreNotEqual( JTokenType.Null, payload.Value( "aliases", primary, "is_chat_administrator" ).Type );
             }
         }
 
@@ -115,6 +117,82 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         #endregion The two row shapes
+
+        #region The Chat Administrator flag
+
+        /// <summary>
+        /// A Chat Administrator manages every shared channel, and the platform learns who one is
+        /// only from this flag, on the row that carries everything about the person.
+        /// </summary>
+        [TestMethod]
+        public void AnActiveChatAdministrator_IsFlaggedOnTheirPrimaryRowWhicheverAliasTheyHold()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Administrator channel" );
+                var adminId = fixture.AddPerson( "Administrator" );
+                var memberId = fixture.AddPerson( "NotAdministrator" );
+                fixture.AddMember( channelGuid, adminId );
+                fixture.AddMember( channelGuid, memberId );
+                var extraAliasGuid = fixture.AddExtraAlias( adminId );
+                fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid(), adminId );
+
+                var payload = fixture.Project();
+
+                var admin = payload.Row( "aliases", "person_alias_guid", PrimaryAliasGuid( adminId ) );
+                var extra = payload.Row( "aliases", "person_alias_guid", extraAliasGuid );
+                var member = payload.Row( "aliases", "person_alias_guid", PrimaryAliasGuid( memberId ) );
+
+                Assert.AreEqual( true, ( bool ) payload.Value( "aliases", admin, "is_chat_administrator" ),
+                    "an active member of Chat Administrators is not flagged, so the platform would refuse them a channel they manage" );
+                Assert.AreEqual( JTokenType.Null, payload.Value( "aliases", extra, "is_chat_administrator" ).Type,
+                    "the flag belongs on the primary row alone, which every other alias resolves to" );
+                Assert.AreEqual( false, ( bool ) payload.Value( "aliases", member, "is_chat_administrator" ),
+                    "someone outside Chat Administrators is flagged as one" );
+            }
+        }
+
+        /// <summary>
+        /// The administrators are an ordinary group, so a membership that is not active, or one
+        /// that was archived, grants nothing, as it bans nothing on the ban list.
+        /// </summary>
+        [TestMethod]
+        public void AnInactivePendingOrArchivedAdministratorsMembership_IsNotFlagged()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Lapsed administrator channel" );
+                var administratorsGuid = Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid();
+
+                var lapsed = new (string LastName, Action<GroupMember> Edit)[]
+                {
+                    ("InactiveAdministrator", m => m.GroupMemberStatus = GroupMemberStatus.Inactive),
+                    ("PendingAdministrator", m => m.GroupMemberStatus = GroupMemberStatus.Pending),
+                    ("ArchivedAdministrator", m => { m.IsArchived = true; m.ArchivedDateTime = RockDateTime.Now; })
+                };
+
+                var personIds = lapsed.Select( l =>
+                {
+                    var personId = fixture.AddPerson( l.LastName );
+                    fixture.AddMember( channelGuid, personId );
+                    fixture.AddMember( administratorsGuid, personId, l.Edit );
+                    return (l.LastName, PersonId: personId);
+                } ).ToList();
+
+                var payload = fixture.Project();
+
+                foreach ( var (lastName, personId) in personIds )
+                {
+                    var row = payload.Row( "aliases", "person_alias_guid", PrimaryAliasGuid( personId ) );
+
+                    Assert.IsNotNull( row, string.Format( "{0} was not projected at all", lastName ) );
+                    Assert.AreEqual( false, ( bool ) payload.Value( "aliases", row, "is_chat_administrator" ),
+                        string.Format( "{0} is flagged as a Chat Administrator", lastName ) );
+                }
+            }
+        }
+
+        #endregion The Chat Administrator flag
 
         #region The form a guid travels in
 

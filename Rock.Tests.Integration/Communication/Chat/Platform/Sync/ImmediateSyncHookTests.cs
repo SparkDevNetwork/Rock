@@ -253,6 +253,34 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void AChatAdministratorsAddOutsideARequestStillPushes()
+        {
+            using ( var scene = new Scene() )
+            {
+                var fixture = scene.Fixture;
+                var personId = fixture.AddPerson( "Administrator" );
+
+                // Saved as a job or a workflow the job engine runs saves: with no request around it.
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMembers( rockContext, Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid(), personId );
+                    rockContext.SaveChanges();
+                }
+
+                var pushes = scene.WaitForPushes();
+
+                Assert.AreEqual( 1, pushes.Count, "a Chat Administrator changes what the person may do in every channel, so it is pushed from every path" );
+                AssertIsAPush( pushes[0] );
+
+                var alias = Row( pushes[0].Json, "aliases", fixture.PrimaryAliasGuid( personId ) );
+                Assert.IsNotNull( alias, "the person's alias row is what carries the flag" );
+                Assert.AreEqual( true, ( bool ) alias[ColumnIndex( "aliases", "is_chat_administrator" )] );
+                Assert.AreEqual( 0, Rows( pushes[0].Json, "channels" ).Count, "the administrators group is never a channel" );
+                Assert.AreEqual( 0, Rows( pushes[0].Json, "members" ).Count );
+            }
+        }
+
         #endregion Where a save came from
 
         #region Absence
