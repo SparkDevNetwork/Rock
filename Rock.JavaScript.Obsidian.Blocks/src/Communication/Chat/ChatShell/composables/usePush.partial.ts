@@ -385,7 +385,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return "blocked";
             }
 
-            return permission === "granted" && !isTurnedOff() ? "on" : "offered";
+            return permission === "granted" && registeredToken !== null && !isTurnedOff() ? "on" : "offered";
         },
 
         stop: (): void => {
