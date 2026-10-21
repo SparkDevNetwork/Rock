@@ -543,6 +543,45 @@ describe("the person's own preferences", () => {
         expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
     });
 
+    // The platform's sidebar shows a hidden room again once a message newer than the hide lands.
+    test("a new message in a room hidden while open brings it back, so it stays when another opens", () => {
+        const { store: s } = store();
+        s.setActive(two);
+        s.applyPrefs(two, { hidden: true });
+
+        s.applyPersonalEvent("channel.unread", { channel_id: two, message_id: 99 });
+        s.setActive(one);
+
+        expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+        expect(s.rows[1].hidden).toBe(false);
+    });
+
+    test("a direct message's new message does the same, and one walked back to an older message does not", () => {
+        const dmOne = "d0000001-0000-4000-8000-000000000000";
+        const dmTwo = "d0000002-0000-4000-8000-000000000000";
+        const dmRow = (channelId: string): SidebarRow => row(channelId, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1 });
+        const preview = (channelId: string, messageId: number | null): Record<string, unknown> => ({
+            channel_id: channelId,
+            message_id: messageId,
+            sent_at: "2026-10-21T10:00:00Z",
+            preview: "hi",
+            sender: { nick_name: "Ben", last_name: "Okafor" },
+            is_own: false
+        });
+        const s = createChannelStore({ reloadSidebar: () => undefined });
+        s.setSidebar([dmRow(dmOne), dmRow(dmTwo)]);
+
+        s.setActive(dmTwo);
+        s.applyPrefs(dmTwo, { hidden: true });
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, null));
+        expect(s.rows.find(r => r.channel_id === dmTwo)?.hidden).toBe(true);
+
+        s.applyPersonalEvent("dm.preview", preview(dmTwo, 50));
+        s.setActive(dmOne);
+
+        expect(s.rows.map(r => r.channel_id)).toContain(dmTwo);
+    });
+
     test("a room the sidebar does not hold is left alone", () => {
         const { store: s } = store();
 

@@ -158,6 +158,16 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         return store.rows.find(row => row.channel_id === channelId);
     }
 
+    /**
+     * A message newer than the hide brings a hidden room back, as the platform's sidebar reads its
+     * hide, so a row kept while it was open stays once another opens.
+     */
+    function unhideOnNew(row: SidebarRow | undefined): void {
+        if (row?.hidden) {
+            row.hidden = false;
+        }
+    }
+
     /** A signal that a channel has something the person has not read. */
     function applyUnread(payload: unknown): void {
         const signal = payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null;
@@ -165,12 +175,14 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             return;
         }
 
+        const row = find(signal.channel_id);
+        unhideOnNew(row);
+
         // The person is looking at it; their save when they leave settles it.
         if (signal.channel_id === store.activeChannelId) {
             return;
         }
 
-        const row = find(signal.channel_id);
         if (!row) {
             dependencies.reloadSidebar();
             return;
@@ -234,6 +246,10 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
         const messageId = typeof signal.message_id === "number" ? signal.message_id : null;
         const row = find(signal.channel_id);
+        if (messageId !== null && messageId > (row?.last_message_id ?? 0)) {
+            unhideOnNew(row);
+        }
+
         if (!row) {
             // A hidden conversation comes back on a new message, as the sidebar's hide rule reads;
             // one emptied out of sight has nothing to draw.
