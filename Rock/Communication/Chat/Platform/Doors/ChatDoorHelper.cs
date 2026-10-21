@@ -514,8 +514,11 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.bad_request", "Leave the conversation instead." );
             }
 
-            // Who would lead next is read with the other two, so one projection call answers for all.
+            // Who would lead next and who leads now are read with the other two, so one projection
+            // call says which of them chat still shows in the room. A room has a few leaders.
+            var leaders = ReadLeaderRows( rockContext, channelGuid );
             var people = new List<int> { caller.Id, targetId.Value };
+            people.AddRange( leaders.Select( l => l.PersonId ).Where( id => !people.Contains( id ) ).Distinct() );
             int? replacementId = null;
             if ( replacementPersonAliasGuid.HasValue )
             {
@@ -528,7 +531,10 @@ namespace Rock.Communication.Chat.Platform.Doors
                     return Membership( "door.not_found", "The person chosen to lead next could not be found." );
                 }
 
-                people.Add( replacementId.Value );
+                if ( !people.Contains( replacementId.Value ) )
+                {
+                    people.Add( replacementId.Value );
+                }
             }
 
             var room = ReadRoom( rockContext, context.Configuration, channelGuid, people );
@@ -557,9 +563,8 @@ namespace Rock.Communication.Chat.Platform.Doors
             // Only a shared channel has leaders; a conversation's members are all alike.
             if ( room.Channel.ChannelType == SharedChannelType )
             {
-                var leaders = ReadLeaderRows( rockContext, room.GroupId );
                 var heldRoleId = leaders.Where( l => l.PersonId == targetId.Value ).Select( l => ( int? ) l.RoleId ).FirstOrDefault();
-                var isLastLeader = heldRoleId.HasValue && leaders.All( l => l.PersonId == targetId.Value );
+                var isLastLeader = IsLastLeader( targetId.Value, leaders.Select( l => l.PersonId ), room.LivePersonIds, room.UnlistedPersonIds );
 
                 var leaderRefusal = RefuseLeaderRemoval( heldRoleId.HasValue, ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ), isLastLeader, replacementId.HasValue );
                 if ( leaderRefusal != null )
@@ -642,7 +647,10 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
-        /// Whether the person removed is the channel's last leader.
+        /// Whether the person removed is the channel's last leader: they lead it, and nobody else
+        /// leads it whom chat still shows in the room. A leader row in Rock held by someone on the
+        /// Chat Ban List, inactive or no longer in the room on the platform leads nobody in chat,
+        /// so it does not spare the room a replacement.
         /// </summary>
         /// <param name="targetPersonId">The person removed.</param>
         /// <param name="leaderPersonIds">Everyone holding a live leader membership in Rock.</param>
@@ -652,7 +660,8 @@ namespace Rock.Communication.Chat.Platform.Doors
         internal static bool IsLastLeader( int targetPersonId, IEnumerable<int> leaderPersonIds, ISet<int> live, ISet<int> unlisted )
         {
             var leaders = leaderPersonIds.ToList();
-            return leaders.Contains( targetPersonId ) && leaders.All( id => id == targetPersonId );
+            return leaders.Contains( targetPersonId )
+                && !leaders.Any( id => id != targetPersonId && live.Contains( id ) && !unlisted.Contains( id ) );
         }
 
         /// <summary>
@@ -1272,12 +1281,12 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// Each live leader membership of a group, by person and role: an active, unarchived row
         /// in a leader role, under no ban in force.
         /// </summary>
-        private static List<(int PersonId, int RoleId)> ReadLeaderRows( RockContext rockContext, int groupId )
+        private static List<(int PersonId, int RoleId)> ReadLeaderRows( RockContext rockContext, Guid groupGuid )
         {
             var now = RockDateTime.Now;
 
             return new GroupMemberService( rockContext ).Queryable()
-                .Where( m => m.GroupId == groupId
+                .Where( m => m.Group.Guid == groupGuid
                     && m.GroupMemberStatus == GroupMemberStatus.Active
                     && m.GroupRole.IsLeader
                     && !( m.IsChatBanned && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) ) )
