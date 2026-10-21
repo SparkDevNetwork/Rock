@@ -100,7 +100,8 @@
                     </div>
                 </div>
 
-                <div :id="noteId" class="chat-pk-note" aria-live="polite" data-testid="nd-note">{{ note }}</div>
+                <!-- Read with the field it describes; its news is told once, in the view's one live region. -->
+                <div :id="noteId" class="chat-pk-note" data-testid="nd-note">{{ note }}</div>
             </div>
         </div>
 
@@ -1242,7 +1243,8 @@
         // before this reads it again.
         const count = props.chosen.length + 1;
         emit("choose", person);
-        announce(`Added ${nameOf(person)}. ${count} ${count === 1 ? "person" : "people"} chosen.`);
+        const full = count >= maxOthers ? ` ${maxOthers} people is the most for one conversation. Press Tab to write your message.` : "";
+        announce(`Added ${nameOf(person)}. ${count} ${count === 1 ? "person" : "people"} chosen.${full}`);
     }
 
     function editorElement(): HTMLElement | null {

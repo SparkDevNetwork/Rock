@@ -578,6 +578,11 @@ describe("what a screen reader is told", () => {
         jest.useFakeTimers();
     });
 
+    /** The live regions in the view that hold these words right now. */
+    function regionsSaying(w: VueWrapper, words: string): Element[] {
+        return Array.from(w.element.querySelectorAll("[aria-live]")).filter(region => plain(region.textContent ?? "").includes(words));
+    }
+
     test("the first person chosen is one person chosen, though the list already holds them as the choice is told", async () => {
         const chosen = reactive<PersonRow[]>([]);
         const w = mountView({ chosen, onChoose: (picked: PersonRow) => chosen.push(picked) });
@@ -587,5 +592,16 @@ describe("what a screen reader is told", () => {
         await press(w, "Enter");
 
         expect(w.get("[data-testid='nd-announcement']").text()).toBe("Added Anna Reyes. 1 person chosen.");
+    });
+
+    test("Enter with no one found is said once, in one live region", async () => {
+        const w = mountView({ search: jest.fn(async () => []) });
+        await typeName(w, "zz");
+        await afterPause();
+
+        await press(w, "Enter");
+
+        expect(regionsSaying(w, "No one to message for")).toHaveLength(1);
+        expect(w.get("[data-testid='nd-note']").attributes("aria-live")).toBeUndefined();
     });
 });
