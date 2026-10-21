@@ -44,7 +44,7 @@
                                     :aria-label="`Remove ${nameOf(person)}`"
                                     :disabled="isLocked"
                                     data-testid="nd-chip-remove"
-                                    @click="emit('unchoose', person.person_alias_guid)">
+                                    @click="unchoose(person)">
                                 <Icon name="x" size="xs" />
                             </button>
                         </span>
@@ -822,7 +822,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
-    import { DirectMessageDraft, DirectMessageLookup, isTextKeptOnSend, maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
+    import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
     import { joinNames } from "../stores/channelStore.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -975,6 +975,14 @@
     let isEditorFocusOwed = !isFieldFocusedFirst;
 
     let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** What each phase of the first message says to a screen reader, as its line under the message reads. */
+    const phaseWords: Record<NonNullable<DraftPhase>, string> = {
+        asking: "Starting your conversation…",
+        waiting: "Still setting it up…",
+        trying: "Sending…",
+        failed: "Your message was not sent. Try again or delete it."
+    };
 
     /** Counts the text typed, so an answer for text the person has since changed is dropped. */
     let searchCount = 0;
@@ -1146,7 +1154,7 @@
         }
         else if (event.key === "Backspace" && !query.value && props.chosen.length > 0) {
             event.preventDefault();
-            emit("unchoose", props.chosen[props.chosen.length - 1].person_alias_guid);
+            unchoose(props.chosen[props.chosen.length - 1]);
         }
         else if (event.key === "Escape") {
             // Stopped here so nothing behind the view closes with it.
@@ -1247,6 +1255,12 @@
         announce(`Added ${nameOf(person)}. ${count} ${count === 1 ? "person" : "people"} chosen.${full}`);
     }
 
+    /** Takes a person back out, saying who, since their chip goes without a word. */
+    function unchoose(person: PersonRow): void {
+        emit("unchoose", person.person_alias_guid);
+        announce(`Removed ${nameOf(person)}.`);
+    }
+
     function editorElement(): HTMLElement | null {
         return viewElement.value?.querySelector<HTMLElement>("[data-testid='composer-input']") ?? null;
     }
@@ -1275,11 +1289,15 @@
     });
 
     // A first message that is over, sent or refused, takes its text off the pending message; a
-    // refusal puts it back in the box through the draft.
+    // refusal puts it back in the box through the draft. Each phase it moves to is told, since it
+    // is drawn under a message the person is not looking at.
     watch(pendingPhase, phase => {
         if (!phase) {
             sentText.value = null;
+            return;
         }
+
+        announce(phaseWords[phase]);
     });
 
     // A chip's remove button goes with its chip, and a browser drops focus from it to the page, so

@@ -604,4 +604,48 @@ describe("what a screen reader is told", () => {
         expect(regionsSaying(w, "No one to message for")).toHaveLength(1);
         expect(w.get("[data-testid='nd-note']").attributes("aria-live")).toBeUndefined();
     });
+
+    test("the eighth person chosen also says how to move on, since the note under the field is not read by itself", async () => {
+        const chosen = reactive<PersonRow[]>(eight.slice(0, 7));
+        const w = mountView({ chosen, search: jest.fn(async () => [eight[7]]), onChoose: (picked: PersonRow) => chosen.push(picked) });
+        await typeName(w, "om");
+        await afterPause();
+
+        await press(w, "Enter");
+
+        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Added Omar Faris. 8 people chosen. 8 people is the most for one conversation. Press Tab to write your message.");
+    });
+
+    test("a chip taken out says who was removed", async () => {
+        const w = mountView({ chosen: [anna, caleb], lookup: fresh, draft: draftFor([anna, caleb]) });
+
+        await w.findAll("[data-testid='nd-chip-remove']")[0].trigger("click");
+
+        expect(w.emitted("unchoose")).toEqual([[anna.person_alias_guid]]);
+        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Removed Anna Reyes.");
+    });
+
+    test("Backspace on an empty field says who it took out", async () => {
+        const w = mountView({ chosen: [anna, caleb], lookup: fresh, draft: draftFor([anna, caleb]) });
+        field(w).focus();
+
+        await press(w, "Backspace");
+
+        expect(w.emitted("unchoose")).toEqual([[caleb.person_alias_guid]]);
+        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Removed Caleb Brooks.");
+    });
+
+    test.each([
+        ["asking", "Starting your conversation…"],
+        ["waiting", "Still setting it up…"],
+        ["trying", "Sending…"],
+        ["failed", "Your message was not sent. Try again or delete it."]
+    ] as const)("each phase of the first message is told as it comes: %s", async (phase, words) => {
+        const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello" }) });
+
+        await w.setProps({ draft: draftFor([caleb], { body: "hello", status: phase === "failed" ? "draft" : "starting", phase }) });
+        await settle();
+
+        expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
+    });
 });
