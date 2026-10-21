@@ -41,6 +41,27 @@
         </component>
 
         <div class="chat-header-actions">
+            <!-- A channel's leaders over its head count, or the people icon where none can be shown. -->
+            <button v-if="membersKind === 'channel' && facts && !isPhone"
+                    type="button"
+                    class="chat-header-pile"
+                    data-testid="header-members"
+                    :aria-label="memberCountLabel"
+                    :aria-expanded="isMembersOpen ? 'true' : 'false'"
+                    @click="emit('members')">
+                <Avatar v-if="pileFaces.length > 0" :people="pileFaces" :size="26" />
+                <span v-else class="chat-header-pile-ic"><Icon name="users" size="sm" /></span>
+                {{ facts.member_count.toLocaleString() }}
+            </button>
+
+            <IconButton v-else-if="membersKind === 'group' && !isPhone"
+                        icon="users"
+                        :label="groupMembersLabel"
+                        tooltip="Members"
+                        data-testid="header-members"
+                        :aria-expanded="isMembersOpen ? 'true' : 'false'"
+                        @click="emit('members')" />
+
             <IconButton v-if="isThreadsOffered && !isPhone"
                         icon="thread"
                         label="Threads"
@@ -263,6 +284,45 @@ button.chat-header-id:hover .chat-header-chev {
     box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
+/* The facepile: up to three faces then the head count, in one pill-shaped button. */
+.chat-header-pile {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
+    height: 34px;
+    padding: 0 10px 0 6px;
+    margin-right: 4px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-header-pile:hover,
+.chat-header-pile[aria-expanded="true"] {
+    background: var(--chat-hover);
+}
+
+.chat-header-pile :deep(.chat-av) {
+    font-size: 10px !important;
+}
+
+/* A room whose faces cannot be shown draws the people icon in a face's place. */
+.chat-header-pile-ic {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    color: var(--chat-icon);
+    background: var(--chat-hover);
+    border-radius: 50%;
+}
+
 /* The banner opens by its own height, which script measures, since grid rows do not animate in Safari 14. */
 .chat-conn-banner {
     flex: none;
@@ -416,6 +476,7 @@ button.chat-header-id:hover .chat-header-chev {
         (e: "backOnline"): void,
         (e: "threads"): void,
         (e: "mentions"): void,
+        (e: "members"): void,
         (e: "details"): void
     }>();
 
@@ -518,6 +579,21 @@ button.chat-header-id:hover .chat-header-chev {
             default: false
         },
 
+        /**
+         * Whether to offer the members panel, which needs a conversation that exists; a channel's
+         * facepile, a group's Members button, never in a conversation of two.
+         */
+        isMembersOffered: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the members panel is open, which its button shows as expanded. */
+        isMembersOpen: {
+            type: Boolean,
+            default: false
+        },
+
         /** Whether the mentions inbox is open, which its button shows as expanded. */
         isMentionsOpen: {
             type: Boolean,
@@ -578,6 +654,25 @@ button.chat-header-id:hover .chat-header-chev {
     /** A person's one face, or a group's first two. */
     const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(name => ({ name })));
 
+    /** Which way into the members panel the room offers: a channel's facepile, a group's button, or none. */
+    const membersKind = computed((): "channel" | "group" | null => props.isMembersOffered && (props.kind === "channel" || props.kind === "group") ? props.kind : null);
+
+    /** Up to three of the room's leaders, only for someone in it, as the panel would list them. */
+    const pileFaces = computed((): AvatarPerson[] => props.facts?.is_member
+        ? props.facts.leaders.slice(0, 3).map(leader => ({ name: `${leader.nick_name ?? ""} ${leader.last_name ?? ""}`.trim(), photoUrl: leader.avatar_url }))
+        : []);
+
+    const memberCountLabel = computed((): string => {
+        const count = props.facts?.member_count ?? 0;
+        return `${count.toLocaleString()} ${count === 1 ? "member" : "members"}`;
+    });
+
+    /** A group's head count, the reader included, from its facts once read. */
+    const groupMembersLabel = computed((): string => {
+        const count = props.facts?.member_count ?? props.people.length + 1;
+        return `Members, ${count.toLocaleString()} ${count === 1 ? "person" : "people"}`;
+    });
+
     /** The title button's name and role, for a room; the plain title of no room has none. */
     const detailsAttributes = computed((): Record<string, string> => props.kind
         ? {
@@ -595,6 +690,10 @@ button.chat-header-id:hover .chat-header-chev {
 
         if (props.isMentionsOffered) {
             items.push({ key: "mentions", label: "Mentions", icon: "at", hasDot: props.hasMentionDot });
+        }
+
+        if (membersKind.value) {
+            items.push({ key: "members", label: "Members", icon: "users" });
         }
 
         if (props.isThreadsOffered) {
@@ -635,6 +734,9 @@ button.chat-header-id:hover .chat-header-chev {
         }
         else if (key === "mentions") {
             emit("mentions");
+        }
+        else if (key === "members") {
+            emit("members");
         }
         else if (key === "details") {
             emit("details");

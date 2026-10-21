@@ -4,8 +4,7 @@
          class="chat-shell"
          data-testid="chat-shell"
          :data-phase="shell.state.phase"
-         :data-phone="isPhone ? 'true' : 'false'"
-         @keydown="onShellKeydown">
+         :data-phone="isPhone ? 'true' : 'false'">
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -71,12 +70,15 @@
                                 :isPhone="isPhone"
                                 :isEmpty="!activeChannelId"
                                 :isThreadsOffered="!!activeChannelId"
+                                :isMembersOffered="!!activeChannelId"
+                                :isMembersOpen="panelKind === 'members'"
                                 :isThreadsOpen="panelKind === 'threads'"
                                 :isMentionsOffered="shell.state.phase === 'ready'"
                                 :isMentionsOpen="panelKind === 'mentions'"
                                 :hasMentionDot="shell.mentions.state.hasDot"
                                 @threads="onListPanel('threads')"
                                 @mentions="onListPanel('mentions')"
+                                @members="onListPanel('members')"
                                 @turnOnPush="onTurnOnPush"
                                 @back="onBack"
                                 @backOnline="onBackOnline"
@@ -113,7 +115,8 @@
                                  @loadOlder="shell.loadOlder"
                                  @openThread="onOpenThread"
                                  @jump="onJump($event, false)"
-                                 @messageAction="onMessageAction($event, null)" />
+                                 @messageAction="onMessageAction($event, null)"
+                                 @members="onListPanel('members')" />
                     <div v-else class="chat-shell-empty">
                         {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
                     </div>
@@ -275,6 +278,7 @@
                                   @retry="shell.members.retry"
                                   @retrySearch="shell.members.retrySearch"
                                   @message="onMemberMessage"
+                                  @person="onMemberPerson"
                                   @close="closePanel" />
 
                     <ThreadDrawer v-else-if="shownPanel === 'thread' && drawnThread"
@@ -357,6 +361,7 @@
                          :key="cardOpenCount"
                          :person="shell.rooms.state.card.person"
                          :campuses="campuses"
+                         :badges="shell.channels.badges"
                          :anchor="cardAnchor"
                          @close="shell.rooms.closeCard"
                          @message="onCardMessage" />
@@ -376,8 +381,10 @@
                                  :leave="shell.rooms.leaveOf(activeChannelId)"
                                  :rename="shell.rooms.renameOf(activeChannelId)"
                                  :announcement="shell.rooms.state.announcement"
+                                 :canSeeRoster="activeRow?.can_mention ?? false"
                                  :isPhone="isPhone"
                                  @close="closeDetails"
+                                 @members="onDetailsMembers"
                                  @leave="onLeave"
                                  @rename="onRename" />
         </div>
@@ -850,6 +857,7 @@
         const isQuery = members.query.trim() !== "";
         return {
             channelName: roomTitles.value[channelId] ?? "",
+            memberCount: shell.value.rooms.factsOf(channelId)?.member_count ?? null,
             isChannel: roomKinds.value[channelId] === "channel",
             members: shownMembers(members),
             hasMore: isQuery ? members.search.hasMore : members.hasMore,
@@ -1258,12 +1266,27 @@
     }
 
     /**
-     * A temporary way into the members panel, Alt+Shift+M, until the header's facepile and a
-     * group's Members button open it; it goes once they do.
+     * A member row's face or name: the person's card for the panel's room, anchored on the row so
+     * it stands beside the panel rather than over the list, and Escape gives focus back to it.
      */
-    function onShellKeydown(event: KeyboardEvent): void {
-        if (event.altKey && event.shiftKey && event.key.toLowerCase() === "m" && activeChannelId.value) {
-            event.preventDefault();
+    function onMemberPerson(personAliasGuid: string): void {
+        const channelId = shell.value.members.state.channelId;
+        const row = panelElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${personAliasGuid}']`) ?? null;
+        if (!channelId || !row) {
+            return;
+        }
+
+        // Safari leaves a pressed button unfocused, and the card hands focus back to what held it.
+        row.focus({ preventScroll: true });
+        cardAnchor.value = row;
+        cardOpenCount.value++;
+        shell.value.rooms.openCard(personAliasGuid, channelId);
+    }
+
+    /** The details dialog's member count: the dialog gives way to the members panel, which takes focus. */
+    function onDetailsMembers(): void {
+        isDetailsOpen.value = false;
+        if (panelKind.value !== "members") {
             void onListPanel("members");
         }
     }

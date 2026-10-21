@@ -41,7 +41,17 @@
                     <Avatar :people="leaders" :size="22" />
                     <span>Led by {{ joinNames(leaders.map(leader => leader.name), 0) }}</span>
                 </span>
-                <span class="chat-rd-fact" data-testid="details-members">
+                <!-- A way to the members panel for whoever may see who is here; a plain count for anyone else. -->
+                <button v-if="canSeeRoster"
+                        type="button"
+                        class="chat-rd-fact is-link"
+                        data-testid="details-members"
+                        @click="emit('members')">
+                    <Icon name="users" size="sm" />
+                    <span>{{ memberText }}</span>
+                    <Icon name="right" size="xs" />
+                </button>
+                <span v-else class="chat-rd-fact" data-testid="details-members">
                     <Icon name="users" size="sm" />
                     <span>{{ memberText }}</span>
                 </span>
@@ -226,6 +236,21 @@
     font-size: 14px;
     color: var(--chat-text-2);
     overflow-wrap: anywhere;
+}
+
+.chat-rd-fact.is-link {
+    padding: 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-rd-fact.is-link:hover {
+    color: var(--chat-text);
 }
 
 .chat-rd-facts {
@@ -638,6 +663,12 @@
             required: true
         },
 
+        /** Whether the reader may see who is in the room, which makes its member count a way to the members panel. */
+        canSeeRoster: {
+            type: Boolean,
+            default: false
+        },
+
         /** The rooms' newest sentence for screen readers; only one said while the dialog is open is read here. */
         announcement: {
             type: Object as PropType<RoomAnnouncement | null>,
@@ -653,6 +684,9 @@
     const emit = defineEmits<{
         /** The close button, Escape or the scrim. */
         (e: "close"): void;
+
+        /** The member count, which opens the members panel. */
+        (e: "members"): void;
 
         /** Leave was confirmed. */
         (e: "leave"): void;

@@ -26,7 +26,8 @@
 //
 // The component these tests are written to, membersPanel.partial.obs:
 //
-//   props: channelName: string, isChannel: boolean, members: RosterMember[] (the rows to list),
+//   props: channelName: string, memberCount: number | null (the room's facts), isChannel: boolean,
+//          members: RosterMember[] (the rows to list),
 //          hasMore, isLoading, isLoadingMore: boolean, error, moreError: ChatError | null,
 //          refusal: "not_member" | "no_roster_right" | null, query: string,
 //          searchStatus: "searching" | "answered" | "failed" | null, personAliasGuid: string,

@@ -24,6 +24,13 @@
                     <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">This is you</span>
                 </div>
                 <div v-if="campusName" class="chat-pc-line" data-testid="profile-campus"><Icon name="pin" size="xs" />{{ campusName }}</div>
+                <ul v-if="shownBadges.length > 0" class="chat-pc-badges" aria-label="Badges" data-testid="profile-badges">
+                    <li v-for="badge in shownBadges"
+                        :key="badge.key"
+                        :class="{ 'is-toned': badge.isToned }"
+                        :style="badge.colors"
+                        data-testid="profile-badge"><i v-if="badge.iconCss" :class="badge.iconCss" aria-hidden="true"></i>{{ badge.name }}</li>
+                </ul>
                 <p v-if="note" class="chat-pc-note" data-testid="profile-note"><Icon v-if="!person.is_self" name="eye-off" size="xs" />{{ note }}</p>
                 <div v-if="!person.is_self" class="chat-pc-acts">
                     <button v-if="person.can_message"
@@ -124,6 +131,50 @@
     color: var(--chat-icon);
 }
 
+/* The person's badges under a rule, each a pill in its badge's colors or the plain pill where it has none. */
+.chat-pc-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 0 0;
+    margin: 12px 0 0;
+    list-style: none;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-pc-badges li {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 24px;
+    padding: 0 9px 0 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: var(--chat-pill-bg);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-pc-badges li i {
+    font-size: 11px;
+    color: var(--chat-icon);
+}
+
+/*
+    The church's pale fill over the card and its dark ink on the icon and edge, each mixed by the
+    theme's measure so a dark card still reads; a badge with only a fill takes the text's color.
+*/
+.chat-pc-badges li.is-toned {
+    --chat-badge-tone: color-mix(in srgb, var(--chat-badge-fg, var(--chat-text-2)) var(--chat-badge-ink-mix), var(--chat-badge-bg));
+    background: color-mix(in srgb, var(--chat-badge-bg) var(--chat-badge-fill-mix), var(--chat-raised));
+    border-color: color-mix(in srgb, var(--chat-badge-tone) 22%, var(--chat-line));
+}
+
+.chat-pc-badges li.is-toned i {
+    color: var(--chat-badge-tone);
+}
+
 .chat-pc-note {
     display: flex;
     gap: 6px;
@@ -211,7 +262,7 @@
     import Icon from "../ui/icon.partial.obs";
     import { avatarHue, tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
-    import { PersonProfile } from "../types.partial";
+    import { ChatBadge, PersonProfile } from "../types.partial";
 
     const props = defineProps({
         /** The person as chat_get_person answered for the room the card was opened from. */
@@ -223,6 +274,12 @@
         /** The church's campuses from the init box, to name the person's campus by. */
         campuses: {
             type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
+        },
+
+        /** The church's badges from the bootstrap, which name and color the person's badge keys. */
+        badges: {
+            type: Array as PropType<ChatBadge[]>,
             default: () => []
         },
 
@@ -300,6 +357,28 @@
     const campusName = computed((): string => {
         const id = props.person.details?.campus_id?.toLowerCase();
         return id ? props.campuses.find(campus => campus.guid?.toLowerCase() === id)?.name ?? "" : "";
+    });
+
+    /**
+     * The person's badges in the church's order, only when they show their details; a key the
+     * church's list does not know is dropped, as one retired since the person's list was synced.
+     */
+    const shownBadges = computed((): Array<{ key: string, name: string, iconCss: string, isToned: boolean, colors: Record<string, string> }> => {
+        const keys = new Set(props.person.details?.badge_keys ?? []);
+        return props.badges
+            .filter(badge => keys.has(badge.badge_key))
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map(badge => {
+                const colors: Record<string, string> = {};
+                if (badge.bg_color) {
+                    colors["--chat-badge-bg"] = badge.bg_color;
+                }
+                if (badge.fg_color) {
+                    colors["--chat-badge-fg"] = badge.fg_color;
+                }
+
+                return { key: badge.badge_key, name: badge.name, iconCss: badge.icon_css?.trim() ?? "", isToned: !!badge.bg_color, colors };
+            });
     });
 
     /** What the person's own card tells them others see, or that someone else keeps details private. */

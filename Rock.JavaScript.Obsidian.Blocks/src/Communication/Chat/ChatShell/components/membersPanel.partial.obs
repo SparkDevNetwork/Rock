@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <PanelHost title="Members"
-               :subtitle="channelName"
+               :subtitle="subtitle"
                :isPhone="isPhone"
                @close="emit('close')">
         <template v-if="!refusal" #top>
@@ -545,6 +545,12 @@
             required: true
         },
 
+        /** How many are in the room, from its facts once read; null until then, which names the room alone. */
+        memberCount: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
         /** A channel lists its leaders first; a group conversation lists everyone together. */
         isChannel: {
             type: Boolean,
@@ -654,6 +660,17 @@
     // #region Computed Values
 
     const isQuery = computed((): boolean => props.query.trim() !== "");
+
+    /** The room by name and its head count: a channel's members, a group's people. */
+    const subtitle = computed((): string => {
+        const count = props.memberCount;
+        if (count === null) {
+            return props.channelName;
+        }
+
+        const noun = props.isChannel ? (count === 1 ? "member" : "members") : (count === 1 ? "person" : "people");
+        return `${props.channelName} · ${count.toLocaleString()} ${noun}`;
+    });
 
     const sections = computed((): DrawnSection[] => {
         const rows = props.members.map(drawMember);

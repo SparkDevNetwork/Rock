@@ -3102,7 +3102,7 @@ describe("the members panel", () => {
         await pile.trigger("click");
         await settle();
         expect(membersOf().open).toHaveBeenCalledWith(team.channel_id);
-        expect(w.get("[data-testid='members-panel'] [data-testid='panel-subtitle']").text()).toBe("Worship Team · 12 members");
+        expect(w.get("[data-testid='panel-host'] [data-testid='panel-subtitle']").text()).toBe("Worship Team · 12 members");
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
         expect(w.get("[data-testid='frame-main'] [data-testid='header-members']").attributes("aria-expanded")).toBe("true");
 
@@ -3122,7 +3122,7 @@ describe("the members panel", () => {
         await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
         await settle();
         expect(membersOf().open).toHaveBeenCalledWith(hike.channel_id);
-        expect(w.get("[data-testid='members-panel'] [data-testid='panel-subtitle']").text()).toBe("Hike planning · 3 people");
+        expect(w.get("[data-testid='panel-host'] [data-testid='panel-subtitle']").text()).toBe("Hike planning · 3 people");
     });
 
     test("is not offered in a conversation of two", async () => {

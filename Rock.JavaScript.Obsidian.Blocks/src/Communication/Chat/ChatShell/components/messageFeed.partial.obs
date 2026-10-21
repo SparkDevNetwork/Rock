@@ -57,7 +57,8 @@
                           :notifyMode="notifyMode"
                           :isEmpty="timeline.messages.length === 0 && pending.length === 0"
                           :isJoinRefused="isJoinRefused"
-                          :isPhone="isPhone" />
+                          :isPhone="isPhone"
+                          @members="emit('members')" />
 
             <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
                 <div class="chat-day-pill" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
@@ -676,7 +677,8 @@
         (e: "markRead", messageId: number): void,
         (e: "openThread", rootId: number): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void
+        (e: "messageAction", request: MessageActionRequest): void,
+        (e: "members"): void
     }>();
 
     // #region Values

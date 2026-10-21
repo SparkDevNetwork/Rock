@@ -105,6 +105,13 @@
     --chat-av-tl: 31%;
     /* How far a profile card's band leans toward the person's hue from the card's own fill. */
     --chat-pc-band-mix: 62%;
+    /*
+        A badge's pill on a profile card: how much of the church's pale fill shows over the card,
+        and how far its icon and edge lean to the badge's dark ink rather than to that fill. A dark
+        card takes a faint wash of the fill and the pale fill as the ink, so both still read.
+    */
+    --chat-badge-fill-mix: 80%;
+    --chat-badge-ink-mix: 100%;
 
     /* Radii, Rock's steps first, then the ones the design writes in a single place. */
     --chat-r-xs: var(--rounded-xsmall, 4px);
@@ -281,6 +288,8 @@
     --chat-av-tsat: 75%;
     --chat-av-tl: 82%;
     --chat-pc-band-mix: 38%;
+    --chat-badge-fill-mix: 14%;
+    --chat-badge-ink-mix: 0%;
     --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
     --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
     --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
@@ -353,6 +362,8 @@
         --chat-av-tsat: 75%;
         --chat-av-tl: 82%;
         --chat-pc-band-mix: 38%;
+        --chat-badge-fill-mix: 14%;
+        --chat-badge-ink-mix: 0%;
         --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
         --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
         --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);

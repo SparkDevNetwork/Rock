@@ -17,6 +17,10 @@
                 </div>
             </div>
 
+            <div v-if="facts.is_member" class="chat-intro-actions" data-testid="intro-actions">
+                <button type="button" class="chat-intro-btn" data-testid="intro-members-button" @click="emit('members')"><Icon name="users" size="xs" />Members</button>
+            </div>
+
             <p class="chat-intro-desc" data-testid="intro-description">{{ description }}</p>
 
             <div v-if="leaders.length > 0" class="chat-intro-facts" data-testid="intro-leaders">
@@ -155,6 +159,50 @@
     color: var(--chat-icon);
 }
 
+/* Beside the heading on a desktop, on their own row on a phone. */
+.chat-intro-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    align-self: center;
+}
+
+.chat-intro.is-phone .chat-intro-actions {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+}
+
+/* A small outlined button. */
+.chat-intro-btn {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 28px;
+    padding: 0 11px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-intro-btn:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-intro.is-phone .chat-intro-btn {
+    height: 36px;
+}
+
+.chat-intro-btn :deep(.chat-ic) {
+    width: 14px;
+    height: 14px;
+    color: var(--chat-icon);
+}
+
 .chat-intro-desc {
     grid-column: 1 / -1;
     max-width: 72ch;
@@ -237,6 +285,11 @@
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { ChannelFacts } from "../types.partial";
+
+    const emit = defineEmits<{
+        /** Members, which opens the members panel. */
+        (e: "members"): void;
+    }>();
 
     const props = defineProps({
         /** What chat_get_channel answered about the room. */
