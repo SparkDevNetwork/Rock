@@ -696,6 +696,8 @@
     const countFrom = 90;
 
     const offlineText = "You're offline. Try again when you're back.";
+    const leaveFailedText = "Couldn't leave. Try again in a moment.";
+    const renameFailedText = "Couldn't save the name. Try again in a moment.";
 
     // #endregion Values
 
@@ -781,6 +783,9 @@
             case "offline":
                 return { kind: "error", text: offlineText };
 
+            case "failed":
+                return { kind: "error", text: renameFailedText };
+
             case "pending":
                 return { kind: "pending", text: "Saved. It can take a minute to reach everyone." };
 
@@ -803,6 +808,7 @@
 
             case "refused":
             case "offline":
+            case "failed":
                 return "refused";
 
             default:
@@ -825,6 +831,10 @@
         const state = shownLeave.value;
         if (state.kind === "refused") {
             return state.text;
+        }
+
+        if (state.kind === "failed") {
+            return leaveFailedText;
         }
 
         return state.kind === "offline" ? offlineText : null;

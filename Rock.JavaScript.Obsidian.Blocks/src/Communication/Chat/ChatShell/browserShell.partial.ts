@@ -98,7 +98,8 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
 
     /**
      * Asks one of Rock's membership doors. Rock answering without the door's result decided
-     * nothing, so it is a refusal with Rock's own sentence, and the person may ask again.
+     * nothing, so it is answered as the door unreached, which the person may ask again: offline
+     * where the connection is lost, otherwise a failure to try again in a moment.
      */
     async function membershipDoor(action: string, args: Record<string, unknown>): Promise<ChatMembershipResultBag> {
         const result = await invokeBlockAction<ChatMembershipResultBag>(action, args);

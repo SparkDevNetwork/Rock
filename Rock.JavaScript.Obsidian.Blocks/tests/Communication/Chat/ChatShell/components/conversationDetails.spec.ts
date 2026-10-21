@@ -467,6 +467,16 @@ describe("Leave", () => {
         expect(w.emitted("leave")).toHaveLength(2);
     });
 
+    test("a leave that failed while online says to try again, not that the person is offline", async () => {
+        const w = mountDetails();
+        await askToLeave(w);
+        await w.get("[data-testid='leave-go']").trigger("click");
+        await w.setProps({ leave: { kind: "failed" } });
+        await settle();
+
+        expect(w.get("[data-testid='leave-error']").text()).toBe("Couldn't leave. Try again in a moment.");
+    });
+
     test("a refusal from an earlier ask is not shown when the confirm opens again", async () => {
         const w = mountDetails({ leave: { kind: "refused", text: "Not now." } });
         await askToLeave(w);
@@ -606,7 +616,8 @@ describe("the conversation name", () => {
         ["saved", { kind: "saved" }, "Saved"],
         ["pending", { kind: "pending" }, "Saved, syncing"],
         ["refused", { kind: "refused", text: "No." }, "Not saved"],
-        ["offline", { kind: "offline" }, "Not saved"]
+        ["offline", { kind: "offline" }, "Not saved"],
+        ["failed", { kind: "failed" }, "Not saved"]
     ])("the head's save indicator reads the rename %s", async (_kind, rename, words) => {
         const w = mountGroup();
 
@@ -614,7 +625,7 @@ describe("the conversation name", () => {
 
         const indicator = w.get("[data-testid='details-save']");
         expect(plain(indicator.text())).toBe(words);
-        expect(indicator.attributes("data-state")).toBe(_kind === "offline" ? "refused" : _kind);
+        expect(indicator.attributes("data-state")).toBe(_kind === "offline" || _kind === "failed" ? "refused" : _kind);
     });
 
     test("the head's Saved fades after 1.6 seconds", async () => {
@@ -661,6 +672,18 @@ describe("the conversation name", () => {
         expect(w.get("[data-testid='rename-note']").text()).toBe("Chat is read only for a few minutes while Cedar Hill updates it. Try again soon.");
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeUndefined();
         expect((w.get("[data-testid='rename-input']").element as HTMLInputElement).value).toBe("Trail crew");
+    });
+
+    test("a save that failed while online says to try again, not that the person is offline, with Save offered again", async () => {
+        const w = mountGroup();
+        await w.get("[data-testid='rename-input']").setValue("Trail crew");
+        await w.setProps({ rename: { kind: "saving" } });
+
+        await w.setProps({ rename: { kind: "failed" } });
+
+        expect(w.get("[data-testid='rename-note']").text()).toBe("Couldn't save the name. Try again in a moment.");
+        expect(w.get("[data-testid='rename-note']").attributes("data-kind")).toBe("error");
+        expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeUndefined();
     });
 
     test("says a pending save can take a minute to reach everyone", async () => {

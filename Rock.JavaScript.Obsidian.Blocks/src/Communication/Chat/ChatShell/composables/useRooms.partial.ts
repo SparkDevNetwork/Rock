@@ -138,20 +138,22 @@ export type JoinState =
 
 /**
  * Where Leave is for one room: not asked, the door on its way, left (pending included, since Rock
- * has made the change and the platform follows), refused with the door's own sentence, or not
- * asked because the connection is lost. Refused and offline may be asked again.
+ * has made the change and the platform follows), refused with the door's own sentence, not
+ * answered because the connection is lost, or not answered while online. Refused, offline and
+ * failed may be asked again.
  */
 export type LeaveState =
     | { kind: "idle" }
     | { kind: "leaving" }
     | { kind: "left" }
     | { kind: "refused", text: string }
-    | { kind: "offline" };
+    | { kind: "offline" }
+    | { kind: "failed" };
 
 /**
  * Where a group's Rename is: not asked, the door on its way, saved, pending while the new name
- * reaches everyone, refused with the door's own sentence, or not asked because the connection is
- * lost.
+ * reaches everyone, refused with the door's own sentence, not answered because the connection is
+ * lost, or not answered while online.
  */
 export type RenameState =
     | { kind: "idle" }
@@ -159,7 +161,8 @@ export type RenameState =
     | { kind: "saved" }
     | { kind: "pending" }
     | { kind: "refused", text: string }
-    | { kind: "offline" };
+    | { kind: "offline" }
+    | { kind: "failed" };
 
 /** The open profile card: whom it is for, the room it was opened from, and the person once read. */
 export type ProfileCardState = {
@@ -643,13 +646,14 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     }
 
     /**
-     * Asks one of Rock's membership doors, marking the room offline where the connection is lost
-     * or the door cannot be reached, its result missing included. Null when there is no answer to
-     * act on: offline, or stopped.
+     * Asks one of Rock's membership doors. Where the door is not reached, its result missing
+     * included, the room is marked unreachable: offline only when the connection is lost, as
+     * Join says it, and otherwise failed. Null when there is no answer to act on: unreached, or
+     * stopped.
      */
-    async function askDoor(ask: () => Promise<JoinResult>, offline: () => void): Promise<JoinResult | null> {
+    async function askDoor(ask: () => Promise<JoinResult>, unreached: (kind: "offline" | "failed") => void): Promise<JoinResult | null> {
         if (dependencies.isOffline()) {
-            offline();
+            unreached("offline");
             return null;
         }
 
@@ -660,9 +664,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
 
             // Rock answered without its door's result, as when the request was lost on the way:
-            // the door decided nothing, so it is unreachable like a call that threw.
+            // the door decided nothing, so it is unreached like a call that threw.
             if (answer.code === "door.unavailable") {
-                offline();
+                unreached(dependencies.isOffline() ? "offline" : "failed");
                 return null;
             }
 
@@ -670,7 +674,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         }
         catch {
             if (!isStopped) {
-                offline();
+                unreached(dependencies.isOffline() ? "offline" : "failed");
             }
             return null;
         }
@@ -852,8 +856,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             const next = dependencies.activeChannelId() === channelId ? neighbourOf(channelId) : null;
             const title = titleOf(channelId);
             state.leaves[channelId] = { kind: "leaving" };
-            const answer = await askDoor(() => door(channelId), () => {
-                state.leaves[channelId] = { kind: "offline" };
+            const answer = await askDoor(() => door(channelId), kind => {
+                state.leaves[channelId] = { kind };
             });
             if (!answer) {
                 return;
@@ -895,8 +899,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // A blank name is no name, which titles the group by its people again.
             const trimmed = name.trim();
             state.renames[channelId] = { kind: "saving" };
-            const answer = await askDoor(() => door(channelId, trimmed), () => {
-                state.renames[channelId] = { kind: "offline" };
+            const answer = await askDoor(() => door(channelId, trimmed), kind => {
+                state.renames[channelId] = { kind };
             });
             if (!answer) {
                 return;

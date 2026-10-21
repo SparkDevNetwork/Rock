@@ -1017,7 +1017,7 @@ describe("Leave", () => {
         expect(s.leaveCalls).toHaveLength(2);
     });
 
-    test("offline asks no door, and a door that cannot be reached is offline too", async () => {
+    test("offline asks no door, and a door that cannot be reached once the connection is lost is offline too", async () => {
         const s = setup();
         sidebarOfThree(s);
         s.offline.value = true;
@@ -1028,12 +1028,36 @@ describe("Leave", () => {
 
         s.offline.value = false;
         void s.rooms.leave(volunteers);
+        s.offline.value = true;
         s.leaveCalls[0].answer.reject(new Error("network"));
         await settle();
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
     });
 
-    test("a door Rock answered without its result is unreachable, as one the network lost, and may be asked again", async () => {
+    test("a door that throws while online failed, and says so without saying the person is offline", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.reject(new Error("server"));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "failed" });
+    });
+
+    test("a door Rock answered without its result once the connection is lost is offline", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.leave(volunteers);
+        s.offline.value = true;
+        s.leaveCalls[0].answer.resolve(door("door.unavailable"));
+        await settle();
+
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
+    });
+
+    test("a door Rock answered without its result while online failed, and may be asked again", async () => {
         const s = setup();
         sidebarOfThree(s);
         s.active.value = volunteers;
@@ -1042,7 +1066,7 @@ describe("Leave", () => {
         s.leaveCalls[0].answer.resolve(door("door.unavailable"));
         await settle();
 
-        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "offline" });
+        expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "failed" });
         expect(s.opened).toEqual([]);
         void s.rooms.leave(volunteers);
         expect(s.leaveCalls).toHaveLength(2);
@@ -1165,7 +1189,7 @@ describe("Rename", () => {
         expect(s.rooms.renameOf(group)).toEqual({ kind: "refused", text: "Chat is read only for a few minutes while Cedar Hill updates it. Try again soon." });
     });
 
-    test("offline asks no door, and a door that cannot be reached is offline too", async () => {
+    test("offline asks no door, and a door that cannot be reached once the connection is lost is offline too", async () => {
         const s = setup();
         sidebarOfThree(s);
         s.offline.value = true;
@@ -1176,12 +1200,36 @@ describe("Rename", () => {
 
         s.offline.value = false;
         void s.rooms.rename(group, "Trail crew");
+        s.offline.value = true;
         s.renameCalls[0].answer.reject(new Error("network"));
         await settle();
         expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
     });
 
-    test("a door Rock answered without its result is unreachable, as one the network lost", async () => {
+    test("a door that throws while online failed, and says so without saying the person is offline", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.reject(new Error("server"));
+        await settle();
+
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "failed" });
+    });
+
+    test("a door Rock answered without its result once the connection is lost is offline", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+
+        void s.rooms.rename(group, "Trail crew");
+        s.offline.value = true;
+        s.renameCalls[0].answer.resolve(door("door.unavailable"));
+        await settle();
+
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
+    });
+
+    test("a door Rock answered without its result while online failed", async () => {
         const s = setup();
         sidebarOfThree(s);
 
@@ -1189,7 +1237,7 @@ describe("Rename", () => {
         s.renameCalls[0].answer.resolve(door("door.unavailable"));
         await settle();
 
-        expect(s.rooms.renameOf(group)).toEqual({ kind: "offline" });
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "failed" });
     });
 
     test("a second save while one is out asks the door once", () => {
