@@ -350,6 +350,7 @@
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensionsTests.cs" />
     <Compile Include="Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Communication\EmailAddressFieldValidatorTests.cs" />
+    <Compile Include="Communication\SendGridEventWebhookSignatureTests.cs" />
     <Compile Include="Communication\Chat\ChatHelperTests.cs" />
     <Compile Include="Communication\Chat\StreamChatProviderTests.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensionTests.cs" />
@@ -411,6 +412,10 @@
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>
       <Name>Rock.Mailgun</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.SendGrid\Rock.SendGrid.csproj">
+      <Project>{205F439A-2CCC-42C1-B1AB-09E1B629D88C}</Project>
+      <Name>Rock.SendGrid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Slingshot.Model\Rock.Slingshot.Model.csproj">
       <Project>{962944de-8bf4-4175-b55a-e75cf7918272}</Project>
