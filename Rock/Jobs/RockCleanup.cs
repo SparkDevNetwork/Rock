@@ -3064,6 +3064,7 @@ WHERE NOT EXISTS (
                 stalePersonAliasIds = personAliasService
                     .Queryable()
                     .Where( a => a.PersonId == anonymousVisitorId
+                        && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                         && a.LastVisitDateTime < staleAnonymousVisitorDate
                         && string.IsNullOrEmpty( a.InternalMessage ) )
                     .Select( a => a.Id )
@@ -3123,6 +3124,7 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
                     var aliasesToUpdate = personAliasService
                         .Queryable()
                         .Where( a => a.PersonId == anonymousVisitorId
+                            && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                             && !a.LastVisitDateTime.HasValue )
                         .Take( 500 )
                         .ToList();
