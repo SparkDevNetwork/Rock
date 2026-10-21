@@ -3266,6 +3266,29 @@ describe("the members panel", () => {
         expect(directMessagesOf().begin).not.toHaveBeenCalled();
     });
 
+    test("a member's Message drops a profile answer after the same members panel was closed and reopened", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        await w.get("[data-testid='intro-members-button']").trigger("click");
+        await settle();
+        membersOf().state.rows = [annaMember];
+        let resolvePerson!: (person: unknown) => void;
+        roomsOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
+        await settle();
+
+        await w.get("[data-testid='member-message']").trigger("click");
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+        await w.get("[data-testid='intro-members-button']").trigger("click");
+        await settle();
+        resolvePerson({ ...annaMember, is_self: false, dm_channel_id: dmAnna.channel_id });
+        await settle();
+
+        expect(mockShell!.selectChannel).toHaveBeenLastCalledWith(team.channel_id);
+        expect(directMessagesOf().begin).not.toHaveBeenCalled();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+    });
+
     test("no longer opens from a keyboard shortcut", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
