@@ -151,6 +151,20 @@ namespace Rock.Oidc
                     return;
                 }
 
+                if ( !AuthClientService.IsClientNameValid( authClient.Name ) )
+                {
+                    // Error code from RFC 7591 section 3.2.2.
+                    context.Response.StatusCode = 400;
+                    context.Response.ContentType = "application/json";
+                    context.Response.Write( new
+                    {
+                        error = "invalid_client_metadata",
+                        error_description = "The client name is not allowed."
+                    }.ToJson() );
+
+                    return;
+                }
+
                 using ( var rockContext = new Data.RockContext() )
                 {
                     new AuthClientService( rockContext ).Add( authClient );
