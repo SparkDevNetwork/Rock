@@ -138,13 +138,16 @@ export function serviceBanner(settings: ChatSettings): string | null {
 
     switch (settings.service.state) {
         case "read_only":
-            return "Chat is read-only while we do some maintenance. You can read messages but not send them.";
+            return readOnlySentence;
         case "maintenance":
             return "Chat is down for maintenance. Try again later.";
         default:
             return "Chat is running slowly right now.";
     }
 }
+
+/** What read only says where the church set no banner of its own. */
+export const readOnlySentence = "Chat is read-only while we do some maintenance. You can read messages but not send them.";
 
 /** What the Rock token action answers. */
 export type ChurchTokenResult = {

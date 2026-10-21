@@ -3580,6 +3580,17 @@ describe("settings", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='composer-locked']").text()).toBe("Only leaders can post in Worship Team.");
     });
 
+    test("in read only the locked bar says the row's sentence, the church's banner, not maintenance", async () => {
+        const w = await mountBlock(1200);
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(0, 1, { ...team, can_post: false, can_post_code: "rpc.read_only", can_post_reason: "Cedar Hill's chat is read only until 9." });
+        mockShell!.state.isComposerOpen = false;
+        await settle();
+        await openTeam(w);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='composer-locked']").text()).toBe("Cedar Hill's chat is read only until 9.");
+    });
+
     test("the composer counts down to the row's limit, and a send over it is toasted", async () => {
         const w = await mountBlock(1200);
         const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;

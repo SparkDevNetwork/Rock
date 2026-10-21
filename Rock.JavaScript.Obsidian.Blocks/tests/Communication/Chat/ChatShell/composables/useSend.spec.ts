@@ -16,9 +16,9 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, JoinResult, newLocalId, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, JoinResult, lockedReason, newLocalId, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -524,6 +524,30 @@ describe("the composer and the service state", () => {
         expect(isComposerOpen("maintenance")).toBe(false);
         expect(isComposerOpen("normal")).toBe(true);
         expect(isComposerOpen("degraded")).toBe(true);
+    });
+});
+
+// A room the person cannot post in locks its composer with the server's sentence. Read only says
+// the row's sentence, which is the church's banner or the read-only one; maintenance, and a room
+// to join, say nothing here, as the composer and the join bar have their own.
+describe("the composer's locked reason", () => {
+    const row = (code: string | null, reason: string | null, canPost = false): SidebarRow => ({ can_post: canPost, can_post_code: code, can_post_reason: reason } as SidebarRow);
+
+    test("is the row's sentence where the person cannot post, else a plain one", () => {
+        expect(lockedReason(row("rpc.not_allowed", "Only leaders can post here."))).toBe("Only leaders can post here.");
+        expect(lockedReason(row("rpc.not_allowed", "  "))).toBe("You can't post in this conversation.");
+        expect(lockedReason(row(null, null, true))).toBeNull();
+        expect(lockedReason(null)).toBeNull();
+    });
+
+    test("in read only is the church's banner, else the read-only sentence", () => {
+        expect(lockedReason(row("rpc.read_only", "Cedar Hill's chat is read only until 9."))).toBe("Cedar Hill's chat is read only until 9.");
+        expect(lockedReason(row("rpc.read_only", null))).toBe("Chat is read-only while we do some maintenance. You can read messages but not send them.");
+    });
+
+    test("says nothing in maintenance or where the person can join", () => {
+        expect(lockedReason(row("rpc.maintenance", "Down for maintenance."))).toBeNull();
+        expect(lockedReason(row("authz.join_required", "Join this channel to post."))).toBeNull();
     });
 });
 

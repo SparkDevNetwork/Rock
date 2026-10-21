@@ -34,6 +34,7 @@ import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, Time
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
+import { readOnlySentence } from "./useSession.partial";
 
 /** What Rock's Join door answers. */
 export type JoinResult = {
@@ -71,8 +72,8 @@ export function isComposerOpen(serviceState: string): boolean {
 
 /**
  * Why the person cannot post in a room, in the server's words, which locks its composer; null
- * where they can. The join case has the join bar and a paused service its own sentence, so
- * neither is said here.
+ * where they can. Read only says the row's sentence, the church's banner where it set one. The
+ * join case has the join bar and maintenance the composer's own sentence, so neither is said here.
  *
  * @param row The room's sidebar row, or null with no room.
  *
@@ -80,11 +81,11 @@ export function isComposerOpen(serviceState: string): boolean {
  */
 export function lockedReason(row: SidebarRow | null): string | null {
     const code = row?.can_post_code ?? null;
-    if (!row || row.can_post !== false || code === "authz.join_required" || code === "rpc.read_only" || code === "rpc.maintenance") {
+    if (!row || row.can_post !== false || code === "authz.join_required" || code === "rpc.maintenance") {
         return null;
     }
 
-    return row.can_post_reason?.trim() || "You can't post in this conversation.";
+    return row.can_post_reason?.trim() || (code === "rpc.read_only" ? readOnlySentence : "You can't post in this conversation.");
 }
 
 /**
