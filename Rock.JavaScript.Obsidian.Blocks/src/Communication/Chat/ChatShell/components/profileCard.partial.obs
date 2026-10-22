@@ -360,7 +360,7 @@
     // would only fade. It flips to whichever side the window has room on, then is kept 8px inside
     // the chat's frame both ways, overlapping its opener rather than leaving the chat.
     const frame = props.anchor?.closest<HTMLElement>(".chat-frame") ?? null;
-    const { floatingStyles, placement } = useFloating(ref(reference), cardElement, {
+    const { floatingStyles, placement, y: cardTop } = useFloating(ref(reference), cardElement, {
         placement: panel ? "left-start" : "bottom-start",
         strategy: "fixed",
         transform: false,
@@ -415,13 +415,23 @@
         return props.person.details ? "" : `${props.person.nick_name} keeps profile details private.`;
     });
 
-    /** The placement, the person's hue for the band, and the pop grown toward what opened it. */
-    const cardStyles = computed((): Record<string, string> => ({
-        ...(props.anchor ? floatingStyles.value : {}),
-        "--chat-av-hue": String(avatarHue(fullName.value)),
-        "--chat-pop-toward": placement.value.startsWith("top") ? "1" : "-1",
-        transformOrigin: placement.value.startsWith("left") ? "100% 0" : placement.value.startsWith("top") ? "0 100%" : "0 0"
-    }));
+    /**
+     * The placement, the person's hue for the band, and the pop grown toward what opened it. Beside
+     * the panel the opener is to the side, so the card grows from its edge at the opener's middle
+     * and does not rise; above or below it, it comes in from just toward the opener.
+     */
+    const cardStyles = computed((): Record<string, string> => {
+        const side = placement.value.startsWith("left");
+        const anchorRect = side ? props.anchor?.getBoundingClientRect() : undefined;
+        const originY = anchorRect ? Math.max(0, anchorRect.top + anchorRect.height / 2 - cardTop.value) : 0;
+
+        return {
+            ...(props.anchor ? floatingStyles.value : {}),
+            "--chat-av-hue": String(avatarHue(fullName.value)),
+            "--chat-pop-toward": side ? "0" : placement.value.startsWith("top") ? "1" : "-1",
+            transformOrigin: side ? `100% ${originY}px` : placement.value.startsWith("top") ? "0 100%" : "0 0"
+        };
+    });
 
     // #endregion Computed Values
 
@@ -487,6 +497,7 @@
         }
 
         isClosing.value = true;
+        props.anchor?.removeAttribute("aria-expanded");
         if (isFocusReturned) {
             opener?.focus({ preventScroll: true });
         }
@@ -511,6 +522,9 @@
     // #region Lifecycle Hooks
 
     onMounted(async () => {
+        // What opened the card reads as expanded while it is open, which keeps a member row's
+        // actions showing beside it as when the row is hovered.
+        props.anchor?.setAttribute("aria-expanded", "true");
         // mousedown rather than click, so a press that starts a text selection elsewhere still closes it.
         document.addEventListener("mousedown", onDocumentPress, true);
         document.addEventListener("keydown", onDocumentKeydown, true);
@@ -519,6 +533,7 @@
     });
 
     onBeforeUnmount(() => {
+        props.anchor?.removeAttribute("aria-expanded");
         document.removeEventListener("mousedown", onDocumentPress, true);
         document.removeEventListener("keydown", onDocumentKeydown, true);
     });

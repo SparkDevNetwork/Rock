@@ -174,6 +174,21 @@ describe("the card", () => {
         expect(document.activeElement).toBe(opener);
     });
 
+    test("marks what opened it as expanded while it is open, so a member row keeps its actions beside it", async () => {
+        const row = document.createElement("li");
+        const opener = document.createElement("button");
+        row.appendChild(opener);
+        document.body.appendChild(row);
+        const w = mountCard(profile(), { anchor: opener });
+        await settle();
+
+        expect(opener.getAttribute("aria-expanded")).toBe("true");
+
+        card(w).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+        expect(opener.hasAttribute("aria-expanded")).toBe(false);
+    });
+
     test("closes on a press outside it", async () => {
         const outside = document.createElement("div");
         document.body.appendChild(outside);
