@@ -209,6 +209,75 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void ARemovedOrDemotedLeaderWhoJoinsAgainComesBackAsAMember()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                scene.Fixture.AddMember( room, ada, m => { m.GroupRoleId = leader; m.IsArchived = true; } );
+                scene.Fixture.AddMember( room, bo, m => { m.GroupRoleId = leader; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+
+                // Cy holds an archived leader row and an archived member row: the member row comes
+                // back, so Rock never holds two of their rows in one role.
+                scene.Fixture.AddMember( room, cy, m => { m.GroupRoleId = leader; m.IsArchived = true; } );
+                scene.Fixture.AddMember( room, cy, m => m.IsArchived = true );
+
+                foreach ( var person in new[] { ada, bo, cy } )
+                {
+                    Assert.AreEqual( "ok", scene.Join( person, room ).Code, "person " + person );
+
+                    var live = scene.Memberships( room, person ).Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
+                    Assert.AreEqual( 1, live.Count, "one live row for person " + person );
+                    Assert.AreEqual( DefaultRoleId( scene ), live[0].GroupRoleId, "a join never brings back a leader's role, person " + person );
+                }
+
+                Assert.AreEqual( 1, scene.Memberships( room, ada ).Count, "no row is added beside the old one" );
+                Assert.AreEqual( 1, scene.Memberships( room, bo ).Count );
+                Assert.AreEqual( 2, scene.Memberships( room, cy ).Count );
+            }
+        }
+
+        [TestMethod]
+        public void ARemovedLeaderAddedBackByAManagerComesBackAsAMember()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var manager = scene.AddManagerRole();
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team", g => g.IsChatChannelPublicOverride = false );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                scene.Fixture.AddMember( room, ada, m => { m.GroupRoleId = leader; m.IsArchived = true; } );
+                scene.Fixture.AddMember( room, bo, m => { m.GroupRoleId = leader; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+
+                var result = scene.Add( lee, room, scene.Alias( ada ), scene.Alias( bo ) );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                foreach ( var person in new[] { ada, bo } )
+                {
+                    var rows = scene.Memberships( room, person );
+                    Assert.AreEqual( 1, rows.Count, "the old row is used again, person " + person );
+                    Assert.AreEqual( GroupMemberStatus.Active, rows[0].GroupMemberStatus );
+                    Assert.AreEqual( DefaultRoleId( scene ), rows[0].GroupRoleId, "an add never brings back a leader's role, person " + person );
+                }
+            }
+        }
+
+        private static int DefaultRoleId( ChatDoorScene scene )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new GroupTypeService( rockContext ).GetSelect( scene.Fixture.SharedGroupTypeId, t => t.DefaultGroupRoleId ).Value;
+            }
+        }
+
+        [TestMethod]
         public void JoiningAChannelThePersonIsAlreadyInChangesNothingAndPostsNoLine()
         {
             using ( var scene = new ChatDoorScene() )

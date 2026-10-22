@@ -403,6 +403,43 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void ABanKeptOnAnInactiveOrArchivedRowIsNotSteppedAroundByStartingAgain()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var di = scene.AddChatPerson( "Di", isOpenDmAllowed: true );
+
+                var withBo = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( withBo, ada );
+                scene.Fixture.AddMember( withBo, bo, m => { m.IsChatBanned = true; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+
+                var withCy = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( withCy, ada );
+                scene.Fixture.AddMember( withCy, cy, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+
+                // The caller's own ban counts the same way.
+                var withDi = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( withDi, ada, m => { m.IsChatBanned = true; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+                scene.Fixture.AddMember( withDi, di );
+
+                foreach ( var person in new[] { bo, cy } )
+                {
+                    var result = scene.Start( ada, scene.Alias( person ) );
+
+                    Assert.AreEqual( "door.target_not_eligible", result.Code, "person " + person );
+                    Assert.AreEqual( scene.Alias( person ), result.PersonAliasGuid );
+                    Assert.AreEqual( 0, scene.DirectMessagesWithExactly( ada, person ).Count, "no new conversation beside the banned one, person " + person );
+                }
+
+                Assert.AreEqual( "door.target_not_eligible", scene.Start( ada, scene.Alias( di ) ).Code, "the caller's own kept ban" );
+                Assert.AreEqual( 0, scene.DirectMessagesWithExactly( ada, di ).Count );
+            }
+        }
+
+        [TestMethod]
         public void ACallerWithoutTheRightToStartConversationsIsRefused()
         {
             // A Direct Message Access data view that no longer exists admits nobody.
