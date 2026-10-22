@@ -63,6 +63,11 @@ internal class SendGridResponseAsync : IAsyncResult
     private readonly HttpContext _context;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// <c>true</c> when this request's SendGrid signature was verified.
+    /// </summary>
+    private bool _isSignatureVerified;
+
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
     Object IAsyncResult.AsyncState { get { return _state; } }
@@ -127,14 +132,46 @@ internal class SendGridResponseAsync : IAsyncResult
 
     private void ProcessJsonContent( HttpRequest request, HttpResponse response )
     {
-        string payload = string.Empty;
+        /*
+            10/21/2026 - MSE
+
+            Read the raw body bytes first so the SendGrid signature can be checked
+            against exactly what SendGrid signed, and reject the request before any
+            event is processed. The bytes are then decoded with the same StreamReader
+            (UTF-8 with byte order mark detection) as before, so the JSON that is
+            deserialized is unchanged.
+
+            Reason: The SendGrid event webhook accepted unsigned events.
+        */
+        byte[] body;
 
         using ( Stream s = request.InputStream )
         {
-            using ( StreamReader readStream = new StreamReader( s, Encoding.UTF8 ) )
+            using ( var memoryStream = new MemoryStream() )
             {
-                payload = readStream.ReadToEnd();
+                s.CopyTo( memoryStream );
+                body = memoryStream.ToArray();
             }
+        }
+
+        string errorMessage;
+        if ( !Rock.Communication.Transport.SendGridHttp.IsEventWebhookRequestAllowed(
+            body,
+            request.Headers["X-Twilio-Email-Event-Webhook-Signature"],
+            request.Headers["X-Twilio-Email-Event-Webhook-Timestamp"],
+            out _isSignatureVerified,
+            out errorMessage ) )
+        {
+            response.Write( errorMessage );
+            response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+            return;
+        }
+
+        string payload = string.Empty;
+
+        using ( StreamReader readStream = new StreamReader( new MemoryStream( body ), Encoding.UTF8 ) )
+        {
+            payload = readStream.ReadToEnd();
         }
 
         var eventList = JsonConvert.DeserializeObject<List<SendGridEvent>>( payload );
@@ -322,6 +359,26 @@ internal class SendGridResponseAsync : IAsyncResult
     private void ProcessForWorkflow( Guid? actionGuid, Rock.Data.RockContext rockContext, SendGridEvent payload )
     {
         _logger.LogDebug( "ProcessForWorkflow {@payload}", payload );
+
+        /*
+            10/21/2026 - MSE
+
+            Bounce processing below changes every person with the event's email address.
+            When the request was not signature verified (a site with no Event Webhook
+            Verification Key), only act on workflow events for a workflow action that
+            exists, so a made-up workflow_action_guid cannot deactivate any address. On
+            those sites a real bounce for a workflow action that no longer exists (deleted
+            or purged workflow) or never existed in the database (a workflow type that is
+            not persisted using Send Email With Events) is then ignored. Signed requests
+            come from SendGrid, so they skip this check and such bounces still deactivate
+            the address as before. The workflow does not need to be active.
+
+            Reason: Unsigned events could deactivate any email address.
+        */
+        if ( !_isSignatureVerified && new WorkflowActionService( rockContext ).GetId( actionGuid.Value ) == null )
+        {
+            return;
+        }
 
         string status = string.Empty;
         switch ( payload.EventType )
