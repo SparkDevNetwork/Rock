@@ -87,6 +87,12 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             ]
         },
         members: {
+            open: jest.fn(async (channelId: string) => {
+                calls.push(`members.open:${channelId}`);
+            }),
+            close: jest.fn(() => {
+                calls.push("members.close");
+            }),
             openAdd: jest.fn(() => {
                 calls.push("members.openAdd");
             })
@@ -226,6 +232,37 @@ describe("the panel column", () => {
 
         jest.runAllTimers();
         expect(frame.shownPanel.value).toBeNull();
+    });
+
+    test("the members list belongs to its conversation, so opening another closes it, focus inside it going to the title", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state, wrapper } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+        wrapper.find<HTMLElement>("[data-testid='panel-close']").element.focus();
+
+        state.activeChannelId = volunteers;
+        await settle();
+        await wrapper.vm.$nextTick();
+
+        expect(frame.panelKind.value).toBeNull();
+        expect(calls).toEqual([`members.open:${team}`, "members.close"]);
+        expect(focused()).toBe("header-title");
+    });
+
+    test("the threads list follows the open conversation", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("threads");
+
+        state.activeChannelId = volunteers;
+        await settle();
+
+        expect(frame.panelKind.value).toBe("threads");
+        expect(calls).toEqual(["threads.openList", "threads.openList"]);
     });
 });
 

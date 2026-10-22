@@ -727,17 +727,25 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         }
     });
 
-    // The threads list and the roster follow the open conversation; a draft has neither, so it closes.
+    // The threads list follows the open conversation; a draft has none, so it closes. The roster
+    // belongs to the room it was opened for, so another conversation closes it, and focus inside it
+    // goes to the title of what replaced it rather than to a header button the person did not press.
     watch(activeChannelId, channelId => {
-        if (panelKind.value !== "threads" && panelKind.value !== "members") {
-            return;
+        if (panelKind.value === "threads" && channelId) {
+            void shell.value.threads.openList(channelId);
         }
-
-        if (channelId) {
-            void (panelKind.value === "threads" ? shell.value.threads.openList(channelId) : shell.value.members.open(channelId));
-        }
-        else {
+        else if (panelKind.value === "threads") {
             closePanel();
+        }
+        else if (panelKind.value === "members") {
+            const hadFocus = !!panelElement.value?.contains(document.activeElement);
+            releasePanel();
+            panelKind.value = null;
+            finishClosing();
+
+            if (hadFocus) {
+                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus());
+            }
         }
     });
 
