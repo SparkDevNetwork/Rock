@@ -617,8 +617,10 @@ namespace Rock.Communication.Chat.Platform.Doors
                     var personIds = people.Select( p => p.Id ).ToList();
                     var read = ReadDirectMessage( rockContext, configuration, senderPersonId, personIds, false );
 
-                    // The administrator's act still does not step around a ban in the conversation.
-                    if ( read.Existing.HasValue && read.BannedPersonIds.Any() )
+                    // The administrator's act still does not step around a ban in the conversation,
+                    // nor one kept on an inactive or archived row the projection does not read.
+                    var isBanned = read.Existing.HasValue && read.BannedPersonIds.Any();
+                    if ( isBanned || KeptBanInConversationOf( rockContext, senderPersonId, personIds ).HasValue )
                     {
                         return Outcome( "door.target_not_eligible", "Someone in this conversation is banned from it." );
                     }
