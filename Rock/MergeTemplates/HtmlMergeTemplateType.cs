@@ -60,13 +60,71 @@ namespace Rock.MergeTemplates
         /// <returns></returns>
         public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
         {
-            this.Exceptions = new List<Exception>();
             BinaryFile outputBinaryFile = null;
 
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
 
-            var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
+            var outputStream = GetMergedDocumentOutputStream( binaryFileService, mergeTemplate, mergeObjectList, globalMergeFields, out var templateBinaryFile );
+            if ( outputStream == null )
+            {
+                return null;
+            }
+
+            outputBinaryFile = new BinaryFile();
+            outputBinaryFile.IsTemporary = true;
+            outputBinaryFile.ContentStream = outputStream;
+            outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
+            outputBinaryFile.MimeType = templateBinaryFile.MimeType;
+            outputBinaryFile.BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id;
+
+            binaryFileService.Add( outputBinaryFile );
+            rockContext.SaveChanges();
+
+            return outputBinaryFile;
+        }
+
+        /// <inheritdoc/>
+        [Rock.Attribute.RockInternal( "17.12" )]
+        public override MergeTemplateDocument CreateDocumentForDownload( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
+        {
+            /*
+                10/21/2026 - MSE
+
+                Return the merged HTML stream directly instead of saving it as a
+                temporary BinaryFile under the unsecured default file type, which
+                GetFile.ashx would serve to anyone by Id.
+
+                Reason: Merged documents must not be saved where they can be downloaded by Id.
+            */
+            var binaryFileService = new BinaryFileService( new RockContext() );
+
+            var outputStream = GetMergedDocumentOutputStream( binaryFileService, mergeTemplate, mergeObjectList, globalMergeFields, out var templateBinaryFile );
+            if ( outputStream == null )
+            {
+                return null;
+            }
+
+            return new MergeTemplateDocument( outputStream,
+                "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName ),
+                templateBinaryFile.MimeType );
+        }
+
+        /// <summary>
+        /// Resolves the template's Lava and returns the merged HTML document as a stream.
+        /// The stream is left positioned at its end, as HtmlDocument.Save leaves it.
+        /// </summary>
+        /// <param name="binaryFileService">The binary file service used to load the template file.</param>
+        /// <param name="mergeTemplate">The merge template.</param>
+        /// <param name="mergeObjectList">The merge object list.</param>
+        /// <param name="globalMergeFields">The global merge fields.</param>
+        /// <param name="templateBinaryFile">The template file, or <c>null</c> when it could not be found.</param>
+        /// <returns>The merged document, or <c>null</c> when the template file could not be found.</returns>
+        private MemoryStream GetMergedDocumentOutputStream( BinaryFileService binaryFileService, MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields, out BinaryFile templateBinaryFile )
+        {
+            this.Exceptions = new List<Exception>();
+
+            templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
             if ( templateBinaryFile == null )
             {
                 return null;
@@ -80,17 +138,7 @@ namespace Rock.MergeTemplates
             var outputStream = new MemoryStream();
             outputDoc.Save( outputStream );
 
-            outputBinaryFile = new BinaryFile();
-            outputBinaryFile.IsTemporary = true;
-            outputBinaryFile.ContentStream = outputStream;
-            outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
-            outputBinaryFile.MimeType = templateBinaryFile.MimeType;
-            outputBinaryFile.BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id;
-
-            binaryFileService.Add( outputBinaryFile );
-            rockContext.SaveChanges();
-
-            return outputBinaryFile;
+            return outputStream;
         }
 
         /// <summary>
