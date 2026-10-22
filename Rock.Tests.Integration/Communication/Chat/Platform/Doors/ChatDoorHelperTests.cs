@@ -641,6 +641,41 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void AWorkflowDoesNotStepAroundABanKeptOnAnInactiveOrArchivedRow()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var sender = scene.AddChatPerson( "Sender" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var di = scene.AddChatPerson( "Di" );
+
+                var withBo = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( withBo, sender );
+                scene.Fixture.AddMember( withBo, bo, m => { m.IsChatBanned = true; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+
+                var withCy = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( withCy, sender );
+                scene.Fixture.AddMember( withCy, cy, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+
+                // The sender's own ban counts the same way.
+                var withDi = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( withDi, sender, m => { m.IsChatBanned = true; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+                scene.Fixture.AddMember( withDi, di );
+
+                foreach ( var person in new[] { bo, cy, di } )
+                {
+                    var outcome = scene.SendWorkflowDirectMessage( sender, person, "Hello" );
+
+                    Assert.AreEqual( "door.target_not_eligible", outcome.Code, "person " + person );
+                    Assert.AreEqual( 0, scene.DirectMessagesWithExactly( sender, person ).Count, "no new conversation beside the banned one, person " + person );
+                }
+
+                Assert.AreEqual( 0, scene.Platform.Posts, "and nothing was posted" );
+            }
+        }
+
+        [TestMethod]
         public void AWorkflowCannotMessageSomeoneUnderTheMinimumAge()
         {
             using ( var scene = new ChatDoorScene( minimumAge: 18 ) )
