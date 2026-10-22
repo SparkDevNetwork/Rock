@@ -222,11 +222,20 @@ describe("the dialog", () => {
         expect(w.emitted("close")).toHaveLength(2);
     });
 
-    test("takes focus itself as it opens, so its Close button's tooltip does not show unasked", async () => {
-        const w = mountDetails();
+    test("puts focus on the room's chosen mode as it opens, as a radio group is entered", async () => {
+        const w = mountDetails({ notifyMode: "mentions" });
         await settle();
 
-        expect(document.activeElement).toBe(dialogOf(w));
+        const chosen = w.get("[data-testid='notify-option'][data-value='mentions']").element;
+        expect(document.activeElement).toBe(chosen);
+    });
+
+    test("with no modes to choose puts focus on its Close button, whose tooltip does not show unasked", async () => {
+        const w = mountDetails({ facts: channelFacts({ is_member: false }) });
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='details-close']").element);
+        await new Promise(resolve => setTimeout(resolve, 600));
         expect(document.querySelector("[role='tooltip']")).toBeNull();
     });
 
@@ -764,7 +773,7 @@ describe("Notify me about", () => {
 
     test("moves and chooses with the arrow keys, wrapping round", async () => {
         const w = mountDetails({ notifyMode: "all" });
-        // after the dialog has taken focus itself as it opened
+        // after the dialog has put focus on the chosen mode as it opened
         await settle();
 
         radios(w)[0].focus();

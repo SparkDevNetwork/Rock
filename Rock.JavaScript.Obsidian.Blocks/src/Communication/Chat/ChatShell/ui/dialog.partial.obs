@@ -88,7 +88,7 @@
     }
 }
 
-/* A settings dialog holds focus itself as it opens, which draws no ring around the whole dialog. */
+/* A dialog with no control to start on holds focus itself, which draws no ring around the whole dialog. */
 .chat-dialog:focus {
     outline: none;
 }
@@ -294,6 +294,7 @@
 <script setup lang="ts">
     import { nextTick, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { focusQuietly } from "./tooltip.partial";
 
     const props = defineProps({
         isOpen: {
@@ -418,16 +419,24 @@
     }
 
     /**
-     * A destructive confirm starts on Cancel, so Enter never deletes by accident; a settings
-     * dialog on itself, since its first control is the close button in its head, whose tooltip
-     * would show unasked; any other starts on its first control.
+     * A destructive confirm starts on Cancel, so Enter never deletes by accident; any other on the
+     * control it marks, else its first. A settings dialog's first control is the close button in
+     * its head, focused quietly so its tooltip does not show unasked.
      */
     function focusFirst(): void {
         const marked = dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]");
-        const first = props.isDestructive && cancelElement.value
-            ? cancelElement.value
-            : marked ?? (props.isSettings ? dialogElement.value : focusables()[0]);
-        (first ?? dialogElement.value)?.focus({ preventScroll: true });
+        if (props.isDestructive && cancelElement.value) {
+            cancelElement.value.focus({ preventScroll: true });
+        }
+        else if (marked) {
+            marked.focus({ preventScroll: true });
+        }
+        else if (props.isSettings && focusables()[0]) {
+            focusQuietly(focusables()[0]);
+        }
+        else {
+            (focusables()[0] ?? dialogElement.value)?.focus({ preventScroll: true });
+        }
     }
 
     /** Gives focus back to the opener, when it is still on the page. */

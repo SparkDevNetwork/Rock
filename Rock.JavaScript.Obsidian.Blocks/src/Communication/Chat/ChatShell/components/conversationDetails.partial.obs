@@ -76,6 +76,7 @@
                             role="radio"
                             :aria-checked="option.value === notifyMode ? 'true' : 'false'"
                             :tabindex="option.value === shownNotifyMode ? 0 : -1"
+                            :data-autofocus="option.value === shownNotifyMode ? '' : undefined"
                             data-testid="notify-option"
                             :data-value="option.value"
                             @click="onNotify(option.value)">

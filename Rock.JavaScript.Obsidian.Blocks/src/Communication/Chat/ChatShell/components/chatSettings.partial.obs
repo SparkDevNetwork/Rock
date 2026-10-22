@@ -48,6 +48,7 @@
                         type="button"
                         class="chat-ms-btn is-brand"
                         :disabled="push === 'asking'"
+                        data-autofocus
                         @click="emit('pushOn')">
                     <span v-if="push === 'asking'" class="chat-spinner"></span><Icon v-else name="bell" size="xs" />Turn on
                 </button>

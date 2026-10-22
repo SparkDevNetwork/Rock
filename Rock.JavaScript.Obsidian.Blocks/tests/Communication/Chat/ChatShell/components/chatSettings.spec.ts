@@ -88,6 +88,22 @@ describe("the dialog", () => {
         expect(w.emitted("close")).toHaveLength(1);
     });
 
+    test("puts focus on Turn on as it opens while this browser's notifications can be turned on", async () => {
+        const w = mountSettings({ push: "offered" });
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='push-row'] button").element);
+    });
+
+    test("otherwise puts focus on its Close button, whose tooltip does not show unasked", async () => {
+        const w = mountSettings({ push: "on" });
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='settings-close']").element);
+        await new Promise(resolve => setTimeout(resolve, 600));
+        expect(document.querySelector("[role='tooltip']")).toBeNull();
+    });
+
     test("names the person, their campus, and where their name and photo come from", () => {
         const w = mountSettings();
 
