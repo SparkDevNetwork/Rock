@@ -148,7 +148,7 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 IsCompleteList = false,
-                ValueFormat = "A single email address on its own, with no display name and no mailto prefix, as in person@example.com. Several addresses are not valid here."
+                ValueFormat = "A single email address on its own, with no display name and no mailto prefix, as in person@example.com. Several addresses are not valid here. It is shown as a mailto link only when it is a single valid address; anything else is displayed as plain text."
             };
         }
 

@@ -446,6 +446,7 @@ namespace Rock.Field.Types
             var hints = new FieldTypeHints
             {
                 ValueFormat = "Key and value pairs in one string. Pairs are separated from each other by a pipe, and within a pair the key is separated from the value by a caret, as in key1^value1|key2^value2. A key or value that itself contains a caret, a pipe, or a comma must percent encode that character, writing '^' as %5E, '|' as %7C, and ',' as %2C, otherwise the pair is split in the wrong place and the value is silently stored wrong. Leave every other character as it is. For example the key Sizes with the value Small, Medium is stored as Sizes^Small%2C Medium."
+                    + ValueListFieldType.GetContentRuleNote( privateConfigurationValues )
             };
 
             // When the values come from a defined type the value half is constrained,
@@ -459,7 +460,7 @@ namespace Rock.Field.Types
                 if ( definedType != null )
                 {
                     hints.IsCompleteList = false;
-                    hints.Instructions = $"The value half of each pair must be a guid from the '{definedType.Name}' defined type. To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey}.";
+                    hints.Instructions = $"The value half of each pair must be the id of a DefinedValue from the '{definedType.Name}' defined type, not a guid and not an idKey. To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey} and take the id of each one you want.";
                 }
             }
 
