@@ -250,16 +250,27 @@ describe("the service banners", () => {
 
 // The church's prompt timing decides when the header offers push; Chat settings offers it always.
 describe("the push offer on a desktop", () => {
-    test("is a bell icon button labelled 'Turn on notifications'", async () => {
+    test("is a small pill in the church's color reading 'Turn on notifications', with no glyph", async () => {
         const w = mountHeader({ isPushOffered: true });
         const offer = w.get("[data-testid='push-offer']");
 
-        expect(offer.classes()).toContain("chat-icon-btn");
-        expect(offer.attributes("aria-label")).toBe("Turn on notifications");
-        expect(hasIcon(w, offer, "bell")).toBe(true);
+        expect(offer.element.tagName).toBe("BUTTON");
+        expect(offer.classes()).toEqual(expect.arrayContaining(["chat-header-push", "is-brand", "is-sm"]));
+        expect(offer.classes()).not.toContain("chat-icon-btn");
+        expect(offer.text()).toBe("Turn on notifications");
+        expect(offer.findAllComponents(Icon)).toHaveLength(0);
 
         await offer.trigger("click");
         expect(w.emitted("turnOnPush")).toHaveLength(1);
+    });
+
+    test("leaves the room's notify menu as the header's only bell", () => {
+        const w = mountHeader({ kind: "channel", isPushOffered: true, isPrefsOffered: true, notifyMode: "all", isThreadsOffered: true, isMentionsOffered: true });
+        const header = w.get("[data-testid='chat-header']");
+
+        const bells = w.findAllComponents(Icon).filter(icon => ["bell", "at-bell", "bell-off"].includes(icon.props("name")) && header.element.contains(icon.element));
+        expect(bells).toHaveLength(1);
+        expect(w.get("[data-testid='header-notify']").element.contains(bells[0].element)).toBe(true);
     });
 
     test("is gone when not offered, and there is no overflow on a desktop", () => {

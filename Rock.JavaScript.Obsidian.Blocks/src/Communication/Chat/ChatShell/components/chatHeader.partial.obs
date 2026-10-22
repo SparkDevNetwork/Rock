@@ -80,11 +80,12 @@
                 <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-mentions-dot" aria-hidden="true"></span>
             </IconButton>
 
-            <IconButton v-if="isPushOffered && !isPhone"
-                        icon="bell"
-                        label="Turn on notifications"
-                        data-testid="push-offer"
-                        @click="emit('turnOnPush')" />
+            <!-- A worded pill with no glyph, so the room's notify menu stays the header's only bell. -->
+            <button v-if="isPushOffered && !isPhone"
+                    type="button"
+                    class="chat-header-push is-brand is-sm"
+                    data-testid="push-offer"
+                    @click="emit('turnOnPush')">Turn on notifications</button>
 
             <!-- The room's notify menu, the bell drawn as its mode; kept on a phone, where Star moves into More. -->
             <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
@@ -276,6 +277,34 @@ button.chat-header-id:hover .chat-header-chev {
     gap: 2px;
     align-items: center;
     margin-left: auto;
+}
+
+/* The push offer, the design's small button in the church's color, set a little apart from the icons beside it. */
+.chat-header-push {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    margin: 0 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-header-push.is-sm {
+    height: 28px;
+    padding: 0 11px;
+    font-size: 12.5px;
+}
+
+.chat-header-push.is-brand {
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+}
+
+.chat-header-push.is-brand:hover {
+    background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
 }
 
 .chat-header-more,
