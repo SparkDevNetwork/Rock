@@ -682,6 +682,15 @@ namespace Rock.Communication.Chat.Platform.Doors
                         return refused;
                     }
 
+                    // The platform posts for someone not in the room and knows only the bans on
+                    // active rows, so a ban kept on an inactive or archived row is asked here. A
+                    // group Rock does not know is left to the platform's not-found.
+                    var groupId = GroupCache.GetId( groupGuid );
+                    if ( groupId.HasValue && HoldsBannedRow( rockContext, groupId.Value, sender.Id ) )
+                    {
+                        return Outcome( "door.target_not_eligible", "The sender is banned from this channel." );
+                    }
+
                     // A sender who has never opened chat has no row on the platform to post under.
                     ChatPlatformSyncHelper.RecordPersonChange( rockContext, sender.Id );
                     rockContext.SaveChanges();
