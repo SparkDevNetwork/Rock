@@ -99,7 +99,7 @@ namespace Rock.MergeTemplates
 
                 Reason: Merged documents must not be saved where they can be downloaded by Id.
             */
-            var binaryFileService = new BinaryFileService( new RockContext() );
+            var binaryFileService = new BinaryFileService( RockApp.Current.CreateRockContext() );
 
             var outputStream = GetMergedDocumentOutputStream( binaryFileService, mergeTemplate, mergeObjectList, globalMergeFields, out var templateBinaryFile );
             if ( outputStream == null )

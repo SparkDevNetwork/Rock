@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Lava;
@@ -88,7 +89,7 @@ namespace Rock.MergeTemplates
                 return CreateDocumentFromUnsavedFile( binaryFile );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var savedFile = binaryFileService.Get( binaryFile.Id );
