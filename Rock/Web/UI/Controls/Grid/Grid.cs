@@ -2786,7 +2786,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                                         if ( dataField is CallbackField )
                                         {
-                                            propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
+                                            propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue, false );
                                         }
 
                                         if ( dataField is LavaBoundField )
