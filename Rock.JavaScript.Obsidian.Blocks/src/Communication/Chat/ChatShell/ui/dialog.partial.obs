@@ -229,6 +229,13 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
+/* The design's regular button, which Add people's Cancel and Add are, a size under the large one. */
+:slotted(.chat-dialog-btn.is-regular) {
+    height: 30px;
+    padding: 0 14px;
+    font-size: 13px;
+}
+
 .chat-dialog-btn.is-line,
 :slotted(.chat-dialog-btn.is-line) {
     color: var(--chat-text);

@@ -114,25 +114,26 @@
                                     <span v-if="row.campus" class="chat-mb-sub" data-testid="member-campus">{{ row.campus }}</span>
                                 </span>
                             </button>
-                            <span v-if="row.isRemoving" class="chat-mb-acts">
-                                <span class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
-                            </span>
-                            <span v-else-if="row.canMessage || row.menu" class="chat-mb-acts">
-                                <button v-if="row.canMessage"
-                                        type="button"
-                                        class="chat-mb-msg"
-                                        data-testid="member-message"
-                                        :aria-label="`Message ${row.name}`"
-                                        @click="emit('message', row.guid)">
-                                    <Icon name="message" size="xs" />Message
-                                </button>
-                                <Menu v-if="row.menu"
-                                      icon="dots"
-                                      :label="`More for ${row.name}`"
-                                      :items="row.menu.items"
-                                      :note="row.menu.note"
-                                      :anchorAttrs="{ class: 'chat-mb-more', 'data-testid': 'member-more', 'data-person': row.guid }"
-                                      @select="onMenuSelect(row.guid, $event)" />
+                            <!-- Drawn on every row, empty where there is nothing to do, so each row ends with its inset. -->
+                            <span class="chat-mb-acts">
+                                <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
+                                <template v-else>
+                                    <button v-if="row.canMessage"
+                                            type="button"
+                                            class="chat-mb-msg"
+                                            data-testid="member-message"
+                                            :aria-label="`Message ${row.name}`"
+                                            @click="emit('message', row.guid)">
+                                        <Icon name="message" size="xs" />Message
+                                    </button>
+                                    <Menu v-if="row.menu"
+                                          icon="dots"
+                                          :label="`More for ${row.name}`"
+                                          :items="row.menu.items"
+                                          :note="row.menu.note"
+                                          :anchorAttrs="{ class: 'chat-mb-more', 'data-testid': 'member-more', 'data-person': row.guid }"
+                                          @select="onMenuSelect(row.guid, $event)" />
+                                </template>
                             </span>
                             <div v-if="row.refusal" class="chat-mb-err" role="alert" data-testid="member-refusal">
                                 <Icon name="alert" size="xs" />

@@ -54,9 +54,9 @@
             <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
 
             <template #actions>
-                <button type="button" class="chat-dialog-btn is-ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</button>
+                <button type="button" class="chat-dialog-btn is-regular is-ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</button>
                 <button type="button"
-                        class="chat-dialog-btn is-brand"
+                        class="chat-dialog-btn is-regular is-brand"
                         data-testid="ap-add"
                         :disabled="chosen.length === 0 || isAdding || undefined"
                         :aria-busy="isAdding ? 'true' : undefined"

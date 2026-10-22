@@ -1343,6 +1343,11 @@
     outline: 0;
 }
 
+/* The field draws no ring of its own, the pill does, but it keeps the design's focus corner. */
+.chat-shell .chat-mb-search input:focus-visible {
+    border-radius: var(--chat-r-sm);
+}
+
 .chat-shell .chat-mb-search input::placeholder {
     color: var(--chat-muted);
 }
