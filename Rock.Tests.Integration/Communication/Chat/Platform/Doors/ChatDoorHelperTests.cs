@@ -767,6 +767,40 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             }
         }
 
+        [TestMethod]
+        public void AWorkflowCannotPostInAChannelAsSomeoneBannedFromIt()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Announcements" );
+                var active = scene.AddChatPerson( "Active" );
+                var inactive = scene.AddChatPerson( "Inactive" );
+                var archived = scene.AddChatPerson( "Archived" );
+                var member = scene.AddChatPerson( "Member" );
+
+                // The platform posts for someone not in the room, and the projection never reads an
+                // inactive or archived row, so only Rock can see the last two bans.
+                scene.Fixture.AddMember( room, active, m => m.IsChatBanned = true );
+                scene.Fixture.AddMember( room, inactive, m => { m.IsChatBanned = true; m.GroupMemberStatus = GroupMemberStatus.Inactive; } );
+                scene.Fixture.AddMember( room, archived, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+                scene.Fixture.AddMember( room, member );
+
+                foreach ( var sender in new[] { active, inactive, archived } )
+                {
+                    var outcome = scene.SendWorkflowChannelMessage( room, sender, "Hello" );
+
+                    Assert.AreEqual( "door.target_not_eligible", outcome.Code, "sender " + sender );
+                }
+
+                Assert.AreEqual( 0, scene.Platform.Posts, "and nothing was posted" );
+
+                var allowed = scene.SendWorkflowChannelMessage( room, member, "Hello" );
+
+                Assert.AreEqual( "ok", allowed.Code, allowed.Message );
+                Assert.AreEqual( 1, scene.Platform.Posts, "a member with no ban still posts" );
+            }
+        }
+
         #endregion A workflow's channel post
 
     }
