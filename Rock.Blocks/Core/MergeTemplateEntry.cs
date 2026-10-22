@@ -32,7 +32,6 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.MergeTemplateEntry;
 using Rock.ViewModels.Core.Grid;
@@ -653,10 +652,10 @@ namespace Rock.Blocks.Core
         #region Block Actions
 
         /// <summary>
-        /// Generates the merge document and returns the URL the browser should use to download it.
+        /// Generates the merge document and returns it as the response content.
         /// </summary>
         /// <param name="bag">The merge request details.</param>
-        /// <returns>The download URL, or an error message describing why the merge failed.</returns>
+        /// <returns>The merged document file, or an error message describing why the merge failed.</returns>
         [BlockAction]
         public BlockActionResult Merge( MergeTemplateEntryMergeRequestBag bag )
         {
@@ -693,16 +692,30 @@ namespace Rock.Blocks.Core
 
                 var globalMergeFields = GetGlobalMergeFields( dataSourceResult.GlobalMergeObjects );
 
-                var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate,
+                /*
+                    10/21/2026 - MSE
+
+                    The merged document is returned as the block action response instead of
+                    being saved as a temporary BinaryFile and linked through GetFile.ashx,
+                    because that file used the unsecured default file type and anyone could
+                    download it by Id until Rock Cleanup removed it. Errors are still returned
+                    as a JSON response bag; the client tells them apart from the file by the
+                    application/json content type, which merged documents do not use.
+
+                    Reason: Merged documents must not be downloadable by Id.
+                */
+                var document = mergeTemplateType.CreateDocumentForDownload( mergeTemplate,
                     dataSourceResult.DetailMergeObjects.Values.ToList(),
                     globalMergeFields );
 
                 LogMergeTemplateExceptions( mergeTemplateType, mergeTemplate );
 
-                return ActionOk( new MergeTemplateEntryMergeResponseBag
+                if ( document == null )
                 {
-                    DownloadUrl = $"{FileUrlHelper.GetFileUrl( outputBinaryFileDoc.Id )}&attachment=true"
-                } );
+                    return ActionOk( new MergeTemplateEntryMergeResponseBag { ErrorMessage = "Unable to get merge template", IsErrorDanger = true } );
+                }
+
+                return new FileBlockActionResult( document.ContentStream, document.MimeType, document.FileName );
             }
             catch ( Exception ex )
             {
