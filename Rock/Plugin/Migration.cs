@@ -17,10 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Migrations.Builders;
 using System.Data.Entity.Migrations.Model;
 using System.Data.Entity.Migrations.Sql;
 using System.Data.Entity.SqlServer;
+#endif
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
@@ -118,6 +120,7 @@ namespace Rock.Plugin
             }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         ///     Adds an operation to create a new table.  This is a wrapper for the default DBMigration CreateTable.
         /// </summary>
@@ -508,5 +511,6 @@ namespace Rock.Plugin
             }
 
         }
+#endif
     }
 }

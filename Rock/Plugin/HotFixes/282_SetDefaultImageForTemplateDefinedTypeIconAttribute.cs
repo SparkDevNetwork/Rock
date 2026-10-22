@@ -14,12 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-
-using Mono.CSharp.Linq;
-
-using static Rock.WebFarm.RockWebFarm;
-
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>

@@ -16,7 +16,6 @@
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <Compile Remove="**\*.WebForms.cs" />
     <Compile Remove="CheckIn\*.cs" />
-    <Compile Remove="Plugin\**\*.cs" />
     <Compile Remove="RealTime\AspNet\**\*.cs" />
     <Compile Remove="Web\UI\**\*.cs" />
     <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
@@ -28,7 +27,6 @@
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
-    <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Web\UI\ContextAttribute.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
