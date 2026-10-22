@@ -620,7 +620,8 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Downloads the AttendanceOccurrence roster.
+        /// Downloads the AttendanceOccurrence roster. The merged roster file is
+        /// returned as the response content.
         /// </summary>
         [BlockAction( "PrintRoster" )]
         public BlockActionResult PrintRoster( GroupAttendanceDetailPrintRosterRequestBag bag )
@@ -696,7 +697,17 @@ namespace Rock.Blocks.Group
 
                 var mergeObjectList = mergeObjects.Select( a => a.Value ).ToList();
 
-                var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, mergeFields );
+                /*
+                    10/21/2026 - MSE
+
+                    The roster file is returned as the block action response instead of
+                    being saved as a temporary BinaryFile and linked through GetFile.ashx,
+                    because that file used the unsecured default file type and anyone could
+                    download it by Id until Rock Cleanup removed it.
+
+                    Reason: Merged documents must not be downloadable by Id.
+                */
+                var document = mergeTemplateType.CreateDocumentForDownload( mergeTemplate, mergeObjectList, mergeFields );
 
                 if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
                 {
@@ -716,10 +727,12 @@ namespace Rock.Blocks.Group
                     }
                 }
 
-                return ActionOk( new GroupAttendanceDetailPrintRosterResponseBag
+                if ( document == null )
                 {
-                    RedirectUrl = $"{this.RequestContext.RootUrlPath}/GetFile.ashx?guid={outputBinaryFileDoc.Guid}&attachment=true"
-                } );
+                    return ActionBadRequest( "Unable to print Attendance Roster: the merge template file could not be loaded." );
+                }
+
+                return new FileBlockActionResult( document.ContentStream, document.MimeType, document.FileName );
             }
         }
 
