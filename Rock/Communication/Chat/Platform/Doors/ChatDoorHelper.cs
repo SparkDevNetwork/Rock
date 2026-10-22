@@ -159,6 +159,16 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return new ChatDirectMessageResultBag { Code = OkCode, ChannelGuid = read.Existing };
             }
 
+            // The projection sees active rows only, so a ban kept on an inactive or archived row of
+            // these people's conversation is asked of Rock, as the other doors ask it, before a new
+            // one is started beside it.
+            var keptBanPersonId = KeptBanInConversationOf( rockContext, caller.Id, personIds );
+            if ( keptBanPersonId.HasValue )
+            {
+                var banned = others.FirstOrDefault( o => o.PersonId == keptBanPersonId.Value );
+                return NotEligible( banned?.Guid, banned?.NickName, banned?.LastName );
+            }
+
             // A new conversation needs each person's Open DM, or a private room they share.
             var unreachable = others.FirstOrDefault( o => !read.People[o.PersonId].IsOpenDmAllowed && !read.SharedPersonIds.Contains( o.PersonId ) );
             if ( unreachable != null )
@@ -1100,15 +1110,21 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
-        /// Puts a person in a group, using a row they already hold, archived or inactive, so a
-        /// return never leaves two side by side. Unsaved.
+        /// Puts a person in a group in the type's default role, using a row they already hold,
+        /// archived or inactive, so a return never leaves two side by side. Unsaved.
         /// </summary>
         private static void AddOrRestoreMember( RockContext rockContext, int groupId, int personId )
         {
             var service = new GroupMemberService( rockContext );
+            var groupTypeId = new GroupService( rockContext ).GetSelect( groupId, g => g.GroupTypeId );
+            var defaultRoleId = GroupTypeCache.Get( groupTypeId ).DefaultGroupRoleId ?? 0;
+
+            // A row already in the default role is preferred, so resetting the role below never
+            // leaves two live rows of one person in one role.
             var existing = service.AsNoFilter()
                 .Where( m => m.GroupId == groupId && m.PersonId == personId )
-                .OrderBy( m => m.IsArchived )
+                .OrderBy( m => m.GroupRoleId == defaultRoleId ? 0 : 1 )
+                .ThenBy( m => m.IsArchived )
                 .ThenBy( m => m.Id )
                 .FirstOrDefault();
 
@@ -1119,17 +1135,19 @@ namespace Rock.Communication.Chat.Platform.Doors
                     service.Restore( existing );
                 }
 
+                // The old row may be a removed or demoted leader's. Coming back by joining or being
+                // added is not a way back into leading, nor into the group rights a role carries.
+                existing.GroupRoleId = defaultRoleId;
                 existing.GroupMemberStatus = GroupMemberStatus.Active;
                 return;
             }
 
-            var groupTypeId = new GroupService( rockContext ).GetSelect( groupId, g => g.GroupTypeId );
             service.Add( new GroupMember
             {
                 GroupId = groupId,
                 GroupTypeId = groupTypeId,
                 PersonId = personId,
-                GroupRoleId = GroupTypeCache.Get( groupTypeId ).DefaultGroupRoleId ?? 0,
+                GroupRoleId = defaultRoleId,
                 GroupMemberStatus = GroupMemberStatus.Active
             } );
         }
@@ -1146,6 +1164,39 @@ namespace Rock.Communication.Chat.Platform.Doors
             return new GroupMemberService( rockContext ).AsNoFilter()
                 .Any( m => m.GroupId == groupId && m.PersonId == personId && m.IsChatBanned
                     && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) );
+        }
+
+        /// <summary>
+        /// The person, of these people, who holds a ban still in force on any row, active or not,
+        /// of a live direct message whose rows are exactly these people, or null when none does.
+        /// </summary>
+        private static int? KeptBanInConversationOf( RockContext rockContext, int callerId, IList<int> personIds )
+        {
+            var directMessageTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() ) ?? 0;
+            // A list, because Entity Framework translates a list's Contains and not every collection's.
+            var people = personIds.ToList();
+            var count = people.Count;
+
+            // Every row counts here, inactive and archived included, since those are the rows the
+            // candidate read in ReadDirectMessage passes over. Read without the archived filter,
+            // which would otherwise hide archived rows from the members read as well.
+            var groupIds = new GroupService( rockContext ).AsNoFilter()
+                .Where( g => g.GroupTypeId == directMessageTypeId && g.IsActive && !g.IsArchived )
+                .Where( g => g.Members.Any( m => m.PersonId == callerId ) )
+                .Where( g => g.Members.Select( m => m.PersonId ).Distinct().Count() == count
+                    && !g.Members.Any( m => !people.Contains( m.PersonId ) ) )
+                .Select( g => g.Id )
+                .ToList();
+
+            foreach ( var personId in people )
+            {
+                if ( groupIds.Any( groupId => HoldsBannedRow( rockContext, groupId, personId ) ) )
+                {
+                    return personId;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
