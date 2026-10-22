@@ -152,6 +152,11 @@ namespace Rock.Reporting.DataSelect.Person
                     foreach ( var person in personList )
                     {
                         var formattedPerson = Rock.Model.Person.FormatFullName( person.NickName, person.LastName, person.SuffixValueId );
+                        if ( e.Encode )
+                        {
+                            formattedPerson = formattedPerson.EncodeHtml();
+                        }
+
                         var formattedGenderAgeGrade = string.Empty;
 
                         if ( includeGender && person.Gender != Gender.Unknown )
