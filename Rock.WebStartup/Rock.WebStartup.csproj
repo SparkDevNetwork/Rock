@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <IsPackable>False</IsPackable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RockWebPath>..\RockWeb</RockWebPath>
@@ -22,13 +22,13 @@
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
-    <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)' == 'net472'" Include="..\Rock.Migrations\Rock.Migrations.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="Rock.Common.Mobile, Version=0.3.19.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>

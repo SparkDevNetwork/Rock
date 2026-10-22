@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+#if WEBFORMS
 using System;
 
 using Rock.WebStartup;
@@ -72,3 +73,4 @@ namespace Rock
         }
     }
 }
+#endif

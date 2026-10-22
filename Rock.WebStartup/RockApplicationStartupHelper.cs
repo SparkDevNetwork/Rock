@@ -346,19 +346,43 @@ namespace Rock.WebStartup
         {
             var sc = new ServiceCollection();
 
+            ConfigureServices( sc );
+
+
+            // If we are running under Visual Studio then turn on scope validation
+            // to help catch misconfigurations.
+            var serviceOptions = new ServiceProviderOptions
+            {
+#if REVIEW_WEBFORMS
+                ValidateOnBuild = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
+                ValidateScopes = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment
+#endif
+            };
+
+            RockApp.Current = new RockApp( sc.BuildServiceProvider( serviceOptions ) );
+        }
+
+        internal static void ConfigureServices( IServiceCollection sc )
+        {
             // Register basic hosting services.
+#if WEBFORMS
             sc.AddSingleton<IConnectionStringProvider, WebFormsConnectionStringProvider>();
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
+#endif
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
+#if REVIEW_WEBFORMS
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
+#endif
             sc.AddSingleton<ICaptchaProvider, CaptchaProofOfWorkProvider>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IUserAgentParser, UserAgentParser>();
+#if WEBFORMS
             sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+#endif
 
             sc.AddSingleton<Configuration.ConnectedServices.ConnectedServicesProvider>();
             sc.AddSingleton<MetadataHelper>();
@@ -387,10 +411,12 @@ namespace Rock.WebStartup
 
             sc.AddRockLogging();
 
+#if REVIEW_WEBFORMS
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the
             // source.
             sc.AddTransient<InitializationSettings, WebFormsInitializationSettings>();
+#endif
 
             // Register Light Containers.
             sc.AddSingleton( typeof( Extension.LightComponentLoader<> ), typeof( Extension.LightComponentLoader<> ) );
@@ -415,16 +441,6 @@ namespace Rock.WebStartup
                     Debug.WriteLine( $"Error configuring services for {configurationType.Value.FullName}: {ex.Message}" );
                 }
             }
-
-            // If we are running under Visual Studio then turn on scope validation
-            // to help catch misconfigurations.
-            var serviceOptions = new ServiceProviderOptions
-            {
-                ValidateOnBuild = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
-                ValidateScopes = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment
-            };
-
-            RockApp.Current = new RockApp( sc.BuildServiceProvider( serviceOptions ) );
         }
 
         /// <summary>
@@ -458,12 +474,14 @@ namespace Rock.WebStartup
         /// </summary>
         private static void RegisterHttpModules()
         {
+#if REVIEW_WEBFORMS
             var activeHttpModules = Rock.Web.HttpModules.HttpModuleContainer.GetActiveComponents();
 
             foreach ( var httpModule in activeHttpModules )
             {
                 HttpApplication.RegisterModule( httpModule.GetType() );
             }
+#endif
         }
 
         /// <summary>
@@ -668,6 +686,7 @@ namespace Rock.WebStartup
         /// </returns>
         public static bool HasPendingEFMigrations()
         {
+#if REVIEW_WEBFORMS
             /* MDP 2020-03-20
              * We had previously used the presence of a "~/App_Data/Run.Migration" file to see if there are migrations to run.
              * We did this to avoid the ~5 second delay that asking EF if there were pending migrations.
@@ -718,6 +737,9 @@ namespace Rock.WebStartup
 
             // if they aren't the same, run EF Migrations
             return lastDbMigrationId != lastRockMigrationId;
+#else
+            return false;
+#endif
         }
 
         /// <summary>
@@ -746,6 +768,7 @@ namespace Rock.WebStartup
         /// <returns>True if at least one migration was run</returns>
         public static bool MigrateDatabase( bool hasPendingEFMigrations )
         {
+#if REVIEW_WEBFORMS
             if ( !hasPendingEFMigrations )
             {
                 return false;
@@ -771,10 +794,12 @@ namespace Rock.WebStartup
                 migrationLogger.LogCompletedMigration();
                 return true;
             }
+#endif
 
             return false;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Logs all the system related info to Migration Log
         /// </summary>
@@ -804,6 +829,7 @@ namespace Rock.WebStartup
                 ExceptionLogService.LogException( ex, null );
             }
         }
+#endif
 
         /// <summary>
         /// Searches all assemblies for <see cref="IEntitySaveHook"/> subclasses
@@ -1428,7 +1454,11 @@ WHERE [PQ].[row_number] = 1
 
         private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )
         {
+#if REVIEW_WEBFORMS
             ExceptionLogService.LogException( e.Exception, System.Web.HttpContext.Current );
+#else
+            ExceptionLogService.LogException( e.Exception );
+#endif
         }
 
         #endregion
@@ -1471,10 +1501,14 @@ WHERE [PQ].[row_number] = 1
         /// <param name="duration">The duration of the operation in milliseconds.</param>
         public static void ShowDebugTimingMessage( string message, double duration )
         {
+#if REVIEW_WEBFORMS
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 Debug.WriteLine( $"[{duration,5:#0} ms] {message}" );
             }
+#else
+                Debug.WriteLine( $"[{duration,5:#0} ms] {message}" );
+#endif
         }
 
         /// <summary>
