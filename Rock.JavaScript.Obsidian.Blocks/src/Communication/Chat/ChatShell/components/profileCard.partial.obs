@@ -345,16 +345,25 @@
      * rather than over the list; it falls back below the opener where the panel leaves no room.
      */
     const panel = props.anchor?.closest<HTMLElement>(".chat-panel") ?? null;
-    const reference = panel && props.anchor
+    const besideGap = 10;
+    const anchor = props.anchor;
+    const reference = panel && anchor
         ? {
             getBoundingClientRect: (): DOMRect => {
+                const openerRect = anchor.getBoundingClientRect();
                 const left = panel.getBoundingClientRect().left;
-                const top = (props.anchor?.getBoundingClientRect().top ?? 0) - 12;
+                // A phone's panel fills the frame, leaving no room beside it, so the card is placed
+                // from the opener itself, as any other card is.
+                if (left - besideGap - (cardElement.value?.offsetWidth ?? 0) < 8) {
+                    return openerRect;
+                }
+
+                const top = openerRect.top - 12;
                 return { x: left, y: top, left, top, right: left, bottom: top, width: 0, height: 0, toJSON: () => ({}) } as DOMRect;
             },
-            contextElement: props.anchor
+            contextElement: anchor
         }
-        : props.anchor;
+        : anchor;
 
     // Placed by left and top, since a transform here would override the pop's own and the card
     // would only fade. It flips to whichever side the window has room on, then is kept 8px inside
@@ -365,7 +374,7 @@
         strategy: "fixed",
         transform: false,
         middleware: [
-            offset(panel ? 10 : 8),
+            offset(({ placement: side }) => side.startsWith("left") ? besideGap : 8),
             flip({ fallbackPlacements: ["bottom-start", "top-start"] }),
             shift({ padding: 8, crossAxis: true, ...(frame ? { boundary: frame } : {}) })
         ],
