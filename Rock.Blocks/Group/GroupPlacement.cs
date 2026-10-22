@@ -243,6 +243,20 @@ namespace Rock.Blocks.Group
                 box = GetBoxForRegistrationPlacement( box, out destinationGroupTypeId );
             }
 
+            // Return a new box so nothing already loaded from the source (title, keys,
+            // attributes) is sent to a person who cannot view it.
+            if ( box.ErrorMessage.IsNullOrWhiteSpace() && !CanViewPlacementSource() )
+            {
+                return new GroupPlacementInitializationBox
+                {
+                    GroupPlacementKeys = new GroupPlacementKeysBag(),
+                    PlacementConfigurationSettingOptions = new PlacementConfigurationSettingOptionsBag(),
+                    NavigationUrls = box.NavigationUrls,
+                    BackPageUrl = box.BackPageUrl,
+                    ErrorMessage = "You are not authorized to view this placement."
+                };
+            }
+
             if ( box.ErrorMessage.IsNotNullOrWhiteSpace() )
             {
                 return box;
@@ -878,6 +892,85 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Determines whether the current person can view the placement source (source group,
+        /// entity set, registration instance or registration template) given by the page parameters
+        /// and block settings. The source is resolved in the same order as <see cref="GetInitializationBox"/>.
+        /// </summary>
+        /// <returns><c>true</c> if the source exists and the current person has VIEW on it; otherwise <c>false</c>.</returns>
+        private bool CanViewPlacementSource()
+        {
+            var currentPerson = GetCurrentPerson();
+            var sourceGroupId = GetIdFromPageParameter( PageParameterKey.SourceGroup );
+            var entitySetId = GetIdFromPageParameter( PageParameterKey.EntitySet );
+
+            if ( sourceGroupId.HasValue )
+            {
+                var sourceGroup = GroupCache.Get( sourceGroupId.Value );
+                return sourceGroup != null && sourceGroup.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            if ( entitySetId.HasValue )
+            {
+                /*
+                    10/22/26 - CLAUDE
+
+                    Entity sets have no seeded security rules and VIEW is allowed by default,
+                    so on a stock install this check allows everyone and entity set placements
+                    can still be opened by integer Id. The check is kept so any rules an admin
+                    adds to an entity set are honored. Securing entity set placements further
+                    (for example, limiting them to the set's creator) is a separate change.
+
+                    Reason: Entity set placements are not secured by this check on a stock install.
+                */
+                var entitySet = new EntitySetService( RockContext ).Get( entitySetId.Value );
+                return entitySet != null && entitySet.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            // A registration instance inherits VIEW from its template.
+            var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
+            if ( registrationInstanceId.HasValue )
+            {
+                var registrationInstance = new RegistrationInstanceService( RockContext ).Get( registrationInstanceId.Value );
+                return registrationInstance != null && registrationInstance.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            var registrationTemplateService = new RegistrationTemplateService( RockContext );
+            var registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            RegistrationTemplate registrationTemplate = null;
+
+            if ( registrationTemplateGuid.HasValue )
+            {
+                registrationTemplate = registrationTemplateService.Get( registrationTemplateGuid.Value );
+            }
+            else
+            {
+                var registrationTemplateId = GetIdFromPageParameter( PageParameterKey.RegistrationTemplateId );
+                if ( registrationTemplateId.HasValue )
+                {
+                    registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
+                }
+            }
+
+            return registrationTemplate != null && registrationTemplate.IsAuthorized( Authorization.VIEW, currentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may attach an existing group to the placement.
+        /// Attaching a group shows its members on the page, so the person must be able to view
+        /// the group or already manage its members.
+        /// </summary>
+        /// <param name="group">The existing group to attach.</param>
+        /// <returns><c>true</c> if the person has VIEW, EDIT or MANAGE_MEMBERS on the group; otherwise <c>false</c>.</returns>
+        private bool CanAttachPlacementGroup( Rock.Model.Group group )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return group.IsAuthorized( Authorization.VIEW, currentPerson )
+                || group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
+        }
+
+        /// <summary>
         /// Determines whether the placement keys (and placement mode) sent by the client
         /// match what <see cref="GetInitializationBox"/> builds from the page parameters
         /// and block settings. The keys come from the client, so every action that uses
@@ -891,6 +984,13 @@ namespace Rock.Blocks.Group
         private bool ArePlacementKeysValid( GroupPlacementKeysBag groupPlacementKeys, PlacementMode? placementMode )
         {
             if ( groupPlacementKeys == null )
+            {
+                return false;
+            }
+
+            // The keys below are bound to the page parameter source, so checking VIEW on that
+            // source covers every block action that calls this method.
+            if ( !CanViewPlacementSource() )
             {
                 return false;
             }
@@ -997,10 +1097,13 @@ namespace Rock.Blocks.Group
         /// <returns>A comma-separated string of valid destination group IDs, or <c>null</c> if no valid IDs are found.</returns>
         private string GetIdsFromDestinationGroupParam()
         {
+            var currentPerson = GetCurrentPerson();
             var destinationGroupIdParams = PageParameter( PageParameterKey.DestinationGroup ).Split( ',' );
+
+            // Only pass groups the person can view, otherwise their members would be returned.
             var destinationGroupIds = destinationGroupIdParams
                 .Select( param => Rock.Utility.IdHasher.Instance.GetId( param ) ?? param.AsIntegerOrNull() )
-                .Where( id => id.HasValue )
+                .Where( id => id.HasValue && GroupCache.Get( id.Value )?.IsAuthorized( Authorization.VIEW, currentPerson ) == true )
                 .Select( id => id.Value.ToString() )
                 .ToList();
 
@@ -1950,6 +2053,11 @@ namespace Rock.Blocks.Group
                         return ActionBadRequest( errorMessage );
                     }
 
+                    if ( !CanAttachPlacementGroup( existingPlacementGroup ) )
+                    {
+                        return ActionBadRequest( "You are not authorized to add one or more of the selected groups to this placement." );
+                    }
+
                     placementGroups.Add( existingPlacementGroup );
                 }
             }
@@ -1968,7 +2076,12 @@ namespace Rock.Blocks.Group
                     return ActionBadRequest( errorMessage );
                 }
 
-                placementGroups = groupService.Queryable().Where( a => a.ParentGroupId == parentGroup.Id && a.IsActive == true ).ToList();
+                // Only attach the child groups the person is allowed to work with.
+                placementGroups = groupService.Queryable()
+                    .Where( a => a.ParentGroupId == parentGroup.Id && a.IsActive == true )
+                    .ToList()
+                    .Where( CanAttachPlacementGroup )
+                    .ToList();
             }
 
             var registrationInstanceService = new RegistrationInstanceService( RockContext );
