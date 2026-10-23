@@ -104,7 +104,7 @@ namespace Rock.ClientService.Core.Note
                     ? IdHasher.Instance.GetHash( note.ParentNoteId.Value )
                     : null,
                 NoteTypeIdKey = IdHasher.Instance.GetHash( note.NoteTypeId ),
-                Text = note.Text,
+                Text = NoteService.SanitizeNoteText( note.Text ),
                 IsAlert = note.IsAlert ?? false,
                 IsPrivate = note.IsPrivateNote,
                 IsPinned = note.IsPinned,
@@ -302,12 +302,13 @@ namespace Rock.ClientService.Core.Note
 
             note.IfValidProperty( nameof( note.Bag.Text ), () =>
             {
+                var sanitizedText = NoteService.SanitizeNoteText( note.Bag.Text );
                 var noteTypeCache = NoteTypeCache.Get( noteEntity.NoteTypeId );
                 if ( noteTypeCache.FormatType != NoteFormatType.Unstructured && noteTypeCache.IsMentionEnabled )
                 {
-                    mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( note.Bag.Text, noteEntity.Text );
+                    mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( sanitizedText, noteEntity.Text );
                 }
-                noteEntity.Text = note.Bag.Text;
+                noteEntity.Text = sanitizedText;
             } );
 
             note.IfValidProperty( nameof( note.Bag.IsAlert ),
@@ -474,7 +475,7 @@ namespace Rock.ClientService.Core.Note
                 IdKey = note.IdKey,
                 NoteTypeIdKey = noteType.IdKey,
                 Caption = note.Caption,
-                Text = note.Text,
+                Text = NoteService.SanitizeNoteText( note.Text ),
                 ApprovalStatus = noteType.RequiresApprovals
                     ? note.ApprovalStatus
                     : NoteApprovalStatus.Approved,
