@@ -80,6 +80,23 @@ namespace Rock.Rest.Controllers
         {
             var errorMessage = string.Empty;
 
+            /*
+                10/23/2026 - MSE
+
+                Finance callers may charge on behalf of donors, but disabling payment
+                safeguards requires Administrate permission on this REST action.
+
+                Reason: Keep payment protection overrides limited to trusted callers.
+            */
+            if ( !enableDuplicateChecking || !enableScheduleAdherenceProtection )
+            {
+                var restAction = RestActionCache.Get( new Guid( "D9027A44-BAF1-4D6F-9681-9E461ED9D071" ) );
+                if ( restAction?.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) != true )
+                {
+                    throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "Turning off duplicate or schedule protection requires Administrate permission on this endpoint." ) );
+                }
+            }
+
             var rockContext = Service.Context as RockContext;
             var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, enableDuplicateChecking, enableScheduleAdherenceProtection );
 
