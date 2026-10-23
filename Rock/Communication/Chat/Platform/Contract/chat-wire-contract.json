@@ -1,6 +1,6 @@
 {
   "artifact": "chat-wire-contract",
-  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the push is the key set of an immediate push body, the claim names are what a person token carries, and the error codes are the one vocabulary every layer branches on. Generated from the database the migrations produce; never edited by hand.",
+  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the push is the key set of an immediate push body, the claim names are what a person token carries, the error codes are the one vocabulary every layer branches on, and the limits are the group size, name length, body length and page sizes every client and Rock enforce. Generated from the database the migrations produce; never edited by hand.",
   "hash_recipe": "SHA-256, lowercase hex, over the UTF-8 bytes of one line per table in the order the tables array gives: the table name, a colon, the wire column names joined by commas, each line closed by a line feed. The JSON is deliberately not what is hashed, so no key order, whitespace or string escaping rule has to be agreed between the languages that compute it. The hash covers the column lists and nothing else: it is compared at ingest, so anything it covered would refuse every submission from every church still on the previous Rock build the moment it changed, and an added enum value is meant to ship to the platform first and leave those churches working.",
   "wire_hash": "c13ba8c3928d213cdc48556abc5c19e0ebc25a638aa49cbbbdd69da067d872e6",
   "jwt_claims": {
@@ -433,13 +433,13 @@
   },
   "limits": {
     "dm_max_others": 8,
-    "dm_name_max_length": 100,
     "body_max_length": 5000,
-    "history_page_size": 50,
     "member_page_size": 50,
-    "mention_page_size": 30,
     "thread_page_size": 30,
-    "directory_page_size": 50,
-    "people_search_size": 10
+    "history_page_size": 50,
+    "mention_page_size": 30,
+    "dm_name_max_length": 100,
+    "people_search_size": 10,
+    "directory_page_size": 50
   }
 }
