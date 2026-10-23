@@ -297,8 +297,7 @@ namespace Rock.WebStartup
             ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaService.CurrentEngineName})" );
 
             // setup and launch the jobs infrastructure if running under IIS
-            bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-            if ( runJobsInContext )
+            if ( RockApp.Current.InitializationSettings.IsRunScheduledJobsEnabled )
             {
                 LogStartupMessage( "Initializing Job Scheduler" );
                 ServiceJobService.InitializeJobScheduler();
@@ -448,7 +447,7 @@ namespace Rock.WebStartup
         /// </summary>
         private static void InitializeRockOrgTimeZone()
         {
-            string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
+            string orgTimeZoneSetting = RockApp.Current.InitializationSettings.OrganizationTimeZone;
 
             if ( string.IsNullOrWhiteSpace( orgTimeZoneSetting ) )
             {

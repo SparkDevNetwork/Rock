@@ -65,36 +65,8 @@ namespace Rock.Configuration
             NodeName = GetValue( "NodeName" )?.ToStringSafe();
             DeploymentEnvironment = GetValue( "DeploymentEnvironment" )?.ConvertToEnumOrNull<DeploymentEnvironment>() ?? DeploymentEnvironment.Production;
 
-            // Load old password keys.
-            var oldPasswordKeys = new List<string>();
-            for ( int i = 0; ; i++ )
-            {
-                var passwordKey = GetValue( $"OldPasswordKey{i}" );
-
-                if ( passwordKey.IsNullOrWhiteSpace() )
-                {
-                    break;
-                }
-
-                oldPasswordKeys.Add( passwordKey );
-            }
-
-            // Load old decryption keys.
-            var oldDataEncryptionKeys = new List<string>();
-            for ( int i = 0; ; i++ )
-            {
-                var dataEncryptionKey = GetValue( $"OldDataEncryptionKey{i}" );
-
-                if ( dataEncryptionKey.IsNullOrWhiteSpace() )
-                {
-                    break;
-                }
-
-                oldDataEncryptionKeys.Add( dataEncryptionKey );
-            }
-
-            OldPasswordKeys = oldPasswordKeys;
-            OldDataEncryptionKeys = oldDataEncryptionKeys;
+            OldPasswordKeys = GetNumberedValues( GetValue, "OldPasswordKey" );
+            OldDataEncryptionKeys = GetNumberedValues( GetValue, "OldDataEncryptionKey" );
         }
 
         /// <inheritdoc/>

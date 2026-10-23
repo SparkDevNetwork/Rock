@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -101,6 +102,39 @@ namespace Rock.Configuration
             ConnectionString = connectionStringProvider.ConnectionString;
             ReadOnlyConnectionString = connectionStringProvider.ReadOnlyConnectionString;
             AnalyticsConnectionString = connectionStringProvider.AnalyticsConnectionString;
+        }
+
+        /// <summary>
+        /// Loads a numbered series of setting values, such as the old password
+        /// keys. The first value uses the key as-is and the rest append a
+        /// number starting at 1 (<c>OldPasswordKey</c>, <c>OldPasswordKey1</c>,
+        /// <c>OldPasswordKey2</c>). Loading stops at the first missing value.
+        /// </summary>
+        /// <param name="getValue">The function that returns the setting value for a key.</param>
+        /// <param name="key">The key of the first value in the series.</param>
+        /// <returns>The values that were found, in order.</returns>
+        private protected static IReadOnlyList<string> GetNumberedValues( Func<string, string> getValue, string key )
+        {
+            /*
+                10/23/2026 - CLAUDE
+
+                This naming matches the way Encryption and the Database
+                authentication provider have always read these keys from
+                web.config. The settings were previously loaded starting at
+                "OldPasswordKey0", which would not find the existing keys.
+
+                Reason: Keep existing web.config old keys working.
+            */
+            var values = new List<string>();
+            var value = getValue( key );
+
+            for ( int i = 1; !string.IsNullOrWhiteSpace( value ); i++ )
+            {
+                values.Add( value );
+                value = getValue( $"{key}{i}" );
+            }
+
+            return values;
         }
     }
 }

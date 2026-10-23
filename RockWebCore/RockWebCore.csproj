@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Machine specific settings are read from the content root and must never be published. -->
+    <Content Update="appsettings.Local.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Rock.Common.Mobile">
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>

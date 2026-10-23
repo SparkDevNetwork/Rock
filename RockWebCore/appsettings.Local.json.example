@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "RockContext": "Data Source=localhost;Initial Catalog=Rock;User Id=RockUser;Password=password;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  }
+}
