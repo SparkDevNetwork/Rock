@@ -24,6 +24,7 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
+using Rock.Security;
 
 namespace Rock.AI.Agent
 {
@@ -122,9 +123,19 @@ namespace Rock.AI.Agent
             }
 
             var isInternal = agentRequestContext.AudienceType == AudienceType.Internal;
+            var currentPerson = agentRequestContext.CurrentPerson;
+
+            /*
+                10/23/2026 - MSE
+
+                Check attribute security before returning loaded values because not
+                every tool result passes through the result sanitizer.
+
+                Reason: An attribute can require more access than its entity.
+            */
 
             return entity.Attributes.Values
-                .Where( a => isInternal || a.IsPublic )
+                .Where( a => ( isInternal || a.IsPublic ) && a.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .Select( a => new AttributeValueResult
                 {
                     AttributeId = a.Id,
@@ -187,10 +198,21 @@ namespace Rock.AI.Agent
             }
 
             var isInternal = agentRequestContext.AudienceType == AudienceType.Internal;
+            var currentPerson = agentRequestContext.CurrentPerson;
+
+            /*
+                10/23/2026 - MSE
+
+                Check attribute security before returning loaded values because not
+                every tool result passes through the result sanitizer.
+
+                Reason: An attribute can require more access than its entity.
+            */
 
             return entity.Attributes.Values
                 .Where( a => ( isInternal || a.IsPublic )
-                    && a.IsGridColumn )
+                    && a.IsGridColumn
+                    && a.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .Select( a => new AttributeValueResult
                 {
                     AttributeId = a.Id,
