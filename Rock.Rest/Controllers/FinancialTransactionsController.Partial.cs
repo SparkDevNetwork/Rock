@@ -98,6 +98,23 @@ namespace Rock.Rest.Controllers
             }
 
             var rockContext = Service.Context as RockContext;
+
+            /*
+                10/23/2026 - MSE
+
+                This endpoint also accepts a schedule in its payment arguments, so it
+                must reject inactive schedules just like the scheduled Process endpoint.
+
+                Reason: Do not bypass inactive schedule protection through this endpoint.
+            */
+            if ( automatedPaymentArgs?.ScheduledTransactionId.HasValue == true &&
+                new FinancialScheduledTransactionService( rockContext ).Queryable()
+                    .Any( s => s.Id == automatedPaymentArgs.ScheduledTransactionId.Value && !s.IsActive ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Conflict, "The scheduled transaction is not active." );
+                throw new HttpResponseException( errorResponse );
+            }
+
             var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, enableDuplicateChecking, enableScheduleAdherenceProtection );
 
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) )
