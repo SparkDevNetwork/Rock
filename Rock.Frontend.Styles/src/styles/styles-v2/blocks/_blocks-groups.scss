@@ -8,7 +8,7 @@
 //  + Group Viewer - styles for the group viewer block.
 //  + Group Viewer v2 - styles for the new group viewer block.
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
-//  + Group Schedule Status Board v2
+//  + Legacy Group Schedule Status Board (WebForms) - Remove when the status board and roster .ascx blocks are chopped
 //  + Group Finder - styles for the Obsidian group finder block.
 // =============================================================
 
@@ -575,14 +575,71 @@
 }
 // ====================== END GROUP SCHEDULER ======================
 
-// ====================== GROUP SCHEDULE STATUS BOARD ======================
+// ====================== LEGACY GROUP SCHEDULE STATUS BOARD (WEBFORMS) ======================
+
+/*
+    10/23/26 - CLAUDE
+
+    The WebForms Group Schedule Status Board used to load its layout rules from
+    ~/Themes/Rock/Styles/group-scheduler.css. That theme was removed in v20, so the
+    structural rules now live here, scoped to the board's own classes so they do not
+    leak into other blocks.
+
+    Everything in this section serves only WebForms blocks, and no Obsidian block uses
+    these selectors:
+    - RockWeb/Blocks/GroupScheduling/GroupScheduleStatusBoard.ascx: every rule except
+      .group-schedule-roster. Delete them when that block is chopped.
+    - RockWeb/Blocks/GroupScheduling/GroupScheduleRoster.ascx: the .group-schedule-roster
+      rule at the end. Delete it when that block is chopped.
+
+    Reason: Restore the status board layout after the old Rock theme was removed.
+*/
+
+.panel-groupscheduler > .scrollable {
+  position: relative;
+  overflow: auto;
+}
 
 .schedule-status-board {
-  & th.location {
-    background: var(--color-interface-softest);
-    border-right: var(--color-interface-soft);
+  width: inherit !important;
+  min-width: 100%;
+  table-layout: fixed;
+
+  > tbody > tr > td {
+    padding: 0;
   }
+
+  .group-locations {
+    position: relative;
+  }
+
+  .sticky-cell {
+    position: sticky;
+    left: var(--spacing-xsmall);
+    display: inline-block;
+  }
+
+  & th.location {
+    position: sticky;
+    inset-inline-start: 0; /* "left" */
+    min-width: 100px;
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    text-align: right;
+    background: var(--color-interface-softest);
+    border-right: 1px solid var(--color-interface-soft);
+
+    > div {
+      height: 100%;
+      padding: var(--spacing-tiny) var(--spacing-xsmall) !important;
+    }
+  }
+
   & td.schedule-location {
+    min-width: 258px;
+    padding: 0 !important;
+    margin: 0;
+    overflow: hidden;
     border-left: 1px solid var(--color-interface-soft);
   }
 }
@@ -602,20 +659,64 @@
 }
 
 .location-scheduled-list {
-  & .person {
-  background: var(--color-interface-softest);
-}
-
-  & .person.pending {
-    color: var(--color-interface-medium);
-  }
+  padding: 0;
+  margin: 0;
+  font-size: var(--font-size-xsmall);
+  list-style: none;
 
   & .slot {
+    height: 24px;
+    padding: var(--spacing-tiny);
     border-bottom: 1px solid var(--color-interface-soft);
   }
 
+  & .person {
+    background: var(--color-interface-softest);
+
+    &.pending {
+      color: var(--color-interface-medium);
+    }
+
+    &.declined {
+      color: var(--color-interface-medium);
+
+      .person-name {
+        text-decoration: line-through;
+      }
+    }
+  }
+
+  & .empty-slot {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-warning-shade);
+    background-color: var(--color-warning-soft);
+  }
+
+  // The status icon is an empty <i> rendered by the block, so the glyph comes from the Tabler icon font.
+  & .status-icon {
+    position: relative;
+    margin: 0 3px 0 0;
+
+    &::before {
+      font-family: "tabler-icons";
+      font-style: normal;
+      color: var(--color-warning-strong);
+      content: "\fa3d"; // ti-help-circle-filled
+    }
+  }
+
+  & .declined .status-icon::before {
+    color: var(--color-danger-strong);
+    content: "\f739"; // ti-circle-x-filled
+  }
+
+  & .confirmed .status-icon::before {
+    color: var(--color-success-strong);
+    content: "\f704"; // ti-circle-check-filled
+  }
 }
 
+// WebForms GroupScheduleRoster.ascx only.
 .group-schedule-roster {
   .location {
     border-radius: 0;
@@ -638,7 +739,7 @@
 
 
 
-// ====================== END GROUP SCHEDULE STATUS BOARD ======================
+// ====================== END LEGACY GROUP SCHEDULE STATUS BOARD (WEBFORMS) ======================
 
 
 // ======================== GROUP FINDER ========================

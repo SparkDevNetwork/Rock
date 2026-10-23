@@ -15,6 +15,7 @@
 //  + Calendar - Styles for the calendar blocks
 //  + Event Entry - The event registration entry screen
 //  + Group Placement - Styles for the group placement block
+//  + Legacy Group Placement (WebForms) - Remove when RegistrationInstanceGroupPlacement.ascx is chopped
 // =============================================================
 
 
@@ -337,3 +338,358 @@
 }
 
 // ======================== END GROUP PLACEMENT ========================
+
+// ======================== LEGACY GROUP PLACEMENT (WEBFORMS) ========================
+
+/*
+    10/23/26 - CLAUDE
+
+    The WebForms Registration Group Placement block used to load its layout rules from
+    ~/Themes/Rock/Styles/group-placement.css. That theme was removed in v20, so the
+    rules now live here. They are scoped under the block's .panel-group-placement root
+    because the old file styled global classes (.person, .dropzone, .resource-list)
+    that would collide with other blocks now that this file loads on every page.
+
+    Everything in this section serves only the WebForms block
+    (RockWeb/Blocks/Event/RegistrationInstanceGroupPlacement.ascx). The Obsidian Group
+    Placement block does not use these selectors. Delete this whole section when the
+    WebForms block is chopped.
+
+    Reason: Restore the WebForms group placement layout after the old Rock theme was removed.
+*/
+
+// Dragula appends the drag mirror to the block instance, outside the panel, so the
+// card styles also target the mirror directly.
+.panel-group-placement .person,
+.person.gu-mirror {
+    display: inline-flex;
+    flex: 0 0 33%;
+    flex-direction: column;
+    max-width: calc(33.333% - var(--spacing-xsmall));
+    margin: 0 var(--spacing-xsmall) var(--spacing-small) 0;
+    color: var(--color-interface-stronger);
+    cursor: grab;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-xsmall);
+    box-shadow: 0 1px 0 var(--color-interface-soft);
+
+    &:hover {
+        background-color: var(--color-interface-softer);
+    }
+
+    &[data-has-placement-error] {
+        color: var(--color-danger-shade);
+        background-color: var(--color-danger-soft);
+        border-color: var(--color-danger-strong);
+    }
+
+    .person-container {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between !important;
+    }
+
+    .details-container {
+        padding: 6px var(--spacing-xsmall);
+        color: var(--color-interface-stronger);
+        background: var(--color-interface-softest);
+        border-bottom-right-radius: var(--rounded-xsmall);
+        border-bottom-left-radius: var(--rounded-xsmall);
+
+        > div {
+            margin-top: var(--spacing-xsmall);
+
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+    }
+
+    dl:not(.dl-horizontal) {
+        margin-bottom: 0;
+        font-size: var(--font-size-small);
+
+        dt {
+            margin-top: var(--spacing-xsmall);
+
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+    }
+
+    .person-name {
+        display: inline-block;
+        padding: 6px var(--spacing-xsmall);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .btn {
+        height: 100%;
+        padding: 5px var(--spacing-xsmall);
+        color: var(--color-interface-soft);
+        background: transparent;
+
+        &:hover,
+        &:focus,
+        &:active:focus {
+            color: var(--color-interface-medium);
+            outline: none;
+        }
+    }
+
+    .dropdown-menu {
+        font-size: var(--font-size-small);
+    }
+}
+
+.person.gu-mirror {
+    max-height: 38px;
+    cursor: grabbing !important;
+    box-shadow: var(--box-shadow);
+    opacity: 1;
+
+    .hide-dragging {
+        display: none;
+    }
+}
+
+.panel-group-placement {
+    // The Full Worksurface layout sizes every .panel.panel-block to the full worksurface height.
+    // That is meant for the block's outer panel only, so the nested registrant and group panels
+    // go back to their natural height and spacing.
+    .panel.panel-block {
+        height: auto;
+        margin-bottom: var(--spacing-large);
+        overflow-y: visible !important;
+    }
+
+    .registrant-search {
+        padding: var(--spacing-small);
+        background: var(--color-interface-softest);
+    }
+
+    .dropzone {
+        &.empty,
+        &:empty {
+            position: relative;
+            padding: 41px var(--spacing-medium);
+            outline-offset: calc(var(--spacing-medium) * -1);
+
+            &::after {
+                position: absolute;
+                top: 50%;
+                left: 0;
+                display: block;
+                width: 100%;
+                font-size: var(--font-size-small);
+                color: var(--color-interface-medium);
+                text-align: center;
+                content: attr(data-empty-label);
+                transform: translateY(-50%);
+            }
+        }
+
+        &.droppable:empty {
+            outline: 2px dashed var(--color-interface-soft);
+        }
+    }
+
+    .placement-capacity-label {
+        &[data-status="over-capacity"] {
+            background-color: var(--color-danger-strong);
+        }
+
+        &[data-status="at-capacity"] {
+            background-color: var(--color-critical-strong);
+        }
+
+        // Capacity is more than 80% full.
+        &[data-status="near-capacity"] {
+            background-color: var(--color-warning-strong);
+        }
+
+        // Capacity is 80% full or less.
+        &[data-status="under-capacity"] {
+            background-color: var(--color-success-strong);
+        }
+
+        // The group has no capacity defined.
+        &[data-status="none"] {
+            display: none;
+        }
+    }
+
+    // Workaround for https://github.com/bevacqua/dragula/issues/421
+    .gu-transit .container {
+        display: none;
+    }
+
+    .group-role-container {
+        display: flex;
+        flex-wrap: wrap;
+
+        // Prevent detail display on drop.
+        .registrant .details-container {
+            display: none;
+        }
+
+        .registrant.gu-transit {
+            max-height: 38px;
+
+            .hide-dragging {
+                display: none;
+            }
+        }
+    }
+
+    .resource-list {
+        position: sticky !important;
+        top: var(--spacing-medium);
+        max-height: calc(100vh - 32px);
+
+        @media (min-width: $screen-medium) {
+            top: calc(#{$navbar-top-height} + var(--spacing-medium));
+            max-height: calc(100vh - 112px);
+        }
+
+        // In the Full Worksurface layout the block scrolls inside its own panel, below the header.
+        .full-work-surface & {
+            top: var(--spacing-medium);
+        }
+
+        // Round the bottom so the shaded scroll list stays inside the panel's corners.
+        .panel-body {
+            position: relative;
+            display: flex !important;
+            flex: 0 1 auto !important;
+            flex-direction: column !important;
+            overflow: hidden;
+            border-bottom-right-radius: inherit;
+            border-bottom-left-radius: inherit;
+        }
+
+        .scroll-list {
+            flex-shrink: 1 !important;
+            flex-grow: 1 !important;
+            height: 100%;
+            min-height: 0;
+            padding: var(--spacing-small) 6px var(--spacing-xsmall) var(--spacing-small);
+            overflow-y: auto;
+            background-color: var(--color-interface-softer);
+        }
+    }
+
+    .registrant-list .person {
+        display: flex;
+        flex-direction: column;
+        min-width: 100%;
+        margin-right: 0;
+
+        .registrant-details {
+            display: block;
+        }
+
+        .dropdown {
+            display: none;
+        }
+    }
+
+    .registrant-list,
+    .placement-groups {
+        .person[data-person-gender="1"] {
+            color: var(--color-gender-male-shade);
+            background-color: var(--color-gender-male-soft);
+            border-color: var(--color-gender-male-strong);
+
+            &:hover {
+                background-color: var(--color-gender-male-tint);
+            }
+        }
+
+        .person[data-person-gender="2"] {
+            color: var(--color-gender-female-shade);
+            background-color: var(--color-gender-female-soft);
+            border-color: var(--color-gender-female-strong);
+
+            &:hover {
+                background-color: var(--color-gender-female-tint);
+            }
+        }
+    }
+
+    .placement-group .panel-drawer > span {
+        display: block;
+        padding: var(--spacing-medium);
+        font-size: var(--font-size-small);
+        background: var(--color-interface-softest);
+        border-bottom: 1px solid var(--color-interface-soft);
+
+        dl {
+            margin-bottom: 0;
+
+            &:empty {
+                display: none;
+            }
+
+            dt {
+                margin-top: var(--spacing-xsmall);
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+    }
+
+    // Move the anchor up so that navigating to a person clears the page header.
+    .person-id-anchor {
+        position: relative;
+        top: -250px;
+        display: block;
+        visibility: hidden;
+    }
+
+    // The inline role panels sit flush inside a placement group panel. They are transparent
+    // so their square corners do not cover the group panel's rounded corners.
+    .panel-inline {
+        margin-bottom: 0 !important;
+        background-color: transparent;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+
+        .panel-heading,
+        .panel-header {
+            padding: var(--spacing-xsmall) var(--spacing-medium);
+            border-radius: 0;
+            background-color: var(--color-interface-softer);
+            border-top: 1px solid var(--color-interface-soft);
+        }
+
+        .panel-title {
+            font-size: var(--font-size-small);
+            font-weight: var(--font-weight-semibold);
+        }
+    }
+
+    .panel-drawer + .group-role-members .panel-heading,
+    .panel-drawer + .group-role-members .panel-header,
+    .group-role-members:first-child .panel-heading,
+    .group-role-members:first-child .panel-header {
+        border-top: 0;
+    }
+
+    .btn-overflow {
+        color: var(--color-interface-medium);
+    }
+
+    .panel-heading .btn-overflow,
+    .panel-header .btn-overflow {
+        width: 20px !important;
+        text-align: right;
+    }
+}
+
+// ======================== END LEGACY GROUP PLACEMENT (WEBFORMS) ========================
