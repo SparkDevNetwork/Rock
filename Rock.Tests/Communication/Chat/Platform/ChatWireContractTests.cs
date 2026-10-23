@@ -27,6 +27,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
+using Rock.Communication.Chat.Platform.Doors;
 
 namespace Rock.Tests.Communication.Chat.Platform
 {
@@ -366,6 +367,51 @@ namespace Rock.Tests.Communication.Chat.Platform
             var codes = contract["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
 
             Assert.IsFalse( codes.Contains( "sync.payload_too_large" ), "the contract still carries a size refusal the ingest can no longer return" );
+        }
+
+        /// <summary>
+        /// The doors refuse a conversation larger, and a name longer, than the platform's own
+        /// limits, read from the contract the platform generates, so the two never hold two values.
+        /// </summary>
+        [TestMethod]
+        public void Limits_TheDoorsGroupSizeAndNameLength_AreTheContractsLimits()
+        {
+            var limits = ReadEmbeddedContract()["limits"];
+
+            Assert.IsNotNull( limits, "the contract carries no limits, so the doors can only hold their own" );
+            Assert.AreEqual( limits["dm_max_others"].Value<int>(), ChatDoorHelper.MaxOthers, "the most people a conversation takes besides its starter" );
+            Assert.AreEqual( limits["dm_name_max_length"].Value<int>(), ChatDoorHelper.MaxNameLength, "the longest name a conversation carries" );
+        }
+
+        /// <summary>
+        /// A limit the contract does not carry is a build that ships without its contract's
+        /// limits, so it fails loudly rather than falling back to a value of Rock's own.
+        /// </summary>
+        [TestMethod]
+        public void Limit_ThatTheContractDoesNotCarry_Throws()
+        {
+            Assert.ThrowsExactly<InvalidOperationException>( () => ChatWireContract.Limit( "no_such_limit" ) );
+        }
+
+        /// <summary>
+        /// Every kind of line the doors post is one the platform's system kind lists, and the doors
+        /// can say every kind it lists, so a line's icon never falls back for a kind Rock forgot.
+        /// </summary>
+        [TestMethod]
+        public void SystemKinds_TheDoorsPost_AreTheContractsSystemKinds()
+        {
+            var listed = ReadEmbeddedContract()["enum_types"]
+                .Children<JObject>()
+                .FirstOrDefault( e => e["name"].Value<string>() == "chat_system_kind" );
+
+            Assert.IsNotNull( listed, "the contract lists no chat_system_kind type" );
+
+            var rockKinds = Enum.GetValues( typeof( ChatDoorHelper.SystemKind ) )
+                .Cast<ChatDoorHelper.SystemKind>()
+                .Select( ChatDoorHelper.ToWire )
+                .ToArray();
+
+            CollectionAssert.AreEquivalent( listed["values"].Select( v => v.Value<string>() ).ToArray(), rockKinds );
         }
         #endregion
     }

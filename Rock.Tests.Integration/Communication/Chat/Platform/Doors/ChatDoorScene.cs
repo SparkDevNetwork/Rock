@@ -490,6 +490,11 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         public string Body { get; set; }
 
         public Guid? SenderAliasGuid { get; set; }
+
+        /// <summary>
+        /// The kind of line it is, as the post named it, or null where the post named none.
+        /// </summary>
+        public string SystemKind { get; set; }
     }
 
     /// <summary>
@@ -564,7 +569,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                     {
                         ChannelGuid = ( Guid ) post["p_channel_id"],
                         Body = ( string ) post["p_body"],
-                        SenderAliasGuid = ( Guid? ) post["p_sender_alias"]
+                        SenderAliasGuid = ( Guid? ) post["p_sender_alias"],
+                        SystemKind = ( string ) post["p_system_kind"]
                     } );
                 }
 

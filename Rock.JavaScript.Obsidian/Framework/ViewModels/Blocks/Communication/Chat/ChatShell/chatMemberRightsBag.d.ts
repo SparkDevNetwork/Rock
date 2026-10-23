@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /**
  * What the person may change about who is in a room, as the screen asks when it opens the
  * room's members. The doors still decide every change.
@@ -31,4 +33,17 @@ export type ChatMemberRightsBag = {
      * channel's members, or being in a group conversation of three or more.
      */
     canManageMembers: boolean;
+
+    /**
+     * Gets or sets whether the person may rename this room: being in a group conversation of
+     * three or more.
+     */
+    canRename: boolean;
+
+    /**
+     * Gets or sets the primary alias of the channel's one remaining leader, whose removal
+     * needs someone named to lead next. Told only to a Chat Administrator, the only person
+     * who may remove a leader, and null where nobody leads or more than one still does.
+     */
+    lastLeaderPersonAliasGuid?: Guid | null;
 };

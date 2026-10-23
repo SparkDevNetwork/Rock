@@ -801,6 +801,27 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             }
         }
 
+        [TestMethod]
+        public void AWorkflowsPostsSayNoKindOfLine()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Announcements" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                scene.Fixture.AddMember( room, ada );
+
+                Assert.AreEqual( "ok", scene.SendWorkflowChannelMessage( room, ada, "Hello" ).Code );
+                Assert.AreEqual( "ok", scene.SendWorkflowChannelMessage( room, null, "Notice" ).Code );
+                Assert.AreEqual( "ok", scene.SendWorkflowDirectMessage( ada, bo, "Hi" ).Code );
+
+                // A kind names a change in who is in a room or what it is called, which a workflow's
+                // message never is, so its line draws as a plain notice.
+                Assert.AreEqual( 3, scene.Platform.Lines.Count );
+                Assert.IsTrue( scene.Platform.Lines.All( l => l.SystemKind == null ) );
+            }
+        }
+
         #endregion A workflow's channel post
 
     }

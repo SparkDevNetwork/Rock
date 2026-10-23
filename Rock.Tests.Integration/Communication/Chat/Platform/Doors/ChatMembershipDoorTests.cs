@@ -1023,6 +1023,99 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void TheRenameRightFollowsTheRenameDoorsRule()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var dee = scene.AddChatPerson( "Dee" );
+                var lee = scene.AddChatPerson( "Lee" );
+                var admin = scene.AddChatPerson( "Admin" );
+                scene.MakeChatAdministrator( admin );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                var pair = scene.Start( ada, scene.Alias( bo ) ).ChannelGuid.Value;
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ) ).ChannelGuid.Value;
+
+                Assert.IsTrue( scene.Rights( cy, group ).CanRename, "a member of a group conversation of three" );
+                Assert.IsFalse( scene.Rights( ada, pair ).CanRename, "a conversation of two is titled by the other person" );
+                Assert.IsFalse( scene.Rights( lee, room ).CanRename, "a channel's name is staff's, in Rock" );
+                Assert.IsFalse( scene.Rights( admin, room ).CanRename, "not even a Chat Administrator's" );
+                Assert.IsFalse( scene.Rights( dee, group ).CanRename, "someone not in the conversation" );
+                Assert.IsFalse( scene.Rights( ada, Guid.NewGuid() ).CanRename, "nothing at all" );
+
+                // The answer is the door's own: where it says yes the door renames, and where it says
+                // no the door refuses.
+                Assert.AreEqual( "ok", scene.Rename( cy, group, "Trip" ).Code );
+                Assert.AreNotEqual( "ok", scene.Rename( ada, pair, "Us" ).Code );
+                Assert.AreNotEqual( "ok", scene.Rename( dee, group, "Mine" ).Code );
+            }
+        }
+
+        [TestMethod]
+        public void TheLastLeaderIsNamedToAChatAdministratorOnly()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var admin = scene.AddChatPerson( "Admin" );
+                var lee = scene.AddChatPerson( "Lee" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var bea = scene.AddChatPerson( "Bea" );
+                var di = scene.AddChatPerson( "Di" );
+                scene.MakeChatAdministrator( admin );
+                var manager = scene.AddManagerRole();
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+
+                var sole = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Sole" );
+                scene.Fixture.AddMember( sole, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( sole, di );
+                scene.Fixture.AddMember( sole, lee, m => m.GroupRoleId = manager );
+
+                var shared = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Shared" );
+                scene.Fixture.AddMember( shared, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( shared, bo, m => m.GroupRoleId = leader );
+
+                var oneListed = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "One listed" );
+                scene.Fixture.AddMember( oneListed, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( oneListed, bea, m => m.GroupRoleId = leader );
+                scene.AddToBanList( bea );
+
+                var unled = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Unled" );
+                scene.Fixture.AddMember( unled, di );
+
+                Assert.AreEqual( scene.Alias( ada ), scene.Rights( admin, sole ).LastLeaderPersonAliasGuid, "the sole leader, who needs a successor to be removed" );
+                Assert.IsNull( scene.Rights( admin, shared ).LastLeaderPersonAliasGuid, "a second listed leader keeps the room led" );
+                Assert.AreEqual( scene.Alias( ada ), scene.Rights( admin, oneListed ).LastLeaderPersonAliasGuid, "a leader on the Chat Ban List leads nobody in chat" );
+                Assert.IsNull( scene.Rights( admin, unled ).LastLeaderPersonAliasGuid, "nobody leads" );
+                Assert.IsNull( scene.Rights( lee, sole ).LastLeaderPersonAliasGuid, "a manager who is not a Chat Administrator removes no leader, so is not told" );
+                Assert.IsNull( scene.Rights( di, sole ).LastLeaderPersonAliasGuid, "a member" );
+
+                // The answer is the remove door's own: the leader it names needs a successor there.
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, sole, scene.Alias( ada ) ).Code );
+                Assert.AreEqual( "door.bad_request", scene.Remove( admin, oneListed, scene.Alias( ada ) ).Code );
+            }
+        }
+
+        [TestMethod]
+        public void AConversationHasNoLastLeader()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                scene.MakeChatAdministrator( ada );
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ) ).ChannelGuid.Value;
+
+                Assert.IsNull( scene.Rights( ada, group ).LastLeaderPersonAliasGuid, "only a shared channel has leaders" );
+            }
+        }
+
+        [TestMethod]
         public void TheSessionSaysWhoIsAChatAdministrator()
         {
             using ( var scene = new ChatDoorScene() )
@@ -1100,6 +1193,51 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         #endregion Rename
+
+        #region The kind of each line
+
+        [TestMethod]
+        public void EachDoorsLineSaysWhatKindOfLineItIs()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var dee = scene.AddChatPerson( "Dee", isOpenDmAllowed: true );
+                var eve = scene.AddChatPerson( "Eve", isOpenDmAllowed: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ), scene.Alias( dee ) ).ChannelGuid.Value;
+
+                Assert.AreEqual( "ok", scene.Join( ada, room ).Code );
+                Assert.AreEqual( "ok", scene.Add( ada, group, scene.Alias( eve ) ).Code );
+                Assert.AreEqual( "ok", scene.Leave( dee, group ).Code );
+                Assert.AreEqual( "ok", scene.Remove( ada, group, scene.Alias( eve ) ).Code );
+                Assert.AreEqual( "ok", scene.Rename( bo, group, "Trip" ).Code );
+                Assert.AreEqual( "ok", scene.Rename( bo, group, " " ).Code );
+
+                var lines = scene.Platform.Lines;
+                Assert.AreEqual( "joined", lines.Single( l => l.ChannelGuid == room ).SystemKind );
+
+                var groupLines = lines.Where( l => l.ChannelGuid == group ).ToList();
+                CollectionAssert.AreEqual(
+                    new[]
+                    {
+                        $"{scene.Name( ada )} added {scene.Name( eve )}.",
+                        $"{scene.Name( dee )} left the conversation.",
+                        $"{scene.Name( ada )} removed {scene.Name( eve )}.",
+                        $"{scene.Name( bo )} named the conversation Trip.",
+                        $"{scene.Name( bo )} removed the conversation's name."
+                    },
+                    groupLines.Select( l => l.Body ).ToArray() );
+
+                // Clearing the name reads "removed", but it is a rename, not someone taken out.
+                CollectionAssert.AreEqual( new[] { "added", "left", "removed", "renamed", "renamed" }, groupLines.Select( l => l.SystemKind ).ToArray() );
+                Assert.IsTrue( lines.All( l => l.SenderAliasGuid == null ), "a line with a kind is under nobody" );
+            }
+        }
+
+        #endregion The kind of each line
 
         #region Every door
 

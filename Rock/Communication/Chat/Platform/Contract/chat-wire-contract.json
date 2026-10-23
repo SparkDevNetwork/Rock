@@ -346,6 +346,17 @@
         "mentions",
         "silent"
       ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_system_kind",
+      "values": [
+        "joined",
+        "left",
+        "added",
+        "removed",
+        "renamed"
+      ]
     }
   ],
   "error_codes": {
@@ -419,5 +430,16 @@
       "push.no_credential",
       "push.provider_failed"
     ]
+  },
+  "limits": {
+    "dm_max_others": 8,
+    "dm_name_max_length": 100,
+    "body_max_length": 5000,
+    "history_page_size": 50,
+    "member_page_size": 50,
+    "mention_page_size": 30,
+    "thread_page_size": 30,
+    "directory_page_size": 50,
+    "people_search_size": 10
   }
 }

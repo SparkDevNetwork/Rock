@@ -176,7 +176,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // The database change is complete; a slow platform must not hold the room's lock.
-            return await FinishAsync( context.Configuration, rockContext, channelGuid, line ).ConfigureAwait( false );
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, line, SystemKind.Removed ).ConfigureAwait( false );
         }
 
         /// <summary>
@@ -222,6 +222,25 @@ namespace Rock.Communication.Chat.Platform.Doors
             var leaders = leaderPersonIds.ToList();
             return leaders.Contains( targetPersonId )
                 && !leaders.Any( id => id != targetPersonId && live.Contains( id ) && !unlisted.Contains( id ) );
+        }
+
+        /// <summary>
+        /// The leader the remove door would ask a successor for: the one leader of the channel chat
+        /// still shows in the room, by the rule <see cref="IsLastLeader"/> applies to a removal.
+        /// </summary>
+        /// <param name="leaderPersonIds">Everyone holding a live leader membership in Rock.</param>
+        /// <param name="live">Who the platform has in the room.</param>
+        /// <param name="unlisted">Who chat does not list.</param>
+        /// <returns>The last leader, or null where none leads or more than one still does.</returns>
+        internal static int? LastLeaderOf( IEnumerable<int> leaderPersonIds, ISet<int> live, ISet<int> unlisted )
+        {
+            var leaders = leaderPersonIds.ToList();
+
+            // Someone not shown in the room is nobody the remove door takes out, so never the answer.
+            return leaders
+                .Where( id => live.Contains( id ) && !unlisted.Contains( id ) )
+                .Select( id => ( int? ) id )
+                .FirstOrDefault( id => IsLastLeader( id.Value, leaders, live, unlisted ) );
         }
 
         /// <summary>

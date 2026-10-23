@@ -115,6 +115,27 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
             Assert.IsTrue( ChatDoorHelper.IsLastLeader( 1, Leaders, live: new HashSet<int> { 1, 2, 4 }, unlisted: new HashSet<int> { 2, 4 } ) );
         }
 
+        [TestMethod]
+        public void TheScreenIsToldTheOneLeaderChatStillShowsInTheRoom()
+        {
+            // Of the four, only Ada (1) is in the room and listed, so removing her needs a successor.
+            Assert.AreEqual( 1, ChatDoorHelper.LastLeaderOf( Leaders, live: new HashSet<int> { 1, 2, 4 }, unlisted: new HashSet<int> { 2, 4 } ) );
+        }
+
+        [TestMethod]
+        public void TheScreenIsToldNoLastLeaderWhereTwoStillLead()
+        {
+            Assert.IsNull( ChatDoorHelper.LastLeaderOf( Leaders, live: new HashSet<int> { 1, 2 }, unlisted: new HashSet<int>() ) );
+        }
+
+        [TestMethod]
+        public void TheScreenIsToldNoLastLeaderWhereNobodyChatShowsLeads()
+        {
+            // A leader row of someone not in the room is nobody the remove door could take out.
+            Assert.IsNull( ChatDoorHelper.LastLeaderOf( Leaders, live: new HashSet<int> { 2, 9 }, unlisted: new HashSet<int> { 2 } ) );
+            Assert.IsNull( ChatDoorHelper.LastLeaderOf( new int[0], live: new HashSet<int> { 9 }, unlisted: new HashSet<int>() ) );
+        }
+
         #endregion Who counts as the last leader
 
         #region The role the next leader takes

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
 {
     /// <summary>
@@ -27,5 +29,18 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// channel's members, or being in a group conversation of three or more.
         /// </summary>
         public bool CanManageMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the person may rename this room: being in a group conversation of
+        /// three or more.
+        /// </summary>
+        public bool CanRename { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary alias of the channel's one remaining leader, whose removal
+        /// needs someone named to lead next. Told only to a Chat Administrator, the only person
+        /// who may remove a leader, and null where nobody leads or more than one still does.
+        /// </summary>
+        public Guid? LastLeaderPersonAliasGuid { get; set; }
     }
 }

@@ -569,9 +569,10 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <param name="channelGuid">The channel, which is the chat group's Guid.</param>
             /// <param name="body">The message.</param>
             /// <param name="senderAliasGuid">The primary alias the message is under, or null for a system line.</param>
+            /// <param name="systemKind">What a system line is about, as the platform names it, or null where it names nothing.</param>
             /// <param name="cancellationToken">Ends the post when its time is up.</param>
             /// <returns>The message's id, or the platform's code and sentence for why there is none. Never an exception.</returns>
-            public async Task<(long? Id, string Code, string Message)> SendSystemMessageAsync( Guid channelGuid, string body, Guid? senderAliasGuid, CancellationToken cancellationToken )
+            public async Task<(long? Id, string Code, string Message)> SendSystemMessageAsync( Guid channelGuid, string body, Guid? senderAliasGuid, string systemKind, CancellationToken cancellationToken )
             {
                 try
                 {
@@ -586,6 +587,13 @@ namespace Rock.Communication.Chat.Platform.Sync
                         ["p_body"] = body,
                         ["p_sender_alias"] = senderAliasGuid.HasValue ? senderAliasGuid.Value.ToString( "D" ) : null
                     };
+
+                    // Named only when there is one, so a post that names none, a workflow's, reads
+                    // the same to a platform of any version.
+                    if ( systemKind != null )
+                    {
+                        request["p_system_kind"] = systemKind;
+                    }
 
                     var content = new StringContent( request.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
 

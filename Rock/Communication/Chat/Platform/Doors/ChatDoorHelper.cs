@@ -24,9 +24,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Humanizer;
+
 using Microsoft.Extensions.Logging;
 
 using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
@@ -56,16 +59,10 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// </summary>
         internal const string OkCode = "ok";
 
-        // A conversation holds nine people, the one starting it included.
-        internal const int MaxOthers = 8;
-
         // The platform's names for the kinds of channel a door tells apart.
         private const string SharedChannelType = "shared";
 
         private const string DirectChannelType = "dm";
-
-        // The longest name a conversation carries, Rock's own width for a group's name.
-        private const int MaxNameLength = 100;
 
         // Rock requires a group name, and the platform treats this one as no name at all.
         private const string DirectMessageName = "Chat Direct Message";
@@ -77,7 +74,60 @@ namespace Rock.Communication.Chat.Platform.Doors
         // The immediate sync's own background timeout, so a workflow waits as long as a push may take.
         private static readonly TimeSpan WorkflowWait = TimeSpan.FromSeconds( 10 );
 
+        // The platform's limits rather than Rock's own, so a door refuses exactly what the platform
+        // and every client do: the most people a conversation takes besides the one starting it,
+        // and the longest name it carries.
+        internal static readonly int MaxOthers = ChatWireContract.Limit( "dm_max_others" );
+
+        internal static readonly int MaxNameLength = ChatWireContract.Limit( "dm_name_max_length" );
+
         #endregion Constants
+
+        #region System line kinds
+
+        /// <summary>
+        /// What a system line a door posts is about, which the platform stores beside the line so
+        /// every client draws its mark from the kind rather than from the line's English.
+        /// </summary>
+        internal enum SystemKind
+        {
+            /// <summary>
+            /// Someone joined a channel.
+            /// </summary>
+            Joined,
+
+            /// <summary>
+            /// Someone left a group conversation.
+            /// </summary>
+            Left,
+
+            /// <summary>
+            /// Someone added people.
+            /// </summary>
+            Added,
+
+            /// <summary>
+            /// Someone removed a person.
+            /// </summary>
+            Removed,
+
+            /// <summary>
+            /// Someone named a group conversation or cleared its name.
+            /// </summary>
+            Renamed
+        }
+
+        /// <summary>
+        /// The kind as the platform names it.
+        /// </summary>
+        /// <param name="kind">The kind.</param>
+        /// <returns>The platform's name for it.</returns>
+        internal static string ToWire( SystemKind kind )
+        {
+            return kind.ToString().ToLowerInvariant();
+        }
+
+        #endregion System line kinds
 
         #region The door
 
@@ -108,7 +158,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             var requested = ( personAliasGuids ?? Enumerable.Empty<Guid>() ).Distinct().ToList();
             if ( requested.Count == 0 || requested.Count > MaxOthers )
             {
-                return Refuse( "door.bad_request", "Choose between one and eight people." );
+                return Refuse( "door.bad_request", ChooseBetweenSentence() );
             }
 
             var chosen = new PersonAliasService( rockContext ).Queryable()
@@ -319,7 +369,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             AddOrRestoreMember( rockContext, room.GroupId, caller.Id );
             rockContext.SaveChanges();
 
-            return await FinishAsync( context.Configuration, rockContext, channelGuid, caller.FullName + " joined the channel." ).ConfigureAwait( false );
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, caller.FullName + " joined the channel.", SystemKind.Joined ).ConfigureAwait( false );
         }
 
         /// <summary>
@@ -371,7 +421,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             RemoveMember( rockContext, room.GroupId, caller.Id );
             rockContext.SaveChanges();
 
-            return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " left the conversation." : null ).ConfigureAwait( false );
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " left the conversation." : null, SystemKind.Left ).ConfigureAwait( false );
         }
 
         /// <summary>
@@ -395,7 +445,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             var requested = ( personAliasGuids ?? Enumerable.Empty<Guid>() ).Distinct().ToList();
             if ( requested.Count == 0 || requested.Count > MaxOthers )
             {
-                return Membership( "door.bad_request", "Choose between one and eight people." );
+                return Membership( "door.bad_request", ChooseBetweenSentence() );
             }
 
             var chosen = new PersonAliasService( rockContext ).Queryable()
@@ -430,7 +480,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             var newcomers = others.Where( o => !room.LivePersonIds.Contains( o.PersonId ) ).ToList();
             if ( isDirect && room.PersonCount + newcomers.Count > MaxOthers + 1 )
             {
-                return Membership( "door.bad_request", "A conversation holds at most nine people." );
+                return Membership( "door.bad_request", $"A conversation holds at most {( MaxOthers + 1 ).ToWords()} people." );
             }
 
             // Everyone is checked before anyone is added, so a refusal adds nobody.
@@ -487,12 +537,13 @@ namespace Rock.Communication.Chat.Platform.Doors
             rockContext.SaveChanges();
 
             var names = newcomers.Select( n => people.First( p => p.Id == n.PersonId ).FullName ).ToList();
-            return await FinishAsync( context.Configuration, rockContext, channelGuid, caller.FullName + " added " + JoinNames( names ) + "." ).ConfigureAwait( false );
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, caller.FullName + " added " + JoinNames( names ) + ".", SystemKind.Added ).ConfigureAwait( false );
         }
 
         /// <summary>
-        /// Whether the caller may add and remove people in a room, by the rule the add and remove
-        /// doors apply, so the screen offers only what those doors would allow.
+        /// What the caller may change about a room, by the rules the add, remove and rename doors
+        /// apply, and for a Chat Administrator which leader the remove door would ask a successor
+        /// for, so the screen offers only what those doors would allow.
         /// </summary>
         /// <param name="caller">The person asking.</param>
         /// <param name="channelGuid">The channel, as the browser names it.</param>
@@ -507,11 +558,30 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return new ChatMemberRightsBag();
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            // Only a Chat Administrator may remove a leader, so only they pay for reading the
+            // leaders. No person has id zero, so every leader read counts as one the projection
+            // confirms, the same few a removal would ask about.
+            var leaderIds = ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext )
+                ? ReadLeaders( rockContext, channelGuid, 0 ).OtherLeaderIds
+                : new List<int>();
+
+            // One projection call, the leaders asked about beside the caller.
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, leaderIds.Concat( new[] { caller.Id } ).ToList() );
+            if ( room == null )
+            {
+                return new ChatMemberRightsBag();
+            }
+
+            // Only a shared channel has leaders; a conversation's members are all alike.
+            var lastLeaderId = room.Channel.ChannelType == SharedChannelType
+                ? LastLeaderOf( leaderIds, room.LivePersonIds, room.UnlistedPersonIds )
+                : null;
 
             return new ChatMemberRightsBag
             {
-                CanManageMembers = room != null && RefuseManaging( rockContext, room, caller, null ) == null
+                CanManageMembers = RefuseManaging( rockContext, room, caller, null ) == null,
+                CanRename = RefuseRenaming( room, caller ) == null,
+                LastLeaderPersonAliasGuid = lastLeaderId.HasValue ? new PersonAliasService( rockContext ).GetPrimaryAliasGuid( lastLeaderId.Value ) : null
             };
         }
 
@@ -539,26 +609,16 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.not_found", "That conversation could not be found." );
             }
 
-            // A channel's name is staff's, set in Rock.
-            if ( room.Channel.ChannelType != DirectChannelType )
+            var refusal = RefuseRenaming( room, caller );
+            if ( refusal != null )
             {
-                return Membership( "door.not_allowed", "Only a group conversation can be renamed here." );
-            }
-
-            if ( !room.LivePersonIds.Contains( caller.Id ) )
-            {
-                return Membership( "door.not_member", "You're not in this conversation." );
-            }
-
-            if ( room.PersonCount <= 2 )
-            {
-                return Membership( "door.not_allowed", "A conversation of two is named by the other person." );
+                return refusal;
             }
 
             var trimmed = ( name ?? string.Empty ).Trim();
             if ( trimmed.Length > MaxNameLength )
             {
-                return Membership( "door.bad_request", "A name is at most 100 characters." );
+                return Membership( "door.bad_request", $"A name is at most {MaxNameLength} characters." );
             }
 
             // Rock requires a name, and chat reads its placeholder as none, showing the members' names.
@@ -571,7 +631,8 @@ namespace Rock.Communication.Chat.Platform.Doors
                 ? caller.FullName + " removed the conversation's name."
                 : caller.FullName + " named the conversation " + trimmed + ".";
 
-            return await FinishAsync( context.Configuration, rockContext, channelGuid, line ).ConfigureAwait( false );
+            // Clearing the name reads "removed", yet it is a rename like any other.
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, line, SystemKind.Renamed ).ConfigureAwait( false );
         }
 
         #endregion The membership doors
@@ -757,7 +818,7 @@ namespace Rock.Communication.Chat.Platform.Doors
         {
             using ( var timeout = new CancellationTokenSource( Remaining( stopwatch ) ) )
             {
-                var answer = await ChatPlatformSyncHelper.SendSystemMessageAsync( configuration, channelGuid, body, senderAliasGuid, timeout.Token ).ConfigureAwait( false );
+                var answer = await ChatPlatformSyncHelper.SendSystemMessageAsync( configuration, channelGuid, body, senderAliasGuid, null, timeout.Token ).ConfigureAwait( false );
 
                 // The platform's own code and sentence pass through, so the workflow log says why.
                 if ( !answer.Id.HasValue )
@@ -1121,6 +1182,29 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
+        /// Why the caller may not rename this room: only a group conversation of three or more is
+        /// renamed here, by someone in it.
+        /// </summary>
+        /// <returns>The refusal, or null where they may.</returns>
+        private static ChatMembershipResultBag RefuseRenaming( RoomRead room, Person caller )
+        {
+            // A channel's name is staff's, set in Rock.
+            if ( room.Channel.ChannelType != DirectChannelType )
+            {
+                return Membership( "door.not_allowed", "Only a group conversation can be renamed here." );
+            }
+
+            if ( !room.LivePersonIds.Contains( caller.Id ) )
+            {
+                return Membership( "door.not_member", "You're not in this conversation." );
+            }
+
+            return room.PersonCount <= 2
+                ? Membership( "door.not_allowed", "A conversation of two is named by the other person." )
+                : null;
+        }
+
+        /// <summary>
         /// Puts a person in a group in the type's default role, using a row they already hold,
         /// archived or inactive, so a return never leaves two side by side. Unsaved.
         /// </summary>
@@ -1230,8 +1314,9 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="rockContext">The context the change was saved in, whose push is awaited.</param>
         /// <param name="channelGuid">The channel the line goes to.</param>
         /// <param name="line">The line, or null where this change posts none.</param>
+        /// <param name="kind">What the line is about.</param>
         /// <returns>Done, and whether the platform had taken the change yet.</returns>
-        private static async Task<ChatMembershipResultBag> FinishAsync( ChatPlatformConfiguration configuration, RockContext rockContext, Guid channelGuid, string line )
+        private static async Task<ChatMembershipResultBag> FinishAsync( ChatPlatformConfiguration configuration, RockContext rockContext, Guid channelGuid, string line, SystemKind kind )
         {
             var push = await ChatPlatformSyncHelper.FlushAsync( rockContext ).ConfigureAwait( false );
 
@@ -1241,7 +1326,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 // cannot take is logged and the door still answers that it is done.
                 using ( var timeout = new CancellationTokenSource( ChatPlatformSyncHelper.AwaitedPushBudget ) )
                 {
-                    var answer = await ChatPlatformSyncHelper.SendSystemMessageAsync( configuration, channelGuid, line, null, timeout.Token ).ConfigureAwait( false );
+                    var answer = await ChatPlatformSyncHelper.SendSystemMessageAsync( configuration, channelGuid, line, null, ToWire( kind ), timeout.Token ).ConfigureAwait( false );
                     if ( !answer.Id.HasValue )
                     {
                         RockLogger.LoggerFactory.CreateLogger( typeof( ChatDoorHelper ).FullName )
@@ -1265,6 +1350,14 @@ namespace Rock.Communication.Chat.Platform.Doors
             return names.Count == 1
                 ? names[0]
                 : string.Join( ", ", names.Take( names.Count - 1 ) ) + " and " + names.Last();
+        }
+
+        /// <summary>
+        /// The sentence refusing an add of nobody, or of more people than a conversation takes at once.
+        /// </summary>
+        private static string ChooseBetweenSentence()
+        {
+            return $"Choose between one and {MaxOthers.ToWords()} people.";
         }
 
         #endregion The membership read and writes

@@ -734,11 +734,12 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="channelGuid">The channel, which is the chat group's Guid.</param>
         /// <param name="body">The message.</param>
         /// <param name="senderAliasGuid">The primary alias the message is under, or null for a system line.</param>
+        /// <param name="systemKind">What a system line is about, as the platform names it, or null where it names nothing.</param>
         /// <param name="cancellationToken">Ends the post when its time is up.</param>
         /// <returns>The message's id, or the platform's code and sentence for why there is none.</returns>
-        internal static Task<(long? Id, string Code, string Message)> SendSystemMessageAsync( ChatPlatformConfiguration configuration, Guid channelGuid, string body, Guid? senderAliasGuid, CancellationToken cancellationToken )
+        internal static Task<(long? Id, string Code, string Message)> SendSystemMessageAsync( ChatPlatformConfiguration configuration, Guid channelGuid, string body, Guid? senderAliasGuid, string systemKind, CancellationToken cancellationToken )
         {
-            return TransportFor( configuration ).SendSystemMessageAsync( channelGuid, body, senderAliasGuid, cancellationToken );
+            return TransportFor( configuration ).SendSystemMessageAsync( channelGuid, body, senderAliasGuid, systemKind, cancellationToken );
         }
 
         /// <summary>

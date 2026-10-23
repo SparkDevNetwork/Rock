@@ -78,6 +78,12 @@ namespace Rock.Communication.Chat.Platform.Contract
         /// </summary>
         private static readonly string _computedHash;
 
+        /// <summary>
+        /// The platform's limits, such as the most people a conversation holds, or null where the
+        /// artifact carries none.
+        /// </summary>
+        private static readonly JObject _limits;
+
         #endregion
 
         #region Constructors
@@ -93,6 +99,7 @@ namespace Rock.Communication.Chat.Platform.Contract
 
             _publishedHash = contract["wire_hash"].Value<string>();
             _computedHash = HashColumnLists( contract );
+            _limits = contract["limits"] as JObject;
         }
 
         #endregion
@@ -128,6 +135,28 @@ namespace Rock.Communication.Chat.Platform.Contract
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// One of the platform's limits, which the platform enforces and every client reads, so a
+        /// door here refuses exactly what the platform would.
+        /// </summary>
+        /// <param name="name">The limit, as the artifact names it.</param>
+        /// <returns>The limit.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the artifact does not carry the limit, which is a build shipped with the wrong
+        /// artifact rather than a runtime condition: a value of Rock's own would be a second copy that
+        /// silently drifts from the platform's.
+        /// </exception>
+        internal static int Limit( string name )
+        {
+            var value = _limits?[name];
+            if ( value == null || value.Type != JTokenType.Integer )
+            {
+                throw new InvalidOperationException( string.Format( "The chat wire contract carries no {0} limit.", name ) );
+            }
+
+            return value.Value<int>();
+        }
 
         /// <summary>
         /// Reads the artifact out of this assembly's manifest.
