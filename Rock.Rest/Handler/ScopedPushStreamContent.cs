@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Net;
+
 namespace Rock.Rest.Handler
 {
     /// <summary>
@@ -31,12 +33,14 @@ namespace Rock.Rest.Handler
     sealed class ScopedPushStreamContent : PushStreamContent
     {
         private readonly IServiceScope _scope;
+        private readonly RockRequestContext _rockRequestContext;
         private readonly PushStreamContent _innerContent;
 
-        public ScopedPushStreamContent( IServiceScope scope, PushStreamContent innerContent )
+        public ScopedPushStreamContent( IServiceScope scope, RockRequestContext rockRequestContext, PushStreamContent innerContent )
             : base( ( _, __, ___ ) => { } )
         {
             _scope = scope;
+            _rockRequestContext = rockRequestContext;
             _innerContent = innerContent;
 
             // Copy headers from original content
@@ -48,12 +52,30 @@ namespace Rock.Rest.Handler
 
         protected override async Task SerializeToStreamAsync( Stream stream, TransportContext context )
         {
+            // The content is written by Web API after ServiceScopeHandler has
+            // returned, so the AsyncLocal holding the RockRequestContext did
+            // not flow to us. Restore it so code running while the stream is
+            // written (such as RockContext.SaveChanges looking for the current
+            // person to set ModifiedByPersonAliasId) sees the same request.
+            var internalAccessor = _scope.ServiceProvider.GetRequiredService<IRockRequestContextAccessor>() as RockRequestContextAccessor;
+            var isRequestContextRestored = internalAccessor != null && internalAccessor.RockRequestContext == null;
+
+            if ( isRequestContextRestored )
+            {
+                internalAccessor.RockRequestContext = _rockRequestContext;
+            }
+
             try
             {
                 await _innerContent.CopyToAsync( stream, context );
             }
             finally
             {
+                if ( isRequestContextRestored && ReferenceEquals( internalAccessor.RockRequestContext, _rockRequestContext ) )
+                {
+                    internalAccessor.RockRequestContext = null;
+                }
+
                 _scope.Dispose();
             }
         }
