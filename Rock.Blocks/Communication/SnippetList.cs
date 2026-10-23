@@ -182,6 +182,24 @@ namespace Rock.Blocks.Communication
         }
 
         /// <inheritdoc/>
+        protected override List<Snippet> GetListItems( IQueryable<Snippet> queryable, RockContext rockContext )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            /*
+                10/23/2026 - MSE
+
+                Check each snippet before exposing its fields in a grid row.
+                Page and block access do not grant access to every snippet.
+
+                Reason: Respect snippet View authorization.
+            */
+            return base.GetListItems( queryable, rockContext )
+                .Where( s => s.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Snippet> GetGridBuilder()
         {
             return new GridBuilder<Snippet>()
