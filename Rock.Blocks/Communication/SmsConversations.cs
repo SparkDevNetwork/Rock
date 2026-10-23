@@ -1040,12 +1040,13 @@ namespace Rock.Blocks.Communication
 
                 request.IfValidProperty( nameof( request.Bag.Text ), () =>
                 {
+                    var sanitizedText = NoteService.SanitizeNoteText( request.Bag.Text );
                     var noteTypeCache = NoteTypeCache.Get( note.NoteTypeId );
                     if ( noteTypeCache.FormatType != NoteFormatType.Unstructured && noteTypeCache.IsMentionEnabled )
                     {
-                        mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( request.Bag.Text, note.Text );
+                        mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( sanitizedText, note.Text );
                     }
-                    note.Text = request.Bag.Text;
+                    note.Text = sanitizedText;
                 } );
 
                 request.IfValidProperty( nameof( request.Bag.IsAlert ),
