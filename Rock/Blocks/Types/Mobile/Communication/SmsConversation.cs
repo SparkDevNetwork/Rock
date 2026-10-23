@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks.Mobile.Communication.SmsConversation;
 using Rock.ViewModels.Communication;
 using Rock.ViewModels.Utility;
@@ -69,6 +70,13 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Key = AttributeKey.DatabaseTimeoutSeconds,
         Order = 2 )]
 
+    [BooleanField( "Allow Unrestricted Uploads",
+        Description = "If true, anyone with access to send messages can upload images or files. Otherwise, it'll use the permissions set for Communication Attachment binary file type.",
+        IsRequired = false,
+        DefaultValue = "True",
+        Key = AttributeKey.AllowUnrestrictedUploads,
+        Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "99812f83-b514-4a76-a79d-01a97369f726" )]
@@ -82,6 +90,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// </summary>
         private static class AttributeKey
         {
+            public const string AllowUnrestrictedUploads = "AllowUnrestrictedUploads";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
             public const string MessageCount = "MessageCount";
             public const string SnippetType = "SnippetType";
@@ -432,6 +441,62 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return ActionInternalServerError( "Unexpected error encountered when trying to send message." );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the security grant token the device sends with attachment
+        /// uploads for the specified conversation. The token lets anyone who
+        /// can send messages from the Rock phone number upload a
+        /// Communication Attachment file, unless unrestricted uploads are
+        /// turned off for the block.
+        /// </summary>
+        /// <param name="conversationKey">The conversation key the attachment will be sent to.</param>
+        /// <returns>The security grant token, or <c>null</c> if the normal Communication Attachment permissions apply.</returns>
+        [BlockAction]
+        public BlockActionResult GetAttachmentUploadToken( string conversationKey )
+        {
+            var rockPhoneNumberGuid = CommunicationService.GetRockPhoneNumberGuidForConversationKey( conversationKey );
+
+            if ( !rockPhoneNumberGuid.HasValue )
+            {
+                return ActionBadRequest( "Invalid conversation." );
+            }
+
+            var rockPhoneNumber = SystemPhoneNumberCache.Get( rockPhoneNumberGuid.Value );
+
+            if ( rockPhoneNumber == null )
+            {
+                return ActionNotFound( "Rock phone number was not found." );
+            }
+
+            if ( !rockPhoneNumber.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to view messages for this phone number." );
+            }
+
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionBadRequest( "Must be logged in to send messages." );
+            }
+
+            if ( !GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
+            {
+                return ActionOk( ( string ) null );
+            }
+
+            var binaryFileType = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+            var binaryFileTypeEntityTypeId = EntityTypeCache.GetId<BinaryFileType>();
+
+            if ( binaryFileType == null || !binaryFileTypeEntityTypeId.HasValue )
+            {
+                return ActionOk( ( string ) null );
+            }
+
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileTypeEntityTypeId.Value, binaryFileType.Id, Rock.Security.Authorization.EDIT ) );
+
+            return ActionOk( securityGrant.ToToken() );
         }
 
         /// <summary>
