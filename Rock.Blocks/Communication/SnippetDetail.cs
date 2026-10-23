@@ -182,7 +182,27 @@ namespace Rock.Blocks.Communication
             }
 
             var snippetType = GetSnippetType();
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || snippetType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            /*
+                10/23/2026 - MSE
+
+                Snippet authorization already checks its type when no rule matches.
+                A type allowance must not override a snippet denial.
+
+                Reason: Respect snippet View authorization.
+            */
+            var currentPerson = RequestContext.CurrentPerson;
+
+            /*
+                10/23/2026 - MSE
+
+                Personal snippets require an identified owner. The model's
+                owner override does not exclude an anonymous person.
+
+                Reason: Keep personal snippets visible only to their owner.
+            */
+            var isPersonalViewable = !entity.OwnerPersonAliasId.HasValue
+                || ( currentPerson != null && entity.OwnerPersonAlias?.PersonId == currentPerson.Id );
+            var isViewable = isPersonalViewable && entity.IsAuthorized( Authorization.VIEW, currentPerson );
 
             entity.LoadAttributes( RockContext );
 
