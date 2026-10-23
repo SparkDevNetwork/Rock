@@ -25,6 +25,9 @@ using Newtonsoft.Json;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Rest.Filters;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -40,10 +43,16 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
+        [Authenticate]
         [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
         [Rock.SystemGuid.RestActionGuid( "B67ED75B-94AB-49B7-9E36-84B845FB20D3" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
+            if ( !CanViewDashboardWidgetBlock( BlockCache.Get( blockId ), GetPerson() ) )
+            {
+                return GetBlockNotFoundHtml( blockId );
+            }
+
             RockContext rockContext = this.Service.Context as RockContext ?? RockApp.Current.CreateRockContext();
             Block block = new BlockService( rockContext ).Get( blockId );
             if ( block != null )
@@ -64,7 +73,7 @@ namespace Rock.Rest.Controllers
 
                 if ( metrics.Count() == 0 )
                 {
-                    return @"<div class='alert alert-warning'> 
+                    return @"<div class='alert alert-warning'>
 								Please select a metric in the block settings.
 							</div>";
                 }
@@ -169,8 +178,49 @@ namespace Rock.Rest.Controllers
                 return resultHtml;
             }
 
+            return GetBlockNotFoundHtml( blockId );
+        }
+
+        /// <summary>
+        /// Determines whether the person can view the block as a Lava Dashboard Widget. Matches
+        /// the page rendering rules: block VIEW, EDIT or ADMINISTRATE plus page VIEW.
+        /// </summary>
+        /// <param name="blockCache">The block, or <c>null</c> if it was not found.</param>
+        /// <param name="person">The current person, or <c>null</c> if anonymous.</param>
+        /// <returns><c>true</c> if the block is a Lava Dashboard Widget the person can view; otherwise <c>false</c>.</returns>
+        private static bool CanViewDashboardWidgetBlock( BlockCache blockCache, Person person )
+        {
+            if ( blockCache == null || blockCache.BlockType?.Guid != Rock.SystemGuid.BlockType.REPORTING_LAVA_DASHBOARD_WIDGET.AsGuid() )
+            {
+                return false;
+            }
+
+            var canViewBlock = blockCache.IsAuthorized( Authorization.VIEW, person )
+                || blockCache.IsAuthorized( Authorization.EDIT, person )
+                || blockCache.IsAuthorized( Authorization.ADMINISTRATE, person );
+
+            if ( !canViewBlock )
+            {
+                return false;
+            }
+
+            if ( !blockCache.PageId.HasValue )
+            {
+                return true;
+            }
+
+            return PageCache.Get( blockCache.PageId.Value )?.IsAuthorized( Authorization.VIEW, person ) == true;
+        }
+
+        /// <summary>
+        /// Gets the alert HTML returned when a block cannot be found or cannot be viewed.
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <returns>The alert HTML.</returns>
+        private static string GetBlockNotFoundHtml( int blockId )
+        {
             return string.Format(
-                @"<div class='alert alert-danger'> 
+                @"<div class='alert alert-danger'>
                     unable to find block_id: {0}
                 </div>",
                 blockId );
