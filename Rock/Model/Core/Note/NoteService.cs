@@ -27,6 +27,7 @@ using Rock.AI.Classes.ChatCompletions;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Utility;
+using Rock.Utility.HtmlSanitization;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -237,6 +238,41 @@ FROM [NoteCte];
             }
 
             return mentions;
+        }
+
+        /// <summary>
+        /// The markup allowed in note text: text, line breaks and mentions.
+        /// </summary>
+        /// <remarks>
+        /// The note editor writes text with literal newlines (Enter inserts a
+        /// newline text node, paste inserts plain text, and the note list uses
+        /// white-space: pre-wrap). The browser itself can add a trailing br, or
+        /// a div when a mobile keyboard's Enter skips the keydown handler.
+        /// Mentions are written as a span with only class and data-identifier.
+        /// Every other element is unwrapped so its text is kept, while
+        /// elements that must never pass, such as script and style, are still
+        /// dropped with their content.
+        /// </remarks>
+        private static readonly HtmlSanitizeOptions NoteTextSanitizeOptions = new HtmlSanitizeOptions()
+            .AllowTag( "br" )
+            .AllowTag( "div" )
+            .AllowTag( "span" )
+            .AllowAttribute( "span", "class" )
+            .AllowAttribute( "span", "data-identifier" )
+            .SetDefaultRemovalMode( HtmlTagRemovalMode.Unwrap )
+            .MakeReadOnly();
+
+        /// <summary>
+        /// Removes all markup from note text except line breaks and mentions.
+        /// </summary>
+        /// <param name="text">The note text, as written by the note editor or any other source.</param>
+        /// <returns>The text that is safe to render as HTML, or <paramref name="text"/> itself when it is <c>null</c> or empty.</returns>
+        /// <remarks>
+        /// Text the note editor produces is returned unchanged.
+        /// </remarks>
+        internal static string SanitizeNoteText( string text )
+        {
+            return text.SanitizeHtml( NoteTextSanitizeOptions );
         }
 
         /// <summary>
