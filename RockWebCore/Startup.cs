@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.XPath;
@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
@@ -105,9 +104,10 @@ namespace RockWebCore
 
             services.AddHostedService<RockStartupService>();
 
+            Rock.WebStartup.RockApplicationStartupHelper.ConfigureServices( services );
             services.AddSingleton<IConnectionStringProvider, NetCoreConnectionStringProvider>();
             services.AddSingleton<IInitializationSettings, NetCoreInitializationSettings>();
-            services.AddSingleton<IHostingSettings, Rock.Configuration.HostingSettings>();
+            services.AddSingleton<IHostingSettings, NetCoreHostingSettings>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -119,6 +119,10 @@ namespace RockWebCore
             }
 
             RockApp.Current = new RockApp( app.ApplicationServices );
+
+            // This must run after RockApp.Current is set and before any
+            // requests are handled, same as the WebForms AssemblyInitializer.
+            Rock.WebStartup.RockApplicationStartupHelper.RunApplicationStartup();
 
             app.UseAuthentication();
 
@@ -146,16 +150,10 @@ namespace RockWebCore
 
             app.UseMiddleware<RockRouterMiddleware>( app );
 
-            var cwd = Directory.GetCurrentDirectory();
-
-            app.UseStaticFiles( new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider( System.IO.Path.Join( cwd, "..", "RockWeb" ) )
-            } );
+            // The web root is set to the RockWeb folder in Program.cs.
+            app.UseStaticFiles();
 
             app.UseRockBundles();
-
-            Rock.Lava.LavaService.SetCurrentEngine( new Rock.Lava.Fluid.FluidEngine() );
         }
     }
 
@@ -243,6 +241,79 @@ namespace RockWebCore
         public override void Save()
         {
             throw new NotSupportedException();
+        }
+    }
+
+    /// <summary>
+    /// The Net Core implementation of <see cref="IHostingSettings"/>.
+    /// </summary>
+    /// <remarks>
+    /// This exists separately from <c>Rock.Configuration.HostingSettings</c>
+    /// because the Rock assembly cannot reference <see cref="IWebHostEnvironment"/>
+    /// on .NET Core. The two can be merged if <c>HostingSettings</c> is moved
+    /// to an assembly where the interface is available (for example, a future
+    /// Rock.Web assembly that contains general web related code for both
+    /// WebForms and .NET Core).
+    /// </remarks>
+    internal class NetCoreHostingSettings : IHostingSettings
+    {
+        /// <inheritdoc/>
+        public DateTime ApplicationStartDateTime { get; }
+
+        /// <inheritdoc/>
+        public string DotNetVersion => Environment.Version.ToString();
+
+        /// <inheritdoc/>
+        public string WebRootPath { get; }
+
+        /// <inheritdoc/>
+        public string VirtualRootPath { get; }
+
+        /// <inheritdoc/>
+        public string MachineName { get; }
+
+        /// <inheritdoc/>
+        public string NodeName { get; }
+
+        /// <inheritdoc/>
+        public bool IsDevelopmentEnvironment { get; }
+
+        /// <summary>
+        /// Creates a new <see cref="NetCoreHostingSettings"/> instance
+        /// from the ASP.NET Core hosting environment.
+        /// </summary>
+        /// <param name="initializationSettings">The initialization settings that provide the node name.</param>
+        /// <param name="webHostEnvironment">The ASP.NET Core hosting environment.</param>
+        public NetCoreHostingSettings( IInitializationSettings initializationSettings, IWebHostEnvironment webHostEnvironment )
+        {
+            ApplicationStartDateTime = Rock.RockDateTime.Now;
+            MachineName = Environment.MachineName;
+
+            // WebRootPath can contain ".." segments from UseWebRoot(), and
+            // IHostingSettings promises a trailing slash.
+            WebRootPath = Path.GetFullPath( webHostEnvironment.WebRootPath ?? webHostEnvironment.ContentRootPath );
+
+            if ( !WebRootPath.EndsWith( Path.DirectorySeparatorChar ) )
+            {
+                WebRootPath += Path.DirectorySeparatorChar;
+            }
+
+            // Hosting under a path base (virtual directory) is not supported yet.
+            VirtualRootPath = "/";
+
+            IsDevelopmentEnvironment = webHostEnvironment.IsDevelopment();
+
+            NodeName = initializationSettings.NodeName;
+
+            if ( string.IsNullOrWhiteSpace( NodeName ) )
+            {
+                NodeName = MachineName;
+            }
+
+            if ( string.IsNullOrWhiteSpace( NodeName ) )
+            {
+                NodeName = Guid.NewGuid().ToString();
+            }
         }
     }
 }

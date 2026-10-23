@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-#if REVIEW_WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -838,6 +837,7 @@ namespace Rock.Communication.Chat
         /// <inheritdoc/>
         public async Task<ChatSyncSetupResult> UpdatePushNotificationSettingsAsync()
         {
+#if REVIEW_WEBFORMS
             var result = new ChatSyncSetupResult();
 
             var operationName = nameof( UpdatePushNotificationSettingsAsync ).SplitCase();
@@ -911,6 +911,9 @@ namespace Rock.Communication.Chat
             result.IsSetUp = !result.HasException;
 
             return result;
+#else
+            throw new NotSupportedException( "Stream Chat provider does not support Push on this platform." );
+#endif
         }
 
         #endregion Configuration
@@ -2276,6 +2279,7 @@ namespace Rock.Communication.Chat
         /// <inheritdoc />
         public async Task<ChatSyncCrudResult> UpdateChatChannelMemberPushPreferencesAsync( List<ChatChannelMember> chatChannelMembers )
         {
+#if REVIEW_WEBFORMS
             var result = new ChatSyncCrudResult();
 
             var operationName = nameof( UpdateChatChannelMemberPushPreferencesAsync ).SplitCase();
@@ -2333,6 +2337,9 @@ namespace Rock.Communication.Chat
             }
 
             return result;
+#else
+            throw new NotSupportedException( "Stream Chat does not support Push notifications on this platform." );
+#endif
         }
 
         /// <inheritdoc/>
@@ -3728,7 +3735,9 @@ namespace Rock.Communication.Chat
                     PushNotifications = true,
                     Blocklist = null,
                     BlocklistBehavior = null,
+#if REVIEW_WEBFORMS
                     Quotes = true,
+#endif
                     Commands = new List<string> { "giphy" }
                 };
             }
@@ -4577,4 +4586,3 @@ namespace Rock.Communication.Chat
         #endregion Supporting Members
     }
 }
-#endif

@@ -200,6 +200,7 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.12" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0" />
+    <PackageReference Include="stream-chat-net" Version="2.17.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.11" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />

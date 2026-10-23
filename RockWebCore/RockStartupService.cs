@@ -7,9 +7,9 @@ namespace RockWebCore
 {
     public class RockStartupService : IHostedService
     {
-        public async Task StartAsync( CancellationToken cancellationToken )
+        public Task StartAsync( CancellationToken cancellationToken )
         {
-            //await Rock.Bus.RockMessageBus.StartAsync();
+            return Task.CompletedTask;
         }
 
         public Task StopAsync( CancellationToken cancellationToken )

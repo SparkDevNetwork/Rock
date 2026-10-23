@@ -21,6 +21,10 @@ namespace RockWebCore
             Host.CreateDefaultBuilder( args )
                 .ConfigureWebHostDefaults( webBuilder =>
                  {
+                     // The web files (themes, scripts, styles) still live in
+                     // the RockWeb folder, so serve that as the web root.
+                     // The path is relative to the content root.
+                     webBuilder.UseWebRoot( "../RockWeb" );
                      webBuilder.UseStartup<Startup>();
                  } );
     }

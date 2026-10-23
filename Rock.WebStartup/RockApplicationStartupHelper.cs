@@ -106,7 +106,9 @@ namespace Rock.WebStartup
 
             AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 
+#if WEBFORMS
             InitializeRockApp();
+#endif
             Rock.JsonExtensions.ReferenceEqualityComparer = new Rock.Utility.EntityReferenceEqualityComparer();
 
             // Indicate to always log to file during initialization.
@@ -368,12 +370,10 @@ namespace Rock.WebStartup
 #if WEBFORMS
             sc.AddSingleton<IConnectionStringProvider, WebFormsConnectionStringProvider>();
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
+            sc.AddSingleton<IHostingSettings, HostingSettings>();
 #endif
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
-            sc.AddSingleton<IHostingSettings, HostingSettings>();
-#if REVIEW_WEBFORMS
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
-#endif
             sc.AddSingleton<ICaptchaProvider, CaptchaProofOfWorkProvider>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IUserAgentParser, UserAgentParser>();
