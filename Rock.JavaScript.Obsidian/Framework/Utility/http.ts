@@ -69,6 +69,36 @@ async function doStreamingApiCallRaw(method: HttpMethod, url: string, params: Ht
     });
 }
 
+/**
+ * Gets the error message from the body of a failed streaming request. The
+ * request asks for a stream, so the error body is also a stream and must be
+ * read before the JSON error message can be found.
+ *
+ * @param data The response data from the failed request.
+ *
+ * @returns The error message or null if one was not found.
+ */
+async function getStreamingErrorMessage(data: unknown): Promise<string | null> {
+    let body: Record<string, unknown> | null = null;
+
+    try {
+        if (data instanceof ReadableStream) {
+            body = JSON.parse(await new Response(data).text());
+        }
+        else if (data && typeof data === "object") {
+            body = data as Record<string, unknown>;
+        }
+    }
+    catch {
+        // The body was not JSON, such as an HTML error page from a proxy.
+        return null;
+    }
+
+    const message = body?.Message ?? body?.message;
+
+    return typeof message === "string" && message ? message : null;
+}
+
 function getSignal(cancellationToken?: ICancellationToken): GenericAbortSignal | undefined {
     if (cancellationToken) {
         const controller = new AbortController();
@@ -236,13 +266,15 @@ export async function doStreamingApiCall<T>(method: HttpMethod, url: string, par
     }
     catch (e) {
         if (axios.isAxiosError(e)) {
-            if (e.response?.data?.Message || e?.response?.data?.message) {
+            const errorMessage = await getStreamingErrorMessage(e.response?.data);
+
+            if (errorMessage) {
                 return {
                     data: null,
                     isError: true,
                     isSuccess: false,
-                    statusCode: e.response.status,
-                    errorMessage: e?.response?.data?.Message ?? e.response.data.message
+                    statusCode: e.response?.status ?? 0,
+                    errorMessage
                 } as HttpResult<ReadableStream<T>>;
             }
 
