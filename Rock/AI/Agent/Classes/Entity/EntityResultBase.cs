@@ -115,10 +115,16 @@ namespace Rock.AI.Agent.Classes.Entity
                     .Where( pi => entityResultBaseType.IsAssignableFrom( pi.PropertyType ) )
                     .ToList();
 
+                /*
+                    10/23/2026 - MSE
+
+                    Include concrete collections and other enumerable declarations
+                    so nested results receive the same security checks.
+
+                    Reason: List properties must not bypass attribute security.
+                */
                 var collectionProperties = rt.GetProperties()
-                    .Where( pi => pi.PropertyType.IsGenericType
-                        && pi.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> )
-                        && entityResultBaseType.IsAssignableFrom( pi.PropertyType.GetGenericArguments()[0] ) )
+                    .Where( pi => IsEntityResultEnumerable( pi.PropertyType ) )
                     .ToList();
 
                 return (individualProperties, collectionProperties);
@@ -144,6 +150,8 @@ namespace Rock.AI.Agent.Classes.Entity
                     continue;
                 }
 
+                var unsafeResults = new List<object>();
+
                 foreach ( var nestedResultObj in nestedResults )
                 {
                     if ( !( nestedResultObj is EntityResultBase nestedResult ) )
@@ -153,12 +161,46 @@ namespace Rock.AI.Agent.Classes.Entity
 
                     var safe = nestedResult.Sanitize( agentRequestContext );
 
-                    if ( !safe && nestedResults is IList listResults )
+                    if ( !safe )
                     {
-                        listResults.Remove( nestedResultObj );
+                        unsafeResults.Add( nestedResultObj );
+                    }
+                }
+
+                /*
+                    10/23/2026 - MSE
+
+                    Wait until enumeration finishes before removing rejected results
+                    and only remove from collections that support this operation.
+
+                    Reason: Mutating an enumerated or fixed collection can throw.
+                */
+                if ( unsafeResults.Count > 0 && nestedResults is IList listResults && !listResults.IsReadOnly && !listResults.IsFixedSize )
+                {
+                    foreach ( var unsafeResult in unsafeResults )
+                    {
+                        listResults.Remove( unsafeResult );
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the type enumerates nested entity results.
+        /// </summary>
+        /// <param name="type">The declared property type.</param>
+        /// <returns>Whether the property contains entity results to sanitize.</returns>
+        private static bool IsEntityResultEnumerable( Type type )
+        {
+            if ( type == typeof( string ) )
+            {
+                return false;
+            }
+
+            return new[] { type }.Concat( type.GetInterfaces() )
+                .Any( i => i.IsGenericType
+                    && i.GetGenericTypeDefinition() == typeof( IEnumerable<> )
+                    && typeof( EntityResultBase ).IsAssignableFrom( i.GetGenericArguments()[0] ) );
         }
 
         /// <summary>
