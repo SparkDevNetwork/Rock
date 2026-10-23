@@ -159,9 +159,10 @@ namespace Rock.Obsidian.UI
                     Status = Model.CommunicationStatus.Transient,
                     CommunicationType = CommunicationType.Email,
                     AdditionalMergeFields = communicationBag.MergeFields,
-                    SenderPersonAliasId = currentPersonAliasId,
-                    UrlReferrer = communicationBag.FromUrl
+                    SenderPersonAliasId = currentPersonAliasId
                 };
+
+                communication.UrlReferrer = communicationBag.FromUrl.TrimForMaxLength( communication, nameof( Rock.Model.Communication.UrlReferrer ) );
 
                 // Save communication to get the Id.
                 communicationService.Add( communication );
