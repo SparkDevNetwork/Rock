@@ -518,6 +518,10 @@ namespace Rock.Slingshot
                     Interlocked.Increment( ref photoLoadProgress );
                     try
                     {
+                        // The stream was read to the end above, so go back to the
+                        // start or the image can't be decoded.
+                        fileStream.Position = 0;
+
 #if REVIEW_WEBFORMS
                         using ( var image = new Bitmap( fileStream ) )
                         {
@@ -699,7 +703,12 @@ namespace Rock.Slingshot
                     using ( var ms = new MemoryStream() )
                     {
                         imageStream.CopyTo( ms );
-                        photoImport.MimeType = imageResponse.ContentType;
+
+                        // Remote servers often send images as binary/octet-stream, which
+                        // GetImage.ashx refuses to serve. Use the type from the image's
+                        // contents when we can, otherwise keep what the server sent.
+                        ms.Position = 0;
+                        photoImport.MimeType = Rock.Utility.FileUtilities.GetImageMimeType( ms ) ?? imageResponse.ContentType;
                         photoImport.PhotoData = Convert.ToBase64String( ms.ToArray(), Base64FormattingOptions.None );
                         photoImport.FileName = $"Photo{photoImport.ForeignId}";
                     }

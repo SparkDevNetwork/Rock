@@ -978,15 +978,30 @@ namespace Rock.Blocks.Engagement
                     RequestStatusDueDateOffsetInDays = status.RequestStatusDueDateOffsetInDays,
                     RequestStatusDueSoonOffsetInDays = status.RequestStatusDueSoonOffsetInDays,
                     AutoFutureFollowUpPauseInDays = status.AutoFutureFollowUpPauseInDays,
-                    Automations = status.ConnectionStatusAutomations.Select( a => new ConnectionStatusAutomationBag
-                    {
-                        Guid = a.Guid,
-                        Order = a.Order,
-                        AutomationName = a.AutomationName,
-                        DataView = a.DataView?.ToListItemBag(),
-                        GroupRequirementsFilter = a.GroupRequirementsFilter,
-                        DestinationStatusGuid = localStatusIdToGuidMap[a.DestinationStatusId]
-                    } ).ToList()
+                    /*
+                        9/30/2026 - MSE
+
+                        Automations must be sorted by Order here. The client displays them in the
+                        order received, and the save sets each automation's Order from its position
+                        in that list. Without this sort, any save after a reload would revert a
+                        drag-and-drop reorder. The ThenBy matches the Connection Requests Automation
+                        job so the displayed order is the evaluated order.
+
+                        Reason: Preserve saved automation order across reloads and saves.
+                    */
+                    Automations = status.ConnectionStatusAutomations
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.AutomationName )
+                        .Select( a => new ConnectionStatusAutomationBag
+                        {
+                            Guid = a.Guid,
+                            Order = a.Order,
+                            AutomationName = a.AutomationName,
+                            DataView = a.DataView?.ToListItemBag(),
+                            GroupRequirementsFilter = a.GroupRequirementsFilter,
+                            DestinationStatusGuid = localStatusIdToGuidMap[a.DestinationStatusId]
+                        } )
+                        .ToList()
                 };
 
                 bags.Add( bag );
@@ -1540,6 +1555,28 @@ namespace Rock.Blocks.Engagement
             }
 
             var isNew = entity.Id == 0;
+
+            /*
+                10/16/2026 - MSE
+
+                Each attribute list may only reference attributes that are new or
+                already belong to this connection type, using the same entity type
+                and qualifier that SaveEntityAttributes() saves them with. The
+                attribute Guids come from the browser, and Helper.SaveAttributeEdits()
+                would otherwise load any attribute by Guid and move it under this
+                connection type, letting a later save delete it with all its values.
+
+                Reason: Prevent taking over unrelated attributes through a tampered Save.
+            */
+            var attributeQualifierValue = isNew ? null : entity.Id.ToString();
+            var areConnectionTypeAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionTypeAttributes, new ConnectionType().TypeId, "Id", attributeQualifierValue, RockContext );
+            var areConnectionOpportunityAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionOpportunityAttributes, new ConnectionOpportunity().TypeId, "ConnectionTypeId", attributeQualifierValue, RockContext );
+            var areConnectionRequestAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ConnectionRequestAttributes, new ConnectionRequest().TypeId, "ConnectionTypeId", attributeQualifierValue, RockContext );
+
+            if ( !areConnectionTypeAttributeEditsAllowed || !areConnectionOpportunityAttributeEditsAllowed || !areConnectionRequestAttributeEditsAllowed )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
 
             RockContext.WrapTransaction( () =>
             {

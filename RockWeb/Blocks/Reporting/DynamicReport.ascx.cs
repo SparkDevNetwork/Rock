@@ -388,25 +388,46 @@ namespace RockWeb.Blocks.Reporting
 
                             try
                             {
-                                filterControl.SetSelection( selection );
+                                /*
+                                    9/21/2026 - NA
 
-                                // if the selection is the same as what is stored in the database for that DataViewFilter,
-                                // Do a GetSelection to get the selection in the current format for that filter
-                                // This will prevent this dynamic report from thinking the selection has changed from the orig filter
-                                if ( selection == filter.Selection )
+                                    Removed the logic that re-normalized the filter's Selection (via a SetSelection
+                                    followed by GetSelection) and then saved that "normalized" value back to the
+                                    DataViewFilter. It was originally added to keep the persisted-data-view fast path
+                                    working across selection format drift, but it assumed GetSelection() is a lossless
+                                    reformat. For a WebForms SimpleFilter (which is how visible/configurable filters
+                                    render here), GetSelection() intentionally collapses the comparison to "Contains"
+                                    (see TextFieldType.GetFilterCompareValue). Persisting that round-trip rewrote the
+                                    shared DataView's stored comparison (e.g. "Starts With" became "Contains"),
+                                    corrupting the DataView simply by viewing the report.
+
+                                    A Dynamic Report must never mutate the DataView it is reporting on, so the write-back
+                                    is gone. The report still applies the filter as before at run time; only the
+                                    destructive persistence is removed.
+
+                                    Reason: Dynamic Report was silently changing a DataView filter's comparison type.
+                                */
+
+                                /*
+                                    10/19/2026 - DSH
+
+                                    Keep the saved filter's selection, in the format GetSelection
+                                    produces, on the filter control so later postbacks can tell
+                                    whether the person changed it. Both sides of that comparison
+                                    go through the same round trip, so a selection stored in an
+                                    older format (or one the round trip simplifies, such as a
+                                    simple filter turning Starts With into Contains) still matches
+                                    and the persisted data view values are still used.
+
+                                    Reason: Without the write-back, comparing against the raw stored
+                                    selection made unchanged filters look changed.
+                                */
+                                filterControl.SetSelection( filter.Selection );
+                                filterControl.OriginalSelection = filterControl.GetSelection();
+
+                                if ( selection != filter.Selection )
                                 {
-                                    var normalizedSelection = filterControl.GetSelection();
-                                    if ( normalizedSelection != filter.Selection )
-                                    {
-                                        // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format
-                                        filter.Selection = normalizedSelection;
-                                        using ( var updateSelectionContext = RockApp.Current.CreateRockContext() )
-                                        {
-                                            var dataViewFilter = new DataViewFilterService( updateSelectionContext ).Get( filter.Id );
-                                            dataViewFilter.Selection = normalizedSelection;
-                                            updateSelectionContext.SaveChanges();
-                                        }
-                                    }
+                                    filterControl.SetSelection( selection );
                                 }
                             }
                             catch ( Exception ex )
@@ -516,7 +537,7 @@ namespace RockWeb.Blocks.Reporting
                         // only save the preference if it is different from the original
                         var origFilter = dataViewFilterService.Get( filterControl.DataViewFilterGuid );
                         var selection = filterControl.GetSelection();
-                        if ( origFilter != null && origFilter.Selection != selection )
+                        if ( origFilter != null && ( filterControl.OriginalSelection ?? origFilter.Selection ) != selection )
                         {
                             preferences.SetValue( selectionKey, selection );
                         }

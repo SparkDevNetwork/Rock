@@ -77,6 +77,10 @@
             type: String as PropType<Guid | null>,
             default: null
         },
+        securityGrantToken: {
+            type: String as PropType<string | null>,
+            default: null
+        },
         saveAccountCheckBoxLabel: {
             type: String as PropType<string>,
             default: "Save account information for future gifts"
@@ -137,7 +141,8 @@
             username: username.value,
             gatewayPersonIdentifier: props.gatewayPersonIdentifier,
             scheduledTransactionGuid: toGuidOrNull(props.scheduledTransactionGuid),
-            confirmationEmailTemplateGuid: toGuidOrNull(props.confirmationEmailTemplateGuid)
+            confirmationEmailTemplateGuid: toGuidOrNull(props.confirmationEmailTemplateGuid),
+            securityGrantToken: props.securityGrantToken
         };
         const result = await http.post<SaveFinancialAccountFormSaveAccountResultBag>("/api/v2/Controls/SaveFinancialAccountFormSaveAccount", null, options);
 

@@ -83,10 +83,10 @@ namespace Rock.Blocks.Lms
         {
             var box = new DetailBlockBox<LearningClassActivityBag, LearningClassActivityDetailOptionsBag>();
 
-            SetBoxInitialEntityState( box );
+            var entity = SetBoxInitialEntityState( box );
 
             box.NavigationUrls = GetBoxNavigationUrls();
-            box.Options = GetBoxOptions( box.IsEditable );
+            box.Options = GetBoxOptions( box.IsEditable, entity );
 
             return box;
         }
@@ -96,10 +96,23 @@ namespace Rock.Blocks.Lms
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
+        /// <param name="entity">The entity being viewed or edited, or <c>null</c> if it was not found.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LearningClassActivityDetailOptionsBag GetBoxOptions( bool isEditable )
+        private LearningClassActivityDetailOptionsBag GetBoxOptions( bool isEditable, LearningClassActivity entity )
         {
             var options = new LearningClassActivityDetailOptionsBag();
+
+            /*
+                10/18/2026 - MSE
+
+                The grade permission is checked against the loaded activity (which defers
+                to its class) instead of the LearningClassId page parameter, so a person
+                cannot point the page parameter at a class they facilitate to unlock the
+                grades of another class.
+
+                Reason: Hide the average grade from people without View Grades on the class.
+            */
+            options.CanViewGrades = entity != null && entity.IsAuthorized( Authorization.VIEW_GRADES, RequestContext.CurrentPerson );
 
             var components = LearningActivityContainer.Instance.Components;
 
@@ -173,14 +186,15 @@ namespace Rock.Blocks.Lms
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<LearningClassActivityBag, LearningClassActivityDetailOptionsBag> box )
+        /// <returns>The entity that was loaded, or <c>null</c> if it was not found.</returns>
+        private LearningClassActivity SetBoxInitialEntityState( DetailBlockBox<LearningClassActivityBag, LearningClassActivityDetailOptionsBag> box )
         {
             var entity = GetInitialEntity();
 
             if ( entity == null )
             {
                 box.ErrorMessage = $"The {LearningClassActivity.FriendlyTypeName} was not found.";
-                return;
+                return null;
             }
 
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
@@ -214,6 +228,8 @@ namespace Rock.Blocks.Lms
             }
 
             PrepareDetailBox( box, entity );
+
+            return entity;
         }
 
         /// <summary>
@@ -235,6 +251,18 @@ namespace Rock.Blocks.Lms
             var currentPerson = GetCurrentPerson();
             var facilitatorId = new LearningParticipantService( RockContext )
                 .GetFacilitatorId( currentPerson.Id, entity.LearningClassId );
+
+            /*
+                10/18/2026 - MSE
+
+                The average grade, percent and passing flag summarize the grades of every
+                student in the class, so they are only filled in for people with View Grades
+                on the activity's class (the activity defers to its class for security).
+                The completion counts are not grades and stay visible with View.
+
+                Reason: Average grade was returned to people without View Grades.
+            */
+            var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, currentPerson );
 
             var isClassFacilitator = facilitatorId.HasValue && facilitatorId.Value > 0;
             var currentPersonBag = new LearningActivityParticipantBag
@@ -266,9 +294,9 @@ namespace Rock.Blocks.Lms
                 AvailableDateDefault = entity.AvailableDateDefault,
                 AvailableDateDescription = entity.AvailableDateDescription,
                 AvailableDateOffset = entity.AvailableDateOffset,
-                AverageGrade = completionStatistics.AverageGrade?.Name,
-                AverageGradePercent = completionStatistics.AverageGradePercent,
-                AverageGradeIsPassing = completionStatistics.AverageGrade?.IsPassing ?? false,
+                AverageGrade = canViewGrades ? completionStatistics.AverageGrade?.Name : null,
+                AverageGradePercent = canViewGrades ? completionStatistics.AverageGradePercent : 0,
+                AverageGradeIsPassing = canViewGrades && ( completionStatistics.AverageGrade?.IsPassing ?? false ),
                 CompleteCount = completionStatistics.Complete,
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 CurrentPerson = currentPersonBag,
@@ -565,6 +593,22 @@ namespace Rock.Blocks.Lms
             };
         }
 
+        /// <summary>
+        /// Gets the ReturnUrl page parameter if it's safe to redirect to.
+        /// </summary>
+        /// <returns>The ReturnUrl page parameter, or an empty string if it's missing or not safe to redirect to.</returns>
+        private string GetSafeReturnUrl()
+        {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            if ( !this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
+            {
+                return string.Empty;
+            }
+
+            return returnUrl;
+        }
+
         #endregion
 
         #region Block Actions
@@ -679,7 +723,7 @@ namespace Rock.Blocks.Lms
                 } ) );
             }
 
-            var returnPageUrl = PageParameter( PageParameterKey.ReturnUrl ) ?? string.Empty;
+            var returnPageUrl = GetSafeReturnUrl() ?? string.Empty;
             if ( returnPageUrl.Length > 0 )
             {
                 return ActionOk( returnPageUrl );
@@ -733,6 +777,19 @@ namespace Rock.Blocks.Lms
             if ( key.IsNullOrWhiteSpace() )
             {
                 return ActionNotFound();
+            }
+
+            // Make sure the activity exists and the person can edit it.
+            var entity = new LearningClassActivityService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionNotFound();
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to copy {LearningClassActivity.FriendlyTypeName}." );
             }
 
             var copiedEntity = new LearningClassActivityService( RockApp.Current.CreateRockContext() ).Copy( key );

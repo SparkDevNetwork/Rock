@@ -343,7 +343,17 @@ namespace Rock.Blocks.Core
                             // history row, producing a wasted DB roundtrip that returns null and appends
                             // nothing to the summary.
                             EntityId = h.EntityId,
-                            CreatedByPersonAliasId = h.CreatedByPersonAliasId
+                            CreatedByPersonAliasId = h.CreatedByPersonAliasId,
+
+                            /*
+                                10/16/2026 - MSE
+
+                                SummaryHtml uses RelatedEntityTypeId to find attribute value history,
+                                whose formatted values are rebuilt as safe HTML instead of encoded.
+
+                                Reason: Without it, attribute values lose their safe links and images.
+                            */
+                            RelatedEntityTypeId = h.RelatedEntityTypeId
                         }.SummaryHtml )
                         .ToList();
 

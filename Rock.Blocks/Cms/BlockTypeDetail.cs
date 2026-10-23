@@ -389,7 +389,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${BlockType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {BlockType.FriendlyTypeName}." );
                 return false;
             }
 

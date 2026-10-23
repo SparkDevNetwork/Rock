@@ -45,6 +45,11 @@ namespace Rock.Security.Authentication
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.AUTHENTICATION_PASSWORDLESS )]
     internal class PasswordlessAuthentication : AuthenticationComponent, IOneTimePasscodeAuthentication
     {
+        /// <summary>
+        /// The purpose used when encrypting the passwordless authentication state.
+        /// </summary>
+        private const string AuthenticationStateEncryptionPurpose = "Rock.Security.PasswordlessAuthenticationState";
+
         /// <inheritdoc/>
         public override bool RequiresRemoteAuthentication
         {
@@ -114,7 +119,7 @@ namespace Rock.Security.Authentication
         /// <returns>The decrypted state.</returns>
         internal static PasswordlessAuthenticationState GetDecryptedAuthenticationState( string state )
         {
-            return Encryption.DecryptString( state )?.FromJsonOrNull<PasswordlessAuthenticationState>();
+            return Encryption.DecryptStringForPurpose( state, AuthenticationStateEncryptionPurpose )?.FromJsonOrNull<PasswordlessAuthenticationState>();
         }
 
         /// <summary>
@@ -124,7 +129,15 @@ namespace Rock.Security.Authentication
         /// <returns>The encrypted authentication state.</returns>
         internal static string GetEncryptedAuthenticationState( PasswordlessAuthenticationState state )
         {
-            return Encryption.EncryptString( state?.ToJson() );
+            /*
+                10/7/2026 - MSE
+
+                The state holds one-time passcodes, so it is encrypted with a
+                key that is only used for this state.
+
+                Reason: Keep the passwordless state private.
+            */
+            return Encryption.EncryptStringForPurpose( state?.ToJson(), AuthenticationStateEncryptionPurpose );
         }
 
         /// <summary>
@@ -218,6 +231,19 @@ namespace Rock.Security.Authentication
                 {
                     IsSuccessful = false,
                     ErrorMessage = "Please provide Email or Phone for passwordless login.",
+                    State = null
+                };
+            }
+
+            // The address pattern allows braces and pipes, so IsValid alone
+            // still lets a Lava output expression through.
+            var isEmailRequested = sendOneTimePasscodeOptions.ShouldSendEmailCode || sendOneTimePasscodeOptions.ShouldSendEmailLink;
+            if ( isEmailRequested && ( sendOneTimePasscodeOptions.Email.IsLavaTemplate() || !EmailAddressFieldValidator.IsValid( sendOneTimePasscodeOptions.Email ) ) )
+            {
+                return new SendOneTimePasscodeResult
+                {
+                    IsSuccessful = false,
+                    ErrorMessage = "Please provide a valid email address.",
                     State = null
                 };
             }
@@ -441,10 +467,31 @@ namespace Rock.Security.Authentication
 
             if ( !matchingPeople.Any() )
             {
+                /*
+                    10/15/2026 - MSE
+
+                    The individual entered the correct code, so the mobile
+                    number or email is now verified. The session gets a new
+                    code that is only returned inside the encrypted state of
+                    this response, as the registration code. Account Entry
+                    only accepts a state with a registration code that matches
+                    the session, so the state returned when the code was sent
+                    (before anyone entered it) can no longer be used to
+                    register.
+
+                    Reason: Passwordless state is not proof the code was entered.
+                */
+                var registrationCode = new RemoteAuthenticationSessionService( rockContext ).GenerateUsableCode( state.CodeIssueDate, state.CodeLifetime );
+                remoteAuthenticationSession.Code = registrationCode;
+                rockContext.SaveChanges();
+
+                state.Code = registrationCode;
+                state.RegistrationCode = registrationCode;
+
                 return new OneTimePasscodeAuthenticationResult
                 {
                     IsRegistrationRequired = true,
-                    State = options.State
+                    State = GetEncryptedAuthenticationState( state )
                 };
             }
 
@@ -694,7 +741,7 @@ namespace Rock.Security.Authentication
         /// Determines whether passwordless authentication is allowed for <paramref name="person"/>.
         /// </summary>
         /// <param name="person">The person to check.</param>
-        private static bool IsPasswordlessAuthenticationAllowedForProtectionProfile( Person person )
+        internal static bool IsPasswordlessAuthenticationAllowedForProtectionProfile( Person person )
         {
             var securitySettings = new SecuritySettingsService().SecuritySettings;
 

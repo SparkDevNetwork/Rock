@@ -48,6 +48,16 @@ namespace Rock.ViewModels.Blocks.Core.Attributes
         public bool AllowSettingOfValues { get; set; }
 
         /// <summary>
+        /// Whether or not the current person can add, edit, delete and reorder attributes
+        /// </summary>
+        public bool CanEditAttributes { get; set; }
+
+        /// <summary>
+        /// Whether or not the current person can edit attribute values
+        /// </summary>
+        public bool CanEditAttributeValues { get; set; }
+
+        /// <summary>
         /// The list of EntityTypes that can be chosen from
         /// </summary>
         public List<ListItemBag> EntityTypes { get; set; }

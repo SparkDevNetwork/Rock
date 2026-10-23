@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="message" class="email-body">
-        <iframe ref="iframeElement" :srcdoc="message"></iframe>
+        <iframe ref="iframeElement" :srcdoc="message" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 </template>
 
@@ -39,6 +39,16 @@ html[theme="dark"] .email-body {
 
     // #region Values
 
+    /*
+        10/16/2026 - MSE
+
+        The iframe in the template shows stored message HTML, so it is sandboxed with
+        "allow-same-origin allow-popups allow-popups-to-escape-sandbox". allow-same-origin is only
+        there so the parent can measure the content height (updateHeight and the ResizeObserver).
+        Never add allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+        Reason: Stop stored XSS through the communication email preview.
+    */
     const iframeElement = ref<HTMLIFrameElement | undefined>();
 
     let loadHandler: (() => void) | null = null;

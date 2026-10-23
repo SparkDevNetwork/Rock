@@ -1099,7 +1099,15 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetAnchorTag( string rockUrlRoot, string cssClass = "" )
         {
-            return string.Format( "<a class='{0}' href='{1}Person/{2}'>{3}</a>", cssClass, rockUrlRoot, Id, FullName );
+            /*
+                10/19/2026 - MSE
+
+                The CSS class is placed in a quoted attribute, so it is encoded the same way as
+                the name to keep a caller supplied value from breaking out of the attribute.
+
+                Reason: Keep the anchor tag safe for any caller supplied CSS class.
+            */
+            return string.Format( "<a class='{0}' href='{1}Person/{2}'>{3}</a>", cssClass.EncodeHtml(), rockUrlRoot, Id, FullName.EncodeHtml() );
         }
 
         /// <summary>
@@ -1152,10 +1160,16 @@ namespace Rock.Model
                             fileName = "PersonPhoto";
                         }
 
+                        // Remote servers often send images as binary/octet-stream, which
+                        // GetImage.ashx refuses to serve. Use the type from the image's
+                        // contents when we can, otherwise keep what the server sent.
+                        photoData.Position = 0;
+                        var mimeType = Rock.Utility.FileUtilities.GetImageMimeType( photoData ) ?? imageResponse.ContentType;
+
                         var binaryFile = new BinaryFile()
                         {
                             FileName = fileName,
-                            MimeType = imageResponse.ContentType,
+                            MimeType = mimeType,
                             BinaryFileTypeId = binaryFileType.Id,
                             IsTemporary = true
                         };

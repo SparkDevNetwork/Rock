@@ -16,7 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
 {
@@ -44,9 +44,9 @@ namespace Rock.Tests.Integration.Core.Lava.Shortcodes
             // shortcode. This caused, among other things, the labels to not
             // render correctly because it thought it had dataitems instead of
             // datasets.
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, input, new LavaTestRenderOptions() );
+                var output = LavaRenderTestHelper.Render( engine, input );
 
                 Assert.Contains( @"labels: [""Small Groups"", ""Serving Groups""],", output, "Labels from first shortcode are missing." );
                 Assert.Contains( @"labels: [""2015"",""2016"",""2017""],", output, "Labels from second shortcode are missing." );

@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn;
 using Rock.Lava;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava.Blocks
 {
@@ -20,14 +20,17 @@ namespace Rock.Tests.Integration.Core.Lava.Blocks
 
             var values = new LavaDataDictionary();
             values.AddOrReplace( "Kiosk", kioskDevice );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = "Kiosk CampusId = {{ Kiosk.CampusId }}";
             string outputExpected = $"Kiosk CampusId = {kioskDevice.CampusId}";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -39,14 +42,17 @@ namespace Rock.Tests.Integration.Core.Lava.Blocks
 
             var values = new LavaDataDictionary();
             values.AddOrReplace( "Kiosk", kioskDevice );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = "Kiosk Device Name = {{ Kiosk.Device.Name }}";
             string outputExpected = $"Kiosk Device Name = {kioskDevice.Device.Name}";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
     }
 }

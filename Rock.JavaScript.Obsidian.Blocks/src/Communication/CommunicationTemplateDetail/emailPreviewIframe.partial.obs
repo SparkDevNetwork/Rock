@@ -5,14 +5,14 @@
         <iframe ref="autoHeightIframe"
                 class="window-iframe"
                 :srcdoc="srcdoc"
-                sandbox="allow-scripts allow-same-origin"></iframe>
+                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 
     <div v-else-if="mode === 'mobile'"
          class="mobile-device">
         <iframe class="window-iframe"
                 :srcdoc="srcdoc"
-                sandbox="allow-scripts allow-same-origin"></iframe>
+                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 </template>
 
@@ -31,6 +31,16 @@
         }
     });
 
+    /*
+        10/16/2026 - MSE
+
+        Both preview iframes in the template show stored template HTML, so they are sandboxed with
+        "allow-same-origin allow-popups allow-popups-to-escape-sandbox". allow-same-origin is kept
+        only so useIframeAutoHeight can read contentDocument.body.scrollHeight. Never add
+        allow-scripts: a same-origin frame that may run script can remove its own sandbox.
+
+        Reason: Stop stored XSS through the communication template preview.
+    */
     const windowTitleBarHeight = 48;
 
     // #region Values

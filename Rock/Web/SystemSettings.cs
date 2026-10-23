@@ -263,6 +263,9 @@ namespace Rock.Web
                 attribute.DefaultValue = value;
             }
 
+            // Keep the persisted copies in sync so they never hold an older value than DefaultValue.
+            Rock.Attribute.Helper.UpdateAttributeDefaultPersistedValues( attribute );
+
             // NOTE: Service Layer will automatically update this Cache (see Attribute.cs UpdateCache)
             rockContext.SaveChanges();
 

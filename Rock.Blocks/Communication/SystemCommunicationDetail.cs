@@ -71,6 +71,15 @@ namespace Rock.Blocks.Communication
 
             var isNew = systemCommunication == null;
 
+            if ( !isNew && !systemCommunication.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return new CustomBlockBox<SystemCommunicationBag, SystemCommunicationDetailOptionsBag>
+                {
+                    ErrorMessage = "You are not authorized to view this system communication.",
+                    NavigationUrls = GetBoxNavigationUrls()
+                };
+            }
+
             var bag = isNew
                 ? new SystemCommunicationBag
                 {
@@ -226,11 +235,52 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone. Anyone who
+            // can view the block may browse and select existing files within
+            // the block's root folder. Only block editors may upload, rename,
+            // move or delete files and folders.
+            if ( IsAssetManagerViewAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            }
+
+            if ( IsAssetManagerEditAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            }
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the current person may browse and select
+        /// existing files with the asset manager. Requires VIEW, EDIT or
+        /// ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerViewAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || IsAssetManagerEditAuthorized() );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may upload, rename, move
+        /// and delete files and folders with the asset manager. Requires EDIT
+        /// or ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerEditAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
         }
 
         /// <inheritdoc/>
@@ -429,13 +479,38 @@ namespace Rock.Blocks.Communication
         [BlockAction( "GetPreviewMessage" )]
         public BlockActionResult GetPreviewMessage( SystemCommunicationDetailGetPreviewMessageRequestBag bag )
         {
-            if ( bag.Message.IsNullOrWhiteSpace() )
+            var currentPerson = GetCurrentPerson();
+            var systemCommunication = GetSystemCommunication();
+
+            if ( systemCommunication != null && !systemCommunication.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return ActionForbidden( "You do not have permission to view this system communication." );
+            }
+
+            /*
+                10/16/26 - JMH
+
+                People who cannot edit an existing system communication preview its saved body.
+                Person tokens in the preview are limited to the person viewing it.
+
+                Reason: Match the preview to what the viewer may edit.
+            */
+            var message = systemCommunication != null && !systemCommunication.IsAuthorized( Authorization.EDIT, currentPerson )
+                ? systemCommunication.Body
+                : bag.Message;
+
+            if ( message.IsNullOrWhiteSpace() )
             {
                 return ActionOk( string.Empty );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
-            var resolvedPreviewHtml = bag.Message.ResolveMergeFields( mergeFields );
+            string resolvedPreviewHtml;
+
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                resolvedPreviewHtml = message.ResolveMergeFields( mergeFields );
+            }
 
             if ( bag.IsCssInlined )
             {

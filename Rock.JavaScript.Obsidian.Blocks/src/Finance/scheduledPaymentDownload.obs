@@ -1,0 +1,127 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Scheduled Payment Download" titleIconCssClass="ti ti-download" type="block">
+        <RockForm @submit="onDownloadClick">
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <FinancialGatewayPicker v-model="financialGateway"
+                                            label="Payment Gateway"
+                                            rules="required" />
+                </div>
+            </div>
+
+            <SlidingDateRangePicker v-model="dateRange"
+                                    label="Date Range"
+                                    :isRangeClearable="false"
+                                    :rules="['required', validateDateRange]" />
+
+            <div class="actions">
+                <RockButton btnType="primary"
+                            type="submit"
+                            autoLoading
+                            :isLoading="isDownloading"
+                            loadingText="Downloading...">
+                    Download Transactions
+                </RockButton>
+            </div>
+
+            <NotificationBox v-if="successMessage"
+                             alertType="success"
+                             heading="Transaction Download Summary:">
+                <div class="download-summary" v-html="successMessage"></div>
+            </NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+        </RockForm>
+    </Panel>
+</template>
+
+<style scoped>
+.download-summary :deep(a) {
+    color: var(--color-link);
+    text-decoration: underline;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/Types/validationRules";
+    import { DownloadTransactionsRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledPaymentDownload/downloadTransactionsRequestBag";
+    import { DownloadTransactionsResultBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledPaymentDownload/downloadTransactionsResultBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const financialGateway = ref<ListItemBag | undefined>();
+    const dateRange = ref<SlidingDateRange | null>({ rangeType: RangeType.DateRange });
+
+    const successMessage = ref("");
+    const errorMessage = ref("");
+    const isDownloading = ref(false);
+
+    /** When Date Range is selected, requires both dates with the end on or after the start. */
+    const validateDateRange: ValidationRuleFunction = (value: unknown): ValidationResult => {
+        const range = value as SlidingDateRange | null;
+
+        if (range?.rangeType !== RangeType.DateRange) {
+            return true;
+        }
+
+        if (!range.lowerDate || !range.upperDate) {
+            return "is required";
+        }
+
+        if (range.upperDate < range.lowerDate) {
+            return "must end on or after the start date";
+        }
+
+        return true;
+    };
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Download Transactions button. Sends the selected
+     * gateway and date range to the server and shows the returned summary.
+     */
+    async function onDownloadClick(): Promise<void> {
+        successMessage.value = "";
+        errorMessage.value = "";
+        isDownloading.value = true;
+
+        try {
+            const bag: DownloadTransactionsRequestBag = {
+                financialGatewayGuid: financialGateway.value?.value,
+                dateRange: dateRange.value
+            };
+
+            const response = await invokeBlockAction<DownloadTransactionsResultBag>("DownloadTransactions", { bag });
+
+            if (response.isError) {
+                errorMessage.value = response.errorMessage ?? "Unable to download transactions.";
+                return;
+            }
+
+            successMessage.value = response.data?.summaryHtml ?? "";
+        }
+        finally {
+            isDownloading.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -174,7 +174,7 @@ namespace Rock.Blocks.Connection
 
             if ( connectionOpportunity != null )
             {
-                breadCrumbs.Add( new BreadCrumbLink( connectionOpportunity.Name, pageReference ) );
+                breadCrumbs.Add( new BreadCrumbLink( connectionOpportunity.PublicName, pageReference ) );
             }
 
             return new BreadCrumbResult

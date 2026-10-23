@@ -16,6 +16,8 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
 using Rock.Tests.Shared.Constants;
 
@@ -26,7 +28,7 @@ namespace Rock.Tests.Lava.Tags
     /// </summary>
     [TestClass]
     [TestCategory( TestFeatures.Lava )]
-    public class LavaShortcodeTagTests : LavaUnitTestBase
+    public class LavaShortcodeTagTests
     {
         /// <summary>
         /// A dynamic shortcode should produce the expected output.
@@ -48,13 +50,15 @@ The answer is {{ x }}.
             var input = @"
 {[ shortcode_execute ]}
 ";
-            var expectedOutput = "The answer is 42.";
+            var expectedOutput = "\nThe answer is 42.\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
     }

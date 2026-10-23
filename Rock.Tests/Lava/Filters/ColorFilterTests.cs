@@ -16,10 +16,14 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+using Rock.Tests.Shared.Constants;
+
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public partial class ColorFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public partial class ColorFilterTests
     {
         /// <summary>
         /// Applying the AdjustHue color filter returns the expected value.
@@ -27,7 +31,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void AdjustHue_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#75ee25", "{{ '#ee7625' | AdjustHue:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | AdjustHue:'20%' }}" );
+
+                Assert.AreEqual( "#75ee25", output );
+            } );
         }
 
         /// <summary>
@@ -36,7 +45,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Darken_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#a0480d", "{{ '#ee7625' | Darken:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Darken:'20%' }}" );
+
+                Assert.AreEqual( "#a0480d", output );
+            } );
         }
 
         /// <summary>
@@ -45,7 +59,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Desaturate_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#d77b3c", "{{ '#ee7625' | Desaturate:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Desaturate:'20%' }}" );
+
+                Assert.AreEqual( "#d77b3c", output );
+            } );
         }
 
         /// <summary>
@@ -54,7 +73,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void FadeIn_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "rgba(238, 118, 37, 1)", "{{ 'rgba( 238, 118, 37, 0.8 )' | FadeIn:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'rgba( 238, 118, 37, 0.8 )' | FadeIn:'20%' }}" );
+
+                Assert.AreEqual( "rgba(238, 118, 37, 1)", output );
+            } );
         }
 
         /// <summary>
@@ -63,7 +87,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void FadeOut_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "rgba(238, 118, 37, 0.8)", "{{ '#ee7625' | FadeOut:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | FadeOut:'20%' }}" );
+
+                Assert.AreEqual( "rgba(238, 118, 37, 0.8)", output );
+            } );
         }
 
         /// <summary>
@@ -72,7 +101,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Grayscale_AppliedToKnownColor_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#8a8a8a", "{{ '#ee7625' | Grayscale }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Grayscale }}" );
+
+                Assert.AreEqual( "#8a8a8a", output );
+            } );
         }
 
         /// <summary>
@@ -81,7 +115,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Lighten_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#f5b184", "{{ '#ee7625' | Lighten:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Lighten:'20%' }}" );
+
+                Assert.AreEqual( "#f5b184", output );
+            } );
         }
 
         /// <summary>
@@ -90,7 +129,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Mix_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#cc794e", "{{ '#ee7625' | Mix:'#4286f4','20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Mix:'#4286f4','20%' }}" );
+
+                Assert.AreEqual( "#cc794e", output );
+            } );
         }
 
         /// <summary>
@@ -99,7 +143,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Saturate_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#ff7314", "{{ '#ee7625' | Saturate:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Saturate:'20%' }}" );
+
+                Assert.AreEqual( "#ff7314", output );
+            } );
         }
 
         /// <summary>
@@ -108,7 +157,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Shade_WithPercentageParameter_ReturnsCorrectValue()
         {
-            TestHelper.AssertTemplateOutput( "#be5e1e", "{{ '#ee7625' | Shade:'20%' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '#ee7625' | Shade:'20%' }}" );
+
+                Assert.AreEqual( "#be5e1e", output );
+            } );
         }
 
     }

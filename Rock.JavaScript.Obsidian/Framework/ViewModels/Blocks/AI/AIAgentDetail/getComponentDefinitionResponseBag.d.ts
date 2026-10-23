@@ -41,4 +41,11 @@ export type GetComponentDefinitionResponseBag = {
 
     /** The current configuration values for the skill. */
     configurationValues?: Record<string, string> | null;
+
+    /**
+     * The description of each available tool, keyed by the tool's unique
+     * identifier. The keys match the values in Rock.ViewModels.Blocks.AI.AIAgentDetail.GetComponentDefinitionResponseBag.AvailableTools
+     * so the UI can display each tool's purpose alongside its checkbox.
+     */
+    toolDescriptions?: Record<string, string> | null;
 };

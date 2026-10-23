@@ -64,11 +64,16 @@ internal class LavaEndpointDetailResult
     public string SecurityMode { get; set; }
 
     /// <summary>
-    /// Who may execute this endpoint when it answers for itself
-    /// (EndpointExecute mode), from its Execute allow rules. <c>null</c> in
-    /// the application modes, where the application's audience governs.
+    /// The IdKey of the endpoint, paired with entityTypeIdKey and the Execute
+    /// action in the Core Administration skill's authorization tools when the
+    /// endpoint answers for itself (EndpointExecute mode).
     /// </summary>
-    public List<string> Audiences { get; set; }
+    public string EndpointIdKey { get; set; }
+
+    /// <summary>
+    /// The IdKey of the Lava Endpoint entity type.
+    /// </summary>
+    public string EntityTypeIdKey { get; set; }
 
     /// <summary>
     /// The MIME content type the endpoint's response declares.

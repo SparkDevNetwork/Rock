@@ -78,4 +78,19 @@ internal class WorkflowAttributeResult : EntityResultBase
     /// attribute's options visible.
     /// </summary>
     public Dictionary<string, string> ConfigurationValues { get; set; }
+
+    /// <summary>
+    /// Describes the shape of a stored value for this attribute, resolved from its
+    /// field type and its own configuration. Null when the field type does not
+    /// describe itself. For a Person attribute this is what warns that the stored
+    /// value is a person alias guid rather than the person's own guid, which is the
+    /// format a Lava template writing into this attribute has to produce.
+    /// </summary>
+    public string ValueFormat { get; set; }
+
+    /// <summary>
+    /// How to obtain a correct value for this attribute. Null when the field type
+    /// does not describe one.
+    /// </summary>
+    public string ValueInstructions { get; set; }
 }

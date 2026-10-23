@@ -12,7 +12,7 @@
           :customActions="customActions"
           @selectItem="onSelectItem">
 
-        <ReorderColumn v-if="config?.options?.showReorderColumn" @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config?.options?.showReorderColumn && config?.isDeleteEnabled" @orderChanged="onOrderChanged" />
 
         <TextColumn name="title"
                     title="Title"

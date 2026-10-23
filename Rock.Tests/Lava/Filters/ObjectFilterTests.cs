@@ -18,12 +18,16 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class ObjectFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class ObjectFilterTests
     {
         /// <summary>
         /// Referencing a valid property of an input object should return the property value.
@@ -31,9 +35,15 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Property_AnonymousObjectFirstLevelPropertyAccess_ReturnsPropertyValue()
         {
-            var mergeValues = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
+            var mergeValues = new LavaDataDictionary { { "CurrentPerson", LavaTestData.GetTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "Decker", "{{ CurrentPerson | Property:'LastName' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson | Property:'LastName' }}", options );
+
+                Assert.AreEqual( "Decker", output );
+            } );
         }
 
         /// <summary>
@@ -42,9 +52,15 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Property_AnonymousObjectSecondLevelPropertyAccess_ReturnsValue()
         {
-            var mergeValues = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
+            var mergeValues = new LavaDataDictionary { { "CurrentPerson", LavaTestData.GetTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "North Campus", "{{ CurrentPerson | Property:'Campus.Name' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson | Property:'Campus.Name' }}", options );
+
+                Assert.AreEqual( "North Campus", output );
+            } );
         }
 
         /// <summary>
@@ -53,9 +69,15 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Property_InvalidPropertyName_ReturnsEmptyString()
         {
-            var mergeValues = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
+            var mergeValues = new LavaDataDictionary { { "CurrentPerson", LavaTestData.GetTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ CurrentPerson | Property:'NonexistentProperty' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson | Property:'NonexistentProperty' }}", options );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -83,7 +105,13 @@ namespace Rock.Tests.Lava.Filters
 
             var expectedOutput = @"6235558888<br>";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, templateInput, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -109,7 +137,13 @@ namespace Rock.Tests.Lava.Filters
 
             var expectedOutput = @"22<br>";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, templateInput, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -137,7 +171,13 @@ namespace Rock.Tests.Lava.Filters
 
             // Only the dictionary whose GroupingId equals 5 should be returned; the null-valued
             // item must be skipped without throwing.
-            TestHelper.AssertTemplateOutput( "2;", templateInput, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, templateInput, options );
+
+                Assert.AreEqual( "2;", output );
+            } );
         }
 
         /// <summary>
@@ -164,7 +204,13 @@ namespace Rock.Tests.Lava.Filters
             // Both the GroupingId=4 and the GroupingId=null items are "not equal" to 5 and
             // should be returned. (The null-valued item was previously throwing, aborting the
             // entire template.) GroupingId=5 is the only item excluded.
-            TestHelper.AssertTemplateOutput( "1;3;", templateInput, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, templateInput, options );
+
+                Assert.AreEqual( "1;3;", output );
+            } );
         }
 
         /// <summary>
@@ -189,7 +235,13 @@ namespace Rock.Tests.Lava.Filters
 {%- endfor %}";
 
             // Only Bravo contains 'Bra'. The null-valued item must be skipped without throwing.
-            TestHelper.AssertTemplateOutput( "2;", templateInput, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, templateInput, options );
+
+                Assert.AreEqual( "2;", output );
+            } );
         }
 
         /// <summary>
@@ -211,7 +263,13 @@ Good evening!
 
             // The matching item is emitted AND the literal text after the filter is preserved -
             // the bug otherwise short-circuits the entire template render with an NRE.
-            TestHelper.AssertTemplateOutput( "2; Good evening!", templateInput, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, templateInput );
+
+                // The leading line feeds are what the five setup tags leave behind.
+                Assert.AreEqual( "\n\n\n\n\n\n2;\nGood evening!\n", output );
+            } );
         }
 
         /// <summary>

@@ -87,10 +87,19 @@ namespace Rock.Blocks.Administration
         [BlockAction]
         public BlockActionResult MarkAsRead( Guid notificationRecipientGuid )
         {
+            var currentPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+
+            if ( !currentPersonAliasId.HasValue )
+            {
+                return ActionNotFound();
+            }
+
             var notificationRecipient = new NotificationRecipientService( RockContext )
                 .Get( notificationRecipientGuid );
 
-            if ( notificationRecipient == null )
+            // Only allow the current person to mark their own notifications
+            // as read, matching the scope of the list shown at init.
+            if ( notificationRecipient == null || notificationRecipient.PersonAliasId != currentPersonAliasId.Value )
             {
                 return ActionNotFound();
             }

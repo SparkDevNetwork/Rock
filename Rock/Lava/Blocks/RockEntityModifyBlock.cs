@@ -324,10 +324,11 @@ namespace Rock.Lava.Blocks
 
                     rockContext.SaveChanges();
 
-                    // Save attributes if any were updated.
+                    // Save attributes if any were updated. Pass the Lava context's RockContext
+                    // so the values are part of any surrounding dbtransaction and roll back with it.
                     if ( attributesWereUpdated )
                     {
-                        entityAsIHasAttributes.SaveAttributeValues();
+                        entityAsIHasAttributes.SaveAttributeValues( rockContext );
                         rockContext.SaveChanges();
                     }
 
@@ -496,6 +497,13 @@ namespace Rock.Lava.Blocks
             if ( type.IsEnum )
             {
                 return Enum.Parse( type, value.ToString() );
+            }
+
+            // Special logic for Guids, Guid does not implement IConvertible so
+            // Convert.ChangeType(...) can't convert a string into one.
+            if ( type == typeof( Guid ) && !( value is Guid ) )
+            {
+                return Guid.Parse( value.ToString().Trim() );
             }
 
             return Convert.ChangeType( value, type );

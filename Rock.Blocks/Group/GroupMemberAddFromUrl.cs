@@ -88,8 +88,8 @@ namespace Rock.Blocks.Group
 
     [GroupTypesField(
         "Limit Group Type",
-        Description = "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.",
-        IsRequired = false,
+        Description = "The group types that people can be added to from a link. Required: when blank, the block adds no one. Security role groups are not supported.",
+        IsRequired = true,
         Order = 5,
         Key = AttributeKey.LimitGroupType )]
 
@@ -163,6 +163,27 @@ namespace Rock.Blocks.Group
         /// <returns>The rendered HTML message (a Lava result or an alert).</returns>
         private string ProcessAddRequest()
         {
+            /*
+                10/19/2026 - MSE
+
+                Limit Group Type is required. The block adds no one until an administrator
+                selects the group types it may add people to, and it never accepts the
+                Security Role group type. These checks run before any value from the URL
+                is read so a misconfigured block makes no changes.
+
+                Reason: Only add people to group types an administrator has allowed.
+            */
+            var allowedGroupTypeGuids = GetAttributeValue( AttributeKey.LimitGroupType ).SplitDelimitedValues().AsGuidList();
+            if ( !allowedGroupTypeGuids.Any() )
+            {
+                return Alert( "This block is not configured. An administrator must select one or more group types in the Limit Group Type setting." );
+            }
+
+            if ( allowedGroupTypeGuids.Contains( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+            {
+                return Alert( "Security role groups are not supported by this block. An administrator must remove the Security Role group type from the Limit Group Type setting." );
+            }
+
             var groupService = new GroupService( RockContext );
 
             var group = GetGroup( groupService );
@@ -173,19 +194,23 @@ namespace Rock.Blocks.Group
 
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
 
-            // Restrict which group types may be targeted so a modified URL cannot add
-            // a person to an arbitrary security group with a known Id.
-            var limitGroupTypeValue = GetAttributeValue( AttributeKey.LimitGroupType );
-            if ( limitGroupTypeValue.IsNotNullOrWhiteSpace() )
-            {
-                var allowedGroupTypeGuids = limitGroupTypeValue.SplitDelimitedValues();
-                var isGroupTypeAllowed = groupType != null
-                    && allowedGroupTypeGuids.Contains( groupType.Guid.ToString(), StringComparer.OrdinalIgnoreCase );
+            /*
+                10/19/2026 - MSE
 
-                if ( !isGroupTypeAllowed )
-                {
-                    return Alert( "Invalid group specified." );
-                }
+                The group, whether it came from the URL or the Default Group setting,
+                must be of one of the allowed group types, and it must never be a
+                security role group, whatever the block settings say.
+
+                Reason: Only add people to allowed groups, never to security roles.
+            */
+            if ( groupType == null || !allowedGroupTypeGuids.Contains( groupType.Guid ) )
+            {
+                return Alert( "Invalid group specified." );
+            }
+
+            if ( group.IsSecurityRoleOrSecurityGroupType() )
+            {
+                return Alert( "Invalid group specified." );
             }
 
             var groupMemberRole = GetGroupMemberRole( group );

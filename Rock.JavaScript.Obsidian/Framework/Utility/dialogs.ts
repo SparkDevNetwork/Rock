@@ -361,7 +361,20 @@ export function confirmDelete(typeName: string, additionalMessage?: string): Pro
  * @param entityTitle The title of the entity. This is used to construct the modal title.
  */
 export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKey: Guid | string | number, entityTitle: string = "Item"): void {
-    Rock.controls.modal.show(undefined, `/Secure/${entityTypeIdKey}/${entityIdKey}?t=Secure ${entityTitle}&pb=&sb=Done`);
+    /*
+        10/1/26 - MSE
+
+        The title must be URL encoded. An unencoded "#" (e.g. "Test Snippet #1")
+        starts a URL fragment, so the server never receives pb/sb. The Dialog
+        layout then falls back to its default Save button, which posts back
+        without closing the modal. An unencoded "&", "+" or "%" also garbles
+        the title.
+
+        Reason: Keep the item title from truncating the modal's query string.
+    */
+    const title = encodeURIComponent(`Secure ${entityTitle}`);
+
+    Rock.controls.modal.show(undefined, `/Secure/${entityTypeIdKey}/${entityIdKey}?t=${title}&pb=&sb=Done`);
 }
 
 /**

@@ -149,6 +149,33 @@ namespace Rock.Tests.CheckIn.v2.Filters
         }
 
         [TestMethod]
+        public void FilterGroups_WithPrioritizeGradeOverAge_DoesNotRemoveAgeMatchWhenOnlyGradeMatchIsDataViewFiltered()
+        {
+            // Regression test for Issue #7059 (DataView variant). A DataView-filtered
+            // grade match must not count as a grade match for prioritization; the
+            // DataView filter, not this one, decides whether the person is eligible.
+            var minGrade = 3;
+            var minAge = 3;
+            var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
+
+            var filter = CreateGradeAndAgeFilter( minGrade, birthdate, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
+            var groupOpportunityByGradeDataViewFiltered = CreateGroupOpportunity( minGradeOffset: minGrade, dataViewGuids: new List<Guid> { Guid.NewGuid() } );
+            var groupOpportunityByAge = CreateGroupOpportunity( minAge: minAge );
+            var opportunities = new OpportunityCollection
+            {
+                Groups = new List<GroupOpportunity>
+                {
+                    groupOpportunityByGradeDataViewFiltered,
+                    groupOpportunityByAge
+                }
+            };
+
+            filter.FilterGroups( opportunities );
+
+            Assert.HasCount( 2, opportunities.Groups );
+        }
+
+        [TestMethod]
         public void FilterGroups_WithPrioritizeGradeOverAge_IncludesGroupsWithAlreadyEnrolled()
         {
             var minGrade = 3;
@@ -171,6 +198,36 @@ namespace Rock.Tests.CheckIn.v2.Filters
             Assert.HasCount( 2, opportunities.Groups );
             Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
             Assert.AreSame( groupOpportunityByDataView, opportunities.Groups[1] );
+        }
+
+        [TestMethod]
+        public void FilterGroups_WithPrioritizeGradeOverAge_DoesNotRemoveAgeMatchWhenOnlyGradeMatchRequiresEnrollment()
+        {
+            // Regression test for Issue #7059. When the only grade-matched group
+            // requires membership ("Already Enrolled in Group"), it must NOT count
+            // as a grade match for prioritization purposes; otherwise the valid
+            // age-matched group is wrongly removed here, and the membership filter
+            // later removes the grade-matched group, leaving the person with no
+            // options at all.
+            var minGrade = 3;
+            var minAge = 3;
+            var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
+
+            var filter = CreateGradeAndAgeFilter( minGrade, birthdate, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
+            var groupOpportunityByGradeEnrollmentRequired = CreateGroupOpportunity( minGradeOffset: minGrade, attendanceRule: AttendanceRule.AlreadyEnrolledInGroup );
+            var groupOpportunityByAge = CreateGroupOpportunity( minAge: minAge );
+            var opportunities = new OpportunityCollection
+            {
+                Groups = new List<GroupOpportunity>
+                {
+                    groupOpportunityByGradeEnrollmentRequired,
+                    groupOpportunityByAge
+                }
+            };
+
+            filter.FilterGroups( opportunities );
+
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         #endregion

@@ -18,12 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 
 using IdentityModel;
@@ -81,6 +78,11 @@ namespace Rock.Security.ExternalAuthentication
         IsRequired = false,
         Key = AttributeKey.RequestedScopes,
         Order = 6 )]
+    [BooleanField( "Require Verified Email",
+        Key = AttributeKey.RequireVerifiedEmail,
+        Description = "When enabled, a first sign-in is matched to an existing person only if the identity provider reports the email address as verified (the email_verified claim). Otherwise a new person is created. Disable this only if your provider verifies every email address but does not send the email_verified claim.",
+        DefaultBooleanValue = true,
+        Order = 7 )]
     [Rock.SystemGuid.EntityTypeGuid( "2C964ABD-3F4D-43F8-B170-21A2A210EB30")]
     public class OidcClient : AuthenticationComponent, IExternalRedirectAuthentication
     {
@@ -118,6 +120,11 @@ namespace Rock.Security.ExternalAuthentication
             /// The post logout redirect URI
             /// </summary>
             public const string PostLogoutRedirectUri = "PostLogoutRedirectUri";
+
+            /// <summary>
+            /// Whether a first sign-in requires a verified email to link to an existing person.
+            /// </summary>
+            internal const string RequireVerifiedEmail = "RequireVerifiedEmail";
         }
 
         /// <summary>
@@ -414,8 +421,22 @@ namespace Rock.Security.ExternalAuthentication
 
                     Person person = null;
 
+                    /*
+                        10/19/2026 - MSE
+
+                        An email that the identity provider has not verified is not proof that the
+                        caller owns the matched record, so only look for an existing person when the
+                        ID token has email_verified set to true (unless an admin turned off Require
+                        Verified Email). A missing claim counts as not verified. Otherwise a new
+                        pending person is created below.
+
+                        Reason: Link a first sign-in to an existing person only by a verified email.
+                    */
+                    var requireVerifiedEmail = GetAttributeValue( AttributeKey.RequireVerifiedEmail ).AsBooleanOrNull() ?? true;
+                    var isEmailVerified = idToken.GetClaimValue( JwtClaimTypes.EmailVerified ).AsBoolean();
+
                     // If person had an email, get the first person with the same name and email address.
-                    if ( !string.IsNullOrWhiteSpace( email ) )
+                    if ( !string.IsNullOrWhiteSpace( email ) && ( isEmailVerified || !requireVerifiedEmail ) )
                     {
                         var personService = new PersonService( rockContext );
                         person = personService.FindPerson( firstName, lastName, email, true );
@@ -492,37 +513,9 @@ namespace Rock.Security.ExternalAuthentication
         {
             if ( !person.PhotoId.HasValue && photoUri.IsNotNullOrWhiteSpace() )
             {
-                byte[] bytes = null;
-                string contentType = string.Empty;
-                var photoExtension = string.Empty;
-                using ( var client = new HttpClient() )
+                if ( !Rock.Net.RemoteImageDownloader.TryDownloadImage( photoUri, out var bytes, out var contentType, out var photoExtension ) )
                 {
-                    var photoResponse = client.GetAsync( photoUri ).GetAwaiter().GetResult();
-                    if ( photoResponse.IsSuccessStatusCode )
-                    {
-                        bytes = photoResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
-                        contentType = photoResponse.Content.Headers.ContentType.MediaType;
-                        photoExtension = GetValidExtensionFromContentType( contentType );
-
-                        // if content type is empty assume jpeg.
-                        if ( contentType.IsNullOrWhiteSpace() )
-                        {
-                            using ( MemoryStream mem = new MemoryStream( bytes ) )
-                            {
-                                using ( var yourImage = Image.FromStream( mem ) )
-                                {
-                                    contentType = "image/jpeg";
-                                    photoExtension = "jpg";
-
-                                    using ( MemoryStream tempImage = new MemoryStream() )
-                                    {
-                                        yourImage.Save( tempImage, ImageFormat.Jpeg );
-                                        bytes = tempImage.ToArray();
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    return;
                 }
 
                 if ( bytes != null && contentType.IsNotNullOrWhiteSpace() && photoExtension.IsNotNullOrWhiteSpace() )
@@ -640,31 +633,6 @@ namespace Rock.Security.ExternalAuthentication
             {
                 person.Gender = Gender.Unknown;
             }
-        }
-
-        /// <summary>
-        /// Gets the valid image extension. This method will return only gif, jpg, or png. All other content types will return empty string and therefore should not be processed.
-        /// </summary>
-        /// <param name="contentType">Content type</param>
-        /// <returns></returns>
-        private string GetValidExtensionFromContentType( string contentType )
-        {
-            if ( contentType.Equals( "image/gif", StringComparison.InvariantCultureIgnoreCase ) )
-            {
-                return "gif";
-            }
-
-            if ( contentType.Equals( "image/jpeg", StringComparison.InvariantCultureIgnoreCase ) )
-            {
-                return "jpg";
-            }
-
-            if ( contentType.Equals( "image/png", StringComparison.InvariantCultureIgnoreCase ) )
-            {
-                return "png";
-            }
-
-            return string.Empty;
         }
 
         private string EncodeBcrypt( string input )

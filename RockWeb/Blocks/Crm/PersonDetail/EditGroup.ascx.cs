@@ -244,7 +244,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", _groupType.Name );
             }
 
-            _canEdit = IsUserAuthorized( Authorization.EDIT );
+            // Only allow groups the context person belongs to, and require VIEW on non-family groups.
+            var isPersonInGroup = Person != null
+                && Person.Id > 0
+                && new GroupMemberService( rockContext ).Queryable( true ).Any( m => m.GroupId == _group.Id && m.PersonId == Person.Id );
+
+            if ( !isPersonInGroup || ( !_isFamilyGroupType && !_group.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
+            {
+                nbInvalidGroup.Text = "Sorry, you are not authorized to view this group.";
+                nbInvalidGroup.NotificationBoxType = NotificationBoxType.Danger;
+                nbInvalidGroup.Visible = true;
+
+                _group = null;
+                pnlEditGroup.Visible = false;
+                return;
+            }
+
+            // Security role membership must never be changed from this block.
+            _canEdit = IsUserAuthorized( Authorization.EDIT )
+                && ( _isFamilyGroupType || _group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                && !_group.IsSecurityRoleOrSecurityGroupType();
 
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
@@ -1145,6 +1164,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            if ( _group == null || !_canEdit )
+            {
+                return;
+            }
+
             // if a Location is getting edited, validate and save it
             if ( gLocations.EditIndex >= 0 )
             {
@@ -1159,11 +1183,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     // acAddress will render an error message
                     return;
                 }
-            }
-
-            if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
-            {
-                return;
             }
 
             // confirmation was disabled by btnSave on client-side.  So if returning without a redirect,
@@ -1510,6 +1529,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
+            if ( _group == null || !_canEdit )
+            {
+                return;
+            }
+
             var groupId = _group.Id;
             var rockContext = RockApp.Current.CreateRockContext();
             var groupMemberService = new GroupMemberService( rockContext );
@@ -1519,20 +1543,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var groupMember = groupMembers.FirstOrDefault();
 
-                // If the person's giving group id is this group, change their giving group id to null
-                if ( groupMember.Person.GivingGroupId == groupMember.GroupId )
+                if ( groupMember != null )
                 {
-                    var personService = new PersonService( rockContext );
-                    var person = personService.Get( groupMember.PersonId );
-                    if ( person != null )
+                    // If the person's giving group id is this group, change their giving group id to null
+                    if ( groupMember.Person.GivingGroupId == groupMember.GroupId )
                     {
-                        person.GivingGroupId = null;
-                        rockContext.SaveChanges();
+                        var personService = new PersonService( rockContext );
+                        var person = personService.Get( groupMember.PersonId );
+                        if ( person != null )
+                        {
+                            person.GivingGroupId = null;
+                            rockContext.SaveChanges();
+                        }
                     }
-                }
 
-                groupMemberService.Delete( groupMember );
-                rockContext.SaveChanges();
+                    groupMemberService.Delete( groupMember );
+                    rockContext.SaveChanges();
+                }
             }
 
             var groupService = new GroupService( rockContext );
@@ -1620,6 +1647,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 btnDelete.Visible = true;
             }
 
+            btnDelete.Visible = btnDelete.Visible && _canEdit;
+
+            /*
+                10/15/2026 - MSE
+
+                The member names are written by data binding expressions in the ascx, which do
+                not encode, and person names are plain text that anyone can set (for example
+                through a public signup form), so the ascx HTML encodes NickName and LastName.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             lvMembers.DataSource = GetMembersOrdered();
             lvMembers.DataBind();
         }
@@ -2012,7 +2050,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     return string.Empty;
                 }
 
-                return result.ConvertCrLfToHtmlBr();
+                /*
+                    10/18/2026 - MSE
+
+                    The address column writes this value as HTML. Address parts are plain text
+                    that anyone can set (for example through Family Pre-Registration), so the text
+                    is encoded before the line breaks are turned into <br> tags.
+
+                    Reason: Prevent stored XSS through a family address.
+                */
+                return result.EncodeHtml().ConvertCrLfToHtmlBr();
             }
         }
     }

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.TransactionReport;
@@ -172,10 +173,44 @@ namespace Rock.Blocks.Finance
         {
             if ( GetAttributeValue( AttributeKey.UsePersonContext ).AsBoolean() )
             {
-                return RequestContext.GetContextEntity<Person>();
+                return GetAuthorizedContextPerson();
             }
 
             return RequestContext.CurrentPerson;
+        }
+
+        /// <summary>
+        /// Gets the person context, but only if the current person is allowed to view that
+        /// person's transactions. This is allowed if the person is the current person, shares
+        /// the same giving unit, is one of the current person's businesses, or the current
+        /// person is authorized to view financial transactions.
+        /// </summary>
+        /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
+        private Person GetAuthorizedContextPerson()
+        {
+            var contextPerson = RequestContext.GetContextEntity<Person>();
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( contextPerson == null || currentPerson == null )
+            {
+                return null;
+            }
+
+            var isCurrentPerson = contextPerson.Id == currentPerson.Id;
+            var isInGivingUnit = contextPerson.GivingId.IsNotNullOrWhiteSpace()
+                && contextPerson.GivingId == currentPerson.GivingId;
+
+            if ( isCurrentPerson || isInGivingUnit || currentPerson.GetBusinesses( RockContext ).Any( b => b.Id == contextPerson.Id ) )
+            {
+                return contextPerson;
+            }
+
+            if ( new FinancialTransaction().IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return contextPerson;
+            }
+
+            return null;
         }
 
         /// <summary>

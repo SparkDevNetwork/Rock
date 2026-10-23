@@ -109,6 +109,22 @@ General advice on how to run Docker Desktop in a virtualized environment can be 
 
 To configure Docker for a Hyper-V virtual machine, follow the more specific instructions [here](https://learn.microsoft.com/en-us/virtualization/hyper-v-on-windows/user-guide/enable-nested-virtualization).
 
+### Using a Docker host other than the local default
+The test framework finds the Docker host the way Testcontainers does, so a Docker
+installation that is not in the default local location is picked up automatically.
+Set `DOCKER_HOST`, or add a `docker.host` entry to `~/.testcontainers.properties`,
+and both the containers and the database image will use it. This covers Colima,
+Rancher Desktop, Podman and rootless Docker, as well as a daemon on another machine.
+
+A remote host has two extra requirements. The daemon has to be reachable from this
+machine, over TLS if it is not on a trusted network. Each container also publishes
+SQL Server on a randomly chosen port on the Docker host, and this machine has to be
+able to reach those ports directly - an SSH tunnel to the daemon alone is not enough.
+
+Set `CONTAINER_POOL_SIZE` when using a remote host. The pool otherwise sizes itself
+from the memory of the machine running the tests, which is not the machine the
+containers run on.
+
 ## Configuring LocalDb
 LocalDB is a minimal instance of SQL Server Express that is specifically targeted for local development and testing.
 This database container is best suited to managing non-standard database configurations, such as when testing a feature

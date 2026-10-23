@@ -253,16 +253,39 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the next check in start time.
+        /// Gets the time that check-in opens for the next occurrence on or after
+        /// the specified date and time. This is the occurrence's start time shifted
+        /// earlier by <see cref="CheckInStartOffsetMinutes" />, not the schedule's
+        /// start time. Use <see cref="GetNextCheckInOccurrenceStartTime(DateTime)" />
+        /// for the actual schedule start time.
         /// </summary>
         /// <param name="beginDateTime">The begindate time.</param>
-        /// <returns>The next <see cref="DateTime"/> that check-in will be active today or <c>null</c> if it will not be active anymore.</returns>
+        /// <returns>The <see cref="DateTime"/> that check-in opens for the next occurrence today, or <c>null</c> if there is none.</returns>
         public virtual DateTime? GetNextCheckInStartTime( DateTime beginDateTime )
         {
             var checkInTimes = GetCheckInTimes( beginDateTime );
             if ( checkInTimes != null && checkInTimes.Any() )
             {
                 return checkInTimes.FirstOrDefault().CheckInStart;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the start time of the next check-in occurrence on or after the
+        /// specified date and time. Unlike <see cref="GetNextCheckInStartTime(DateTime)" />,
+        /// this returns the schedule's actual start time and does not subtract
+        /// <see cref="CheckInStartOffsetMinutes" />.
+        /// </summary>
+        /// <param name="beginDateTime">The begindate time.</param>
+        /// <returns>The schedule start time of the next check-in occurrence today, or <c>null</c> if there is none.</returns>
+        public virtual DateTime? GetNextCheckInOccurrenceStartTime( DateTime beginDateTime )
+        {
+            var checkInTimes = GetCheckInTimes( beginDateTime );
+            if ( checkInTimes != null && checkInTimes.Any() )
+            {
+                return checkInTimes.FirstOrDefault().Start;
             }
 
             return null;

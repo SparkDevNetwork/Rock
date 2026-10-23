@@ -10,6 +10,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 
 namespace Rock.Blocks.Crm.PersonDetail

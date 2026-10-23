@@ -22,6 +22,7 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -54,6 +55,21 @@ internal sealed partial class PrayerSkill
         if ( prayerRequestIdKey.IsNotNullOrWhiteSpace() )
         {
             prayerRequest = helper.GetRequiredEntity<PrayerRequest>( prayerRequestIdKey );
+
+            /*
+                10/16/2026 - MSE
+
+                Loading the request only checks VIEW, which every person has on
+                prayer requests by default. Changing an existing request must
+                require EDIT on it, as the other agent write tools do, so a person
+                who can use this skill cannot rewrite requests they could only see.
+
+                Reason: Prevent editing prayer requests without EDIT permission.
+            */
+            if ( prayerRequest != null && !prayerRequest.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                return Error( "You are not authorized to edit this prayer request." );
+            }
         }
         else
         {

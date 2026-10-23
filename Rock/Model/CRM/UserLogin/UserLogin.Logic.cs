@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -93,6 +94,17 @@ namespace Rock.Model
         public override bool IsAllowedByDefault( string action )
         {
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = base.ToDictionary();
+
+            dictionary.Remove( nameof( Password ) );
+            dictionary.Remove( nameof( ApiKey ) );
+
+            return dictionary;
         }
     }
 }

@@ -16,10 +16,13 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -162,6 +165,23 @@ const label = ref(""hello"");
 
 <script setup>
 const count = 1;
+</script>
+";
+
+        private const string PlaceholderSource = @"<placeholder>
+    <div class=""panel panel-block"">
+        <div class=""skeleton skeleton-block"" style=""height: 200px""></div>
+    </div>
+</placeholder>
+
+<template>
+    <div class=""panel panel-block"">{{ label }}</div>
+</template>
+
+<script setup>
+import { ref } from ""vue"";
+
+const label = ref(""hello"");
 </script>
 ";
 
@@ -342,7 +362,106 @@ const count = 1;
             Assert.IsTrue( result.Errors.Any( e => e.Contains( unreachableEndpoint ) ), "The error must name the endpoint that could not be reached." );
         }
 
+        [TestMethod]
+        public void CompileSource_WithPlaceholderBlock_IgnoresThePlaceholder()
+        {
+            // The Vue SFC parser must treat <placeholder> as a custom block and
+            // leave it out of the compiled component entirely.
+            var compiler = new ForgeContentCompiler( GetBundlePathOrInconclusive(), GetBrowserPathOrInconclusive() );
+
+            var result = compiler.CompileSource( PlaceholderSource );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+            Assert.IsFalse( result.CompiledContent.Contains( "skeleton-block" ), "The placeholder HTML must not be compiled into the component." );
+        }
+
+        [TestMethod]
+        public void CompileSource_AfterCompile_LeavesNoBrowserProcessRunning()
+        {
+            // Regression: the compile browser used to be a long-lived static that
+            // nothing closed, so every app domain left a Chrome running that held
+            // App_Data\ChromeEngine open and broke deploys. Each compile must now
+            // release its own browser. Processes already running from the engine
+            // before the compile are ignored so an unrelated Chrome cannot fail this.
+            var browserPath = GetBrowserPathOrInconclusive();
+            var compiler = new ForgeContentCompiler( GetBundlePathOrInconclusive(), browserPath );
+            var engineDirectory = Path.GetDirectoryName( browserPath );
+            var existingProcessIds = GetEngineProcessIds( engineDirectory );
+
+            var result = compiler.CompileSource( ValidSource );
+
+            Assert.IsTrue( result.IsSuccess, "Compile failed: " + string.Join( "; ", result.Errors ) );
+
+            // Child processes (GPU, renderers) can take a moment to exit after the
+            // browser process does, so allow a short grace period.
+            var leftoverProcessIds = GetEngineProcessIds( engineDirectory ).Except( existingProcessIds ).ToList();
+            var deadline = DateTime.UtcNow.AddSeconds( 10 );
+
+            while ( leftoverProcessIds.Any() && DateTime.UtcNow < deadline )
+            {
+                Thread.Sleep( 250 );
+                leftoverProcessIds = GetEngineProcessIds( engineDirectory ).Except( existingProcessIds ).ToList();
+            }
+
+            Assert.AreEqual( 0, leftoverProcessIds.Count, "Chrome processes were left running from the engine path: " + string.Join( ", ", leftoverProcessIds ) );
+        }
+
         #endregion CompileSource
+
+        #region GetPlaceholderHtml
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithPlaceholderBlock_ReturnsItsContent()
+        {
+            var html = ForgeContentCompiler.GetPlaceholderHtml( PlaceholderSource );
+
+            Assert.IsTrue( html.StartsWith( "<div class=\"panel panel-block\">", StringComparison.Ordinal ), "Unexpected placeholder: " + html );
+            Assert.IsTrue( html.EndsWith( "</div>", StringComparison.Ordinal ), "Unexpected placeholder: " + html );
+            Assert.IsTrue( html.Contains( "skeleton-block" ) );
+            Assert.IsFalse( html.Contains( "placeholder>" ), "The placeholder tags themselves must not be returned." );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithWindowsLineEndings_ReturnsItsContent()
+        {
+            var html = ForgeContentCompiler.GetPlaceholderHtml( PlaceholderSource.Replace( "\r\n", "\n" ).Replace( "\n", "\r\n" ) );
+
+            Assert.IsTrue( html.Contains( "skeleton-block" ) );
+            Assert.IsFalse( html.Contains( "placeholder>" ) );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithoutPlaceholderBlock_ReturnsEmpty()
+        {
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( ValidSource ) );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithEmptySource_ReturnsEmpty()
+        {
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( null ) );
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( string.Empty ) );
+        }
+
+        [TestMethod]
+        public void GetPlaceholderHtml_WithIndentedTagInsideTemplate_ReturnsEmpty()
+        {
+            // Only a top-level block counts. A <placeholder> element used inside
+            // the template is component markup, not the block's initial HTML.
+            var source = @"<template>
+    <placeholder>
+        <span>inside the template</span>
+    </placeholder>
+</template>
+
+<script setup>
+</script>
+";
+
+            Assert.AreEqual( string.Empty, ForgeContentCompiler.GetPlaceholderHtml( source ) );
+        }
+
+        #endregion GetPlaceholderHtml
 
         #region Support
 
@@ -392,6 +511,42 @@ const count = 1;
             builder.AppendLine( "</script>" );
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Gets the ids of the running chrome.exe processes launched from the
+        /// given engine directory.
+        /// </summary>
+        /// <param name="engineDirectory">The directory holding the Chromium executable.</param>
+        /// <returns>The ids of the matching processes.</returns>
+        private static List<int> GetEngineProcessIds( string engineDirectory )
+        {
+            var processIds = new List<int>();
+
+            foreach ( var process in Process.GetProcessesByName( "chrome" ) )
+            {
+                try
+                {
+                    var fileName = process.MainModule?.FileName;
+
+                    if ( fileName != null && fileName.StartsWith( engineDirectory, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        processIds.Add( process.Id );
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignored: the process exited while being read, or
+                    // belongs to another user and cannot be inspected, so it is not
+                    // one this test launched.
+                }
+                finally
+                {
+                    process.Dispose();
+                }
+            }
+
+            return processIds;
         }
 
         /// <summary>

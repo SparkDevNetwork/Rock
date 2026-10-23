@@ -133,7 +133,17 @@ namespace Rock.Utility.CaptchaApi
 
                      Reason: Enforced a max-safe token expiration to meet library constraints while minimizing user-facing disruptions.
                 */
-                TokenLifetime = TimeSpan.FromDays( 1 ).Add( TimeSpan.FromMinutes( -2 ) )
+
+                /*
+                     9/24/26 - CLAUDE
+
+                     Reduced the CAPTCHA token lifetime from just under 24 hours to 4 hours.
+                     A day-long token gave too wide a window for a solved token to be reused.
+                     Four hours is still ample time for individuals to complete long forms.
+
+                     Reason: Shortened token lifetime to limit reuse of solved CAPTCHA tokens.
+                */
+                TokenLifetime = TimeSpan.FromHours( 4 )
             };
 
             var encryptedToken = Encryption.EncryptString( captchaToken.ToJson() );

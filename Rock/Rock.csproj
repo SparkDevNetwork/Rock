@@ -22,6 +22,7 @@
     <Compile Include="CheckIn\CheckinManagerHelper.cs" />
     <Compile Include="CheckIn\CheckInTemplateSettings.cs" />
     <Compile Include="CheckIn\CheckInGroupLocationSchedule.cs" />
+    <Compile Include="CheckIn\PinAttemptLimiter.cs" />
     <Compile Include="CheckIn\RosterAttendee.cs" />
     <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />

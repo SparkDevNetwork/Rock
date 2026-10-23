@@ -122,14 +122,21 @@ namespace Rock.Model
         /// <summary>
         /// Determines whether the specified action is authorized. If the tag is personal and
         /// owned by the person, it returns true, but if it's personal and NOT owned by the person
-        /// it returns false -- otherwise (not a personal tag) it returns what the chain of authority
-        ///  determines, but note: the parent authority is the category (if the tag has a category).
+        /// (or there is no person) it returns false -- otherwise (not a personal tag) it returns
+        /// what the chain of authority determines, but note: the parent authority is the category
+        /// (if the tag has a category).
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns>True if the person is authorized; false otherwise.</returns>
         public override bool IsAuthorized( string action, Person person )
         {
+            if ( this.OwnerPersonAliasId.HasValue && person == null )
+            {
+                // A personal tag is never available to an anonymous person.
+                return false;
+            }
+
             if ( this.OwnerPersonAlias != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
             {
                 // always allow people to do anything with their own tags

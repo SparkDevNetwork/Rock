@@ -19,7 +19,8 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
+using Rock.Tests.Shared;
 using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Engine
@@ -31,7 +32,6 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
     [TestCategory( TestFeatures.Lava )]
     public class TypeConversionTests
     {
-        private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;
 
         /// <summary>
         /// Verifies the resolution of a specific Issue.
@@ -76,14 +76,20 @@ StartTimeOfDay (Formatted): 10:30 AM +11:00
     END:VCALENDAR
 </pre>
 ";
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
-                EnabledCommands = "RockEntity",
-                IgnoreWhiteSpace = true,
-                LavaEngineTypes = new List<System.Type> { typeof( FluidEngine ) }
+                EnabledCommands = "RockEntity"
             };
 
-            _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                // This test is ignored, so its exact output cannot be observed.
+                // The whitespace-insensitive comparison is kept rather than
+                // replaced with an expectation nobody can verify.
+                Assert.That.AreEqualIgnoreWhitespace( expectedOutput, output );
+            } );
         }
     }
 }

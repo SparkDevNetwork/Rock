@@ -153,14 +153,7 @@ namespace Rock.Blocks.Cms
 
                 Reason: Only content requiring approval should appear in this list.
             */
-            var entityTypeIdBlock = EntityTypeCache.Get( typeof( Block ), true, rockContext ).Id;
-            var htmlContentBlockTypeId = BlockTypeCache.Get( SystemGuid.BlockType.HTML_CONTENT.AsGuid(), rockContext ).Id.ToString();
-
-            var attributeValueQry = new AttributeValueService( rockContext ).Queryable()
-                .Where( a => a.Attribute.Key == "RequireApproval" && a.Attribute.EntityTypeId == entityTypeIdBlock )
-                .Where( a => a.Attribute.EntityTypeQualifierColumn == "BlockTypeId" && a.Attribute.EntityTypeQualifierValue == htmlContentBlockTypeId )
-                .Where( a => a.Value == "True" )
-                .Select( a => a.EntityId );
+            var attributeValueQry = GetRequireApprovalBlockIdQueryable( rockContext );
 
             var qry = base.GetListQueryable( rockContext )
                 .Include( a => a.Block.Page.Layout.Site )
@@ -203,6 +196,25 @@ namespace Rock.Blocks.Cms
             }
 
             return qry;
+        }
+
+        /// <summary>
+        /// Gets a queryable of the identifiers of the HTML Content blocks that
+        /// have the RequireApproval setting turned on. Only content for these
+        /// blocks is listed by this block.
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>A queryable of block identifiers.</returns>
+        private IQueryable<int?> GetRequireApprovalBlockIdQueryable( RockContext rockContext )
+        {
+            var entityTypeIdBlock = EntityTypeCache.Get( typeof( Block ), true, rockContext ).Id;
+            var htmlContentBlockTypeId = BlockTypeCache.Get( SystemGuid.BlockType.HTML_CONTENT.AsGuid(), rockContext ).Id.ToString();
+
+            return new AttributeValueService( rockContext ).Queryable()
+                .Where( a => a.Attribute.Key == "RequireApproval" && a.Attribute.EntityTypeId == entityTypeIdBlock )
+                .Where( a => a.Attribute.EntityTypeQualifierColumn == "BlockTypeId" && a.Attribute.EntityTypeQualifierValue == htmlContentBlockTypeId )
+                .Where( a => a.Value == "True" )
+                .Select( a => a.EntityId );
         }
 
         /// <inheritdoc/>
@@ -288,7 +300,16 @@ namespace Rock.Blocks.Cms
             var htmlContentService = new HtmlContentService( RockContext );
             var htmlContent = htmlContentService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( htmlContent == null )
+            // Only content of HTML Content blocks that require approval is
+            // listed by this block, so do not return the content of any other
+            // block (for example one on a secured page). The approval status
+            // and site filters are not applied since the row may have been
+            // toggled since the grid was loaded.
+            var isListedContent = htmlContent != null
+                && htmlContent.BlockId.HasValue
+                && GetRequireApprovalBlockIdQueryable( RockContext ).Contains( htmlContent.BlockId );
+
+            if ( !isListedContent )
             {
                 return ActionBadRequest( "Unable to find the specified HTML content." );
             }

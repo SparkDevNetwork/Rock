@@ -23,7 +23,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
@@ -40,9 +40,9 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void WorkflowActivateBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% workflowactivate workflowtype:'$ItSupportWorkflowGuid' %}
+{%- workflowactivate workflowtype:'$ItSupportWorkflowGuid' -%}
   Activated new workflow with the id of #{{ Workflow.Id }}.
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
             input = input.Replace( "$ItSupportWorkflowGuid", WorkflowTypeItSupportGuid );
 
@@ -50,7 +50,12 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             // Is this correct behavior, or should the content of the block be hidden?
             var expectedOutput = "The Lava command 'workflowactivate' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -58,17 +63,23 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         {
             // Activate Workflow: IT Support
             var input = @"
-{% workflowactivate workflowtype:'$ItSupportWorkflowGuid' workflowname:'My IT Support Request' %}
+{%- workflowactivate workflowtype:'$ItSupportWorkflowGuid' workflowname:'My IT Support Request' -%}
   Activated new workflow with the name '{{ Workflow.Name }}'.
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
             input = input.Replace( "$ItSupportWorkflowGuid", WorkflowTypeItSupportGuid );
 
-            var expectedOutput = @"Activated new workflow with the name 'My IT Support Request'.";
+            var expectedOutput = "\n"
+                + "  Activated new workflow with the name 'My IT Support Request'.\n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -81,16 +92,22 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             };
 
             var input = @"
-{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'{{WorkflowName}}' %}
+{%- workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'{{WorkflowName}}' -%}
   Activated new workflow with the name '{{ Workflow.Name }}'.
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
 
-            var expectedOutput = @"Activated new workflow with the name 'Ted's Workflow'.";
+            var expectedOutput = "\n"
+                + "  Activated new workflow with the name 'Ted's Workflow'.\n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -110,20 +127,25 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             };
 
             var input = @"
-{% workflowactivate workflowid:{{ WorkflowId }} activitytype:'{{ WorkflowActivityGuid }}' %}
+{%- workflowactivate workflowid:{{ WorkflowId }} activitytype:'{{ WorkflowActivityGuid }}' -%}
 Workflow: {{ Workflow.Name }}
 Activity: {{ Activity.ActivityType.Name }}
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
 
             var expectedOutput = @"
 Workflow: IT Support (Test)
 Activity: Assign Worker
-";
+".NormalizeLineEndings();
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         private Rock.Model.Workflow CreateNewWorkflowInstance( string workflowTypeGuid, string name )
@@ -145,21 +167,25 @@ Activity: Assign Worker
         public void WorkflowActivateBlock_WorkflowActivatedWithAttributeParameters_PassesAttributeValuesCorrectly()
         {
             var input = @"
-{% workflowactivate WorkflowType:'$ItSupportWorkflowGuid' summary:'Help!' details:'Now!' %}
+{%- workflowactivate WorkflowType:'$ItSupportWorkflowGuid' summary:'Help!' details:'Now!' -%}
     Summary: {{ Workflow | Attribute:'Summary' }}
     Details: {{ Workflow | Attribute:'Details' }}
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
 
             input = input.Replace( "$ItSupportWorkflowGuid", WorkflowTypeItSupportGuid );
-            var expectedOutput = @"
-Summary: Help!
-Details: Now!
-";
+            var expectedOutput = "\n"
+                + "    Summary: Help!\n"
+                + "    Details: Now!\n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -181,66 +207,79 @@ Details: Now!
 
             // Add a new instance of the "Assign Worker" activity to the workflow and activate it.
             var input = @"
-{% workflowactivate workflowid:{{ WorkflowId }} activitytype:'{{ ActivityTypeGuid }}' SelectedAction:'Done' %}
+{%- workflowactivate workflowid:{{ WorkflowId }} activitytype:'{{ ActivityTypeGuid }}' SelectedAction:'Done' -%}
 Workflow: {{ Workflow.Name }}
 Activity: {{ Activity.ActivityType.Name }}
 Selected Action: {{ Activity | Attribute:'SelectedAction' }}
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
 
             var expectedOutput = @"
 Workflow: IT Support (Test)
 Activity: Open
 Selected Action: Done
-";
+".NormalizeLineEndings();
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void WorkflowActivateBlock_WithAttributeParameterNamesAsMixedCase_PassesAttributeValuesCorrectly()
         {
             var input = @"
-{% workflowactivate WorkflowType:'$ItSupportWorkflowGuid' summary:'Test Workflow' DETAILS:'Here are the details...' %}
+{%- workflowactivate WorkflowType:'$ItSupportWorkflowGuid' summary:'Test Workflow' DETAILS:'Here are the details...' -%}
     Title: {{ Workflow | Attribute:'Summary' }}<br>
     Details: {{ Workflow | Attribute:'Details' }}
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
 
-            var expectedOutput = @"
-Title: Test Workflow<br>
-Details: Here are the details...
-";
+            var expectedOutput = "\n"
+                + "    Title: Test Workflow<br>\n"
+                + "    Details: Here are the details...\n";
             input = input.Replace( "$ItSupportWorkflowGuid", WorkflowTypeItSupportGuid );
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void WorkflowActivateBlock_WithInvalidAttributeParameter_IgnoresInvalidAttribute()
         {
             var input = @"
-{% workflowactivate WorkflowType:'$ItSupportWorkflowGuid' summary:'Help!' invalidattribute:'InvalidValue' %}
+{%- workflowactivate WorkflowType:'$ItSupportWorkflowGuid' summary:'Help!' invalidattribute:'InvalidValue' -%}
     Workflow: {{ Workflow.Name }}
     Summary: {{ Workflow | Attribute:'Summary' }}
     Invalid Attribute: {{ Workflow | Attribute:'InvalidValue' }}(empty)
-{% endworkflowactivate %}
+{%- endworkflowactivate -%}
 ";
             input = input.Replace( "$ItSupportWorkflowGuid", WorkflowTypeItSupportGuid );
 
-            var expectedOutput = @"
-Workflow: IT Support
-Summary: Help!
-Invalid Attribute: (empty)
-";
+            var expectedOutput = "\n"
+                + "    Workflow: IT Support\n"
+                + "    Summary: Help!\n"
+                + "    Invalid Attribute: (empty)\n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
     }
 }

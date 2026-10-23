@@ -1,6 +1,6 @@
 ---
 title: Group Scheduling
-last_updated: 2026-05-26
+last_updated: 2026-10-19
 related_files:
   - Rock.Blocks/Group/Scheduling/GroupScheduler.cs
   - Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs
@@ -15,7 +15,10 @@ related_files:
   - Rock/Model/Group/GroupScheduleExclusion/GroupScheduleExclusion.cs
   - Rock/Model/Group/PersonScheduleExclusion/PersonScheduleExclusion.cs
   - Rock/Model/Group/GroupLocation/GroupLocationScheduleConfig.cs
-  - Rock/Jobs/SendSignUpReminders.cs
+  - Rock/Model/Event/Attendance/Attendance.cs
+  - Rock/Model/Event/Attendance/AttendanceService.cs
+  - Rock/Model/Event/AttendanceOccurrence/AttendanceOccurrence.cs
+  - Rock/Jobs/SendGroupScheduleNotifications.cs
   - Rock.Blocks/Group/GroupDetail.cs
 ---
 
@@ -23,23 +26,30 @@ related_files:
 
 ## Overview
 
-Group Scheduling is the volunteer scheduling system for Groups whose `GroupType.IsSchedulingEnabled` is true: typical for serving teams. The administrator-facing block is **Group Scheduler**; the volunteer-facing self-service block is **Schedule Toolbox**. Both pivot on `GroupMemberAssignment`, one row per scheduled position for one person at one (location, schedule) pair.
+Group Scheduling is the volunteer scheduling system for Groups whose `GroupType.IsSchedulingEnabled` is true: typical for serving teams. The administrator-facing block is **Group Scheduler**; the volunteer-facing self-service block is **Schedule Toolbox**. Both work from `Attendance`: one row for each person at each occurrence, which is a group, location, schedule, and date. `GroupMemberAssignment` holds each member's preferred schedule and location, and Auto Schedule uses it to decide who to place.
 
 ## Mental Model
 
-A scheduling row is **one volunteer in one position**. The position is identified by `(Group, Location, Schedule)`. The volunteer is identified through their `GroupMember`. The same volunteer can hold many `GroupMemberAssignment` rows: one for each position they fill across services and weeks.
+A scheduled position is **one person at one occurrence**. The occurrence is an `AttendanceOccurrence`, identified by `(Group, Location, Schedule, OccurrenceDate)`. The person's row on it is an `Attendance` with `RequestedToAttend = true`. The same volunteer has one `Attendance` row for each occurrence they are scheduled for, across services and weeks. The row carries the scheduling state (pending, confirmed, declined) and the per-occurrence notification flags.
 
-There are two parallel data tracks:
+The inputs that decide who gets scheduled are separate from the schedule itself:
 
-- **Availability** (what a volunteer says they can do) lives on `GroupMemberScheduleTemplate`. A template is a recurring pattern, like "Every Sunday Morning". A `GroupMember` references at most one template via `GroupMember.ScheduleTemplateId`.
-- **Assignments** (what they have committed to) live on `GroupMemberAssignment`. Each row covers every recurrence of the schedule it references; per-occurrence reminder timestamps live on the row.
+- **Availability** (the cadence a volunteer says they can serve) lives on `GroupMemberScheduleTemplate`. A template is a recurring pattern, like "Every Sunday Morning". A `GroupMember` references at most one template via `GroupMember.ScheduleTemplateId`.
+- **Preferences** (which schedule, which location, or both, the volunteer prefers) live on `GroupMemberAssignment`. A preference row covers every recurrence of the schedule it references. It is not a scheduled position: nobody is on the schedule until an `Attendance` row exists.
+
+Sign-Up Groups reuse `GroupMemberAssignment` with a different meaning: there, a row is the member's slot on a project (location and schedule). This doc covers group scheduling only.
 
 ```mermaid
 erDiagram
-    GroupMember ||--o{ GroupMemberAssignment : "scheduled positions"
+    GroupMember ||--o{ GroupMemberAssignment : "preference"
     GroupMember }o--o| GroupMemberScheduleTemplate : "availability"
-    Location ||--o{ GroupMemberAssignment : "at"
-    Schedule ||--o{ GroupMemberAssignment : "during"
+    Location |o--o{ GroupMemberAssignment : "preferred location"
+    Schedule |o--o{ GroupMemberAssignment : "preferred schedule"
+    AttendanceOccurrence ||--o{ Attendance : "scheduled positions"
+    PersonAlias ||--o{ Attendance : "scheduled person"
+    Group ||--o{ AttendanceOccurrence : "occurrences"
+    Location ||--o{ AttendanceOccurrence : "at"
+    Schedule ||--o{ AttendanceOccurrence : "during"
     GroupLocationScheduleConfig }o--|| Schedule : "capacity for"
     GroupLocationScheduleConfig }o--|| GroupLocation : "capacity for"
     GroupType ||--o{ GroupScheduleExclusion : "blackouts (org-wide)"
@@ -56,11 +66,11 @@ Exclusions are two-tier. **Group-level exclusions** are GroupType-scoped blackou
 
 **Warning-state members are eligible to schedule.** Group Requirement state matters here: members in `MeetsWithWarning` (e.g., a soon-expiring background check) are still eligible. Only `NotMet` blocks scheduling. The Scheduler block treated Warning as ineligible until commit `78e21f1ed0` fixed it. See [group-requirements.md](group-requirements.md).
 
-**One assignment row, many occurrences.** `GroupMemberAssignment` is keyed on `(GroupMember, Location, Schedule)`. The same row covers every recurrence of the schedule, with `LastReminderSentDateTime` advancing over time. Per-occurrence presence is in `Attendance`; per-occurrence assignment rows do not exist.
+**One `Attendance` row per person per occurrence; one preference row covers every recurrence.** Each scheduled position is its own `Attendance` row on an `AttendanceOccurrence`, and that row holds the RSVP state and the `ScheduleConfirmationSent` / `ScheduleReminderSent` flags for that one occurrence. A `GroupMemberAssignment` preference row is not per occurrence: one row for "prefers the 9am service" applies to every 9am occurrence.
 
-**Reminders fire from "today" relative to job execution, not from occurrence time.** The reminder job sweeps assignments where the next occurrence falls within the configured offset window. A misconfigured `ScheduleReminderEmailOffsetDays` (e.g., 0) sends reminders the day of the occurrence, possibly after the service has already started.
+**Notification windows are measured from "today" when the job runs, not from occurrence time.** `SendGroupScheduleNotifications` sends to `Attendance` rows whose occurrence date is within the offset window (`ScheduleConfirmationEmailOffsetDays` for confirmations, `ScheduleReminderEmailOffsetDays` for reminders) and whose flag is not yet set. An offset of 0 sends the reminder on the day of the occurrence. The job skips occurrences whose `StartDateTime` has already passed, so a reminder is never sent after the service has started. A per-member `ScheduleReminderEmailOffsetDays` of -1 means "do not send a reminder".
 
-**Capacity is advisory in the UI but not enforced server-side.** Custom block actions or API calls can create assignments above `MaximumCapacity`. The block UI is the enforcement point. Bulk operations or automation that bypass the block need to enforce capacity themselves.
+**Capacity is advisory in the UI but not enforced server-side.** Custom block actions or API calls can schedule people above `MaximumCapacity`. The block UI is the enforcement point. Bulk operations or automation that bypass the block need to enforce capacity themselves.
 
 **`PersonScheduleExclusion.ParentPersonScheduleExclusionId` self-reference is a UI helper.** A "for my whole family" toggle in the Toolbox creates one parent row plus child rows for each family member. Cleanup of children is handled by the UI flows; raw SQL deletes of the parent do not cascade unless the FK is configured for it. Verify on your version.
 
@@ -72,11 +82,11 @@ Exclusions are two-tier. **Group-level exclusions** are GroupType-scoped blackou
 
 ## Common Scenarios
 
-**"Schedule volunteers for the next four weeks of Sunday services."** Open the Group Scheduler with the relevant Group and a four-week date range. The block resolves `GroupLocation`s, their `Schedule`s, and per-pair `GroupLocationScheduleConfig` capacity. Drag eligible volunteers into cells; each drop creates a `GroupMemberAssignment` and queues a confirmation email.
+**"Schedule volunteers for the next four weeks of Sunday services."** Open the Group Scheduler with the relevant Group and a four-week date range. The block resolves `GroupLocation`s, their `Schedule`s, and per-pair `GroupLocationScheduleConfig` capacity. Drag eligible volunteers into cells; each drop creates a pending `Attendance` row via `ScheduledPersonAddPending`. The confirmation email goes out when `SendGroupScheduleNotifications` runs inside the confirmation window, or right away if the scheduler uses the block's send confirmations action.
 
 **"Volunteer wants to mark themselves unavailable for two weeks."** Toolbox -> Schedule Unavailability. Creates one `PersonScheduleExclusion` row. The "for my whole family" toggle creates additional child rows.
 
-**"Volunteer wants to sign up for an additional service."** Toolbox -> Sign Up for Additional Times. Volunteer checks occurrences, picks a location if needed, clicks Save. Each checked occurrence becomes a `GroupMemberAssignment`. Save is explicit; the volunteer can back out without committing.
+**"Volunteer wants to sign up for an additional service."** Toolbox -> Sign Up for Additional Times. Volunteer checks occurrences, picks a location if needed, clicks Save. Each checked occurrence becomes an `Attendance` row: the block calls `ScheduledPersonAddPending`, then confirms the row in the same save because the volunteer scheduled themselves. Save is explicit; the volunteer can back out without committing.
 
 **"Block out a holiday week for every Group of a type."** Add a `GroupScheduleExclusion` row to the GroupType with the date range. Every Group of the type honors it on the next scheduler render.
 
@@ -84,13 +94,13 @@ Exclusions are two-tier. **Group-level exclusions** are GroupType-scoped blackou
 
 ## Key Architectural Decisions
 
-### One assignment per (member, location, schedule)
+### Scheduled positions are per-occurrence `Attendance` rows
 
-The triple-key keeps total scheduling row count tractable. A weekly schedule for one volunteer over a year is one row, not 52. Per-occurrence state goes in `Attendance` rows, which is the right place for it.
+Scheduling reuses the same `Attendance` and `AttendanceOccurrence` tables that record presence. A scheduled position, its RSVP, its notification flags, and later its check-in all live on one row, so "who was scheduled" and "who showed up" can be compared without a join to a separate table.
 
-### Templates are availability, assignments are scheduling
+### Templates and preferences are inputs, `Attendance` is the schedule
 
-`GroupMemberScheduleTemplate` says "I can be scheduled at this cadence". `GroupMemberAssignment` says "I am scheduled for this position". The Scheduler reads templates to decide who to invite; it writes assignments as the volunteer accepts.
+`GroupMemberScheduleTemplate` says "I can be scheduled at this cadence". `GroupMemberAssignment` records a preferred schedule and location, which Auto Schedule uses. Neither puts anyone on the schedule. The Scheduler (manually or through Auto Schedule) and the Toolbox sign-up write `Attendance` rows.
 
 ### Two-tier exclusions
 
@@ -98,12 +108,9 @@ GroupType-level for "the building is closed for Christmas". Person-level for "I 
 
 ### Sign-up commits on explicit Save
 
-The Toolbox sign-up flow requires an explicit Save click after the volunteer selects occurrences. Auto-on-check would commit unwanted assignments and send confirmation emails the volunteer never intended; the Save step is the consent surface.
+The Toolbox sign-up flow requires an explicit Save click after the volunteer selects occurrences. Auto-on-check would commit unwanted sign-ups and send confirmation emails the volunteer never intended; the Save step is the consent surface.
 
 ## Considered but Rejected
-
-### Per-occurrence assignment rows
-Rejected. A weekly schedule for one volunteer over a year would generate 52 rows. The triple-keyed assignment plus per-row reminder timestamp gives the same operational view at far less storage cost.
 
 ### Auto-blocking volunteers in Warning requirement state
 Rejected (commit `78e21f1ed0`). Warning means "approaching non-compliance", not "non-compliant". Blocking schedules for Warnings produced false negatives where a volunteer with a soon-expiring background check could not be scheduled for next Sunday.
@@ -115,15 +122,22 @@ Rejected. Volunteers should be able to browse openings without committing, and t
 
 ### Data Model
 
-`GroupMemberAssignment` ([Rock/Model/Group/GroupMemberAssignment/GroupMemberAssignment.cs](../../Rock/Model/Group/GroupMemberAssignment/GroupMemberAssignment.cs)):
+`Attendance` ([Rock/Model/Event/Attendance/Attendance.cs](../../Rock/Model/Event/Attendance/Attendance.cs)) is the scheduled position. One row per person per `AttendanceOccurrence` ([Rock/Model/Event/AttendanceOccurrence/AttendanceOccurrence.cs](../../Rock/Model/Event/AttendanceOccurrence/AttendanceOccurrence.cs)), which is keyed by group, location, schedule, and `OccurrenceDate`. The state transitions live in [AttendanceService.cs](../../Rock/Model/Event/Attendance/AttendanceService.cs):
 
-- `GroupMemberId`. Cascade delete from GroupMember.
-- `LocationId`. Cascade delete from Location.
-- `ScheduleId`. Cascade delete from Schedule.
-- `ConfirmationSentDateTime`. Once-per-assignment.
-- `LastReminderSentDateTime`. Advances per-occurrence-cycle.
+- `ScheduledPersonAddPending` ([line 2395](../../Rock/Model/Event/Attendance/AttendanceService.cs)) creates the row with `RequestedToAttend = true`, `ScheduledToAttend = false`, `RSVP = Unknown`. If the group's `ScheduleConfirmationLogic` is `AutoAccept`, it sets `ScheduledToAttend = true` and `RSVP = Yes` instead.
+- `ScheduledPersonConfirm` sets `ScheduledToAttend = true`, `RSVP = Yes`.
+- `ScheduledPersonDecline` sets `ScheduledToAttend = false`, `RSVP = No`, and an optional `DeclineReasonValueId`.
+- `ScheduledPersonPending` resets to pending; `ScheduledPersonClear` sets `RequestedToAttend = false` and resets the RSVP; it does not delete the row.
+- `ScheduleConfirmationSent` and `ScheduleReminderSent` record per-occurrence notification state.
 
-Compound logical key: `(GroupMemberId, LocationId, ScheduleId)`.
+`GroupMemberAssignment` ([Rock/Model/Group/GroupMemberAssignment/GroupMemberAssignment.cs](../../Rock/Model/Group/GroupMemberAssignment/GroupMemberAssignment.cs)) is a scheduling preference:
+
+- `GroupId`, `GroupMemberId`. Required. No cascade delete.
+- `LocationId`. Optional preferred location. No cascade delete.
+- `ScheduleId`. Optional preferred schedule. No cascade delete.
+- `ConfirmationSentDateTime`, `LastReminderSentDateTime`. Sign-Up Groups only. Written by [ProcessSendSignUpRegistrationConfirmation.cs](../../Rock/Tasks/ProcessSendSignUpRegistrationConfirmation.cs) and [SendSignUpReminders.cs](../../Rock/Jobs/SendSignUpReminders.cs). Group scheduling never reads or writes them.
+
+Auto Schedule (`AttendanceService.SchedulePersonsAutomatically`) matches preference rows to each occurrence's location and schedule, places the most specific matches first, and skips rows that have neither a location nor a schedule ([AttendanceService.cs:2298](../../Rock/Model/Event/Attendance/AttendanceService.cs)). The Toolbox's schedule preference actions and the Scheduler's preferences panel are the UI that read and write these rows.
 
 ### Inline Schedule Lifecycle
 
@@ -165,12 +179,17 @@ Compound logical key: `(GroupMemberId, LocationId, ScheduleId)`.
 
 Two SystemCommunications, configured per GroupType:
 
-- `ScheduleConfirmationSystemCommunicationId`. Sent when a volunteer is initially scheduled.
-- `ScheduleReminderSystemCommunicationId`. Sent N days before the scheduled date (`ScheduleReminderEmailOffsetDays`, GroupType default 2, optional per-member override).
+- `ScheduleConfirmationSystemCommunicationId`. Sent to pending (and auto-accepted) scheduled people, up to `ScheduleConfirmationEmailOffsetDays` before the occurrence (GroupType default 4).
+- `ScheduleReminderSystemCommunicationId`. Sent to confirmed scheduled people, up to `ScheduleReminderEmailOffsetDays` before the occurrence (GroupType default 2, optional per-member override, -1 to opt out).
 
-The reminder job [Rock/Jobs/SendSignUpReminders.cs](../../Rock/Jobs/SendSignUpReminders.cs) sweeps `GroupMemberAssignment` rows where the next occurrence falls within the reminder window and `LastReminderSentDateTime` is null or older than today. For each, queues the SystemCommunication and stamps `LastReminderSentDateTime`. The same row can receive multiple reminders across different occurrences because the timestamp is "last reminder", not "the only reminder".
+The job [Rock/Jobs/SendGroupScheduleNotifications.cs](../../Rock/Jobs/SendGroupScheduleNotifications.cs) ("Send Group Schedule Confirmations and Reminders") sends both. It queries `Attendance` rows, not `GroupMemberAssignment`:
 
-`ConfirmationSentDateTime` is stamped by the Scheduler when the assignment is first created. Once-per-assignment field, not once-per-occurrence.
+- **Confirmations** use `AttendanceService.GetPendingAndAutoAcceptScheduledConfirmations()` filtered to `ScheduleConfirmationSent != true` and the confirmation window. Sending sets `Attendance.ScheduleConfirmationSent = true`.
+- **Reminders** use `AttendanceService.GetConfirmedScheduled()` filtered to `ScheduleReminderSent != true`, future occurrences whose `StartDateTime` has not passed, and the reminder window. Sending sets `Attendance.ScheduleReminderSent = true`.
+
+Because each flag is on the per-occurrence `Attendance` row, each occurrence gets at most one confirmation and one reminder. The Group Scheduler's send confirmations action calls the same `SendScheduleConfirmationCommunication` method for the occurrences in view, outside the job's window.
+
+`SendSignUpReminders.cs` is a different job for Sign-Up Groups. It filters to the Sign-Up Group group type and stamps `GroupMemberAssignment.LastReminderSentDateTime`. It does not send group scheduling reminders.
 
 ### Capacity Honoring
 
@@ -192,18 +211,20 @@ The Scheduler honors `GroupLocationScheduleConfig` capacities as a soft hierarch
 
 ### Extension Points
 
-- **`ScheduleConfirmationLogic`** on GroupType. Whether assignments require explicit volunteer confirmation or are auto-confirmed.
+- **`ScheduleConfirmationLogic`** on GroupType. Whether scheduled people must explicitly confirm or are auto-confirmed.
 - **`ScheduleCancellationWorkflowTypeId`** on GroupType. Workflow launched on volunteer decline.
 - **`ScheduleCoordinator`** on Group. Person who handles cancellations and substitution requests.
 - **`AllowedScheduleTypes`** on GroupType. Restricts kinds of schedules that can attach to the Group's locations.
 
 ### File Index
 
+- [Rock/Model/Event/Attendance/](../../Rock/Model/Event/Attendance/)
+- [Rock/Model/Event/AttendanceOccurrence/](../../Rock/Model/Event/AttendanceOccurrence/)
 - [Rock/Model/Group/GroupMemberAssignment/](../../Rock/Model/Group/GroupMemberAssignment/)
 - [Rock/Model/Group/GroupMemberScheduleTemplate/](../../Rock/Model/Group/GroupMemberScheduleTemplate/)
 - [Rock/Model/Group/GroupScheduleExclusion/](../../Rock/Model/Group/GroupScheduleExclusion/)
 - [Rock/Model/Group/PersonScheduleExclusion/](../../Rock/Model/Group/PersonScheduleExclusion/)
-- [Rock/Jobs/SendSignUpReminders.cs](../../Rock/Jobs/SendSignUpReminders.cs)
+- [Rock/Jobs/SendGroupScheduleNotifications.cs](../../Rock/Jobs/SendGroupScheduleNotifications.cs)
 
 ## Recent Impactful Changes
 

@@ -89,6 +89,12 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public ModelServiceRole Role { get; set; }
 
         /// <summary>
+        /// How much reasoning effort the language model should spend when
+        /// this agent responds to a chat message.
+        /// </summary>
+        public ReasoningEffort ReasoningEffort { get; set; }
+
+        /// <summary>
         /// The Lava template that will be used to generate the current person
         /// details to be added to the system prompt of a chat agent. If blank
         /// then a default template will be used.

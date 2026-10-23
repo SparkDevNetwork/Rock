@@ -67,6 +67,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
         }
 
+        var editError = GetWorkflowTypeEditError( activityType.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         var activityName = activityType.Name;
         var workflowTypeId = activityType.WorkflowTypeId;
         var actionTypes = activityType.ActionTypes.ToList();
@@ -146,7 +153,10 @@ internal sealed partial class WorkflowBuilderSkill
             DeletedAttributeCount = attributeCount,
             DeletedInstanceCount = instanceCount,
             WorkflowTypeIdKey = workflowTypeId.AsIdKey()
-        } );
+        } )
+            // Deleting an activity can leave the actions that pointed at it
+            // referencing something that no longer exists.
+            .WithInstructions( $"Call {nameof( GetWorkflowTypeConfiguration )} to confirm nothing was orphaned. Any action that activated this activity now points at nothing, and Rock will not report it." );
     }
 
     #endregion

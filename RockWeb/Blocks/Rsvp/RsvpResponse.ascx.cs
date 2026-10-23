@@ -196,21 +196,15 @@ $(document).ready(function () {
             {
                 bool isAccept = ( PageParameter( PageParameterKey.IsAccept ) == "1" );
                 bool isDecline = ( PageParameter( PageParameterKey.IsAccept ) == "0" );
-                var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+                var attendanceOccurrenceId = GetSingleOccurrenceId();
                 var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
-
-                if ( ( attendanceOccurrenceId == null ) && ( attendanceOccurrenceIdList.Count == 1 ) )
-                {
-                    // If only one occurrence ID is specified in the list, move it to the individual occurrence ID and treat it as a single RSVP response.
-                    attendanceOccurrenceId = attendanceOccurrenceIdList.First();
-                }
 
                 if ( attendanceOccurrenceId != null )
                 {
                     // Using a single occurrece.
                     if ( isAccept )
                     {
-                        if ( GroupHasAttributes() )
+                        if ( GroupHasAttributes( attendanceOccurrenceId.Value, person ) )
                         {
                             // If the group has GroupMember attributes, write the RSVP but show the decision form.
                             WriteEmailAcceptResponse( attendanceOccurrenceId.Value, person );
@@ -246,15 +240,19 @@ $(document).ready(function () {
             }
             else
             {
-                var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+                // Rebuild the same mode that was displayed on the initial load.
+                var attendanceOccurrenceId = GetSingleOccurrenceId();
                 if ( attendanceOccurrenceId != null )
                 {
-                    BuildAttributeControls();
+                    BuildAttributeControls( attendanceOccurrenceId.Value, person );
                 }
-                var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
-                if ( attendanceOccurrenceIdList.Any() )
+                else
                 {
-                    RebuildMultipleOccurrenceDataItems( attendanceOccurrenceIdList, person );
+                    var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
+                    if ( attendanceOccurrenceIdList.Any() )
+                    {
+                        RebuildMultipleOccurrenceDataItems( attendanceOccurrenceIdList, person );
+                    }
                 }
             }
         }
@@ -291,7 +289,7 @@ $(document).ready(function () {
         protected void lbAccept_Single_Click( object sender, EventArgs e )
         {
             var person = GetPerson();
-            var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+            var attendanceOccurrenceId = GetSingleOccurrenceId();
             if ( person == null || attendanceOccurrenceId == null )
             {
                 // Invalid person action identifier.
@@ -310,7 +308,7 @@ $(document).ready(function () {
         protected void lbDecline_Single_Click( object sender, EventArgs e )
         {
             var person = GetPerson();
-            var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+            var attendanceOccurrenceId = GetSingleOccurrenceId();
             if ( person == null || attendanceOccurrenceId == null )
             {
                 // Invalid person action identifier.
@@ -347,11 +345,38 @@ $(document).ready(function () {
             if ( declineReason.HasValue )
             {
                 int occurrenceId = hfDeclineReason_OccurrenceId.Value.AsInteger();
+
+                // The occurrence must be the one specified in the query string.
+                var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+                if ( attendanceOccurrenceId != occurrenceId && !GetMultipleOccurrenceIds().Contains( occurrenceId ) )
+                {
+                    return;
+                }
+
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var person = GetPerson();
+                    if ( person == null )
+                    {
+                        nbNotAuthorized.Visible = true;
+                        return;
+                    }
+
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
+
+                    /*
+                        10/16/2026 - MSE
+
+                        The same expiration rule and invitation check that are applied when displaying the decline form.
+
+                        Reason: Stop people from writing RSVP records on any occurrence by Id.
+                    */
+                    if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now || !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
+                    {
+                        return;
+                    }
+
                     person = new PersonService( rockContext ).Get( person.Guid );
                     UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.No, null, declineReason.Value, rtbDeclineNote.Text );
                 }
@@ -373,9 +398,44 @@ $(document).ready(function () {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+
+                /*
+                    10/16/2026 - MSE
+
+                    The same expiration rule and invitation check that are applied when displaying the choice form.
+                    Without the invitation check an uninvited person could seed an Attendance record that makes the
+                    later Accept look like an invitation.
+
+                    Reason: Stop people from writing RSVP records on any occurrence by Id.
+                */
+                if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now || !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
+                {
+                    return;
+                }
+
                 person = new PersonService( rockContext ).Get( person.Guid );
                 UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes );
             }
+        }
+
+        /// <summary>
+        /// Gets the single Occurrence ID from the query string. This is the AttendanceOccurrenceId
+        /// parameter or, if that is not specified, the only ID in the AttendanceOccurrenceIds list.
+        /// </summary>
+        private int? GetSingleOccurrenceId()
+        {
+            var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+            if ( attendanceOccurrenceId == null )
+            {
+                var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
+                if ( attendanceOccurrenceIdList.Count == 1 )
+                {
+                    // If only one occurrence ID is specified in the list, treat it as a single RSVP response.
+                    attendanceOccurrenceId = attendanceOccurrenceIdList.First();
+                }
+            }
+
+            return attendanceOccurrenceId;
         }
 
         /// <summary>
@@ -421,6 +481,50 @@ $(document).ready(function () {
                     return CurrentPerson;
             }
 
+        }
+
+        /// <summary>
+        /// Determines whether the person is allowed to respond to the occurrence. The person must
+        /// already have an Attendance record on the occurrence (an invitation) or be a member of
+        /// the occurrence's group. Call this before any write in the same request so that
+        /// <paramref name="isRegisteredInvitee"/> reflects records that existed before the request.
+        /// </summary>
+        /// <param name="occurrence">The <see cref="AttendanceOccurrence"/>.</param>
+        /// <param name="person">The Person record of the respondent.</param>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        /// <param name="isRegisteredInvitee">Set to <c>true</c> if the person already has an Attendance record on the occurrence.</param>
+        /// <returns><c>true</c> if the person may respond to the occurrence; otherwise <c>false</c>.</returns>
+        private bool CanRespondToOccurrence( AttendanceOccurrence occurrence, Person person, RockContext rockContext, out bool isRegisteredInvitee )
+        {
+            /*
+                10/16/2026 - MSE
+
+                The occurrence Id comes from the query string, so knowing an Id is not proof of an invitation.
+                A person may respond only if they already have an Attendance record on the occurrence (from
+                Register Recipients, the group scheduler or an earlier response) or are a member of the
+                occurrence's group. Membership uses GroupMemberService.Queryable() so archived members do
+                not count.
+
+                Reason: Stop people from responding to, and auto joining the group of, any occurrence by Id.
+            */
+            isRegisteredInvitee = false;
+
+            if ( occurrence == null || occurrence.GroupId == null || person == null )
+            {
+                return false;
+            }
+
+            var personId = person.Id;
+            var occurrenceId = occurrence.Id;
+            var groupId = occurrence.GroupId.Value;
+
+            isRegisteredInvitee = new AttendanceService( rockContext ).Queryable().AsNoTracking()
+                .Any( a => a.OccurrenceId == occurrenceId && a.PersonAlias.PersonId == personId );
+
+            var isGroupMember = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                .Any( gm => gm.GroupId == groupId && gm.PersonId == personId );
+
+            return isRegisteredInvitee || isGroupMember;
         }
 
         /// <summary>
@@ -517,7 +621,23 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+
+                /*
+                    10/16/2026 - MSE
+
+                    Only invited people or group members may see the occurrence title and response form. The
+                    check runs before the expiry check so an uninvited person cannot read the title of an
+                    expired occurrence.
+
+                    Reason: Stop showing another group's occurrence to people who were not invited.
+                */
+                if ( !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
+                {
+                    Show404();
+                    return;
+                }
+
+                if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -564,13 +684,27 @@ $(document).ready(function () {
         /// <summary>
         /// Rebuilds the dynamic attribute value controls (for single occurrence mode) after a postback.
         /// </summary>
-        private void BuildAttributeControls()
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence.</param>
+        /// <param name="person">The Person record of the respondent.</param>
+        private void BuildAttributeControls( int occurrenceId, Person person )
         {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var person = GetPerson();
-                var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+
+                /*
+                    10/16/2026 - MSE
+
+                    The occurrence Id comes from the query string on every postback, so apply the same
+                    invitation check as the initial load before rendering the group's attribute controls.
+
+                    Reason: Stop showing another group's member attribute definitions to people who were not invited.
+                */
+                if ( occurrence == null || !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
+                {
+                    return;
+                }
+
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
                 if ( groupMember == null )
                 {
@@ -590,14 +724,19 @@ $(document).ready(function () {
         /// <summary>
         /// Tests the group to see if there are any GroupMember attributes.
         /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence.</param>
+        /// <param name="person">The Person record of the respondent.</param>
         /// <returns></returns>
-        private bool GroupHasAttributes()
+        private bool GroupHasAttributes( int occurrenceId, Person person )
         {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var person = GetPerson();
-                var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+                if ( occurrence == null )
+                {
+                    return false;
+                }
+
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
                 if ( groupMember == null )
                 {
@@ -651,7 +790,23 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+
+                /*
+                    10/16/2026 - MSE
+
+                    The invitation check runs before the expiry check so that an uninvited person cannot read the
+                    title (group name and date) of an expired occurrence. Invited people still see the expired
+                    message. Only a registered invitee may be auto joined to the group.
+
+                    Reason: Stop people from accepting, and joining the group of, any occurrence by Id.
+                */
+                if ( !CanRespondToOccurrence( occurrence, person, rockContext, out bool isRegisteredInvitee ) )
+                {
+                    Show404();
+                    return;
+                }
+
+                if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -662,7 +817,7 @@ $(document).ready(function () {
                 lHeading.Text = GetOccurrenceTitle( occurrence );
 
                 person = new PersonService( rockContext ).Get( person.Guid );
-                UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phAttributes );
+                UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phAttributes, allowAutoEnroll: isRegisteredInvitee );
 
                 // Show Single Occurrence Accept message.
                 pnlSingle_Accept.Visible = true;
@@ -691,7 +846,8 @@ $(document).ready(function () {
         /// <param name="attributePlaceHolder">(Optional) PlaceHolder control that contains the GroupMember attribute values to set.</param>
         /// <param name="declineReasonId">(Optional) The DefinedValue ID of a Decline Reason, if one was selected.  Only used if rsvpStatus is No.</param>
         /// <param name="declineNote">(Optional) An explanation of the reason for declining.  Only used if rsvpStatus is No.</param>
-        private void UpdateOrCreateAttendanceRecord( AttendanceOccurrence occurrence, Person person, RockContext rockContext, Rock.Model.RSVP rsvpStatus, PlaceHolder attributePlaceHolder = null, int declineReasonId = 0, string declineNote = "" )
+        /// <param name="allowAutoEnroll">(Optional) If <c>true</c>, a person who is not a member of the group may be added to it. Only pass <c>true</c> for a registered invitee.</param>
+        private void UpdateOrCreateAttendanceRecord( AttendanceOccurrence occurrence, Person person, RockContext rockContext, Rock.Model.RSVP rsvpStatus, PlaceHolder attributePlaceHolder = null, int declineReasonId = 0, string declineNote = "", bool allowAutoEnroll = false )
         {
             var attendance = occurrence.Attendees.Where( a => person.Aliases.Contains( a.PersonAlias ) ).FirstOrDefault();
             if ( attendance == null )
@@ -727,7 +883,16 @@ $(document).ready(function () {
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
 
                 // Only auto-enroll a new GroupMember when the RSVP is accepted, so declining doesn't silently add the person to the group.
-                if ( groupMember == null && rsvpStatus == Rock.Model.RSVP.Yes )
+                /*
+                    10/16/2026 - MSE
+
+                    Only a registered invitee (a person who already had an Attendance record on the occurrence
+                    before this request) is added to the group, only when the group type has RSVP enabled, and
+                    never into a security role group. Everyone else keeps their RSVP but is not added.
+
+                    Reason: A raw occurrence Id must not be able to create a group membership.
+                */
+                if ( groupMember == null && rsvpStatus == Rock.Model.RSVP.Yes && allowAutoEnroll && occurrence.Group.GroupType.EnableRSVP && !occurrence.Group.IsSecurityRoleOrSecurityGroupType() )
                 {
                     groupMember = new GroupMember();
                     groupMember.PersonId = person.Id;
@@ -770,7 +935,23 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+
+                /*
+                    10/16/2026 - MSE
+
+                    Decline writes an Attendance record, which would later count as an invitation, so the same
+                    invitation check applies. It runs before the expiry check so an uninvited person cannot read
+                    the title of an expired occurrence.
+
+                    Reason: Stop people from writing RSVP records on any occurrence by Id.
+                */
+                if ( !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
+                {
+                    Show404();
+                    return;
+                }
+
+                if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -884,6 +1065,22 @@ $(document).ready(function () {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
+
+                    /*
+                        10/16/2026 - MSE
+
+                        The occurrence list comes from the query string. Skip Ids that do not exist (this also
+                        prevents a null reference) and occurrences the person was not invited to. The invitation
+                        check runs before the expiry check so an uninvited occurrence does not affect the expired
+                        message.
+
+                        Reason: Stop showing other groups' occurrences to people who were not invited.
+                    */
+                    if ( occurrence == null || !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
+                    {
+                        continue;
+                    }
+
                     if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                     {
                         // This event has expired.
@@ -942,7 +1139,16 @@ $(document).ready(function () {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
-                    if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+
+                    /*
+                        10/16/2026 - MSE
+
+                        Apply the same rules as the initial list so the postback repeater only holds occurrences
+                        the person was invited to. This also prevents a null reference on an Id that does not exist.
+
+                        Reason: Keep ProcessOccurrence limited to invited occurrences.
+                    */
+                    if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now || !CanRespondToOccurrence( occurrence, person, rockContext, out _ ) )
                     {
                         continue;
                     }
@@ -1047,12 +1253,38 @@ $(document).ready(function () {
                 HiddenField hfOccurrenceId = item.FindControl( "hfOccurrenceId" ) as HiddenField;
                 PlaceHolder phOccurrenceAttributes = item.FindControl( "phOccurrenceAttributes" ) as PlaceHolder;
 
-                int occurrenceId = int.Parse( hfOccurrenceId.Value );
+                int occurrenceId = hfOccurrenceId.Value.AsInteger();
+
+                // The occurrence must be one of the occurrences specified in the query string.
+                if ( !GetMultipleOccurrenceIds().Contains( occurrenceId ) )
+                {
+                    return false;
+                }
+
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
 
+                // The same expiration rule that is applied when displaying the occurrences.
+                if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+                {
+                    return false;
+                }
+
+                /*
+                    10/16/2026 - MSE
+
+                    The occurrence list comes from the query string, so each occurrence needs the invitation check.
+                    Only a registered invitee may be auto joined to the group.
+
+                    Reason: Stop people from accepting, and joining the group of, any occurrence by Id.
+                */
+                if ( !CanRespondToOccurrence( occurrence, person, rockContext, out bool isRegisteredInvitee ) )
+                {
+                    return false;
+                }
+
                 person = new PersonService( rockContext ).Get( person.Guid );
-                UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phOccurrenceAttributes );
+                UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phOccurrenceAttributes, allowAutoEnroll: isRegisteredInvitee );
                 _processedOccurrences.Add( GetOccurrenceTitle( occurrence ) );
             }
             return rcbAccept.Checked;

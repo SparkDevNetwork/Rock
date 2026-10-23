@@ -1,0 +1,265 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData" keyField="guid" itemTerm="Discount" liveUpdates light @addItem="onAddDiscount">
+        <ReorderColumn @orderChanged="onOrderChanged" />
+        <TextColumn name="code" field="code" title="Code" />
+        <TextColumn name="discount" field="discount" title="Discount" />
+        <TextColumn name="limits" field="limits" title="Limits" />
+        <EditColumn @click="onEditDiscount" />
+        <DeleteColumn @click="onDeleteDiscount" />
+    </Grid>
+
+    <Modal v-model="isModalVisible" title="Discount Code" saveText="Save" cancelText="Cancel" :onSave="onSaveDiscount">
+        <NotificationBox v-if="modalErrorMessage" alertType="warning">{{ modalErrorMessage }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="editCode" label="Discount Code" rules="required" :maxLength="100" />
+
+                <RadioButtonList v-model="editDiscountType" label="Discount Type" horizontal :items="discountTypeItems" />
+
+                <NumberBox v-if="isPercentage" v-model="editPercentage" label="Discount Percentage" :decimalCount="0" :minimumValue="0" :maximumValue="100" inputClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">%</span>
+                    </template>
+                </NumberBox>
+
+                <CurrencyBox v-else v-model="editAmount" label="Discount Amount" />
+
+                <CheckBox v-model="editAutoApplyDiscount"
+                          label="Auto Apply Discount"
+                          help="Will automatically apply the discount if the registration meets the criteria. If multiple automatic discounts exist, only the first one that meets the criteria will be applied." />
+            </div>
+
+            <div class="col-md-6">
+                <NumberBox v-model="editMaxUsage"
+                           label="Maximum Usage"
+                           :decimalCount="0"
+                           :minimumValue="0"
+                           help="The maximum number of registrations that the discount code can be used on (leave blank for none)." />
+
+                <NumberBox v-model="editMaxRegistrants"
+                           label="Maximum Registrants"
+                           :decimalCount="0"
+                           :minimumValue="0"
+                           help="The maximum number of registrants in a single registration that the discount code can be used on." />
+
+                <NumberBox v-model="editMinRegistrants"
+                           label="Minimum Registrants"
+                           :decimalCount="0"
+                           :minimumValue="0"
+                           help="The minimum number of registrants in the registration that are required in order to use the discount code." />
+
+                <DateRangePicker v-model="editDateRange" label="Effective Dates" help="The beginning and/or ending date that the discount code can be used." />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RegistrationTemplateDiscountBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateDiscountBag";
+    import { DiscountType } from "./types.partial";
+    import { formatDiscount, formatDiscountLimits, getNextOrder, moveItem, renumberOrder } from "./utils.partial";
+
+    const props = defineProps({
+        /** The discount codes of the template. */
+        discounts: {
+            type: Array as PropType<RegistrationTemplateDiscountBag[]>,
+            required: true
+        },
+
+        /** The currency settings of the organization. */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:discounts", value: RegistrationTemplateDiscountBag[]): void
+    }>();
+
+    // #region Values
+
+    const isModalVisible = ref(false);
+    const modalErrorMessage = ref("");
+
+    /** The unique identifier of the discount being edited, or null when adding. */
+    const editingGuid = ref<string | null>(null);
+    const editCode = ref("");
+    const editDiscountType = ref<string>(DiscountType.Percentage);
+    const editPercentage = ref<number | null>(null);
+    const editAmount = ref<number | null>(null);
+    const editAutoApplyDiscount = ref(false);
+    const editMaxUsage = ref<number | null>(null);
+    const editMaxRegistrants = ref<number | null>(null);
+    const editMinRegistrants = ref<number | null>(null);
+    const editDateRange = ref<DateRangeParts | undefined>(undefined);
+
+    const discountTypeItems: ListItemBag[] = [
+        { value: DiscountType.Percentage, text: "Percentage" },
+        { value: DiscountType.Amount, text: "Amount" }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const discounts = computed({
+        get(): RegistrationTemplateDiscountBag[] {
+            return props.discounts ?? [];
+        },
+        set(value: RegistrationTemplateDiscountBag[]) {
+            emit("update:discounts", value);
+        }
+    });
+
+    const gridData = computed(() => {
+        const rows = [...discounts.value]
+            .sort((a, b) => a.order - b.order)
+            .map(discount => ({
+                guid: discount.guid,
+                code: discount.code ?? "",
+                discount: formatDiscount(discount, props.currencyInfo),
+                limits: formatDiscountLimits(discount)
+            }));
+
+        return { rows };
+    });
+
+    const isPercentage = computed((): boolean => {
+        return editDiscountType.value !== DiscountType.Amount;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button on the grid is clicked.
+     */
+    function onAddDiscount(): void {
+        openModal(null);
+    }
+
+    /**
+     * Called when the Edit button for a row is clicked.
+     *
+     * @param key The unique identifier of the discount to edit.
+     */
+    function onEditDiscount(key: string): void {
+        const discount = discounts.value.find(d => d.guid === key);
+
+        if (discount) {
+            openModal(discount);
+        }
+    }
+
+    /**
+     * Called when the Delete button for a row is clicked.
+     *
+     * @param key The unique identifier of the discount to delete.
+     */
+    function onDeleteDiscount(key: string): void {
+        discounts.value = renumberOrder(discounts.value.filter(d => d.guid !== key));
+    }
+
+    /**
+     * Called when a row is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to the end.
+     *
+     * @returns True to keep the new order.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        discounts.value = moveItem([...discounts.value].sort((a, b) => a.order - b.order), item["guid"] as string, (beforeItem?.["guid"] as string | undefined) ?? null, d => d.guid);
+
+        return true;
+    }
+
+    /**
+     * Called when the modal Save button is clicked. Validates the discount code
+     * is unique and then replaces or appends the discount.
+     */
+    function onSaveDiscount(): void {
+        modalErrorMessage.value = "";
+
+        const code = editCode.value.trim();
+        const isDuplicateCode = discounts.value.some(d => d.guid !== editingGuid.value && (d.code ?? "").trim().toLowerCase() === code.toLowerCase());
+
+        if (isDuplicateCode) {
+            modalErrorMessage.value = `The discount code "${code}" is already in use.`;
+
+            return;
+        }
+
+        const existing = editingGuid.value ? discounts.value.find(d => d.guid === editingGuid.value) : undefined;
+
+        const discount: RegistrationTemplateDiscountBag = {
+            guid: existing?.guid ?? newGuid(),
+            order: existing?.order ?? getNextOrder(discounts.value),
+            code: code,
+            discountPercentage: isPercentage.value ? (editPercentage.value ?? 0) * 0.01 : 0,
+            discountAmount: isPercentage.value ? 0 : (editAmount.value ?? 0),
+            maxUsage: editMaxUsage.value,
+            maxRegistrants: editMaxRegistrants.value,
+            minRegistrants: editMinRegistrants.value,
+            startDate: editDateRange.value?.lowerValue || null,
+            endDate: editDateRange.value?.upperValue || null,
+            autoApplyDiscount: editAutoApplyDiscount.value
+        };
+
+        if (existing) {
+            discounts.value = discounts.value.map(d => d.guid === existing.guid ? discount : d);
+        }
+        else {
+            discounts.value = [...discounts.value, discount];
+        }
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Opens the modal for a new discount, or populates it with an existing discount.
+     *
+     * @param discount The discount to edit, or null to add a new discount.
+     */
+    function openModal(discount: RegistrationTemplateDiscountBag | null): void {
+        modalErrorMessage.value = "";
+        editingGuid.value = discount?.guid ?? null;
+        editCode.value = discount?.code ?? "";
+        editDiscountType.value = (discount?.discountAmount ?? 0) > 0 ? DiscountType.Amount : DiscountType.Percentage;
+        editPercentage.value = discount ? Math.round(discount.discountPercentage * 100) : null;
+        editAmount.value = discount && discount.discountAmount > 0 ? discount.discountAmount : null;
+        editAutoApplyDiscount.value = discount?.autoApplyDiscount ?? false;
+        editMaxUsage.value = discount?.maxUsage ?? null;
+        editMaxRegistrants.value = discount?.maxRegistrants ?? null;
+        editMinRegistrants.value = discount?.minRegistrants ?? null;
+        editDateRange.value = discount?.startDate || discount?.endDate
+            ? { lowerValue: discount.startDate ?? "", upperValue: discount.endDate ?? "" }
+            : undefined;
+
+        isModalVisible.value = true;
+    }
+
+    // #endregion Functions
+</script>

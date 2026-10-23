@@ -62,10 +62,6 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 500,
         Order = 2,
         Key = TwilioAttributeKey.LongCodeThrottling )]
-    [BooleanField( "Enable Signature Validation",
-        Description = "The Auth Token will be validated with each request to the Twilio web hooks. If enabled, the Public Application Root must be used as the Webhook URL of your configuration in Twilio otherwise your incoming messages will not validate (be accepted).  Also, if you change your AuthToken or create a secondary AuthToken in Twilio, your incoming Twilio messages would not validate until the Token has been promoted to your primary AuthToken.",
-        Order = 3,
-        Key = TwilioAttributeKey.EnableValidation )]
     [IntegerField( "Concurrent Send Workers",
         IsRequired = false,
         DefaultIntegerValue = 10,
@@ -588,9 +584,18 @@ namespace Rock.Communication.Transport
                             }
                         }
 
+                        /*
+                            10/16/2026 - MSE
+
+                            History.SummaryHtml now HTML encodes the stored value name, so this
+                            entry is written as plain text. Markup here would show as literal tags.
+
+                            Reason: History values are encoded when shown.
+                        */
+
                         // Add this to the Person Activity history
                         var historyChanges = new History.HistoryChangeList();
-                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is <em>\"{ex.Message}\"</em> <a href='{ex.MoreInfo}' target='_blank' rel='noopener noreferrer'>More info here</a>" );
+                        historyChanges.AddCustom( string.Empty, History.HistoryChangeType.Property.ToString(), $"SMS Disabled for {phoneNumber.NumberTypeValue} {phoneNumber.NumberFormatted}. The error received from Twilio is \"{ex.Message}\". More info: {ex.MoreInfo}" );
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), recipient.PersonAlias.Person.Id, historyChanges );
                     }
                 }

@@ -100,6 +100,15 @@ namespace Rock.Rest.Controllers
             var rockContext = ( RockContext ) Service.Context;
             var list = new List<TreeViewItem>();
 
+            /*
+                10/18/2026 - MSE
+
+                The tree view (rockTree.js) renders node names as HTML, and requester names can be
+                set by anonymous visitors through public forms. Opportunity, requester and connection
+                type names are HTML encoded, the same as other tree endpoints such as LocationsController.
+
+                Reason: Prevent stored XSS in the Connection Request picker.
+            */
             if ( id.StartsWith( "T" ) )
             {
                 int connectionTypeId = id.Substring( 1 ).AsInteger();
@@ -110,7 +119,7 @@ namespace Rock.Rest.Controllers
                 {
                     var item = new TreeViewItem();
                     item.Id = string.Format( "O{0}", opportunity.Id );
-                    item.Name = opportunity.Name;
+                    item.Name = System.Web.HttpUtility.HtmlEncode( opportunity.Name );
                     item.HasChildren = opportunity.ConnectionRequests
                         .Any( r =>
                             r.ConnectionState == ConnectionState.Active ||
@@ -134,7 +143,7 @@ namespace Rock.Rest.Controllers
                 {
                     var item = new TreeViewItem();
                     item.Id = request.Id.ToString();
-                    item.Name = request.PersonAlias.Person.FullName;
+                    item.Name = System.Web.HttpUtility.HtmlEncode( request.PersonAlias.Person.FullName );
                     item.HasChildren = false;
                     item.IconCssClass = "ti ti-user";
                     list.Add( item );
@@ -152,7 +161,7 @@ namespace Rock.Rest.Controllers
                     {
                         var item = new TreeViewItem();
                         item.Id = string.Format( "T{0}", connectionType.Id );
-                        item.Name = connectionType.Name;
+                        item.Name = System.Web.HttpUtility.HtmlEncode( connectionType.Name );
                         item.HasChildren = connectionType.ConnectionOpportunities.Any();
                         item.IconCssClass = connectionType.IconCssClass;
                         list.Add( item );
@@ -224,138 +233,6 @@ namespace Rock.Rest.Controllers
             }
 
             return connectionTypeCache.IsNextSequentialActiveStatus( currentStatus.ConnectionStatusId, toStatusId );
-        }
-
-        /// <summary>
-        /// Gets the connection board status view models.
-        /// </summary>
-        /// <param name="connectionRequestId">The connection request identifier.</param>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <param name="connectorPersonAliasId">The connector person alias identifier.</param>
-        /// <param name="requesterPersonAliasId">The requester person alias identifier.</param>
-        /// <param name="minDate">The minimum date.</param>
-        /// <param name="maxDate">The maximum date.</param>
-        /// <param name="delimitedStatusIds">The delimited status ids.</param>
-        /// <param name="delimitedConnectionStates">The delimited connection states.</param>
-        /// <param name="delimitedLastActivityTypeIds">The delimited last activity type ids.</param>
-        /// <param name="statusIconsTemplate">The status icons template.</param>
-        /// <param name="pastDueOnly">if set to <c>true</c> [past due only] for requests that are future follow-up.</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardRequestViewModel/{connectionRequestId}" )]
-        [Rock.SystemGuid.RestActionGuid( "C867FECB-0491-438A-AB12-B37C356E3B82" )]
-        public ConnectionRequestViewModel GetConnectionBoardStatusViewModel(
-            int connectionRequestId,
-            int? campusId = null,
-            int? connectorPersonAliasId = null,
-            int? requesterPersonAliasId = null,
-            DateTime? minDate = null,
-            DateTime? maxDate = null,
-            string delimitedStatusIds = null,
-            string delimitedConnectionStates = null,
-            string delimitedLastActivityTypeIds = null,
-            string statusIconsTemplate = null,
-            bool pastDueOnly = false )
-        {
-            var personAliasId = GetPersonAliasId();
-
-            if ( !personAliasId.HasValue )
-            {
-                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The current person alias did not resolve" );
-                throw new HttpResponseException( errorResponse );
-            }
-
-            var connectionRequestService = Service as ConnectionRequestService;
-            return connectionRequestService.GetConnectionRequestViewModel(
-                personAliasId.Value,
-                connectionRequestId,
-                new ConnectionRequestViewModelQueryArgs
-                {
-                    CampusId = campusId,
-                    ConnectorPersonAliasId = connectorPersonAliasId,
-                    RequesterPersonAliasId = requesterPersonAliasId,
-                    MinDate = minDate,
-                    MaxDate = maxDate,
-                    StatusIds = delimitedStatusIds.SplitDelimitedValues().AsIntegerList(),
-                    ConnectionStates = delimitedConnectionStates
-                        .SplitDelimitedValues()
-                        .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
-                        .ToList(),
-                    LastActivityTypeIds = delimitedLastActivityTypeIds.SplitDelimitedValues().AsIntegerList(),
-                    IsFutureFollowUpPastDueOnly = pastDueOnly
-                },
-                statusIconsTemplate );
-        }
-
-        /// <summary>
-        /// Gets the connection board status view models.
-        /// </summary>
-        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <param name="connectorPersonAliasId">The connector person alias identifier.</param>
-        /// <param name="requesterPersonAliasId">The requester person alias identifier.</param>
-        /// <param name="minDate">The minimum date.</param>
-        /// <param name="maxDate">The maximum date.</param>
-        /// <param name="delimitedStatusIds">The delimited status ids.</param>
-        /// <param name="delimitedConnectionStates">The delimited connection states.</param>
-        /// <param name="delimitedLastActivityTypeIds">The delimited last activity type ids.</param>
-        /// <param name="statusIconsTemplate">The status icons template.</param>
-        /// <param name="sortProperty">The sort property.</param>
-        /// <param name="maxRequestsPerStatus">The maximum requests per status.</param>
-        /// <param name="pastDueOnly">if set to <c>true</c> [past due only] for future follow-up requests.</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException">errorResponse</exception>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardStatusViewModels/{connectionOpportunityId}" )]
-        [Rock.SystemGuid.RestActionGuid( "8BE5DFE1-CC4D-4119-93BE-E90302BE9D88" )]
-        public List<ConnectionStatusViewModel> GetConnectionBoardStatusViewModels(
-            int connectionOpportunityId,
-            int? campusId = null,
-            int? connectorPersonAliasId = null,
-            int? requesterPersonAliasId = null,
-            DateTime? minDate = null,
-            DateTime? maxDate = null,
-            string delimitedStatusIds = null,
-            string delimitedConnectionStates = null,
-            string delimitedLastActivityTypeIds = null,
-            string statusIconsTemplate = null,
-            ConnectionRequestViewModelSortProperty? sortProperty = null,
-            int? maxRequestsPerStatus = null,
-            bool pastDueOnly = false )
-        {
-            var personAliasId = GetPersonAliasId();
-
-            if ( !personAliasId.HasValue )
-            {
-                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The current person alias did not resolve" );
-                throw new HttpResponseException( errorResponse );
-            }
-
-            var connectionRequestService = Service as ConnectionRequestService;
-            var connectionStatusViewModels = connectionRequestService.GetConnectionBoardStatusViewModels(
-                personAliasId.Value,
-                connectionOpportunityId,
-                new ConnectionRequestViewModelQueryArgs
-                {
-                    CampusId = campusId,
-                    ConnectorPersonAliasId = connectorPersonAliasId,
-                    RequesterPersonAliasId = requesterPersonAliasId,
-                    MinDate = minDate,
-                    MaxDate = maxDate,
-                    StatusIds = delimitedStatusIds.SplitDelimitedValues().AsIntegerList(),
-                    ConnectionStates = delimitedConnectionStates
-                        .SplitDelimitedValues()
-                        .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
-                        .ToList(),
-                    LastActivityTypeIds = delimitedLastActivityTypeIds.SplitDelimitedValues().AsIntegerList(),
-                    SortProperty = sortProperty,
-                    IsFutureFollowUpPastDueOnly = pastDueOnly
-                },
-                statusIconsTemplate,
-                maxRequestsPerStatus );
-
-            return connectionStatusViewModels;
         }
 
         #endregion Connection Request Board Endpoints

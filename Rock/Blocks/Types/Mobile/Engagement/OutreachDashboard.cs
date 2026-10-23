@@ -345,8 +345,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult GetContactTouchpointHistory( int contactId )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );

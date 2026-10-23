@@ -358,7 +358,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${EntitySearch.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {EntitySearch.FriendlyTypeName}." );
                 return false;
             }
 

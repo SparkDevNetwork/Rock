@@ -289,9 +289,15 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         private int? UpdateReminder( Guid reminderGuid, Guid reminderTypeGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, Guid? assignedToPersonAliasGuid, RockContext rockContext )
         {
             var reminderService = new ReminderService( rockContext );
-            var reminder = reminderService.Get( reminderGuid );
+            var reminder = reminderService.GetInclude( reminderGuid, r => r.PersonAlias );
 
             if ( reminder == null )
+            {
+                return null;
+            }
+
+            // Only the owner of the reminder may update it.
+            if ( reminder.PersonAlias == null || reminder.PersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
             {
                 return null;
             }
@@ -336,6 +342,21 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             var noteType = NoteTypeCache.Get( linkedNoteTypeGuid );
 
             if ( note == null || noteType == null )
+            {
+                return;
+            }
+
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return;
+            }
+
+            // The note and note type come from page parameters, so make sure
+            // the note type is for reminders and that the current person is
+            // allowed to edit the note before moving it.
+            var isReminderNoteType = noteType.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Reminder>();
+
+            if ( !isReminderNoteType || !note.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return;
             }
@@ -496,6 +517,23 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             if ( RequestContext.CurrentPerson == null )
             {
                 return ActionUnauthorized();
+            }
+
+            // Only the owner of an existing reminder may view it.
+            if ( reminderGuid.HasValue )
+            {
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
+                {
+                    var ownerPersonId = new ReminderService( rockContext ).Queryable()
+                        .Where( r => r.Guid == reminderGuid.Value )
+                        .Select( r => ( int? ) r.PersonAlias.PersonId )
+                        .FirstOrDefault();
+
+                    if ( ownerPersonId != RequestContext.CurrentPerson.Id )
+                    {
+                        return ActionNotFound();
+                    }
+                }
             }
 
             return ActionOk( GetReminderEditBag( reminderGuid, entityTypeGuid, entityGuid ) );

@@ -111,6 +111,11 @@ namespace Rock.SystemGuid
         public const string SAME_SITE_COOKIE_SETTING = "03F55022-C1E0-45F3-84E1-C2BE8C38E22B";
 
         /// <summary>
+        /// The Site attribute listing the external domains the browser may be redirected to (e.g. after login).
+        /// </summary>
+        public const string SITE_ALLOWED_REDIRECT_DOMAINS = "F2EAB603-7412-46BF-A13D-5A451C4D8E1C";
+
+        /// <summary>
         /// The Active attribute for the observability HTTP filter.
         /// </summary>
         [RockObsolete( "17.0" )]

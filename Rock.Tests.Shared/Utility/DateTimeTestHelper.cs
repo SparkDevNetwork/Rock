@@ -25,12 +25,21 @@ namespace Rock.Tests.Shared.Utility
     /// <summary>
     /// A helper class for testing components related to date/time.
     /// </summary>
-    /// <remarks>This class will be moved to Rock.Tests.Shared in the future.</remarks>
     public class DateTimeTestHelper
     {
         /// <summary>
         /// Sets the RockDateTime timezone.
         /// </summary>
+        /// <remarks>
+        /// A component that reads <see cref="RockDateTime.OrgTimeZoneInfo"/> once
+        /// and caches it keeps using the old zone after this call. The Lava Fluid
+        /// engine is one: it copies the zone into its template options when it is
+        /// initialized. Nothing is notified from here, so such a component has to
+        /// be built after the zone is set rather than before. The Lava tests get
+        /// that for free, because LavaRenderTestHelper builds a new engine inside
+        /// every ExecuteForActiveEngines call.
+        /// </remarks>
+        /// <param name="tz">The time zone to make the organization time zone.</param>
         public static void SetRockTimeZone( TimeZoneInfo tz )
         {
             RockDateTime.Initialize( tz );

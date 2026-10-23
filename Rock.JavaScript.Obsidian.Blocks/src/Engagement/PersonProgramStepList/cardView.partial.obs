@@ -1,0 +1,56 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="step-type-card-grid">
+        <StepTypeCard v-for="stepType in stepTypes"
+                      :key="stepType.idKey ?? stepType.id"
+                      :stepType="stepType"
+                      :stepTerm="options.stepTerm ?? 'Step'"
+                      :stepStatusColors="stepStatusColors"
+                      :isCampusShown="options.isCampusColumnVisible"
+                      @add="emit('add', $event)"
+                      @edit="(stepTypeId, stepId) => emit('edit', stepTypeId, stepId)"
+                      @delete="emit('delete', $event)" />
+    </div>
+</template>
+
+<style scoped>
+/* Equal columns sized from the min width; auto-fit drops unused columns so a single row of cards can grow to the max. */
+.step-type-card-grid {
+    --step-card-min-width: 240px;
+    --step-card-max-width: 400px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--step-card-min-width)), 1fr));
+    justify-items: center;
+    gap: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
+    import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
+    import StepTypeCard from "./stepTypeCard.partial.obs";
+
+    defineProps({
+        stepTypes: {
+            type: Array as PropType<PersonProgramStepTypeBag[]>,
+            required: true
+        },
+
+        stepStatusColors: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        options: {
+            type: Object as PropType<PersonProgramStepListOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "add", stepTypeId: number): void;
+        (e: "edit", stepTypeId: number, stepId: number): void;
+        (e: "delete", stepIdKey: string): void;
+    }>();
+</script>

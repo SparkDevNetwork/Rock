@@ -1199,5 +1199,26 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   CREATE PROCEDURE script for [spGetGroupPlacementPeople] that returns
+        ///   inactive (non-archived) destination group members as placed and adds
+        ///   [GroupMemberStatus] to the result set so the Group Placement block can
+        ///   show them muted instead of returning them to People to Place.
+        /// </summary>
+        public static string _323_ShowInactiveGroupPlacementMembers_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_323_ShowInactiveGroupPlacementMembers_spGetGroupPlacementPeople", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   ALTER FUNCTION script that makes the SQL spouse lookup honor the Bible Strict Spouse system setting.
+        /// </summary>
+        public static string _334_FixSpouseFunctionBibleStrictSetting7117_ufnCrm_GetSpousePersonIdFromPersonId {
+            get {
+                return ResourceManager.GetString("_334_FixSpouseFunctionBibleStrictSetting7117_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+            }
+        }
     }
 }

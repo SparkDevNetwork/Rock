@@ -296,6 +296,28 @@ namespace Rock.Blocks.Event
             return true;
         }
 
+        /// <summary>
+        /// Determines whether the event item occurrence belongs to an event item on at least
+        /// one calendar the current person is authorized to view. This is the base filter the
+        /// calendar item dialog uses when listing calendars; its date and status filters are
+        /// user choices and are intentionally not re-applied here.
+        /// </summary>
+        /// <param name="eventItemOccurrenceId">The event item occurrence identifier.</param>
+        /// <returns><c>true</c> if the occurrence is on a viewable calendar; otherwise, <c>false</c>.</returns>
+        private bool IsOccurrenceOnViewableCalendar( int eventItemOccurrenceId )
+        {
+            var calendarIds = new EventItemOccurrenceService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( o => o.Id == eventItemOccurrenceId )
+                .SelectMany( o => o.EventItem.EventCalendarItems.Select( ci => ci.EventCalendarId ) )
+                .ToList();
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null && c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
+        }
+
         #endregion
 
         #region Block Actions
@@ -315,17 +337,28 @@ namespace Rock.Blocks.Event
             var bag = box.Entity;
             if ( bag != null )
             {
+                var instance = RegistrationInstanceService.Get( PageParameter( PageParameterKey.RegistrationInstanceId ) );
                 var linkageId = bag.IdKey;
                 if ( !string.IsNullOrEmpty( linkageId ) )
                 {
                     linkage = service.Get( linkageId );
                 }
 
+                // This block only manages linkages of the registration instance
+                // the page is for, so do not allow an existing linkage from a
+                // different instance to be edited through a tampered IdKey.
+                var isLinkageFromOtherInstance = linkage != null
+                    && ( instance == null || linkage.RegistrationInstanceId != instance.Id );
+
+                if ( isLinkageFromOtherInstance )
+                {
+                    return ActionBadRequest( "Invalid linkage." );
+                }
+
                 if ( linkage == null )
                 {
                     linkage = new EventItemOccurrenceGroupMap();
 
-                    var instance = RegistrationInstanceService.Get( PageParameter( PageParameterKey.RegistrationInstanceId ) );
                     if ( instance != null )
                     {
                         linkage.RegistrationInstanceId = instance.Id;
@@ -348,6 +381,16 @@ namespace Rock.Blocks.Event
                         o.Guid == selectedOccurenceGuid
                     )
                     .FirstOrDefault();
+
+                // The occurrence Guid comes from the client. Allow it only if it is unchanged
+                // or on a calendar the person can view, which is where the dialog offers them from.
+                var isOccurrenceChanged = eventCalendarItem != null
+                    && eventCalendarItem.Id != linkage.EventItemOccurrenceId;
+
+                if ( isOccurrenceChanged && !IsOccurrenceOnViewableCalendar( eventCalendarItem.Id ) )
+                {
+                    return ActionBadRequest( "The selected event occurrence is not available." );
+                }
 
                 linkage.EventItemOccurrenceId = eventCalendarItem?.Id;
                 linkage.GroupId = GroupCache.Get( bag.Group.Value )?.Id;

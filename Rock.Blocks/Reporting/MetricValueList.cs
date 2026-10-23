@@ -621,6 +621,16 @@ namespace Rock.Blocks.Reporting
                 return ActionBadRequest( $"{MetricValue.FriendlyTypeName} not found." );
             }
 
+            // The grid only lists values of the page's metric, and the metric Edit check
+            // in CanEdit is evaluated against that metric. Reject values of any other
+            // metric so Edit rights on one metric cannot delete values of another.
+            var metric = ResolvedMetric;
+
+            if ( metric == null || metricValue.MetricId != metric.Id )
+            {
+                return ActionBadRequest( $"{MetricValue.FriendlyTypeName} not found." );
+            }
+
             if ( !CanEdit )
             {
                 return ActionBadRequest( $"Not authorized to delete {MetricValue.FriendlyTypeName}." );

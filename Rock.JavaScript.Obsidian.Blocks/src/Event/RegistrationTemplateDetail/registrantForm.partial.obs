@@ -1,0 +1,258 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :modelValue="isExpanded" @update:modelValue="onExpandedChanged" hasCollapse :title="title">
+        <template v-if="!isDefaultForm" #headerActions>
+            <span class="registrant-form-reorder reorder-handle btn btn-link btn-xs" title="Drag to reorder" @click.stop>
+                <i class="ti ti-menu-2"></i>
+            </span>
+
+            <RockButton btnType="danger" btnSize="xs" class="btn-square" title="Delete Form" @click.stop="onDeleteForm">
+                <i class="ti ti-x"></i>
+            </RockButton>
+        </template>
+
+        <div v-if="!isDefaultForm" class="row">
+            <div class="col-md-6">
+                <TextBox :modelValue="form.name ?? ''" @update:modelValue="onNameChanged" label="Form Name" rules="required" :maxLength="100" />
+            </div>
+        </div>
+
+        <Grid :data="gridData" keyField="guid" itemTerm="Field" liveUpdates light @addItem="onAddField">
+            <ReorderColumn @orderChanged="onOrderChanged" />
+
+            <Column name="name" field="name" title="Field">
+                <template #format="{ row }">
+                    <span v-if="row.isAttributeMissing" class="label label-danger">Invalid Attribute</span>
+                    <span v-else>{{ row.name }}</span>
+                </template>
+            </Column>
+
+            <TextColumn name="source" field="source" title="Source" />
+
+            <Column name="type" field="type" title="Type">
+                <template #format="{ row }">
+                    <span v-if="row.isAttributeMissing" class="label label-danger">Invalid Attribute</span>
+                    <span v-else>{{ row.type }}</span>
+                </template>
+            </Column>
+
+            <BooleanColumn name="isInternal" field="isInternal" title="Internal" />
+            <BooleanColumn name="isSharedValue" field="isSharedValue" title="Common" />
+            <BooleanColumn name="isLockedIfValuesExist" field="isLockedIfValuesExist" title="Lock Existing Value" />
+            <BooleanColumn name="showCurrentValue" field="showCurrentValue" title="Use Current Value" />
+            <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+            <BooleanColumn name="isGridField" field="isGridField" title="Show on Grid" />
+            <BooleanColumn name="showOnWaitlist" field="showOnWaitlist" title="Show on Wait List" />
+
+            <Column name="filter" title="" width="58px" itemClass="grid-columncommand" headerClass="grid-columncommand" disableSort>
+                <template #format="{ row }">
+                    <button v-if="row.isFilterVisible"
+                            type="button"
+                            class="btn btn-sm form-field-filter-button"
+                            :class="row.hasVisibilityRules ? 'btn-warning' : 'btn-default'"
+                            title="Filter"
+                            @click.prevent="onFilterField(row.guid)">
+                        <i class="ti ti-filter"></i>
+                    </button>
+                </template>
+            </Column>
+
+            <EditColumn @click="onEditField" />
+            <DeleteColumn @click="onDeleteField" :rowDisabled="isDeleteDisabled" />
+        </Grid>
+    </Panel>
+</template>
+
+<style scoped>
+.form-field-filter-button.btn {
+    opacity: 1;
+    box-shadow: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Grid, { BooleanColumn, Column, DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { RegistrationFieldSource, RegistrationFieldSourceDescription } from "@Obsidian/Enums/Event/registrationFieldSource";
+    import { RegistrationTemplateFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormBag";
+    import { RegistrationTemplateFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormFieldBag";
+    import { FieldReorder } from "./types.partial";
+    import { getFieldDisplayName, isFieldAttributeMissing, isProtectedField } from "./utils.partial";
+
+    const props = defineProps({
+        /** The form being displayed. */
+        form: {
+            type: Object as PropType<RegistrationTemplateFormBag>,
+            required: true
+        },
+
+        /** True when this is the default form, which cannot be renamed, moved or deleted. */
+        isDefaultForm: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** True when the form panel is expanded. */
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isExpanded", value: boolean): void,
+        (e: "update:form", value: RegistrationTemplateFormBag): void,
+        (e: "delete"): void,
+        (e: "addField"): void,
+        (e: "editField", fieldGuid: string): void,
+        (e: "filterField", fieldGuid: string): void,
+        (e: "deleteField", fieldGuid: string): void,
+        (e: "reorderFields", value: FieldReorder): void
+    }>();
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        if (props.isDefaultForm) {
+            return props.form.name || "Default Form";
+        }
+
+        return props.form.name || "New Form";
+    });
+
+    const fields = computed((): RegistrationTemplateFormFieldBag[] => {
+        return [...(props.form.fields ?? [])].sort((a, b) => a.order - b.order);
+    });
+
+    /**
+     * Fields that can be used as filter criteria. A filter needs at least one
+     * other field to compare against, so the filter button is hidden until two
+     * non-person fields exist.
+     */
+    const filterableFieldCount = computed((): number => {
+        return fields.value.filter(field => field.fieldSource !== RegistrationFieldSource.PersonField).length;
+    });
+
+    const gridData = computed(() => {
+        const rows = fields.value.map(field => ({
+            guid: field.guid,
+            name: getFieldDisplayName(field),
+            source: RegistrationFieldSourceDescription[field.fieldSource] ?? "",
+            type: field.fieldSource === RegistrationFieldSource.PersonField ? "" : (field.fieldTypeName ?? ""),
+            isAttributeMissing: isFieldAttributeMissing(field),
+            isInternal: field.isInternal,
+            isSharedValue: field.isSharedValue,
+            isLockedIfValuesExist: field.isLockedIfValuesExist,
+            showCurrentValue: field.showCurrentValue,
+            isRequired: field.isRequired,
+            isGridField: field.isGridField,
+            showOnWaitlist: field.showOnWaitlist,
+            isFilterVisible: field.fieldSource !== RegistrationFieldSource.PersonField && filterableFieldCount.value >= 2,
+            hasVisibilityRules: (field.visibilityRules?.rules?.length ?? 0) > 0,
+            isProtected: isProtectedField(field, props.isDefaultForm)
+        }));
+
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the panel is expanded or collapsed.
+     *
+     * @param value True when the panel is expanded.
+     */
+    function onExpandedChanged(value: boolean): void {
+        emit("update:isExpanded", value);
+    }
+
+    /**
+     * Called when the form name is changed.
+     *
+     * @param value The new name.
+     */
+    function onNameChanged(value: string): void {
+        emit("update:form", { ...props.form, name: value });
+    }
+
+    /**
+     * Called when the delete button of the form is clicked.
+     */
+    function onDeleteForm(): void {
+        emit("delete");
+    }
+
+    /**
+     * Called when the Add button on the fields grid is clicked.
+     */
+    function onAddField(): void {
+        emit("addField");
+    }
+
+    /**
+     * Called when the Edit button of a field is clicked.
+     *
+     * @param key The unique identifier of the field.
+     */
+    function onEditField(key: string): void {
+        emit("editField", key);
+    }
+
+    /**
+     * Called when the filter button of a field is clicked.
+     *
+     * @param key The unique identifier of the field as stored on the grid row.
+     */
+    function onFilterField(key: unknown): void {
+        emit("filterField", String(key));
+    }
+
+    /**
+     * Called when the Delete button of a field is clicked.
+     *
+     * @param key The unique identifier of the field.
+     */
+    function onDeleteField(key: string): void {
+        emit("deleteField", key);
+    }
+
+    /**
+     * Called when a field is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to the end.
+     *
+     * @returns True to keep the new order.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        emit("reorderFields", {
+            fieldGuid: item["guid"] as string,
+            beforeFieldGuid: (beforeItem?.["guid"] as string | undefined) ?? null
+        });
+
+        return true;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Determines if the delete button of a row is disabled. The first and last
+     * name fields of the default form can never be removed.
+     *
+     * @param row The grid row.
+     *
+     * @returns True when the row cannot be deleted.
+     */
+    function isDeleteDisabled(row: Record<string, unknown>): boolean {
+        return row["isProtected"] === true;
+    }
+
+    // #endregion Functions
+</script>

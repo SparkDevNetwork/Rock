@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Net;
 using System.Web.Http;
 
 using Rock.Data;
@@ -38,6 +39,12 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "D7DA6AB3-CCCD-4ABB-AD25-83EE092A5DD5" )]
         public Rock.Model.Note GetNoteEditData( int noteId )
         {
+            // Note edit data is only for signed-in people.
+            if ( GetPerson() == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
             // Enable proxy creation since Note security may need to lazy load some child properties (for example, note.CreatedByPersonAlias)
             SetProxyCreation( true );
 

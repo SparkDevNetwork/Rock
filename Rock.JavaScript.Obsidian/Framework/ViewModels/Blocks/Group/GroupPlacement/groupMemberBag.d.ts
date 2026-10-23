@@ -47,6 +47,12 @@ export type GroupMemberBag = {
     /** The encrypted identifier key for the group role assigned to the member. */
     groupRoleIdKey?: string | null;
 
+    /**
+     * Determines if the group member status is Inactive. Inactive members are still
+     * considered placed but are displayed muted and are not counted toward capacity.
+     */
+    isInactive: boolean;
+
     /** The person associated with this group member. */
     person?: PersonBag | null;
 };

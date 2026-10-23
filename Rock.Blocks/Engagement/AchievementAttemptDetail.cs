@@ -365,7 +365,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AchievementAttempt.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AchievementAttempt.FriendlyTypeName}." );
                 return false;
             }
 
@@ -389,8 +389,16 @@ namespace Rock.Blocks.Engagement
 
             if ( achiever is PersonAlias personAlias )
             {
-                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl, personAlias.Person.PhotoUrl );
-                personImageStringBuilder.AppendFormat( nameLinkFormat, personAlias.Person.FullName, personAlias.PersonId );
+                /*
+                    10/19/2026 - MSE
+
+                    This HTML is shown with v-html. A person can set their own name (and the photo
+                    URL carries their initials), so both are encoded before they go into the markup.
+
+                    Reason: Prevent stored XSS through a person's name in Achievement Attempt Detail.
+                */
+                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl.EncodeHtml(), personAlias.Person.PhotoUrl.EncodeHtml() );
+                personImageStringBuilder.AppendFormat( nameLinkFormat, personAlias.Person.FullName.EncodeHtml(), personAlias.PersonId );
             }
             else
             {
@@ -571,6 +579,8 @@ namespace Rock.Blocks.Engagement
                 return actionError;
             }
 
+            var originalAchievementTypeId = entity.AchievementTypeId;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
@@ -578,6 +588,21 @@ namespace Rock.Blocks.Engagement
             }
 
             var achievementType = AchievementTypeCache.Get( entity.AchievementTypeId );
+
+            if ( achievementType == null )
+            {
+                return ActionBadRequest( "Invalid achievement type." );
+            }
+
+            // If an existing attempt is being moved to a different achievement
+            // type then make sure the person can also edit the new type.
+            if ( entity.Id != 0
+                && entity.AchievementTypeId != originalAchievementTypeId
+                && !achievementType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {AchievementAttempt.FriendlyTypeName}." );
+            }
+
             var progress = box.Bag.Progress.AsDecimal();
 
             if ( progress < 0m )

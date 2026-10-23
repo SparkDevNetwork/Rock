@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 
-using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.TestFramework;
@@ -67,9 +66,7 @@ namespace Rock.Tests.Integration.TestFramework.Database.Initializer
             // including the Rock.Bus.Transport.InMemory Type that is required to start the Rock Message Bus.
             EntityTypeService.RegisterEntityTypes();
 
-            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
-
-            var lavaEngine = LavaIntegrationTestHelper.GetEngineInstance<FluidEngine>();
+            var lavaEngine = LavaIntegrationEngineFactory.InitializeCurrentEngine( shouldRegisterDynamicShortcodes: false );
 
             var factory = new SampleDataManager( lavaEngine );
             var args = new SampleDataManager.SampleDataImportActionArgs

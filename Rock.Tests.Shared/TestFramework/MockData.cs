@@ -167,6 +167,51 @@ namespace Rock.Tests.Shared.TestFramework
         }
 
         /// <summary>
+        /// Creates a <see cref="PhoneNumber"/> for a person, adding it to the
+        /// context and to the person's <c>PhoneNumbers</c> collection.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="numberFormatted"/> is supplied by the caller because the
+        /// real value is written by <c>PhoneNumber</c>'s save hook, and the mocked
+        /// context's <c>SaveChanges</c> runs no hooks. Formatting it here instead
+        /// would not help either: <c>PhoneNumber.FormattedNumber</c> reads the phone
+        /// country code defined type and its match and format expressions from the
+        /// database, so without those rows it returns the digits unchanged.
+        /// </remarks>
+        /// <param name="rockContext">The mocked context to seed.</param>
+        /// <param name="person">The person the number belongs to.</param>
+        /// <param name="number">The unformatted number, digits only.</param>
+        /// <param name="numberFormatted">The number as it should appear when displayed.</param>
+        /// <param name="numberTypeValue">The defined value describing the number's type, such as Home or Mobile.</param>
+        /// <returns>The created <see cref="PhoneNumber"/>.</returns>
+        public static PhoneNumber CreatePhoneNumber( RockContext rockContext, Person person, string number, string numberFormatted, DefinedValue numberTypeValue = null )
+        {
+            var phoneNumber = new PhoneNumber
+            {
+                Id = GetNextId<PhoneNumber>( rockContext ),
+                Guid = Guid.NewGuid(),
+                PersonId = person.Id,
+                Number = number,
+                NumberFormatted = numberFormatted,
+                NumberTypeValueId = numberTypeValue?.Id,
+                NumberTypeValue = numberTypeValue
+            };
+
+            rockContext.Set<PhoneNumber>().Add( phoneNumber );
+
+            // The mocked context performs no navigation-property fixup, so the
+            // person's collection is maintained by hand.
+            if ( person.PhoneNumbers == null )
+            {
+                person.PhoneNumbers = new List<PhoneNumber>();
+            }
+
+            person.PhoneNumbers.Add( phoneNumber );
+
+            return phoneNumber;
+        }
+
+        /// <summary>
         /// Gets the next available integer identifier for the entity type in the
         /// mocked context. This lets seeded entities have a unique, non-zero Id
         /// without requiring a <c>SaveChanges</c> call.

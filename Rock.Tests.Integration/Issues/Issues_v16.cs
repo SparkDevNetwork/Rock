@@ -22,7 +22,7 @@ using Rock.Field.Types;
 using Rock.Lava.Fluid;
 using Rock.Tests.Integration.Crm;
 using Rock.Tests.Integration.TestFramework.Database;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Web.UI.Controls;
 
@@ -40,7 +40,6 @@ namespace Rock.Tests.Integration.Issues
     [RockObsolete( "1.16" )]
     public class BugFixVerificationTests_v16 : DatabaseTestsBase
     {
-        private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;
 
         /// <summary>
         /// Verifies the resolution of Issue #5389.
@@ -66,17 +65,28 @@ namespace Rock.Tests.Integration.Issues
 {% endcontentchannel %}
 ";
 
-            var expectedOutput = @"
-Dot Notation: 1
-<br>
-Property Filter: 1
-";
+            // The template's own indentation, and the blank line the assign tag
+            // leaves behind, are part of the output: neither tag uses whitespace
+            // control. The expected value is written as concatenated parts so the
+            // leading spaces are visible. What the test is about is that both
+            // access paths report a size of 1.
+            var expectedOutput = "\n"
+                + "\n"
+                + "    Dot Notation: 1<br>\n"
+                + "    \n"
+                + "    Property Filter: 1\n"
+                + "\n";
 
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
                 EnabledCommands = "RockEntity"
             };
-            _TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         public void Issue3760_PhoneNumberFieldTypeWithCountryCode_PreservesCountryCode()
@@ -156,19 +166,40 @@ Did you see those comments ^^^
     < b > Welcome...</ b >
 {% endif %}
 ";
-            var expectedOutput = @"
-<h3>Testing issue 5560</h3>
-Did you see those comments ^^^
-";
+            // Each comment is removed, but the line it occupied is not: what is
+            // left behind is the whitespace that surrounded it. The runs of blank
+            // lines below are those remains, and that they hold no comment text is
+            // the point of the test. The expected value is written as concatenated
+            // parts so that the blank lines and trailing spaces are visible.
+            var expectedOutput = "\n"
+                + "<h3>Testing issue 5560</h3>\n"
+                + "\n\n\n"
+                + " \n"
+                + "\n\n"
+                + "Did you see those comments ^^^\n"
+                + "\n\n\n\n"
+                + "            \n"
+                + "\n"
+                + "            \n";
 
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
-                EnabledCommands = "RockEntity",
-                IgnoreWhiteSpace = true,
-                LavaEngineTypes = new List<System.Type> { typeof( FluidEngine ) }
+                EnabledCommands = "RockEntity"
             };
 
-            _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+
+                // Named separately from the comparison above, so that a failure
+                // says a comment leaked rather than just that the text differs.
+                Assert.DoesNotContain( "By Jim M", output );
+                Assert.DoesNotContain( "By Stan Y", output );
+                Assert.DoesNotContain( "GroupType 67", output );
+                Assert.DoesNotContain( "proceed if we found a group", output );
+            } );
         }
 
         [TestMethod]
@@ -197,13 +228,32 @@ Did you see those comments ^^^
 {% endfor %}
 ";
 
-            var expectedOutput = @"
-<Pass1>InnerScope:counter=1,OuterScope:counter=1<Pass2>InnerScope:counter=2,OuterScope:counter=2<Pass3>InnerScope:counter=3,OuterScope:counter=3 
-";
+            // What the test is about is that the counter assigned inside the
+            // workflowactivate block is still that value outside it, so the inner
+            // and outer readings agree on every pass. The indentation and blank
+            // lines come from the template, which uses no whitespace control; the
+            // expected value is built per pass so that the pairing stays visible.
+            var expectedOutput = "\n\n\n\n\n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+            for ( var pass = 1; pass <= 3; pass++ )
+            {
+                expectedOutput += "    <Pass " + pass + ">\n"
+                    + "    \n"
+                    + "        \n"
+                    + "        Inner Scope: counter=" + pass + ",\n"
+                    + "    \n"
+                    + "    Outer Scope: counter=" + pass + "\n"
+                    + "\n";
+            }
 
-            _TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            var options = new LavaRenderOptions() { EnabledCommands = "WorkflowActivate" };
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -232,34 +282,42 @@ StartTimeOfDay (Formatted): {{ schedule.StartTimeOfDay | Date:'hh:mm tt K' }}<br
 <pre>{{ schedule.iCalendarContent }}</pre>
 {% endschedule %}
 ";
-            var expectedOutput = $@"
-<h3>Testing issue 5632</h3>
-Standard Date Format: 03:30 PM
-<br/>
-Schedule Name: Sunday 10:30am
-<br/>
-StartTimeOfDay (Raw): 10:30:00
-<br/>
-StartTimeOfDay (Formatted): 10:30 AM {System.DateTime.Now:%K}
-<br/>
-<pre>
-    BEGIN:VCALENDAR
-    BEGIN:VEVENT
-    DTEND:20130501T113000
-    DTSTART:20130501T103000
-    RRULE:FREQ=WEEKLY;BYDAY=SU
-    END:VEVENT
-    END:VCALENDAR
-</pre>
-";
-            var options = new LavaTestRenderOptions
+            // What the test is about is the "(Raw)" line: StartTimeOfDay renders as
+            // the TimeSpan 10:30:00 rather than as a UTC DateTime. The rest is the
+            // surrounding template, written out exactly because the comparison is
+            // now exact. The iCalendar body carries the line terminators the row
+            // was stored with, which Render normalizes to "\n" along with the rest
+            // of the output.
+            var expectedOutput = "\n"
+                + "<h3>Testing issue 5632</h3>\n"
+                + "\n"
+                + "Standard Date Format: 03:30 PM\n"
+                + "<br/>\n"
+                + "\n"
+                + "Schedule Name: Sunday 10:30am<br/>\n"
+                + "StartTimeOfDay (Raw): 10:30:00<br/>\n"
+                // The offset is the one the machine running the test is in, which
+                // is what the Date filter's "K" specifier renders here.
+                + $"StartTimeOfDay (Formatted): 10:30 AM {System.DateTime.Now:%K}<br/>\n"
+                + "<pre>BEGIN:VCALENDAR\n"
+                + "BEGIN:VEVENT\n"
+                + "DTEND:20130501T113000\n"
+                + "DTSTART:20130501T103000\n"
+                + "RRULE:FREQ=WEEKLY;BYDAY=SU\n"
+                + "END:VEVENT\n"
+                + "END:VCALENDAR</pre>\n"
+                + "\n";
+            var options = new LavaRenderOptions
             {
-                EnabledCommands = "RockEntity",
-                IgnoreWhiteSpace = true,
-                LavaEngineTypes = new List<System.Type> { typeof( FluidEngine ) }
+                EnabledCommands = "RockEntity"
             };
 
-            _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -290,9 +348,34 @@ StartTimeOfDay (Formatted): 10:30 AM {System.DateTime.Now:%K}
 {% endregistration %}
 ";
 
-            // Confirm that the template is parsed correctly, but ignore the output.
-            var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
-            _TestHelper.AssertTemplateOutput( string.Empty, input, options );
+            /*
+                9/27/26 - CLAUDE
+
+                The test is about the template parsing at all: before the fix,
+                nesting two entity commands whose names share a root prefix threw.
+                So the parse result is asserted directly rather than inferred from
+                the rendered text.
+
+                The previous assertion compared the output against an empty string,
+                which only held because the comparison stripped whitespace. The
+                template emits nothing of its own, but the whitespace between its
+                tags survives, so what the output must be is blank rather than
+                empty. Asserting the exact run of spaces and newlines would say
+                nothing about the issue and would break on any unrelated change to
+                whitespace handling.
+
+                Reason: Assert that the template parsed and rendered no content,
+                which is what the issue was about.
+            */
+            var options = new LavaRenderOptions() { EnabledCommands = "RockEntity" };
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var result = LavaRenderTestHelper.RenderResult( engine, input, options );
+
+                Assert.IsNull( result.Error, "Template parsing failed." );
+                Assert.IsTrue( result.Text.IsNullOrWhiteSpace(), $"Expected no rendered content. [Output=\"{result.Text}\"]" );
+            } );
         }
     }
 }

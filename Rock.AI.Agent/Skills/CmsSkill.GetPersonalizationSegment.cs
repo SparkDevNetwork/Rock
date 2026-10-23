@@ -44,7 +44,7 @@ internal sealed partial class CmsSkill
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var rockContext = AgentRequestContext.RockContext;
 
-        var segment = helper.GetRequiredEntity<Model.PersonalizationSegment>( personalizationSegmentIdKey, checkSecurity: false );
+        var segment = helper.GetRequiredEntity<Model.PersonalizationSegment>( personalizationSegmentIdKey );
 
         if ( segment == null )
         {

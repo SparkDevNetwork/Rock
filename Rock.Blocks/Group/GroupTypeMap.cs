@@ -165,21 +165,30 @@ namespace Rock.Blocks.Group
 
         #region Constants
 
+        /*
+            10/19/2026 - MSE
+
+            The info window is rendered as HTML. Group names, location fields, person names
+            and emails can be set by group editors or the people themselves, so the default
+            template escapes them.
+
+            Reason: Prevent stored XSS through names in the default info window.
+        */
         /// <summary>
         /// Default Lava template for the group info window. Kept identical to the WebForms block
         /// so existing customized templates continue to render against the same merge fields.
         /// </summary>
         private const string DefaultLavaTemplate = @"
 <div class='clearfix'>
-    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4>
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName | Escape}}</h4>
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
 </div>
 
 <div class='clearfix'>
     <div class='pull-left' style='padding-right: 24px'>
         <strong>{{GroupLocation.Name}}</strong><br>
-        {{GroupLocation.Street1}}
-        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.PostalCode}}
+        {{GroupLocation.Street1 | Escape}}
+        <br>{{GroupLocation.City | Escape}}, {{GroupLocation.State | Escape}} {{GroupLocation.PostalCode | Escape}}
         {% for attribute in Attributes %}
             {% if forloop.first %}<br/>{% endif %}
             <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
@@ -189,11 +198,11 @@ namespace Rock.Blocks.Group
         <strong>{{GroupMemberTerm}}s</strong><br>
         {% for GroupMember in GroupMembers -%}
             {% if PersonProfilePage != '' %}
-                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName | Escape}} {{GroupMember.LastName | Escape}}</a>
             {% else %}
-                {{GroupMember.NickName}} {{GroupMember.LastName}}
+                {{GroupMember.NickName | Escape}} {{GroupMember.LastName | Escape}}
             {% endif %}
-            - {{GroupMember.Email}}
+            - {{GroupMember.Email | Escape}}
             {% for PhoneType in GroupMember.PhoneTypes %}
                 <br>{{PhoneType.Name}}: {{PhoneType.Number}}
             {% endfor %}
@@ -611,7 +620,19 @@ namespace Rock.Blocks.Group
             }
 
             var group = new GroupService( RockContext ).Get( request.GroupId );
-            if ( group == null )
+            var groupType = ResolveGroupType( GetAttributeValue( AttributeKey.GroupType ), PageParameter( PageParameterKey.GroupTypeId ) );
+            var includeInactiveGroups = GetAttributeValue( AttributeKey.IncludeInactiveGroups ).AsBoolean();
+
+            // The map only shows groups of the configured group type (and
+            // only active ones unless inactive groups are included), so any
+            // other group is treated as not found. Otherwise a tampered id
+            // could render the members of any group the person can view.
+            var isGroupMapped = group != null
+                && groupType != null
+                && group.GroupTypeId == groupType.Id
+                && ( includeInactiveGroups || group.IsActive );
+
+            if ( !isGroupMapped )
             {
                 return ActionBadRequest( "The group could not be found." );
             }

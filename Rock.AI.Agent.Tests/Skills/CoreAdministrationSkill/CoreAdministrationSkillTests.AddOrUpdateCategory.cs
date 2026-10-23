@@ -25,6 +25,7 @@ using Rock.AI.Agent.Classes.Skills.CoreAdministrationSkill;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -312,6 +313,7 @@ public partial class CoreAdministrationSkillTests
         };
 
         rockContext.Set<Category>().Add( category );
+        AllowAllUsersToEdit<Category>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -372,6 +374,7 @@ public partial class CoreAdministrationSkillTests
         };
 
         rockContext.Set<Category>().Add( category );
+        AllowAllUsersToEdit<Category>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -380,6 +383,357 @@ public partial class CoreAdministrationSkillTests
             entityTypeIdKey: IdHasher.Instance.GetHash( 999 ) );
 
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateMoveUnderEditableParentWithoutEditOnCategory_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var finance = new Category
+        {
+            Id = 10,
+            Guid = new Guid( "1a2b3c4d-0001-4a37-9000-000000000010" ),
+            Name = "Finance",
+            EntityTypeId = entityType.Id
+        };
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0001-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        rockContext.Set<Category>().Add( finance );
+        rockContext.Set<Category>().Add( youth );
+
+        // The caller can edit Youth but not Finance, which has no rules of its
+        // own. Moving Finance under Youth must not grant EDIT through Youth.
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youth.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( finance.Id ),
+            parentCategoryIdKey: new SetOrClear<string> { Value = IdHasher.Instance.GetHash( youth.Id ) } );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "not authorized to edit" ) ) );
+        Assert.IsNull( finance.ParentCategoryId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateMoveUnderParentWithoutEdit_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0002-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        var youthSub = new Category
+        {
+            Id = 12,
+            Guid = new Guid( "1a2b3c4d-0002-4a37-9000-000000000012" ),
+            Name = "Youth Sub",
+            EntityTypeId = entityType.Id,
+            ParentCategoryId = youth.Id,
+            ParentCategory = youth
+        };
+
+        var missions = new Category
+        {
+            Id = 13,
+            Guid = new Guid( "1a2b3c4d-0002-4a37-9000-000000000013" ),
+            Name = "Missions",
+            EntityTypeId = entityType.Id
+        };
+
+        rockContext.Set<Category>().Add( youth );
+        rockContext.Set<Category>().Add( youthSub );
+        rockContext.Set<Category>().Add( missions );
+
+        // The caller can edit Youth Sub through its own rule, but not Missions.
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youthSub.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( youthSub.Id ),
+            parentCategoryIdKey: new SetOrClear<string> { Value = IdHasher.Instance.GetHash( missions.Id ) } );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "selected parent category" ) ) );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateMoveWithEditOnBoth_MovesCategory()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0003-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        var youthSub = new Category
+        {
+            Id = 12,
+            Guid = new Guid( "1a2b3c4d-0003-4a37-9000-000000000012" ),
+            Name = "Youth Sub",
+            EntityTypeId = entityType.Id,
+            ParentCategoryId = youth.Id,
+            ParentCategory = youth
+        };
+
+        var missions = new Category
+        {
+            Id = 13,
+            Guid = new Guid( "1a2b3c4d-0003-4a37-9000-000000000013" ),
+            Name = "Missions",
+            EntityTypeId = entityType.Id
+        };
+
+        rockContext.Set<Category>().Add( youth );
+        rockContext.Set<Category>().Add( youthSub );
+        rockContext.Set<Category>().Add( missions );
+
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youthSub.Id );
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, missions.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( youthSub.Id ),
+            parentCategoryIdKey: new SetOrClear<string> { Value = IdHasher.Instance.GetHash( missions.Id ) } );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.AreEqual( missions.Id, youthSub.ParentCategoryId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateRenameWithEditThroughParent_UpdatesCategory()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0004-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        var child = new Category
+        {
+            Id = 12,
+            Guid = new Guid( "1a2b3c4d-0004-4a37-9000-000000000012" ),
+            Name = "Child",
+            EntityTypeId = entityType.Id,
+            ParentCategoryId = youth.Id,
+            ParentCategory = youth
+        };
+
+        rockContext.Set<Category>().Add( youth );
+        rockContext.Set<Category>().Add( child );
+
+        // EDIT on the child is inherited from its stored parent.
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youth.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( child.Id ),
+            name: "Renamed Child" );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.AreEqual( "Renamed Child", child.Name );
+        Assert.AreEqual( youth.Id, child.ParentCategoryId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateWithoutEditOnStoredCategory_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var category = new Category
+        {
+            Id = 10,
+            Guid = new Guid( "1a2b3c4d-0005-4a37-9000-000000000010" ),
+            Name = "Original Name",
+            EntityTypeId = entityType.Id
+        };
+
+        rockContext.Set<Category>().Add( category );
+
+        // Intentionally not granting EDIT.
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( category.Id ),
+            name: "Renamed" );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "edit that category" ) ) );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateMoveWithAdministrateOnParent_MovesCategory()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0007-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        var youthSub = new Category
+        {
+            Id = 12,
+            Guid = new Guid( "1a2b3c4d-0007-4a37-9000-000000000012" ),
+            Name = "Youth Sub",
+            EntityTypeId = entityType.Id,
+            ParentCategoryId = youth.Id,
+            ParentCategory = youth
+        };
+
+        var missions = new Category
+        {
+            Id = 13,
+            Guid = new Guid( "1a2b3c4d-0007-4a37-9000-000000000013" ),
+            Name = "Missions",
+            EntityTypeId = entityType.Id
+        };
+
+        rockContext.Set<Category>().Add( youth );
+        rockContext.Set<Category>().Add( youthSub );
+        rockContext.Set<Category>().Add( missions );
+
+        // The caller can edit Youth Sub through its own rule and can only
+        // administrate Missions, which is enough to move a category under it.
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youthSub.Id );
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.ADMINISTRATE, missions.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( youthSub.Id ),
+            parentCategoryIdKey: new SetOrClear<string> { Value = IdHasher.Instance.GetHash( missions.Id ) } );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.AreEqual( missions.Id, youthSub.ParentCategoryId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateMoveByGuidUnderEditableParentWithoutEditOnCategory_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var finance = new Category
+        {
+            Id = 10,
+            Guid = new Guid( "1a2b3c4d-0008-4a37-9000-000000000010" ),
+            Name = "Finance",
+            EntityTypeId = entityType.Id
+        };
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0008-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        rockContext.Set<Category>().Add( finance );
+        rockContext.Set<Category>().Add( youth );
+
+        // Same as the IdKey case, but both categories are addressed by Guid.
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youth.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: finance.Guid.ToString(),
+            parentCategoryIdKey: new SetOrClear<string> { Value = youth.Guid.ToString() } );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "edit that category" ) ) );
+        Assert.IsNull( finance.ParentCategoryId );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateCategory_UpdateMoveToRootWithEditOnCategory_MovesCategory()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var entityType = EntityTypeCache.Get<WorkflowType>( true, rockContext );
+
+        var youth = new Category
+        {
+            Id = 11,
+            Guid = new Guid( "1a2b3c4d-0006-4a37-9000-000000000011" ),
+            Name = "Youth",
+            EntityTypeId = entityType.Id
+        };
+
+        var youthSub = new Category
+        {
+            Id = 12,
+            Guid = new Guid( "1a2b3c4d-0006-4a37-9000-000000000012" ),
+            Name = "Youth Sub",
+            EntityTypeId = entityType.Id,
+            ParentCategoryId = youth.Id,
+            ParentCategory = youth
+        };
+
+        rockContext.Set<Category>().Add( youth );
+        rockContext.Set<Category>().Add( youthSub );
+
+        MockAuthorizationHelper.AllowAllUsers<Category>( rockContext, Authorization.EDIT, youthSub.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateCategory(
+            categoryIdKey: IdHasher.Instance.GetHash( youthSub.Id ),
+            parentCategoryIdKey: new SetOrClear<string> { ClearValue = true } );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.IsNull( youthSub.ParentCategoryId );
     }
 
     #endregion

@@ -363,7 +363,7 @@ namespace Rock.Blocks.WebFarm
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${WebFarmNode.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {WebFarmNode.FriendlyTypeName}." );
                 return false;
             }
 

@@ -36,39 +36,63 @@ export function isUrl(val: unknown): boolean {
 }
 
 /**
- * Make the URL safe to use for redirects. Basically, this strips off any
- * protocol and hostname from the URL and ensures it's not a javascript:
- * url or anything like that.
+ * Checks if the URL uses a safe scheme. The URL is resolved the same way
+ * the browser resolves an href, so relative URLs are allowed.
  *
- * @param url The URL to be made safe to use with a redirect.
+ * @param url The URL to be checked.
  *
- * @returns A string that is safe to assign to window.location.href.
+ * @returns true if the URL uses the http or https scheme; otherwise false.
  */
-export function makeUrlRedirectSafe(url: string): string {
+export function isUrlSchemeSafe(url: string): boolean {
     try {
-        // If this can't be parsed as a url, such as "/page/123" it will throw
-        // an error which will be handled by the next section.
-        const u = new URL(url);
+        const u = new URL(url, document.baseURI);
 
-        // If the protocol isn't an HTTP or HTTPS, then it is most likely
-        // a dangerous URL.
-        if (u.protocol !== "http:" && u.protocol !== "https:") {
-            return "/";
-        }
-
-        // Try again incase they did something like "http:javascript:alert('hi')".
-        return makeUrlRedirectSafe(`${u.pathname}${u.search}`);
+        return u.protocol === "http:" || u.protocol === "https:";
     }
     catch {
-        // If the URL contains a : but could not be parsed as a URL then it
-        // is not valid, so return "/" so they get redirected to home page.
-        if (url.indexOf(":") !== -1) {
-            return "/";
-        }
+        return false;
+    }
+}
 
-        // Otherwise consider it safe to use.
+/**
+ * Make the URL safe to use for redirects.
+ *
+ * - A URL on this site is returned unchanged.
+ * - A URL on another site keeps its path and query, but on this site.
+ * - Anything else (e.g. javascript:, or a URL that can't be parsed) is "/".
+ *
+ * Allowed Redirect Domain(s) aren't checked here. To redirect to another
+ * site, validate the URL on the server with SiteCache.IsSafeRedirectUrl()
+ * instead.
+ *
+ * @param url The URL to redirect to.
+ *
+ * @returns A URL that is safe to assign to window.location.href.
+ */
+export function makeUrlRedirectSafe(url: string): string {
+    let u: URL;
+
+    try {
+        // Resolve the URL exactly as the browser will when it's assigned to
+        // window.location.href.
+        u = new URL(url, document.baseURI);
+    }
+    catch {
+        return "/";
+    }
+
+    // Only web pages are safe; this rejects javascript:, data:, etc.
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+        return "/";
+    }
+
+    if (u.origin === window.location.origin) {
         return url;
     }
+
+    // Keep the path but stay on this site. Prefixing the origin keeps a path
+    // like "//unsafe.com" from being read as another site.
+    return `${window.location.origin}${u.pathname}${u.search}`;
 }
 
 /**

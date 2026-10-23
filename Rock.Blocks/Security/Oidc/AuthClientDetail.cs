@@ -106,6 +106,12 @@ namespace Rock.Blocks.Security.Oidc
                 return false;
             }
 
+            if ( !AuthClientService.AreRedirectUrisValid( authClient ) )
+            {
+                errorMessage = "One or more redirect URIs are invalid. Separate them with commas, and use https, http or an app scheme in reverse domain form, such as com.example.app.";
+                return false;
+            }
+
             return true;
         }
 
@@ -325,7 +331,7 @@ namespace Rock.Blocks.Security.Oidc
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AuthClient.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AuthClient.FriendlyTypeName}." );
                 return false;
             }
 

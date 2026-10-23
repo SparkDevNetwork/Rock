@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Rock.Communication
@@ -95,6 +97,8 @@ namespace Rock.Communication
 
             return validator.Validate( content );
         }
+
+        private static readonly char[] _lavaBraces = new[] { '{', '}' };
 
         private static EmailAddressFieldValidator _defaultValidator = new EmailAddressFieldValidator
         {
@@ -235,6 +239,64 @@ namespace Rock.Communication
 
             // A single email address.
             return $@"^{_emailAddressRegex}$";
+        }
+
+        /// <summary>
+        /// Determines whether the value contains a Lava brace ('{' or '}').
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns><c>true</c> if the value contains a Lava brace; otherwise <c>false</c>.</returns>
+        internal static bool ContainsLavaBrace( string value )
+        {
+            return value != null && value.IndexOfAny( _lavaBraces ) >= 0;
+        }
+
+        /// <summary>
+        /// Splits the delimited email addresses and returns only the valid ones.
+        /// </summary>
+        /// <param name="delimitedEmails">The delimited email addresses.</param>
+        /// <param name="hasLavaAddress">Set to <c>true</c> if an address was skipped because it contains a Lava brace.</param>
+        /// <param name="hasInvalidAddress">Set to <c>true</c> if an address was skipped because it is not a valid email address.</param>
+        /// <returns>The valid email addresses.</returns>
+        internal static List<string> GetValidEmailAddresses( string delimitedEmails, out bool hasLavaAddress, out bool hasInvalidAddress )
+        {
+            /*
+                10/13/2026 - MSE
+
+                Workflow email actions use this for recipient values that may contain
+                submitted text. The email transport renders each To address as Lava, so
+                an address that still contains a Lava brace must not be sent. Braces are
+                checked on each address because splitting on whitespace, commas,
+                semicolons and pipes can break a Lava tag into pieces.
+
+                Reason: Submitted values were rendered as Lava.
+            */
+            var validEmails = new List<string>();
+            hasLavaAddress = false;
+            hasInvalidAddress = false;
+
+            if ( delimitedEmails.IsNullOrWhiteSpace() )
+            {
+                return validEmails;
+            }
+
+            foreach ( var email in delimitedEmails.SplitDelimitedValues().Select( e => e.Trim() ).Where( e => e.IsNotNullOrWhiteSpace() ) )
+            {
+                if ( ContainsLavaBrace( email ) )
+                {
+                    hasLavaAddress = true;
+                }
+                else if ( !IsValid( email ) )
+                {
+                    hasInvalidAddress = true;
+                }
+                else
+                {
+                    validEmails.Add( email );
+                }
+            }
+
+            return validEmails;
         }
 
         private void InvalidateCurrentRegex()

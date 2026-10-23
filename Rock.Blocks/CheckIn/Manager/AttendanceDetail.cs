@@ -478,6 +478,33 @@ namespace Rock.Blocks.CheckIn.Manager
         }
 
         /// <summary>
+        /// Determines whether the attendance can be moved to the specified
+        /// group, location and schedule. Only the combinations offered by the
+        /// Move Person modal, or the attendance's current one (so the check-in
+        /// and check-out times can still be edited when it is no longer
+        /// offered), are allowed.
+        /// </summary>
+        /// <param name="attendance">The attendance being moved.</param>
+        /// <param name="groupId">The target group identifier.</param>
+        /// <param name="locationId">The target location identifier.</param>
+        /// <param name="scheduleId">The target schedule identifier.</param>
+        /// <returns><c>true</c> if the move target is allowed; otherwise <c>false</c>.</returns>
+        private bool IsMoveTargetAllowed( Attendance attendance, int groupId, int locationId, int scheduleId )
+        {
+            var isCurrentTarget = attendance.Occurrence.GroupId == groupId
+                && attendance.Occurrence.LocationId == locationId
+                && attendance.Occurrence.ScheduleId == scheduleId;
+
+            if ( isCurrentTarget )
+            {
+                return true;
+            }
+
+            return CheckinManagerHelper.GetGroupLocationSchedulesForPersonMove( RockContext, attendance )
+                .Any( gls => gls.Group.Id == groupId && gls.Location.Id == locationId && gls.Schedule.Id == scheduleId );
+        }
+
+        /// <summary>
         /// Reads the group/location/schedule combos the attended person may
         /// be moved to and folds them into the shape the Move Person modal
         /// consumes. The three lookup dictionaries share the same delimiter
@@ -626,6 +653,14 @@ namespace Rock.Blocks.CheckIn.Manager
             if ( !request.GroupId.HasValue )
             {
                 return ActionOk( new AttendanceDetailMovePersonResponseBag { ErrorMessage = "Group Not Found" } );
+            }
+
+            // Only the group, location and schedule combinations the Move
+            // Person modal offers are allowed. Otherwise a tampered request
+            // could move the person into any group or room.
+            if ( !IsMoveTargetAllowed( attendance, request.GroupId.Value, request.LocationId.Value, request.ScheduleId.Value ) )
+            {
+                return ActionOk( new AttendanceDetailMovePersonResponseBag { ErrorMessage = "The selected group, location and schedule are not valid for this attendance." } );
             }
 
             var allowEditingTimes = GetAttributeValue( AttributeKey.AllowEditingStartAndEndTimes ).AsBoolean();

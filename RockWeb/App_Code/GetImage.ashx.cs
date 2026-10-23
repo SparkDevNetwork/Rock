@@ -40,6 +40,23 @@ namespace RockWeb
     public class GetImage : IHttpHandler
     {
         /// <summary>
+        /// The file extensions used for cached images, keyed by the mime type of the image.
+        /// </summary>
+        private static readonly Dictionary<string, string> _cachedFileExtensions = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            { "image/jpeg", "jpg" },
+            { "image/jpg", "jpg" },
+            { "image/png", "png" },
+            { "image/gif", "gif" },
+            { "image/bmp", "bmp" },
+            { "image/tiff", "jpg" },
+            { "image/webp", "webp" },
+            { "image/svg+xml", "svg" },
+            { "image/heic", "heic" },
+            { "image/heif", "heif" }
+        };
+
+        /// <summary>
         /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
         /// </summary>
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
@@ -102,7 +119,7 @@ namespace RockWeb
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
                 // Decrypt it (It is encrypted to help prevent direct access to filesystem).
-                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder, false );
+                trustedRootFolder = Encryption.DecryptRootFolder( encryptedRootFolder );
             }
 
             // If we don't have a rootFolder, default to the ~/Content folder.
@@ -151,6 +168,7 @@ namespace RockWeb
                         }
 
                         context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( trustedPhysicalFilePath ) ) );
+                        AddResponseSecurityHeaders( context );
                         context.Response.ContentType = mimeType;
 
                         // If extra query string params are passed in and it isn't an SVG file, assume resize is needed
@@ -311,13 +329,26 @@ namespace RockWeb
             }
 
             // Security checks pass so send the file
+
+            // Reject non-image files so this image handler never serves an executable type such as text/html.
+            if ( binaryFileMetaData.MimeType?.StartsWith( "image/" ) != true )
+            {
+                SendNotFound( context );
+                return;
+            }
+
             Stream fileContent = null;
             try
             {
                 // Is it cached
                 string cacheName = UrlQueryToCachedFileName( context.Request.QueryString, binaryFileMetaData.MimeType );
                 string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
-                if ( binaryFileMetaData.BinaryFileType_CacheToServerFileSystem && File.Exists( physCachedFilePath ) )
+                string physCacheFolderPath = context.Request.MapPath( "~/App_Data/Cache" );
+
+                bool useServerFileSystemCache = binaryFileMetaData.BinaryFileType_CacheToServerFileSystem
+                    && FileUtilities.IsPathWithinFolder( physCachedFilePath, physCacheFolderPath );
+
+                if ( useServerFileSystemCache && File.Exists( physCachedFilePath ) )
                 {
                     //// Compare the File's LastWrite DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
                     //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
@@ -390,7 +421,7 @@ namespace RockWeb
                             }
                         }
 
-                        if ( binaryFileMetaData.BinaryFileType_CacheToServerFileSystem )
+                        if ( useServerFileSystemCache )
                         {
                             Cache( fileContent, physCachedFilePath );
 
@@ -450,6 +481,7 @@ namespace RockWeb
                 using ( var responseStream = fileContent )
                 {
                     context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName.MakeValidFileName().UrlEncode() );
+                    AddResponseSecurityHeaders( context );
                     if ( responseStream.CanSeek )
                     {
                         responseStream.Seek( 0, SeekOrigin.Begin );
@@ -552,11 +584,7 @@ namespace RockWeb
 
             if ( !string.IsNullOrWhiteSpace( mimeType ) )
             {
-                string[] mimeParts = mimeType.Split( new char[] { '/' } );
-                if ( mimeParts.Length >= 2 )
-                {
-                    fileName += "." + mimeParts[1].Replace( "jpeg", "jpg" ).Replace( "svg+xml", "svg" ).Replace( "tiff", "jpg" );
-                }
+                fileName += "." + ( _cachedFileExtensions.TryGetValue( mimeType.Trim(), out var extension ) ? extension : "bin" );
             }
 
             return fileName;
@@ -707,6 +735,26 @@ namespace RockWeb
             context.Response.StatusCode = System.Net.HttpStatusCode.NotFound.ConvertToInt();
             context.Response.StatusDescription = "The requested image could not be found.";
             context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Adds the security headers that prevent an uploaded file from executing script in the
+        /// context of the Rock domain. Uploaded files are stored and served with a client-supplied
+        /// mime type, so a text file can be served as text/html or image/svg+xml and would then
+        /// execute its script as an active document on the Rock domain. The sandbox directive places
+        /// the response in an opaque origin with scripting disabled (even on direct top-level
+        /// navigation), so script inside an uploaded file cannot run, read the Rock auth cookie, or
+        /// call Rock's API as the viewing user. default-src 'none' additionally blocks the file from
+        /// making any outbound request, preventing data exfiltration and hardening the response if the
+        /// sandbox is ever relaxed. nosniff is included so a file with a benign declared type cannot be
+        /// sniffed into a dangerous one.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void AddResponseSecurityHeaders( HttpContext context )
+        {
+            // No allow-downloads token since this handler only serves inline images.
+            context.Response.AddHeader( "Content-Security-Policy", "default-src 'none'; sandbox" );
+            context.Response.AddHeader( "X-Content-Type-Options", "nosniff" );
         }
 
         /// <summary>

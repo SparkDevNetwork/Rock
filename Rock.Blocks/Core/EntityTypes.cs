@@ -82,6 +82,11 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<EntityTypesBag> GetListQueryable( RockContext rockContext )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return Enumerable.Empty<EntityTypesBag>().AsQueryable();
+            }
+
             var entityTypeService = new EntityTypeService( rockContext );
             var data = entityTypeService.Queryable().Where( e => e.IsEntity ).Select( e => new EntityTypesBag
                 {
@@ -125,6 +130,13 @@ namespace Rock.Blocks.Core
             var entityTypeService = new EntityTypeService( RockContext );
             error = null;
 
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                entity = null;
+                error = ActionForbidden( $"Not authorized to edit {EntityType.FriendlyTypeName}." );
+                return false;
+            }
+
             if ( idKey.IsNotNullOrWhiteSpace() )
             {
                 // If editing an existing entity then load it and make sure it
@@ -140,12 +152,6 @@ namespace Rock.Blocks.Core
             if ( entity == null )
             {
                 error = ActionBadRequest( $"{EntityType.FriendlyTypeName} not found." );
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-            {
-                error = ActionBadRequest( $"Not authorized to edit ${EntityType.FriendlyTypeName}." );
                 return false;
             }
 
@@ -198,17 +204,9 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetEditEntityType( string key )
         {
-            var entityTypeService = new EntityTypeService( RockContext );
-            var entity = entityTypeService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                return ActionBadRequest( $"{EntityType.FriendlyTypeName} not found." );
-            }
-
-            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( "Not authorized to make changes to this entity type." );
+                return actionError ?? ActionBadRequest( $"{EntityType.FriendlyTypeName} not found." );
             }
 
             var editBag = new EntityTypesBag

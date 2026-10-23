@@ -1865,6 +1865,12 @@ namespace Rock.Model
                 return;
             }
 
+            if ( interaction.PersonAlias.Person.Guid == SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() )
+            {
+                // Anonymous visitor aliases represent different people, so they must not contribute to a shared streak.
+                return;
+            }
+
             // Get the person's streaks
             var personId = interaction.PersonAlias.Person.Id;
             var streakService = new StreakService( RockApp.Current.CreateRockContext() );

@@ -301,6 +301,10 @@ namespace Rock.Tests.CheckIn.v2.Filters
             groupMemberMock.Setup( m => m.GroupRole ).Returns( groupRoleMock.Object );
             groupMemberMock.Object.GroupMemberStatus = memberStatus;
 
+            // Seeded rows need a non-zero Id, otherwise the mocked context
+            // treats them as unsaved and hides them from queries.
+            groupMemberMock.Object.Id = 1;
+
             return groupMemberMock;
         }
 

@@ -416,14 +416,32 @@ namespace Rock.Storage.AssetStorage
         {
             string cleanKey = asset.Key.TrimStart( '~' );
             string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
-#if REVIEW_WEBFORMS
-            string physicalPath = FileSystemComponentHttpContext.Server.MapPath( virtualPath );
-#else
-            var physicalPath = RockApp.Current.MapPath( virtualPath );
-#endif
 
             try
             {
+                /*
+                    10/16/26 - JMH
+
+                    The asset key can come from the browser, so a key with parent
+                    directory segments could point the thumbnail delete at any folder
+                    or file in the web root. Whole segments are compared so object
+                    names with two dots in them (photo..jpg) still delete.
+
+                    Reason: Keep thumbnail deletes inside the provider's thumbnail folder.
+                */
+                if ( cleanKey.Split( '/', '\\' ).Any( s => s == ".." ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+                }
+
+                string physicalPath = RockApp.Current.MapPath( virtualPath );
+                string physicalThumbnailRoot = RockApp.Current.MapPath( $"{ThumbnailRootPath}/{assetStorageProvider.Id}" );
+
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalThumbnailRoot ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+                }
+
                 if ( asset.Type == AssetType.File )
                 {
                     if ( File.Exists( physicalPath ) )

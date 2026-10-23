@@ -8,6 +8,14 @@
 //  + Chat Bot
 // =============================================================
 
+.ai-instructions {
+  padding: var(--spacing-small);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-wrap: wrap;
+}
+
 .btn-chat-toggle.active {
     background-color: var(--color-info-soft);
 }

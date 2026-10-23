@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Bus;
 using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Integration.TestFramework.Database.Initializer;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Tests.Shared.Utility;
 using Rock.WebStartup;
@@ -114,6 +115,11 @@ namespace Rock.Tests.Integration.TestFramework
             LogHelper.SetTestContext( context );
 
             LogHelper.Log( $"Initialize Test Environment: started..." );
+
+            // Only the factory is registered here. The engines it builds read the
+            // shortcodes defined as LavaShortcode rows, so they cannot be built
+            // until a test has a database, and they are built per test.
+            LavaIntegrationEngineFactory.RegisterEngineFactory();
 
             LogHelper.Log( $"Initializing Rock Message Bus..." );
             await RockMessageBus.StartTestMemoryBusAsync();

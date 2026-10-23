@@ -14,6 +14,7 @@
 
                             <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                             <asp:CustomValidator ID="cvSecurityError" runat="server" Display="None"></asp:CustomValidator>
+                            <asp:CustomValidator ID="cvQueryHint" runat="server" Display="None"></asp:CustomValidator>
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -45,7 +46,7 @@
                                     <div class="col-md-6">
                                         <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
                                         Help="Limits the number of rows returned in the report. Leave blank to show all rows." />
-                                        <Rock:RockTextBox ID="tbQueryHint" runat="server" Label="Query Hint" Help="The Query Hint to apply to the query that is executed on the database server. These can sometimes improve the performance of the report, but could also make it worse. Examples are: <code>OPTIMIZE FOR UNKNOWN</code> and <code>RECOMPILE</code>." />
+                                        <Rock:RockTextBox ID="tbQueryHint" runat="server" Label="Query Hint" Help="The Query Hint to apply to the query that is executed on the database server. These can sometimes improve the performance of the report, but could also make it worse. Allowed hints are <code>RECOMPILE</code>, <code>OPTIMIZE FOR UNKNOWN</code>, <code>FORCE ORDER</code> and <code>MAXDOP n</code>. Separate multiple hints with commas." />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:ValueList ID="vMergeFields" runat="server" Label="Communication Merge Fields"

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
+//
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +21,10 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Configuration;
-using Rock.Data;
 using Rock.Lava;
-using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
@@ -64,18 +62,26 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         public void IsInDataView_WithInputAsEntityObject_CorrectlyIdentifiesTargetEntity()
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
-{% assign inDataView = CurrentPerson | IsInDataView:'<dataViewRef>' %}
+{%- assign inDataView = CurrentPerson | IsInDataView:'<dataViewRef>' -%}
 {{ inDataView }}";
 
-            TestHelper.AssertTemplateOutput( "true",
-                template.Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendees ),
-                options );
-            TestHelper.AssertTemplateOutput( "false",
-                template.Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendeesFemales ),
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var inDataView = LavaRenderTestHelper.Render( engine,
+                    template.Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendees ),
+                    options );
+
+                Assert.AreEqual( "true", inDataView );
+
+                var notInDataView = LavaRenderTestHelper.Render( engine,
+                    template.Replace( "<dataViewRef>", DataViewNameAdultMembersAndAttendeesFemales ),
+                    options );
+
+                Assert.AreEqual( "false", notInDataView );
+            } );
         }
 
         [TestMethod]
@@ -143,16 +149,20 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
             return dataView;
         }
 
-        private void IsInDataView_AssertResult( string inputValue, string dataViewRef, string expectedOutput )
+        private void IsInDataView_AssertResult( string inputValue, string dataViewRef, string expectedValue )
         {
             var template = @"
-{% assign inDataView = <entityRef> | IsInDataView:'<dataViewRef>' %}
+{%- assign inDataView = <entityRef> | IsInDataView:'<dataViewRef>' -%}
 {{ inDataView }}"
                 .Replace( "<entityRef>", inputValue )
                 .Replace( "<dataViewRef>", dataViewRef );
 
-            TestHelper.AssertTemplateOutput( expectedOutput,
-                template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedValue, output );
+            } );
         }
 
         #endregion
@@ -165,41 +175,48 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
             var tedDecker = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker );
 
             var template = @"
-{% assign tedDeckerGuid = '<personGuid>' %}
-{% assign personEntityTypeId = '<personEntityTypeGuid>' | GuidToId:'EntityType' %}
-{% assign tedDeckerId = tedDeckerGuid | GuidToId:personEntityTypeId %}
+{%- assign tedDeckerGuid = '<personGuid>' -%}
+{%- assign personEntityTypeId = '<personEntityTypeGuid>' | GuidToId:'EntityType' -%}
+{%- assign tedDeckerId = tedDeckerGuid | GuidToId:personEntityTypeId -%}
 Ted Decker's record can be identified by Guid '{{ tedDeckerGuid }}' or Id '{{ tedDeckerId }}'.
 "
                 .Replace( "<personGuid>", tedDecker.Guid.ToString() )
                 .Replace( "<personEntityTypeGuid>", SystemGuid.EntityType.PERSON );
-            var expectedOutput = @"
-Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDeckerId'.
-"
-                .Replace( "$tedDeckerGuid", tedDecker.Guid.ToString() )
-                .Replace( "$tedDeckerId", tedDecker.Id.ToString() );
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                expectedOutput,
-                template );
+            // Each of the three assign tags leaves behind the newline that
+            // followed it, which is where the blank lines come from.
+            var expectedOutput = "Ted Decker's record can be identified by Guid '8fedc6ee-8630-41ed-9fc5-c7157fd1eaa4' or Id '6'.\n";
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void GuidToId_WithInvalidInput_ThrowsErrorMessage()
         {
             var template = @"
-{% assign personEntityTypeId = '#invalid#' | GuidToId:'EntityType' %}
+{%- assign personEntityTypeId = '#invalid#' | GuidToId:'EntityType' -%}
 ";
             var expectedMessage = "Lava Error: Invalid Input Guid Value.";
 
-            var exception = Assert.Throws<LavaException>( () =>
+            var options = new LavaRenderOptions
             {
-                var renderOptions = LavaTestRenderOptions.DefaultEngine
-                    .WithExceptionHandling( ExceptionHandlingStrategySpecifier.Throw );
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
+            };
 
-                TestHelper.GetTemplateOutput( template, renderOptions );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var exception = Assert.Throws<LavaException>( () =>
+                {
+                    LavaRenderTestHelper.Render( engine, template, options );
+                } );
+
+                Assert.AreEqual( expectedMessage, exception.Message );
             } );
-
-            Assert.AreEqual( expectedMessage, exception.Message );
         }
 
         [TestMethod]
@@ -211,11 +228,15 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 {{ '$entityTypeGuid' | GuidToId:'EntityType' }}
 "
                 .Replace( "$entityTypeGuid", entityTypeGuid );
-            var expectedOutput = entityTypeMap.Values.First();
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                expectedOutput,
-                template );
+            var expectedOutput = "\n" + entityTypeMap.Values.First() + "\n";
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -224,15 +245,19 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
             var entityTypeMap = GetEntityTypeGuidToIdMap();
             var entityTypeGuidList = entityTypeMap.Keys.JoinStrings( "," );
             var template = @"
-{% assign entityTypeIdList = '$guidList' | GuidToId:'EntityType' %}
+{%- assign entityTypeIdList = '$guidList' | GuidToId:'EntityType' -%}
 {{ entityTypeIdList | Join:',' }}
 "
                 .Replace( "$guidList", entityTypeGuidList );
-            var expectedOutput = entityTypeMap.Values.JoinStrings( "," );
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                expectedOutput,
-                template );
+            var expectedOutput = "9,2,3\n";
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -240,39 +265,47 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
         {
             var entityTypeMap = GetEntityTypeGuidToIdMap();
             var template = @"
-{% assign entityTypeIdList = EntityTypeGuidList | GuidToId:'EntityType' %}
+{%- assign entityTypeIdList = EntityTypeGuidList | GuidToId:'EntityType' -%}
 {{ entityTypeIdList | Join:',' }}
 ";
-            var expectedOutput = entityTypeMap.Values.JoinStrings( "," );
 
-            var options = new LavaTestRenderOptions
+            var expectedOutput = "9,2,3\n";
+
+            var options = new LavaRenderOptions
             {
                 MergeFields = LavaDataDictionary.FromKeyValue( "EntityTypeGuidList", entityTypeMap.Keys )
             };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                expectedOutput,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void GuidToId_WithInvalidEntityId_ThrowsErrorMessage()
         {
             var template = @"
-{% assign entityTypeId = '94FF79FE-4BB0-4F9E-AD74-14766433FC06' | GuidToId:'#InvalidEntityType#' %}
+{%- assign entityTypeId = '94FF79FE-4BB0-4F9E-AD74-14766433FC06' | GuidToId:'#InvalidEntityType#' -%}
 ";
             var expectedMessage = "Lava Error: Invalid Entity Type.";
 
-            var exception = Assert.Throws<LavaException>( () =>
+            var options = new LavaRenderOptions
             {
-                var renderOptions = LavaTestRenderOptions.DefaultEngine
-                    .WithExceptionHandling( ExceptionHandlingStrategySpecifier.Throw );
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
+            };
 
-                TestHelper.GetTemplateOutput( template, renderOptions );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var exception = Assert.Throws<LavaException>( () =>
+                {
+                    LavaRenderTestHelper.Render( engine, template, options );
+                } );
+
+                Assert.AreEqual( expectedMessage, exception.Message );
             } );
-
-            Assert.AreEqual( expectedMessage, exception.Message );
         }
 
         private Dictionary<string, string> GetEntityTypeGuidToIdMap()

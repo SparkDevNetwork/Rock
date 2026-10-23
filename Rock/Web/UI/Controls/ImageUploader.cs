@@ -772,6 +772,11 @@ namespace Rock.Web.UI.Controls
             var securitySettings = new SecuritySettingsService().SecuritySettings;
             bool disablePredictableIds = securitySettings.DisablePredictableIds;
 
+            // Content files need a grant that allows uploads to the root folder.
+            var securityGrantToken = !this.IsBinaryFile
+                ? new Rock.Security.SecurityGrant().AddRule( new Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule( this.RootFolder ) ).ToToken()
+                : string.Empty;
+
             var script =
             $@"
 Rock.controls.imageUploader.initialize({{
@@ -785,7 +790,8 @@ Rock.controls.imageUploader.initialize({{
     postbackScript: '{postBackScript}',
     fileType: 'image',
     isBinaryFile: '{( this.IsBinaryFile ? "T" : "F" )}',
-    rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
+    rootFolder: '{Rock.Security.Encryption.EncryptRootFolder( this.RootFolder )}',
+    securityGrantToken: '{securityGrantToken}',
     noPictureUrl: '{this.NoPictureUrl}',
     disablePredictableIds: {disablePredictableIds.ToString().ToLower()},
     submitFunction: function (e, data) {{

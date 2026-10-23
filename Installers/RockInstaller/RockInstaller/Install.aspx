@@ -23,7 +23,7 @@
 
         $(document).ready(function () {
 
-            var baseVersion = '<%=baseVersion %>';
+            var baseVersion = '<%=installerVersion %>';
             var isDebug = <%=isDebug.ToString().ToLower() %>;
             var queryString = '<%=Request.Url.PathAndQuery %>';
 
@@ -208,7 +208,7 @@
 
 
                             <div class="btn-list clearfix">
-						        <a href="https://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left" rel="noopener noreferrer"><i class="fas fa-desktop"></i> Install Video</a>
+						        <a href="https://www.rockrms.com/Learn/Install" target="_blank" rel="noopener noreferrer" class="btn btn-default pull-left"><i class="fas fa-desktop"></i> Install Video</a>
                                 <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class="fas fa-chevron-right"></i></a>
 					        </div>
                         </div>
@@ -556,9 +556,10 @@
 <script language="CS" runat="server">
 
     const string baseStorageUrl = "https://rockrms.blob.core.windows.net/install/";
-    const string baseVersion = "2_9_0";
+    const string baseVersion = "2_9_5";
 
     string storageUrl = string.Empty;
+    string installerVersion = baseVersion;   // effective version: ?Version= override, else the const default
     bool isDebug = false;
 
     void Page_Init( object sender, EventArgs e )
@@ -566,14 +567,14 @@
         // toggle the SSL warning
         lSslWarning.Visible = !Request.IsSecureConnection;
 
+        // Honor a ?Version= override so BOTH the installer scripts (storageUrl)
+        // and the Rock payload download (installVersion, below) use the same folder.
         if ( Request["Version"] != null )
         {
-            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, Request["Version"] );
+            installerVersion = Request["Version"];
         }
-        else
-        {
-            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, baseVersion );
-        }
+
+        storageUrl = String.Format( "{0}{1}/", baseStorageUrl, installerVersion );
 
         if ( Request["Debug"] != null )
         {

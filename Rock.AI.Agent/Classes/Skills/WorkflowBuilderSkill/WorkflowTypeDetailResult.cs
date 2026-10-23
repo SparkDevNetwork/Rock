@@ -143,4 +143,11 @@ internal class WorkflowTypeDetailResult : EntityResultBase
     /// The activities in the workflow type, in order.
     /// </summary>
     public List<WorkflowActivityTypeResult> ActivityTypes { get; set; }
+
+    /// <summary>
+    /// The structural defects found in this workflow, each one something Rock
+    /// accepts silently and never reports at run time. Null when none were found,
+    /// so a clean workflow costs nothing in the response.
+    /// </summary>
+    public List<string> Warnings { get; set; }
 }

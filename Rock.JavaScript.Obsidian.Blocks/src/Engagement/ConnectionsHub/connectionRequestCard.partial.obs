@@ -157,7 +157,7 @@
     import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
-    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { escapeHtml, isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
     import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
@@ -350,10 +350,19 @@
     const getAttributeTooltip = (attributeFieldValue: AttributeFieldDefinitionBag): string | null | undefined => {
         const textValue = getAttributeTextValue(attributeFieldValue);
 
+        // 10/16/2026 - MSE
+        //
+        // This tooltip is rendered as HTML so the minus icon shows. The title
+        // and value are plain text, and the value can come from an anonymous
+        // Connection Opportunity Signup, so escape both before adding them.
+        //
+        // Reason: Stored text rendered as HTML in the Connections Hub tooltip.
+        const title = escapeHtml(attributeFieldValue.title ?? "");
+
         if (isNullOrWhiteSpace(textValue)) {
-            return `${attributeFieldValue.title}: <i class="ti ti-minus"></i>`;
+            return `${title}: <i class="ti ti-minus"></i>`;
         }
-        return `${attributeFieldValue.title}: ${textValue}`;
+        return `${title}: ${escapeHtml(textValue ?? "")}`;
     };
 
     const connectorTooltip = (): string => {

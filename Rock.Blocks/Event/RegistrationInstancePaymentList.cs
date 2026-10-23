@@ -87,6 +87,7 @@ namespace Rock.Blocks.Event
         #region Fields
 
         private RegistrationInstance _registrationInstance;
+        private bool _hasAttemptedRegistrationInstanceLoad;
         private List<Registration> _paymentRegistrations;
 
         #endregion
@@ -255,7 +256,7 @@ namespace Rock.Blocks.Event
                         { PageParameterKey.RegistrationId, registration.IdKey }
                     };
                     string url = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, qryParams );
-                    registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName ) );
+                    registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName.EncodeHtml() ) );
                 }
             }
 
@@ -288,14 +289,31 @@ namespace Rock.Blocks.Event
         /// <returns>The registration instance, or null if the parameter was missing or did not resolve.</returns>
         private RegistrationInstance GetRegistrationInstance()
         {
-            if ( _registrationInstance == null )
+            if ( !_hasAttemptedRegistrationInstanceLoad )
             {
+                _hasAttemptedRegistrationInstanceLoad = true;
+
                 var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
 
                 if ( registrationInstanceKey.IsNotNullOrWhiteSpace() )
                 {
                     _registrationInstance = new RegistrationInstanceService( RockContext )
                         .Get( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds );
+                }
+
+                /*
+                    10/16/2026 - MSE
+
+                    The instance comes from the page parameter, so a person could swap in
+                    the IdKey of an instance they are not allowed to see and get its
+                    payments and transaction details. VIEW on the instance falls back to
+                    the template and its category.
+
+                    Reason: Registration instance lists skipped VIEW on the instance.
+                */
+                if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    _registrationInstance = null;
                 }
             }
 

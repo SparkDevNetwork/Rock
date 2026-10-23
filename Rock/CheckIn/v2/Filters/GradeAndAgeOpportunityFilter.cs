@@ -35,6 +35,11 @@ namespace Rock.CheckIn.v2.Filters
         /// be <c>null</c> if no matched groups by grade were found. This value
         /// will only be set if <see cref="TemplateConfigurationData.GradeAndAgeMatchingBehavior"/>
         /// is set to <see cref="GradeAndAgeMatchingMode.PrioritizeGradeOverAge"/>.
+        /// Groups that would be handled by <see cref="SkipGroupForPrioritization(GroupOpportunity)"/>
+        /// (DataView-filtered or "Already Enrolled in Group" attendance rule) are
+        /// intentionally not tracked here, because a later filter may remove
+        /// them and they cannot represent a reliable grade match for
+        /// prioritization purposes.
         /// </summary>
         private List<string> _matchedByGradeGroupIds;
 
@@ -57,7 +62,7 @@ namespace Rock.CheckIn.v2.Filters
         /// </para>
         /// <para>
         /// This will intentionally not apply to groups with a DataView filter or
-        /// Group Membership required as those types of filters explicitely list
+        /// Group Membership required as those types of filters explicitly list
         /// the people that can check-in.
         /// </para>
         /// </summary>
@@ -121,7 +126,54 @@ namespace Rock.CheckIn.v2.Filters
                 // If we are configured such that grade matches take priority
                 // over other matches then we need to track groups that were
                 // positively matched by grade.
-                if ( PrioritizeGradeOverAge && gradeRangeMatch.Value )
+
+                /*
+                    9/23/26 - NA
+
+                    Skip groups that SkipGroupForPrioritization would exempt
+                    from removal (DataView-filtered or "Already Enrolled in Group"
+                    attendance rule). Those groups have their own hard person
+                    list that is evaluated later by MembershipOpportunityFilter
+                    and DataViewOpportunityFilter. Whether the current person
+                    is actually on that list isn't known here, so we treat
+                    these groups uniformly and let their dedicated filters
+                    decide. This aligns the record-side of prioritization with
+                    the remove-side (SkipGroupForPrioritization is already
+                    honored in FilterGroups), and it matches the promise in
+                    the PrioritizeGradeOverAge XML docs that prioritization
+                    "will intentionally not apply to" these group types.
+
+                    Primary motivation is issue #7059: when the only grade
+                    match is a membership-required group the person is not
+                    enrolled in, adding it here caused VALID age-matched
+                    groups from other areas to be removed, and then the
+                    membership filter removed the grade-matched group itself,
+                    leaving the person with no options ("No Eligible Options
+                    Found").
+
+                    Trade-off: for a person who IS enrolled in a grade-matched
+                    membership/DataView group AND has no other non-filtered
+                    grade match, prioritization no longer hides their
+                    age-matched groups from other areas. That person will now
+                    see additional age-matched options alongside their enrolled
+                    grade room. This is already the intended behavior per the
+                    the XML docs but is a behavior change from prior releases.
+
+                    Reason: Fix the "no options at all" bug for unenrolled
+                    kids by making prioritization consistently exclude
+                    membership/DataView groups on both sides.
+
+                    Alternative (if the enrolled-member trade-off above is
+                    later deemed undesirable): split the prioritization
+                    removal pass out of this filter into a separate filter
+                    that runs after MembershipOpportunityFilter and
+                    DataViewOpportunityFilter, so prioritization only ever
+                    sees groups that already survived those filters. That
+                    preserves grade-hides-age behavior for enrolled kids
+                    while still fixing #7059, but at the cost of a bigger
+                    restructure.
+                */
+                if ( PrioritizeGradeOverAge && gradeRangeMatch.Value && !SkipGroupForPrioritization( group ) )
                 {
                     if ( _matchedByGradeGroupIds == null )
                     {
@@ -153,11 +205,19 @@ namespace Rock.CheckIn.v2.Filters
         }
 
         /// <summary>
-        /// Determines if this group should be skipped when removing groups
-        /// that are not in the priority list.
+        /// Determines if this group should be skipped by grade prioritization
+        /// logic. This is checked on both sides of the prioritization pass:
+        /// (1) in <see cref="IsGroupValid(GroupOpportunity)"/>, to prevent the
+        /// group from being added to the grade-match tracking list; and
+        /// (2) in <see cref="FilterGroups(OpportunityCollection)"/>, to prevent
+        /// the group from being removed when other groups matched by grade.
+        /// Groups that use a DataView filter or require enrollment provide
+        /// their own hard-coded person list and are re-evaluated by later
+        /// filters (<c>DataViewOpportunityFilter</c> and
+        /// <c>MembershipOpportunityFilter</c>).
         /// </summary>
         /// <param name="group">The group opportunity that is being considered for removal.</param>
-        /// <returns><c>true</c> if the group opportunity should not be removed; otherwise <c>false</c> if removal is allowed.</returns>
+        /// <returns><c>true</c> if the group opportunity should be skipped by prioritization; otherwise <c>false</c>.</returns>
         private bool SkipGroupForPrioritization( GroupOpportunity group )
         {
             // If the group uses any Data Views to determine who can check-in

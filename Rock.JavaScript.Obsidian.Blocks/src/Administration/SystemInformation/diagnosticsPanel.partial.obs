@@ -139,7 +139,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
-    import { useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { useInvokeBlockAction, useDownloadBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -154,7 +154,7 @@
     });
 
     const invokeBlockAction = useInvokeBlockAction();
-    const blockActionUrl = useBlockActionUrl();
+    const downloadBlockAction = useDownloadBlockAction();
 
     const diagnostics = ref<SystemDiagnosticsBag | null>(null);
     const isLoading = ref(true);
@@ -242,10 +242,14 @@
     }
 
     /**
-     * Navigates to the download action to retrieve the plain-text diagnostics file.
+     * Calls the download action to retrieve the plain-text diagnostics file.
      */
-    function onDownload(): void {
-        window.location.href = blockActionUrl("DownloadDiagnostics");
+    async function onDownload(): Promise<void> {
+        const result = await downloadBlockAction("DownloadDiagnostics", undefined, "RockDiagnostics.txt");
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to download the diagnostics file.");
+        }
     }
 
     onMounted(loadDiagnostics);

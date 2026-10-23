@@ -29,6 +29,7 @@ using Rock.Bus.Message;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -94,6 +95,11 @@ namespace Rock.Security
         /// Cache Key
         /// </summary>
         private const string CACHE_KEY = "Rock.Security.Authorization";
+
+        /// <summary>
+        /// The purpose used when encrypting the unsecure person identifier cookie.
+        /// </summary>
+        private const string UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE = "Rock.Security.UnsecurePersonIdentifier";
 
         /// <summary>
         /// Authorization to view object
@@ -1152,12 +1158,55 @@ namespace Rock.Security
         /// <param name="personAliasGuid">The person alias unique identifier.</param>
         public static void SetUnsecurePersonIdentifier( Guid personAliasGuid )
         {
+            /*
+                10/7/2026 - MSE
+
+                The cookie value is encrypted with a key that is only used for
+                this cookie. Read it with GetUnsecurePersonIdentifier().
+
+                Reason: Make sure the cookie value was set by Rock.
+            */
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
-            httpcookie.Value = personAliasGuid.ToString();
+            httpcookie.Value = Encryption.EncryptStringForPurpose( personAliasGuid.ToString(), UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE );
             httpcookie.Expires = RockDateTime.SystemDateTime.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
         }
 #endif
+
+        /// <summary>
+        /// Gets the person alias unique identifier from the unsecure person
+        /// identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie that was set
+        /// by <see cref="SetUnsecurePersonIdentifier(Guid)"/>.
+        /// </summary>
+        /// <returns>The person alias unique identifier, or <c>null</c> if the cookie is missing or not valid.</returns>
+        [Rock.Attribute.RockInternal( "17.11", true )]
+        public static Guid? GetUnsecurePersonIdentifier()
+        {
+#if REVIEW_WEBFORMS
+            var httpCookie = HttpContext.Current?.Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER]?.Value;
+#else
+            var httpCookie = RockRequestContextAccessor.Current?.GetCookieValue( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+#endif
+
+            return GetUnsecurePersonIdentifier( httpCookie );
+        }
+
+        /// <summary>
+        /// Gets the person alias unique identifier from a value of the unsecure
+        /// person identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie that
+        /// was set by <see cref="SetUnsecurePersonIdentifier(Guid)"/>.
+        /// </summary>
+        /// <param name="cookieValue">The value of the cookie.</param>
+        /// <returns>The person alias unique identifier, or <c>null</c> if the value is missing or not valid.</returns>
+        internal static Guid? GetUnsecurePersonIdentifier( string cookieValue )
+        {
+            if ( cookieValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return Encryption.DecryptStringForPurpose( cookieValue, UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE ).AsGuidOrNull();
+        }
 
         #endregion
 
@@ -1782,6 +1831,15 @@ namespace Rock.Security
         {
             get
             {
+                /*
+                    10/19/2026 - MSE
+
+                    The display name is an HTML fragment (the small labels and the span are markup)
+                    that the Security block shows as HTML. Person, role and group names are stored
+                    data that a person or group leader can set, so they are HTML encoded here.
+
+                    Reason: Prevent stored XSS through names shown in the Security dialog.
+                */
                 // All Users
                 switch ( SpecialRole )
                 {
@@ -1804,7 +1862,7 @@ namespace Rock.Security
                                 var person = personService.Get( PersonId.Value );
                                 if ( person != null )
                                 {
-                                    return person.FullName + " <small>(User)</small>";
+                                    return person.FullName.EncodeHtml() + " <small>(User)</small>";
                                 }
                             }
                             catch
@@ -1824,14 +1882,14 @@ namespace Rock.Security
                             if ( role != null )
                             {
                                 return ( role.IsSecurityTypeGroup ? "" : "GROUP - " ) +
-                                       role.Name + " <small>(Role)</small>";
+                                       role.Name.EncodeHtml() + " <small>(Role)</small>";
                             }
 
                             var groupService = new GroupService( RockApp.Current.CreateRockContext() );
                             var group = groupService.Get( GroupId.Value );
                             if ( group != null )
                             {
-                                return $"<span class='text-muted'>GROUP - {group.Name} <small>(No longer a valid active role)</small></span>";
+                                return $"<span class='text-muted'>GROUP - {group.Name.EncodeHtml()} <small>(No longer a valid active role)</small></span>";
                             }
                         }
                         catch

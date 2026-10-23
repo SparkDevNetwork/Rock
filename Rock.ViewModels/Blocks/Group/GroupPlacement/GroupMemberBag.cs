@@ -62,5 +62,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// The date and time when the group member record was added, if available.
         /// </summary>
         public DateTimeOffset? DateTimeAdded { get; set; }
+
+        /// <summary>
+        /// Determines if the group member status is Inactive. Inactive members are still
+        /// considered placed but are displayed muted and are not counted toward capacity.
+        /// </summary>
+        public bool IsInactive { get; set; }
     }
 }

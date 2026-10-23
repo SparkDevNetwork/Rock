@@ -55,6 +55,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
+        /// Gets or sets the security grant token that allows the payment
+        /// method to be saved for future use.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SaveAccountSecurityGrantToken { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of remaining spots for the registration instance.
         /// </summary>
         /// <value>

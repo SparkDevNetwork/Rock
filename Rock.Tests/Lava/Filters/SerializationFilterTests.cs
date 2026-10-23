@@ -18,12 +18,16 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class SerializationFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class SerializationFilterTests
     {
         /// <summary>
         /// The filter should accept a Person object as input and return a valid JSON string.
@@ -31,13 +35,20 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToJSON_ForDynamicObject_ProducesJsonString()
         {
-            var person = TestHelper.GetTestPersonTedDecker();
+            var person = LavaTestData.GetTestPersonTedDecker();
 
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", person } };
 
             var personJson = person.ToJson( indentOutput: true );
 
-            TestHelper.AssertTemplateOutput( personJson, "{{ CurrentPerson | ToJSON }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson | ToJSON }}", options );
+
+                // Render normalizes line endings to a line feed; ToJson uses Environment.NewLine.
+                Assert.AreEqual( personJson.NormalizeLineEndings(), output );
+            } );
         }
 
         /// <summary>
@@ -52,7 +63,14 @@ namespace Rock.Tests.Lava.Filters
 
             var numbersJson = numbers.ToJson( indentOutput: true );
 
-            TestHelper.AssertTemplateOutput( numbersJson, "{{ Numbers | ToJSON }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ Numbers | ToJSON }}", options );
+
+                // Render normalizes line endings to a line feed; ToJson uses Environment.NewLine.
+                Assert.AreEqual( numbersJson.NormalizeLineEndings(), output );
+            } );
         }
 
         /// <summary>
@@ -61,15 +79,19 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void FromJSON_ForTestPersonObject_ProducesJsonObject()
         {
-            var person = TestHelper.GetTestPersonTedDecker();
+            var person = LavaTestData.GetTestPersonTedDecker();
 
             var jsonString = person.ToJson();
 
             var mergeValues = new LavaDataDictionary { { "JsonString", jsonString } };
 
-            TestHelper.AssertTemplateOutput( "Ted Decker - North Campus",
-                "{% assign jsonObject = JsonString | FromJSON %}{{ jsonObject.NickName }} {{ jsonObject.LastName }} - {{ jsonObject.Campus.Name }}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign jsonObject = JsonString | FromJSON %}{{ jsonObject.NickName }} {{ jsonObject.LastName }} - {{ jsonObject.Campus.Name }}", options );
+
+                Assert.AreEqual( "Ted Decker - North Campus", output );
+            } );
         }
 
         /// <summary>
@@ -88,7 +110,14 @@ namespace Rock.Tests.Lava.Filters
 
             var dictionaryJson = dictionary.ToJson( indentOutput: true );
 
-            TestHelper.AssertTemplateOutput( dictionaryJson, "{{ Dictionary | ToJSON }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ Dictionary | ToJSON }}", options );
+
+                // Render normalizes line endings to a line feed; ToJson uses Environment.NewLine.
+                Assert.AreEqual( dictionaryJson.NormalizeLineEndings(), output );
+            } );
         }
     }
 }

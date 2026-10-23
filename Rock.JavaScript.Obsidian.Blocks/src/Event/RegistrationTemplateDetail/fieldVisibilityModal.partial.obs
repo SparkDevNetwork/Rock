@@ -1,0 +1,189 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isOpen" title="Form Field Filter" saveText="Save" cancelText="Cancel" :onSave="onSave" :isSaveButtonDisabled="isLoading || !!loadError">
+        <LoadingIndicator v-if="isLoading" />
+
+        <NotificationBox v-else-if="loadError" alertType="warning">
+            {{ loadError }} The filter for this field was left unchanged.
+        </NotificationBox>
+
+        <NotificationBox v-else-if="!sources.length && !hasRules" alertType="info">
+            There are no other fields on this form that can be used to filter this field.
+        </NotificationBox>
+
+        <div v-else class="form-field-filter-editor">
+            <FieldFilterEditor v-model="rules" :sources="sources" :title="fieldName" />
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+/*
+    The shared filter editor sets a 4px gap between its dropdowns and the words
+    of the sentence they sit in, which reads as cramped at this modal's width.
+    The rule hangs off a wrapper of our own rather than starting with `:deep`,
+    because a leading `:deep` compiles to `[data-v-hash] <selector>` and so needs
+    a scoped ancestor above the editor's own root element, which the teleported
+    modal content does not have.
+*/
+.form-field-filter-editor :deep(.filtervisibilityrules-type) {
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+    import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+    import { RegistrationTemplateFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormFieldBag";
+    import { createEmptyVisibilityRules, getFieldDisplayName } from "./utils.partial";
+
+    const props = defineProps({
+        /** True when the modal is open. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The field whose visibility rules are being edited. */
+        field: {
+            type: Object as PropType<RegistrationTemplateFormFieldBag | null>,
+            required: false
+        },
+
+        /** The other fields of the same form that the rules can compare against. */
+        otherFields: {
+            type: Array as PropType<RegistrationTemplateFormFieldBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "save", value: FieldFilterGroupBag): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isOpen = useVModelPassthrough(props, "modelValue", emit);
+    const isLoading = ref(false);
+    const sources = ref<FieldFilterSourceBag[]>([]);
+    const rules = ref<FieldFilterGroupBag>(createEmptyVisibilityRules());
+
+    const unableToLoadSourcesMessage = "Unable to load the fields that this field can be filtered by.";
+
+    /** Set when the filter sources could not be loaded. The editor is hidden while it has a value. */
+    const loadError = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const fieldName = computed((): string => {
+        return props.field ? getFieldDisplayName(props.field) : "";
+    });
+
+    const hasRules = computed((): boolean => {
+        return (rules.value.rules?.length ?? 0) > 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the modal Save button is clicked. Hands the edited rules
+     * back to the owner of the field.
+     */
+    function onSave(): void {
+        if (isLoading.value || loadError.value) {
+            return;
+        }
+
+        emit("save", rules.value);
+        isOpen.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    let loadEditorRequestId = 0;
+
+    /**
+     * Loads the filter sources for the other fields of the form and seeds the
+     * editor with a copy of the field's current rules. Rules are kept when the
+     * field they compare against is still on the form, even if that field is
+     * not offered for new criteria.
+     */
+    async function loadEditor(): Promise<void> {
+        const requestId = ++loadEditorRequestId;
+        const currentRules = props.field?.visibilityRules;
+        const otherFields = props.otherFields ?? [];
+        const otherFieldGuids = otherFields.map(field => field.guid);
+        const includeFieldGuids = (currentRules?.rules ?? [])
+            .map(rule => rule.attributeGuid)
+            .filter((guid): guid is string => !!guid && otherFieldGuids.some(fieldGuid => areEqual(fieldGuid, guid)));
+
+        isLoading.value = true;
+        sources.value = [];
+        loadError.value = "";
+
+        let loadedSources: FieldFilterSourceBag[] = [];
+        let failureMessage = "";
+
+        try {
+            const result = await invokeBlockAction<FieldFilterSourceBag[]>("GetFieldFilterSources", {
+                fields: otherFields,
+                includeFieldGuids
+            });
+
+            if (result.isSuccess && result.data) {
+                loadedSources = result.data;
+            }
+            else {
+                failureMessage = result.errorMessage || unableToLoadSourcesMessage;
+            }
+        }
+        catch {
+            failureMessage = unableToLoadSourcesMessage;
+        }
+
+        if (requestId !== loadEditorRequestId) {
+            return;
+        }
+
+        isLoading.value = false;
+        loadError.value = failureMessage;
+        sources.value = loadedSources;
+        rules.value = currentRules
+            ? {
+                ...currentRules,
+                rules: (currentRules.rules ?? [])
+                    .filter(rule => otherFieldGuids.some(guid => areEqual(guid, rule.attributeGuid)))
+                    .map(rule => ({ ...rule }))
+            }
+            : createEmptyVisibilityRules();
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isOpen, () => {
+        if (isOpen.value) {
+            loadEditor();
+        }
+    });
+
+    // #endregion Watchers
+</script>

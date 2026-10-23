@@ -8,6 +8,7 @@
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"
+                 showLabelsInHeader
                  :entityKey="entityKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"

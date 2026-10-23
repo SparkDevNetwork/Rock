@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility;
 
@@ -188,7 +189,7 @@ namespace Rock.Migrations.RockStartup
         /// <returns>A list of <see cref="ServiceJob"/> identifiers.</returns>
         internal static List<int> GetRunOnceJobIds()
         {
-            return new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
+            return new Model.ServiceJobService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( a => startupRunOnceJobGuids.Contains( a.Guid ) )
                 .Select( a => new
                 {
@@ -207,7 +208,7 @@ namespace Rock.Migrations.RockStartup
         /// <param name="runOnceJobIds">The <see cref="ServiceJob"/> identifiers to be executed.</param>
         internal static void ExecuteRunOnceJobs( List<int> runOnceJobIds )
         {
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var jobService = new Rock.Model.ServiceJobService( rockContext );
             foreach ( var runOnceJobId in runOnceJobIds )
             {

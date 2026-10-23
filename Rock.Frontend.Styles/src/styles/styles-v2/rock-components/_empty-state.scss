@@ -1,0 +1,44 @@
+
+
+// EMPTY STATE (ROCK COMPONENT)
+// Centered icon and message shown when a chart, list or panel has no data to display.
+// Height and padding are left to the consuming block so it can match the space the data would fill.
+
+
+// =============================================================
+// Table of Content
+//  + Base Style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.empty-state {
+  display:                flex;
+  flex-direction:         column;
+  align-items:            center;
+  justify-content:        center;
+  gap:                    var(--spacing-small);
+  color:                  var(--color-interface-medium);
+
+  &-icon {
+    font-size:            60px;
+    line-height:          1;
+  }
+
+  &-body {
+    display:              flex;
+    flex-direction:       column;
+    align-items:          center;
+    gap:                  var(--spacing-tiny);
+  }
+
+  &-text {
+    margin:               0;
+  }
+
+  &-help-text {
+    margin:               0;
+    font-size:            var(--font-size-xsmall);
+  }
+}
+// ====================== END BASE STYLE ======================

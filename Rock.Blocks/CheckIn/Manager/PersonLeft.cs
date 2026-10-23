@@ -706,6 +706,56 @@ namespace Rock.Blocks.CheckIn.Manager
             return DigitMaskRegex.Replace( value, "*" );
         }
 
+        /// <summary>
+        /// Gets the SMS snippets the current user can insert into the
+        /// message, filtered by the optional Snippet Category block setting
+        /// and either the current user's personal snippets or the shared
+        /// snippets they are authorized to view. The snippet list and the
+        /// snippet content action both use this, so content can only be
+        /// rendered for a snippet the list offers.
+        /// </summary>
+        /// <param name="usePersonal"><c>true</c> for the current user's personal snippets; <c>false</c> for shared snippets.</param>
+        /// <returns>The available snippets.</returns>
+        private IEnumerable<Snippet> GetAvailableSnippets( bool usePersonal )
+        {
+            var smsSnippetTypeGuid = Rock.SystemGuid.SnippetType.SMS.AsGuid();
+            var smsSnippetTypeId = new SnippetTypeService( RockContext )
+                .Queryable()
+                .Where( st => st.Guid == smsSnippetTypeGuid )
+                .Select( st => ( int? ) st.Id )
+                .FirstOrDefault();
+
+            if ( !smsSnippetTypeId.HasValue )
+            {
+                return new List<Snippet>();
+            }
+
+            var snippetCategoryGuid = GetAttributeValue( AttributeKey.SnippetCategory ).AsGuidOrNull();
+            var snippetCategoryId = snippetCategoryGuid.HasValue
+                ? CategoryCache.GetId( snippetCategoryGuid.Value )
+                : null;
+
+            var currentPerson = RequestContext.CurrentPerson;
+            var currentPersonId = currentPerson?.Id;
+
+            // Two disjoint queries. Personal shows just the current user's
+            // owned snippets; shared restricts to ownerless snippets and
+            // relies on GetAuthorizedSnippets to apply the VIEW check.
+            // Branching in C# rather than inside the Expression avoids EF
+            // silently miscompiling a ternary over a closure variable.
+            var snippetService = new SnippetService( RockContext );
+
+            return usePersonal
+                ? snippetService.GetAuthorizedSnippets( currentPerson,
+                    s => s.SnippetTypeId == smsSnippetTypeId.Value
+                        && ( !snippetCategoryId.HasValue || s.CategoryId == snippetCategoryId.Value )
+                        && s.OwnerPersonAlias.PersonId == currentPersonId )
+                : snippetService.GetAuthorizedSnippets( currentPerson,
+                    s => s.SnippetTypeId == smsSnippetTypeId.Value
+                        && ( !snippetCategoryId.HasValue || s.CategoryId == snippetCategoryId.Value )
+                        && s.OwnerPersonAliasId == null );
+        }
+
         #endregion Methods
 
         #region SMS Send Helpers
@@ -856,45 +906,9 @@ namespace Rock.Blocks.CheckIn.Manager
         [BlockAction]
         public BlockActionResult GetSnippets( PersonLeftSnippetListRequestBag bag )
         {
-            var smsSnippetTypeGuid = Rock.SystemGuid.SnippetType.SMS.AsGuid();
-            var smsSnippetTypeId = new SnippetTypeService( RockContext )
-                .Queryable()
-                .Where( st => st.Guid == smsSnippetTypeGuid )
-                .Select( st => ( int? ) st.Id )
-                .FirstOrDefault();
-
-            if ( !smsSnippetTypeId.HasValue )
-            {
-                return ActionOk( new List<PersonLeftSnippetBag>() );
-            }
-
-            var snippetCategoryGuid = GetAttributeValue( AttributeKey.SnippetCategory ).AsGuidOrNull();
-            var snippetCategoryId = snippetCategoryGuid.HasValue
-                ? CategoryCache.GetId( snippetCategoryGuid.Value )
-                : null;
-
-            var currentPerson = RequestContext.CurrentPerson;
-            var currentPersonId = currentPerson?.Id;
             var usePersonal = bag?.UsePersonal ?? false;
 
-            // Two disjoint queries. Personal shows just the current user's
-            // owned snippets; shared restricts to ownerless snippets and
-            // relies on GetAuthorizedSnippets to apply the VIEW check.
-            // Branching in C# rather than inside the Expression avoids EF
-            // silently miscompiling a ternary over a closure variable.
-            var snippetService = new SnippetService( RockContext );
-
-            var authorized = usePersonal
-                ? snippetService.GetAuthorizedSnippets( currentPerson,
-                    s => s.SnippetTypeId == smsSnippetTypeId.Value
-                        && ( !snippetCategoryId.HasValue || s.CategoryId == snippetCategoryId.Value )
-                        && s.OwnerPersonAlias.PersonId == currentPersonId )
-                : snippetService.GetAuthorizedSnippets( currentPerson,
-                    s => s.SnippetTypeId == smsSnippetTypeId.Value
-                        && ( !snippetCategoryId.HasValue || s.CategoryId == snippetCategoryId.Value )
-                        && s.OwnerPersonAliasId == null );
-
-            var snippets = authorized
+            var snippets = GetAvailableSnippets( usePersonal )
                 .OrderBy( s => s.Order )
                 .ThenBy( s => s.Name )
                 .ThenBy( s => s.Id )
@@ -922,7 +936,15 @@ namespace Rock.Blocks.CheckIn.Manager
             }
 
             var snippet = new SnippetService( RockContext ).Get( bag.SnippetIdKey, !PageCache.Layout.Site.DisablePredictableIds );
-            if ( snippet == null )
+
+            // Only a snippet the snippet list offers (personal or shared) may
+            // be rendered. Otherwise a tampered key could read and render any
+            // snippet, including other people's personal snippets.
+            var isSnippetAvailable = snippet != null
+                && ( GetAvailableSnippets( true ).Any( s => s.Id == snippet.Id )
+                    || GetAvailableSnippets( false ).Any( s => s.Id == snippet.Id ) );
+
+            if ( !isSnippetAvailable )
             {
                 return ActionBadRequest( "The snippet could not be loaded." );
             }
@@ -986,6 +1008,15 @@ namespace Rock.Blocks.CheckIn.Manager
             if ( phoneNumber == null )
             {
                 return ActionBadRequest( "Could not find a valid number for this person." );
+            }
+
+            // The attachment must be a file the current person just uploaded
+            // (the modal's image uploader makes temporary files). Otherwise a
+            // tampered Guid could send any file. Checked before the recipient
+            // is adjusted below so a rejected send changes nothing.
+            if ( bag.AttachmentGuid.HasValue && !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( bag.AttachmentGuid, null, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid attachment." );
             }
 
             /*

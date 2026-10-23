@@ -727,7 +727,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${StepType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {StepType.FriendlyTypeName}." );
                 return false;
             }
 
@@ -1295,6 +1295,13 @@ namespace Rock.Blocks.Engagement
 
             var isNew = entity.Id == 0;
 
+            // Make sure the step attributes are either new or already
+            // belong to this step type.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.StepAttributes?.ConvertAll( e => e.Attribute ), new Step().TypeId, "StepTypeId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             // Workflow Triggers: Remove deleted triggers.
             var uiWorkflows = box.Bag.Workflows.Select( l => l.Guid );
             var deletedTriggers = entity.StepWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList();
@@ -1551,7 +1558,15 @@ namespace Rock.Blocks.Engagement
 
             var targetStepProgram = StepProgramCache.Get( transferBag.TargetStepProgramGuid.Value );
 
-            if ( targetStepProgram == null )
+            // Only allow the same programs that GetStepPrograms() offers.
+            var targetStepProgramEntity = targetStepProgram != null
+                ? new StepProgramService( RockContext ).Get( targetStepProgram.Id )
+                : null;
+
+            if ( targetStepProgramEntity == null
+                || !targetStepProgramEntity.IsActive
+                || targetStepProgramEntity.Id == stepType.StepProgramId
+                || !targetStepProgramEntity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "Target Step Program not found." );
             }

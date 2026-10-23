@@ -140,7 +140,7 @@
     const internalValue = ref(props.modelValue);
     const uniqueId = newGuid();
     const editorWrapper = ref<HTMLDivElement>();
-    const lineCount = ref(1);
+    const lineCount = ref(internalValue.value.split("\n").length);
 
     // #region Computed Values
 

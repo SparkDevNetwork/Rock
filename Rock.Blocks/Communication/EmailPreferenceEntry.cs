@@ -1111,6 +1111,15 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( $"{errorMessagePrefix}, as the channel cannot be found." );
             }
 
+            // Only allow the same lists that are offered to the person.
+            var shouldFilterByCampus = GetAttributeValue( AttributeKey.FilterCommunicationListsByCampusContext ).AsBoolean()
+                && ContextCampus != null;
+
+            if ( !group.IsActive || !group.IsPublic || ( shouldFilterByCampus && group.CampusId.HasValue && group.CampusId != ContextCampus.Id ) )
+            {
+                return ActionBadRequest( $"{errorMessagePrefix}, as the channel cannot be found." );
+            }
+
             // Ensure the person is authorized to subscribe to this list.
             var isAuthorized = false;
             if ( AllowedCommunicationListCategoryGuids.Any() )

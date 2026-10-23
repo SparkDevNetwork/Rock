@@ -207,31 +207,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private bool LoadPhoneNumbers()
         {
-            // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All( false )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                .OrderBy( spn => spn.Order )
-                .ThenBy( spn => spn.Name )
-                .ThenBy( spn => spn.Id )
-                .ToList();
-
-            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
-            if ( selectedNumberGuids.Any() )
-            {
-                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
-            }
-
-            // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
-            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
-            {
-                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
-            }
-
-            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
-            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
-            {
-                smsNumbers = smsNumbers.Where( spn => CurrentPerson.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) ).ToList();
-            }
+            var smsNumbers = GetAllowedSmsNumbers();
 
             if ( smsNumbers.Any() )
             {
@@ -276,6 +252,59 @@ namespace RockWeb.Blocks.Communication
             return true;
         }
 
+        /// <summary>
+        /// Gets the SMS numbers that the current person is allowed to use with this block.
+        /// </summary>
+        /// <returns>A list of <see cref="SystemPhoneNumberCache"/> objects.</returns>
+        private List<SystemPhoneNumberCache> GetAllowedSmsNumbers()
+        {
+            // First load up all of the available numbers
+            var smsNumbers = SystemPhoneNumberCache.All( false )
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
+
+            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+            if ( selectedNumberGuids.Any() )
+            {
+                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
+            }
+
+            // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
+            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
+            {
+                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
+            }
+
+            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
+            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                smsNumbers = smsNumbers.Where( spn => CurrentPerson.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) ).ToList();
+            }
+
+            return smsNumbers;
+        }
+
+        /// <summary>
+        /// Gets the selected SMS number identifier. The value comes from a hidden
+        /// field, so it is only returned if it is one of the numbers the current
+        /// person is allowed to use.
+        /// </summary>
+        /// <returns>The <see cref="SystemPhoneNumber"/> identifier or <c>0</c> if not valid.</returns>
+        private int GetSelectedSmsNumberId()
+        {
+            var smsSystemPhoneNumberId = hfSmsNumber.ValueAsInt();
+
+            if ( smsSystemPhoneNumberId == 0 || !GetAllowedSmsNumbers().Any( spn => spn.Id == smsSystemPhoneNumberId ) )
+            {
+                return 0;
+            }
+
+            return smsSystemPhoneNumberId;
+        }
+
         private void LoadResponseListing()
         {
             LoadResponseListing( null );
@@ -300,7 +329,7 @@ namespace RockWeb.Blocks.Communication
             lbShowImagePicker.Visible = false;
             noteEditor.Visible = false;
 
-            var smsSystemPhoneNumberId = hfSmsNumber.ValueAsInt();
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
             if ( smsSystemPhoneNumberId == 0 )
             {
                 return;
@@ -358,7 +387,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private string LoadResponsesForRecipientPerson( int recipientPersonId )
         {
-            var smsSystemPhoneNumberId = hfSmsNumber.ValueAsInt();
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
             var smsSystemPhoneNumber = smsSystemPhoneNumberId != 0
                 ? SystemPhoneNumberCache.Get( smsSystemPhoneNumberId )
                 : null;
@@ -455,7 +484,16 @@ namespace RockWeb.Blocks.Communication
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
                     mergeFields.Add( "Person", recipientPerson );
 
-                    html = lava.ResolveMergeFields( mergeFields );
+                    /*
+                        10/16/2026 - MSE
+
+                        The person's name and other values in the template can be set by anonymous
+                        visitors and the result is rendered as HTML. Encode every {{ }} output value
+                        as HTML while keeping the template's own markup.
+
+                        Reason: Prevent stored person text from rendering as HTML in the conversation header.
+                    */
+                    html = lava.ResolveMergeFields( mergeFields, true );
                 }
             }
 
@@ -476,7 +514,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                preferences.SetValue( "smsNumber", hfSmsNumber.Value.ToString() );
+                preferences.SetValue( "smsNumber", GetSelectedSmsNumberId().ToString() );
             }
 
             preferences.SetValue( "messageFilter", ddlMessageFilter.SelectedValue );
@@ -499,22 +537,36 @@ namespace RockWeb.Blocks.Communication
                 string fromPersonName = CurrentUser.Person.FullName;
 
                 // The sending phone is the selected one
-                var fromPhone = SystemPhoneNumberCache.Get( hfSmsNumber.ValueAsInt() );
+                var fromPhone = SystemPhoneNumberCache.Get( GetSelectedSmsNumberId() );
+
+                if ( fromPhone == null )
+                {
+                    return;
+                }
 
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
                 BinaryFile binaryFile = null;
                 List<BinaryFile> photos = null;
+                var binaryFileService = new BinaryFileService( rockContext );
 
                 if ( !newMessage && ImageUploaderConversation.BinaryFileId.IsNotNullOrZero() )
                 {
                     // If this is a response using the conversation window and a photo file has been uploaded then add it
-                    binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderConversation.BinaryFileId.Value );
+                    // Only accept a new upload by the current person.
+                    if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( ImageUploaderConversation.BinaryFileId, null, CurrentPerson ) )
+                    {
+                        binaryFile = binaryFileService.Get( ImageUploaderConversation.BinaryFileId.Value );
+                    }
                 }
                 else if ( newMessage && ImageUploaderModal.BinaryFileId.IsNotNullOrZero() )
                 {
                     // If this is a new message using the modal and a photo file has been uploaded then add it
-                    binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderModal.BinaryFileId.Value );
+                    // Only accept a new upload by the current person.
+                    if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( ImageUploaderModal.BinaryFileId, null, CurrentPerson ) )
+                    {
+                        binaryFile = binaryFileService.Get( ImageUploaderModal.BinaryFileId.Value );
+                    }
                 }
 
                 photos = binaryFile != null ? new List<BinaryFile> { binaryFile } : null;
@@ -553,7 +605,14 @@ namespace RockWeb.Blocks.Communication
                     }
                     else
                     {
-                        literal.Text = message;
+                        /*
+                            10/16/2026 - MSE
+
+                            The message is plain SMS text and the Literal renders HTML, so encode it.
+
+                            Reason: Prevent SMS text from rendering as HTML in the conversation list.
+                        */
+                        literal.Text = message.EncodeHtml();
                     }
 
                     break;
@@ -772,12 +831,20 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                litMessagePart.Text = messagePart;
+                /*
+                    10/16/2026 - MSE
+
+                    The latest message can be an inbound SMS from anyone who texts the church
+                    and the Literal renders HTML, so encode it.
+
+                    Reason: Prevent inbound SMS text from rendering as HTML in the conversation list.
+                */
+                litMessagePart.Text = messagePart.EncodeHtml();
             }
 
-            var smsSystemPhoneNumberId = hfSmsNumber.Value.AsIntegerOrNull();
-            var smsSystemPhoneNumber = smsSystemPhoneNumberId.HasValue
-                ? SystemPhoneNumberCache.Get( smsSystemPhoneNumberId.Value )
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
+            var smsSystemPhoneNumber = smsSystemPhoneNumberId != 0
+                ? SystemPhoneNumberCache.Get( smsSystemPhoneNumberId )
                 : null;
 
             if ( smsSystemPhoneNumber != null && recipientPersonAliasId.HasValue )
@@ -840,17 +907,25 @@ namespace RockWeb.Blocks.Communication
             hfRecipientPersonAliasId.Value = responseListItem.RecipientPersonAliasId.ToString();
             hfConversationKey.Value = responseListItem.ConversationKey;
             hfPhoneNumber.Value = responseListItem.ContactKey;
+            /*
+                10/16/2026 - MSE
+
+                The name can be set by anonymous visitors and the message can be an inbound SMS
+                from anyone who texts the church. The Label and Literal render HTML, so encode both.
+
+                Reason: Prevent names and inbound SMS text from rendering as HTML in the conversation list.
+            */
             if ( responseListItem.IsNamelessPerson )
             {
                 lblName.Text = PhoneNumber.FormattedNumber( null, responseListItem.ContactKey );
             }
             else
             {
-                lblName.Text = responseListItem.FullName;
+                lblName.Text = responseListItem.FullName.EncodeHtml();
             }
 
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
-            litMessagePart.Text = responseListItem.SMSMessage;
+            litMessagePart.Text = responseListItem.SMSMessage.EncodeHtml();
 
             if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.HasAttachments( RockApp.Current.CreateRockContext() ) )
             {
@@ -889,7 +964,15 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
+                    /*
+                        10/16/2026 - MSE
+
+                        The message can be an inbound SMS from anyone who texts the church and
+                        the Literal renders HTML, so encode it.
+
+                        Reason: Prevent inbound SMS text from rendering as HTML in the conversation.
+                    */
+                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage.EncodeHtml();
                 }
 
                 var rockContext = RockApp.Current.CreateRockContext();
@@ -899,19 +982,43 @@ namespace RockWeb.Blocks.Communication
                     var lSMSAttachments = ( Literal ) e.Item.FindControl( "lSMSAttachments" );
                     string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
 
-                    foreach ( var binaryFileGuid in communicationRecipientResponse.GetBinaryFileGuids( rockContext ) )
-                    {
-                        // Show the image thumbnail by appending the html to lSMSMessage.Text
-                        string imageUrl = FileUrlHelper.GetImageUrl( binaryFileGuid, new GetImageUrlOptions{ Width = 200 } );
-                        string imageElement = $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}' class='img-responsive sms-image'></a>";
+                    var binaryFileGuids = communicationRecipientResponse.GetBinaryFileGuids( rockContext );
+                    var binaryFiles = new BinaryFileService( rockContext ).Queryable()
+                        .Where( bf => binaryFileGuids.Contains( bf.Guid ) )
+                        .Select( bf => new
+                        {
+                            bf.Guid,
+                            bf.FileName,
+                            bf.MimeType
+                        } )
+                        .ToList();
 
-                        // If there is a text portion or previous image then drop down a line before appending the image element
-                        lSMSAttachments.Text += imageElement;
+                    foreach ( var binaryFile in binaryFiles )
+                    {
+                        if ( binaryFile.MimeType?.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true )
+                        {
+                            // Show the image thumbnail by appending the html to lSMSMessage.Text
+                            string imageUrl = FileUrlHelper.GetImageUrl( binaryFile.Guid, new GetImageUrlOptions { Width = 200 } );
+                            lSMSAttachments.Text += $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}' class='img-responsive sms-image'></a>";
+                        }
+                        else
+                        {
+                            // Non-image files can't be served by GetImage, so link to the file instead.
+                            string fileUrl = FileUrlHelper.GetFileUrl( binaryFile.Guid );
+                            lSMSAttachments.Text += $"<div class='sms-file'><i class='fa fa-file'></i><a href='{fileUrl}' target='_blank' rel='noopener noreferrer'>{binaryFile.FileName.EncodeHtml()}</a></div>";
+                        }
                     }
                 }
 
                 var lSenderName = ( Literal ) e.Item.FindControl( "lSenderName" );
-                lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName;
+                /*
+                    10/16/2026 - MSE
+
+                    The sender name is person text and the Literal renders HTML, so encode it.
+
+                    Reason: Prevent stored names from rendering as HTML in the conversation.
+                */
+                lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName.EncodeHtml();
 
                 var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
                 lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();
@@ -964,6 +1071,13 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
 
+                // Same rule gRecipients_RowSelected uses to show the Link button:
+                // only a nameless person that is not already part of a merge request.
+                if ( !namelessPerson.IsNameless() || namelessPerson.IsPartOfMergeRequest() )
+                {
+                    return;
+                }
+
                 EntitySet mergeRequest = null;
                 if ( pnlLinkToExistingPerson.Visible )
                 {
@@ -974,6 +1088,11 @@ namespace RockWeb.Blocks.Communication
                     }
 
                     var existingPerson = personService.Get( existingPersonId.Value );
+                    if ( existingPerson == null )
+                    {
+                        return;
+                    }
+
                     mergeRequest = namelessPerson.CreateMergeRequest( existingPerson );
                     var entitySetService = new EntitySetService( rockContext );
                     entitySetService.Add( mergeRequest );
@@ -1033,6 +1152,12 @@ namespace RockWeb.Blocks.Communication
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
+
+                // Same rule gRecipients_RowSelected uses to show the View Merge Request button.
+                if ( namelessPerson == null || !namelessPerson.IsNameless() || !namelessPerson.IsPartOfMergeRequest() )
+                {
+                    return;
+                }
 
                 var mergeRequest = namelessPerson.GetMergeRequest( rockContext );
 

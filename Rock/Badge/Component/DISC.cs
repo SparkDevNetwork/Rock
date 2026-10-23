@@ -117,9 +117,9 @@ namespace Rock.Badge.Component
                 {
                     int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
 #if REVIEW_WEBFORMS
-                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, person.UrlEncodedKey ) );
+                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, person.GetPersonActionIdentifier( "Assessment" ) ) );
 #else
-                    detailPageUrl = RockApp.Current.ResolveRockUrl( String.Format( "~/page/{0}?Person={1}", pageId, person.UrlEncodedKey ) );
+                    detailPageUrl = RockApp.Current.ResolveRockUrl( String.Format( "~/page/{0}?Person={1}", pageId, person.GetPersonActionIdentifier( "Assessment" ) ) );
 #endif
                     writer.Write( "<a href='{0}'>", detailPageUrl );
                 }

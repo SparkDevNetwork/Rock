@@ -52,6 +52,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
+        var viewError = GetWorkflowTypeViewError( actionType.ActivityType?.WorkflowType );
+
+        if ( viewError != null )
+        {
+            return Error( viewError );
+        }
+
         // Setting values that point at an activity or attribute in the same workflow
         // get a readable name alongside the raw value, exactly as the tree read does.
         var workflowTypeId = actionType.ActivityType?.WorkflowTypeId;
@@ -94,9 +101,18 @@ internal sealed partial class WorkflowBuilderSkill
 
         // A single setting here can be a forty kilobyte template, which is the whole
         // point of the tool and exactly what should not go into chat history.
-        return Success( result )
+        var toolResult = Success( result )
             .WithHistoryKey( $"workflow-action-{actionType.IdKey}" )
             .WithoutHistoryContent();
+
+        // The same checks the write path runs, so inspecting a suspect action surfaces
+        // the problem rather than requiring a read of the whole workflow.
+        foreach ( var warning in GetActionWarnings( result ) )
+        {
+            toolResult = toolResult.WithInstructions( warning );
+        }
+
+        return toolResult;
     }
 
     #endregion

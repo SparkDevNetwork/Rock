@@ -21,8 +21,10 @@ using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Cms;
 using Rock.Configuration;
 using Rock.Enums.Cms;
+using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -68,9 +70,8 @@ internal sealed partial class LavaApplicationBuilderSkill
             CodeTemplate = endpoint.CodeTemplate,
             EnabledLavaCommands = endpoint.EnabledLavaCommands,
             SecurityMode = endpoint.SecurityMode.ToString(),
-            Audiences = endpoint.SecurityMode == LavaEndpointSecurityMode.EndpointExecute
-                ? GetAudienceDescriptions( rockContext, endpoint.TypeId, endpoint.Id, Authorization.EXECUTE )
-                : null,
+            EndpointIdKey = endpoint.IdKey,
+            EntityTypeIdKey = EntityTypeCache.Get<LavaEndpoint>().IdKey,
             ContentType = endpoint.GetAdditionalSettings<LavaEndpointAdditionalSettings>()?.ContentType,
             Url = url
         } )

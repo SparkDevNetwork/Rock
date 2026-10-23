@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { CommunicationRecipientActivity } from "@Obsidian/Enums/Communication/communicationRecipientActivity";
 import { CommunicationRecipientStatus } from "@Obsidian/Enums/Communication/communicationRecipientStatus";
 import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
 import { AgeClassification } from "@Obsidian/Enums/Crm/ageClassification";
@@ -81,4 +82,38 @@ export type RecipientGridRow = {
     gender?: Gender | null;
     grade?: string | null;
     isDeceased?: boolean | null;
+};
+
+export type RecipientTimelineActivity = {
+    iconCssClass: string;
+    iconLabelType: "default" | "success" | "info" | "warning" | "danger" | "custom",
+    iconLabelCustomClass?: string | null,
+    activity: string;
+    activityDateTime: string;
+    description?: string | null;
+    tooltip?: string | null;
+};
+
+export const RecipientActivityIconCssClass: Record<CommunicationRecipientActivity, string> = {
+    [CommunicationRecipientActivity.Pending]: "ti ti-hourglass",
+    [CommunicationRecipientActivity.Cancelled]: "ti ti-ban",
+    [CommunicationRecipientActivity.Sent]: "ti ti-send",
+    [CommunicationRecipientActivity.Delivered]: "ti ti-circle-check",
+    [CommunicationRecipientActivity.DeliveryFailed]: "ti ti-x",
+    [CommunicationRecipientActivity.Opened]: "ti ti-eye",
+    [CommunicationRecipientActivity.Clicked]: "ti ti-hand-finger",
+    [CommunicationRecipientActivity.MarkedAsSpam]: "ti ti-trash",
+    [CommunicationRecipientActivity.Unsubscribed]: "ti ti-circle-minus"
+};
+
+export const RecipientActivityIconLabelType: Record<CommunicationRecipientActivity, "default" | "success" | "info" | "warning" | "danger" | "custom"> = {
+    [CommunicationRecipientActivity.Pending]: "default",
+    [CommunicationRecipientActivity.Cancelled]: "warning",
+    [CommunicationRecipientActivity.Sent]: "success",
+    [CommunicationRecipientActivity.Delivered]: "success",
+    [CommunicationRecipientActivity.DeliveryFailed]: "danger",
+    [CommunicationRecipientActivity.Opened]: "info",
+    [CommunicationRecipientActivity.Clicked]: "success",
+    [CommunicationRecipientActivity.MarkedAsSpam]: "warning",
+    [CommunicationRecipientActivity.Unsubscribed]: "danger"
 };

@@ -27,9 +27,9 @@
 
                     <div ref="overflowRef"
                          class="overflow-indicator"
-                         :class="{ clickable: !!onMoreClick }"
+                         :class="{ clickable: !!onMoreClick || canExpand }"
                          v-show="isOverflowIndicatorShown"
-                         @click="onMoreClick?.()">
+                         @click="onOverflowIndicatorClick">
                         <Pill :disabled="disabled">{{ modelValue.length - visibleItems.length }} more</Pill>
                     </div>
                 </div>
@@ -236,8 +236,9 @@
         },
 
         /**
-         * Whether the button to expand/collapse should be shown
-         * to allow the user to expand the list to show all items.
+         * Whether the user can expand the list to show every item.
+         * Shows the expand/collapse button when items overflow. Clicking the
+         * "N more" pill also expands the list, unless `onMoreClick` is set.
          */
         canExpand: {
             type: Boolean as PropType<boolean>,
@@ -280,9 +281,10 @@
 
         /**
          * Optional callback invoked when the "X more" overflow indicator
-         * pill is clicked. When omitted, the overflow pill is not clickable
-         * and renders without a cursor or hover affordance. Useful for
-         * opening a "view all" modal that lives on the consuming component.
+         * pill is clicked. When set, this wins over the inline expand from
+         * `canExpand` and the pill does not expand on its own. When omitted
+         * and `canExpand` is also off, the overflow pill is not clickable.
+         * Useful for opening a "view all" modal that lives on the consuming component.
          *
          * Named with the `on` prefix so consumers can use Vue's listener
          * syntax: both `@moreClick="handler"` and `:onMoreClick="handler"`
@@ -433,6 +435,29 @@
 
     function onAdd(): void {
         emit("add");
+    }
+
+    /*
+        9/22/26 - MSE
+
+        The overflow pill is what people click when a list is truncated.
+        canExpand already means the user is allowed to see every item, but
+        only the chevron did that, so Bulk Update's "N more" pill did nothing
+        and the full person list could not be reviewed before continuing.
+        A consumer-supplied onMoreClick still wins and does not expand, so
+        Communication can keep opening its recipient modal.
+
+        Reason: Overflow pill expands inline when canExpand is set and moreClick is not.
+    */
+    function onOverflowIndicatorClick(): void {
+        if (props.onMoreClick) {
+            props.onMoreClick();
+            return;
+        }
+
+        if (props.canExpand) {
+            void onExpand();
+        }
     }
 
     // #endregion Event Handlers

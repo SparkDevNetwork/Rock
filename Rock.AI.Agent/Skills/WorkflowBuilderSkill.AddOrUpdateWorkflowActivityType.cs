@@ -144,6 +144,13 @@ internal sealed partial class WorkflowBuilderSkill
             activityTypeService.Add( activityType );
         }
 
+        var editError = GetWorkflowTypeEditError( workflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         helper.UpdateProperty( activityType, at => at.Name, name );
         helper.UpdateProperty( activityType, at => at.Description, description );
         helper.UpdateProperty( activityType, at => at.IsActive, isActive );

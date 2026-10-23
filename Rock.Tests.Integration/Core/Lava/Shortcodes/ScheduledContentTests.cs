@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
@@ -48,11 +48,20 @@ Schedule Live: {{ IsLive }}
 
             input = input.Replace( "$scheduleId", schedule1630.Id.ToString() );
 
-            var expectedOutput = @"
-ScheduleName:Saturday4:30pm<br>ScheduleLive:true<br>
-";
+            // Shortcode tags take no whitespace control, so the template's own
+            // line breaks are part of the output.
+            var expectedOutput = "\n"
+                + "Schedule Name: Saturday 4:30pm\n"
+                + "<br>\n"
+                + "Schedule Live: true\n"
+                + "<br>\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -69,9 +78,14 @@ Schedule Active = {{isScheduleActive}}
 ";
             input = input.Replace( "$scheduleId", schedule.Id.ToString() );
 
-            var expectedOutput = @"Schedule Active = true";
+            var expectedOutput = "\n\nSchedule Active = true\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -93,7 +107,7 @@ Next Occurrence:
 {[ endscheduledcontent ]}
 ";
 
-            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = true };
+            var renderOptions = new LavaRenderOptions();
             string input;
             string expectedOutput;
 
@@ -111,9 +125,14 @@ Next Occurrence:
 1. Look Ahead - 0 Days -->
 2. Look Ahead - 8 Days --> 2020-10-24
 3. Look Ahead - Default --> 2020-10-24
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, renderOptions );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, renderOptions );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -131,7 +150,7 @@ Next Occurrence:
 {[ scheduledcontent scheduleid:'$scheduleId' ]}4. showwhen = (unspecified): Visible when Live.{[ endscheduledcontent ]}
 ";
 
-            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = true };
+            var renderOptions = new LavaRenderOptions();
             string input;
             string expectedOutput;
 
@@ -140,13 +159,20 @@ Next Occurrence:
 
             input = inputTemplate.Replace( "$scheduleId", liveSchedule.Id.ToString() );
 
-            expectedOutput = @"
-1. IsLive = true: Visible always.
-2. showwhen = 'live': Visible when Live.
-4. showwhen = (unspecified): Visible when Live.
-";
+            // The third shortcode renders nothing for a live schedule, leaving
+            // the blank line between the second and fourth.
+            expectedOutput = "\n"
+                + "1. IsLive = true: Visible always.\n"
+                + "2. showwhen = 'live': Visible when Live.\n"
+                + "\n"
+                + "4. showwhen = (unspecified): Visible when Live.\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, renderOptions );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, renderOptions );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
 
             // Verify for Pending Schedule.
             var pendingSchedule = scheduleService.GetByIdentifierOrThrow( TestGuids.Schedules.ScheduleSat1630Guid );
@@ -157,12 +183,20 @@ Next Occurrence:
 
             input = inputTemplate.Replace( "$scheduleId", pendingSchedule.Id.ToString() );
 
-            expectedOutput = @"
-1. IsLive = false: Visible always.
-3. showwhen = 'notlive': Visible when Pending.
-";
+            // The second shortcode renders nothing for a pending schedule, and
+            // the fourth leaves a trailing blank line.
+            expectedOutput = "\n"
+                + "1. IsLive = false: Visible always.\n"
+                + "\n"
+                + "3. showwhen = 'notlive': Visible when Pending.\n"
+                + "\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, renderOptions );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, renderOptions );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
     }

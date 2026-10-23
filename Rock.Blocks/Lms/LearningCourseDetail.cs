@@ -710,6 +710,12 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"{LearningCourseRequirement.FriendlyTypeName} not found." );
             }
 
+            // Make sure the person can edit the course the requirement belongs to.
+            if ( entity.LearningCourse?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) != true )
+            {
+                return ActionBadRequest( $"Not authorized to delete {LearningCourseRequirement.FriendlyTypeName}." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );

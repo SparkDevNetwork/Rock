@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="formFieldProps" :modelValue="internalMediaElement" name="media-element-picker">
+    <RockFormField v-bind="formFieldProps" :modelValue="internalMediaElement?.value" name="media-element-picker">
         <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" rules="" help="" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem :enhanceForLongLists="enhanceMediaAccountPickerForLongLists" />
         <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" rules="" help="" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaFolderPickerForLongLists">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
@@ -9,7 +9,7 @@
                 </span>
             </template>
         </BaseAsyncPicker>
-        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" help="" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaElementPickerForLongLists">
+        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" rules="" help="" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaElementPickerForLongLists">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
                     <RockButton isSquare @click.prevent="fetchMediaElements"><i class="ti ti-refresh"></i></RockButton>

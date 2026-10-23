@@ -189,6 +189,11 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult GetRowData( GetMetricsBag bag )
         {
+            if ( !IsConnectionOpportunityAllowed( bag ) )
+            {
+                return ActionBadRequest( "Connection opportunity not found." );
+            }
+
             var builder = GetGridBuilder();
             var gridDataBag = builder.Build( GetConnectors( bag ) );
 
@@ -198,6 +203,11 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult GetMetrics( GetMetricsBag bag )
         {
+            if ( !IsConnectionOpportunityAllowed( bag ) )
+            {
+                return ActionBadRequest( "Connection opportunity not found." );
+            }
+
             var metrics = new MetricsBag
             {
                 CompletionMetrics = GetCompletionMetrics( bag ),
@@ -247,6 +257,32 @@ namespace Rock.Blocks.Engagement
         #endregion Block Actions
 
         #region Private Methods
+
+        /// <summary>
+        /// Determines whether the connection opportunity filter posted in the bag
+        /// is one the current person was offered when the block was initialized.
+        /// This keeps the block actions from returning connector and metric data
+        /// for opportunities that <see cref="GetConnectionOpportunities"/> filters
+        /// out of the opportunity picker.
+        /// </summary>
+        /// <param name="bag">The bag that contains the posted filter values.</param>
+        /// <returns><c>true</c> if no opportunity was posted or the posted opportunity is allowed; otherwise <c>false</c>.</returns>
+        private bool IsConnectionOpportunityAllowed( GetMetricsBag bag )
+        {
+            var connectionOpportunityGuid = bag?.ConnectionOpportunityGuid;
+
+            // No opportunity filter means the type-wide data, which is what
+            // the block shows on initialization.
+            if ( !connectionOpportunityGuid.HasValue )
+            {
+                return true;
+            }
+
+            var connectionOpportunityGuidText = connectionOpportunityGuid.Value.ToString();
+
+            return GetConnectionOpportunities()
+                .Any( co => co.Value.Equals( connectionOpportunityGuidText, StringComparison.OrdinalIgnoreCase ) );
+        }
 
         /// <summary>
         /// Determines whether the specified box is valid and provides an error message if it is not.

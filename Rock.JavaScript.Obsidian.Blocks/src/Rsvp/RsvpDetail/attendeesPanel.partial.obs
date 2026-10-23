@@ -37,6 +37,7 @@
                     <DropDownList :modelValue="(row.status as string) ?? AttendeeStatus.NoResponse"
                                   :items="statusItems"
                                   :showBlankItem="false"
+                                  :disabled="!bag.isEditable"
                                   formGroupClasses="mb-0"
                                   @update:modelValue="onStatusChanged(row, $event as string)" />
                 </div>
@@ -59,7 +60,7 @@
                     <DropDownList :modelValue="(row.declineReasonValueGuid as string) ?? ''"
                                   :items="bag.attendeeDeclineReasons ?? []"
                                   :showBlankItem="true"
-                                  :disabled="row.status !== AttendeeStatus.Decline"
+                                  :disabled="!bag.isEditable || row.status !== AttendeeStatus.Decline"
                                   formGroupClasses="mb-0"
                                   @update:modelValue="onDeclineReasonChanged(row, $event as string)" />
                 </div>
@@ -76,13 +77,14 @@
                 :exportValue="getDeclineNoteSortValue"
                 width="37%">
             <template #format="{ row }">
-                <button v-if="row.status === AttendeeStatus.Decline"
+                <button v-if="bag.isEditable && row.status === AttendeeStatus.Decline"
                         type="button"
                         class="btn btn-link p-0 text-decoration-none d-flex align-items-center w-100 text-left"
                         @click="onEditNoteClick($event, row)">
                     <span class="flex-grow-1 text-truncate" :class="row.declineNote ? 'text-body' : 'text-muted'">{{ (row.declineNote as string) || "Add note..." }}</span>
                     <i class="ti ti-pencil text-muted ml-1"></i>
                 </button>
+                <span v-else-if="row.status === AttendeeStatus.Decline" class="d-block text-truncate">{{ row.declineNote as string }}</span>
             </template>
         </Column>
     </Grid>

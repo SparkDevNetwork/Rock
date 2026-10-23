@@ -388,7 +388,8 @@ namespace Rock.Rest.Controllers
                                 // Get or create a new component with the details we have.
                                 if ( mobileInteraction.ComponentEntityId.HasValue )
                                 {
-                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName );
+                                    // The client may name a new component but must not rename an existing one.
+                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName, false );
                                 }
                                 else
                                 {
@@ -516,7 +517,23 @@ namespace Rock.Rest.Controllers
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
-                var userLogin = userLoginService.GetByUserName( loginParameters.Username );
+
+                /*
+                    10/6/26 - PS
+
+                    Use the userName returned by IsLoginValid, never the posted
+                    Username. When a JWT is used, IsLoginValid resolves the login
+                    from the token and ignores the posted Username, so trusting the
+                    posted value would let a caller sign in as any other account.
+
+                    Reason: Prevent JWT logins from impersonating another username.
+                */
+                var userLogin = userLoginService.GetByUserName( userName );
+
+                if ( userLogin?.Person == null )
+                {
+                    return StatusCode( System.Net.HttpStatusCode.Unauthorized );
+                }
 
                 if ( personalDeviceGuid.HasValue )
                 {
@@ -533,7 +550,7 @@ namespace Rock.Rest.Controllers
                 rockContext.SaveChanges();
 
                 var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
-                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( userLogin.UserName );
 
                 return Ok( mobilePerson );
             }

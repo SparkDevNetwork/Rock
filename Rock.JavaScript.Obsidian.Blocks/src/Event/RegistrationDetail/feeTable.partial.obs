@@ -1,0 +1,55 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="rows.length === 0" alertType="info" class="margin-t-md">
+        There are no fees associated with this registration.
+    </NotificationBox>
+
+    <div v-else class="well">
+        <div class="fee-table">
+            <h4 class="mt-0">Cost Summary</h4>
+            <div class="registrationentry-summary">
+                <div class="row hidden-xs fee-header">
+                    <div class="col-sm-6">
+                        <strong>Description</strong>
+                    </div>
+                    <div v-if="isDiscountedAmountColumnVisible" class="col-sm-3 fee-value">
+                        <strong>Discounted Amount</strong>
+                    </div>
+                    <div class="col-sm-3 fee-value">
+                        <strong>Amount</strong>
+                    </div>
+                </div>
+
+                <div v-for="(row, index) in rows" :key="index" :class="`row fee-row-${row.rowType}`">
+                    <div class="col-sm-6 fee-caption">
+                        {{ row.description }}
+                    </div>
+                    <div v-if="isDiscountedAmountColumnVisible" class="col-sm-3 fee-value">
+                        <span class="visible-xs-inline">Discounted Amount:</span> {{ row.discountedCostText }}
+                    </div>
+                    <div class="col-sm-3 fee-value">
+                        <span class="visible-xs-inline">Amount:</span> {{ row.costText }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { RegistrationFeeRowBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationFeeRowBag";
+
+    defineProps({
+        rows: {
+            type: Array as PropType<RegistrationFeeRowBag[]>,
+            default: () => []
+        },
+
+        isDiscountedAmountColumnVisible: {
+            type: Boolean,
+            default: false
+        }
+    });
+</script>

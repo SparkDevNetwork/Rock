@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <EditableAttributesGrid v-model="attributes"
+                            itemTerm="Registration Attribute"
+                            modalTitle="Registration Attributes"
+                            :attributeEntityTypeGuid="EntityType.Registration"
+                            isCategoryShown />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import EditableAttributesGrid from "@Obsidian/Controls/editableAttributesGrid.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+
+    const props = defineProps({
+        /** The attributes collected for each registration of the template. */
+        attributes: {
+            type: Array as PropType<PublicEditableAttributeBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:attributes", value: PublicEditableAttributeBag[]): void
+    }>();
+
+    // #region Computed Values
+
+    const attributes = computed({
+        get(): PublicEditableAttributeBag[] {
+            return props.attributes ?? [];
+        },
+        set(value: PublicEditableAttributeBag[]) {
+            emit("update:attributes", value);
+        }
+    });
+
+    // #endregion Computed Values
+</script>

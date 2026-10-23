@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="isVisible"
-           title="Apply Fliters"
+           title="Apply Filters"
            saveText="Apply"
            @save="onSave">
 
@@ -195,3 +195,4 @@
 
     // #endregion Watchers
 </script>
+

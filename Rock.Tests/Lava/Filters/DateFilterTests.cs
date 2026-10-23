@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Ical.Net;
 using Ical.Net.CalendarComponents;
@@ -27,16 +28,19 @@ using Ical.Net.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared.Core.Schedules;
 using Rock.Tests.Shared.Utility;
 
 using Calendar = Ical.Net.Calendar;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class DateFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class DateFilterTests
     {
         /*
          * Lava Date filters operate on the assumption that local DateTime values are expressed in the currently configured Rock Organization timezone.
@@ -58,7 +62,7 @@ namespace Rock.Tests.Lava.Filters
         public void SetDefaultTestTimezone()
         {
             // Prior to each test, ensure that the Lava Engine is synchronized with the test timezone.
-            LavaTestHelper.SetRockDateTimeToUtcPositiveTimezone();
+            DateTimeTestHelper.SetRockDateTimeToUtcPositiveTimezone();
 
             // Initialize the test calendar data.
             _now = RockDateTime.Now;
@@ -118,7 +122,7 @@ namespace Rock.Tests.Lava.Filters
         public static void Cleanup()
         {
             // Reset the timezone to avoid problems with other tests.
-            LavaTestHelper.SetRockDateTimeToLocalTimezone();
+            DateTimeTestHelper.SetRockDateTimeToLocalTimezone();
         }
 
         #region Filter Tests: AsDateTime
@@ -131,7 +135,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '' | AsDateTime }}";
 
-            TestHelper.AssertTemplateOutput( string.Empty, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -142,7 +151,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ 'xyzzy' | AsDateTime }}";
 
-            TestHelper.AssertTemplateOutput( string.Empty, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -157,7 +171,12 @@ namespace Rock.Tests.Lava.Filters
             var localCultureTimeString = LavaDateTime.ToString( dateTimeInput, "G" );
 
             // Verify that the default date output format matches the current culture General Date format.
-            TestHelper.AssertTemplateOutput( localCultureTimeString, "{{ '2018-05-01 10:00:00 AM' | AsDateTime }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2018-05-01 10:00:00 AM' | AsDateTime }}" );
+
+                Assert.AreEqual( localCultureTimeString, output );
+            } );
         }
 
         /// <summary>
@@ -171,7 +190,12 @@ namespace Rock.Tests.Lava.Filters
             var template = "{{ '<inputString>' | AsDateTime }}"
                 .Replace( "<inputString>", inputString );
 
-            TestHelper.AssertTemplateOutputDate( result, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                LavaAssert.DateEqual( result, output );
+            } );
         }
 
         /// <summary>
@@ -184,7 +208,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -199,7 +228,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -219,7 +253,13 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInput } };
 
             // Verify that the Lava Date filter processes the DateTimeOffset value correctly to include the offset, and the result matches the Rock time.
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | AsDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | AsDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -239,13 +279,19 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInputString } };
 
             // Verify that the Lava Date filter parses the DateTimeOffset value correctly to include the offset, and the result matches the local server time.
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | AsDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | AsDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void AsDateTimeUtc_WithDateTimeStringAsInput_ConvertsFromRockDateTime()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( tz ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
             {
                 var dateTimeInput = LavaDateTime.NewDateTimeOffset( 2018, 5, 1, 10, 0, 0 );
                 var dateTimeInputString = dateTimeInput.ToString( "yyyy-MM-ddTHH:mm:ss" );
@@ -254,22 +300,36 @@ namespace Rock.Tests.Lava.Filters
                 var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInputString } };
 
                 // Verify that the filter parses the DateTimeOffset value correctly to include the offset, and the result matches the UTC time.
-                TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var options = new LavaRenderOptions { MergeFields = mergeValues };
+                    var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                    Assert.AreEqual( expectedOutput, output );
+                } );
             } );
         }
 
         [TestMethod]
         public void AsDateTimeUtc_WithSpecifiedOffsetStringAsInput_ConvertsFromOffset()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( tz ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
             {
                 // Verify that an input date with an offset of UTC+04:00 is converted to the correct UTC date.
-                TestHelper.AssertTemplateOutput( "2018-05-01T23:00:00+00:00",
-                    "{{ '2018-05-02T03:00:00+04:00' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '2018-05-02T03:00:00+04:00' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" );
+
+                    Assert.AreEqual( "2018-05-01T23:00:00+00:00", output );
+                } );
 
                 // Verify that an input date with an offset of UTC-04:00 is converted to the correct UTC date.
-                TestHelper.AssertTemplateOutput( "2018-05-02T03:00:00+00:00",
-                    "{{ '2018-05-01T23:00:00-04:00' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '2018-05-01T23:00:00-04:00' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" );
+
+                    Assert.AreEqual( "2018-05-02T03:00:00+00:00", output );
+                } );
 
             } );
         }
@@ -285,7 +345,13 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInput } };
 
             // Verify that the filter translates the DateTimeOffset to the equivalent datetime with a +00:00 offset.
-            TestHelper.AssertTemplateOutput( "2018-05-01T23:00:00+00:00", "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( "2018-05-01T23:00:00+00:00", output );
+            } );
         }
 
         /// <summary>
@@ -299,7 +365,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -343,7 +414,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -364,7 +440,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '' | Date:'yyyy-MM-dd HH:mm:ss' }}";
 
-            TestHelper.AssertTemplateOutput( string.Empty, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -379,7 +460,12 @@ namespace Rock.Tests.Lava.Filters
             var template = @"{% capture formatString %}<formatString>{% endcapture %}{{ '1-May-2018 6:30 PM' | Date:formatString }}"
                 .Replace( "<formatString>", formatString );
 
-            TestHelper.AssertTemplateOutput( result, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( result, output );
+            } );
         }
 
         /// <summary>
@@ -389,7 +475,12 @@ namespace Rock.Tests.Lava.Filters
         public void Date_NowWithNoFormatStringAsInput_ResolvesToCurrentDateTimeWithGeneralFormat()
         {
             // Expect the general format: short date/long time.
-            TestHelper.AssertTemplateOutputDate( _now.ToString( "G" ), "{{ 'Now' | Date }}", new TimeSpan( 0, 0, 10 ) );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Now' | Date }}" );
+
+                LavaAssert.DateEqual( _now.ToString( "G" ), output, new TimeSpan( 0, 0, 10 ) );
+            } );
         }
 
         /// <summary>
@@ -398,7 +489,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Date_NowWithFormatStringAsInput_ResolvesToCurrentDateTimeWithSpecifiedFormat()
         {
-            TestHelper.AssertTemplateOutputDate( _now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
+
+                LavaAssert.DateEqual( _now.ToString( "yyyy-MM-dd" ), output );
+            } );
         }
 
         [TestMethod]
@@ -410,7 +506,12 @@ namespace Rock.Tests.Lava.Filters
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | Date:'sd' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | Date:'sd' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -424,7 +525,12 @@ namespace Rock.Tests.Lava.Filters
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -438,7 +544,12 @@ namespace Rock.Tests.Lava.Filters
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'client' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -451,7 +562,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var shortDate = new DateTime( 2018, 5, 1 );
 
-            TestHelper.AssertTemplateOutput( shortDate.ToShortDateString(), "{{ '1-May-2018' | Date:'sd' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018' | Date:'sd' }}" );
+
+                Assert.AreEqual( shortDate.ToShortDateString(), output );
+            } );
         }
 
         /// <summary>
@@ -464,7 +580,12 @@ namespace Rock.Tests.Lava.Filters
 
             var expectedOutput = LavaDateTime.ToString( shortTime, "t" );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ '1-May-2018 6:30 PM' | Date:'st' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 6:30 PM' | Date:'st' }}" );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -482,7 +603,13 @@ namespace Rock.Tests.Lava.Filters
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( rockTimeString, output );
+            } );
         }
 
         /// <summary>
@@ -507,7 +634,12 @@ namespace Rock.Tests.Lava.Filters
                 // Get the Rock server local time, including the correct offset from UTC.
                 var expectedOutput = new DateTimeOffset( RockDateTime.Now, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ).ToString( "yyyy-MM-ddTHH:mm:sszzz" );
 
-                TestHelper.AssertTemplateOutputDate( expectedOutput, template, new TimeSpan( 0, 0, 10 ) );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, template );
+
+                    LavaAssert.DateEqual( expectedOutput, output, new TimeSpan( 0, 0, 10 ) );
+                } );
             }
             finally
             {
@@ -531,7 +663,13 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "textInput", textInput } };
 
             // Verify that the Lava Date filter formats the DateTimeOffset, including the correct offset.
-            TestHelper.AssertTemplateOutput( textInput, "{{ textInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ textInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( textInput, output );
+            } );
         }
 
         /// <summary>
@@ -552,7 +690,13 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
             // Verify that the Lava Date filter formats the DateTimeOffset value as a Rock time, including the correct offset.
-            TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( rockTimeString, output );
+            } );
         }
 
         [TestMethod]
@@ -571,20 +715,20 @@ namespace Rock.Tests.Lava.Filters
             // Add the input DateTime object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            var parameters = new LavaRenderParameters
-            {
-                Context = LavaRenderContext.FromMergeValues( mergeValues ),
-                TimeZone = RockDateTime.OrgTimeZoneInfo
-            };
-
             // Verify that the Lava Date filter formats the DateTime value as a Rock time, including the correct offset.
-            TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues, TimeZone = RockDateTime.OrgTimeZoneInfo };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( rockTimeString, output );
+            } );
         }
 
         [TestMethod]
         public void Date_WithDateTimeLocalKindAsInput_IsProcessedAsRockTime()
         {
-            LavaTestHelper.SetRockDateTimeToUtcPositiveTimezone();
+            DateTimeTestHelper.SetRockDateTimeToUtcPositiveTimezone();
 
             // Get a time of 10:00am in the Rock timezone.
             var dtoInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
@@ -599,14 +743,14 @@ namespace Rock.Tests.Lava.Filters
             // Add the input DateTime object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            var parameters = new LavaRenderParameters
-            {
-                Context = LavaRenderContext.FromMergeValues( mergeValues ),
-                TimeZone = RockDateTime.OrgTimeZoneInfo
-            };
-
             // Verify that the Lava Date filter formats the DateTime value as a Rock time, including the correct offset.
-            TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues, TimeZone = RockDateTime.OrgTimeZoneInfo };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( rockTimeString, output );
+            } );
         }
 
         /// <summary>
@@ -638,13 +782,13 @@ namespace Rock.Tests.Lava.Filters
 
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            var parameters = new LavaRenderParameters
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                Context = LavaRenderContext.FromMergeValues( mergeValues ),
-                TimeZone = explicitTimeZone
-            };
+                var options = new LavaRenderOptions { MergeFields = mergeValues, TimeZone = explicitTimeZone };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -660,13 +804,13 @@ namespace Rock.Tests.Lava.Filters
 
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            var parameters = new LavaRenderParameters
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                Context = LavaRenderContext.FromMergeValues( mergeValues ),
-                Culture = currentCulture
-            };
+                var options = new LavaRenderOptions { MergeFields = mergeValues, Culture = currentCulture };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput }}", options );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput }}", parameters );
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -689,13 +833,13 @@ namespace Rock.Tests.Lava.Filters
 
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            var parameters = new LavaRenderParameters
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                Context = LavaRenderContext.FromMergeValues( mergeValues ),
-                Culture = explicitCulture
-            };
+                var options = new LavaRenderOptions { MergeFields = mergeValues, Culture = explicitCulture };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput }}", options );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput }}", parameters );
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -737,7 +881,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var expectedOutputDate = LavaDateTime.NowOffset.AddDays( 5 );
 
-            TestHelper.AssertTemplateOutputDate( expectedOutputDate, "{{ 'Now' | DateAdd:5,'d' }}", TimeSpan.FromSeconds( 300 ) );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Now' | DateAdd:5,'d' }}" );
+
+                LavaAssert.DateEqual( expectedOutputDate, output, TimeSpan.FromSeconds( 300 ) );
+            } );
         }
 
         /// <summary>
@@ -746,7 +895,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddDefaultIncrement_AddsDays()
         {
-            TestHelper.AssertTemplateOutputDate( "4-May-2018", "{{ '1-May-2018' | DateAdd:'3' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018' | DateAdd:'3' }}" );
+
+                LavaAssert.DateEqual( "4-May-2018", output );
+            } );
         }
 
         /// <summary>
@@ -755,7 +909,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddDaysIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "4-Jan-2018", "{{ '1-Jan-2018' | DateAdd:'3','d' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-Jan-2018' | DateAdd:'3','d' }}" );
+
+                LavaAssert.DateEqual( "4-Jan-2018", output );
+            } );
         }
 
         /// <summary>
@@ -764,7 +923,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddHoursIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 4:00 PM", "{{ '1-May-2018 3:00 PM' | DateAdd:'1','h' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | DateAdd:'1','h' }}" );
+
+                LavaAssert.DateEqual( "1-May-2018 4:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -773,7 +937,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddMinutesIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 5:00 PM", "{{ '1-May-2018 3:00 PM' | DateAdd:'120','m' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | DateAdd:'120','m' }}" );
+
+                LavaAssert.DateEqual( "1-May-2018 5:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -782,7 +951,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddSecondsIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 3:05 PM", "{{ '1-May-2018 3:00 PM' | DateAdd:'300','s' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | DateAdd:'300','s' }}" );
+
+                LavaAssert.DateEqual( "1-May-2018 3:05 PM", output );
+            } );
         }
 
         /// <summary>
@@ -791,7 +965,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddYearsIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2020 3:00 PM", "{{ '1-May-2018 3:00 PM' | DateAdd:'2','y' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | DateAdd:'2','y' }}" );
+
+                LavaAssert.DateEqual( "1-May-2020 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -800,7 +979,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddYearsIntervalToGivenLeapDate()
         {
-            TestHelper.AssertTemplateOutputDate( "28-Feb-2017 3:00 PM", "{{ '29-Feb-2016 3:00 PM' | DateAdd:'1','y' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '29-Feb-2016 3:00 PM' | DateAdd:'1','y' }}" );
+
+                LavaAssert.DateEqual( "28-Feb-2017 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -809,7 +993,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddMonthsIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "1-Jun-2018 3:00 PM", "{{ '1-May-2018 3:00 PM' | DateAdd:'1','M' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | DateAdd:'1','M' }}" );
+
+                LavaAssert.DateEqual( "1-Jun-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -819,7 +1008,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddMonthsIntervalToGivenLongerMonthDate()
         {
-            TestHelper.AssertTemplateOutputDate( "30-Jun-2018 3:00 PM", "{{ '31-May-2018 3:00 PM' | DateAdd:'1','M' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '31-May-2018 3:00 PM' | DateAdd:'1','M' }}" );
+
+                LavaAssert.DateEqual( "30-Jun-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -828,7 +1022,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateAdd_AddWeeksIntervalToGivenDate()
         {
-            TestHelper.AssertTemplateOutputDate( "15-May-2018 3:00 PM", "{{ '1-May-2018 3:00 PM' | DateAdd:'2','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | DateAdd:'2','w' }}" );
+
+                LavaAssert.DateEqual( "15-May-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -849,7 +1048,13 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
             // Verify that the Lava Date filter formats the DateTimeOffset value as a local server time.
-            TestHelper.AssertTemplateOutput( expectedDateString, "{{ dateTimeInput | DateAdd:1,'h' | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DateAdd:1,'h' | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( expectedDateString, output );
+            } );
         }
 
         /// <summary>
@@ -880,7 +1085,13 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
             // Verify that the Lava Date filter formats the DateTimeOffset value as a local server time.
-            TestHelper.AssertTemplateOutput( expectedDateString, "{{ dateTimeInput | DateAdd:1,'h' | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DateAdd:1,'h' | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                Assert.AreEqual( expectedDateString, output );
+            } );
         }
 
         #endregion
@@ -894,22 +1105,52 @@ namespace Rock.Tests.Lava.Filters
         public void DateDiff_CompareDifferenceInWeeks()
         {
             // Same date should result in 0 weeks
-            TestHelper.AssertTemplateOutput( "0", "{{ '01-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '01-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "0", output );
+            } );
 
             // 7 days apart should result in 1 week
-            TestHelper.AssertTemplateOutput( "1", "{{ '01-Jan-2024' | DateDiff:'08-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '01-Jan-2024' | DateDiff:'08-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "1", output );
+            } );
 
             // 6 days apart should result in 0 weeks (round down)
-            TestHelper.AssertTemplateOutput( "0", "{{ '01-Jan-2024' | DateDiff:'07-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '01-Jan-2024' | DateDiff:'07-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "0", output );
+            } );
 
             // 11 days apart should result in 1 week (round down)
-            TestHelper.AssertTemplateOutput( "1", "{{ '01-Jan-2024' | DateDiff:'12-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '01-Jan-2024' | DateDiff:'12-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "1", output );
+            } );
 
             // 14 days apart should result in 2 weeks
-            TestHelper.AssertTemplateOutput( "2", "{{ '01-Jan-2024' | DateDiff:'15-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '01-Jan-2024' | DateDiff:'15-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "2", output );
+            } );
 
             // 21 days apart should result in 3 weeks
-            TestHelper.AssertTemplateOutput( "3", "{{ '01-Jan-2024' | DateDiff:'22-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '01-Jan-2024' | DateDiff:'22-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "3", output );
+            } );
         }
 
         /// <summary>
@@ -919,10 +1160,30 @@ namespace Rock.Tests.Lava.Filters
         public void DateDiff_CompareEarlierDateInWeeks_YieldsNegativeInteger()
         {
             // Negative intervals
-            TestHelper.AssertTemplateOutput( "-1", "{{ '08-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
-            TestHelper.AssertTemplateOutput( "-1", "{{ '12-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
-            TestHelper.AssertTemplateOutput( "-2", "{{ '15-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
-            TestHelper.AssertTemplateOutput( "-3", "{{ '22-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '08-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "-1", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '12-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "-1", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '15-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "-2", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '22-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+
+                Assert.AreEqual( "-3", output );
+            } );
         }
 
 
@@ -932,7 +1193,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateDiff_CompareLaterDateInDays_YieldsPositiveInteger()
         {
-            TestHelper.AssertTemplateOutput( "32", "{{ '14-Feb-2011 8:00 AM' | DateDiff:'18-Mar-2011 11:30 AM','d' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '14-Feb-2011 8:00 AM' | DateDiff:'18-Mar-2011 11:30 AM','d' }}" );
+
+                Assert.AreEqual( "32", output );
+            } );
         }
 
         /// <summary>
@@ -941,7 +1207,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateDiff_CompareEarlierDateInDays_YieldsNegativeInteger()
         {
-            TestHelper.AssertTemplateOutput( "-32", "{{ '18-Mar-2011 11:30 AM' | DateDiff:'14-Feb-2011 8:00 AM','d' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '18-Mar-2011 11:30 AM' | DateDiff:'14-Feb-2011 8:00 AM','d' }}" );
+
+                Assert.AreEqual( "-32", output );
+            } );
         }
 
         /// <summary>
@@ -950,9 +1221,24 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateDiff_CompareDifferenceInYears_ReturnsWholeYearDifferenceOnly()
         {
-            TestHelper.AssertTemplateOutput( "0", "{{ '31-Dec-2020' | DateDiff:'01-Jan-2021','Y' }}" );
-            TestHelper.AssertTemplateOutput( "10", "{{ '31-Dec-2010' | DateDiff:'31-Dec-2020','Y' }}" );
-            TestHelper.AssertTemplateOutput( "-10", "{{ '31-Dec-2020' | DateDiff:'31-Dec-2010','Y' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '31-Dec-2020' | DateDiff:'01-Jan-2021','Y' }}" );
+
+                Assert.AreEqual( "0", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '31-Dec-2010' | DateDiff:'31-Dec-2020','Y' }}" );
+
+                Assert.AreEqual( "10", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '31-Dec-2020' | DateDiff:'31-Dec-2010','Y' }}" );
+
+                Assert.AreEqual( "-10", output );
+            } );
         }
 
         /// <summary>
@@ -962,13 +1248,28 @@ namespace Rock.Tests.Lava.Filters
         public void DateDiff_CompareDifferenceWithInterveningLeapYears_ReturnsCorrectYearDifference()
         {
             // A period spanning 365 days that occurs during a non-leap year should return a difference of 1.
-            TestHelper.AssertTemplateOutput( "1", "{{ '2024-03-02' | DateDiff:'2025-03-02','Y' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2024-03-02' | DateDiff:'2025-03-02','Y' }}" );
+
+                Assert.AreEqual( "1", output );
+            } );
 
             // A period spanning 365 days that occurs during a leap year should return a difference of 0.
-            TestHelper.AssertTemplateOutput( "0", "{{ '2024-02-29' | DateDiff:'2025-02-27','Y' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2024-02-29' | DateDiff:'2025-02-27','Y' }}" );
+
+                Assert.AreEqual( "0", output );
+            } );
 
             // A period spanning 366 days that occurs during a leap year should return a difference of 1.
-            TestHelper.AssertTemplateOutput( "1", "{{ '2023-03-02' | DateDiff:'2024-03-02','Y' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2023-03-02' | DateDiff:'2024-03-02','Y' }}" );
+
+                Assert.AreEqual( "1", output );
+            } );
         }
 
         /// <summary>
@@ -981,7 +1282,7 @@ namespace Rock.Tests.Lava.Filters
             var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 4, 0, 0 ) );
             var datetimeReference = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 3, 0, 0 ) );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // Get a string representing Rock time, which has a different UTC offset.
                 var referenceDateTimeString = LavaDateTime.ToString( datetimeReference, "yyyy-MM-ddTHH:mm:sszzz" );
@@ -990,7 +1291,10 @@ namespace Rock.Tests.Lava.Filters
                 var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput }, { "serverLocalTime", referenceDateTimeString } };
 
                 // Verify that the difference between the input date and the adjusted local time is 1 hour.
-                TestHelper.AssertTemplateOutput( engine, "1", "{{ dateTimeInput | DateDiff:serverLocalTime,'h' }}", mergeValues );
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DateDiff:serverLocalTime,'h' }}", options );
+
+                Assert.AreEqual( "1", output );
             } );
         }
 
@@ -1000,7 +1304,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DateDiff_WithDaylightSavingDateTimeObjectAsInput_AdjustsResultForDst()
         {
-            LavaTestHelper.SetRockDateTimeToDaylightSavingTimezone();
+            DateTimeTestHelper.SetRockDateTimeToDaylightSavingTimezone();
 
             // Get a date that occurs within daylight saving time for this timezone.
             var testDate = new DateTime( 2022, 9, 1, 10, 0, 0 );
@@ -1014,11 +1318,17 @@ namespace Rock.Tests.Lava.Filters
 
                 var lavaValues = new LavaDataDictionary() { { "inputDate", testDate } };
 
-                TestHelper.AssertTemplateOutput( "0", template, lavaValues );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var options = new LavaRenderOptions { MergeFields = lavaValues };
+                    var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                    Assert.AreEqual( "0", output );
+                } );
             }
             finally
             {
-                LavaTestHelper.SetRockDateTimeToLocalTimezone();
+                DateTimeTestHelper.SetRockDateTimeToLocalTimezone();
             }
         }
 
@@ -1046,11 +1356,10 @@ namespace Rock.Tests.Lava.Filters
 
             template = template.Replace( "$filterOption", filterOption );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
-
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
 
                 // Verify that the result contains the expected entries.
                 foreach ( var date in dates )
@@ -1087,7 +1396,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DatesFromICal_SingleDayEventWithInfiniteRecurrencePattern_ReturnsRequestedOccurrences()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 // Create a new schedule starting at 11am today Rock time.
                 var startDateTime = LavaDateTime.NewDateTime( _now.Year, _now.Month, _now.Day, 22, 0, 0 );
@@ -1104,7 +1413,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DatesFromICal_DailyEventWithPastOccurrenceOnSameDay_ReturnsNextDayAsFirstDate()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 var eventDuration = new TimeSpan( 1, 0, 0 );
 
@@ -1125,7 +1434,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DatesFromICal_DailyEventWithFutureOccurrenceOnSameDay_ReturnsSameDayAsFirstDate()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 var eventDuration = new TimeSpan( 1, 0, 0 );
 
@@ -1146,7 +1455,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DatesFromICal_DailyEventWithActiveOccurrenceOnSameDay_ReturnsSameDayAsFirstDate()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 var eventDuration = new TimeSpan( 2, 0, 0 );
 
@@ -1170,7 +1479,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DatesFromICal_Saturday430ServiceScheduleNextDate_ReturnsNextSaturday()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 // Get the iCalendar and expected datetime for the test time zone.
                 var testDateTime = new DateTime( 2021, 3, 15, 13, 0, 0 );
@@ -1189,7 +1498,7 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 // Get the iCalendar and expected datetime for the test time zone.
                 var testDateTime = new DateTime( 2021, 3, 15, 13, 0, 0 );
@@ -1253,7 +1562,7 @@ END:VCALENDAR
             expectedStartDateTimeString = expectedStartDateTimeString.Replace( "{YEAR}", yearText );
             expectedEndDateTimeString = expectedEndDateTimeString.Replace( "{YEAR}", yearText );
 
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 var expectedStartDateTime = LocalExpected( timeZone, expectedStartDateTimeString );
                 var expectedEndDateTime = LocalExpected( timeZone, expectedEndDateTimeString );
@@ -1284,11 +1593,10 @@ Start: {{ schedule.NextStartDateTime | ToJSON }}
 End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 ";
 
-                TestHelper.ExecuteForActiveEngines( ( engine ) =>
+                LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
                 {
-                    var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
-
-                    TestHelper.DebugWriteRenderResult( engine, template, output );
+                    var options = new LavaRenderOptions { MergeFields = mergeValues };
+                    var output = LavaRenderTestHelper.Render( engine, template, options );
 
                     var rockStartDateTimeString = LavaDateTime.ToString( expectedStartDateTime, "yyyy-MM-ddTHH:mm:sszzz" );
                     var rockEndDateTimeString = LavaDateTime.ToString( expectedEndDateTime, "yyyy-MM-ddTHH:mm:sszzz" );
@@ -1376,7 +1684,7 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void DatesFromICal_Saturday430ServiceScheduleNextYearDate_ReturnsSaturdayNextYear()
         {
-            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            DateTimeTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month.
                 // So 12 months from now would be the previous month next year.
@@ -1456,7 +1764,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( -14 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "14 days ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "14 days ago", output );
+            } );
         }
 
         /// <summary>
@@ -1469,7 +1782,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( -1 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "yesterday", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "yesterday", output );
+            } );
         }
 
         /// <summary>
@@ -1482,7 +1800,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "today", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "today", output );
+            } );
         }
 
         /// <summary>
@@ -1495,7 +1818,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( 1 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "tomorrow", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "tomorrow", output );
+            } );
         }
 
         /// <summary>
@@ -1508,7 +1836,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( 14 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "in 14 days", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "in 14 days", output );
+            } );
         }
 
         /// <summary>
@@ -1521,21 +1854,27 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             var tomorrow = _now.Date.AddDays( 1 ).AddHours( 1 );
             var localOffset = RockDateTime.OrgTimeZoneInfo.BaseUtcOffset;
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // First, verify that the Lava filter returns "tomorrow" for a DateTimeOffset that resolves to Rock time 1:00am tomorrow.
                 var datetimeInput = LavaDateTime.ConvertToRockOffset( tomorrow );
 
                 var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-                TestHelper.AssertTemplateOutput( engine, "tomorrow", "{{ dateTimeInput | DaysFromNow }}", mergeValues );
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DaysFromNow }}", options );
+
+                Assert.AreEqual( "tomorrow", output );
 
                 // Now verify that the Lava filter returns "today" if the offset is increased by 2 hours, equating to a Rock time of 11:00pm today.
                 var datetimeInput2 = new DateTimeOffset( tomorrow.Year, tomorrow.Month, tomorrow.Day, tomorrow.Hour, tomorrow.Minute, tomorrow.Second, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
 
                 var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
 
-                TestHelper.AssertTemplateOutput( engine, "today", "{{ dateTimeInput | DaysFromNow }}", mergeValues2 );
+                var options2 = new LavaRenderOptions { MergeFields = mergeValues2 };
+                var output2 = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DaysFromNow }}", options2 );
+
+                Assert.AreEqual( "today", output2 );
             } );
         }
 
@@ -1551,7 +1890,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00' }}";
 
-            TestHelper.AssertTemplateOutput( "true", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "true", output );
+            } );
         }
 
         /// <summary>
@@ -1562,7 +1906,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00','yyyy-MM-dd HH:mm' }}";
 
-            TestHelper.AssertTemplateOutput( "false", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "false", output );
+            } );
         }
 
         /// <summary>
@@ -1573,7 +1922,13 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ targetDate | IsDateBetween:startDate,endDate }}";
             var mergeValues = new LavaDataDictionary() { { "targetDate", DateTime.Parse( "2022-05-02" ) }, { "startDate", DateTime.Parse( "2022-05-01" ) }, { "endDate", DateTime.Parse( "2022-05-03" ) } };
-            TestHelper.AssertTemplateOutput( "true", template, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( "true", output );
+            } );
         }
 
         #endregion
@@ -1588,7 +1943,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             targetDate = targetDate.AddDays( -1 );
 
-            TestHelper.AssertTemplateOutput( targetDate.Day.ToString(), "{{ 'Now' | DaysInMonth }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Now' | DaysInMonth }}" );
+
+                Assert.AreEqual( targetDate.Day.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -1597,7 +1957,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void DaysInMonth_InputMonthParameter_YieldsDaysInSpecifiedMonth()
         {
-            TestHelper.AssertTemplateOutput( "31", "{{ '' | DaysInMonth:'03' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | DaysInMonth:'03' }}" );
+
+                Assert.AreEqual( "31", output );
+            } );
         }
 
         /// <summary>
@@ -1606,7 +1971,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void DaysInMonth_InputMonthYearParameters_YieldsDaysInSpecifiedMonth()
         {
-            TestHelper.AssertTemplateOutput( "29", "{{ '' | DaysInMonth:'02','2016' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | DaysInMonth:'02','2016' }}" );
+
+                Assert.AreEqual( "29", output );
+            } );
         }
 
         /// <summary>
@@ -1615,7 +1985,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void DaysInMonth_InputDate_YieldsDaysInMonth()
         {
-            TestHelper.AssertTemplateOutput( "28", "{{ '1-Feb-2017' | DaysInMonth }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-Feb-2017' | DaysInMonth }}" );
+
+                Assert.AreEqual( "28", output );
+            } );
         }
 
         #region Filter Tests: DaysSince
@@ -1630,7 +2005,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( -3 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "3", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "3", output );
+            } );
         }
 
         /// <summary>
@@ -1643,7 +2023,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "0", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "0", output );
+            } );
         }
 
         /// <summary>
@@ -1656,7 +2041,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.Date.AddMinutes( -1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
 
-            TestHelper.AssertTemplateOutput( "1", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "1", output );
+            } );
         }
 
         /// <summary>
@@ -1669,7 +2059,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "-3", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "-3", output );
+            } );
         }
 
         /// <summary>
@@ -1687,14 +2082,26 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( "14", "{{ dateTimeInput | DaysSince }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DaysSince }}", options );
+
+                Assert.AreEqual( "14", output );
+            } );
 
             // Now verify that the Lava filter returns "15" if the DateTimeOffset is increased by 2 hours.
             var datetimeInput2 = new DateTimeOffset( priorRockDate.Year, priorRockDate.Month, priorRockDate.Day, priorRockDate.Hour, priorRockDate.Minute, priorRockDate.Second, rockOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
 
             var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
 
-            TestHelper.AssertTemplateOutput( "15", "{{ dateTimeInput | DaysSince }}", mergeValues2 );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options2 = new LavaRenderOptions { MergeFields = mergeValues2 };
+                var output2 = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | DaysSince }}", options2 );
+
+                Assert.AreEqual( "15", output2 );
+            } );
         }
 
         #endregion
@@ -1711,7 +2118,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "3", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "3", output );
+            } );
         }
 
         /// <summary>
@@ -1724,7 +2136,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "0", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "0", output );
+            } );
         }
 
         /// <summary>
@@ -1737,7 +2154,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.Date.AddDays( 1 ).AddMinutes( 1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
 
-            TestHelper.AssertTemplateOutput( "1", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "1", output );
+            } );
         }
 
         /// <summary>
@@ -1750,7 +2172,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddDays( -3 ).ToString( "dd-MMM-yyyy" ) );
 
-            TestHelper.AssertTemplateOutput( "-3", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "-3", output );
+            } );
         }
 
         #endregion
@@ -1766,7 +2193,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
             template = template.Replace( "<compareDate>", _now.AddDays( -1 ).ToString( "dd-MMM-yyyy tt" ) );
 
-            TestHelper.AssertTemplateOutput( "yesterday", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "yesterday", output );
+            } );
         }
 
         /// <summary>
@@ -1779,7 +2211,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             template = template.Replace( "<compareDate>", _now.AddHours( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
-            TestHelper.AssertTemplateOutput( "2 hours ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "2 hours ago", output );
+            } );
         }
 
         /// <summary>
@@ -1791,7 +2228,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
             template = template.Replace( "<compareDate>", _now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
-            TestHelper.AssertTemplateOutput( "2 days ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "2 days ago", output );
+            } );
         }
 
         /// <summary>
@@ -1803,7 +2245,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
             template = template.Replace( "<compareDate>", _now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
-            TestHelper.AssertTemplateOutput( "2 months ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "2 months ago", output );
+            } );
         }
 
         /// <summary>
@@ -1814,7 +2261,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020' | HumanizeDateTime:'2-May-2020' }}";
 
-            TestHelper.AssertTemplateOutput( "yesterday", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "yesterday", output );
+            } );
         }
 
         /// <summary>
@@ -1825,7 +2277,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 6:00 PM' | HumanizeDateTime:'1-May-2020 8:00 PM' }}";
 
-            TestHelper.AssertTemplateOutput( "2 hours ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "2 hours ago", output );
+            } );
         }
 
         /// <summary>
@@ -1836,7 +2293,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '7-May-2020' | HumanizeDateTime:'10-May-2020' }}";
 
-            TestHelper.AssertTemplateOutput( "3 days ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "3 days ago", output );
+            } );
         }
 
         /// <summary>
@@ -1847,7 +2309,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-Jan-2020' | HumanizeDateTime:'10-May-2020' }}";
 
-            TestHelper.AssertTemplateOutput( "4 months ago", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "4 months ago", output );
+            } );
         }
 
         /// <summary>
@@ -1858,7 +2325,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeDateTime:'1-May-2020 8:00 PM' }}";
 
-            TestHelper.AssertTemplateOutput( "2 hours from now", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "2 hours from now", output );
+            } );
         }
 
         /// <summary>
@@ -1872,7 +2344,13 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "14 days from now", "{{ dateTimeInput | HumanizeDateTime:'1-May-2020 1:00 AM' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | HumanizeDateTime:'1-May-2020 1:00 AM' }}", options );
+
+                Assert.AreEqual( "14 days from now", output );
+            } );
 
             // Next, verify that the Lava filter returns the previous day if the DateTimeOffset is increased such that the datetime
             // translates to the previous day when translated to Rock time.
@@ -1882,7 +2360,13 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
             var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "13 days from now", "{{ dateTimeInput | HumanizeDateTime:'1-May-2020 1:00 AM' }}", mergeValues2 );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options2 = new LavaRenderOptions { MergeFields = mergeValues2 };
+                var output2 = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | HumanizeDateTime:'1-May-2020 1:00 AM' }}", options2 );
+
+                Assert.AreEqual( "13 days from now", output2 );
+            } );
         }
 
         #endregion
@@ -1897,7 +2381,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM' }}";
 
-            TestHelper.AssertTemplateOutput( "17 weeks", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "17 weeks", output );
+            } );
         }
 
         /// <summary>
@@ -1908,7 +2397,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM',1 }}";
 
-            TestHelper.AssertTemplateOutput( "17 weeks", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "17 weeks", output );
+            } );
         }
 
         /// <summary>
@@ -1919,7 +2413,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM',2 }}";
 
-            TestHelper.AssertTemplateOutput( "17 weeks, 6 days", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "17 weeks, 6 days", output );
+            } );
         }
 
         /// <summary>
@@ -1930,7 +2429,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM',3 }}";
 
-            TestHelper.AssertTemplateOutput( "17 weeks, 6 days, 1 hour", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "17 weeks, 6 days, 1 hour", output );
+            } );
         }
 
         /// <summary>
@@ -1941,7 +2445,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM',4 }}";
 
-            TestHelper.AssertTemplateOutput( "17 weeks, 6 days, 1 hour, 30 minutes", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "17 weeks, 6 days, 1 hour, 30 minutes", output );
+            } );
         }
 
         /// <summary>
@@ -1952,7 +2461,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var template = "{{ '3-Sep-2020 11:30:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30:00 PM' }}";
 
-            TestHelper.AssertTemplateOutput( "just now", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "just now", output );
+            } );
         }
 
         /// <summary>
@@ -1964,7 +2478,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             var template = "{{ 'Now' | HumanizeTimeSpan:'<compareDate>' }}";
             template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "yyyy-MM-dd hh:mm:ss" ) );
 
-            TestHelper.AssertTemplateOutputRegex( "[23] days", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                StringAssert.Matches( output, new Regex( "[23] days" ) );
+            } );
         }
 
         /// <summary>
@@ -1976,7 +2495,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             var template = "{{ '<compareDate>' | HumanizeTimeSpan:'Now' }}";
             template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "yyyy-MM-dd hh:mm:ss" ) );
 
-            TestHelper.AssertTemplateOutputRegex( "[23] days", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                StringAssert.Matches( output, new Regex( "[23] days" ) );
+            } );
 
         }
 
@@ -1988,14 +2512,17 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( _now );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
                 var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
 
                 var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-                TestHelper.AssertTemplateOutput( engine, "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", options );
+
+                Assert.AreEqual( "2 weeks", output );
 
                 // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
                 // crosses the boundary to the previous day when translated to local time.
@@ -2003,7 +2530,10 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
                 var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
 
-                TestHelper.AssertTemplateOutput( engine, "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+                var options2 = new LavaRenderOptions { MergeFields = mergeValues2 };
+                var output2 = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", options2 );
+
+                Assert.AreEqual( "1 week", output2 );
             } );
         }
 
@@ -2017,8 +2547,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void NextDayOfTheWeek_NextWeekdayWithDefaultParameters_ReturnsNextWeekday()
         {
-            TestHelper.AssertTemplateOutputDate( "8-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday' }}" );
+
+                LavaAssert.DateEqual( "8-May-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -2028,8 +2562,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         public void NextDayOfTheWeek_FromPreviousDay_ReturnsNextDaysDate()
         {
             // 1-May-2018 is a Tuesday, so the expected result is 2-May-2018.
-            TestHelper.AssertTemplateOutputDate( "2-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Wednesday' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Wednesday' }}" );
+
+                LavaAssert.DateEqual( "2-May-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -2038,8 +2576,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void NextDayOfTheWeek_IncludeCurrentDayWhereInputDateIsSameDay_ReturnsInputDate()
         {
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday','true' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday','true' }}" );
+
+                LavaAssert.DateEqual( "1-May-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -2056,16 +2598,28 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void NextDayOfTheWeek_TwoWeeksHence_ReturnsFollowingWeekday()
         {
-            TestHelper.AssertTemplateOutputDate( "15-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday','false','2' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday','false','2' }}" );
+
+                LavaAssert.DateEqual( "15-May-2018 3:00 PM", output );
+            } );
 
             // Since Wednesday has not happened, we advance two Wednesdays -- which is Wed, 5/9
-            TestHelper.AssertTemplateOutputDate( "9-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Wednesday','false','2' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Wednesday','false','2' }}" );
+
+                LavaAssert.DateEqual( "9-May-2018 3:00 PM", output );
+            } );
 
             // Since Monday has passed, we advance to two week's out Monday, 5/14
-            TestHelper.AssertTemplateOutputDate( "14-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Monday','false','2' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Monday','false','2' }}" );
+
+                LavaAssert.DateEqual( "14-May-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -2092,17 +2646,29 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             // If we include the current day (so it counts as *this* current week), then one week ago would be
             // last Tuesday, April 24.
-            TestHelper.AssertTemplateOutputDate( "24-Apr-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',true,'-1' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',true,'-1' }}" );
+
+                LavaAssert.DateEqual( "24-Apr-2018 3:00 PM", output );
+            } );
 
             // Otherwise in this case, since it's Tuesday (and we're not including it as the current week), then
             // the same date is the *previous* week's Tuesday.
-            TestHelper.AssertTemplateOutputDate( "1-May-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',false,'-1' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',false,'-1' }}" );
+
+                LavaAssert.DateEqual( "1-May-2018 3:00 PM", output );
+            } );
 
             // Since Monday has just passed, we get this past Monday, 4/30
-            TestHelper.AssertTemplateOutputDate( "30-Apr-2018 3:00 PM",
-                                              "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Monday',false,'-1' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Monday',false,'-1' }}" );
+
+                LavaAssert.DateEqual( "30-Apr-2018 3:00 PM", output );
+            } );
         }
 
         /// <summary>
@@ -2111,7 +2677,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void NextDayOfTheWeek_InvalidNumberOfWeeks_ReturnsEmpty()
         {
-            TestHelper.AssertTemplateOutput( "", "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',false,'0' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',false,'0' }}" );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         /// <summary>
@@ -2122,14 +2693,17 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( _now );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
                 var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
 
                 var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-                TestHelper.AssertTemplateOutput( engine, "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", options );
+
+                Assert.AreEqual( "2 weeks", output );
 
                 // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
                 // crosses the boundary to the previous day when translated to local time.
@@ -2137,7 +2711,10 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
 
                 var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
 
-                TestHelper.AssertTemplateOutput( engine, "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+                var options2 = new LavaRenderOptions { MergeFields = mergeValues2 };
+                var output2 = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", options2 );
+
+                Assert.AreEqual( "1 week", output2 );
             } );
         }
 
@@ -2148,51 +2725,126 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void TimeOfDay_InputInMorningRange_ReturnsMorning()
         {
-            TestHelper.AssertTemplateOutput( "Morning", "{{ '2020-1-1 05:00:00 am' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Morning", "{{ '2020-1-1 06:30:00 am' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Morning", "{{ '2020-1-1 11:59:59 am' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 05:00:00 am' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Morning", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 06:30:00 am' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Morning", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 11:59:59 am' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Morning", output );
+            } );
         }
 
         [TestMethod]
         public void TimeOfDay_InputInAfternoonRange_ReturnsAfternoon()
         {
-            TestHelper.AssertTemplateOutput( "Afternoon", "{{ '2020-1-1 12:00:00 pm' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Afternoon", "{{ '2020-1-1 02:30:00 pm' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Afternoon", "{{ '2020-1-1 04:59:59 pm' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 12:00:00 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Afternoon", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 02:30:00 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Afternoon", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 04:59:59 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Afternoon", output );
+            } );
         }
 
         [TestMethod]
         public void TimeOfDay_InputInEveningRange_ReturnsEvening()
         {
-            TestHelper.AssertTemplateOutput( "Evening", "{{ '2020-1-1 05:00:00 pm' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Evening", "{{ '2020-1-1 07:30:00 pm' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Evening", "{{ '2020-1-1 08:59:59 pm' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 05:00:00 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Evening", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 07:30:00 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Evening", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 08:59:59 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Evening", output );
+            } );
         }
 
         [TestMethod]
         public void TimeOfDay_InputInNightRange_ReturnsNight()
         {
-            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1 09:00:00 pm' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1 11:30:00 pm' | TimeOfDay }}" );
-            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1 04:59:59 am' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 09:00:00 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Night", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 11:30:00 pm' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Night", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1 04:59:59 am' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Night", output );
+            } );
         }
 
         [TestMethod]
         public void TimeOfDay_InputIsTimeOnly_ReturnsCorrectTimeOfDay()
         {
-            TestHelper.AssertTemplateOutput( "Morning", "{{ '6:30 AM' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '6:30 AM' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Morning", output );
+            } );
         }
 
         [TestMethod]
         public void TimeOfDay_InputIsDateOnly_ReturnsNight()
         {
-            TestHelper.AssertTemplateOutput( "Night", "{{ '2020-1-1' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '2020-1-1' | TimeOfDay }}" );
+
+                Assert.AreEqual( "Night", output );
+            } );
         }
 
         [TestMethod]
         public void TimeOfDay_InputCannotBeParsedToValidDateTime_ReturnsEmptyString()
         {
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ 'This-is-not-a-date-time-string' | TimeOfDay }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'This-is-not-a-date-time-string' | TimeOfDay }}" );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         #endregion
@@ -2205,10 +2857,14 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void ToMidnight_InputDateHasTimeComponent_YieldsMidnight()
         {
-            LavaTestHelper.ExecuteForTimeZones( tz =>
+            DateTimeTestHelper.ExecuteForTimeZones( tz =>
             {
-                TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
-                    "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
+
+                    LavaAssert.DateEqual( "1-May-2018 12:00 AM", output );
+                } );
             } );
         }
 
@@ -2222,9 +2878,14 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                LavaTestHelper.ExecuteForTimeZones( tz =>
+                DateTimeTestHelper.ExecuteForTimeZones( tz =>
                 {
-                    TestHelper.AssertTemplateOutputDate( expectedResult, "{{ '" + input + "' | ToMidnight | Date:'yyyy-MM-ddTHH:mm' }}" );
+                    LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                    {
+                        var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | ToMidnight | Date:'yyyy-MM-ddTHH:mm' }}" );
+
+                        LavaAssert.DateEqual( expectedResult, output );
+                    } );
                 } );
                 return null;
             }, clientCulture );
@@ -2236,13 +2897,17 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void ToMidnight_Now()
         {
-            LavaTestHelper.ExecuteForTimeZones( tz =>
+            DateTimeTestHelper.ExecuteForTimeZones( tz =>
             {
                 var now = RockDateTime.Now;
                 var midnightUtc = LavaDateTime.NewDateTimeOffset( now.Year, now.Month, now.Day, 0, 0, 0 );
 
-                TestHelper.AssertTemplateOutputDate( midnightUtc,
-                    "{{ 'Now' | ToMidnight }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ 'Now' | ToMidnight }}" );
+
+                    LavaAssert.DateEqual( midnightUtc, output );
+                } );
             } );
         }
 
@@ -2252,7 +2917,7 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void ToMidnight_WithDateTimeOffsetAsInput_PreservesOffset()
         {
-            LavaTestHelper.ExecuteForTimeZones( tz =>
+            DateTimeTestHelper.ExecuteForTimeZones( tz =>
             {
                 // Get an input time of 10:00+04:00.
                 var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 2, 0, 0 ) );
@@ -2260,9 +2925,13 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
                 // Add the input DateTimeOffset object to the Lava context.
                 var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-                TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00",
-                    "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}",
-                    mergeValues );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var options = new LavaRenderOptions { MergeFields = mergeValues };
+                    var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", options );
+
+                    Assert.AreEqual( "2018-05-01T00:00:00+02:00", output );
+                } );
             } );
         }
 
@@ -2276,9 +2945,14 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void SundayDate_WithDateTimeStringAsInput_YieldsNextSundayDate()
         {
-            LavaTestHelper.ExecuteForTimeZones( tz =>
+            DateTimeTestHelper.ExecuteForTimeZones( tz =>
             {
-                TestHelper.AssertTemplateOutput( "2021-10-17", "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '2021-10-11' | SundayDate | Date:'yyyy-MM-dd' }}" );
+
+                    Assert.AreEqual( "2021-10-17", output );
+                } );
             } );
         }
 
@@ -2288,7 +2962,7 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void SundayDate_WithDateTimeOffsetAsInput_YieldsNextSundayDate()
         {
-            LavaTestHelper.ExecuteForTimeZones( tz =>
+            DateTimeTestHelper.ExecuteForTimeZones( tz =>
             {
                 var baseDate = LavaDateTime.NewDateTime( 2021, 10, 11, 10, 0, 0 );
 
@@ -2298,10 +2972,13 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
                 // Get the next Sunday date in the active Rock time zone.
                 var nextSundayDate = LavaDateTime.ConvertToRockDateTime( baseDate.GetNextWeekday( DayOfWeek.Sunday ).Date );
 
-                TestHelper.AssertTemplateOutputDate( nextSundayDate,
-                "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}",
-                maximumDelta: null,
-                mergeValues );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var options = new LavaRenderOptions { MergeFields = mergeValues };
+                    var output = LavaRenderTestHelper.Render( engine, "{{ dateTimeInput | SundayDate | Date:'yyyy-MM-dd' }}", options );
+
+                    LavaAssert.DateEqual( nextSundayDate, output, maximumDelta: null );
+                } );
             } );
         }
 
@@ -2313,8 +2990,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             // This filter returns the Sunday associated with the current week.
             // Rock considers Sunday to be the last day of the week by default, so any other day should return a future date.
-            TestHelper.AssertTemplateOutputDate( "3-May-2020",
-                                      "{{ '1-May-2020' | SundayDate }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1-May-2020' | SundayDate }}" );
+
+                LavaAssert.DateEqual( "3-May-2020", output );
+            } );
         }
 
         /// <summary>
@@ -2323,8 +3004,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         [TestMethod]
         public void SundayDate_InputDateIsSunday_YieldsSameDay()
         {
-            TestHelper.AssertTemplateOutputDate( "3-May-2020",
-                                      "{{ '3-May-2020' | SundayDate }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '3-May-2020' | SundayDate }}" );
+
+                LavaAssert.DateEqual( "3-May-2020", output );
+            } );
         }
 
         /// <summary>
@@ -2335,8 +3020,12 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
         {
             var nextSunday = RockDateTime.Now.SundayDate();
 
-            TestHelper.AssertTemplateOutputDate( nextSunday,
-                                      "{{ 'Now' | SundayDate }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Now' | SundayDate }}" );
+
+                LavaAssert.DateEqual( nextSunday, output );
+            } );
         }
 
         #endregion

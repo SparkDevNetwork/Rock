@@ -17,14 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -49,6 +53,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// Matches a URL scheme at the start of the value, such as "https:".
+        /// </summary>
+        private static readonly Regex SchemePattern = new Regex( @"^([a-zA-Z][a-zA-Z0-9+.\-]*):", RegexOptions.Compiled | RegexOptions.CultureInvariant );
+
+        /// <summary>
+        /// Matches an HTML character reference, such as "&amp;#58" or "&amp;colon;".
+        /// The browser decodes these inside an attribute before it reads the
+        /// URL, so they could be used to hide a scheme.
+        /// </summary>
+        private static readonly Regex CharacterReferencePattern = new Regex( @"&(?:#|[a-zA-Z][a-zA-Z0-9]*;)", RegexOptions.Compiled | RegexOptions.CultureInvariant );
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -60,6 +80,15 @@ namespace Rock.Field.Types
             }
             else
             {
+                var safeValue = GetSafeUrl( privateValue );
+
+                // A value that can't be made safe is never passed to the
+                // template, it is only shown as plain text.
+                if ( safeValue == null )
+                {
+                    return privateValue.EncodeHtml();
+                }
+
                 if ( privateConfigurationValues != null )
                 {
                     Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
@@ -100,13 +129,74 @@ namespace Rock.Field.Types
                         mergeFields.Add( NAME_KEY, privateConfigurationValues[NAME_KEY] );
                     }
 
-                    mergeFields.Add( "value", privateValue );
+                    mergeFields.Add( "value", safeValue );
 
                     return template.ResolveMergeFields( mergeFields );
                 }
 
-                return privateValue;
+                return safeValue;
             }
+        }
+
+        /// <summary>
+        /// Gets a version of the URL that is safe to place inside an HTML
+        /// attribute, such as an href. Characters that could end the
+        /// attribute are percent-encoded. Values with a scheme other than
+        /// http or https, or that contain HTML character references, can't
+        /// be made safe.
+        /// </summary>
+        /// <param name="value">The URL to be made safe.</param>
+        /// <returns>The safe URL, or <c>null</c> if the value can't be made safe.</returns>
+        internal static string GetSafeUrl( string value )
+        {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Empty;
+            }
+
+            var url = value.Trim();
+
+            if ( CharacterReferencePattern.IsMatch( url ) )
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder( url.Length );
+
+            foreach ( var c in url )
+            {
+                if ( c <= ' ' || c == '\x7F' || c == '"' || c == '\'' || c == '<' || c == '>' || c == '`' )
+                {
+                    sb.Append( '%' ).Append( ( ( int ) c ).ToString( "X2" ) );
+                }
+                else
+                {
+                    sb.Append( c );
+                }
+            }
+
+            url = sb.ToString();
+
+            // Values without a scheme are relative URLs, such as a bare
+            // username when no base URL is configured.
+            var schemeMatch = SchemePattern.Match( url );
+
+            if ( schemeMatch.Success )
+            {
+                var scheme = schemeMatch.Groups[1].Value;
+
+                if ( !scheme.Equals( "http", StringComparison.OrdinalIgnoreCase ) && !scheme.Equals( "https", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return null;
+                }
+
+                if ( !Uri.TryCreate( url, UriKind.Absolute, out _ ) )
+                {
+                    return null;
+                }
+            }
+
+            return url;
         }
 
         #endregion
@@ -123,6 +213,13 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                additionalRules: StringValidationRule.EventHandlerAttributes );
+        }
 
         /// <inheritdoc />
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -249,21 +346,31 @@ namespace Rock.Field.Types
         #region Value Hinting
 
         /// <inheritdoc/>
-        /// <remarks>
-        /// The displayed value is a full profile link, but what is stored is only the
-        /// part after the configured base url. Said explicitly because the display and
-        /// the storage differ, and a caller copying the link stores the base url twice.
-        /// </remarks>
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
+            /*
+                10/21/26 - CLAUDE
+
+                This hint used to say to store only the handle, on the belief that Rock
+                adds the base url when it builds the link. It does not. The editor adds
+                the base url on save, in GetPrivateEditValue, so the stored value is the
+                full profile url. GetHtmlValue passes the stored value straight to the
+                display template, and the default template uses it as the href. A value
+                written directly, as an agent does, skips GetPrivateEditValue, so a bare
+                handle was stored as is and shown as a broken relative link.
+
+                Reason: The stored value must be the full profile url the editor writes.
+            */
             var baseUrl = privateConfigurationValues.GetValueOrNull( BASEURL );
 
-            var valueFormat = "The account name or handle on its own, not a full profile url. Rock builds the link by appending this to the base url configured on the field.";
+            var valueFormat = "The full profile url, as the editor stores it, not the account name or handle on its own. The stored value is used as the link exactly as written, so a bare handle becomes a broken link.";
 
             if ( baseUrl.IsNotNullOrWhiteSpace() )
             {
-                valueFormat += $" The base url here is '{baseUrl}', so store only what would follow it.";
+                valueFormat += $" The base url here is '{baseUrl}', so store it followed by the handle, as in {baseUrl.TrimEnd( '/' )}/handle.";
             }
+
+            valueFormat += " A value with a scheme other than http or https, or one containing an HTML character reference, is displayed as plain text and is not passed to the display template. HTML tags, Lava and event handler attributes such as onclick= are rejected on save.";
 
             return new FieldTypeHints
             {

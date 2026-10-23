@@ -764,6 +764,10 @@ namespace Rock.Utility
                                         attrState.Guid = formFieldElement.Attribute( "guid" ).Value.AsGuid();
                                         attrState.Name = formFieldElement.Attribute( "name" ).Value.Trim();
                                         attrState.Key = attrState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
+
+                                        // The template editor keeps these attribute flags in sync with the form field, so mirror that here.
+                                        attrState.IsRequired = formFieldElement.Attribute( "isRequired" ) != null ? formFieldElement.Attribute( "isRequired" ).Value.AsBoolean() : false;
+                                        attrState.IsGridColumn = formFieldElement.Attribute( "showOnGrid" ) != null ? formFieldElement.Attribute( "showOnGrid" ).Value.AsBoolean() : false;
                                         var type = formFieldElement.Attribute( "type" ).Value.Trim();
                                         var fieldType = FieldTypeCache.All().Where( f => f.Name == type ).FirstOrDefault();
                                         if ( fieldType != null )
@@ -3341,9 +3345,19 @@ namespace Rock.Utility
         /// <returns>Id of the binaryFile</returns>
         private BinaryFile SaveImage( string imageUrl, BinaryFileType binaryFileType, string binaryFileTypeSettings, RockContext context )
         {
-            // always create a new BinaryFile record of IsTemporary when a file is uploaded
+            /*
+                10/5/26 - CLAUDE
+
+                Every caller attaches the returned file immediately (check images to a
+                FinancialTransactionImage, photos to a Person), so it is never actually
+                temporary. Normally the FinancialTransactionImage and Person save hooks
+                would clear IsTemporary, but sample data is saved with
+                disablePrePostProcessing: true, so those hooks never run.
+
+                Reason: Save hooks are bypassed, so the file must be created as non-temporary.
+            */
             BinaryFile binaryFile = new BinaryFile();
-            binaryFile.IsTemporary = true;
+            binaryFile.IsTemporary = false;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( imageUrl );
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -3356,7 +3370,16 @@ namespace Rock.Utility
                 binaryFile.FileSize = imageData.Length;
                 binaryFile.ContentStream = new MemoryStream( imageData );
 
-                if ( webClient.ResponseHeaders != null )
+                // Remote servers often send images as binary/octet-stream, which
+                // GetImage.ashx refuses to serve. Use the type from the image's
+                // contents when we can.
+                var detectedMimeType = Rock.Utility.FileUtilities.GetImageMimeType( binaryFile.ContentStream );
+
+                if ( detectedMimeType != null )
+                {
+                    binaryFile.MimeType = detectedMimeType;
+                }
+                else if ( webClient.ResponseHeaders != null )
                 {
                     binaryFile.MimeType = webClient.ResponseHeaders["content-type"];
                 }

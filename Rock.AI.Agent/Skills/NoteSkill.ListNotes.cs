@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -61,14 +62,36 @@ internal sealed partial class NoteSkill
         qry = helper.WhereOptionalProperty( qry, n => n.IsPrivateNote, isPrivateNote );
         qry = helper.WhereOptionalProperty( qry, n => n.IsPinned, isPinned );
 
-        var paginator = new Data.CursorPaginator<Model.Note>( q =>
+        /*
+            10/16/2026 - MSE
+
+            Apply the same approval and private note rules the note timeline
+            uses. Note.IsAuthorized does not look at the approval status, so
+            without this pending and denied notes of other people were returned.
+            Filtering in SQL also keeps the paginator from scanning private notes
+            it would drop anyway.
+
+            Reason: Only return notes the person is allowed to view.
+        */
+        qry = qry.AreViewableBy( currentPerson?.Id );
+
+        /*
+            10/16/2026 - MSE
+
+            Pass the current person to the paginator so it checks VIEW on each
+            note. Without it private notes of other people and notes in note
+            types the person cannot view were returned.
+
+            Reason: Only return notes the person is allowed to view.
+        */
+        var paginator = new Data.CursorPaginator<Model.Note>( currentPerson, q =>
             q.OrderByDescending( n => n.CreatedDateTime )
             .ThenBy( n => n.Id ) );
 
         var cursorPage = helper.GetCursorPaginatedItems( qry, paginator, cursor );
 
         var resultPage = cursorPage.WithItems( cursorPage.Items
-                .Select( n => GetNoteResult( n, AgentRequestContext.RockContext ) )
+                .Select( n => GetNoteResult( n, AgentRequestContext.RockContext, currentPerson ) )
                 .ToList() );
 
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( n => new

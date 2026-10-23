@@ -26,8 +26,10 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestFramework.Database;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
 {
@@ -43,29 +45,33 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void Command_MultipleInstancesOfCustomBlock_ResolvesAllInstances()
         {
             var input = @"
-{% javascript %}
+{%- javascript -%}
     alert('Message 1');
-{% endjavascript %}
-{% javascript %}
+{%- endjavascript -%}
+{%- javascript -%}
     alert('Message 2');
-{% endjavascript %}
+{%- endjavascript -%}
 ";
 
-            var expectedOutput = @"
-<script>
-    (function(){
-        alert('Message 1');
-    })();
-</script>
-<script>
-    (function(){
-        alert('Message 2');
-    })();
-</script>
+            var expectedOutput = "\n"
+                + "<script>(function(){\n"
+                + "  \n"
+                + "    alert('Message 1');\n"
+                + "\n"
+                + "})();</script>\n"
+                + "\n"
+                + "<script>(function(){\n"
+                + "  \n"
+                + "    alert('Message 2');\n"
+                + "\n"
+                + "})();</script>\n";
 
-";
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -76,16 +82,21 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void EntityBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% person where: 'LastName == ""Decker""' %}
-    {% for person in personItems %}
+{%- person where: 'LastName == ""Decker""' -%}
+    {%- for person in personItems -%}
         {{ person.FullName }} < br />
-    {% endfor %}
-{% endperson %}
+    {%- endfor -%}
+{%- endperson -%}
             ";
 
             var expectedOutput = "The Lava command 'rockentity' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -93,49 +104,52 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         {
 
             var input = @"
-{% note expression:'NoteType.Name == ""Personal Note""' sort:'Id' limit:'3' %}
-    {% for note in noteItems %}
-        {% case note.NoteType.EntityType.FriendlyName %}
-            {% when 'Person' %}
-                {% person id:'{{ note.EntityId }}' %}
+{%- note expression:'NoteType.Name == ""Personal Note""' sort:'Id' limit:'3' -%}
+    {%- for note in noteItems -%}
+        {%- case note.NoteType.EntityType.FriendlyName -%}
+            {%- when 'Person' -%}
+                {%- person id:'{{ note.EntityId }}' -%}
                     [{{person.FullName}}]: {{note.Text}}<br>
-                {% endperson %}
-        {% endcase %}
-    {% endfor %}
-{% endnote %}
+                {%- endperson -%}
+        {%- endcase -%}
+    {%- endfor -%}
+{%- endnote -%}
 ";
 
-            var expectedOutput = @"
-[Ted Decker]: Talked to Ted today about starting a new Young Adults ministry<br>
-[Ted Decker]: Called Ted and heard that his mother is in the hospital and could use prayer.<br>
-[Daniel Peak]: Called Daniel to see if he would be interested in joining our team as the Communications Director.<br>
-";
+            var expectedOutput = "\n"
+                + "                    [Ted Decker]: Talked to Ted today about starting a new Young Adults ministry<br>\n"
+                + "                \n"
+                + "                    [Ted Decker]: Called Ted and heard that his mother is in the hospital and could use prayer.<br>\n"
+                + "                \n"
+                + "                    [Daniel Peak]: Called Daniel to see if he would be interested in joining our team as the Communications Director.<br>\n"
+                + "                ";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions() { EnabledCommands = "RockEntity" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void EntityBlock_PersonWhereLastNameIsDecker_ReturnsDeckers()
         {
             var input = @"
-{% person where:'LastName == ""Decker""' %}
-    {% for person in personItems %}
+{%- person where:'LastName == ""Decker""' -%}
+    {%- for person in personItems -%}
         {{ person.FullName }} <br/>
-    {% endfor %}
-{% endperson %}
+    {%- endfor -%}
+{%- endperson -%}
             ";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var options = new LavaRenderOptions { EnabledCommands = "RockEntity" };
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var context = engine.NewRenderContext();
-
-                context.SetEnabledCommands( "RockEntity" );
-
-                var output = TestHelper.GetTemplateOutput( engine, input, context );
-
-                TestHelper.DebugWriteRenderResult( engine, input, output );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
 
                 Assert.Contains( "Ted Decker", output, "Expected person not found." );
                 Assert.Contains( "Cindy Decker", output, "Expected person not found." );
@@ -150,59 +164,74 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void ExecuteBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% execute %}
+{%- execute -%}
     return ""Hello World!"";
-{% endexecute %}
+{%- endexecute -%}
             ";
 
             var expectedOutput = "The Lava command 'execute' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void ExecuteBlock_HelloWorld_ReturnsExpectedOutput()
         {
             var input = @"
-{% execute %}
+{%- execute -%}
     return ""Hello World!"";
-{% endexecute %}
+{%- endexecute -%}
             ";
 
-            var expectedOutput = @"Hello World!";
+            var expectedOutput = "Hello World!";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "execute" };
+            var options = new LavaRenderOptions() { EnabledCommands = "execute" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void ExecuteBlock_WithImports_ReturnsExpectedOutput()
         {
             var input = @"
-{% execute import:'Newtonsoft.Json,Newtonsoft.Json.Linq' %}
+{%- execute import:'Newtonsoft.Json,Newtonsoft.Json.Linq' -%}
 
     JArray itemArray = JArray.Parse( ``['Banana','Orange','Apple']`` );
 
     return ``Fruit: `` + itemArray[1];
 
-{% endexecute %}
+{%- endexecute -%}
     ";
 
             input = input.Replace( "``", @"""" );
 
-            var expectedOutput = @"Fruit: Orange";
+            var expectedOutput = "Fruit: Orange";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "execute" };
+            var options = new LavaRenderOptions() { EnabledCommands = "execute" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void ExecuteBlock_ClassType_ReturnsExpectedOutput()
         {
             var input = @"
-{% execute type:'class' %}
+{%- execute type:'class' -%}
     using Rock;
     using Rock.Data;
     using Rock.Model;
@@ -217,23 +246,28 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             }
         }
     }
-{% endexecute %}
+{%- endexecute -%}
 ";
 
-            input = input.Replace( "<PersonGuid>", TestHelper.GetTestPersonTedDecker().Guid );
+            input = input.Replace( "<PersonGuid>", TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker ).Guid.ToString() );
 
-            var expectedOutput = @"Ted Decker";
+            var expectedOutput = "Ted Decker";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "execute" };
+            var options = new LavaRenderOptions() { EnabledCommands = "execute" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void ExecuteBlock_WithContextValues_ResolvesContextValuesCorrectly()
         {
             var input = @"
-{% execute type:'class' %}
+{%- execute type:'class' -%}
     using Rock;
     using Rock.Data;
     using Rock.Model;
@@ -248,18 +282,23 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             }
         }
     }
-{% endexecute %}
+{%- endexecute -%}
 ";
 
-            var expectedOutput = @"Ted Decker";
+            var expectedOutput = "Ted Decker";
 
             var context = new LavaDataDictionary();
 
-            context.Add( "Person", TestHelper.GetTestPersonTedDecker() );
+            context.Add( "Person", TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker ) );
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "execute", MergeFields = context };
+            var options = new LavaRenderOptions() { EnabledCommands = "execute", MergeFields = context };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
         #endregion
 
@@ -269,31 +308,40 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void InteractionWriteBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% interactionwrite channeltypemediumvalueid:'1' channelentityid:'1' channelname:'Some Channel' componententitytypeid:'1' interactionentitytypeid:'1' componententityid:'1' componentname:'Some Component' entityid:'1' operation:'View' summary:'Viewed Some Page' relatedentitytypeid:'1' relatedentityid:'1' channelcustom1:'Some Custom Value' channelcustom2:'Another Custom Value' channelcustomindexed1:'Some Indexed Custom Value'  personaliasid:'10' %}
+{%- interactionwrite channeltypemediumvalueid:'1' channelentityid:'1' channelname:'Some Channel' componententitytypeid:'1' interactionentitytypeid:'1' componententityid:'1' componentname:'Some Component' entityid:'1' operation:'View' summary:'Viewed Some Page' relatedentitytypeid:'1' relatedentityid:'1' channelcustom1:'Some Custom Value' channelcustom2:'Another Custom Value' channelcustomindexed1:'Some Indexed Custom Value'  personaliasid:'10' -%}
     Here is the interaction data.
-{% endinteractionwrite %}
+{%- endinteractionwrite -%}
 ";
 
             var expectedOutput = "The Lava command 'interactionwrite' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void InteractionWriteBlock_ForEntityCommandResult_IsCached()
         {
             var input = @"
-{% interactionwrite channeltypemediumvalueid:'1' channelentityid:'1' channelname:'Some Channel' componententitytypeid:'1' interactionentitytypeid:'1' componententityid:'1' componentname:'Some Component' entityid:'1' operation:'View' summary:'Viewed Some Page' relatedentitytypeid:'1' relatedentityid:'1' channelcustom1:'Some Custom Value' channelcustom2:'Another Custom Value' channelcustomindexed1:'Some Indexed Custom Value' personaliasid:'10' %}
+{%- interactionwrite channeltypemediumvalueid:'1' channelentityid:'1' channelname:'Some Channel' componententitytypeid:'1' interactionentitytypeid:'1' componententityid:'1' componentname:'Some Component' entityid:'1' operation:'View' summary:'Viewed Some Page' relatedentitytypeid:'1' relatedentityid:'1' channelcustom1:'Some Custom Value' channelcustom2:'Another Custom Value' channelcustomindexed1:'Some Indexed Custom Value' personaliasid:'10' -%}
     Here is the interaction data.
-{% endinteractionwrite %}
+{%- endinteractionwrite -%}
 ";
 
-            var expectedOutput = @"
-";
+            var expectedOutput = "";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionWrite" };
+            var options = new LavaRenderOptions() { EnabledCommands = "InteractionWrite" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -304,24 +352,29 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             var interaction2Summary = Guid.NewGuid().ToString();
             var interaction3Summary = Guid.NewGuid().ToString();
             var input = @"
-{% interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 1' componentname:'Component 1' operation:'View' summary:'<Summary1>' %}
+{%- interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 1' componentname:'Component 1' operation:'View' summary:'<Summary1>' -%}
 findme-interactiontest1
-{% endinteractionwrite %}  
-{% interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 2' componentname:'Component 2' operation:'View' summary:'<Summary2>' %}
+{%- endinteractionwrite -%}  
+{%- interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 2' componentname:'Component 2' operation:'View' summary:'<Summary2>' -%}
 findme-interactiontest2
-{% endinteractionwrite %}
-{% interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 2' componentname:'Component 1' operation:'View' summary:'<Summary3>' %}
+{%- endinteractionwrite -%}
+{%- interactionwrite channeltypemediumvalueid:'1' channelname:'Channel 2' componentname:'Component 1' operation:'View' summary:'<Summary3>' -%}
 findme-interactiontest3
-{% endinteractionwrite %}";
+{%- endinteractionwrite -%}";
             input = input
                 .Replace( "<Summary1>", interaction1Summary )
                 .Replace( "<Summary2>", interaction2Summary )
                 .Replace( "<Summary3>", interaction3Summary );
-            var expectedOutput = @"";
-            var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionWrite" };
+            var expectedOutput = "";
+            var options = new LavaRenderOptions() { EnabledCommands = "InteractionWrite" };
 
             // Process the Lava template to create the interactions.
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
 
             // Process the transaction queue to ensure that the interactions are created.
             var exceptions = new List<Exception>();
@@ -364,27 +417,36 @@ findme-interactiontest3
         public void InteractionContentChannelItemWriteTag_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% interactioncontentchannelitemwrite contentchannelitemid:'1' operation:'View' summary:'Viewed content channel item #1' personaliasid:'10' %}
+{%- interactioncontentchannelitemwrite contentchannelitemid:'1' operation:'View' summary:'Viewed content channel item #1' personaliasid:'10' -%}
 ";
 
             var expectedOutput = "The Lava command 'interactioncontentchannelitemwrite' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void InteractionContentChannelItemWriteTag_ForEntityCommandResult_IsCached()
         {
             var input = @"
-{% interactioncontentchannelitemwrite contentchannelitemid:'1' operation:'View' summary:'Viewed content channel item #1' personaliasid:'10' %}
+{%- interactioncontentchannelitemwrite contentchannelitemid:'1' operation:'View' summary:'Viewed content channel item #1' personaliasid:'10' -%}
 ";
 
-            var expectedOutput = @"
-";
+            var expectedOutput = "";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionContentChannelItemWrite" };
+            var options = new LavaRenderOptions() { EnabledCommands = "InteractionContentChannelItemWrite" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -395,20 +457,24 @@ findme-interactiontest3
         public void JavascriptBlock_HelloWorld_ReturnsJavascriptScript()
         {
             var input = @"
-{% javascript %}
+{%- javascript -%}
     alert('Hello world!');
-{% endjavascript %}
+{%- endjavascript -%}
 ";
 
-            var expectedOutput = @"
-<script>
-    (function(){
-        alert('Hello world!');
-    })();
-</script>
-";
+            var expectedOutput = "\n"
+                + "<script>(function(){\n"
+                + "  \n"
+                + "    alert('Hello world!');\n"
+                + "\n"
+                + "})();</script>\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -419,15 +485,19 @@ findme-interactiontest3
         public void JsonPropertyBlock_WithNumberType_EmitsJsonNumberProperty()
         {
             var input = @"
-{% jsonproperty name:'mynumber' type:'number' %}
+{%- jsonproperty name:'mynumber' type:'number' -%}
 123
-{% endjsonproperty %}
+{%- endjsonproperty -%}
 ";
 
-            var expectedOutput = @"`mynumber`:`123`"
-                .Replace( "`", @"""" );
+            var expectedOutput = "\"mynumber\": \"123\"";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -438,16 +508,21 @@ findme-interactiontest3
         public void SearchBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% search query: 'ted decker' %}
-    {% for result in results %}
+{%- search query: 'ted decker' -%}
+    {%- for result in results -%}
         {{ result.DocumentName }}
-    {% endfor %}
-{% endsearch %}
+    {%- endfor -%}
+{%- endsearch -%}
 ";
 
             var expectedOutput = "The Lava command 'search' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -455,18 +530,23 @@ findme-interactiontest3
         public void SearchBlock_UniversalSearchNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% search query:'ted decker' %}
-    {% for result in results %}
+{%- search query:'ted decker' -%}
+    {%- for result in results -%}
         {{ result.DocumentName }}
-    {% endfor %}
-{% endsearch %}
+    {%- endfor -%}
+{%- endsearch -%}
 ";
 
             var expectedOutput = "Search results not available. Universal search is not enabled for this Rock instance.";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Search", OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains };
+            var options = new LavaRenderOptions { EnabledCommands = "Search" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.Contains( expectedOutput, output );
+            } );
         }
 
         #endregion Search
@@ -477,47 +557,57 @@ findme-interactiontest3
         public void SqlBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
     AND      [NickName] IN ('Ted', 'Alex')
     ORDER BY [NickName]
-{% endsql %}
+{%- endsql -%}
 ";
 
             var expectedOutput = "The Lava command 'sql' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void SqlBlock_PersonWhereLastNameIsDecker_ReturnsDeckers()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
     AND      [NickName] IN ('Ted', 'Alex')
     ORDER BY [NickName]
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
-            var expectedOutput = @"Alex_Decker;Ted_Decker;";
+            var expectedOutput = "Alex_Decker;Ted_Decker;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void SqlBlock_NullColumnValueInResult_IsRenderedAsEmptyString()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
@@ -525,16 +615,21 @@ findme-interactiontest3
 UNION
     SELECT   null as [NickName], null as [LastName]
     ORDER BY [NickName]
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
-            var expectedOutput = @"_;Alex_Decker;Ted_Decker;";
+            var expectedOutput = "_;Alex_Decker;Ted_Decker;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -544,21 +639,26 @@ UNION
         public void SqlBlock_NullableDatabaseColumn_IsReturnedAsNullableType()
         {
             var input = @"
-{% sql return:'Items' %}
+{%- sql return:'Items' -%}
     SELECT TOP 1 p.[PhotoId] FROM [Person] as p WHERE [PhotoId] IS NULL
-{% endsql %}
-{% for item in Items %}
-    {% if item.PhotoId == null %}
+{%- endsql -%}
+{%- for item in Items -%}
+    {%- if item.PhotoId == null -%}
     Is Null
-    {% endif %}
-{% endfor %}
+    {%- endif -%}
+{%- endfor -%}
 ";
 
-            var expectedOutput = @"Is Null";
+            var expectedOutput = "Is Null";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -570,24 +670,27 @@ UNION
         public void SqlBlock_SelectFilterAppliedToResultSet_ReturnsSelectedField()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
 SELECT [FirstName], [LastName] FROM Person
 WHERE [FirstName] IN ('Brian','Daniel','Nancy', 'William')
 ORDER BY [FirstName]
-{% endsql %}
-{% assign firstNames = results | Select:'FirstName' | Uniq %}
-{% for firstName in firstNames %}
+{%- endsql -%}
+{%- assign firstNames = results | Select:'FirstName' | Uniq -%}
+{%- for firstName in firstNames -%}
 {{ firstName }};
-{% endfor %}
+{%- endfor -%}
 ";
 
-            var expectedOutput = @"
-Brian;Daniel;Nancy;William;
-";
+            var expectedOutput = "Brian;Daniel;Nancy;William;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -598,21 +701,28 @@ Brian;Daniel;Nancy;William;
         public void StylesheetBlock_HelloWorld_ReturnsJavascriptScript()
         {
             var input = @"
-{% stylesheet %}
+{%- stylesheet -%}
 #content-wrapper {
     background-color: red !important;
     color: #fff;
 }
-{% endstylesheet %}
+{%- endstylesheet -%}
 ";
 
-            var expectedOutput = @"
-<style>
-    #content-wrapper {background-color:red!important;color:#fff;}
-</style> 
-";
+            var expectedOutput = "\n"
+                + "<style>\n"
+                + "#content-wrapper {\n"
+                + "    background-color: red !important;\n"
+                + "    color: #fff;\n"
+                + "}\n"
+                + "</style>\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -623,16 +733,14 @@ Brian;Daniel;Nancy;William;
         public void TagListTag_InTemplate_ReturnsListOfTags()
         {
             var input = @"
-{% taglist %}
+{%- taglist -%}
 ";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var result = engine.RenderTemplate( input );
-
-                TestHelper.DebugWriteRenderResult( engine, input, result.Text );
-
-                var output = result.Text.Replace( " ", string.Empty );
+                // The tag writes a table of every registered tag, so the spaces
+                // are removed and known entries are looked for by name.
+                var output = LavaRenderTestHelper.Render( engine, input ).Replace( " ", string.Empty );
 
                 Assert.Contains( "person-Rock.Lava.Blocks.RockEntity", output, "Expected Entity Tag not found." );
                 Assert.Contains( "cache-Rock.Lava.Blocks.Cache", output, "Expected Command Block not found." );
@@ -648,28 +756,39 @@ Brian;Daniel;Nancy;William;
         public void WebRequestBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/git/commits/88b33817b02b798679d75f237970649f25332fe1' return:'commit' %}
+{%- webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/git/commits/88b33817b02b798679d75f237970649f25332fe1' return:'commit' -%}
     {{ commit.message }}
-{% endwebrequest %}  
+{%- endwebrequest -%}  
 ";
 
-            var expectedOutput = "The Lava command 'webrequest' is not configured for this template.";
+            var expectedOutput = "The Lava command 'webrequest' is not configured for this template.\n"
+                + "    \n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void WebRequestBlock_GetRockRepoCommits_ReturnsValidResponse()
         {
             var input = @"
-{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/git/commits/88b33817b02b798679d75f237970649f25332fe1' return:'commit' %}
+{%- webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/git/commits/88b33817b02b798679d75f237970649f25332fe1' return:'commit' -%}
     {{ commit.message }}
-{% endwebrequest %}  
+{%- endwebrequest -%}  
 ";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WebRequest" };
+            var options = new LavaRenderOptions() { EnabledCommands = "WebRequest" };
 
-            TestHelper.AssertTemplateOutput( "readme", input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( "\n    readme\n", output );
+            } );
         }
 
         #endregion
@@ -682,13 +801,19 @@ Brian;Daniel;Nancy;William;
         {
             var template = @"
 12345
-{% return %}
+{%- return -%}
 67890
 ";
 
-            var expectedOutput = @"12345";
+            var expectedOutput = "\n"
+                + "12345";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -698,24 +823,30 @@ Brian;Daniel;Nancy;William;
         public void ReturnTag_InNestedBlock_TerminatesRenderingImmediately()
         {
             var template = @"
-{% assign isTrue = true %}
-{% assign isFalse = false %}
+{%- assign isTrue = true -%}
+{%- assign isFalse = false -%}
 Step 1
-{% if isTrue == false %}
-    {% return %}
-{% endif %}
+{%- if isTrue == false -%}
+    {%- return -%}
+{%- endif -%}
 <hr>
 Step 2
-{% if isTrue == true %}
-    {% return %}
-{% endif %}
+{%- if isTrue == true -%}
+    {%- return -%}
+{%- endif -%}
 <hr>
 Step 3
 ";
 
-            var expectedOutput = @"Step1<hr>Step2";
+            var expectedOutput = "Step 1<hr>\n"
+                + "Step 2";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -725,14 +856,19 @@ Step 3
         public void ReturnTag_InForLoop_TerminatesDocumentRenderImmediately()
         {
             var template = @"
-{% assign list = '10,9,8,7,6,5,4,3,2,1' | Split: ',' %}
-{% for i in list %}{{ i }}...{% if i == 1 %}{% return %}{% endif %}{% endfor %}
+{%- assign list = '10,9,8,7,6,5,4,3,2,1' | Split: ',' -%}
+{%- for i in list -%}{{ i }}...{%- if i == 1 -%}{%- return -%}{%- endif -%}{%- endfor -%}
 Lift-Off!
 ";
 
-            var expectedOutput = @"10...9...8...7...6...5...4...3...2...1...";
+            var expectedOutput = "10...9...8...7...6...5...4...3...2...1...";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
     }
 }

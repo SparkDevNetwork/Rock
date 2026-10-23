@@ -403,7 +403,7 @@ namespace Rock.Blocks.Crm
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AssessmentType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AssessmentType.FriendlyTypeName}." );
                 return false;
             }
 

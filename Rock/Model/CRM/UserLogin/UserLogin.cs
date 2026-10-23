@@ -185,7 +185,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [HideFromReporting]
-        [DataMember]
         [StringValidation( StringValidationProfile.Unrestricted )]
         public string ApiKey { get; set; }
         

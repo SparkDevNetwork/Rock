@@ -20,16 +20,20 @@ using System.Dynamic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class CollectionFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class CollectionFilterTests
     {
         List<string> _TestNameList = new List<string>() { "Ted", "Alisha", "Cynthia", "Brian" };
         List<string> _TestOrderedList = new List<string>() { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -44,12 +48,14 @@ Whole Fruit: {{ fruits | Join:', ' }}
 {% assign squashedFruits = fruits | Compact %}
 Squashed Fruit: {{ squashedFruits | Join:', ' }}
 ";
-            var expectedOutput = @"
-Whole Fruit: apples, , oranges, , peaches
-Squashed Fruit: apples, oranges, peaches
-";
+            var expectedOutput = "\n\nWhole Fruit: apples, , oranges, , peaches\n\nSquashed Fruit: apples, oranges, peaches\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -58,9 +64,13 @@ Squashed Fruit: apples, oranges, peaches
             var names = new List<string>() { null, "Alisha", "Brian", null, "Cynthia" };
             var mergeValues = new LavaDataDictionary { { "TestList", names } };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                "Alisha,Brian,Cynthia",
-                "{{ TestList | Compact | Join:',' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ TestList | Compact | Join:',' }}", options );
+
+                Assert.AreEqual( "Alisha,Brian,Cynthia", output );
+            } );
         }
 
         [TestMethod]
@@ -72,9 +82,14 @@ Squashed Fruit: apples, oranges, peaches
 {% assign allColors = primaryColors | Concat: secondaryColors %}
 {{ allColors | Join:', ' }}
 ";
-            var expectedOutput = @"red, yellow, blue, orange, green, violet";
+            var expectedOutput = "\n\n\n\nred, yellow, blue, orange, green, violet\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -88,9 +103,14 @@ Squashed Fruit: apples, oranges, peaches
 {{ item }},
 {% endfor %}
 ";
-            var expectedOutput = @"apples, oranges, peaches, carrots, turnips, potatoes,";
+            var expectedOutput = "\n\n\n\n\napples,\n\noranges,\n\npeaches,\n\ncarrots,\n\nturnips,\n\npotatoes,\n\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #region Filter Tests: Distinct
@@ -102,13 +122,19 @@ Squashed Fruit: apples, oranges, peaches
 
             var lavaTemplate = "{{ TestList | Distinct | Join:',' }}";
 
-            TestHelper.AssertTemplateOutput( "Item 1,Item 2 (duplicate),Item 3", lavaTemplate, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "Item 1,Item 2 (duplicate),Item 3", output );
+            } );
         }
 
         [TestMethod]
         public void Distinct_OnObjectPropertyWithMultipleValues_ReturnsFirstValueOnly()
         {
-            var personList = TestHelper.GetTestPersonCollectionForDeckerAndMarble();
+            var personList = LavaTestData.GetTestPersonCollectionForDeckerAndMarble();
             var mergeValues = new LavaDataDictionary { { "PersonList", personList } };
 
             var lavaTemplate = @"
@@ -121,7 +147,13 @@ Squashed Fruit: apples, oranges, peaches
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
             // Only the first person of each family in the collection should be returned.
-            TestHelper.AssertTemplateOutput( "TedDecker<br>BillMarble<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "\n\n\nTed Decker<br>\n\nBill Marble<br>\n\n", output );
+            } );
         }
 
         [TestMethod]
@@ -131,7 +163,12 @@ Squashed Fruit: apples, oranges, peaches
 {% assign testArray = '2,1,3,5,4,2' | Split:',' %}
 {{ testArray  | Distinct | Contains:'2' }}
 ";
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( "\n\ntrue\n", output );
+            } );
         }
 
         #endregion
@@ -141,7 +178,7 @@ Squashed Fruit: apples, oranges, peaches
         [TestMethod]
         public void GroupBy_OnStringCollectionWithDuplicates_RemovesDuplicates()
         {
-            var personList = TestHelper.GetTestPersonCollectionForDeckerAndMarble();
+            var personList = LavaTestData.GetTestPersonCollectionForDeckerAndMarble();
             var mergeValues = new LavaDataDictionary { { "PersonList", personList } };
 
             var lavaTemplate = @"
@@ -159,7 +196,13 @@ Squashed Fruit: apples, oranges, peaches
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( "<li>Decker</li><ul>Edward<br>Cindy<br>Noah<br>Alex<br></ul><li>Marble</li><ul>William<br>Alisha<br></ul>", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "\n\n\n    \n    <li>Decker</li>\n    <ul>\n        \n            Edward<br>\n        \n            Cindy<br>\n        \n            Noah<br>\n        \n            Alex<br>\n        \n    </ul>\n\n    \n    <li>Marble</li>\n    <ul>\n        \n            William<br>\n        \n            Alisha<br>\n        \n    </ul>\n\n", output );
+            } );
         }
 
         [TestMethod]
@@ -177,7 +220,13 @@ Squashed Fruit: apples, oranges, peaches
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( "one<br>two<br>three<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "\n        \n        \n        \n            one<br>\n        \n            two<br>\n        \n            three<br>\n        \n", output );
+            } );
         }
 
         [TestMethod]
@@ -194,7 +243,13 @@ Squashed Fruit: apples, oranges, peaches
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( "Item 1<br>Item 2<br>Item 3<br>Item 4<br>Item 5<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "\n        \n        \n            Item 1<br>\n        \n            Item 2<br>\n        \n            Item 3<br>\n        \n            Item 4<br>\n        \n            Item 5<br>\n        \n", output );
+            } );
         }
 
         [TestMethod]
@@ -211,7 +266,13 @@ Squashed Fruit: apples, oranges, peaches
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( "Item 1<br>Item 3<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "\n        \n        \n            Item 1<br>\n        \n            Item 3<br>\n        \n", output );
+            } );
         }
 
         [TestMethod]
@@ -221,13 +282,16 @@ Squashed Fruit: apples, oranges, peaches
         [DataRow( "A,B,C", "0" )]
         public void Sum_AppliedToArrayOfNumbers_ReturnsSumOfValues( string values, string sumValue )
         {
-            var lavaTemplate = $@"
-Total: {{{{ '{values}' | Split:',' | Sum }}}}
-";
+            var lavaTemplate = $"Total: {{{{ '{values}' | Split:',' | Sum }}}}";
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( $"Total:{sumValue}", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( $"Total: {sumValue}", output );
+            } );
         }
 
         #endregion
@@ -243,7 +307,12 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {{ dict | AllKeysFromDictionary }}
 ";
 
-            TestHelper.AssertTemplateOutput( "key1key2key3", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( "\n        \n        \n        key1key2key3\n", output );
+            } );
         }
 
         [TestMethod]
@@ -255,7 +324,12 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {{ dict | ToJSON }}
 ";
 
-            TestHelper.AssertTemplateOutput( @"{""key1"":""value2""}", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( "\n        \n        \n        {\n  \"key1\": \"value2\"\n}\n", output );
+            } );
         }
 
         [TestMethod]
@@ -273,19 +347,14 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
     This request is denied.
 </div>
 ";
-            var expectedOutput = @"
-<div style='color:green'>
-    This request is approved.
-</div>
-<div style='color:orange'>
-    This request is incomplete.
-</div>
-<div style='color:red'>
-    This request is denied.
-</div>
-";
+            var expectedOutput = "\n\n<div style='color:green'>\n    This request is approved.\n</div>\n<div style='color:orange'>\n    This request is incomplete.\n</div>\n<div style='color:red'>\n    This request is denied.\n</div>\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -297,7 +366,12 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
 {{ dict | AllKeysFromDictionary }}
 ";
 
-            TestHelper.AssertTemplateOutput( "key1key3", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( "\n\n\nkey1key3\n", output );
+            } );
         }
 
         [TestMethod]
@@ -308,7 +382,12 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
 {{ dict | AllKeysFromDictionary }}
 ";
 
-            TestHelper.AssertTemplateOutput( "key1key2key3", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate );
+
+                Assert.AreEqual( "\n\nkey1key2key3\n", output );
+            } );
         }
 
         #endregion
@@ -328,7 +407,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var lavaTemplate = "{{ TestList | Contains:'<searchValue>' }}";
             lavaTemplate = lavaTemplate.Replace( "<searchValue>", searchValue );
 
-            TestHelper.AssertTemplateOutput( isFound ? "true" : "false", lavaTemplate, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( isFound ? "true" : "false", output );
+            } );
         }
 
         [TestMethod]
@@ -347,7 +432,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
                 && !( enumerableCollection is IEnumerable<object> )
                 && !( enumerableCollection is IList ) );
 
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "true", output );
+            } );
 
             // IEnumerable<> collection.
             var queueCollection = new Queue<string>( itemList );
@@ -356,12 +447,24 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             Assert.IsTrue( queueCollection is IEnumerable<string>
                 && !( queueCollection is IList ) );
 
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "true", output );
+            } );
 
             // IList collection.
             mergeValues["TestEnumerable"] = itemList;
 
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "true", output );
+            } );
         }
 
         [TestMethod]
@@ -379,12 +482,24 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             Assert.IsTrue( itemArray is IList
                 && !( itemArray is IList<string> ) );
 
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "true", output );
+            } );
 
             // IList<T> collection.
             mergeValues["TestEnumerable"] = itemList;
 
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( "true", output );
+            } );
         }
 
         #region Filter Tests: Index
@@ -403,7 +518,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var lavaTemplate = "{{ TestList | Index:<index> }}";
             lavaTemplate = lavaTemplate.Replace( "<index>", index.ToString() );
 
-            TestHelper.AssertTemplateOutput( expectedValue, lavaTemplate, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, lavaTemplate, options );
+
+                Assert.AreEqual( expectedValue, output );
+            } );
 
         }
 
@@ -415,7 +536,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var mergeValues = new LavaDataDictionary { { "TestList", _TestNameList } };
 
-            TestHelper.AssertTemplateOutput( "", "{{ TestList | Index:999 }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ TestList | Index:999 }}", options );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         #endregion
@@ -448,9 +575,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
 
             var mergeValues = new LavaDataDictionary { { "Members", members } };
 
-            TestHelper.AssertTemplateOutput( "Ted;Alex;Cindy;",
-                "{% assign items = Members | OrderBy:'GroupRole.IsLeader desc,Person.FirstName' %}{% for item in items %}{{ item.Person.FirstName }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign items = Members | OrderBy:'GroupRole.IsLeader desc,Person.FirstName' %}{% for item in items %}{{ item.Person.FirstName }};{% endfor %}", options );
+
+                Assert.AreEqual( "Ted;Alex;Cindy;", output );
+            } );
         }
 
         /// <summary>
@@ -461,9 +592,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var mergeValues = new LavaDataDictionary { { "Items", GetOrderByTestCollection() } };
 
-            TestHelper.AssertTemplateOutput( "A;B;C;D;",
-                "{% assign items = Items | OrderBy:'Order' %}{% for item in items %}{{ item.Title }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign items = Items | OrderBy:'Order' %}{% for item in items %}{{ item.Title }};{% endfor %}", options );
+
+                Assert.AreEqual( "A;B;C;D;", output );
+            } );
         }
 
         /// <summary>
@@ -474,9 +609,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var mergeValues = new LavaDataDictionary { { "Items", GetOrderByTestCollection() } };
 
-            TestHelper.AssertTemplateOutput( "D;C;B;A;",
-                "{% assign items = Items | OrderBy:'Order DESC' %}{% for item in items %}{{ item.Title }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign items = Items | OrderBy:'Order DESC' %}{% for item in items %}{{ item.Title }};{% endfor %}", options );
+
+                Assert.AreEqual( "D;C;B;A;", output );
+            } );
         }
 
         /// <summary>
@@ -487,9 +626,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var mergeValues = new LavaDataDictionary { { "Items", GetOrderByTestCollection() } };
 
-            TestHelper.AssertTemplateOutput( "A;B;C;D;",
-                "{% assign items = Items | OrderBy:'Order, SecondOrder DESC' %}{% for item in items %}{{ item.Title }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign items = Items | OrderBy:'Order, SecondOrder DESC' %}{% for item in items %}{{ item.Title }};{% endfor %}", options );
+
+                Assert.AreEqual( "A;B;C;D;", output );
+            } );
         }
 
         /// <summary>
@@ -500,9 +643,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var mergeValues = new LavaDataDictionary { { "Items", GetOrderByTestCollection() } };
 
-            TestHelper.AssertTemplateOutput( "A;B;C;D;",
-                "{% assign items = Items | OrderBy:'Order, Nested.Order DESC' %}{% for item in items %}{{ item.Title }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign items = Items | OrderBy:'Order, Nested.Order DESC' %}{% for item in items %}{{ item.Title }};{% endfor %}", options );
+
+                Assert.AreEqual( "A;B;C;D;", output );
+            } );
         }
 
         private List<ExpandoObject> GetOrderByTestCollection()
@@ -530,13 +677,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var orderedOutput = _TestOrderedList.JoinStrings( ";" ) + ";";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // Add a copy of the test list to the context, as it will be modified during the rendering process.
                 var mergeValues = new LavaDataDictionary { { "OrderedList", new List<string>( _TestOrderedList ) } };
 
                 // First, verify that the unshuffled lists are equal.
-                var orderedResult = TestHelper.GetTemplateOutput( engine, "{% assign items = OrderedList %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
+                var orderedResult = LavaRenderTestHelper.Render( engine, "{% assign items = OrderedList %}{% for item in items %}{{ item }};{% endfor %}", new LavaRenderOptions { MergeFields = mergeValues } );
 
                 Assert.AreEqual( orderedOutput, orderedResult );
 
@@ -549,7 +696,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
                 string shuffledResult = string.Empty;
                 for ( int i = 0; i < 10; i++ )
                 {
-                    shuffledResult = TestHelper.GetTemplateOutput( engine, "{% assign items = OrderedList | Shuffle %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
+                    shuffledResult = LavaRenderTestHelper.Render( engine, "{% assign items = OrderedList | Shuffle %}{% for item in items %}{{ item }};{% endfor %}", new LavaRenderOptions { MergeFields = mergeValues } );
 
                     if ( orderedOutput != shuffledResult )
                     {
@@ -570,11 +717,15 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             // The Select filter should work correctly on any collection of objects that supports the
             // ILavaDataDictionary interface. This includes objects that inherit from LavaDataObject,
             // or are proxied using LavaDataObject.
-            var mergeValues = new LavaDataDictionary { { "People", TestHelper.GetTestPersonCollectionForDecker() } };
+            var mergeValues = new LavaDataDictionary { { "People", LavaTestData.GetTestPersonCollectionForDecker() } };
 
-            TestHelper.AssertTemplateOutput( "Edward;Cindy;Noah;Alex;",
-                "{% assign names = People | Select:'FirstName' %}{% for name in names %}{{ name }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign names = People | Select:'FirstName' %}{% for name in names %}{{ name }};{% endfor %}", options );
+
+                Assert.AreEqual( "Edward;Cindy;Noah;Alex;", output );
+            } );
         }
 
         /// <summary>
@@ -600,9 +751,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
 
             var mergeValues = new LavaDataDictionary { { "Dictionaries", new List<Dictionary<string, object>> { dictionary1, dictionary2 } } };
 
-            TestHelper.AssertTemplateOutput( "Value1-2;Value2-2;",
-                "{% assign values = Dictionaries | Select:'Key2' %}{% for value in values %}{{ value }};{% endfor %}",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{% assign values = Dictionaries | Select:'Key2' %}{% for value in values %}{{ value }};{% endfor %}", options );
+
+                Assert.AreEqual( "Value1-2;Value2-2;", output );
+            } );
         }
 
 
@@ -615,9 +770,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var unsortedNames = new List<string>() { "Ted", "brian", "Cynthia", "alisha" };
             var mergeValues = new LavaDataDictionary { { "TestList", unsortedNames } };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                "Cynthia,Ted,alisha,brian",
-                "{{ TestList | Sort | Join:',' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ TestList | Sort | Join:',' }}", options );
+
+                Assert.AreEqual( "Cynthia,Ted,alisha,brian", output );
+            } );
         }
 
         /// <summary>
@@ -629,9 +788,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var unsortedNames = new List<string>() { "Ted", "brian", "Cynthia", "alisha" };
             var mergeValues = new LavaDataDictionary { { "TestList", unsortedNames } };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                "alisha,brian,Cynthia,Ted",
-                "{{ TestList | SortNatural | Join:',' }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ TestList | SortNatural | Join:',' }}", options );
+
+                Assert.AreEqual( "alisha,brian,Cynthia,Ted", output );
+            } );
 
         }
 
@@ -643,7 +806,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         {
             var mergeValues = new LavaDataDictionary { { "TestList", _TestNameList } };
 
-            TestHelper.AssertTemplateOutput( _TestNameList.Count.ToString(), "{{ TestList | Size }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ TestList | Size }}", options );
+
+                Assert.AreEqual( _TestNameList.Count.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -656,7 +825,13 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
 
             var mergeValues = new LavaDataDictionary { { "TestString", testString } };
 
-            TestHelper.AssertTemplateOutput( testString.Length.ToString(), "{{ TestString | Size }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ TestString | Size }}", options );
+
+                Assert.AreEqual( testString.Length.ToString(), output );
+            } );
         }
     }
 }

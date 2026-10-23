@@ -123,7 +123,9 @@ namespace Rock.Blocks.Cms
                 StandardLogLevel = rockConfig.StandardLogLevel.ConvertToInt().ToString(),
             };
 
-            var selectedCategories = rockConfig.StandardCategories ?? new List<string>();
+            var selectedCategories = ( rockConfig.StandardCategories ?? new List<string>() )
+                .Where( c => c.IsNotNullOrWhiteSpace() )
+                .ToList();
             var standardCategories = RockLogger.GetStandardCategories();
             var categories = selectedCategories.Where( c => standardCategories.Contains( c ) ).ToList();
             var customCategories = selectedCategories.Where( c => !standardCategories.Contains( c ) ).ToList();
@@ -147,7 +149,12 @@ namespace Rock.Blocks.Cms
                 () => entity.StandardLogLevel = ( LogLevel ) box.Bag.StandardLogLevel.AsInteger() );
 
             box.IfValidProperty( nameof( box.Bag.Categories ),
-                () => entity.StandardCategories = box.Bag.Categories.Union( box.Bag.CustomCategories ).Distinct().ToList() );
+                () => entity.StandardCategories = box.Bag.Categories
+                    .Union( box.Bag.CustomCategories ?? new List<string>() )
+                    .Where( c => c.IsNotNullOrWhiteSpace() )
+                    .Select( c => c.Trim() )
+                    .Distinct()
+                    .ToList() );
 
             box.IfValidProperty( nameof( box.Bag.IsLocalLoggingEnabled ),
                 () => entity.IsLocalLoggingEnabled = box.Bag.IsLocalLoggingEnabled );
@@ -262,6 +269,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete()
         {
+            if ( !TryGetEntityForEditAction( out _, out var actionError ) )
+            {
+                return actionError;
+            }
+
             RockLogger.RecycleSerilog();
             ( RockLogger.LogReader as RockSerilogReader )?.Delete();
             return ActionOk( this.GetCurrentPageUrl() );

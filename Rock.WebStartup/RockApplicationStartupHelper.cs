@@ -46,6 +46,7 @@ using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Utility.CaptchaApi;
+using Rock.Utility.HtmlSanitization;
 using Rock.Utility.Settings;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -169,7 +170,7 @@ namespace Rock.WebStartup
             // This will help reduce the chances of multiple RockWeb instances causing problems,
             // like creating duplicate attributes, or running the same migration in parallel.
             LogStartupMessage( "Initializing RockContext" );
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 new AttributeService( rockContext ).Get( 0 );
                 ShowDebugTimingMessage( "Initialize RockContext" );
@@ -213,7 +214,7 @@ namespace Rock.WebStartup
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
-            RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
+            RockDateTime.FirstDayOfWeek = new AttributeService( RockApp.Current.CreateRockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
 
             ShowDebugTimingMessage( "Initialize RockDateTime" );
 
@@ -250,7 +251,7 @@ namespace Rock.WebStartup
             LogStartupMessage( "Reloading Cache" );
             RockCache.ClearAllCachedItems( false );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 LogStartupMessage( "Loading Cache From Database" );
                 LoadEarlyCacheObjects( rockContext );
@@ -290,6 +291,27 @@ namespace Rock.WebStartup
             LogStartupMessage( "Registering HTTP Modules" );
             RegisterHttpModules();
             ShowDebugTimingMessage( "Register HTTP Modules" );
+
+            /*
+                10/15/2026 - MSE
+
+                Load the AI provider container so its component attributes
+                are updated and any plain text secret keys are encrypted.
+
+                Reason: Keep AI provider secret keys encrypted at rest.
+            */
+            try
+            {
+                LogStartupMessage( "Loading AI Providers" );
+#pragma warning disable CS0618 // Type or member is obsolete
+                _ = Rock.AI.Provider.AIProviderContainer.Instance;
+#pragma warning restore CS0618 // Type or member is obsolete
+                ShowDebugTimingMessage( "Load AI Providers" );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
 
             // Initialize the Lava engine.
             LogStartupMessage( "Initializing Lava Engine" );
@@ -374,6 +396,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
             sc.AddSingleton<ICaptchaProvider, CaptchaProofOfWorkProvider>();
+            sc.AddSingleton<IHtmlAllowListSanitizer, HtmlAllowListSanitizer>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IUserAgentParser, UserAgentParser>();
 #if WEBFORMS
@@ -585,7 +608,7 @@ namespace Rock.WebStartup
         {
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
                 }
@@ -902,7 +925,7 @@ namespace Rock.WebStartup
         /// <returns></returns>
         private static bool UpdateThemes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var themeService = new ThemeService( rockContext );
 
@@ -972,7 +995,7 @@ namespace Rock.WebStartup
             }
 
             // Create EF service for plugin migrations
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var pluginMigrationService = new PluginMigrationService( rockContext );
 
             // Get the versions that have already been installed
@@ -1107,7 +1130,7 @@ namespace Rock.WebStartup
                     && t.GetCustomAttribute<HasQueryableAttributesAttribute>() != null )
                 .ToList();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeService = new EntityTypeService( rockContext );
                 var knownViews = new List<string>();

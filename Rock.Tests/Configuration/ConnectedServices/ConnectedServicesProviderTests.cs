@@ -76,6 +76,8 @@ namespace Rock.Tests.Configuration.ConnectedServices
                 SystemSetting.CONNECTED_SERVICES_AUTH,
                 SystemSetting.CONNECTED_SERVICES_CONFIGURATION,
                 SystemSetting.CONNECTED_SERVICES_MANIFEST,
+                SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED,
+                SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED,
                 StoreOrganizationKeySettingKey );
 
             var handler = new RecordingMessageHandler();
@@ -107,6 +109,8 @@ namespace Rock.Tests.Configuration.ConnectedServices
                 SystemSetting.CONNECTED_SERVICES_AUTH,
                 SystemSetting.CONNECTED_SERVICES_CONFIGURATION,
                 SystemSetting.CONNECTED_SERVICES_MANIFEST,
+                SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED,
+                SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED,
                 StoreOrganizationKeySettingKey );
 
             var handler = new RecordingMessageHandler();
@@ -165,7 +169,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
         /// </summary>
         private static void SeedConfiguration( ConnectedServicesConfiguration configuration )
         {
-            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION, configuration.ToJson() );
+            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED, Rock.Security.Encryption.EncryptString( configuration.ToJson() ) );
             SystemSettings.Remove();
         }
 
@@ -186,7 +190,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
         /// </summary>
         private static void SeedManifest( string manifestJson )
         {
-            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_MANIFEST, manifestJson );
+            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED, Rock.Security.Encryption.EncryptString( manifestJson ) );
             SystemSettings.Remove();
         }
 
@@ -202,7 +206,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
                 Verifier = verifier
             };
 
-            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_AUTH, context.ToJson() );
+            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_AUTH, Rock.Security.Encryption.EncryptString( context.ToJson() ) );
             SystemSettings.Remove();
         }
 
@@ -227,7 +231,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
         {
             FlushAllCaches();
 
-            return SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION )
+            return DecryptIfNotBlank( SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED ) )
                 .FromJsonOrNull<ConnectedServicesConfiguration>();
         }
 
@@ -240,7 +244,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
         {
             FlushAllCaches();
 
-            return SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_AUTH );
+            return DecryptIfNotBlank( SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_AUTH ) );
         }
 
         /// <summary>
@@ -261,7 +265,28 @@ namespace Rock.Tests.Configuration.ConnectedServices
         {
             FlushAllCaches();
 
-            return SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_MANIFEST );
+            return DecryptIfNotBlank( SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED ) );
+        }
+
+        /// <summary>
+        /// Reads back the raw stored value of a system setting, without
+        /// decrypting it.
+        /// </summary>
+        private static string ReadRawSetting( string key )
+        {
+            FlushAllCaches();
+
+            return SystemSettings.GetValue( key );
+        }
+
+        /// <summary>
+        /// Decrypts a stored value. Blank values are returned as is.
+        /// </summary>
+        private static string DecryptIfNotBlank( string storedValue )
+        {
+            return storedValue.IsNullOrWhiteSpace()
+                ? storedValue
+                : Rock.Security.Encryption.DecryptString( storedValue );
         }
 
         /// <summary>
@@ -1313,6 +1338,124 @@ namespace Rock.Tests.Configuration.ConnectedServices
                 Assert.IsTrue( bag.IsCardOnFile );
                 Assert.IsFalse( bag.IsCardExpired );
                 Assert.IsFalse( bag.IsCardExpiringSoon );
+            }
+        }
+
+        #endregion
+
+        #region Encryption
+
+        [TestMethod]
+        public async Task CompleteLinkOrganizationAsync_WithMatchingRequestId_StoresConfigurationEncrypted()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthContext( "req-123", "verifier-abc" );
+
+                var responseBody = @"{
+	""token"": ""spk-m-v1-babxj6k28dcdbeags95fmklabce2qkomw5dx0bd61fiwjkfgmqjfs3oow95ugw77"",
+	""context"": ""http://localhost:6229/link-organization"",
+    ""organizationName"": ""Test Church"",
+    ""organizationGuid"": ""1a2b3c4d-5e6f-7089-90ab-cdef12345678""
+}";
+
+                ctx.Handler.SetResponse( HttpMethod.Post, "/auth/v1/token", HttpStatusCode.OK, responseBody );
+
+                await ctx.Provider.CompleteLinkOrganizationAsync( "req-123", CancellationToken.None );
+
+                var storedValue = ReadRawSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED );
+
+                Assert.IsFalse( storedValue.IsNullOrWhiteSpace() );
+                Assert.IsFalse( storedValue.TrimStart().StartsWith( "{" ), "Stored configuration should not be JSON." );
+                Assert.IsFalse( storedValue.Contains( "spk-m-v1-" ), "Stored configuration should not contain the token." );
+                Assert.IsTrue( ReadRawSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION ).IsNullOrWhiteSpace() );
+            }
+        }
+
+        [TestMethod]
+        public void GetConfiguration_WithLegacyPlainTextConfiguration_MigratesToEncryptedSetting()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION, new ConnectedServicesConfiguration { AuthToken = "legacy-token" }.ToJson() );
+                SystemSettings.Remove();
+
+                Assert.IsTrue( ctx.Provider.IsOrganizationLinked() );
+                Assert.AreEqual( "legacy-token", ReadPersistedConfiguration()?.AuthToken );
+                Assert.IsTrue( ReadRawSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION ).IsNullOrWhiteSpace() );
+            }
+        }
+
+        [TestMethod]
+        public void GetConfiguration_WithPlainTextInEncryptedSetting_IsNotLinked()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED, new ConnectedServicesConfiguration { AuthToken = "planted-token" }.ToJson() );
+                SystemSettings.Remove();
+
+                Assert.IsFalse( ctx.Provider.IsOrganizationLinked() );
+            }
+        }
+
+        [TestMethod]
+        public void GetConfiguration_WithEncryptedAndLegacySettings_IgnoresAndClearsLegacySetting()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "encrypted-token" );
+                SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION, new ConnectedServicesConfiguration { AuthToken = "legacy-token" }.ToJson() );
+                SystemSettings.Remove();
+
+                Assert.AreEqual( "encrypted-token", ctx.Provider.GetConfiguration()?.AuthToken );
+                Assert.IsTrue( ReadRawSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION ).IsNullOrWhiteSpace() );
+            }
+        }
+
+        [TestMethod]
+        public async Task UpdateManifestAsync_WithSuccessResponse_StoresManifestEncrypted()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "token" );
+
+                var manifestJson = @"{
+	""createdDateTime"": ""2026-07-16T17:29:53.4671315+00:00"",
+    ""services"": [
+	    {
+            ""serviceId"": ""rock-iq"",
+            ""status"": ""ok"",
+            ""configuration"": {},
+		    ""bundle"": {
+				""id"": ""95B3D6AB-831B-BEA5-4CD2-735AB1E71212"",
+				""name"": ""Standard"",
+				""order"": 1,
+				""replacesBundles"": [],
+				""settings"": {
+					""url"": ""https://openrouter.ai/api/v1"",
+					""apiKey"": ""sk-or-v1-fakekey"",
+					""models"": [
+						{
+							""type"": ""General"",
+							""id"": ""std-general""
+						}
+					]
+				}
+			}
+		}
+	]
+}";
+
+                ctx.Handler.SetResponse( HttpMethod.Get, "/api/v1/config/manifest", HttpStatusCode.OK, manifestJson );
+
+                await ctx.Provider.UpdateManifestAsync( CancellationToken.None );
+
+                var storedValue = ReadRawSetting( SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED );
+
+                Assert.IsFalse( storedValue.IsNullOrWhiteSpace() );
+                Assert.IsFalse( storedValue.TrimStart().StartsWith( "{" ), "Stored manifest should not be JSON." );
+                Assert.IsFalse( storedValue.Contains( "sk-or-v1-fakekey" ), "Stored manifest should not contain the API key." );
+                Assert.IsTrue( ReadRawSetting( SystemSetting.CONNECTED_SERVICES_MANIFEST ).IsNullOrWhiteSpace() );
             }
         }
 

@@ -683,12 +683,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private Guid? GetPersonAliasGuidFromUnsecuredPersonIdentifier()
         {
-            if ( Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] != null )
-            {
-                return Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
-            }
-
-            return null;
+            return Rock.Security.Authorization.GetUnsecurePersonIdentifier();
         }
 
         /// <summary>

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.UI;
@@ -95,6 +96,13 @@ namespace RockWeb.Blocks.Cms
                     updateMessages.Add( "Font Awesome Pro Key updated" );
                     pnlFontAwesomeFree.Visible = false;
                 }
+            }
+
+            // Only process a new upload by the current person.
+            if ( fupFontAwesomeProPackage.BinaryFileId.HasValue
+                && !new BinaryFileService( RockApp.Current.CreateRockContext() ).IsUploadedBinaryFileAllowedForPerson( fupFontAwesomeProPackage.BinaryFileId, null, CurrentPerson ) )
+            {
+                fupFontAwesomeProPackage.BinaryFileId = null;
             }
 
             if ( fupFontAwesomeProPackage.BinaryFileId.HasValue )

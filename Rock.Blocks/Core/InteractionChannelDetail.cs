@@ -390,7 +390,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${InteractionChannel.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {InteractionChannel.FriendlyTypeName}." );
                 return false;
             }
 

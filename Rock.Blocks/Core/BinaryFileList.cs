@@ -223,8 +223,10 @@ namespace Rock.Blocks.Core
             {
                 var entityService = new BinaryFileService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+                var binaryFileTypeGuid = GetAttributeValue( AttributeKey.BinaryFileType ).AsGuid();
 
-                if ( entity == null )
+                // Only allow files of the configured file type to be deleted.
+                if ( entity == null || entity.BinaryFileType == null || entity.BinaryFileType.Guid != binaryFileTypeGuid )
                 {
                     return ActionBadRequest( $"{BinaryFile.FriendlyTypeName} not found." );
                 }

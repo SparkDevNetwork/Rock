@@ -207,7 +207,7 @@ internal class RockIntelligenceProvider : AgentProviderComponent
     }
 
     /// <inheritdoc/>
-    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext )
+    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext, ReasoningEffort reasoningEffort )
     {
         return new OpenAIPromptExecutionSettings()
         {
@@ -219,7 +219,11 @@ internal class RockIntelligenceProvider : AgentProviderComponent
                 ? personAliasGuid.ToString( "D" )
                 : null,
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            ReasoningEffort = "low"
+
+            // Serialized as the OpenAI style reasoning_effort field, which
+            // Rock Intelligence accepts as-is and maps to the provider behind
+            // the configured model. The wire values are lowercase.
+            ReasoningEffort = reasoningEffort.ToString().ToLowerInvariant()
         };
     }
 }

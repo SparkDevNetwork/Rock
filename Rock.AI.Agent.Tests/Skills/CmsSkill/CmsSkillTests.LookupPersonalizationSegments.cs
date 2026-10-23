@@ -16,12 +16,15 @@
 //
 
 using System;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.AI.Agent.Classes.Skills.CmsSkill;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 
@@ -57,6 +60,26 @@ public partial class CmsSkillTests
         var result = skill.LookupPersonalizationSegments();
 
         Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void LookupPersonalizationSegments_WithoutViewAuthorization_ExcludesSegment()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var visibleSegment = SeedPersonalizationSegment( rockContext, 500, "First-time Visitors", "FIRST_TIME" );
+        var hiddenSegment = SeedPersonalizationSegment( rockContext, 501, "Staff Only", "STAFF_ONLY" );
+        MockAuthorizationHelper.DenyAllUsers<PersonalizationSegment>( rockContext, Authorization.VIEW, hiddenSegment.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.LookupPersonalizationSegments();
+        var content = result.GetResults().Cast<PersonalizationSegmentResult>().ToList();
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+        Assert.HasCount( 1, content );
+        Assert.AreEqual( visibleSegment.Id, content[0].Id );
     }
 
     /// <summary>

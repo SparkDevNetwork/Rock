@@ -22,12 +22,15 @@
     import StepOne from "./csvImport/stepOne.partial.obs";
     import StepTwo from "./csvImport/stepTwo.partial.obs";
     import StepThree from "./csvImport/stepThree.partial.obs";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues } from "@Obsidian/Utility/block";
     import { CsvImportBox } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { StepOneResults, StepTwoResults } from "./csvImport/types.partial";
 
     const config = useConfigurationValues<CsvImportBox>();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    provideSecurityGrant(securityGrant);
 
     const step = ref<number>(1);
 

@@ -19,16 +19,20 @@ namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
 /// One security role an audience can name, as listed by ResolveAudience.
-/// The name is the exact value to pass in the audiences parameter of
-/// AddOrUpdateLavaApplication.
+/// Its groupIdKey is what AddOrUpdateAuthorizationForEntity takes to grant
+/// or deny the role an action.
 /// </summary>
 internal class SecurityRoleResult
 {
     /// <summary>
-    /// The name of the security role, exactly as AddOrUpdateLavaApplication
-    /// expects it.
+    /// The name of the security role.
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// The groupIdKey to pass to AddOrUpdateAuthorizationForEntity.
+    /// </summary>
+    public string GroupIdKey { get; set; }
 
     /// <summary>
     /// The description of the security role, when one has been entered.

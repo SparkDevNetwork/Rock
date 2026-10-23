@@ -1,6 +1,6 @@
 ---
 title: Groups Domain Overview
-last_updated: 2026-05-26
+last_updated: 2026-10-19
 related_files:
   - Rock/Model/Group/Group/Group.cs
   - Rock/Model/Group/Group/Group.Logic.cs
@@ -100,7 +100,7 @@ The full set of entities under `Rock/Model/Group/`:
 | `GroupType` | Template defining shared configuration. See [group-types.md](group-types.md). |
 | `GroupTypeRole` | Role within a GroupType, with permission flags. |
 | `GroupMember` | Person + Group + Role join row. See [group-members-and-roles.md](group-members-and-roles.md). |
-| `GroupMemberAssignment` | Scheduled position for a member. See [group-scheduling.md](group-scheduling.md). |
+| `GroupMemberAssignment` | Scheduling preference for a member (group scheduling), or a project slot (Sign-Up Groups). See [group-scheduling.md](group-scheduling.md). |
 | `GroupMemberScheduleTemplate` | Recurring availability template. |
 | `GroupMemberRequirement` | Per-member requirement evaluation result. See [group-requirements.md](group-requirements.md). |
 | `GroupMemberWorkflowTrigger` | Workflow launches on member events. |
@@ -151,7 +151,7 @@ Four cache classes back the domain: `GroupCache`, `GroupTypeCache`, `GroupTypeRo
 - C# blocks: [Rock.Blocks/Group/](../../Rock.Blocks/Group/)
 - Obsidian blocks: [Rock.JavaScript.Obsidian.Blocks/src/Group/](../../Rock.JavaScript.Obsidian.Blocks/src/Group/)
 - Caches: [Rock/Web/Cache/Entities/Group*.cs](../../Rock/Web/Cache/Entities/)
-- Jobs: [Rock/Jobs/CalculateGroupRequirements.cs](../../Rock/Jobs/CalculateGroupRequirements.cs), [GroupSync.cs](../../Rock/Jobs/GroupSync.cs), [SendSignUpReminders.cs](../../Rock/Jobs/SendSignUpReminders.cs), [ProcessGroupHistory.cs](../../Rock/Jobs/ProcessGroupHistory.cs)
+- Jobs: [Rock/Jobs/CalculateGroupRequirements.cs](../../Rock/Jobs/CalculateGroupRequirements.cs), [GroupSync.cs](../../Rock/Jobs/GroupSync.cs), [SendGroupScheduleNotifications.cs](../../Rock/Jobs/SendGroupScheduleNotifications.cs), [SendSignUpReminders.cs](../../Rock/Jobs/SendSignUpReminders.cs), [ProcessGroupHistory.cs](../../Rock/Jobs/ProcessGroupHistory.cs)
 
 ## Recent Impactful Changes
 

@@ -191,7 +191,19 @@ namespace Rock.Blocks.Event
             var builder = GetGridBuilder();
 
             var isAddDeleteEnabled = GetIsAddDeleteEnabled();
-            box.IsAddEnabled = isAddDeleteEnabled;
+
+            /*
+                10/20/2026 - MSE
+
+                The Obsidian Registration Detail block does not create registrations;
+                a blank or 0 RegistrationId shows "not found". The Add button linked
+                there with RegistrationId=0, so it is turned off, matching the
+                Registrations tab. Registrations are created through the Registration
+                Entry block.
+
+                Reason: Avoid an Add button that leads to a "not found" page.
+            */
+            box.IsAddEnabled = false;
             box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -520,7 +532,6 @@ namespace Rock.Blocks.Event
                 .AddTextField( "lastName", r => r.PersonAlias?.Person?.LastName )
                 .AddTextField( "personIdKey", r => r.PersonAlias?.Person?.IdKey )
                 .AddTextField( "registrationIdKey", r => IdHasher.Instance.GetHash( r.RegistrationId ) )
-                .AddField( "registrantId", r => r.Id )
                 .AddTextField( "groupName", r => r.GroupMember?.Group?.Name )
                 .AddField( "groupId", r => r.GroupMember?.GroupId )
                 .AddField( "fees", GetFeeSummaries )
@@ -764,18 +775,27 @@ namespace Rock.Blocks.Event
             return GetRegistrationTemplatePlacements()
                 .Select( placement =>
                 {
-                    var placedGroupNames = personId.HasValue && _placementGroupsByPlacementId.TryGetValue( placement.Id, out var placementGroups )
-                        ? placementGroups
-                            .Where( g => g.PersonIds.Contains( personId.Value ) )
-                            .Select( g => g.GroupName )
-                            .ToList()
-                        : new List<string>();
+                    var placementGroups = personId.HasValue && _placementGroupsByPlacementId.TryGetValue( placement.Id, out var groupsForPlacement )
+                        ? groupsForPlacement
+                        : new List<PlacementGroupInfo>();
+
+                    var activeGroupNames = placementGroups
+                        .Where( g => g.ActivePersonIds.Contains( personId.Value ) )
+                        .Select( g => g.GroupName )
+                        .ToList();
+
+                    // An inactive membership still counts as placed, but only the active ones drive the count and green state.
+                    var inactiveGroupNames = placementGroups
+                        .Where( g => g.InactivePersonIds.Contains( personId.Value ) )
+                        .Select( g => g.GroupName )
+                        .ToList();
 
                     return new RegistrantPlacementBag
                     {
                         PlacementId = placement.Id,
-                        GroupCount = placedGroupNames.Count,
-                        GroupNames = placedGroupNames
+                        GroupCount = activeGroupNames.Count,
+                        GroupNames = activeGroupNames,
+                        InactiveGroupNames = inactiveGroupNames
                     };
                 } )
                 .ToList();
@@ -1183,7 +1203,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     {
                         g.Id,
                         g.Name,
-                        PersonIds = g.Members.Select( m => m.PersonId )
+                        ActivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId ),
+                        InactivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId )
                     } )
                     .ToList();
 
@@ -1194,7 +1219,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     {
                         g.Id,
                         g.Name,
-                        PersonIds = g.Members.Select( m => m.PersonId )
+                        ActivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId ),
+                        InactivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId )
                     } )
                     .ToList();
 
@@ -1222,7 +1252,8 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     placementGroups.Add( new PlacementGroupInfo
                     {
                         GroupName = groupInfo.Name,
-                        PersonIds = new HashSet<int>( groupInfo.PersonIds )
+                        ActivePersonIds = new HashSet<int>( groupInfo.ActivePersonIds ),
+                        InactivePersonIds = new HashSet<int>( groupInfo.InactivePersonIds )
                     } );
                 }
 
@@ -1434,8 +1465,25 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            /*
+                10/16/2026 - MSE
+
+                The instance comes from the page parameter, so a person could swap in
+                the IdKey of an instance they are not allowed to see and get its
+                registrants, placements and form fields, or email its registrars. VIEW
+                on the instance falls back to the template and its category, which is
+                eager loaded because the query is AsNoTracking.
+
+                Reason: Registration instance lists skipped VIEW on the instance.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }
@@ -1783,9 +1831,17 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
             public string GroupName { get; set; }
 
             /// <summary>
-            /// Gets or sets the person identifiers of the group's members.
+            /// Gets or sets the person identifiers of the group's non-archived
+            /// members whose status is Active or Pending.
             /// </summary>
-            public HashSet<int> PersonIds { get; set; }
+            public HashSet<int> ActivePersonIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person identifiers of the group's non-archived
+            /// members whose status is Inactive. These people are still placed
+            /// but are shown in a muted state.
+            /// </summary>
+            public HashSet<int> InactivePersonIds { get; set; }
         }
 
         /// <summary>

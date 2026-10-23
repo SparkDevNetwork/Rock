@@ -97,17 +97,47 @@ namespace Rock.Badge.Component
 
                 if (spanValue == "New")
                 {
-                    writer.Write(String.Format( "<div class='rockbadge rockbadge-standard rockbadge-attendingduration {1}' data-toggle='tooltip' data-original-title='{0} is new this week.'>", person.NickName, cssClass));
+                    writer.Write(String.Format( "<div class='rockbadge rockbadge-standard rockbadge-attendingduration {1}' data-toggle='tooltip' data-original-title='{0}'>", GetTooltipAttributeValue( person.NickName, "is new this week." ), cssClass));
                 }
                 else
                 {
-                    writer.Write(String.Format( "<div class='rockbadge rockbadge-standard rockbadge-attendingduration {2}' data-toggle='tooltip' data-original-title='{0} first visited {1} ago.'>", person.NickName, spanUnit.ToQuantity(spanValue.AsInteger()), cssClass));
+                    writer.Write(String.Format( "<div class='rockbadge rockbadge-standard rockbadge-attendingduration {1}' data-toggle='tooltip' data-original-title='{0}'>", GetTooltipAttributeValue( person.NickName, $"first visited {spanUnit.ToQuantity( spanValue.AsInteger() )} ago." ), cssClass));
                 }
 
                 writer.Write(String.Format("<span class='metric-value'>{0}</span><span class='metric-unit'>{1}</span>", spanValue, spanUnit));
 
                 writer.Write("</div>");
             }
+        }
+
+        /// <summary>
+        /// Gets the tooltip text for the badge, encoded for use inside a single quoted
+        /// HTML attribute whose value is then rendered as an HTML tooltip.
+        /// </summary>
+        /// <param name="nickName">The person's nick name.</param>
+        /// <param name="message">The plain text message that follows the nick name.</param>
+        /// <returns>The encoded tooltip text.</returns>
+        internal static string GetTooltipAttributeValue( string nickName, string message )
+        {
+            /*
+                10/18/2026 - MSE
+
+                The tooltip is placed in a single quoted HTML attribute, which the browser
+                decodes once, and badge tooltips are then rendered as HTML (BadgeControl and
+                the Obsidian badges use html: true). A person can set their own nick name, so
+                the HTML markup characters in the name are encoded first (to still be text when
+                the tooltip is rendered as HTML), and then the whole tooltip is HTML encoded for
+                the attribute. Quotes are only encoded by the outer layer, so a name such as
+                O'Brien still shows correctly where the tooltip is rendered as plain text.
+
+                Reason: Prevent stored XSS through a person's nick name in the badge tooltip.
+            */
+            var tooltipName = ( nickName ?? string.Empty )
+                .Replace( "&", "&amp;" )
+                .Replace( "<", "&lt;" )
+                .Replace( ">", "&gt;" );
+
+            return $"{tooltipName} {message}".EncodeHtml();
         }
     }
 }

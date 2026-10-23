@@ -47,11 +47,10 @@ internal class LavaEndpointSummaryResult
     public string SecurityMode { get; set; }
 
     /// <summary>
-    /// Who may execute this endpoint when it answers for itself
-    /// (EndpointExecute mode), from its Execute allow rules. <c>null</c> in
-    /// the application modes, where the application's read audience governs.
+    /// The IdKey of the endpoint, for the Core Administration skill's
+    /// authorization tools when the endpoint answers for itself.
     /// </summary>
-    public List<string> Audiences { get; set; }
+    public string EndpointIdKey { get; set; }
 
     /// <summary>
     /// Whether the endpoint can be called.

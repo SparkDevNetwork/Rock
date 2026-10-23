@@ -15,7 +15,7 @@
           :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
 
         <TextColumn name="entityType"
                     title="Entity Type"

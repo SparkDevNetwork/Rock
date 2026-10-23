@@ -17,26 +17,6 @@
     </RankedListBarChart>
 </template>
 
-<style scoped>
-/* The inner Ant Select sizes to its content, so pin its width here; otherwise the picker grows
-   and shrinks with the selected dimension's label. :deep pierces into the DropDownList control. */
-.utm-dimension-picker :deep(.ant-select) {
-    min-width: 160px;
-}
-
-/* No label on the picker, so drop the control's default bottom spacing. */
-.utm-dimension-picker {
-    margin-bottom: 0;
-}
-
-/* Loading placeholder sized to the ranked list it stands in for. The base .skeleton class supplies
-   the shimmer animation. */
-.utm-skeleton {
-    height: 220px;
-    border-radius: var(--rounded-small);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";

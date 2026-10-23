@@ -49,6 +49,18 @@ namespace Rock.Badge.Component
         DefaultValue = "Last|6|Month||",
         IsRequired = false,
         Order = 3 )]
+
+    /*
+        10/14/2026 - MSE
+
+        The default template puts the tooltip in an HTML attribute, which the browser
+        decodes once, and badge tooltips are then rendered as HTML (BadgeControl sets
+        html: true). A person can set their own name (for example through a public
+        signup form), so the tooltip is escaped twice to still be encoded when it is
+        rendered.
+
+        Reason: Prevent stored XSS through a person's name in the badge tooltip.
+    */
     [CodeEditorField( "Lava Template",
         Description = "The lava template to use for the badge display",
         EditorMode = CodeEditorMode.Lava,
@@ -67,7 +79,7 @@ namespace Rock.Badge.Component
   {% capture tooltipText %}{{ Person.NickName }} has not contributed{{ dateRangeText }}.{% endcapture %}
 {% endif %}
 
-<div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
+<div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText | Escape | Escape }}'>
   <i class='badge-icon ti ti-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 ",

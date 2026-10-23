@@ -138,9 +138,6 @@
 </html>
 <script>
     Sys.Application.add_load(function () {
-        new ResizeSensor($('#dialog'), function ()
-        {
-            $('#modal-popup iframe', window.parent.document).height($('#dialog').height());
-        });
+        Rock.controls.modal.observeDialogSize();
     });
 </script>
