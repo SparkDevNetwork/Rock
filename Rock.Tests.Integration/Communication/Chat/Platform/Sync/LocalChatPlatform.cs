@@ -228,7 +228,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         public JObject WaitForSystemLine( Guid tenantId, Guid channelId, string body )
         {
             return WaitFor(
-                $"messages?select=id,person_alias_guid,body&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&message_type=eq.system&body=eq.{Uri.EscapeDataString( body )}",
+                $"messages?select=id,person_alias_guid,body,system_kind&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&message_type=eq.system&body=eq.{Uri.EscapeDataString( body )}",
                 r => r != null );
         }
 

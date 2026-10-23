@@ -206,6 +206,57 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void EachDoorsLineCarriesItsKindOnThePlatform()
+        {
+            using ( var scene = new Scene() )
+            {
+                scene.Platform.AddSystemAuthor( scene.TenantId );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var dee = scene.AddChatPerson( "Dee" );
+                var eve = scene.AddChatPerson( "Eve" );
+                var pip = scene.AddChatPerson( "Pip" );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                scene.Push( room, pip );
+                Assert.IsNotNull( scene.Platform.WaitForChannel( scene.TenantId, room, r => r != null ), "the room is on the platform" );
+                var group = scene.Start( ada, bo, cy, dee );
+
+                Assert.IsTrue( scene.Rights( bo, group ).CanRename, "the screen offers the rename the door then makes" );
+
+                Assert.AreEqual( "ok", scene.Join( ada, room ).Code );
+                Assert.AreEqual( "ok", scene.Add( ada, group, eve ).Code );
+                Assert.AreEqual( "ok", scene.Leave( dee, group ).Code );
+                Assert.AreEqual( "ok", scene.Remove( ada, group, eve ).Code );
+                Assert.AreEqual( "ok", scene.Rename( bo, group, "Trip" ).Code );
+                Assert.AreEqual( "ok", scene.Rename( bo, group, " " ).Code );
+
+                // Each line as the platform stored it: the kind the door sent, taken by the real call.
+                var expected = new[]
+                {
+                    (room, $"{scene.Name( ada )} joined the channel.", "joined"),
+                    (group, $"{scene.Name( ada )} added {scene.Name( eve )}.", "added"),
+                    (group, $"{scene.Name( dee )} left the conversation.", "left"),
+                    (group, $"{scene.Name( ada )} removed {scene.Name( eve )}.", "removed"),
+                    (group, $"{scene.Name( bo )} named the conversation Trip.", "renamed"),
+                    (group, $"{scene.Name( bo )} removed the conversation's name.", "renamed")
+                };
+
+                foreach ( var (channel, body, kind) in expected )
+                {
+                    var line = scene.Platform.WaitForSystemLine( scene.TenantId, channel, body );
+                    Assert.IsNotNull( line, "the line is in the room: " + body );
+                    Assert.AreEqual( kind, ( string ) line["system_kind"], body );
+                }
+
+                // A workflow's notice names no kind, and the platform stores none.
+                var notice = ChatDoorHelper.SendWorkflowChannelMessage( room, null, "The service starts at ten", scene.Configuration );
+                Assert.AreEqual( "ok", notice.Code, notice.Message );
+                Assert.AreEqual( Newtonsoft.Json.Linq.JTokenType.Null, scene.Platform.WaitForSystemLine( scene.TenantId, room, "The service starts at ten" )["system_kind"].Type );
+            }
+        }
+
         #endregion The membership doors
 
         #region Workflow posts
@@ -481,6 +532,26 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 return AsCaller( callerId, ( caller, context, rockContext ) =>
                     ChatDoorHelper.RemoveMemberAsync( caller, channelGuid, Fixture.PrimaryAliasGuid( personId ), replacement, context, rockContext ) );
+            }
+
+            public ChatMembershipResultBag Add( int callerId, Guid channelGuid, params int[] personIds )
+            {
+                return AsCaller( callerId, ( caller, context, rockContext ) =>
+                    ChatDoorHelper.AddMembersAsync( caller, channelGuid, personIds.Select( Fixture.PrimaryAliasGuid ), context, rockContext ) );
+            }
+
+            public ChatMemberRightsBag Rights( int callerId, Guid channelGuid )
+            {
+                return AsCaller( callerId, ( caller, context, rockContext ) =>
+                    System.Threading.Tasks.Task.FromResult( ChatDoorHelper.GetMemberRights( caller, channelGuid, context, rockContext ) ) );
+            }
+
+            public string Name( int personId )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return new PersonService( rockContext ).Get( personId ).FullName;
+                }
             }
 
             public ChatMembershipResultBag Rename( int callerId, Guid channelGuid, string name )
