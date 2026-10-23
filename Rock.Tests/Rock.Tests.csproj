@@ -231,6 +231,7 @@
     <Compile Include="Model\AnalyticsSourceDateTests.cs" />
     <Compile Include="Model\ExceptionLogServiceRedactionTests.cs" />
     <Compile Include="Model\InteractionComponentServiceTests.cs" />
+    <Compile Include="Model\NoteServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="CheckIn\PinAttemptLimiterTests.cs" />
