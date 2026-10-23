@@ -209,6 +209,34 @@ namespace Rock.Workflow
             {
                 person.Gender = personBag.PersonGender ?? Gender.Unknown;
             }
+
+            var personEntrySettings = form.GetFormPersonEntrySettings( _action.Activity.Workflow.WorkflowTypeCache?.FormBuilderTemplate );
+
+            // Match the WebForms behavior by preserving existing values when a
+            // visible optional field does not contain a valid selection.
+            var raceGuid = personBag.PersonRace?.Value.AsGuidOrNull();
+            if ( personEntrySettings.RaceEntry != WorkflowActionFormPersonEntryOption.Hidden && raceGuid.HasValue )
+            {
+                var raceValue = DefinedValueCache.Get( raceGuid.Value, _rockContext );
+                var raceTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RACE.AsGuid(), _rockContext )?.Id;
+
+                if ( raceValue != null && raceValue.DefinedTypeId == raceTypeId )
+                {
+                    person.RaceValueId = raceValue.Id;
+                }
+            }
+
+            var ethnicityGuid = personBag.PersonEthnicity?.Value.AsGuidOrNull();
+            if ( personEntrySettings.EthnicityEntry != WorkflowActionFormPersonEntryOption.Hidden && ethnicityGuid.HasValue )
+            {
+                var ethnicityValue = DefinedValueCache.Get( ethnicityGuid.Value, _rockContext );
+                var ethnicityTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ETHNICITY.AsGuid(), _rockContext )?.Id;
+
+                if ( ethnicityValue != null && ethnicityValue.DefinedTypeId == ethnicityTypeId )
+                {
+                    person.EthnicityValueId = ethnicityValue.Id;
+                }
+            }
         }
 
         /// <summary>
