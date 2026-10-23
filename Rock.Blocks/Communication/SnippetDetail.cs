@@ -189,7 +189,19 @@ namespace Rock.Blocks.Communication
 
                 Reason: Respect snippet View authorization.
             */
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            var currentPerson = RequestContext.CurrentPerson;
+
+            /*
+                10/23/2026 - MSE
+
+                Personal snippets require an identified owner. The model's
+                owner override does not exclude an anonymous person.
+
+                Reason: Keep personal snippets visible only to their owner.
+            */
+            var isPersonalViewable = !entity.OwnerPersonAliasId.HasValue
+                || ( currentPerson != null && entity.OwnerPersonAlias?.PersonId == currentPerson.Id );
+            var isViewable = isPersonalViewable && entity.IsAuthorized( Authorization.VIEW, currentPerson );
 
             entity.LoadAttributes( RockContext );
 
