@@ -88,6 +88,9 @@ function sidebarRow(channelId: string, extra: Partial<SidebarRow> = {}): Sidebar
         can_mention: true,
         dm_names: null,
         dm_other_count: null,
+        room_kind: "channel",
+        title: extra.name ?? "Room",
+        preview_line: "",
         ...extra
     };
 }

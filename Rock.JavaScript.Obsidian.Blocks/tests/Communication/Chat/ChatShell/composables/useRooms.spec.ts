@@ -32,9 +32,10 @@
 // chat_list_directory's {channels, total}, chat_get_person's object, and
 // ChatMembershipResultBag's {code, message, isPending, personAliasGuid}.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, directoryPageSize, directorySearchPause, PersonProfileResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, directorySearchPause, PersonProfileResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { MemberRights } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { JoinResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
-import { createChannelStore, roomTitle } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
+import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
 import { ChannelFacts, DirectoryRow, PersonProfile, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
@@ -101,6 +102,9 @@ function facts(channelId: string, name: string, extra: Partial<ChannelFacts> = {
     };
 }
 
+/** A page of the directory as the platform's limits set it, a size no client would choose. */
+const directoryPageSize = 35;
+
 /** A sidebar row in the exact shape chat_get_bootstrap answers. */
 function sidebarRow(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
     return {
@@ -132,6 +136,9 @@ function sidebarRow(channelId: string, extra: Partial<SidebarRow> = {}): Sidebar
         can_mention: true,
         dm_names: null,
         dm_other_count: null,
+        room_kind: "channel",
+        title: extra.name ?? "Room",
+        preview_line: "",
         ...extra
     };
 }
@@ -162,6 +169,8 @@ type Setup = {
     leaveCalls: Array<{ channelId: string, answer: Deferred<JoinResult> }>;
     renameCalls: Array<{ channelId: string, name: string, answer: Deferred<JoinResult> }>;
     personCalls: Array<{ personAliasGuid: string, channelId: string, answer: Deferred<PersonProfileResult> }>;
+    rightsCalls: Array<{ channelId: string, answer: Deferred<MemberRights> }>;
+    reloads: { value: number };
     opened: string[];
     toasts: Array<{ code: string, text: string, icon: string }>;
     active: { value: string | null };
@@ -175,6 +184,8 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
     const leaveCalls: Setup["leaveCalls"] = [];
     const renameCalls: Setup["renameCalls"] = [];
     const personCalls: Setup["personCalls"] = [];
+    const rightsCalls: Setup["rightsCalls"] = [];
+    const reloads = { value: 0 };
     const opened: string[] = [];
     const toasts: Setup["toasts"] = [];
     const active = { value: null as string | null };
@@ -212,6 +223,15 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
             personCalls.push({ personAliasGuid, channelId, answer });
             return answer.promise;
         },
+        getMemberRights: channelId => {
+            const answer = deferred<MemberRights>();
+            rightsCalls.push({ channelId, answer });
+            return answer.promise;
+        },
+        reloadSidebar: () => {
+            reloads.value++;
+        },
+        limits: () => ({ directory_page_size: directoryPageSize }),
         openChannel: channelId => {
             opened.push(channelId);
         },
@@ -222,7 +242,7 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
         notify: notice => toasts.push(notice)
     });
 
-    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, personCalls, opened, toasts, active, offline };
+    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, personCalls, rightsCalls, reloads, opened, toasts, active, offline };
 }
 
 /** Opens Browse channels and answers its first page. */
@@ -898,7 +918,7 @@ function sidebarOfThree(s: Setup): void {
     s.channels.setSidebar([
         sidebarRow(team, { name: "Tech Team" }),
         sidebarRow(volunteers, { name: "Volunteers" }),
-        sidebarRow(group, { name: null, channel_type: "dm", is_public: false, dm_names: ["Caleb", "Hannah"], dm_other_count: 2 })
+        sidebarRow(group, { name: null, channel_type: "dm", is_public: false, dm_names: ["Caleb", "Hannah"], dm_other_count: 2, room_kind: "group", title: "Caleb and Hannah" })
     ]);
 }
 
@@ -1111,13 +1131,14 @@ describe("Rename", () => {
 
         const row = s.channels.rows.find(r => r.channel_id === group)!;
         expect(row.name).toBe("Trail crew");
-        expect(roomTitle(row)).toBe("Trail crew");
+        expect(row.title).toBe("Trail crew");
+        expect(s.reloads.value).toBe(0);
         expect(s.rooms.factsOf(group)?.name).toBe("Trail crew");
     });
 
-    test("a name removed and saved titles the group by its people again, from its facts", async () => {
+    test("a name removed and saved reads the sidebar again, whose title of the group by its people is the platform's", async () => {
         const s = setup();
-        s.channels.setSidebar([sidebarRow(group, { name: "Trail crew", channel_type: "dm", is_public: false, dm_names: null, dm_other_count: 0 })]);
+        s.channels.setSidebar([sidebarRow(group, { name: "Trail crew", channel_type: "dm", is_public: false, dm_names: null, dm_other_count: 0, room_kind: "group", title: "Trail crew" })]);
         s.active.value = group;
         void s.rooms.channelOpened(group);
         s.channelCalls[0].answer.resolve({
@@ -1140,7 +1161,7 @@ describe("Rename", () => {
 
         const row = s.channels.rows.find(r => r.channel_id === group)!;
         expect(row.name).toBeNull();
-        expect(roomTitle(row)).toBe("Caleb and Hannah");
+        expect(s.reloads.value).toBe(1);
         expect(s.rooms.factsOf(group)?.name).toBeNull();
     });
 
@@ -1253,6 +1274,51 @@ describe("Rename", () => {
 // The profile card's person, read by chat_get_person for the room the card was opened from. One
 // card is open at a time, so a card opened over another drops the first's answer whenever it
 // lands; a person the platform does not list draws no card at all.
+// Whether the details offer Rename is Rock's answer, asked each time they open: the members door's
+// CanRename, by the rule its rename door applies. No answer, or a failed one, offers nothing.
+describe("Rename offered", () => {
+    test("opening the details asks Rock, and Rename is offered only once it says yes", async () => {
+        const s = setup();
+
+        void s.rooms.detailsOpened(group);
+        expect(s.rightsCalls.map(c => c.channelId)).toEqual([group]);
+        expect(s.rooms.canRenameOf(group)).toBe(false);
+
+        s.rightsCalls[0].answer.resolve({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null });
+        await settle();
+        expect(s.rooms.canRenameOf(group)).toBe(true);
+        expect(s.rooms.canRenameOf(team)).toBe(false);
+    });
+
+    test("each open asks again, and a no takes Rename away", async () => {
+        const s = setup();
+        void s.rooms.detailsOpened(group);
+        s.rightsCalls[0].answer.resolve({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null });
+        await settle();
+
+        void s.rooms.detailsOpened(group);
+        s.rightsCalls[1].answer.resolve({ canManageMembers: false, canRename: false, lastLeaderPersonAliasGuid: null });
+        await settle();
+
+        expect(s.rightsCalls).toHaveLength(2);
+        expect(s.rooms.canRenameOf(group)).toBe(false);
+    });
+
+    test("a door that fails offers nothing, and nothing lands once stopped", async () => {
+        const s = setup();
+        void s.rooms.detailsOpened(group);
+        s.rightsCalls[0].answer.reject(new Error("unreachable"));
+        await settle();
+        expect(s.rooms.canRenameOf(group)).toBe(false);
+
+        void s.rooms.detailsOpened(team);
+        s.rooms.stop();
+        s.rightsCalls[s.rightsCalls.length - 1].answer.resolve({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null });
+        await settle();
+        expect(s.rooms.canRenameOf(team)).toBe(false);
+    });
+});
+
 describe("the profile card", () => {
     const anna = "a0000002-0000-4000-8000-000000000000";
     const ben = "a0000003-0000-4000-8000-000000000000";

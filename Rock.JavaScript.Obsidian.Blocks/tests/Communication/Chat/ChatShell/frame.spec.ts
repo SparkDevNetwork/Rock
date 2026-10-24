@@ -41,7 +41,9 @@ const dmAnna: SidebarRow = sidebarRow({
     channel_id: "c0000005-0000-4000-8000-000000000000",
     channel_type: "dm",
     dm_names: ["Anna Kim"],
-    dm_other_count: 1
+    dm_other_count: 1,
+    room_kind: "person",
+    title: "Anna Kim"
 });
 
 /** A sidebar row in the exact shape chat_get_bootstrap answers. */
@@ -74,6 +76,9 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
         can_mention: true,
         dm_names: null,
         dm_other_count: null,
+        room_kind: "channel",
+        title: overrides.name ?? "",
+        preview_line: "",
         ...overrides
     };
 }
@@ -103,7 +108,7 @@ const mockTimelines = new Map<string, { messages: TimelineMessage[] }>();
 function timelineOf(channelId: string): { messages: TimelineMessage[] } {
     let timeline = mockTimelines.get(channelId);
     if (!timeline) {
-        timeline = reactive({ messages: [] as TimelineMessage[], isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: null });
+        timeline = reactive({ messages: [] as TimelineMessage[], isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: null });
         mockTimelines.set(channelId, timeline);
     }
 
@@ -164,6 +169,7 @@ function fakeShell(): Record<string, unknown> {
         activeChannelId: null as string | null,
         banner: null,
         isComposerOpen: true,
+        limits: { dm_max_others: 8, dm_name_max_length: 100 },
         isPushOffered: false,
         push: "offered"
     });
@@ -303,6 +309,7 @@ function fakeRooms(): Record<string, unknown> {
         joins: {} as Record<string, unknown>,
         leaves: {} as Record<string, unknown>,
         renames: {} as Record<string, unknown>,
+        canRename: {} as Record<string, boolean>,
         card: null as Record<string, unknown> | null,
         announcement: null
     });
@@ -330,6 +337,8 @@ function fakeRooms(): Record<string, unknown> {
         leaveOf: (channelId: string) => state.leaves[channelId] ?? { kind: "idle" },
         rename: jest.fn(async () => undefined),
         renameOf: (channelId: string) => state.renames[channelId] ?? { kind: "idle" },
+        detailsOpened: jest.fn(async () => undefined),
+        canRenameOf: (channelId: string) => state.canRename[channelId] === true,
         openCard: jest.fn(),
         readPerson: jest.fn(async () => null),
         closeCard: jest.fn(() => {
@@ -1588,7 +1597,9 @@ describe("a named group direct message", () => {
         channel_type: "dm",
         name: "Hike planning",
         dm_names: [],
-        dm_other_count: 0
+        dm_other_count: 0,
+        room_kind: "group",
+        title: "Hike planning"
     });
 
     async function openHike(w: VueWrapper): Promise<void> {
@@ -1618,13 +1629,34 @@ describe("a named group direct message", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("4 people");
     });
 
+    test("the header draws the title and the kind the platform sent, not ones made from the names it shows", async () => {
+        const w = await mountBlock(1200);
+        // Three people, one of them on the Chat Ban List: the names show only one other.
+        const listedOut = sidebarRow({
+            channel_id: "c0000011-0000-4000-8000-000000000000",
+            channel_type: "dm",
+            dm_names: ["Anna Kim"],
+            dm_other_count: 1,
+            room_kind: "group",
+            title: "Anna and 1 more"
+        });
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(listedOut);
+        await settle();
+        await openRow(w, listedOut.channel_id);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-title']").text()).toContain("Anna and 1 more");
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("2 people");
+    });
+
     test("an unnamed group still counts its people with the reader under its title", async () => {
         const w = await mountBlock(1200);
         const trio = sidebarRow({
             channel_id: "c0000010-0000-4000-8000-000000000000",
             channel_type: "dm",
             dm_names: ["Anna Kim", "Ben Ortiz"],
-            dm_other_count: 2
+            dm_other_count: 2,
+            room_kind: "group",
+            title: "Anna and Ben"
         });
         (mockShell!.channels as { rows: SidebarRow[] }).rows.push(trio);
         await settle();
@@ -2972,7 +3004,7 @@ describe("the profile card", () => {
 // The header's title opens the conversation's details, as does the phone's overflow; Leave and a
 // group's Rename go to the shell's rooms, and the dialog closes once the person has left.
 describe("the conversation's details", () => {
-    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", dm_names: ["Caleb", "Hannah"], dm_other_count: 2 });
+    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", dm_names: ["Caleb", "Hannah"], dm_other_count: 2, room_kind: "group", title: "Caleb and Hannah" });
 
     function detailsDialog(): HTMLElement | null {
         return document.querySelector<HTMLElement>("[data-testid='details-close']")?.closest<HTMLElement>("[role='dialog']") ?? null;
@@ -3108,11 +3140,14 @@ describe("the conversation's details", () => {
                 { person_alias_guid: "a0000006-0000-4000-8000-000000000000", nick_name: "Hannah", last_name: "Diaz", avatar_url: null, details: null }
             ]
         });
+        roomsOf().state.canRename[hike.channel_id] = true;
         await settle();
         await openRow(w, hike.channel_id);
         await w.get("[data-testid='header-details']").trigger("click");
         await settle();
 
+        // Opening the details asks Rock whether the person may rename the room.
+        expect(roomsOf().detailsOpened).toHaveBeenCalledWith(hike.channel_id);
         const input = document.querySelector<HTMLInputElement>("[data-testid='rename-input']")!;
         input.value = "Trail crew";
         input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -3139,7 +3174,7 @@ describe("the conversation's details", () => {
 // button, the intro's Members and the details dialog's member count; a second press closes it.
 // A member row opens the person's card beside the panel, and Escape gives focus back to the row.
 describe("the members panel", () => {
-    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_names: ["Caleb", "Hannah"], dm_other_count: 2 });
+    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_names: ["Caleb", "Hannah"], dm_other_count: 2, room_kind: "group", title: "Hike planning" });
 
     /** Anna as chat_list_members answers her, exactly its keys. */
     const annaMember = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, is_leader: false, details: { campus_id: null, badge_keys: ["serving"] }, can_message: true };
@@ -3411,11 +3446,11 @@ describe("the members panel", () => {
     test("the page asks Rock's doors for the rights, an add and a remove, and a door Rock answered without is unreached", async () => {
         await mountBlock(1200);
         const options = mockShellOptions!;
-        mockInvoke.mockResolvedValueOnce({ isSuccess: true, data: { canManageMembers: true } });
+        mockInvoke.mockResolvedValueOnce({ isSuccess: true, data: { canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: annaMember.person_alias_guid } });
         mockInvoke.mockResolvedValueOnce({ isSuccess: true, data: { code: "ok", message: null, isPending: true } });
         mockInvoke.mockResolvedValueOnce({ isSuccess: false, errorMessage: "Request failed", data: null });
 
-        expect(await options.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: true });
+        expect(await options.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: annaMember.person_alias_guid });
         expect(await options.addMembers!(team.channel_id, [annaMember.person_alias_guid])).toEqual({ code: "ok", message: null, isPending: true });
         expect(await options.removeMember!(team.channel_id, annaMember.person_alias_guid, null)).toEqual({ code: "door.unavailable", message: "Request failed", isPending: false });
 
@@ -3430,7 +3465,7 @@ describe("the members panel", () => {
         await mountBlock(1200);
         mockInvoke.mockResolvedValueOnce({ isSuccess: false, errorMessage: "Request failed", data: null });
 
-        expect(await mockShellOptions!.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: false });
+        expect(await mockShellOptions!.getMemberRights!(team.channel_id)).toEqual({ canManageMembers: false, canRename: false, lastLeaderPersonAliasGuid: null });
     });
 
 });

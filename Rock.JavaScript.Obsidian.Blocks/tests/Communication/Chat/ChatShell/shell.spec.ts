@@ -52,6 +52,22 @@ async function settle(): Promise<void> {
     }
 }
 
+/**
+ * The platform's limits as the token exchange answers them; the directory's page is a size no
+ * client would choose, so only a size read from them is asked.
+ */
+const platformLimits = {
+    dm_max_others: 8,
+    dm_name_max_length: 100,
+    body_max_length: 4000,
+    history_page_size: 50,
+    member_page_size: 50,
+    mention_page_size: 30,
+    thread_page_size: 30,
+    directory_page_size: 45,
+    people_search_size: 10
+};
+
 function page(id: number): HistoryPage {
     return {
         messages: [{ id, person_alias_guid: "a0000001-0000-4000-8000-000000000000", sender_nick_name: "Ada", message_type: "text", body: `m${id}`, created_at: "2026-09-23T10:00:00Z" }],
@@ -156,7 +172,7 @@ function build(options: {
     // Every device register and unregister asked, and what an unregister answers.
     const deviceCalls: Array<{ name: string, body: Record<string, unknown> }> = [];
     const deviceAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: {} } };
-    const exchangeSettings = { value: options.pushSettings ? { push: options.pushSettings } as Record<string, unknown> : {} as Record<string, unknown> };
+    const exchangeSettings = { value: { limits: platformLimits, ...(options.pushSettings ? { push: options.pushSettings } : {}) } as Record<string, unknown> };
     const heldExchange: { value: Deferred<void> | null } = { value: null };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
@@ -1853,6 +1869,9 @@ describe("the live sidebar", () => {
             can_mention: true,
             dm_names: null,
             dm_other_count: null,
+            room_kind: "channel",
+            title: extra.name ?? "Room",
+            preview_line: "",
             ...extra
         };
     }
@@ -1863,7 +1882,7 @@ describe("the live sidebar", () => {
             channels: [
                 sidebarRow(channelA, { read_cursor: 9 }),
                 sidebarRow(channelB),
-                sidebarRow(dmD, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1 }),
+                sidebarRow(dmD, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1, room_kind: "person", title: "Ben Okafor" }),
                 sidebarRow(channelE, { last_message_id: 12, read_cursor: 10, is_unread: true, mention_count: 1 })
             ],
             reactions: [],
@@ -2006,9 +2025,10 @@ describe("the live sidebar", () => {
                 sender: { nick_name: "Ben", last_name: "Okafor" },
                 is_own: false,
                 posted_by_rock: false,
+                preview_line: "new",
                 id: "5e000013-0000-4000-8000-000000000000"
             }, h => {
-                expect(rowOf(h, dmD)).toEqual(expect.objectContaining({ last_message_id: 11, last_message_preview: "new", last_sender_nick_name: "Ben", is_unread: true }));
+                expect(rowOf(h, dmD)).toEqual(expect.objectContaining({ last_message_id: 11, last_message_preview: "new", preview_line: "new", last_sender_nick_name: "Ben", is_unread: true }));
             }],
             ["channel.read", "channel.read", { channel_id: channelE, read_cursor: 12, last_message_id: 12, id: "5e000014-0000-4000-8000-000000000000" }, h => {
                 expect(rowOf(h, channelE)).toEqual(expect.objectContaining({ read_cursor: 12, is_unread: false, mention_count: 0 }));
@@ -2198,7 +2218,7 @@ describe("the live sidebar", () => {
                 p_whole_church: false,
                 p_not_joined: false,
                 p_after: null,
-                p_limit: 50
+                p_limit: 45
             }]);
         });
 
@@ -2389,7 +2409,7 @@ describe("the live sidebar", () => {
                 isChatAdministrator: true,
                 getMemberRights: async channelId => {
                     doorCalls.push(["rights", channelId]);
-                    return { canManageMembers: true };
+                    return { canManageMembers: true, canRename: false, lastLeaderPersonAliasGuid: null };
                 },
                 removeMember: async (channelId, personAliasGuid, replacement) => {
                     doorCalls.push(["remove", channelId, personAliasGuid, replacement]);
@@ -2444,7 +2464,7 @@ describe("settings", () => {
         const h = await startedWith({ channels: [row], me: { unread_mentions: [] } });
         const refresh = deferred<void>();
         h.heldExchange.value = refresh;
-        h.exchangeSettings.value = { service: { state: "read_only", banner: "Chat is read only until 9." } };
+        h.exchangeSettings.value = { limits: platformLimits, service: { state: "read_only", banner: "Chat is read only until 9." } };
 
         personal(h, "session.recheck", {});
         await settle();
@@ -2472,7 +2492,8 @@ describe("settings", () => {
             is_favorite: false, notify_mode: "all", is_leader: false, can_post_announcements: false, can_mention_all: false, last_message_id: 10,
             last_message_at: "2026-10-19T09:00:00Z", last_message_type: "text", last_sender_nick_name: "Ada", last_sender_last_name: "Member",
             last_sender_listed: true, last_message_preview: "old", last_message_is_own: false, last_message_posted_by_rock: false, read_cursor: 10,
-            is_unread: false, mention_count: 0, all_mention_count: 0, can_mention: true, dm_names: null, dm_other_count: null
+            is_unread: false, mention_count: 0, all_mention_count: 0, can_mention: true, dm_names: null, dm_other_count: null,
+            room_kind: "channel", title: "Room", preview_line: ""
         };
         const h = await startedWith({ channels: [row], me: { unread_mentions: [] } });
         h.prefsAnswer.value = { status: 200, body: { channel: { channel_id: channelB, is_favorite: false, hidden: false, notify_mode: "silent", notify_mode_effective: "silent" }, me: {} } };

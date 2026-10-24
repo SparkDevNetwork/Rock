@@ -479,7 +479,22 @@ describe("settings from the token exchange", () => {
         service: { state: "normal", banner: null },
         client: { update_required: false },
         routes: { send: "direct" },
-        limits: { reconnect_base_ms: 1000, reconnect_cap_ms: 30000, catch_up_page: 100, catch_up_max: 500 },
+        // the platform's own limits have no default here: one not sent reads as 0
+        limits: {
+            reconnect_base_ms: 1000,
+            reconnect_cap_ms: 30000,
+            catch_up_page: 100,
+            catch_up_max: 500,
+            dm_max_others: 0,
+            dm_name_max_length: 0,
+            body_max_length: 0,
+            history_page_size: 0,
+            member_page_size: 0,
+            mention_page_size: 0,
+            thread_page_size: 0,
+            directory_page_size: 0,
+            people_search_size: 0
+        },
         flags: {},
         push: { web: null, vapid_key: null, prompt: "after_send" }
     };
@@ -499,6 +514,24 @@ describe("settings from the token exchange", () => {
         expect(readSettings({})).toEqual(defaults);
         expect(readSettings("not an object")).toEqual(defaults);
         expect(readSettings({ limits: { reconnect_cap_ms: 60000 } }).limits).toEqual({ ...defaults.limits, reconnect_cap_ms: 60000 });
+    });
+
+    test("the platform's limits are read as it sent them, and one missing or not a positive whole number reads as 0", () => {
+        const platform = {
+            dm_max_others: 8,
+            dm_name_max_length: 100,
+            body_max_length: 4000,
+            history_page_size: 50,
+            member_page_size: 50,
+            mention_page_size: 30,
+            thread_page_size: 30,
+            directory_page_size: 50,
+            people_search_size: 10
+        };
+
+        expect(readSettings({ limits: platform }).limits).toEqual({ ...defaults.limits, ...platform });
+        const odd = readSettings({ limits: { ...platform, dm_max_others: "8", history_page_size: 2.5, people_search_size: -1, member_page_size: undefined } }).limits;
+        expect([odd.dm_max_others, odd.history_page_size, odd.people_search_size, odd.member_page_size]).toEqual([0, 0, 0, 0]);
     });
 
     test("a catch-up page is never larger than history will serve", () => {

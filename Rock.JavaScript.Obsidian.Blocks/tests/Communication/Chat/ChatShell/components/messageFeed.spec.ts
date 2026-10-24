@@ -133,6 +133,7 @@ function timeline(messages: TimelineMessage[], extra: Partial<TimelineState> = {
         hasMore: false,
         readCursor: null,
         unreadCount: 0,
+        firstUnreadId: null,
         isBehind: false,
         verifiedThrough: messages.length ? messages[messages.length - 1].id : null,
         ...extra
@@ -373,6 +374,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         const answer = deferred<SendResult>();
         let sender: ReturnType<typeof createSender> | null = null;
         const timelines = createTimelines({
+            limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: [message(1, anna, at(14, 50))], read_cursor: null, unread_count: 0, has_more: false }),
             onLanded: m => sender?.landed(m)
         });
@@ -547,11 +549,11 @@ describe("day sections", () => {
 describe("the New divider and the unread strip", () => {
     function unread(): VueWrapper {
         return draw({
-            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7 })
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7, firstUnreadId: 2 })
         });
     }
 
-    test("the divider reads New and sits above the first message past the read position", () => {
+    test("the divider reads New and sits above the first unread message the platform found", () => {
         const wrapper = unread();
 
         const divider = wrapper.get("[data-testid='unread-divider']");
@@ -560,8 +562,28 @@ describe("the New divider and the unread strip", () => {
         expect(isBefore(divider.element, wrapper.get("[data-message-id='2']").element)).toBe(true);
     });
 
+    test("the divider stands above a post Rock made in the reader's name when the platform says it is the first unread", () => {
+        // The reader's own message by its sender, which the feed itself would never call new.
+        const wrapper = draw({
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, me, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2, firstUnreadId: 2 })
+        });
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(isBefore(wrapper.get("[data-message-id='1']").element, divider.element)).toBe(true);
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='2']").element)).toBe(true);
+    });
+
+    test("the divider stands at the page's top when the first unread is older than the page loaded", () => {
+        const wrapper = draw({
+            timeline: timeline([message(40, anna, at(11, 0)), message(41, anna, at(11, 30))], { readCursor: 3, unreadCount: 99, firstUnreadId: 4 })
+        });
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='40']").element)).toBe(true);
+    });
+
     test("no divider and no strip with nothing unread", () => {
-        const wrapper = draw({ timeline: timeline([message(1, anna, at(11, 0))], { readCursor: 1, unreadCount: 0 }) });
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(11, 0))], { readCursor: 1, unreadCount: 0, firstUnreadId: null }) });
 
         expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
         expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
@@ -612,7 +634,7 @@ describe("the New divider and the unread strip", () => {
 
     test("Mark as read saves the read position at the newest stored message", async () => {
         const wrapper = draw({
-            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2 }),
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2, firstUnreadId: 2 }),
             pending: [pendingRow("a")]
         });
         FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
@@ -638,7 +660,7 @@ describe("the New divider and the unread strip", () => {
     });
 
     test("after a send, a catch-up whose divider falls past the newest message at the send brings the divider and the strip back", async () => {
-        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7 });
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7, firstUnreadId: 2 });
         const wrapper = draw({ timeline: state });
 
         await wrapper.setProps({ pending: [pendingRow("a")] });
@@ -649,6 +671,7 @@ describe("the New divider and the unread strip", () => {
         state.messages.push(message(4, me, at(11, 40)), message(5, anna, at(11, 45)));
         state.readCursor = 4;
         state.unreadCount = 1;
+        state.firstUnreadId = 5;
         await nextTick();
 
         const divider = wrapper.get("[data-testid='unread-divider']");
@@ -660,7 +683,7 @@ describe("the New divider and the unread strip", () => {
     });
 
     test("after a send, a catch-up whose divider falls at or before the newest message at the send keeps them hidden", async () => {
-        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7 });
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 7, firstUnreadId: 2 });
         const wrapper = draw({ timeline: state });
         FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
         await nextTick();
@@ -668,10 +691,12 @@ describe("the New divider and the unread strip", () => {
         await wrapper.setProps({ pending: [pendingRow("a")] });
         await nextTick();
 
-        // The same read position comes back with the send stored after it: nothing new from others.
+        // The same read position comes back with the send stored after it, and an answer that
+        // still names an unread message from before the send.
         state.messages.push(message(4, me, at(11, 40)));
         state.readCursor = 1;
         state.unreadCount = 3;
+        state.firstUnreadId = 2;
         await nextTick();
 
         expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
@@ -687,8 +712,8 @@ describe("the New divider and the unread strip", () => {
         expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
     });
 
-    test("with the reader's own messages past the read position, the strip counts only the others' after the divider", async () => {
-        // The platform's count is everything past the read position, the reader's own included.
+    test("the strip says the platform's count, since the first unread it found, with the reader's own messages among them", async () => {
+        // The platform's count already leaves out the reader's own and the system line.
         const wrapper = draw({
             timeline: timeline([
                 message(1, anna, at(11, 0)),
@@ -697,7 +722,7 @@ describe("the New divider and the unread strip", () => {
                 message(4, me, at(11, 31)),
                 message(5, anna, at(11, 32)),
                 message(6, anna, at(11, 33), { message_type: "system" })
-            ], { readCursor: 1, unreadCount: 4 })
+            ], { readCursor: 1, unreadCount: 2, firstUnreadId: 3 })
         });
         FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
         await nextTick();

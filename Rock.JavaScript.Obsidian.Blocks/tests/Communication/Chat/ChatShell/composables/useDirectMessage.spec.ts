@@ -23,7 +23,6 @@ import {
     DoorResult,
     isNewMessageShown,
     isTextKeptOnSend,
-    maxOthers,
     PersonRow
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { ChatError, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -87,6 +86,7 @@ function setup(overrides: Partial<DirectMessageDependencies & Waiting> = {}): {
             calls.push(`send ${channelId} ${body}`);
             return true;
         },
+        limits: () => ({ dm_max_others: 8 }),
         ...overrides
     };
 
@@ -116,17 +116,31 @@ describe("the picker", () => {
         expect(dm.error).toBeNull();
     });
 
-    test("takes at most eight people", () => {
+    test("takes at most the people the platform's limits allow besides the person", () => {
         const { dependencies } = setup();
         const dm = createDirectMessages(dependencies);
 
-        for (let n = 1; n <= maxOthers; n++) {
+        for (let n = 1; n <= 8; n++) {
             expect(dm.choose(person(n))).toBe(true);
         }
 
         expect(dm.choose(person(9))).toBe(false);
         expect(dm.chosen.length).toBe(8);
-        expect(maxOthers).toBe(8);
+    });
+
+    test("a group size of 3 from the limits takes three, and starts with no more than three", () => {
+        const { dependencies } = setup({ limits: () => ({ dm_max_others: 3 }) });
+        const dm = createDirectMessages(dependencies);
+
+        for (let n = 1; n <= 3; n++) {
+            expect(dm.choose(person(n))).toBe(true);
+        }
+        expect(dm.choose(person(4))).toBe(false);
+        expect(dm.chosen.length).toBe(3);
+
+        const fresh = createDirectMessages(dependencies);
+        fresh.begin([person(1), person(2), person(3), person(4), person(5)]);
+        expect(fresh.chosen.map(p => p.person_alias_guid)).toEqual([person(1), person(2), person(3)].map(p => p.person_alias_guid));
     });
 
     test("a person chosen twice is chosen once", () => {

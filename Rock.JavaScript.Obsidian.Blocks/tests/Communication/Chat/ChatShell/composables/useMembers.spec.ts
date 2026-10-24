@@ -45,8 +45,8 @@
 //
 //   shownMembers(state): RosterMember[]      what the panel lists for the query typed
 //   searchStatus(state): "searching" | "answered" | "failed" | null
-//   memberSearchPause: 250, memberPageSize: 50
-import { createMembers, isLastLeader, memberPageSize, memberSearchPause, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
+//   memberSearchPause: 250; the page and search sizes are the platform's limits
+import { createMembers, MemberRights, memberSearchPause, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -110,6 +110,14 @@ function deferred<T>(): Deferred<T> {
 
 type Call = { name: string, args: Record<string, unknown> };
 
+/**
+ * A page of the roster and the people search's answer, as the platform's limits set them; sizes
+ * no client would choose for itself, so only a size read from the limits is asked.
+ */
+const memberPageSize = 40;
+const peopleSearchSize = 7;
+const limits = (): { member_page_size: number, people_search_size: number } => ({ member_page_size: memberPageSize, people_search_size: peopleSearchSize });
+
 /** The roster with a call path the test answers in order, each answer given or held. */
 function harness(...answers: Array<CallResult | Deferred<CallResult>>): { members: ReturnType<typeof createMembers>, calls: Call[], answers: Array<CallResult | Deferred<CallResult>> } {
     const calls: Call[] = [];
@@ -122,7 +130,8 @@ function harness(...answers: Array<CallResult | Deferred<CallResult>>): { member
                 return Promise.resolve(page([]));
             }
             return "promise" in next ? next.promise : Promise.resolve(next);
-        }
+        },
+        limits
     });
     return { members, calls, answers: queue };
 }
@@ -451,13 +460,15 @@ describe("stopping", () => {
 //                      refusal: { text, personAliasGuid } | null }
 //   askRemove(guid), cancelRemove(), remove(replacementGuid?), dismissRemoval(guid),
 //   setSuccessorQuery(query), openAdd(), closeAdd(), setAddQuery(query), add(people)
-//   isLastLeader(state, guid), successorChoices(state)
+//   successorChoices(state); state.lastLeaderPersonAliasGuid is Rock's answer on open, and
+//   state.isSuccessorAsked says the confirm asks who leads next
 
 type Answer = { code?: string | null, message?: string | null, isPending: boolean, personAliasGuid?: string | null };
 
 type DoorCall = { door: string, args: unknown[] };
 
-type Rights = { canManageMembers: boolean };
+/** Rock's answer, its other rights none unless a test gives them. */
+type Rights = Partial<MemberRights> & { canManageMembers: boolean };
 
 /** The roster with Rock's doors, each answering what the test hands it, in order, given or held. */
 function doorHarness(options: {
@@ -493,7 +504,8 @@ function doorHarness(options: {
             getRights: channelId => {
                 doorCalls.push({ door: "getRights", args: [channelId] });
                 const next = rightsQueue.shift() ?? { canManageMembers: false };
-                return "promise" in next ? next.promise : Promise.resolve(next);
+                const answer = "promise" in next ? next.promise : Promise.resolve(next);
+                return answer.then(rights => ({ canRename: false, lastLeaderPersonAliasGuid: null, ...rights }));
             },
             addMembers: (channelId, personAliasGuids) => {
                 doorCalls.push({ door: "addMembers", args: [channelId, personAliasGuids] });
@@ -508,7 +520,8 @@ function doorHarness(options: {
         notify: notice => notices.push(notice),
         titleOf: id => id === channel ? "young-adults" : "Hike planning",
         isChatAdministrator: options.isChatAdministrator ?? false,
-        campusOnly: false
+        campusOnly: false,
+        limits
     });
 
     return { members, calls, doorCalls, notices, offline };
@@ -585,7 +598,7 @@ describe("the reader's rights in the room", () => {
     });
 
     test("a page with no doors offers nothing, and whether the reader is a Chat Administrator comes from Rock's page load", async () => {
-        const bare = createMembers({ call: () => Promise.resolve(page([tom])) });
+        const bare = createMembers({ call: () => Promise.resolve(page([tom])), limits });
         await bare.open(channel);
         expect(bare.state.canManageMembers).toBe(false);
         expect(bare.state.isChatAdministrator).toBe(false);
@@ -730,15 +743,25 @@ describe("removing someone", () => {
 describe("removing a leader", () => {
     const grace = member(5, "Grace", "Kim", { is_leader: true });
 
-    test("a leader is the last one only while no other leader is in the loaded roster", async () => {
-        const { members } = doorHarness({ calls: [page([tom, grace, anna])] });
+    test("the last leader is the one Rock names on open, whatever leaders the loaded roster shows", async () => {
+        // Grace leads too by the roster, but Rock leaves her out (on the Chat Ban List, say).
+        const { members } = doorHarness({ calls: [page([tom, grace, anna])], rights: [{ canManageMembers: true, lastLeaderPersonAliasGuid: guid(1).toUpperCase() }], isChatAdministrator: true });
         await members.open(channel);
-        expect(isLastLeader(members.state, guid(1))).toBe(false);
-        expect(isLastLeader(members.state, guid(2))).toBe(false);
+        await settle();
 
-        const alone = doorHarness({ calls: [page([tom, anna])] });
+        members.askRemove(guid(1));
+        expect(members.state.isSuccessorAsked).toBe(true);
+        members.askRemove(guid(5));
+        expect(members.state.isSuccessorAsked).toBe(false);
+        members.askRemove(guid(2));
+        expect(members.state.isSuccessorAsked).toBe(false);
+
+        // The roster's only leader is not the last one when Rock names nobody.
+        const alone = doorHarness({ calls: [page([tom, anna])], rights: [{ canManageMembers: true, lastLeaderPersonAliasGuid: null }] });
         await alone.members.open(channel);
-        expect(isLastLeader(alone.members.state, guid(1))).toBe(true);
+        await settle();
+        alone.members.askRemove(guid(1));
+        expect(alone.members.state.isSuccessorAsked).toBe(false);
     });
 
     test("the last leader's dialog lists the room's other members, and its search asks the roster for the whole room", async () => {
@@ -813,12 +836,12 @@ describe("removing a leader", () => {
         const { members, doorCalls } = doorHarness({ calls: [page([tom, grace, anna]), page([grace, { ...anna, is_leader: true }])], answers: [lastLeader, ok], isChatAdministrator: true });
         await members.open(channel);
         members.askRemove(guid(1));
-        expect(isLastLeader(members.state, guid(1))).toBe(false);
+        expect(members.state.isSuccessorAsked).toBe(false);
 
         await members.remove();
 
         expect(members.state.confirming?.nick_name).toBe("Tom");
-        expect(isLastLeader(members.state, guid(1))).toBe(true);
+        expect(members.state.isSuccessorAsked).toBe(true);
         expect(members.state.removals[guid(1)]).toBeUndefined();
         expect(members.state.successorRefusal).toBeNull();
 
@@ -827,7 +850,7 @@ describe("removing a leader", () => {
         expect(members.state.confirming).toBeNull();
 
         members.askRemove(guid(5));
-        expect(isLastLeader(members.state, guid(5))).toBe(false);
+        expect(members.state.isSuccessorAsked).toBe(false);
     });
 
     test("a refusal of a member who does not lead stays under their row", async () => {
@@ -861,7 +884,7 @@ describe("adding people", () => {
         members.setAddQuery(" a ");
         expect(members.state.adding.isSearching).toBe(true);
         jest.advanceTimersByTime(memberSearchPause);
-        expect(calls[1]).toEqual({ name: "chat_search_people", args: { p_query: "a", p_limit: 10, p_campus_only: false, p_channel_id: channel } });
+        expect(calls[1]).toEqual({ name: "chat_search_people", args: { p_query: "a", p_limit: peopleSearchSize, p_campus_only: false, p_channel_id: channel } });
 
         await settle();
         expect(members.state.adding.people?.map(p => [p.nick_name, p.in_room])).toEqual([["Aaron", false], ["Anna", true]]);

@@ -80,6 +80,9 @@ const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
 const channel = "c0000001-0000-4000-8000-000000000000";
+
+/** The platform's page of the inbox, a size no client would choose, so only the limits' is asked. */
+const mentionLimits = (): { mention_page_size: number } => ({ mention_page_size: 12 });
 const otherChannel = "c0000002-0000-4000-8000-000000000000";
 
 const annaPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes" };
@@ -218,7 +221,7 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
     const calls: Call[] = [];
     const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
     const storage = options.storage ?? memoryStorage();
-    const timelines = createTimelines({ fetchPage });
+    const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage });
     const opened: string[] = [];
     const landed: number[] = [];
     const threads: Array<[string, number, number]> = [];
@@ -236,6 +239,7 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
     };
 
     const mentions = createMentions({
+        limits: mentionLimits,
         call: (name, args) => {
             calls.push({ name, args });
             const next = answers[name]?.shift();
@@ -581,7 +585,7 @@ describe("the inbox", () => {
         const fetches = h.callsTo("chat_list_mentions");
         expect(fetches).toHaveLength(1);
         expect(fetches[0].args).toEqual(expect.objectContaining({ p_channel_id: null, p_before_created_at: null, p_before_id: null }));
-        expect(typeof fetches[0].args.p_limit).toBe("number");
+        expect(fetches[0].args.p_limit).toBe(12);
         expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([50, 40]);
         expect(h.mentions.state.inbox.hasMore).toBe(true);
     });

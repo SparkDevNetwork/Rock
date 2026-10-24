@@ -173,6 +173,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
     notices: jest.Mock
 }> {
     const timelines = createTimelines({
+        limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => ({ messages, read_cursor: null, unread_count: 0, has_more: false })
     });
     await timelines.loadNewest(channel);
@@ -755,6 +756,7 @@ describe("a page read before a reaction", () => {
         const answers: Array<CallResult | Deferred<CallResult>> = [];
         let reactions: ReturnType<typeof createReactions> | null = null;
         const timelines = createTimelines({
+            limits: () => ({ history_page_size: 50 }),
             fetchPage: () => {
                 const page = deferred<HistoryPage>();
                 pages.push(page);
@@ -762,7 +764,7 @@ describe("a page read before a reaction", () => {
             },
             applyReaction: (channelId: string, event: string, payload: unknown) => reactions?.applyEvent(channelId, event as "reaction.added", payload)
         } as never);
-        const threads = createThreads({ call: () => threadPage.promise, timelines, personAliasGuid: me });
+        const threads = createThreads({ limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me });
         reactions = createReactions({
             call: () => {
                 const answer = answers.shift() ?? ok({});

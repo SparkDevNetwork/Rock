@@ -130,6 +130,8 @@ function mountDetails(props: Record<string, unknown> = {}): VueWrapper {
             personPhotoUrl: null,
             leave: idle,
             rename: renameIdle,
+            canRename: false,
+            nameMaxLength: 100,
             ...props
         },
         attachTo: document.body
@@ -137,8 +139,9 @@ function mountDetails(props: Record<string, unknown> = {}): VueWrapper {
     return wrapper;
 }
 
+/** A group the person is in, which Rock's members door says they may rename. */
 function mountGroup(props: Record<string, unknown> = {}): VueWrapper {
-    return mountDetails({ kind: "group", title: "Caleb, Hannah and Luis", facts: groupFacts(), ...props });
+    return mountDetails({ kind: "group", title: "Caleb, Hannah and Luis", facts: groupFacts(), canRename: true, ...props });
 }
 
 function dialogOf(w: VueWrapper): HTMLElement {
@@ -535,7 +538,7 @@ describe("a channel the person has not joined", () => {
 });
 
 describe("the conversation name", () => {
-    test("is offered for a group only", () => {
+    test("is offered only where Rock's door says the person may rename the room", () => {
         const channel = mountDetails();
         expect(channel.find("[data-testid='rename-input']").exists()).toBe(false);
         channel.unmount();
@@ -546,6 +549,22 @@ describe("the conversation name", () => {
 
         const group = mountGroup();
         expect(group.find("[data-testid='rename-input']").exists()).toBe(true);
+        group.unmount();
+
+        // A group the person is in, which Rock still will not let them rename.
+        const refused = mountGroup({ canRename: false });
+        expect(refused.find("[data-testid='rename-input']").exists()).toBe(false);
+    });
+
+    test("holds a name of up to the length the platform sets, and counts toward that length", async () => {
+        const w = mountGroup({ nameMaxLength: 60 });
+        const input = w.get("[data-testid='rename-input']");
+
+        expect((input.element as HTMLInputElement).maxLength).toBe(60);
+        await input.setValue("x".repeat(49));
+        expect(w.find("[data-testid='rename-count']").exists()).toBe(false);
+        await input.setValue("x".repeat(55));
+        expect(w.get("[data-testid='rename-count']").text()).toBe("55 of 60 characters");
     });
 
     test("is a labelled field of up to 100 characters holding the name, the members' first names as its placeholder", () => {
@@ -716,8 +735,8 @@ describe("the conversation name", () => {
         expect(w.get("[data-testid='rename-note']").text()).toBe("Saved. It can take a minute to reach everyone.");
     });
 
-    test("is not offered in a group the person is not in", () => {
-        const w = mountGroup({ facts: groupFacts({ is_member: false }) });
+    test("is not offered in a group the person is not in, which Rock's door says", () => {
+        const w = mountGroup({ facts: groupFacts({ is_member: false }), canRename: false });
 
         expect(w.find("[data-testid='rename-input']").exists()).toBe(false);
     });

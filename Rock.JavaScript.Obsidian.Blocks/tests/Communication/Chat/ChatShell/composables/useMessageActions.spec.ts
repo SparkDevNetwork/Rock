@@ -133,6 +133,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
     notices: jest.Mock
 }> {
     const timelines = createTimelines({
+        limits: () => ({ history_page_size: 50 }),
         fetchPage: async channelId => ({ messages: channelId === channel ? messages : [message(900, { body: "elsewhere" })], read_cursor: null, unread_count: 0, has_more: false })
     });
     await timelines.loadNewest(channel);

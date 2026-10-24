@@ -66,6 +66,7 @@ let wrapper: VueWrapper | null = null;
 function mountView(props: Record<string, unknown> = {}): VueWrapper {
     wrapper = mount(NewMessage, {
         props: {
+            maxOthers: 8,
             chosen: [],
             search: jest.fn(async () => [anna, andre]),
             lookup: idle,
@@ -181,6 +182,7 @@ describe("the header", () => {
 
     test.each([
         ["nothing chosen", {}, "Choose up to 8 people"],
+        ["nothing chosen where the platform's group size is 3", { maxOthers: 3 }, "Choose up to 3 people"],
         ["one person new", { chosen: [anna], lookup: fresh, draft: draftFor([anna]) }, "New conversation"],
         ["a new group", { chosen: [anna, caleb, hannah], lookup: fresh, draft: draftFor([anna, caleb, hannah]) }, "New group of 4 people"],
         ["a conversation they have", { chosen: [anna], lookup: found, foundTitle: "Anna Reyes" }, "You already have this conversation"]
@@ -672,7 +674,7 @@ describe("the conversation found", () => {
 
     test("shows its last messages under the strip, out of reach, as the history slot draws them", () => {
         const w = mount(NewMessage, {
-            props: { chosen: [anna], search: jest.fn(async () => []), lookup: found, foundTitle: "Anna Reyes", recent: [said(1), said(2)] },
+            props: { maxOthers: 8, chosen: [anna], search: jest.fn(async () => []), lookup: found, foundTitle: "Anna Reyes", recent: [said(1), said(2)] },
             slots: { history: "<p data-testid='drawn-history'>the feed</p>" },
             attachTo: document.body
         });

@@ -15,16 +15,15 @@
 // </copyright>
 //
 // How a channel's messages are laid out before anything is drawn: which messages share a group,
-// where each day starts and what it is called, where the New divider sits, and the words of the
-// unread strip and Jump to latest. These are pure rules, read without mounting, so each layout
-// draws the same groups. The clock and the locale are fixed here, so a test never depends on the
+// where each day starts and what it is called, and the words of the unread strip and Jump to
+// latest; which message the New divider stands above is the platform's answer. These are pure
+// rules, read without mounting, so each layout draws the same groups. The clock and the locale are fixed here, so a test never depends on the
 // day it runs or the machine it runs on. Dates are built in local time, the time a reader sees.
 import {
     dayLabel,
     groupWindowMs,
     jumpLabel,
     layoutFeed,
-    newDividerBeforeId,
     newMessagesText,
     sentHoldMs,
     skeletonDelayMs,
@@ -318,33 +317,6 @@ describe("day sections", () => {
         ["a year before", new Date(2025, 9, 3, 12, 0), "October 3, 2025"]
     ])("a day %s is labelled %s", (_when, day, label) => {
         expect(dayLabel(day, now, locale)).toBe(label);
-    });
-});
-
-describe("the New divider", () => {
-    test("sits above the first message past the read position", () => {
-        const list = [message(9, anna, at(9, 0)), message(10, anna, at(9, 1)), message(11, ben, at(9, 2)), message(12, anna, at(9, 3))];
-
-        expect(newDividerBeforeId(list, 10, 2, me)).toBe(11);
-    });
-
-    test("skips a system line past the read position", () => {
-        const list = [message(10, anna, at(9, 0)), message(11, null, at(9, 1), { message_type: "system" }), message(12, anna, at(9, 2))];
-
-        expect(newDividerBeforeId(list, 10, 1, me)).toBe(12);
-    });
-
-    test("skips the reader's own message, which is never new to them", () => {
-        const list = [message(10, anna, at(9, 0)), message(11, me, at(9, 1)), message(12, anna, at(9, 2))];
-
-        expect(newDividerBeforeId(list, 10, 1, me)).toBe(12);
-    });
-
-    test("is not drawn with nothing unread or no read position", () => {
-        const list = [message(10, anna, at(9, 0)), message(11, anna, at(9, 1))];
-
-        expect(newDividerBeforeId(list, 10, 0, me)).toBeNull();
-        expect(newDividerBeforeId(list, null, 3, me)).toBeNull();
     });
 });
 

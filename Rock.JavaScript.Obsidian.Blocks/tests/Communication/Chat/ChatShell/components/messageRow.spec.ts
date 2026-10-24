@@ -519,6 +519,39 @@ describe("system lines and block posts", () => {
         expect(wrapper.findComponent(Avatar).exists()).toBe(false);
     });
 
+    /** The icon a system line draws beside its text. */
+    function systemIconOf(wrapper: VueWrapper): string | undefined {
+        const slot = wrapper.get(".chat-sys-icon");
+        return wrapper.findAllComponents(Icon).find(icon => slot.element.contains(icon.element))?.props("name") as string | undefined;
+    }
+
+    // The icon follows the kind Rock gave the line, never its words: "removed the conversation's
+    // name" says removed, and is a rename.
+    test.each([
+        ["renamed", "Grace Kim removed the conversation's name.", "pencil"],
+        ["renamed", "Grace Kim named the conversation Trail crew.", "pencil"],
+        ["joined", "Grace Kim joined the channel.", "door"],
+        ["left", "Grace Kim left the conversation.", "door"],
+        ["added", "Grace Kim added Sam Ortiz.", "users"],
+        ["removed", "Grace Kim removed Sam Ortiz.", "users"]
+    ] as const)("a channel's %s line, \"%s\", draws the %s icon", (systemKind, body, icon) => {
+        const wrapper = draw({ message: message({ message_type: "system", person_alias_guid: null, body, system_kind: systemKind }), isChannel: true });
+
+        expect(systemIconOf(wrapper)).toBe(icon);
+    });
+
+    test("a channel's line with no kind draws the info mark, whatever its words say", () => {
+        const wrapper = draw({ message: message({ message_type: "system", person_alias_guid: null, body: "Grace Kim joined the channel.", system_kind: null }), isChannel: true });
+
+        expect(systemIconOf(wrapper)).toBe("info");
+    });
+
+    test("a direct message's system line always draws the quiet info mark", () => {
+        const wrapper = draw({ message: message({ message_type: "system", person_alias_guid: null, body: "Grace Kim named the conversation Trail crew.", system_kind: "renamed" }), isChannel: false });
+
+        expect(systemIconOf(wrapper)).toBe("info");
+    });
+
     test.each([["a direct message", false], ["a channel", true]] as const)("a block post in %s is a card with its sender, its blocks and an unknown block's fallback", (_kind, isChannel) => {
         const blocks = [
             { type: "text", text: "Easter signups are open", pieces: null, fallback: { type: "text", text: "Easter signups are open" } },

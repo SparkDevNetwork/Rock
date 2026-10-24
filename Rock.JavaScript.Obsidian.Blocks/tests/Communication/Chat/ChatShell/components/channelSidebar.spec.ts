@@ -19,19 +19,13 @@
 // its face, preview and time, whichever section it sits in. A row says what needs the person's attention without
 // shouting: a direct message waiting to be read carries a dot, a channel only goes bold unless it
 // names them, a muted room's mention badge is the quiet one, and a screen reader hears the same
-// facts as a suffix on the row's name. A two-person conversation is named by the other person,
-// since the wire's count of others includes the people it already names.
+// facts as a suffix on the row's name. A room's kind, its title and the line under it are the
+// platform's, drawn as sent: the platform's own tests hold how it works each of them out.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
+import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { isTwoPersonDirectMessage } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
-
-// The two-person rule is the store's, so a test can stand in for it and see the sidebar follow.
-jest.mock("../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial", () => {
-    const actual = jest.requireActual("../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial");
-    return { ...actual, isTwoPersonDirectMessage: jest.fn(actual.isTwoPersonDirectMessage) };
-});
 
 // #region Fixtures
 
@@ -65,6 +59,9 @@ function row(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRo
         can_mention: true,
         dm_names: null,
         dm_other_count: null,
+        room_kind: "channel",
+        title: overrides.name ?? "",
+        preview_line: "",
         ...overrides
     };
 }
@@ -75,12 +72,16 @@ const starred = row({ channel_id: "c0000003-0000-4000-8000-000000000000", name: 
 const muted = row({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "Announcements", notify_mode: "silent", is_unread: true, mention_count: 2 });
 
 // A two-person direct message: the wire names the other person in full and counts them in
-// dm_other_count; a group's names are first names.
+// dm_other_count; a group's names are first names. Each carries the kind, title and line the
+// platform answers for it.
 const dmAnna = row({
     channel_id: "c0000005-0000-4000-8000-000000000000",
     channel_type: "dm",
     dm_names: ["Anna Kim"],
     dm_other_count: 1,
+    room_kind: "person",
+    title: "Anna Kim",
+    preview_line: "Do you have a minute after rehearsal?",
     last_sender_nick_name: "Anna",
     last_sender_last_name: "Kim",
     last_message_preview: "Do you have a minute after rehearsal?",
@@ -91,7 +92,10 @@ const dmGroup = row({
     channel_id: "c0000006-0000-4000-8000-000000000000",
     channel_type: "dm",
     dm_names: ["Anna", "Marcus"],
-    dm_other_count: 2
+    dm_other_count: 2,
+    room_kind: "group",
+    title: "Anna and Marcus",
+    preview_line: "Marcus: Are we doing the extended bridge again?"
 });
 
 // Six others, of whom the wire names the first four.
@@ -99,7 +103,10 @@ const dmBig = row({
     channel_id: "c0000007-0000-4000-8000-000000000000",
     channel_type: "dm",
     dm_names: ["Anna", "Ben", "Cara", "Dee"],
-    dm_other_count: 6
+    dm_other_count: 6,
+    room_kind: "group",
+    title: "Anna, Ben, Cara, Dee and 2 more",
+    preview_line: "Marcus: Are we doing the extended bridge again?"
 });
 
 const dmRead = row({
@@ -107,6 +114,9 @@ const dmRead = row({
     channel_type: "dm",
     dm_names: ["Priya Shah"],
     dm_other_count: 1,
+    room_kind: "person",
+    title: "Priya Shah",
+    preview_line: "Are we doing the extended bridge again?",
     is_unread: false
 });
 
@@ -244,28 +254,24 @@ describe("Find a conversation", () => {
 });
 
 describe("a direct message's name", () => {
-    test("is the other person's full name in a two-person conversation, never 'and 1 more'", () => {
-        const w = mountSidebar();
+    test("is the title the platform sent, which names people the faces do not", () => {
+        // A person on the Chat Ban List is in the room's title count but not among its names.
+        const w = mountSidebar({ rows: [{ ...dmGroup, title: "Anna, Marcus and 1 more" }] });
 
-        expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-name']").text()).toBe("Anna Kim");
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-name']").text()).toBe("Anna, Marcus and 1 more");
     });
 
-    test("joins a group's members as 'A and B'", () => {
-        const w = mountSidebar();
+    test("is the title the platform sent for a named group, not its name field", () => {
+        const w = mountSidebar({ rows: [{ ...dmGroup, name: "Chat Direct Message", title: "Anna and Marcus" }] });
 
         expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-name']").text()).toBe("Anna and Marcus");
     });
 
-    test("counts only the members the wire did not name", () => {
-        const w = mountSidebar();
+    test("is found by Find a conversation under the title the platform sent", async () => {
+        const w = mountSidebar({ rows: [team, { ...dmBig, title: "Setlist crew" }] });
 
-        expect(rowOf(w, dmBig.channel_id).get("[data-testid='row-name']").text()).toBe("Anna, Ben, Cara, Dee and 2 more");
-    });
-
-    test("is the group's own name when it has one", () => {
-        const w = mountSidebar({ rows: [{ ...dmGroup, name: "Setlist crew" }] });
-
-        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-name']").text()).toBe("Setlist crew");
+        await w.get("[data-testid='sidebar-search']").setValue("setlist");
+        expect(visibleRowIds(w)).toEqual([dmBig.channel_id]);
     });
 });
 
@@ -371,30 +377,25 @@ describe("a row's look, by the room's kind", () => {
         expect(rowIdsIn(w, "starred")).toEqual([starred.channel_id, starredDm.channel_id]);
     });
 
-    test("Conversational draws a preview, prefixed by who wrote it in a group, and the time", () => {
-        const w = mountSidebar();
+    test("Conversational draws the line the platform sent under the title, and the time", () => {
+        // The line names a sender the raw fields do not, so only the platform's line reads this way.
+        const w = mountSidebar({ rows: [{ ...dmGroup, preview_line: "Priya: See you Sunday" }] });
 
-        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Marcus: Are we doing the extended bridge again?");
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Priya: See you Sunday");
         expect(rowOf(w, dmGroup.channel_id).find("[data-testid='row-time']").exists()).toBe(true);
     });
 
-    test("tells a two-person direct message from a group by the store's one rule", () => {
-        const rule = jest.mocked(isTwoPersonDirectMessage);
-        const actual = rule.getMockImplementation();
-        rule.mockReturnValue(true);
-        try {
-            const w = mountSidebar({ rows: [dmGroup] });
+    test("draws a direct message by the kind the platform sent: a group showing one other person still draws a group's faces", () => {
+        // Three people, one of them on the Chat Ban List, so the names show only one other.
+        const banListGroup = { ...dmGroup, dm_names: ["Anna"], dm_other_count: 1, room_kind: "group" as const };
+        const w = mountSidebar({ rows: [banListGroup, dmRead] });
 
-            expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Are we doing the extended bridge again?");
-        }
-        finally {
-            rule.mockReset();
-            rule.mockImplementation(actual);
-        }
+        expect(rowOf(w, dmGroup.channel_id).findComponent(Avatar).props("size")).toBe(22);
+        expect(rowOf(w, dmRead.channel_id).findComponent(Avatar).props("size")).toBe(36);
     });
 
-    test("Conversational reads 'No messages yet' for an empty room", () => {
-        const empty = { ...dmRead, last_message_id: null, last_message_at: null, last_message_preview: null, last_sender_nick_name: null, last_sender_last_name: null };
+    test("Conversational draws the platform's empty line for an empty room", () => {
+        const empty = { ...dmRead, last_message_id: null, last_message_at: null, last_message_preview: null, last_sender_nick_name: null, last_sender_last_name: null, preview_line: "No messages yet" };
         const w = mountSidebar({ rows: [empty] });
 
         expect(rowOf(w, dmRead.channel_id).get("[data-testid='row-preview']").text()).toBe("No messages yet");
@@ -575,21 +576,13 @@ describe("a previewed room", () => {
 // The live sidebar: the reader's own last message reads "You: " in any direct message, and a row
 // glows once when a message from someone else reaches it, as the design's incoming message does.
 describe("the reader's own last message", () => {
-    test("reads 'You: ' in a two-person conversation and in a group", () => {
-        const ownPair = { ...dmAnna, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis", is_unread: false };
-        const ownGroup = { ...dmGroup, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis" };
-        const w = mountSidebar({ rows: [ownPair, ownGroup] });
+    test("reads as the platform's line says, its 'You: ' included, the row adding nothing of its own", () => {
+        const ownPair = { ...dmAnna, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis", is_unread: false, preview_line: "You: Do you have a minute after rehearsal?" };
+        const ownSystem = { ...dmGroup, last_message_is_own: true, last_message_type: "system", last_message_preview: "Jordan added Priya", preview_line: "Jordan added Priya" };
+        const w = mountSidebar({ rows: [ownPair, ownSystem] });
 
         expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-preview']").text()).toBe("You: Do you have a minute after rehearsal?");
-        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("You: Are we doing the extended bridge again?");
-    });
-
-    test("is never prefixed on a system line, and another's in a group keeps their first name", () => {
-        const ownSystem = { ...dmGroup, last_message_is_own: true, last_message_type: "system", last_message_preview: "Jordan added Priya" };
-        const w = mountSidebar({ rows: [ownSystem, dmBig] });
-
         expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-preview']").text()).toBe("Jordan added Priya");
-        expect(rowOf(w, dmBig.channel_id).get("[data-testid='row-preview']").text()).toBe("Marcus: Are we doing the extended bridge again?");
     });
 });
 

@@ -70,6 +70,9 @@ import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/C
 // #region Fixtures
 
 const channel = "c0000001-0000-4000-8000-000000000000";
+
+/** The platform's page sizes, sizes no client would choose, so only the limits' are asked. */
+const threadLimits = (): { history_page_size: number, thread_page_size: number } => ({ history_page_size: 23, thread_page_size: 17 });
 const otherChannel = "c0000002-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -190,11 +193,13 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
     const calls: Call[] = [];
     const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
     const timelines = createTimelines({
+        limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => historyPage ?? { messages: [], read_cursor: null, unread_count: 0, has_more: false }
     });
     await timelines.loadNewest(channel);
 
     const threads = createThreads({
+        limits: threadLimits,
         call: (name, args) => {
             calls.push({ name, args });
             const next = answers[name]?.shift();
@@ -275,7 +280,7 @@ describe("the threads list is fetched", () => {
         await threads.openList(channel);
 
         expect(callsTo("chat_list_threads")).toEqual([
-            { name: "chat_list_threads", args: expect.objectContaining({ p_channel_id: channel, p_limit: 30 }) }
+            { name: "chat_list_threads", args: expect.objectContaining({ p_channel_id: channel, p_limit: 17 }) }
         ]);
         expect(threads.state.list.rows.map(r => r.root.id)).toEqual([40]);
         expect(threads.state.list.tab).toBe("channel");
@@ -336,7 +341,7 @@ describe("the threads list is fetched", () => {
             p_channel_id: channel,
             p_before_last_reply_at: "2026-10-13T08:00:00Z",
             p_before_id: 30,
-            p_limit: 30
+            p_limit: 17
         }));
         expect(threads.state.list.rows.map(r => r.root.id)).toEqual([40, 30, 20]);
         expect(threads.state.list.hasMore).toBe(false);
@@ -454,7 +459,7 @@ describe("the thread page", () => {
 
         await threads.openThread(channel, 40);
 
-        expect(callsTo("chat_get_thread_history")[0].args).toEqual(expect.objectContaining({ p_root_id: 40, p_limit: 50 }));
+        expect(callsTo("chat_get_thread_history")[0].args).toEqual(expect.objectContaining({ p_root_id: 40, p_limit: 23 }));
         expect(threads.state.thread).toEqual(expect.objectContaining({ channelId: channel, rootId: 40, following: false, readCursor: 41, hasMore: true }));
         expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43]);
     });
