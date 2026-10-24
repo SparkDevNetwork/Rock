@@ -32,7 +32,7 @@ import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } f
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
-import { ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
+import { ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
@@ -48,7 +48,7 @@ import {
     StorageLike,
     writeRememberedChannel
 } from "./pageLoad.partial";
-import { ChannelStore, createChannelStore, roomTitle } from "./stores/channelStore.partial";
+import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
@@ -190,6 +190,9 @@ export type ShellState = {
 
     /** Whether the composer takes a message in the service state the platform last named. */
     isComposerOpen: boolean;
+
+    /** The platform's limits as the latest token exchange answered them, which the screens draw. */
+    limits: PlatformLimits;
 
     /** Whether the church's prompt timing would offer push now. */
     isPushOffered: boolean;
@@ -368,6 +371,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         service: { state: "normal", banner: null },
         isUpdateRequired: false,
         isComposerOpen: true,
+        // the platform's, from the first exchange; nothing is drawn from them before it answers
+        limits: readSettings(undefined).limits,
         isPushOffered: false,
         // known once push starts after the first channel is on screen
         push: "unavailable",
@@ -452,6 +457,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.service = { ...settings.service };
         state.isUpdateRequired = settings.client.update_required;
         state.isComposerOpen = isComposerOpen(settings.service.state);
+        state.limits = settings.limits;
     }
 
     /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
@@ -579,6 +585,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             return result.data as HistoryPage;
         },
+        limits: () => session.settings().limits,
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
         // whichever copy of the person's send lands first, from a page, live or its answer, settles it
@@ -628,7 +635,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     // a reply shown only in its thread lands nowhere else, so the open thread settles its send
-    const threads = createThreads({ call, timelines, personAliasGuid, onLanded: message => sender.landed(message) });
+    const threads = createThreads({ call, timelines, personAliasGuid, limits: () => session.settings().limits, onLanded: message => sender.landed(message) });
 
     const messageActions = createMessageActions({
         call,
@@ -667,6 +674,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             return options.storage;
         },
         timelines,
+        limits: () => session.settings().limits,
         // A jump opens its conversation as a sidebar row does, and one already open stays as it is.
         openChannel: async channelId => {
             directMessages.close();
@@ -720,6 +728,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         joinChannel: options.joinChannel,
         leaveChannel: options.leaveChannel,
         renameConversation: options.renameConversation,
+        getMemberRights: options.getMemberRights,
         // The next conversation after a leave opens as a sidebar row does.
         openChannel: channelId => {
             directMessages.close();
@@ -728,6 +737,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
         },
         channels,
+        // a reload asked while a rejoin's wait is pending is the one that wait will make
+        reloadSidebar: () => sidebarWait === null ? void loadSidebar() : undefined,
+        limits: () => session.settings().limits,
         activeChannelId: () => state.activeChannelId,
         // a lost connection is told by its banner, and a door asked then would not be reached
         isOffline: () => state.connection !== null,
@@ -740,12 +752,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // a lost connection is told by its banner, and a door asked then would not be reached
         isOffline: () => state.connection !== null,
         notify: notice => options.notify?.(notice),
-        titleOf: channelId => {
-            const row = channels.rows.find(r => r.channel_id === channelId);
-            return row ? roomTitle(row) : "";
-        },
+        titleOf: channelId => channels.rows.find(r => r.channel_id === channelId)?.title ?? "",
         isChatAdministrator: options.session.isChatAdministrator ?? false,
-        campusOnly: options.areSharedChannelsFilteredByCampus ?? false
+        campusOnly: options.areSharedChannelsFilteredByCampus ?? false,
+        limits: () => session.settings().limits
     });
 
     const prefs = createPrefs({
@@ -820,7 +830,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const directMessages = createDirectMessages({
         search: async query => {
-            const result = await call("chat_search_people", { p_query: query, p_limit: 10, p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
+            const result = await call("chat_search_people", { p_query: query, p_limit: session.settings().limits.people_search_size, p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
             return result.ok
                 ? { ok: true, people: (result.data as Partial<PeopleSearchAnswer> | null)?.people ?? [] }
                 : { ok: false, error: result.error };
@@ -851,6 +861,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             return isSent;
         },
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
+        limits: () => session.settings().limits,
         report
     });
 

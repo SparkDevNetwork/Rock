@@ -24,13 +24,34 @@
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError } from "../types.partial";
 
-/** The settings the token exchange answers, every key filled. Names are the platform's own. */
 /* eslint-disable @typescript-eslint/naming-convention */
+/**
+ * The limits the platform enforces or its pages ask for, the same for every church, which every
+ * client and Rock read from the platform rather than holding their own.
+ */
+export type PlatformLimits = {
+    /** The most people a conversation holds besides the one starting it. */
+    dm_max_others: number;
+
+    /** The longest name a group conversation carries. */
+    dm_name_max_length: number;
+    body_max_length: number;
+    history_page_size: number;
+    member_page_size: number;
+    mention_page_size: number;
+
+    /** A page of the threads list. */
+    thread_page_size: number;
+    directory_page_size: number;
+    people_search_size: number;
+};
+
+/** The settings the token exchange answers, every key filled. Names are the platform's own. */
 export type ChatSettings = {
     service: { state: string, banner: string | null };
     client: { update_required: boolean };
     routes: { send: string };
-    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number };
+    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number } & PlatformLimits;
     flags: Record<string, unknown>;
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
@@ -52,12 +73,25 @@ const pushPrompts = ["off", "offer", "after_send"];
  * The defaults when the platform sends nothing for a key. The reconnect and catch-up figures are
  * estimates, not measurements; the platform can change them without a release.
  */
-const defaultLimits: ChatSettings["limits"] = {
+const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits> = {
     reconnect_base_ms: 1000,
     reconnect_cap_ms: 30000,
     catch_up_page: 100,
     catch_up_max: 500
 };
+
+/** The platform's limits by name, read from every exchange's answer. */
+const platformLimitKeys: Array<keyof PlatformLimits> = [
+    "dm_max_others",
+    "dm_name_max_length",
+    "body_max_length",
+    "history_page_size",
+    "member_page_size",
+    "mention_page_size",
+    "thread_page_size",
+    "directory_page_size",
+    "people_search_size"
+];
 
 /** An object's own value for a key, or undefined when the value is not an object. */
 function section(value: unknown, key: string): Record<string, unknown> {
@@ -86,10 +120,17 @@ export function readSettings(raw: unknown): ChatSettings {
     // Firebase needs both, so one without the other is push off
     const hasPush = web !== null && typeof push.vapid_key === "string" && push.vapid_key !== "";
 
-    const limit = (key: keyof ChatSettings["limits"]): number => {
+    const limit = (key: keyof typeof defaultLimits): number => {
         const value = limits[key];
         return typeof value === "number" && value > 0 ? value : defaultLimits[key];
     };
+
+    // The platform answers its limits on every exchange and the client keeps no copy of its own,
+    // so one missing reads as 0 and what needs it is refused rather than guessed at.
+    const platformLimits = Object.fromEntries(platformLimitKeys.map(key => {
+        const value = limits[key];
+        return [key, typeof value === "number" && Number.isInteger(value) && value > 0 ? value : 0];
+    })) as PlatformLimits;
 
     return {
         service: {
@@ -104,7 +145,8 @@ export function readSettings(raw: unknown): ChatSettings {
             // history serves 1 to 100 messages a page and refuses anything else, so a setting
             // outside that would fail every catch-up
             catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
-            catch_up_max: limit("catch_up_max")
+            catch_up_max: limit("catch_up_max"),
+            ...platformLimits
         },
         flags: { ...flags },
         push: {

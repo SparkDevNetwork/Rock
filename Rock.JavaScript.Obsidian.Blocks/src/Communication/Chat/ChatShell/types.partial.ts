@@ -19,6 +19,18 @@
 // every message to camelCase on arrival would cost a copy of each for no reader's benefit.
 /* eslint-disable @typescript-eslint/naming-convention */
 
+/**
+ * What kind of room a row is, as the platform says by its live head count: a shared channel, a
+ * conversation of two, or a group.
+ */
+export type RoomKind = "channel" | "person" | "group";
+
+/**
+ * A system line's kind, as Rock gave it when it posted the line; a line with none is told by the
+ * info mark.
+ */
+export type SystemKind = "joined" | "left" | "added" | "removed" | "renamed";
+
 /** One row of the sidebar, as chat_get_bootstrap returns it. */
 export type SidebarRow = {
     channel_id: string;
@@ -63,6 +75,15 @@ export type SidebarRow = {
     can_mention: boolean;
     dm_names: string[] | null;
     dm_other_count: number | null;
+
+    /** What kind of room this is; every screen reads this rather than counting the names it is shown. */
+    room_kind: RoomKind;
+
+    /** The name the room shows: its own, or for a direct message without one its other people. */
+    title: string;
+
+    /** The whole line the row draws under its title, its empty state and its "You: " included. */
+    preview_line: string;
 
     /**
      * Whether a send here would be taken, and if not its code and the server's sentence, as the
@@ -224,6 +245,9 @@ export type TimelineMessage = {
      */
     sender_is_leader?: boolean;
     message_type: string;
+
+    /** What a system line says happened, as Rock gave it; null on any other message, and on a line Rock gave none. */
+    system_kind?: SystemKind | null;
     body: string | null;
 
     /** The body's pieces as the server built them; null when the body is plain text. */
@@ -346,7 +370,15 @@ export type Replier = {
 export type HistoryPage = {
     messages: TimelineMessage[];
     read_cursor: number | null;
+
+    /** How many messages past the read position are news to the reader, up to 100. */
     unread_count: number;
+
+    /**
+     * The first of them, which the New divider stands above; null with nothing unread or no read
+     * position. Every page the platform answers carries it; a stand-in page may leave it out.
+     */
+    first_unread_id?: number | null;
     has_more: boolean;
 };
 
@@ -558,6 +590,9 @@ export type MessageCreatedEvent = {
     shown_in_channel: boolean;
     person_alias_guid: string | null;
     message_type: string;
+
+    /** What a system line says happened, as Rock gave it; null on any other message, and on a line Rock gave none. */
+    system_kind?: SystemKind | null;
     body: string | null;
     pieces?: DisplayPiece[] | null;
     blocks?: MessageBlock[] | null;
@@ -645,6 +680,9 @@ export type DmPreviewEvent = {
 
     /** Whether Rock posted it; a post in the reader's own name still makes the row unread. */
     posted_by_rock: boolean;
+
+    /** The whole line this reader's row draws, by the rule the sidebar reads. */
+    preview_line: string;
 };
 
 /**

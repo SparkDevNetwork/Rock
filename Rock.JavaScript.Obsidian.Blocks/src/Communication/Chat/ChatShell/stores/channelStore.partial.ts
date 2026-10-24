@@ -271,6 +271,8 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         row.last_sender_last_name = typeof sender?.last_name === "string" ? sender.last_name : null;
         row.last_message_is_own = isOwn;
         row.last_message_posted_by_rock = signal.posted_by_rock === true;
+        // the line the platform worked out for this reader, so the row never composes its own
+        row.preview_line = typeof signal.preview_line === "string" ? signal.preview_line : "";
 
         // Worked out again from the new pointer rather than only set, so a walk-back past an unread
         // message that was deleted leaves the row read. A message the person typed, or one in the
@@ -417,13 +419,14 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 }
 
 /**
- * People's names as one title: "Anna", "Anna and Ben", "Anna, Ben and Cara", or "Anna, Ben, Cara,
- * Dee and 2 more" when the platform names only the first few of a group.
+ * People's names as one line of text that is not a room's title, which the platform sends: who was
+ * added, who leads a channel, the people a new conversation is with. "Anna", "Anna and Ben",
+ * "Anna, Ben and Cara", or "Anna, Ben, Cara, Dee and 2 more".
  *
- * @param names The names the platform sent.
+ * @param names The names.
  * @param unnamed How many more people there are than names.
  *
- * @returns The title.
+ * @returns The line.
  */
 export function joinNames(names: string[], unnamed: number): string {
     if (unnamed > 0) {
@@ -435,35 +438,4 @@ export function joinNames(names: string[], unnamed: number): string {
     }
 
     return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-}
-
-/**
- * Whether a direct message is between the person and one other. Only a group can be named, and
- * the platform counts a room's people only when it has no name, so a named one, sent with a count
- * of 0, is a group.
- *
- * @param row The sidebar row.
- *
- * @returns True for a two-person direct message.
- */
-export function isTwoPersonDirectMessage(row: SidebarRow): boolean {
-    return row.channel_type === "dm" && !row.name && (row.dm_other_count ?? 1) <= 1;
-}
-
-/**
- * A room's title as the sidebar and the header draw it: its own name, or for a direct message
- * without one the people in it. The platform's count of others includes the people it names, so
- * only the rest are "more".
- *
- * @param row The sidebar row.
- *
- * @returns The title.
- */
-export function roomTitle(row: SidebarRow): string {
-    if (row.name) {
-        return row.name;
-    }
-
-    const names = row.dm_names ?? [];
-    return joinNames(names, (row.dm_other_count ?? names.length) - names.length);
 }

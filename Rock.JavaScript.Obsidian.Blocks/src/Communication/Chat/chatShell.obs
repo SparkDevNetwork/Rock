@@ -191,6 +191,7 @@
                     <!-- Its first message is drawn as a direct message is, whatever the conversation under it. -->
                     <NewMessage v-else-if="mainView === 'newdm'"
                                 data-look="conversational"
+                                :maxOthers="shell.state.limits.dm_max_others"
                                 :chosen="shell.directMessages.chosen"
                                 :search="shell.directMessages.search"
                                 :lookup="shell.directMessages.lookup"
@@ -225,7 +226,7 @@
                                          :personName="personName"
                                          :personPhotoUrl="personPhotoUrl"
                                          :organizationName="organizationName"
-                                         :isDirectMessage="foundRow ? isTwoPersonDirectMessage(foundRow) : shell.directMessages.chosen.length === 1"
+                                         :isDirectMessage="foundRow ? foundRow.room_kind === 'person' : shell.directMessages.chosen.length === 1"
                                          :isPhone="isPhone"
                                          isPreviewing />
                         </template>
@@ -400,6 +401,8 @@
                                  :title="activeTitle"
                                  :facts="activeFacts"
                                  :groupName="activeRow?.name ?? null"
+                                 :canRename="shell.rooms.canRenameOf(activeChannelId)"
+                                 :nameMaxLength="shell.state.limits.dm_name_max_length"
                                  :campuses="campuses"
                                  :organizationName="organizationName"
                                  :personName="personName"
@@ -675,7 +678,7 @@
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
-    import { isTwoPersonDirectMessage, joinNames, roomTitle } from "./ChatShell/stores/channelStore.partial";
+    import { joinNames } from "./ChatShell/stores/channelStore.partial";
     import { ChannelFacts, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
@@ -836,32 +839,14 @@
     const isJoinBarShown = computed((): boolean => activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
 
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
-    const isActiveDirectMessage = computed((): boolean => !!activeRow.value && isTwoPersonDirectMessage(activeRow.value));
+    const isActiveDirectMessage = computed((): boolean => activeRow.value?.room_kind === "person");
 
     /** The other people of the open direct message, by the names the sidebar shows. */
     const activePeople = computed((): string[] => activeRow.value?.dm_names ?? []);
 
-    const activeKind = computed((): HeaderRoomKind | null => {
-        if (!activeRow.value) {
-            return null;
-        }
+    const activeKind = computed((): HeaderRoomKind | null => activeRow.value?.room_kind ?? null);
 
-        if (activeRow.value.channel_type !== "dm") {
-            return "channel";
-        }
-
-        return isActiveDirectMessage.value ? "person" : "group";
-    });
-
-    const activeTitle = computed((): string => {
-        if (activeRow.value?.name) {
-            return activeRow.value.name;
-        }
-
-        // A group the platform names only its first few people for says how many more there are.
-        const others = activeRow.value?.dm_other_count ?? activePeople.value.length;
-        return joinNames(activePeople.value, others - activePeople.value.length);
-    });
+    const activeTitle = computed((): string => activeRow.value?.title ?? "");
 
     /**
      * The look the open conversation is drawn in, by its kind alone: a channel in Community's flat
@@ -902,7 +887,7 @@
     const roomTitles = computed((): Record<string, string> => {
         const titles: Record<string, string> = {};
         for (const row of shell.value.channels.rows) {
-            titles[row.channel_id] = roomTitle(row);
+            titles[row.channel_id] = row.title;
         }
 
         return titles;
@@ -912,7 +897,7 @@
     const roomKinds = computed((): Record<string, HeaderRoomKind> => {
         const kinds: Record<string, HeaderRoomKind> = {};
         for (const row of shell.value.channels.rows) {
-            kinds[row.channel_id] = row.channel_type !== "dm" ? "channel" : isTwoPersonDirectMessage(row) ? "person" : "group";
+            kinds[row.channel_id] = row.room_kind;
         }
 
         return kinds;
@@ -969,7 +954,7 @@
             return null;
         }
 
-        return { messages, isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: messages[messages.length - 1].id };
+        return { messages, isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: messages[messages.length - 1].id };
     });
 
     // #endregion Computed Values
@@ -1415,6 +1400,14 @@
         const active = document.activeElement;
         if (wasShown && !isShown && !!active && isInViewOrDetails(active)) {
             isFocusOwed = true;
+        }
+    });
+
+    // Each time the details open Rock is asked whether the person may rename the room, as its
+    // rename door would answer now.
+    watch(isDetailsOpen, isOpen => {
+        if (isOpen && activeChannelId.value) {
+            void shell.value.rooms.detailsOpened(activeChannelId.value);
         }
     });
 

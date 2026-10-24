@@ -944,7 +944,7 @@
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
-    import { ChatError, DisplayPiece, PendingMessage, Reaction, TimelineMessage } from "../types.partial";
+    import { ChatError, DisplayPiece, PendingMessage, Reaction, SystemKind, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -1108,6 +1108,15 @@
     }>();
 
     // #region Values
+
+    /** Each kind of system line's icon in Community's gutter. */
+    const systemIcons: Record<SystemKind, string> = {
+        joined: "door",
+        left: "door",
+        added: "users",
+        removed: "users",
+        renamed: "pencil"
+    };
 
     /** One to six emoji and nothing else, joined sequences and skin tones included. */
     const jumboPattern = new RegExp("^(?:\\p{Extended_Pictographic}|\\p{Emoji_Modifier}|\\u{FE0F}|\\u{200D})+$", "u");
@@ -1347,22 +1356,14 @@
 
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 
-    /** A system line's icon: in Community's gutter, by what it says happened; in bubbles, always the quiet info mark. */
+    /**
+     * A system line's icon: in Community's gutter, by the kind Rock gave the line as it posted it,
+     * the info mark for a line it gave none or a kind this client does not know; in bubbles,
+     * always the quiet info mark.
+     */
     const systemIcon = computed((): string => {
-        if (layout.value !== "community") {
-            return "info";
-        }
-
-        const text = display.value.text ?? "";
-        if (/\b(joined|left)\b/.test(text)) {
-            return "door";
-        }
-
-        if (/\b(added|removed)\b/.test(text)) {
-            return "users";
-        }
-
-        return /\bnamed\b/.test(text) ? "pencil" : "info";
+        const kind = props.message?.system_kind;
+        return layout.value === "community" && kind ? systemIcons[kind] ?? "info" : "info";
     });
 
     /** A stored message the person reads as it is, which an action can apply to. */

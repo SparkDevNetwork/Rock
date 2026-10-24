@@ -547,7 +547,7 @@
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { useSentHold } from "../composables/useSend.partial";
-    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newDividerBeforeId, newMessagesText, skeletonDelayMs, timeLabel, unreadStripCount, unreadStripText } from "../feedLayout.partial";
+    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -752,8 +752,13 @@
     /** The look the conversation's kind picks: a channel's flat rows, a direct message's bubbles. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
+    /**
+     * The message the New divider stands above: the first unread the platform found, or the page's
+     * top when that message is older than the page loaded.
+     */
     const dividerBeforeId = computed((): number | null => {
-        const id = newDividerBeforeId(props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, props.personAliasGuid);
+        const firstUnreadId = props.timeline.firstUnreadId;
+        const id = firstUnreadId === null ? null : props.timeline.messages.find(m => m.id >= firstUnreadId)?.id ?? null;
         return id !== null && clearedThroughId.value !== null && id <= clearedThroughId.value ? null : id;
     });
 
@@ -801,10 +806,7 @@
     /** One control points down at a time: while the strip points down at the divider, Jump hides. */
     const isJumpShown = computed((): boolean => isScrolledUp.value && !(isStripShown.value && !isDividerAbove.value));
 
-    const unreadCount = computed((): number => unreadStripCount(
-        props.timeline.messages, props.timeline.readCursor, props.timeline.unreadCount, dividerBeforeId.value, props.personAliasGuid));
-
-    const unreadCountText = computed((): string => newMessagesText(unreadCount.value));
+    const unreadCountText = computed((): string => newMessagesText(props.timeline.unreadCount));
 
     const unreadSince = computed((): string => {
         const first = props.timeline.messages.find(m => m.id === dividerBeforeId.value);
@@ -813,7 +815,7 @@
 
     const stripText = computed((): string => {
         const first = props.timeline.messages.find(m => m.id === dividerBeforeId.value);
-        return first ? unreadStripText(unreadCount.value, new Date(first.created_at)) : unreadCountText.value;
+        return first ? unreadStripText(props.timeline.unreadCount, new Date(first.created_at)) : unreadCountText.value;
     });
 
     const jumpText = computed((): string => jumpLabel(newCount.value));

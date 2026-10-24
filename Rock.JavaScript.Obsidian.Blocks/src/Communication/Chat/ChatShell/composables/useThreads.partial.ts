@@ -42,11 +42,9 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, firstPageSize, Timelines, withSendKey } from "./useHistory.partial";
+import { applyMessageChange, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
-
-/** How many rows a page of the threads list holds. */
-export const threadListPageSize = 30;
+import { PlatformLimits } from "./useSession.partial";
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
@@ -116,6 +114,9 @@ export type ThreadsDependencies = {
 
     /** The reader, so their own reply does not mark a thread unread. */
     personAliasGuid: string;
+
+    /** The platform's limits, from the latest token exchange: a thread's page and the list's. */
+    limits: () => Pick<PlatformLimits, "history_page_size" | "thread_page_size">;
 
     /**
      * Told of every copy of a reply sent under a key as it reaches the open thread, so the sender
@@ -278,7 +279,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 // both cursor values together, as the platform's keyset reads them
                 p_before_last_reply_at: last?.last_reply_at ?? null,
                 p_before_id: last?.root.id ?? null,
-                p_limit: threadListPageSize
+                p_limit: dependencies.limits().thread_page_size
             });
         }
         finally {
@@ -637,7 +638,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 row.has_unread = false;
             }
 
-            const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: firstPageSize });
+            const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: dependencies.limits().history_page_size });
             if (isStopped || thisOpen !== threadOpen || !state.thread) {
                 return;
             }
@@ -684,7 +685,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             }
 
             const thisOpen = threadOpen;
-            const result = await dependencies.call("chat_get_thread_history", { p_root_id: thread.rootId, p_before_id: oldest.id, p_limit: firstPageSize });
+            const result = await dependencies.call("chat_get_thread_history", { p_root_id: thread.rootId, p_before_id: oldest.id, p_limit: dependencies.limits().history_page_size });
             // dropped when the thread was left, or another older page got there first
             if (isStopped || thisOpen !== threadOpen || !state.thread || state.thread.replies[0]?.id !== oldest.id) {
                 return;

@@ -106,14 +106,14 @@
             </section>
         </template>
 
-        <section v-if="isRenameOffered" class="chat-rd-sec">
+        <section v-if="canRename" class="chat-rd-sec">
             <h4><label :for="renameId">Conversation name</label></h4>
             <div class="chat-rn">
                 <input :id="renameId"
                        v-model="draftName"
                        class="chat-rn-in"
                        data-testid="rename-input"
-                       maxlength="100"
+                       :maxlength="nameMaxLength"
                        autocomplete="off"
                        :placeholder="namesPlaceholder"
                        :readonly="rename.kind === 'saving'"
@@ -740,6 +740,18 @@
             default: null
         },
 
+        /** Whether Rock lets the person rename this room, as its members door answered when the details opened. */
+        canRename: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The longest name a conversation carries, as the platform sets it. */
+        nameMaxLength: {
+            type: Number,
+            required: true
+        },
+
         /** The church's campuses, which name the room's or the person's campus. */
         campuses: {
             type: Array as PropType<ChatCampusBag[]>,
@@ -880,8 +892,8 @@
 
     const notifyElements = ref<HTMLButtonElement[]>([]);
 
-    /** The count shows from here, ten short of the 100 a name may hold. */
-    const countFrom = 90;
+    /** The count shows from this many characters short of the most a name may hold. */
+    const countShortOf = 10;
 
     const offlineText = "You're offline. Try again when you're back.";
     const leaveFailedText = "Couldn't leave. Try again in a moment.";
@@ -950,9 +962,6 @@
         ...props.facts.people.map(person => ({ key: person.person_alias_guid, name: fullName(person), photoUrl: person.avatar_url, label: fullName(person) }))
     ]);
 
-    /** Only a group can be named, and only by someone in it. */
-    const isRenameOffered = computed((): boolean => props.kind === "group" && props.facts.is_member);
-
     /** The members' first names, which is what a blank name shows. */
     const namesPlaceholder = computed((): string => props.facts.people.map(person => person.nick_name ?? "").filter(name => name !== "").join(", "));
 
@@ -1009,7 +1018,7 @@
     /** The rooms' newest sentence, once it is one said since the dialog opened. */
     const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
 
-    const countText = computed((): string | null => draftName.value.length >= countFrom ? `${draftName.value.length} of 100 characters` : null);
+    const countText = computed((): string | null => draftName.value.length >= props.nameMaxLength - countShortOf ? `${draftName.value.length} of ${props.nameMaxLength} characters` : null);
 
     /** The leave as this confirm sees it: idle until it asks, so an earlier answer is never shown. */
     const shownLeave = computed((): LeaveState => hasAskedLeave.value ? props.leave : { kind: "idle" });

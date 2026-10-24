@@ -21,7 +21,7 @@
 
 import { computed, Ref } from "vue";
 import { ChatShell } from "../shell.partial";
-import { isLastLeader, searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
+import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
 
 /** What the members panel and its dialogs read from the block. */
 export type MembersPanelDependencies = {
@@ -90,7 +90,7 @@ export function useMembersPanel(dependencies: MembersPanelDependencies) {
             isChannel: room.value.isChannel,
             campusNames,
             member: confirming,
-            isLastLeader: !!confirming && isLastLeader(members, confirming.person_alias_guid),
+            isLastLeader: !!confirming && members.isSuccessorAsked,
             choices: successorChoices(members),
             query: members.successorQuery,
             refusal: members.successorRefusal,

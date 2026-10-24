@@ -33,12 +33,10 @@ import { CallResult } from "../platformCall.partial";
 import { joinNames } from "../stores/channelStore.partial";
 import { ChatError, PersonRow, RosterMember, RosterPage } from "../types.partial";
 import { ActionNotice } from "./useMessageActions.partial";
+import { PlatformLimits } from "./useSession.partial";
 
 /** The people search's pause after the last keystroke before it asks the platform. */
 export const memberSearchPause = 250;
-
-/** How many people a page holds; a shorter page is the last. */
-export const memberPageSize = 50;
 
 /** The room's two searches: the panel's filter, and the last leader's dialog's "Find a member". */
 type RoomSearchKey = "search" | "successor";
@@ -84,6 +82,12 @@ export type MembersState = {
     /** Whether the reader is a Chat Administrator, the only person who may remove a channel's leader. */
     isChatAdministrator: boolean;
 
+    /**
+     * The channel's one remaining leader by primary alias, as Rock answered on open; told only to a
+     * Chat Administrator, and null where nobody leads or more than one still does.
+     */
+    lastLeaderPersonAliasGuid: string | null;
+
     /** Each row's removal while the door works or after it refused, by person. */
     removals: Record<string, MemberRemoval>;
 
@@ -96,8 +100,8 @@ export type MembersState = {
     successorRefusal: string | null;
 
     /**
-     * Rock said the person asked about is the room's last leader, though the loaded roster showed
-     * another, so the confirm becomes the dialog that asks who leads next.
+     * The person asked about is the room's last leader, so the confirm is the dialog that asks who
+     * leads next: Rock named them so on open, or refused their removal for want of a successor.
      */
     isSuccessorAsked: boolean;
 
@@ -137,9 +141,18 @@ export type MembershipAnswer = {
     personAliasGuid?: string | null;
 };
 
+/** What Rock says the reader may change about a room, as its members door answers. */
+export type MemberRights = {
+    canManageMembers: boolean;
+    canRename: boolean;
+
+    /** The channel's one remaining leader by primary alias; null where nobody leads, more than one does, or the reader may not remove a leader. */
+    lastLeaderPersonAliasGuid: string | null;
+};
+
 /** Rock's doors that change who is in a room, and the one that says whether the reader may; a page without one offers none of it. */
 export type MemberDoors = {
-    getRights?: (channelId: string) => Promise<{ canManageMembers: boolean }>;
+    getRights?: (channelId: string) => Promise<MemberRights>;
     addMembers?: (channelId: string, personAliasGuids: string[]) => Promise<MembershipAnswer>;
     removeMember?: (channelId: string, personAliasGuid: string, replacementPersonAliasGuid: string | null) => Promise<MembershipAnswer>;
 };
@@ -164,6 +177,9 @@ export type MembersDependencies = {
 
     /** Whether the people search keeps to the reader's campus, as the page's setting says. */
     campusOnly?: boolean;
+
+    /** The platform's limits, from the latest token exchange. */
+    limits: () => Pick<PlatformLimits, "member_page_size" | "people_search_size">;
 };
 
 /** The roster a shell holds. */
@@ -217,6 +233,7 @@ function emptyState(): MembersState {
         search: noSearch(),
         canManageMembers: false,
         isChatAdministrator: false,
+        lastLeaderPersonAliasGuid: null,
         removals: {},
         confirming: null,
         successorQuery: "",
@@ -235,24 +252,6 @@ function matchesFor(rows: RosterMember[], search: MemberSearchState, query: stri
     }
 
     return search.query === trimmed && !search.isSearching && !search.error ? search.rows : rows.filter(member => isMatch(member, trimmed));
-}
-
-/**
- * Whether a person is the room's only leader. The roster lists leaders first and lists only people
- * chat shows, so the loaded rows hold every leader who counts.
- *
- * @param state The roster.
- * @param personAliasGuid The person.
- *
- * @returns True when they lead and nobody else loaded does.
- */
-export function isLastLeader(state: MembersState, personAliasGuid: string): boolean {
-    if (state.isSuccessorAsked && state.confirming?.person_alias_guid === personAliasGuid) {
-        return true;
-    }
-
-    const leaders = state.rows.filter(member => member.is_leader);
-    return leaders.some(member => member.person_alias_guid === personAliasGuid) && leaders.length === 1;
 }
 
 /**
@@ -359,12 +358,17 @@ export function createMembers(dependencies: MembersDependencies): Members {
     let addSearchTimer: ReturnType<typeof setTimeout> | null = null;
     let addGeneration = 0;
 
+    /** How many people a page holds, as the platform sets it; a shorter page is the last. */
+    function pageSize(): number {
+        return dependencies.limits().member_page_size;
+    }
+
     /** One page of the room's people after a person given, for a query or none. */
     function fetchPage(channelId: string, after: RosterMember | undefined, query: string | null): Promise<CallResult> {
         return dependencies.call("chat_list_members", {
             p_channel_id: channelId,
             p_after: after?.person_alias_guid ?? null,
-            p_limit: memberPageSize,
+            p_limit: pageSize(),
             p_query: query
         });
     }
@@ -404,7 +408,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
         const members = membersOf(result);
         state.rows = members;
-        state.hasMore = members.length >= memberPageSize;
+        state.hasMore = members.length >= pageSize();
     }
 
     /**
@@ -420,7 +424,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
         const members = membersOf(result);
         state.rows = members;
-        state.hasMore = members.length >= memberPageSize;
+        state.hasMore = members.length >= pageSize();
     }
 
     /** Asks Rock whether the reader may change who is in the room; anything but a yes is a no. */
@@ -435,6 +439,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             const rights = await door(channelId);
             if (!isStopped && generation === rosterGeneration) {
                 state.canManageMembers = rights.canManageMembers === true;
+                state.lastLeaderPersonAliasGuid = rights.lastLeaderPersonAliasGuid?.toLowerCase() ?? null;
             }
         }
         catch {
@@ -470,7 +475,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
         }
 
         const members = membersOf(result);
-        state[key] = { query, rows: members, hasMore: members.length >= memberPageSize, isSearching: false, error: null };
+        state[key] = { query, rows: members, hasMore: members.length >= pageSize(), isSearching: false, error: null };
     }
 
     /** Drops a search's answer still on its way and its pause still running. */
@@ -518,7 +523,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
         }
 
         const members = membersOf(result);
-        state.search = { ...search, rows: [...search.rows, ...members], hasMore: members.length >= memberPageSize };
+        state.search = { ...search, rows: [...search.rows, ...members], hasMore: members.length >= pageSize() };
     }
 
     /** Drops the Add people search's answer still on its way and its pause still running. */
@@ -542,7 +547,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
         const generation = addSearchGeneration;
         const result = await dependencies.call("chat_search_people", {
             p_query: query,
-            p_limit: 10,
+            p_limit: dependencies.limits().people_search_size,
             p_campus_only: dependencies.campusOnly ?? false,
             p_channel_id: channelId
         });
@@ -639,7 +644,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             const held = new Set(state.rows.map(member => member.person_alias_guid));
             const members = membersOf(result);
             state.rows = [...state.rows, ...members.filter(member => !held.has(member.person_alias_guid))];
-            state.hasMore = members.length >= memberPageSize;
+            state.hasMore = members.length >= pageSize();
         },
 
         retry: loadFirstPage,
@@ -686,7 +691,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             state.successorQuery = "";
             state.successor = noSearch();
             state.successorRefusal = null;
-            state.isSuccessorAsked = false;
+            state.isSuccessorAsked = member.person_alias_guid.toLowerCase() === state.lastLeaderPersonAliasGuid;
         },
 
         cancelRemove: (): void => {
@@ -751,8 +756,8 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            // A leader removed with no one named, whom the loaded roster did not show as the last,
-            // is the last to Rock: the confirm comes back as the dialog that asks who leads next.
+            // A leader removed with no one named, whom Rock did not name as the last on open, is
+            // the last to Rock now: the confirm comes back as the dialog that asks who leads next.
             if (answer.code === "door.bad_request" && !replacement && target.is_leader) {
                 delete state.removals[personAliasGuid];
                 cancelSearch("successor");
@@ -785,8 +790,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
             const title = dependencies.titleOf?.(channelId) ?? "";
             notify({ code: "member.leader", text: `${successor ? fullNameOf(successor) : "Someone"} is now the leader of ${title}`, icon: "users" });
 
-            // Marked at once, then read again, since Rock may have given the role to more rows than the one shown.
-            await refreshRoster(channelId);
+            // Marked at once, then read again, since Rock may have given the role to more rows than
+            // the one shown, and who leads last has changed.
+            await Promise.all([refreshRoster(channelId), loadRights(channelId)]);
         },
 
         dismissRemoval: (personAliasGuid): void => {

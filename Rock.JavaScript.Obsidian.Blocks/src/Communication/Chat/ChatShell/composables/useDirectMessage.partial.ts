@@ -46,11 +46,9 @@ import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
 import { defaultRetryDelay } from "./useHistory.partial";
 import { newLocalId, noKeySentence, SendTry } from "./useSend.partial";
+import { PlatformLimits } from "./useSession.partial";
 
 export type { PersonRow };
-
-/** The most people a person can start a conversation with, besides themselves. */
-export const maxOthers = 8;
 
 /**
  * How many times a first message is tried after Rock made its conversation and the platform had
@@ -143,6 +141,9 @@ export type DirectMessageDependencies = {
 
     /** The first wait before a try and the longest; the history's by default. */
     retryDelay?: () => { baseMs: number, capMs: number };
+
+    /** The platform's limits, from the latest token exchange: the most people a conversation holds besides the one starting it. */
+    limits: () => Pick<PlatformLimits, "dm_max_others">;
 
     /** Waits; a timer by default. */
     sleep?: (ms: number) => Promise<void>;
@@ -836,7 +837,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             }
 
             isBegun = true;
-            state.chosen = people.slice(0, maxOthers);
+            state.chosen = people.slice(0, dependencies.limits().dm_max_others);
             if (state.chosen.length > 0) {
                 lookUp();
             }
@@ -878,7 +879,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             if (state.chosen.some(p => p.person_alias_guid === person.person_alias_guid)) {
                 return true;
             }
-            if (state.chosen.length >= maxOthers) {
+            if (state.chosen.length >= dependencies.limits().dm_max_others) {
                 return false;
             }
 

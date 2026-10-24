@@ -584,7 +584,7 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
-    import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
+    import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
     import { joinNames } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -603,6 +603,12 @@
         lockedReason: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** The most people a conversation holds besides the person starting it, as the platform sets it. */
+        maxOthers: {
+            type: Number,
+            required: true
         },
 
         /** The people chosen so far, in the order they were chosen. */
@@ -765,7 +771,7 @@
 
     const subtitle = computed((): string => {
         if (props.chosen.length === 0) {
-            return `Choose up to ${maxOthers} people`;
+            return `Choose up to ${props.maxOthers} people`;
         }
 
         if (isFound.value) {
@@ -797,11 +803,11 @@
         }
 
         const count = props.chosen.length;
-        if (count >= maxOthers) {
-            return `${maxOthers} people is the most for one conversation. Press Tab to write your message.`;
+        if (count >= props.maxOthers) {
+            return `${props.maxOthers} people is the most for one conversation. Press Tab to write your message.`;
         }
 
-        return count >= 6 ? `${count} of ${maxOthers} people` : "";
+        return count >= 6 ? `${count} of ${props.maxOthers} people` : "";
     });
 
     const pendingPhase = computed(() => props.draft?.phase ?? null);
@@ -860,9 +866,9 @@
 
     /** Enter on an empty To field moves to the message, or at the cap says it is reached. */
     function onSubmit(): void {
-        if (props.chosen.length >= maxOthers) {
+        if (props.chosen.length >= props.maxOthers) {
             // The note already says how to move on; focus stays so it is read.
-            announce(`${maxOthers} people is the most for one conversation.`);
+            announce(`${props.maxOthers} people is the most for one conversation.`);
         }
         else if (props.chosen.length > 0) {
             focusEditor();
@@ -948,7 +954,7 @@
         // before this reads it again.
         const count = props.chosen.length + 1;
         emit("choose", person);
-        const full = count >= maxOthers ? ` ${maxOthers} people is the most for one conversation. Press Tab to write your message.` : "";
+        const full = count >= props.maxOthers ? ` ${props.maxOthers} people is the most for one conversation. Press Tab to write your message.` : "";
         announce(`Added ${nameOf(person)}. ${count} ${count === 1 ? "person" : "people"} chosen.${full}`);
     }
 

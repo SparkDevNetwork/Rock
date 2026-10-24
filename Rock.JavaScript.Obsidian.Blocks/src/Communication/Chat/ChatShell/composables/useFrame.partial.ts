@@ -26,7 +26,6 @@
 
 import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef, ShallowRef, StyleValue, watch, watchEffect } from "vue";
 import { ChatShell } from "../shell.partial";
-import { isTwoPersonDirectMessage } from "../stores/channelStore.partial";
 import { PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/tooltip.partial";
@@ -472,7 +471,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      */
     function openAddPeople(channelId: string): void {
         const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
-        if (row && isTwoPersonDirectMessage(row)) {
+        if (row?.room_kind === "person") {
             return;
         }
 

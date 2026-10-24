@@ -29,16 +29,15 @@
 // is asked and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { ChannelStore, roomTitle } from "../stores/channelStore.partial";
+import { ChannelStore } from "../stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
+import type { MemberRights } from "./useMembers.partial";
 import { ActionNotice } from "./useMessageActions.partial";
+import { PlatformLimits } from "./useSession.partial";
 import { JoinResult } from "./useSend.partial";
 
 /** How long the directory waits after the last keystroke before it searches, as the design sets it. */
 export const directorySearchPause = 200;
-
-/** How many rows a page of the directory asks for: the platform's own default page. */
-export const directoryPageSize = 50;
 
 /** The sentence a refusal shows when the door gave none of its own, as the door words its refusal. */
 const refusedSentence = "You can't join this channel.";
@@ -194,6 +193,9 @@ export type RoomsState = {
     /** Each group's Rename, by its id; a group not here is idle. */
     renames: Record<string, RenameState>;
 
+    /** Whether Rock lets the person rename each room, by its id, as its details last asked; a room not here is not offered it. */
+    canRename: Record<string, boolean>;
+
     /** The profile card open now, or null; drawn only once its person is read. */
     card: ProfileCardState | null;
     announcement: RoomAnnouncement | null;
@@ -216,6 +218,9 @@ export type RoomsDependencies = {
     /** Rock's Rename door for a group; without it, Rename is refused. */
     renameConversation?: (channelId: string, name: string) => Promise<JoinResult>;
 
+    /** Rock's answer to what the person may change about a room, which says whether Rename is offered; without it, it is not. */
+    getMemberRights?: (channelId: string) => Promise<MemberRights>;
+
     /** Reads one person for the profile card, chat_get_person through the shell's call path. */
     getPerson: (personAliasGuid: string, channelId: string) => Promise<PersonProfileResult>;
 
@@ -224,6 +229,12 @@ export type RoomsDependencies = {
 
     /** The sidebar, which a previewed room's stand-in row joins. */
     channels: Pick<ChannelStore, "rows" | "previewChannelId" | "setPreview">;
+
+    /** Fetches the sidebar again, for a title only the platform writes. */
+    reloadSidebar: () => void;
+
+    /** The platform's limits, from the latest token exchange. */
+    limits: () => Pick<PlatformLimits, "directory_page_size">;
 
     /** The conversation on screen now, or null. */
     activeChannelId: () => string | null;
@@ -281,6 +292,12 @@ export type Rooms = {
     rename: (channelId: string, name: string) => Promise<void>;
 
     renameOf: (channelId: string) => RenameState;
+
+    /** A room's details opened: Rock is asked whether the person may rename it. */
+    detailsOpened: (channelId: string) => Promise<void>;
+
+    /** Whether Rock said the person may rename the room; false until it answers. */
+    canRenameOf: (channelId: string) => boolean;
 
     /** Opens the profile card for a person, read for the room it was opened from. */
     openCard: (personAliasGuid: string, channelId: string) => void;
@@ -353,7 +370,11 @@ function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url
         all_mention_count: 0,
         can_mention: false,
         dm_names: null,
-        dm_other_count: null
+        dm_other_count: null,
+        // only a channel is ever previewed, and a channel's row draws its name and no line under it
+        room_kind: "channel",
+        title: source.name ?? "",
+        preview_line: ""
     };
 }
 
@@ -388,6 +409,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         joins: {},
         leaves: {},
         renames: {},
+        canRename: {},
         card: null,
         announcement: null
     }) as RoomsState;
@@ -436,7 +458,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             wholeChurch: campus.kind === "wholeChurch",
             notJoined: directory.show === "notJoined",
             after,
-            limit: directoryPageSize
+            limit: dependencies.limits().directory_page_size
         };
     }
 
@@ -483,7 +505,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         directory.rows = result.page.channels;
         directory.total = result.page.total;
         // a short page is the end; a full one may be followed by an empty one, which ends it too
-        directory.hasMore = result.page.channels.length >= directoryPageSize;
+        directory.hasMore = result.page.channels.length >= asked.limit;
         directory.emptyKind = directory.rows.length === 0 ? emptyKindFor(asked) : null;
 
         if (asked.query !== null) {
@@ -516,7 +538,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         directory.isLoadingMore = true;
         directory.moreError = null;
         const generation = directoryGeneration;
-        const result = await dependencies.listDirectory(request(last.channel_id));
+        const asked = request(last.channel_id);
+        const result = await dependencies.listDirectory(asked);
         if (isStopped || generation !== directoryGeneration) {
             return;
         }
@@ -531,7 +554,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         const held = new Set(directory.rows.map(row => row.channel_id));
         directory.rows.push(...result.page.channels.filter(row => !held.has(row.channel_id)));
         directory.total = result.page.total;
-        directory.hasMore = result.page.channels.length >= directoryPageSize;
+        directory.hasMore = result.page.channels.length >= asked.limit;
     }
 
     // #endregion The directory
@@ -622,7 +645,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     /** The room's title as the sidebar shows it, a group with no name by its people. */
     function titleOf(channelId: string): string {
         const row = channels.rows.find(r => r.channel_id === channelId);
-        return row ? roomTitle(row) : nameOf(channelId);
+        return row ? row.title : nameOf(channelId);
     }
 
     /**
@@ -640,22 +663,24 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     /**
      * Draws a group's saved name at once in its sidebar row and its facts, which the header, the
      * sidebar and the details read, rather than waiting for the platform's signal to reload them.
-     * With no name the group is titled by its people again, from the facts' own list of them. Only
-     * a saved answer does this: a pending one is not on the platform yet, which a reload would show.
+     * With no name the group is titled by its people again, a title only the platform writes, so
+     * the sidebar is read again, as the platform's own signal would have it read. Only a saved
+     * answer does this: a pending one is not on the platform yet, which a reload would show.
      */
     function showName(channelId: string, name: string): void {
         const facts = state.facts[channelId];
         const row = channels.rows.find(r => r.channel_id === channelId);
         if (row) {
             row.name = name || null;
-            if (!name && facts) {
-                row.dm_names = facts.people.map(person => person.nick_name ?? "").filter(nickName => nickName !== "");
-                // the others, past the few the facts name, as the platform counts them for an unnamed room
-                row.dm_other_count = Math.max(facts.member_count - 1, facts.people.length);
+            if (name) {
+                row.title = name;
             }
         }
         if (facts) {
             facts.name = name || null;
+        }
+        if (!name) {
+            dependencies.reloadSidebar();
         }
     }
 
@@ -940,6 +965,25 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         },
 
         renameOf: (channelId: string): RenameState => state.renames[channelId] ?? { kind: "idle" },
+
+        detailsOpened: async (channelId: string): Promise<void> => {
+            const door = dependencies.getMemberRights;
+            if (isStopped || !door) {
+                return;
+            }
+
+            try {
+                const rights = await door(channelId);
+                if (!isStopped) {
+                    state.canRename[channelId] = rights.canRename === true;
+                }
+            }
+            catch {
+                // Intentionally ignored: with no answer Rename is not offered, and the door still decides.
+            }
+        },
+
+        canRenameOf: (channelId: string): boolean => state.canRename[channelId] === true,
 
         openCard: (personAliasGuid: string, channelId: string): void => {
             if (isStopped) {

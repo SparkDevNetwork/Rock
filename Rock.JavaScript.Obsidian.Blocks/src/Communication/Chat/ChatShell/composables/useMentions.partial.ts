@@ -27,15 +27,13 @@ import { CallResult } from "../platformCall.partial";
 import { ChannelMentionEvent, ChatError, MentionListPage, MentionPerson, MentionRow, MentionSearchAnswer, SidebarRow, UnreadMention } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 import { LandingCheck, loadUntilHeld } from "./useJump.partial";
+import { PlatformLimits } from "./useSession.partial";
 
 /**
  * How long the picker waits after the last keystroke before it searches. An estimate, not a
  * measurement: about the gap between keystrokes of steady typing, so a typed name asks once.
  */
 export const mentionSearchPause = 150;
-
-/** How many rows a page of the inbox holds. */
-export const mentionPageSize = 30;
 
 /** How many people the picker asks for: the six rows it draws. */
 export const mentionPickerSize = 6;
@@ -103,6 +101,9 @@ export type MentionsDependencies = {
 
     /** The channel timelines a jump looks for its message in. */
     timelines: Pick<Timelines, "state" | "loadOlder">;
+
+    /** The platform's limits, from the latest token exchange: how many rows a page of the inbox holds. */
+    limits: () => Pick<PlatformLimits, "mention_page_size">;
 
     /** Opens a conversation; resolves true once it is on screen. */
     openChannel: (channelId: string) => Promise<boolean>;
@@ -301,7 +302,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             p_channel_id: null,
             p_before_created_at: after?.message.created_at ?? null,
             p_before_id: after?.message.id ?? null,
-            p_limit: mentionPageSize
+            p_limit: dependencies.limits().mention_page_size
         });
     }
 

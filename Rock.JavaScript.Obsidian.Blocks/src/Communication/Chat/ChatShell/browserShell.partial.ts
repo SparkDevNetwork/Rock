@@ -156,7 +156,12 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         getMemberRights: async channelId => {
             const result = await invokeBlockAction<ChatMemberRightsBag>("GetMemberRights", { channelGuid: channelId });
             // Without Rock's answer nothing is offered; the doors still decide every change.
-            return { canManageMembers: result.isSuccess && result.data?.canManageMembers === true };
+            const rights = result.isSuccess ? result.data : null;
+            return {
+                canManageMembers: rights?.canManageMembers === true,
+                canRename: rights?.canRename === true,
+                lastLeaderPersonAliasGuid: rights?.lastLeaderPersonAliasGuid ?? null
+            };
         },
         addMembers: (channelId, personAliasGuids) => membershipDoor("AddMembers", { channelGuid: channelId, personAliasGuids }),
         removeMember: (channelId, personAliasGuid, replacementPersonAliasGuid) => membershipDoor("RemoveMember", { channelGuid: channelId, personAliasGuid, replacementPersonAliasGuid }),

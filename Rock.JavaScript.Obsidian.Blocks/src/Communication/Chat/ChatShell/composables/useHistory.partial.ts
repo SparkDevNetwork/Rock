@@ -32,9 +32,7 @@ import { reactive } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
-
-/** How many messages the first page of a channel holds. */
-export const firstPageSize = 50;
+import { PlatformLimits } from "./useSession.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
 export const defaultCatchUp = { page: 100, max: 500 };
@@ -178,8 +176,11 @@ export type TimelineState = {
     /** The person's read position when the first page was read. */
     readCursor: number | null;
 
-    /** How many messages were above that position, for the unread divider. */
+    /** How many messages past that position are news to the reader, as the platform counted them for the unread strip. */
     unreadCount: number;
+
+    /** The first of them, which the New divider stands above, as the platform found it; null for none. */
+    firstUnreadId: number | null;
 
     /** Whether a catch-up failed and is waiting to try again, so messages may be missing. */
     isBehind: boolean;
@@ -196,6 +197,9 @@ export type TimelineState = {
 export type TimelineDependencies = {
     /** Fetches a page: the newest, the page before an id, or the page after one. */
     fetchPage: (channelId: string, options: { limit: number, beforeId?: number, afterId?: number }) => Promise<HistoryPage>;
+
+    /** The platform's limits, from the latest token exchange: how many messages a page holds. */
+    limits: () => Pick<PlatformLimits, "history_page_size">;
 
     /** How catch-up pages forward on a rejoin, read from the settings each time. */
     catchUp?: () => { page: number, max: number };
@@ -420,7 +424,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let timeline = states.get(channelId);
 
         if (!timeline) {
-            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: null }) as TimelineState;
+            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: null }) as TimelineState;
             states.set(channelId, timeline);
         }
 
@@ -652,6 +656,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         timeline.hasMore = page.has_more;
         timeline.readCursor = page.read_cursor;
         timeline.unreadCount = page.unread_count;
+        timeline.firstUnreadId = page.first_unread_id ?? null;
         timeline.isLoaded = true;
         return !isJoined;
     }
@@ -696,7 +701,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             const isPastBound = fetched >= max;
             let answer: { page: HistoryPage, readAt: number } | null;
             try {
-                answer = await fetchCurrent(channelId, isPastBound ? { limit: firstPageSize } : { limit: pageSize, afterId });
+                answer = await fetchCurrent(channelId, isPastBound ? { limit: dependencies.limits().history_page_size } : { limit: pageSize, afterId });
             }
             catch (error) {
                 // a run that no longer owns the channel goes quietly; a refusal that waiting cannot
@@ -810,7 +815,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             let failure: { error: unknown } | null = null;
 
             try {
-                const answer = await fetchCurrent(channelId, { limit: firstPageSize });
+                const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size });
                 if (answer && !isStopped) {
                     if (takeNewest(channelId, answer.page, answer.readAt)) {
                         channelSync.hasJoined = false;
@@ -863,7 +868,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 return;
             }
 
-            const answer = await fetchCurrent(channelId, { limit: firstPageSize, beforeId: oldest.id });
+            const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size, beforeId: oldest.id });
             // dropped when what is held changed underneath it, or another older page got there first
             if (!answer || timeline.messages[0]?.id !== oldest.id) {
                 return;

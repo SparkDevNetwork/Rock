@@ -201,61 +201,6 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
 }
 
 /**
- * Where the New divider sits: above the first message past the read position that is news to
- * the reader. A system line is not news, and neither is the reader's own message, sent from
- * another device.
- *
- * @param messages The timeline, oldest first.
- * @param readCursor The reader's position when the channel opened.
- * @param unreadCount How many messages the platform counted above it.
- * @param personAliasGuid The reader.
- *
- * @returns The id of the message the divider sits above, or null for none.
- */
-export function newDividerBeforeId(messages: TimelineMessage[], readCursor: number | null, unreadCount: number, personAliasGuid: string): number | null {
-    if (readCursor === null || unreadCount <= 0) {
-        return null;
-    }
-
-    const me = personAliasGuid.toLowerCase();
-    const first = messages.find(m => m.id > readCursor
-        && m.message_type !== "system"
-        && !isOwnMessage(m, me));
-
-    return first?.id ?? null;
-}
-
-/**
- * How many messages the unread strip counts. The platform's count is everything past the read
- * position, the reader's own messages included, so while the reader has messages of their own
- * past it the strip counts instead the others' from the divider on, by the platform's rules: no
- * system line, nothing deleted, hidden or removed.
- *
- * @param messages The timeline, oldest first.
- * @param readCursor The id of the last message the reader has read, or null.
- * @param unreadCount The platform's count of unread messages.
- * @param dividerBeforeId The message the New divider sits above, or null when none is drawn.
- * @param personAliasGuid The reader.
- *
- * @returns The count to show.
- */
-export function unreadStripCount(messages: TimelineMessage[], readCursor: number | null, unreadCount: number, dividerBeforeId: number | null, personAliasGuid: string): number {
-    if (readCursor === null || dividerBeforeId === null) {
-        return unreadCount;
-    }
-
-    const me = personAliasGuid.toLowerCase();
-    const isCounted = (m: TimelineMessage): boolean => m.message_type !== "system" && !m.deleted_at && (m.visibility ?? "visible") === "visible";
-    const isOwn = (m: TimelineMessage): boolean => isOwnMessage(m, me);
-
-    if (!messages.some(m => m.id > readCursor && isOwn(m) && isCounted(m))) {
-        return unreadCount;
-    }
-
-    return messages.filter(m => m.id >= dividerBeforeId && !isOwn(m) && isCounted(m)).length;
-}
-
-/**
  * A day's label: Today, Yesterday, the weekday within the past six days, then the date, with the
  * year only when it is not this year.
  *
