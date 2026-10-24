@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -480,7 +481,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             var newcomers = others.Where( o => !room.LivePersonIds.Contains( o.PersonId ) ).ToList();
             if ( isDirect && room.PersonCount + newcomers.Count > MaxOthers + 1 )
             {
-                return Membership( "door.bad_request", $"A conversation holds at most {( MaxOthers + 1 ).ToWords()} people." );
+                return Membership( "door.bad_request", ConversationHoldsAtMostSentence() );
             }
 
             // Everyone is checked before anyone is added, so a refusal adds nobody.
@@ -1355,9 +1356,20 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <summary>
         /// The sentence refusing an add of nobody, or of more people than a conversation takes at once.
         /// </summary>
-        private static string ChooseBetweenSentence()
+        /// <returns>The sentence.</returns>
+        internal static string ChooseBetweenSentence()
         {
-            return $"Choose between one and {MaxOthers.ToWords()} people.";
+            // The sentence is English, so its number is too, whatever culture the server runs in.
+            return $"Choose between one and {MaxOthers.ToWords( CultureInfo.InvariantCulture )} people.";
+        }
+
+        /// <summary>
+        /// The sentence refusing an add that would take a conversation past its size.
+        /// </summary>
+        /// <returns>The sentence.</returns>
+        internal static string ConversationHoldsAtMostSentence()
+        {
+            return $"A conversation holds at most {( MaxOthers + 1 ).ToWords( CultureInfo.InvariantCulture )} people.";
         }
 
         #endregion The membership read and writes
