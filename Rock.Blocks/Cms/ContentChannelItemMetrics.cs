@@ -24,8 +24,10 @@ using System.Linq.Expressions;
 
 using Rock.Attribute;
 using Rock.Cms.Utm;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.ContentChannelItemMetrics;
 using Rock.ViewModels.Core.Grid;
@@ -137,6 +139,22 @@ namespace Rock.Blocks.Cms
             var box = new ContentChannelItemMetricsInitializationBox();
 
             var contentChannelItem = GetContentChannelItem();
+
+            /*
+                10/25/2026 - MSE
+
+                Page and block access do not grant access to every content item.
+                Check item VIEW, including inherited channel security, before
+                returning its metadata, interaction state or filter options.
+
+                Reason: Respect content item VIEW security in metrics initialization.
+            */
+            if ( contentChannelItem != null
+                && !contentChannelItem.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToView( ContentChannelItem.FriendlyTypeName );
+                return box;
+            }
 
             if ( contentChannelItem != null )
             {
@@ -799,6 +817,19 @@ namespace Rock.Blocks.Cms
                 return ActionNotFound( "Content channel item not found." );
             }
 
+            /*
+                10/25/2026 - MSE
+
+                Block actions can be called directly with a different item page
+                parameter, so initialization security must be checked again here.
+
+                Reason: Respect content item VIEW security on every metrics request.
+            */
+            if ( !contentChannelItem.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {ContentChannelItem.FriendlyTypeName}." );
+            }
+
             var dateRange = GetBlockPersonPreferences().GetValue( PersonPreferenceKey.DateRange );
 
             return ActionOk( BuildOverviewMetrics( contentChannelItem.Id, dateRange ) );
@@ -817,6 +848,19 @@ namespace Rock.Blocks.Cms
             if ( contentChannelItem == null )
             {
                 return ActionNotFound( "Content channel item not found." );
+            }
+
+            /*
+                10/25/2026 - MSE
+
+                Block actions can be called directly with a different item page
+                parameter, so initialization security must be checked again here.
+
+                Reason: Respect content item VIEW security on every metrics request.
+            */
+            if ( !contentChannelItem.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {ContentChannelItem.FriendlyTypeName}." );
             }
 
             var preferences = GetBlockPersonPreferences();

@@ -320,7 +320,7 @@ FROM (
                                 if ( !string.IsNullOrWhiteSpace( metric.SourceSql ) )
                                 {
                                     string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
-                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null, commandTimeout );
+                                    var tableResult = GetSourceSqlResults( formattedSql, commandTimeout );
 
                                     if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
                                     {
@@ -556,6 +556,56 @@ FROM (
             }
 
             return metricResult;
+        }
+
+        /// <summary>
+        /// Gets the first result table from metric SQL and rolls back its transaction.
+        /// </summary>
+        /// <param name="sql">The metric SQL.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
+        /// <returns>The first result table, or null if there are no result tables.</returns>
+        private static DataTable GetSourceSqlResults( string sql, int commandTimeout )
+        {
+            /*
+                10/25/2026 - MSE
+
+                Metric SQL is intended to calculate values, so roll back database changes made
+                while obtaining its results. This is a guard, not a sandbox: source authors still
+                need ADMINISTRATE because explicit commits and external effects can escape it.
+                Disable enlistment on this connection so its rollback cannot end a caller's
+                ambient transaction. Fill a DataSet, as DbService does, to observe all result
+                sets and errors before returning the first table.
+
+                Reason: Metric calculations must not retain incidental database changes.
+            */
+            var connectionString = new SqlConnectionStringBuilder( Rock.Configuration.RockApp.Current.InitializationSettings.ConnectionString )
+            {
+                Enlist = false
+            };
+
+            using ( var connection = new SqlConnection( connectionString.ConnectionString ) )
+            {
+                connection.Open();
+                using ( var transaction = connection.BeginTransaction() )
+                using ( var command = new SqlCommand( sql, connection, transaction )
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = commandTimeout
+                } )
+                using ( var adapter = new SqlDataAdapter( command ) )
+                {
+                    var dataSet = new DataSet( "rockDs" );
+                    adapter.Fill( dataSet );
+
+                    if ( transaction.Connection == null )
+                    {
+                        throw new Exception( "The metric SQL ended the transaction it runs in. Metric SQL may only read data." );
+                    }
+
+                    transaction.Rollback();
+                    return dataSet.Tables.Count > 0 ? dataSet.Tables[0] : null;
+                }
+            }
         }
 
         /// <summary>

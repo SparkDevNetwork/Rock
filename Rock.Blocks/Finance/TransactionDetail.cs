@@ -1245,7 +1245,10 @@ namespace Rock.Blocks.Finance
                 ApplyRefundState( entity, box.Bag );
             }
 
-            SaveTransactionImages( box.Bag, entity );
+            if ( !SaveTransactionImages( box.Bag, entity ) )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -1326,63 +1329,84 @@ namespace Rock.Blocks.Finance
         /// </summary>
         /// <param name="bag">The transaction bag containing the image list from the client.</param>
         /// <param name="entity">The transaction entity whose images are being updated.</param>
-        private void SaveTransactionImages(TransactionBag bag, FinancialTransaction entity )
+        /// <returns>Whether all image references are valid for this transaction.</returns>
+        private bool SaveTransactionImages( TransactionBag bag, FinancialTransaction entity )
         {
             var images = bag.Images;
             if ( images?.Any() == true )
             {
+                var binaryFileService = new BinaryFileService( RockContext );
+
+                /*
+                    10/25/2026 - MSE
+
+                    Only existing transaction images or allowed temporary uploads may be attached.
+                    A removal must only affect a file already linked to this transaction.
+
+                    Reason: Image Guids are supplied by the client and do not establish file ownership.
+                */
+                var linkedFileIds = new FinancialTransactionImageService( RockContext ).Queryable()
+                    .Where( i => i.TransactionId == entity.Id )
+                    .Select( i => i.BinaryFileId )
+                    .ToList();
+
                 var imageOrder = 0;
                 foreach ( var image in images )
                 {
-                    var binaryFileId = new BinaryFileService( RockContext ).GetId( image.Guid );
+                    var binaryFileId = binaryFileService.GetId( image.Guid );
 
                     if ( binaryFileId != null )
                     {
+                        var isLinked = linkedFileIds.Contains( binaryFileId.Value );
+
                         if ( image.IsMarkedForDeletion )
                         {
-                            RemoveImageFromTransaction( binaryFileId.Value, entity.Id );
+                            if ( isLinked )
+                            {
+                                RemoveImageFromTransaction( binaryFileId.Value, entity.Id );
+                            }
                         }
                         else
                         {
+                            if ( !isLinked
+                                && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileId.Value, null, RequestContext.CurrentPerson ) )
+                            {
+                                return false;
+                            }
+
                             MaintainOrAddImage( binaryFileId.Value, entity.Id, imageOrder );
                             imageOrder++;
                         }
                     }
                 }
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Marks a binary file as temporary and removes the corresponding
-        /// <see cref="FinancialTransactionImage"/> record so the image is no longer
-        /// associated with the transaction.
+        /// Removes the corresponding <see cref="FinancialTransactionImage"/> record.
+        /// Its save hook marks the removed image file as temporary.
         /// </summary>
         /// <param name="binaryFileId">The Id of the binary file to remove.</param>
         /// <param name="transactionId">The Id of the transaction the image is being removed from.</param>
         private void RemoveImageFromTransaction( int binaryFileId, int transactionId )
         {
+            /*
+                10/25/2026 - MSE
 
-            // First set the binary file to temporary so it is removed
-            var binaryFileService = new BinaryFileService( RockContext );
+                Delete only the transaction image link. Its save hook handles file cleanup and history.
 
-            var imagePreview = binaryFileService.Get( binaryFileId );
-
-            if( imagePreview != null )
-            {
-                imagePreview.IsTemporary = true;
-            }
-
-            // Remove the transaction reference so it does not get pulled in while it is temporarily in db
-
+                Reason: An unlinked file must not be marked temporary by this request.
+            */
             var txnImageService = new FinancialTransactionImageService( RockContext );
 
             var txnImageToRemove = txnImageService.Queryable().Where( i => i.BinaryFileId == binaryFileId && i.TransactionId == transactionId ).FirstOrDefault();
 
-            if( txnImageToRemove != null )
+            if ( txnImageToRemove != null )
             {
                 txnImageService.Delete( txnImageToRemove );
             }
-
         }
 
         /// <summary>
