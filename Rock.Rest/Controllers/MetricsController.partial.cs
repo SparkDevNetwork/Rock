@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using HttpStatusCode = System.Net.HttpStatusCode;
+using System.Web.Http;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
@@ -36,6 +38,69 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MetricsController
     {
+        /// <inheritdoc/>
+        protected override void CheckCanEdit( Metric entity )
+        {
+            base.CheckCanEdit( entity );
+
+            /*
+                10/25/2026 - MSE
+
+                Staff inherit EDIT on v1 REST controllers, and metric EDIT is also used for
+                value entry. New SQL or Lava metrics can run code as the application, so their
+                creation needs controller ADMINISTRATE, like block ADMINISTRATE in Metric Detail.
+                Check dormant source text too, so it cannot be planted through a different type.
+
+                Reason: Value editors must not author metric source code through v1 REST.
+            */
+            if ( entity != null && entity.Id == 0 )
+            {
+                var sourceTypeGuid = DefinedValueCache.Get( entity.SourceValueTypeId ?? 0 )?.Guid;
+                bool hasExecutableSource = sourceTypeGuid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid()
+                    || sourceTypeGuid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid()
+                    || !string.IsNullOrEmpty( entity.SourceSql )
+                    || !string.IsNullOrEmpty( entity.SourceLava );
+
+                if ( hasExecutableSource )
+                {
+                    CheckCanAdministrateController();
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void CheckCanEditAfterUpdate( Metric entity )
+        {
+            base.CheckCanEditAfterUpdate( entity );
+
+            /*
+                10/25/2026 - MSE
+
+                Only source changes need ADMINISTRATE. Full updates that echo unchanged source
+                and ordinary metadata updates must still work for metric editors. Authorize
+                against the stored metric so posted values cannot supply their own permission.
+
+                Reason: Source authoring must have the same authority through every v1 write.
+            */
+            using ( var rockContext = new RockContext() )
+            {
+                var storedMetric = new MetricService( rockContext ).Get( entity.Id );
+                if ( storedMetric == null )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+
+                bool sourceChanged = entity.SourceValueTypeId != storedMetric.SourceValueTypeId
+                    || !string.Equals( entity.SourceSql ?? string.Empty, storedMetric.SourceSql ?? string.Empty, StringComparison.Ordinal )
+                    || !string.Equals( entity.SourceLava ?? string.Empty, storedMetric.SourceLava ?? string.Empty, StringComparison.Ordinal );
+
+                if ( sourceChanged && !storedMetric.IsAuthorized( Authorization.ADMINISTRATE, GetPerson() ) )
+                {
+                    CheckCanAdministrateController();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the HTML for a LiquidDashboardWidget block
         /// </summary>
