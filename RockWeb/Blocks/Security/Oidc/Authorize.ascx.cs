@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
             // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
             var scopesApprovalCookieValue = RockPage.GetCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ) )?.Value;
-            var scopesPreviouslyApproved = Rock.Security.Encryption.DecryptString( scopesApprovalCookieValue ) == authClient.AllowedScopes.ToString();
+            var scopesPreviouslyApproved = AuthClientService.IsScopeCookieValueValid( scopesApprovalCookieValue, authClient, CurrentUser );
 
             // We have to use querystring, because something in the .net postback chain writes to the Response object which breaks the auth call.
             var action = PageParameter( PageParamKey.Action );
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Security.Oidc
             ticket.SetResources( "resource_server" );
 
             // Set cookie to remember the fact that this individual as approved the scopes.
-            var cookieValue = $"{Rock.Security.Encryption.EncryptString( authClient.AllowedScopes.ToString() )}";
+            var cookieValue = AuthClientService.GetScopeCookieValue( authClient, CurrentUser );
             RockPage.AddOrUpdateCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ), cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
 
             // Returning a SignInResult will ask ASOS to serialize the specified identity
