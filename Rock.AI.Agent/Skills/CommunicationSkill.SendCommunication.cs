@@ -22,8 +22,10 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -62,6 +64,11 @@ internal partial class CommunicationSkill
         else if ( communication != null && !IsAuthorizedToEditDraft( communication, currentPerson ) )
         {
             helper.AddError( "You are not authorized to send this communication." );
+        }
+        else if ( communication != null && !IsSmsFromNumberAuthorized( communication, currentPerson ) )
+        {
+            helper.AddError( "You are not authorized to send from this communication's SMS 'from' number." );
+            helper.AddInstructions( "Ask the user to draft the message again from one of their available SMS 'from' numbers." );
         }
 
         if ( helper.HasErrors )
@@ -127,6 +134,43 @@ internal partial class CommunicationSkill
             CommunicationId = communicationId
         };
         transactionMsg.Send();
+    }
+
+    /// <summary>
+    /// Determines if the person is allowed to send the communication from its
+    /// SMS 'from' number. Communications that do not send SMS, or that have no
+    /// 'from' number, are always allowed.
+    /// </summary>
+    /// <param name="communication">The communication that will be sent.</param>
+    /// <param name="person">The person that wants to send the communication.</param>
+    /// <returns><c>true</c> if the person can send from the number; otherwise <c>false</c>.</returns>
+    private static bool IsSmsFromNumberAuthorized( Model.Communication communication, Model.Person person )
+    {
+        /*
+            10/25/2026 - MSE
+
+            The draft tools only accept 'from' numbers the person can VIEW,
+            but a transient communication could have been saved before that
+            check existed or created another way. Check the number again at
+            send time. RecipientPreference communications can also send SMS,
+            so they are checked too.
+
+            Reason: Prevent sending SMS from a system phone number the person cannot view.
+        */
+        if ( !communication.SmsFromSystemPhoneNumberId.HasValue )
+        {
+            return true;
+        }
+
+        if ( communication.CommunicationType != CommunicationType.SMS
+            && communication.CommunicationType != CommunicationType.RecipientPreference )
+        {
+            return true;
+        }
+
+        var fromNumber = SystemPhoneNumberCache.Get( communication.SmsFromSystemPhoneNumberId.Value );
+
+        return fromNumber != null && fromNumber.IsAuthorized( Authorization.VIEW, person );
     }
 
     #endregion
