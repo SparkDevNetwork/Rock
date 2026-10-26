@@ -452,8 +452,17 @@ namespace Rock.Workflow.Action
                 return GetAttributeValue( _action, attributeKey ).ResolveMergeFields( _mergeFields );
             }
 
-            // If it's text within an attribute then resolve using that
-            return _action.GetWorkflowAttributeValue( attributeGuid.Value ).ResolveMergeFields( _mergeFields );
+            /*
+                10/26/2026 - MSE
+
+                An attribute's value can hold untrusted input (entry forms, page
+                parameters), so it is used as data and is not rendered as Lava. The
+                empty string fallback keeps the old result for a missing value.
+
+                Reason: Attribute values can hold untrusted input and must not run as Lava.
+            */
+            // If it's text within an attribute then use the attribute value as data.
+            return _action.GetWorkflowAttributeValue( attributeGuid.Value ) ?? string.Empty;
         }
 
         /// <summary>
@@ -503,15 +512,16 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         private Guid? GetGuidFromTextOrAttribute( string attributeKey )
         {
-            var value = GetAttributeValue( _action, attributeKey, true );
-            var guid = value.AsGuidOrNull();
+            /*
+                10/26/2026 - MSE
 
-            if ( !guid.HasValue )
-            {
-                guid = value.ResolveMergeFields( _mergeFields ).AsGuidOrNull();
-            }
+                Values read from a selected workflow attribute are data and are not rendered
+                as Lava; only text typed into the setting is rendered. See
+                ActionComponent.GetTextOrAttributeValue.
 
-            return guid;
+                Reason: Attribute values can hold untrusted input and must not run as Lava.
+            */
+            return GetTextOrAttributeValue( _action, attributeKey, _mergeFields ).AsGuidOrNull();
         }
 
         /// <summary>
