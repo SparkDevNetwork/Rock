@@ -17,7 +17,8 @@
 
 using System;
 using System.IO;
-using System.Web.Hosting;
+
+using Rock.Configuration;
 
 namespace Rock.Plugin.HotFixes
 {
@@ -328,13 +329,13 @@ END
             */
             try
             {
-                var path = HostingEnvironment.MapPath( "~/Bin/rocks.pillars.AzureStorageProvider.dll" );
+                var path = RockApp.Current.MapPath( "~/Bin/rocks.pillars.AzureStorageProvider.dll" );
                 if ( File.Exists( path ) )
                 {
                     File.Delete( path );
                 }
 
-                path = HostingEnvironment.MapPath( "~/Bin/rocks.pillars.AzureStorageProvider.pdb" );
+                path = RockApp.Current.MapPath( "~/Bin/rocks.pillars.AzureStorageProvider.pdb" );
                 if ( File.Exists( path ) )
                 {
                     File.Delete( path );

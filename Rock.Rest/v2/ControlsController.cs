@@ -1209,14 +1209,14 @@ namespace Rock.Rest.v2
             if ( asset.IsLocalAsset )
             {
                 // The root folder and restricted folders can't be deleted.
-                if ( IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                if ( IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( RockApp.Current.MapPath( asset.FullPath ) ) )
                 {
                     return BadRequest();
                 }
 
                 try
                 {
-                    var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                    var physicalFolder = RockApp.Current.MapPath( asset.FullPath );
                     Directory.Delete( physicalFolder, true );
                 }
                 catch ( Exception ex )
@@ -1292,7 +1292,7 @@ namespace Rock.Rest.v2
 
             if ( parsedAsset.IsLocalAsset )
             {
-                var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.FullPath );
+                var physicalFolder = RockApp.Current.MapPath( parsedAsset.FullPath );
                 Directory.CreateDirectory( Path.Combine( physicalFolder, options.NewFolderName ) );
 
                 return Ok( new AssetManagerTreeItemBag
@@ -1376,12 +1376,12 @@ namespace Rock.Rest.v2
 
                 // Only local folders inside the root can be renamed, and not
                 // the root folder or restricted folders.
-                if ( asset == null || !asset.IsLocalAsset || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                if ( asset == null || !asset.IsLocalAsset || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( RockApp.Current.MapPath( asset.FullPath ) ) )
                 {
                     return BadRequest();
                 }
 
-                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var physicalPath = RockApp.Current.MapPath( asset.FullPath );
                 var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath.TrimEnd( '/', '\\' ) ), options.NewFolderName );
 
                 if ( !IsPhysicalPathWithinRoot( renamedPath, asset.Root ) || IsUploadRestrictedLocalPath( renamedPath ) )
@@ -1429,15 +1429,15 @@ namespace Rock.Rest.v2
 
                 // Only local folders inside the root can be moved, and not
                 // the root folder or restricted folders.
-                if ( asset == null || !asset.IsLocalAsset || options.TargetFolder == null || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                if ( asset == null || !asset.IsLocalAsset || options.TargetFolder == null || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( RockApp.Current.MapPath( asset.FullPath ) ) )
                 {
                     return BadRequest();
                 }
 
                 var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
-                var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var currentPhysicalPath = RockApp.Current.MapPath( asset.FullPath );
                 var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder.TrimStart( '/', '\\' ), baseFolderName );
-                var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
+                var targetPhyicalPath = RockApp.Current.MapPath( targetRootRelativePath );
 
                 if ( !IsPhysicalPathWithinRoot( targetPhyicalPath, asset.Root ) || IsUploadRestrictedLocalPath( targetPhyicalPath ) )
                 {
@@ -1498,14 +1498,14 @@ namespace Rock.Rest.v2
                         return BadRequest();
                     }
 
-                    if ( options.Files.Any( f => IsUploadRestrictedLocalPath( System.Web.HttpContext.Current.Server.MapPath( f ) ) ) )
+                    if ( options.Files.Any( f => IsUploadRestrictedLocalPath( RockApp.Current.MapPath( f ) ) ) )
                     {
                         return BadRequest();
                     }
 
                     foreach ( string file in options.Files )
                     {
-                        var physicalPath = System.Web.HttpContext.Current.Server.MapPath( file );
+                        var physicalPath = RockApp.Current.MapPath( file );
                         File.Delete( physicalPath );
                     }
                 }
@@ -1568,7 +1568,7 @@ namespace Rock.Rest.v2
                         return BadRequest( "Invalid file." );
                     }
 
-                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    var physicalPath = RockApp.Current.MapPath( options.File );
                     fileName = Path.GetFileName( physicalPath );
                     stream = File.Open( physicalPath, FileMode.Open, FileAccess.Read );
                 }
@@ -1649,7 +1649,7 @@ namespace Rock.Rest.v2
                         return BadRequest( "Invalid file name." );
                     }
 
-                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    var physicalPath = RockApp.Current.MapPath( options.File );
                     var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
 
                     if ( !IsPhysicalPathWithinRoot( renamedPath, root ) || IsUploadRestrictedLocalPath( renamedPath ) )
@@ -1722,7 +1722,7 @@ namespace Rock.Rest.v2
 
             try
             {
-                physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( root, options.FileName ) );
+                physicalZipFile = RockApp.Current.MapPath( Path.Combine( root, options.FileName ) );
             }
             catch ( Exception )
             {
@@ -1851,7 +1851,7 @@ namespace Rock.Rest.v2
                 }
 
                 var selectedSubPath = selectedFolder.Substring( normalizedRoot.Length ).TrimStart( '/' );
-                var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( root );
+                var physicalRootFolder = RockApp.Current.MapPath( root );
                 var physicalSelectedFolder = Path.GetFullPath( Path.Combine( physicalRootFolder, selectedSubPath.Replace( '/', Path.DirectorySeparatorChar ) ) ).TrimEnd( '/', '\\' );
 
                 if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSelectedFolder, physicalRootFolder ) )
@@ -2063,7 +2063,7 @@ namespace Rock.Rest.v2
         {
             try
             {
-                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( path );
+                var physicalPath = RockApp.Current.MapPath( path );
 
                 return IsPhysicalPathWithinRoot( physicalPath, root );
             }
@@ -2088,7 +2088,7 @@ namespace Rock.Rest.v2
 
             try
             {
-                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( root );
+                var physicalRoot = RockApp.Current.MapPath( root );
 
                 return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalRoot );
             }
@@ -2108,7 +2108,7 @@ namespace Rock.Rest.v2
         {
             try
             {
-                var physicalWebRoot = Path.GetFullPath( System.Web.HttpContext.Current.Server.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
+                var physicalWebRoot = Path.GetFullPath( RockApp.Current.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
                 var fullPath = Path.GetFullPath( physicalPath ).TrimEnd( '/', '\\' );
 
                 if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalWebRoot ) )
@@ -2178,8 +2178,8 @@ namespace Rock.Rest.v2
         {
             try
             {
-                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
-                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+                var physicalPath = RockApp.Current.MapPath( asset.FullPath );
+                var physicalRoot = RockApp.Current.MapPath( asset.Root );
 
                 return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRoot, physicalPath );
             }
@@ -2252,7 +2252,7 @@ namespace Rock.Rest.v2
                 parsedAsset.EncryptedRoot = selectedFolder.EncryptedRoot;
             }
 
-            var localRoot = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.Root );
+            var localRoot = RockApp.Current.MapPath( parsedAsset.Root );
 
             if ( !Directory.Exists( localRoot ) )
             {
@@ -2334,8 +2334,8 @@ namespace Rock.Rest.v2
                 asset.Root = "~/" + asset.Root;
             }
 
-            var localRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
-            var localPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+            var localRoot = RockApp.Current.MapPath( asset.Root );
+            var localPath = RockApp.Current.MapPath( asset.FullDirectoryPath );
             var subDirectories = Directory.GetDirectories( localPath ).OrderBy( a => a ).ToList();
 
             foreach ( var subDir in subDirectories )
@@ -2397,8 +2397,8 @@ namespace Rock.Rest.v2
         /// <returns>An object containing the list of files as well as flags for restrictions on the folder.</returns>
         private AssetManagerGetFilesResultsBag<Asset> GetFilesInFolder( AssetManagerAsset asset, string browseMode /* image or doc */ )
         {
-            var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
-            var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+            var physicalRootFolder = RockApp.Current.MapPath( asset.Root );
+            var physicalFolder = RockApp.Current.MapPath( asset.FullDirectoryPath );
 
             var fileTypeWhiteList = "*.*";
             var fileList = new List<string>();

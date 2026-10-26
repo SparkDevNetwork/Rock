@@ -31,7 +31,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
@@ -45,6 +44,7 @@ using ImageResizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Configuration;
 using Rock.Core.Geography;
 using Rock.Core.Geography.Classes;
 using Rock.Data;
@@ -791,7 +791,7 @@ namespace Rock.Lava
                     else
                     {
                         var photoUrl = new StringBuilder();
-                        photoUrl.Append( HttpContext.Current.Server.MapPath( "~/" ) );
+                        photoUrl.Append( RockApp.Current.MapPath( "~/" ) );
 
                         if ( person.Age.HasValue && person.Age.Value < 18 )
                         {

@@ -104,7 +104,7 @@ namespace RockWeb
                 settings.PhotoId = null;
             }
 
-            string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
+            string cacheFolder = RockApp.Current.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
 
             // Fill in missing colors. This must be done after the creation of the cache key to prevent caching avatars in every color of the rainbow
@@ -280,7 +280,7 @@ namespace RockWeb
             var settings = new AvatarSettings();
 
             // Calculate the physical path to store the cached files to
-            settings.CachePath = request.MapPath( $"~/App_Data/Avatar/Cache/" );
+            settings.CachePath = RockApp.Current.MapPath( $"~/App_Data/Avatar/Cache/" );
 
             var disablePredictableIds = _securitySettingsService.SecuritySettings.DisablePredictableIds;
 

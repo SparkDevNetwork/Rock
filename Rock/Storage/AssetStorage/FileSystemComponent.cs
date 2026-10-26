@@ -21,9 +21,9 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 
 namespace Rock.Storage.AssetStorage
@@ -130,7 +130,7 @@ namespace Rock.Storage.AssetStorage
             VerifyPathFromRoot( asset.Key, rootFolder );
             VerifyPathIsNotProtected( asset.Key, AssetType.Folder );
 
-            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = RockApp.Current.MapPath( asset.Key );
 
             try
             {
@@ -173,7 +173,7 @@ namespace Rock.Storage.AssetStorage
                     throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
                 }
 
-                string physicalPath = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+                string physicalPath = RockApp.Current.MapPath( asset.Key );
 
                 if ( asset.Type == AssetType.File )
                 {
@@ -228,7 +228,7 @@ namespace Rock.Storage.AssetStorage
                 VerifyPathFromRoot( asset.Key, rootFolder );
                 VerifyPathIsNotProtected( asset.Key, AssetType.File );
 
-                string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+                string physicalFile = RockApp.Current.MapPath( asset.Key );
                 FileInfo fileInfo = new FileInfo( physicalFile );
 
                 var objAsset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, createThumbnail );
@@ -275,7 +275,7 @@ namespace Rock.Storage.AssetStorage
             asset.Key = FixKey( asset, rootFolder );
             VerifyPathFromRoot( asset.Key, rootFolder );
 
-            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = RockApp.Current.MapPath( asset.Key );
 
             return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File );
         }
@@ -308,7 +308,7 @@ namespace Rock.Storage.AssetStorage
             asset.Key = FixKey( asset, rootFolder );
             VerifyPathFromRoot( asset.Key, rootFolder );
 
-            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = RockApp.Current.MapPath( asset.Key );
             var assets = new List<Asset>();
             if ( !HiddenFolders.Any( a => physicalFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
             {
@@ -348,7 +348,7 @@ namespace Rock.Storage.AssetStorage
 
             var assets = new List<Asset>();
 
-            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = RockApp.Current.MapPath( asset.Key );
 
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.AllDirectories, AssetType.Folder ) );
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.AllDirectories, AssetType.File ) );
@@ -373,7 +373,7 @@ namespace Rock.Storage.AssetStorage
 
             var assets = new List<Asset>();
 
-            string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+            string physicalFolder = RockApp.Current.MapPath( asset.Key );
 
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.Folder ) );
             assets.AddRange( GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File ) );
@@ -406,8 +406,8 @@ namespace Rock.Storage.AssetStorage
                 VerifyPathIsNotProtected( asset.Key, AssetType.File );
 
                 string filePath = GetPathFromKey( asset.Key );
-                string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( filePath );
-                string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+                string physicalFolder = RockApp.Current.MapPath( filePath );
+                string physicalFile = RockApp.Current.MapPath( asset.Key );
                 string newPhysicalFile = Path.Combine( physicalFolder, newName );
 
                 if ( IsProtectedPhysicalPath( newPhysicalFile, AssetType.File ) )
@@ -451,7 +451,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                string physicalPath = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
+                string physicalPath = RockApp.Current.MapPath( asset.Key );
 
                 using ( FileStream fs = new FileStream( physicalPath, FileMode.Create ) )
                 using ( asset.AssetStream )
@@ -495,10 +495,10 @@ namespace Rock.Storage.AssetStorage
 
             // check if thumbnail exists
             string thumbDir = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{path}";
-            Directory.CreateDirectory( FileSystemComponentHttpContext.Server.MapPath( thumbDir ) );
+            Directory.CreateDirectory( RockApp.Current.MapPath( thumbDir ) );
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
-            string physicalThumbPath = FileSystemComponentHttpContext.Server.MapPath( virtualThumbPath );
+            string physicalThumbPath = RockApp.Current.MapPath( virtualThumbPath );
 
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();
@@ -529,8 +529,8 @@ namespace Rock.Storage.AssetStorage
         /// <param name="rootFolder">The root folder path (from the "RootFolder" attribute value).</param>
         private void VerifyPathFromRoot( string assetPath, string rootFolder )
         {
-            string physicalPath = FileSystemComponentHttpContext.Server.MapPath( assetPath );
-            string physicalRootFolder = FileSystemComponentHttpContext.Server.MapPath( rootFolder );
+            string physicalPath = RockApp.Current.MapPath( assetPath );
+            string physicalRootFolder = RockApp.Current.MapPath( rootFolder );
 
             // Make sure the physical location is valid.
             if ( !physicalPath.StartsWith( physicalRootFolder ) )
@@ -609,7 +609,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                physicalPath = FileSystemComponentHttpContext.Server.MapPath( assetPath );
+                physicalPath = RockApp.Current.MapPath( assetPath );
             }
             catch
             {
@@ -680,8 +680,8 @@ namespace Rock.Storage.AssetStorage
         {
             try
             {
-                var physicalPath = Path.GetFullPath( FileSystemComponentHttpContext.Server.MapPath( assetPath ) ).TrimEnd( '\\', '/' );
-                var physicalRootFolder = Path.GetFullPath( FileSystemComponentHttpContext.Server.MapPath( rootFolder ) ).TrimEnd( '\\', '/' );
+                var physicalPath = Path.GetFullPath( RockApp.Current.MapPath( assetPath ) ).TrimEnd( '\\', '/' );
+                var physicalRootFolder = Path.GetFullPath( RockApp.Current.MapPath( rootFolder ) ).TrimEnd( '\\', '/' );
 
                 if ( physicalPath.Equals( physicalRootFolder, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -709,7 +709,7 @@ namespace Rock.Storage.AssetStorage
         {
             try
             {
-                var physicalWebRoot = Path.GetFullPath( FileSystemComponentHttpContext.Server.MapPath( "~/" ) ).TrimEnd( '\\', '/' );
+                var physicalWebRoot = Path.GetFullPath( RockApp.Current.MapPath( "~/" ) ).TrimEnd( '\\', '/' );
                 var fullPath = Path.GetFullPath( physicalPath ).TrimEnd( '\\', '/' );
 
                 if ( fullPath.Equals( physicalWebRoot, StringComparison.OrdinalIgnoreCase ) )
@@ -737,7 +737,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         private string ReverseMapPath( string path )
         {
-            string appPath = HttpContext.Current.Server.MapPath( "~" );
+            string appPath = RockApp.Current.MapPath( "~" );
             string res = string.Format( "~/{0}", path.Replace( appPath, "" ).Replace( "\\", "/" ) );
             return res;
         }

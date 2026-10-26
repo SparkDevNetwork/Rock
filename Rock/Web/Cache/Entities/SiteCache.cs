@@ -115,7 +115,7 @@ namespace Rock.Web.Cache
                 var editorTheme = request["EditorTheme"];
                 if (
                     editorTheme.IsNotNullOrWhiteSpace() &&
-                    System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + editorTheme ) ) )
+                    System.IO.Directory.Exists( RockApp.Current.MapPath( "~/Themes/" + editorTheme ) ) )
                 {
                     return editorTheme;
                 }
@@ -129,7 +129,7 @@ namespace Rock.Web.Cache
                     if ( theme.Trim() != string.Empty )
                     {
                         // Don't allow switching to an invalid theme
-                        if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
+                        if ( System.IO.Directory.Exists( RockApp.Current.MapPath( "~/Themes/" + theme ) ) )
                         {
                             // Add the cookie with the updated theme string to the response.
                             Rock.Web.UI.RockPage.AddOrUpdateCookie( new HttpCookie( cookieName, theme ) );
@@ -157,7 +157,7 @@ namespace Rock.Web.Cache
                 }
 
                 // Don't allow switching to an invalid theme
-                if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + cookie.Value ) ) )
+                if ( System.IO.Directory.Exists( RockApp.Current.MapPath( "~/Themes/" + cookie.Value ) ) )
                 {
                     return cookie.Value;
                 }

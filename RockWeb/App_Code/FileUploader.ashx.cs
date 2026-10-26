@@ -357,7 +357,7 @@ namespace RockWeb
             }
 
             // Get the absolute path for our trusted root.
-            string trustedPhysicalRootFolder = Path.GetFullPath( context.Request.MapPath( trustedRootFolder ) );
+            string trustedPhysicalRootFolder = Path.GetFullPath( RockApp.Current.MapPath( trustedRootFolder ) );
 
             // Treat rooted folder paths as relative.
             string untrustedRelativeFolderPath = "";

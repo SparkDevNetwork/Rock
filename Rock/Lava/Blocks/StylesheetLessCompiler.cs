@@ -18,7 +18,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web.Hosting;
 
 using dotless.Core;
 using dotless.Core.Exceptions;
@@ -33,6 +32,7 @@ using dotless.Core.Stylizers;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Utility;
@@ -76,7 +76,7 @@ namespace Rock.Lava.Blocks
         /// <returns>The compiled CSS, or an empty string if the content could not be compiled.</returns>
         internal static string Compile( string less )
         {
-            return Compile( less, HostingEnvironment.MapPath );
+            return Compile( less, p => RockApp.Current.MapPath( p ) );
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Rock.Lava.Blocks
         /// <returns><c>true</c> if the file may be read; otherwise <c>false</c>.</returns>
         internal static bool IsAllowedPath( string physicalPath )
         {
-            return IsAllowedPath( physicalPath, HostingEnvironment.MapPath );
+            return IsAllowedPath( physicalPath, p => RockApp.Current.MapPath( p ) );
         }
 
         /// <summary>

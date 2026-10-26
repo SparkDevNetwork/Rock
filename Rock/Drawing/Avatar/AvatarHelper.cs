@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -101,7 +101,7 @@ namespace Rock.Drawing.Avatar
         {
 
             // Load icon masks. 
-            var folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~\\App_Data\\Avatar\\" );
+            var folderPath = RockApp.Current.MapPath( "~\\App_Data\\Avatar\\" );
 
             // Load role guids that are allowed to refresh the cache
             AuthorizedRefreshCacheRoleGuids.Add( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );

@@ -20,6 +20,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -357,7 +358,7 @@ namespace Rock.Storage.AssetStorage
 
             string fileExtension = Path.GetExtension( fileName ).TrimStart( '.' );
             string virtualThumbnailFilePath = string.Format( "/Assets/Icons/FileTypes/{0}.png", fileExtension );
-            string thumbnailFilePath = FileSystemComponentHttpContext.Request.MapPath( virtualThumbnailFilePath );
+            string thumbnailFilePath = RockApp.Current.MapPath( virtualThumbnailFilePath );
 
             if ( !File.Exists( thumbnailFilePath ) )
             {
@@ -425,8 +426,8 @@ namespace Rock.Storage.AssetStorage
                     throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
                 }
 
-                string physicalPath = FileSystemComponentHttpContext.Server.MapPath( virtualPath );
-                string physicalThumbnailRoot = FileSystemComponentHttpContext.Server.MapPath( $"{ThumbnailRootPath}/{assetStorageProvider.Id}" );
+                string physicalPath = RockApp.Current.MapPath( virtualPath );
+                string physicalThumbnailRoot = RockApp.Current.MapPath( $"{ThumbnailRootPath}/{assetStorageProvider.Id}" );
 
                 if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalThumbnailRoot ) )
                 {
@@ -543,7 +544,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="height">The height.</param>
         private void CreateImageThumbnailFromFile( AssetStorageProvider assetStorageProvider, Asset asset, string physicalThumbPath, int? width = null, int? height = null )
         {
-            string assetFilePath = FileSystemComponentHttpContext.Request.MapPath( asset.Key );
+            string assetFilePath = RockApp.Current.MapPath( asset.Key );
 
             if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
                 Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) ||

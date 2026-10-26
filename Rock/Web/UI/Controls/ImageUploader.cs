@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Security;
 using Rock.Utility;
 
@@ -678,7 +679,7 @@ namespace Rock.Web.UI.Controls
             }
             else if ( NonBinaryFileSrc.IsNotNullOrWhiteSpace() )
             {
-                string physicalFile = this.Page.Request.MapPath( NonBinaryFileSrc );
+                string physicalFile = RockApp.Current.MapPath( NonBinaryFileSrc );
                 if ( File.Exists( physicalFile ) )
                 {
                     thumbnailImageUrl = System.Web.VirtualPathUtility.ToAbsolute( NonBinaryFileSrc );
@@ -869,7 +870,7 @@ Rock.controls.imageUploader.initialize({{
                 {
                     if ( this.NonBinaryFileSrc.IsNotNullOrWhiteSpace() )
                     {
-                        var physicalFileName = this.Page.Request.MapPath( NonBinaryFileSrc );
+                        var physicalFileName = RockApp.Current.MapPath( NonBinaryFileSrc );
                         if ( File.Exists( physicalFileName ) )
                         {
                             File.Delete( physicalFileName );

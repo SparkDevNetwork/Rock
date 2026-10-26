@@ -129,7 +129,7 @@ namespace RockWeb
             }
 
             // Get the absolute path for our trusted root.
-            string trustedPhysicalRootFolder = Path.GetFullPath( context.Request.MapPath( trustedRootFolder ) );
+            string trustedPhysicalRootFolder = Path.GetFullPath( RockApp.Current.MapPath( trustedRootFolder ) );
 
             // Treat rooted file paths as relative
             string untrustedRelativeFilePath = untrustedFilePath.TrimStart( Path.GetPathRoot( untrustedFilePath ).ToCharArray() );
@@ -342,8 +342,8 @@ namespace RockWeb
             {
                 // Is it cached
                 string cacheName = UrlQueryToCachedFileName( context.Request.QueryString, binaryFileMetaData.MimeType );
-                string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
-                string physCacheFolderPath = context.Request.MapPath( "~/App_Data/Cache" );
+                string physCachedFilePath = RockApp.Current.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
+                string physCacheFolderPath = RockApp.Current.MapPath( "~/App_Data/Cache" );
 
                 bool useServerFileSystemCache = binaryFileMetaData.BinaryFileType_CacheToServerFileSystem
                     && FileUtilities.IsPathWithinFolder( physCachedFilePath, physCacheFolderPath );

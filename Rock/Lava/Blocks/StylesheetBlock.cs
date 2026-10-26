@@ -20,6 +20,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -112,7 +113,7 @@ namespace Rock.Lava.Blocks
                                 {
                                     filePath = page.ResolveRockUrl( filePath );
 
-                                    var fullPath = page.MapPath( "~/" ) + filePath;
+                                    var fullPath = RockApp.Current.MapPath( "~/" ) + filePath;
 
                                     // Only files the Less compiler is allowed to read are imported.
                                     if ( StylesheetLessCompiler.IsAllowedPath( fullPath ) && File.Exists( fullPath ) )

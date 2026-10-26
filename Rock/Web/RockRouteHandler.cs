@@ -375,7 +375,7 @@ namespace Rock.Web
 
                     // Verify that Layout exists in the default theme directory and if not try use the default layout of the default theme
                     string layoutPagePath = string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout );
-                    if ( !File.Exists( requestContext.HttpContext.Server.MapPath( layoutPagePath ) ) )
+                    if ( !File.Exists( RockApp.Current.MapPath( layoutPagePath ) ) )
                     {
                         layout = "FullWidth";
                     }

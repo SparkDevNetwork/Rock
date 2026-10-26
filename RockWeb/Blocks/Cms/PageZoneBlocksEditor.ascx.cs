@@ -394,7 +394,7 @@ namespace RockWeb.Blocks.Cms
 
             HtmlAgilityPack.HtmlDocument layoutAspx = new HtmlAgilityPack.HtmlDocument();
             layoutAspx.OptionFixNestedTags = true;
-            string layoutFullPath = HttpContext.Current.Server.MapPath( layoutPath );
+            string layoutFullPath = RockApp.Current.MapPath( layoutPath );
             layoutAspx.Load( layoutFullPath );
 
             List<HtmlNode> masterControlNodes = new List<HtmlNode>();

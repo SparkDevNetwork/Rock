@@ -217,7 +217,19 @@ namespace Rock.Lava
                     }
                 }
 
-                return HttpContext.Current.Server.MapPath( templatePath );
+                /*
+                    10/26/2026 - CLAUDE
+
+                    Only relative paths reach this point, since "~" and "~~" paths
+                    return above. Server.MapPath resolved them against the request
+                    URL's folder, which differs from page to page. RockApp.MapPath
+                    does not accept relative paths, so treat them as relative to
+                    the app root, the same as the fallback below does when there
+                    is no HttpContext.
+
+                    Reason: Resolve relative include paths the same way everywhere.
+                */
+                return RockApp.Current.MapPath( "~/" + templatePath );
             }
 #endif
 

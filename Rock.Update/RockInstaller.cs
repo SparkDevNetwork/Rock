@@ -42,7 +42,7 @@ namespace Rock.Update
         private const string CONTENT_PATH = "content/";
         private const string CONTENT_PATH_ALT = "content\\";
 
-        private readonly string _backupPath = Path.Combine( FileManagementHelper.ROOT_PATH, BACKUP_FOLDER );
+        private readonly string _backupPath = Path.Combine( FileManagementHelper.RootPath, BACKUP_FOLDER );
         private readonly IRockUpdateService _rockUpdateService;
         private readonly string _versionBackupPath;
         private readonly Version _targetVersion;
@@ -161,7 +161,7 @@ namespace Rock.Update
             {
                 try
                 {
-                    var originalPath = Path.Combine( FileManagementHelper.ROOT_PATH, file.Replace( _versionBackupPath.EnsureTrailingBackslash(), string.Empty ) );
+                    var originalPath = Path.Combine( FileManagementHelper.RootPath, file.Replace( _versionBackupPath.EnsureTrailingBackslash(), string.Empty ) );
 
                     var backupDirectory = Path.GetDirectoryName( originalPath );
                     if ( !Directory.Exists( backupDirectory ) )
@@ -203,18 +203,18 @@ namespace Rock.Update
 
             foreach ( var deleteItem in itemsToDelete )
             {
-                var deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem );
+                var deleteItemFullPath = Path.Combine( FileManagementHelper.RootPath, deleteItem );
 
                 var rockWeb = "RockWeb\\";
                 if ( deleteItem.StartsWith( rockWeb ) )
                 {
-                    deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem.Substring( rockWeb.Length ) );
+                    deleteItemFullPath = Path.Combine( FileManagementHelper.RootPath, deleteItem.Substring( rockWeb.Length ) );
                 }
 
                 rockWeb = "RockWeb/";
                 if ( deleteItem.StartsWith( rockWeb ) )
                 {
-                    deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem.Substring( rockWeb.Length ) );
+                    deleteItemFullPath = Path.Combine( FileManagementHelper.RootPath, deleteItem.Substring( rockWeb.Length ) );
                 }
 
                 var backupFilePath = GetBackupFileLocation( deleteItemFullPath );
@@ -284,7 +284,7 @@ namespace Rock.Update
             foreach ( ZipArchiveEntry entry in contentFilesToProcess )
             {
                 // process all content files
-                string fullpath = Path.Combine( FileManagementHelper.ROOT_PATH, entry.FullName.ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty ) );
+                string fullpath = Path.Combine( FileManagementHelper.RootPath, entry.FullName.ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty ) );
 
                 string directory = Path.GetDirectoryName( fullpath ).ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty );
 
@@ -348,7 +348,7 @@ namespace Rock.Update
                 throw new Exception( $"Target Release {release} doesn't have a Package URI specified." );
             }
 
-            var localRockPackageDirectory = Path.Combine( FileManagementHelper.ROOT_PATH, LOCAL_ROCK_PACKAGE_FOLDER );
+            var localRockPackageDirectory = Path.Combine( FileManagementHelper.RootPath, LOCAL_ROCK_PACKAGE_FOLDER );
 
             if ( !Directory.Exists( localRockPackageDirectory ) )
             {
@@ -387,7 +387,7 @@ namespace Rock.Update
             {
                 // process xdt
                 string filename = entry.FullName.ReplaceFirstOccurrence( CONTENT_PATH, string.Empty ).ReplaceFirstOccurrence( CONTENT_PATH_ALT, string.Empty );
-                string transformTargetFile = Path.Combine( FileManagementHelper.ROOT_PATH, filename.Substring( 0, filename.LastIndexOf( TRANSFORM_FILE_SUFFIX ) ) );
+                string transformTargetFile = Path.Combine( FileManagementHelper.RootPath, filename.Substring( 0, filename.LastIndexOf( TRANSFORM_FILE_SUFFIX ) ) );
 
                 // process transform
                 using ( XmlTransformableDocument document = new XmlTransformableDocument() )
@@ -414,7 +414,7 @@ namespace Rock.Update
         /// <returns></returns>
         private string GetBackupFileLocation( string filepathToBackup )
         {
-            var relativeTargetPath = filepathToBackup.Replace( FileManagementHelper.ROOT_PATH.EnsureTrailingBackslash(), string.Empty );
+            var relativeTargetPath = filepathToBackup.Replace( FileManagementHelper.RootPath.EnsureTrailingBackslash(), string.Empty );
 
             if ( !Directory.Exists( _versionBackupPath ) )
             {

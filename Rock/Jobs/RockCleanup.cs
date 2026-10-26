@@ -1407,12 +1407,12 @@ namespace Rock.Jobs
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
-                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
+                    cacheDirectoryPath = RockApp.Current.MapPath( cacheDirectoryPath );
                 }
 
                 if ( !string.IsNullOrEmpty( avatarCachePath ) )
                 {
-                    avatarCachePath = System.Web.Hosting.HostingEnvironment.MapPath( avatarCachePath );
+                    avatarCachePath = RockApp.Current.MapPath( avatarCachePath );
                 }
             }
 
@@ -3248,7 +3248,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
                 Browser = PuppeteerSharp.SupportedBrowser.Chrome,
-                Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
+                Path = RockApp.Current.MapPath( "~/App_Data/ChromeEngine" )
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );

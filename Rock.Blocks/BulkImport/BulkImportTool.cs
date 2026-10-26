@@ -22,9 +22,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Hosting;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
@@ -113,7 +113,7 @@ namespace Rock.Blocks.BulkImport
         private string GetSlingshotRootFolder()
         {
             string virtualPath = "~/App_Data/SlingshotFiles";
-            string physicalPath = HostingEnvironment.MapPath( virtualPath );
+            string physicalPath = RockApp.Current.MapPath( virtualPath );
 
             if ( !Directory.Exists( physicalPath ) )
             {
@@ -158,7 +158,7 @@ namespace Rock.Blocks.BulkImport
 
             // The path is posted back by the browser, so only allow files in the
             // folder that the uploader saves to and GetFileInfo() returns paths for.
-            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSlingshotFile, HostingEnvironment.MapPath( GetSlingshotRootFolder() ) ) )
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSlingshotFile, RockApp.Current.MapPath( GetSlingshotRootFolder() ) ) )
             {
                 return ActionBadRequest( "Slingshot file not found." );
             }

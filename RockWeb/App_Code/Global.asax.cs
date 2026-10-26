@@ -208,7 +208,7 @@ namespace RockWeb
                 // mark any user login stored as 'IsOnline' in the database as offline
                 MarkOnlineUsersOffline();
 
-                SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
+                SqlServerTypes.Utilities.LoadNativeAssemblies( RockApp.Current.MapPath( "~" ) );
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Types" );
 
@@ -423,7 +423,7 @@ namespace RockWeb
                     // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                     BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
-                    BlockTypeService.RegisterBlockTypes( HostingEnvironment.MapPath( "~" ), false );
+                    BlockTypeService.RegisterBlockTypes( RockApp.Current.MapPath( "~" ), false );
 
                     UpdateCompilerAttributesOnBlockTypes();
 

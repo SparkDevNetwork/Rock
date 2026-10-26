@@ -16,8 +16,11 @@
 
 using System;
 using System.IO;
+#if WEBFORMS
 using System.Web.Hosting;
+#endif
 
+using Rock.Configuration;
 using Rock.Model;
 
 namespace Rock.Update.Helpers
@@ -27,10 +30,38 @@ namespace Rock.Update.Helpers
     /// </summary>
     public static class FileManagementHelper
     {
+#if WEBFORMS
+        /*
+            10/26/2026 - CLAUDE
+
+            ROOT_PATH is a public field computed when the type loads, using the
+            WebForms HostingEnvironment. It is replaced by the RootPath property,
+            which is computed on first use through RockApp so it works on .NET
+            Core. Changing the field itself into a property would break plugins
+            compiled against it, so it is kept on WebForms and marked obsolete
+            to give plugins time to move to RootPath.
+
+            Reason: Replace HostingEnvironment.MapPath without breaking plugins.
+        */
+
         /// <summary>
         /// The root physical file system path of the web application.
         /// </summary>
+        [Obsolete( "Use RootPath instead." )]
+        [RockObsolete( "21.0" )]
         public static readonly string ROOT_PATH = HostingEnvironment.MapPath( "~/" ) ?? AppDomain.CurrentDomain.BaseDirectory;
+#endif
+
+        /// <summary>
+        /// The lazily computed root physical file system path of the web application.
+        /// </summary>
+        private static readonly Lazy<string> _rootPath = new Lazy<string>( () => RockApp.Current.MapPath( "~/" ) );
+
+        /// <summary>
+        /// Gets the root physical file system path of the web application.
+        /// </summary>
+        public static string RootPath => _rootPath.Value;
+
         private static readonly string DELETE_FILE_EXTENSION = "rdelete";
 
         /// <summary>
@@ -114,7 +145,7 @@ namespace Rock.Update.Helpers
                 }
                 else
                 {
-                    physicalFile = Path.Combine( ROOT_PATH, filepathToRename );
+                    physicalFile = Path.Combine( RootPath, filepathToRename );
                 }
 
                 RenameFile( physicalFile );
@@ -126,7 +157,7 @@ namespace Rock.Update.Helpers
         /// </summary>
         public static void CleanUpDeletedFiles()
         {
-            var filesToDelete = Directory.GetFiles( ROOT_PATH, $"*.{DELETE_FILE_EXTENSION}", SearchOption.AllDirectories );
+            var filesToDelete = Directory.GetFiles( RootPath, $"*.{DELETE_FILE_EXTENSION}", SearchOption.AllDirectories );
             foreach ( var file in filesToDelete )
             {
                 FileManagementHelper.TryDelete( file, false );

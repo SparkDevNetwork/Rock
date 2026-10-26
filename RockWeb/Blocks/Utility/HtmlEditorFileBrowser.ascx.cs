@@ -23,6 +23,7 @@ using System.Text;
 using System.Web;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -249,8 +250,8 @@ namespace RockWeb.Blocks.Utility
 
                 if ( PageParameter( PageParameterKey.RelativeFilePath ).IsNotNullOrWhiteSpace() )
                 {
-                    string fileUrl = Server.MapPath( PageParameter( PageParameterKey.RelativeFilePath ) );
-                    string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
+                    string fileUrl = RockApp.Current.MapPath( PageParameter( PageParameterKey.RelativeFilePath ) );
+                    string physicalRootFolder = RockApp.Current.MapPath( GetRootFolderPath() );
                     if ( File.Exists( fileUrl ) && fileUrl.Contains( physicalRootFolder ) )
                     {
                         string directoryPath = Path.GetDirectoryName( fileUrl );
@@ -292,7 +293,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
         private void BuildFolderTreeView()
         {
-            string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
+            string physicalRootFolder = RockApp.Current.MapPath( GetRootFolderPath() );
 
             if ( !Directory.Exists( physicalRootFolder ) )
             {
@@ -473,7 +474,7 @@ namespace RockWeb.Blocks.Utility
             try
             {
                 string rootFolder = GetRootFolderPath();
-                string physicalRootFolder = this.MapPath( rootFolder );
+                string physicalRootFolder = RockApp.Current.MapPath( rootFolder );
                 string physicalFolder = GetPhysicalFolder( relativeFolderPath );
 
                 bool isRestricted = false;
@@ -670,7 +671,7 @@ namespace RockWeb.Blocks.Utility
                 Directory.Delete( selectedPhysicalFolder, true );
 
                 string rootFolder = GetRootFolderPath();
-                string physicalRootFolder = this.MapPath( rootFolder );
+                string physicalRootFolder = RockApp.Current.MapPath( rootFolder );
                 string relativeFolder = selectedPhysicalFolder.Replace( physicalRootFolder, string.Empty );
 
                 // set selected folder to deleted folder's parent
@@ -761,7 +762,7 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMoveFolder_Click( object sender, EventArgs e )
         {
-            string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
+            string physicalRootFolder = RockApp.Current.MapPath( GetRootFolderPath() );
             var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder );
 
             if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
@@ -908,11 +909,11 @@ namespace RockWeb.Blocks.Utility
 
             try
             {
-                var physicalZipFile = this.Request.MapPath( fupZipUpload.UploadedContentFilePath );
+                var physicalZipFile = RockApp.Current.MapPath( fupZipUpload.UploadedContentFilePath );
 
                 // The uploaded file name comes from the browser, so make sure
                 // it is really in the folder the uploader saves files to.
-                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalZipFile, this.Request.MapPath( fupZipUpload.RootFolder ) ) )
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalZipFile, RockApp.Current.MapPath( fupZipUpload.RootFolder ) ) )
                 {
                     nbErrorMessage.Text = "Invalid File Uploaded.";
                     nbErrorMessage.Visible = true;
@@ -1054,7 +1055,7 @@ namespace RockWeb.Blocks.Utility
         private string GetPhysicalFolder( string relativeFolderPath, bool allowRootFolder )
         {
             string rootFolder = GetRootFolderPath();
-            string physicalRootFolder = this.MapPath( rootFolder );
+            string physicalRootFolder = RockApp.Current.MapPath( rootFolder );
             string selectedPhysicalFolder = Path.Combine( physicalRootFolder, ( relativeFolderPath ?? string.Empty ).TrimStart( '/', '\\' ) );
 
             EnsurePathIsWithinRootFolder( selectedPhysicalFolder, allowRootFolder );
@@ -1069,7 +1070,7 @@ namespace RockWeb.Blocks.Utility
         /// <param name="allowRootFolder">If <c>false</c> then the path may not be the root folder itself.</param>
         private void EnsurePathIsWithinRootFolder( string physicalPath, bool allowRootFolder )
         {
-            string physicalRootFolder = this.MapPath( GetRootFolderPath() );
+            string physicalRootFolder = RockApp.Current.MapPath( GetRootFolderPath() );
 
             if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalRootFolder ) )
             {
