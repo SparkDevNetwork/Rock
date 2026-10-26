@@ -107,14 +107,23 @@ namespace Rock.Workflow.Action
             if ( attribute != null )
             {
                 var mergeFields = GetMergeFields( action );
-                string firstName = GetAttributeValue( action, FIRST_NAME_KEY, true ).ResolveMergeFields( mergeFields );
-                string lastName = GetAttributeValue( action, LAST_NAME_KEY, true ).ResolveMergeFields( mergeFields );
-                string email = GetAttributeValue( action, EMAIL_KEY, true ).ResolveMergeFields( mergeFields );
-                string mobileNumber = GetAttributeValue( action, MOBILE_NUMBER_KEY, true ).ResolveMergeFields( mergeFields ) ?? string.Empty;
+                /*
+                    10/26/2026 - MSE
 
-                int? birthDay = GetAttributeValue( action, BIRTH_DAY_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
-                int? birthMonth = GetAttributeValue( action, BIRTH_MONTH_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
-                int? birthYear = GetAttributeValue( action, BIRTH_YEAR_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+                    Values read from a selected workflow attribute are data and are not rendered
+                    as Lava; only text typed into the setting is rendered. See
+                    ActionComponent.GetTextOrAttributeValue.
+
+                    Reason: Attribute values can hold untrusted input and must not run as Lava.
+                */
+                string firstName = GetTextOrAttributeValue( action, FIRST_NAME_KEY, mergeFields );
+                string lastName = GetTextOrAttributeValue( action, LAST_NAME_KEY, mergeFields );
+                string email = GetTextOrAttributeValue( action, EMAIL_KEY, mergeFields );
+                string mobileNumber = GetTextOrAttributeValue( action, MOBILE_NUMBER_KEY, mergeFields ) ?? string.Empty;
+
+                int? birthDay = GetTextOrAttributeValue( action, BIRTH_DAY_KEY, mergeFields ).AsIntegerOrNull();
+                int? birthMonth = GetTextOrAttributeValue( action, BIRTH_MONTH_KEY, mergeFields ).AsIntegerOrNull();
+                int? birthYear = GetTextOrAttributeValue( action, BIRTH_YEAR_KEY, mergeFields ).AsIntegerOrNull();
 
                 if ( string.IsNullOrWhiteSpace( firstName ) || string.IsNullOrWhiteSpace( lastName ) )
                 {

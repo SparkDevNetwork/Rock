@@ -270,6 +270,15 @@ namespace Rock.Workflow.Action.Groups
                 // Get the merge fields
                 var mergeFields = GetMergeFields( action );
 
+                /*
+                    10/26/2026 - MSE
+
+                    The reminder and confirmation details below use the value of a selected
+                    workflow attribute as data and do not render it as Lava; only text typed
+                    into the setting is rendered. See ActionComponent.GetTextOrAttributeValue.
+
+                    Reason: Attribute values can hold untrusted input and must not run as Lava.
+                */
                 groupLocation.GroupLocationScheduleConfigs.Add( new GroupLocationScheduleConfig
                 {
                     GroupLocationId = groupLocation.Id,
@@ -277,8 +286,8 @@ namespace Rock.Workflow.Action.Groups
                     MinimumCapacity = GetAttributeValue( action, AttributeKey.MinimumCapacity, true ).AsIntegerOrNull(),
                     DesiredCapacity = GetAttributeValue( action, AttributeKey.DesiredCapacity, true ).AsIntegerOrNull(),
                     MaximumCapacity = GetAttributeValue( action, AttributeKey.MaximumCapacity, true ).AsIntegerOrNull(),
-                    ReminderAdditionalDetails = GetAttributeValue( action, AttributeKey.ReminderDetails, true ).ResolveMergeFields( mergeFields ),
-                    ConfirmationAdditionalDetails = GetAttributeValue( action, AttributeKey.ConfirmationDetails, true ).ResolveMergeFields( mergeFields )
+                    ReminderAdditionalDetails = GetTextOrAttributeValue( action, AttributeKey.ReminderDetails, mergeFields ),
+                    ConfirmationAdditionalDetails = GetTextOrAttributeValue( action, AttributeKey.ConfirmationDetails, mergeFields )
                 } );
 
                 shouldSaveChanges = true;

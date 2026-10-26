@@ -1046,7 +1046,16 @@ namespace Rock.Security
 
             // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
             // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
+            /*
+                10/26/2026 - MSE
+
+                The Secure flag must follow the scheme the browser actually used. UrlProxySafe now uses the
+                PublicApplicationRoot scheme on hosts that are not site domains, which would mark the auth
+                cookie Secure on a plain http request and the browser would drop it (sign-in would fail).
+
+                Reason: Decide the Secure flag from the received scheme.
+            */
+            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlForwardedUnvalidated().Scheme == "https" ? ";Secure" : string.Empty;
 
             // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
             string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";

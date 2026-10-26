@@ -164,7 +164,15 @@ namespace Rock.Workflow.Action
         InteractiveActionResult IInteractiveAction.StartAction( WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
         {
             var mergeFields = GetMergeFields( action, requestContext );
-            var url = GetAttributeValue( action, AttributeKey.Url, true ).ResolveMergeFields( mergeFields );
+            /*
+                10/26/2026 - MSE
+
+                A Url read from a selected workflow attribute is data and is not rendered
+                as Lava; only typed text is rendered, as the legacy Execute path already does.
+
+                Reason: Attribute values can hold untrusted input and must not run as Lava.
+            */
+            var url = GetTextOrAttributeValue( action, AttributeKey.Url, mergeFields );
             var processOpt = GetAttributeValue( action, AttributeKey.ProcessingOptions );
             var canSendRedirect = url.IsNotNullOrWhiteSpace();
 
