@@ -39,6 +39,9 @@ export const CHAT_PATHS = [
   'Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatConfiguration/',
   'Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/Communication/Chat/ChatConfiguration/',
   'Rock/Jobs/ChatPlatform',
+  // The mobile app's chat routes, beside the chat controller that already shipped.
+  'Rock.Rest/v2/ChatController.Mobile.cs',
+  'Rock.ViewModels/Rest/Chat/',
   // Sync Now, which both chat blocks share. The button and its behaviour sit with the framework's
   // internal controls because the two blocks are in separate TypeScript projects.
   'Rock.ViewModels/Blocks/Communication/Chat/ChatSyncNow/',

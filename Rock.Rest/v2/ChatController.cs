@@ -37,7 +37,7 @@ namespace Rock.Rest.v2
     /// <seealso cref="ApiControllerBase"/>
     [RoutePrefix( "api/v2/chat" )]
     [Rock.SystemGuid.RestControllerGuid( "56049595-5BE3-4B70-8FE5-C8E1D53976F0" )]
-    public sealed class ChatController : ApiControllerBase
+    public sealed partial class ChatController : ApiControllerBase
     {
         /// <summary>
         /// Receives webhook requests from an external chat provider.

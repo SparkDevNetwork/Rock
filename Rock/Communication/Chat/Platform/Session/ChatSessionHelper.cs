@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
+using System.Security.Principal;
+using System.Web.Security;
 
 using Microsoft.IdentityModel.Tokens;
 
@@ -28,6 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
+using Rock.ViewModels.Rest.Chat;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.Chat.Platform.Session
@@ -489,6 +493,124 @@ namespace Rock.Communication.Chat.Platform.Session
             var context = BuildSessionContext( person, ChatPlatformConfigurationService.Read(), rockContext );
 
             return SaveBirthdate( person?.Id, year, month, day, context, rockContext );
+        }
+
+        /// <summary>
+        /// Opens chat for the person as the mobile app's session call does, reading the church's
+        /// settings, name, campuses and public address.
+        /// </summary>
+        /// <param name="person">The person opening chat, or null when nobody is signed in.</param>
+        /// <param name="rockContext">Used by the gates, the data view and the enrolment write.</param>
+        /// <returns>The session, the church's name and campuses, and the first token.</returns>
+        public static ChatMobileSessionBag OpenMobileSession( Person person, RockContext rockContext )
+        {
+            return OpenMobileSession(
+                person,
+                BuildSessionContext( person, ChatPlatformConfigurationService.Read(), rockContext ),
+                GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME ),
+                ListActiveCampuses( CampusCache.All( rockContext ) ),
+                GlobalAttributesCache.Value( "PublicApplicationRoot" ),
+                rockContext );
+        }
+
+        /// <summary>
+        /// Opens chat for the person as the web's chat block does, enrolment included, and signs
+        /// the first church token when the gates passed.
+        /// </summary>
+        /// <param name="person">The person opening chat, or null when nobody is signed in.</param>
+        /// <param name="context">The church's settings and the direct message access result.</param>
+        /// <param name="organizationName">The church's name, from Rock's global attributes.</param>
+        /// <param name="campuses">The church's active campuses.</param>
+        /// <param name="publicApplicationRoot">The church's public address, which the photo address is made absolute against.</param>
+        /// <param name="rockContext">Used by the gates and the enrolment write.</param>
+        /// <returns>The session, the church's name and campuses, and the first token.</returns>
+        internal static ChatMobileSessionBag OpenMobileSession( Person person, ChatSessionContext context, string organizationName, List<ChatCampusBag> campuses, string publicApplicationRoot, RockContext rockContext )
+        {
+            var session = OpenSession( person, context, rockContext );
+
+            // The web resolves Rock's relative photo address against its own page; the app has no
+            // page, so it is given the whole address.
+            session.PersonPhotoUrl = ToPublicUrl( publicApplicationRoot, session.PersonPhotoUrl );
+
+            return new ChatMobileSessionBag
+            {
+                Session = session,
+                OrganizationName = organizationName,
+                Campuses = campuses,
+                // The token runs the gates again; that costs two lookups and keeps one signing path.
+                Token = session.Gate == ToGateCode( ChatMintGate.Ok ) ? MintToken( person, context, rockContext ) : null
+            };
+        }
+
+        /// <summary>
+        /// Makes one of Rock's site-relative addresses whole under the church's public address.
+        /// </summary>
+        /// <param name="publicApplicationRoot">The church's public address.</param>
+        /// <param name="url">The address, relative or already whole, or null.</param>
+        /// <returns>The whole address, or null when there was none.</returns>
+        internal static string ToPublicUrl( string publicApplicationRoot, string url )
+        {
+            if ( url.IsNullOrWhiteSpace() || Uri.IsWellFormedUriString( url, UriKind.Absolute ) )
+            {
+                return url;
+            }
+
+            return publicApplicationRoot.EnsureTrailingForwardslash() + url.RemoveLeadingForwardslash();
+        }
+
+        /// <summary>
+        /// Decides whether a request may reach the mobile app's chat routes. The person's session
+        /// cookie is the credential there and a browser sends it on its own, so only the shape the
+        /// native app sends passes: a JSON POST with no Origin, from a mobile application, signed
+        /// in by the cookie rather than an API key, OAuth client or web token.
+        /// </summary>
+        /// <param name="method">The request's HTTP method.</param>
+        /// <param name="origin">The request's Origin header, or null when it carried none.</param>
+        /// <param name="contentType">The request's Content-Type header, or null when it carried none.</param>
+        /// <param name="isMobileSite">Whether the app headers named a mobile application site and its key.</param>
+        /// <param name="principal">Who the request is signed in as, or null.</param>
+        /// <returns><see cref="HttpStatusCode.OK"/> when the request may proceed, else the status to refuse it with.</returns>
+        internal static HttpStatusCode CheckMobileRequest( string method, string origin, string contentType, bool isMobileSite, IPrincipal principal )
+        {
+            if ( method != "POST" )
+            {
+                return HttpStatusCode.MethodNotAllowed;
+            }
+
+            // The app sends no Origin and every browser sends one on a cross-site POST, so this
+            // also closes what a church's own CORS allow-list would open.
+            if ( origin != null )
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            // A page can post a form or plain text across sites without asking first; JSON needs
+            // a preflight it cannot pass.
+            var mediaType = contentType?.Split( ';' )[0].Trim();
+            if ( !string.Equals( mediaType, "application/json", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return HttpStatusCode.UnsupportedMediaType;
+            }
+
+            if ( !isMobileSite )
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            var identity = principal?.Identity;
+            if ( identity == null || !identity.IsAuthenticated )
+            {
+                return HttpStatusCode.Unauthorized;
+            }
+
+            // Only the session cookie signs in as a forms identity; a REST user or an integration
+            // key must never mint a chat token.
+            if ( !( identity is FormsIdentity ) )
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            return HttpStatusCode.OK;
         }
 
         /// <summary>

@@ -410,6 +410,76 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
         #endregion
 
+        #region Mobile session
+
+        [TestMethod]
+        public void OpenMobileSession_Ok_CarriesWhatTheWebIsGivenAndTheFirstToken()
+        {
+            // The app pays one Rock round trip before it reaches the platform, so the session, the
+            // church's name and campuses and the first token all come back together.
+            var person = Adult();
+            var campuses = new System.Collections.Generic.List<ChatCampusBag> { new ChatCampusBag { Guid = Guid.NewGuid(), Name = "Main Campus", ShortCode = "MAIN" } };
+
+            var bag = ChatSessionHelper.OpenMobileSession( person, SigningConfig(), "Cedar Hill Church", campuses, "https://church.example/", _rockContext );
+
+            Assert.AreEqual( "ok", bag.Session.Gate );
+            Assert.AreEqual( person.PrimaryAliasGuid, bag.Session.PersonAliasGuid );
+            Assert.AreEqual( "Cedar Hill Church", bag.OrganizationName );
+            Assert.AreSame( campuses, bag.Campuses );
+            Assert.AreEqual( "ok", bag.Token.Gate );
+            var token = new JwtSecurityTokenHandler().ReadJwtToken( bag.Token.ChurchToken );
+            Assert.AreEqual( person.PrimaryAliasGuid.ToString(), token.Subject );
+            Assert.AreEqual( token.ValidTo, bag.Token.ExpiresAt?.UtcDateTime );
+        }
+
+        [TestMethod]
+        public void OpenMobileSession_Ok_EnrolsThePersonAsTheWebDoes()
+        {
+            var person = Adult();
+
+            ChatSessionHelper.OpenMobileSession( person, SigningConfig(), "Cedar Hill Church", null, "https://church.example/", _rockContext );
+
+            Assert.AreEqual( 1, MarkerCount( _rockContext, person.Id ) );
+        }
+
+        [TestMethod]
+        public void OpenMobileSession_Refused_CarriesTheGateAndNoToken()
+        {
+            var child = Adult();
+            child.BirthYear = RockDateTime.Now.Year - 8;
+
+            var bag = ChatSessionHelper.OpenMobileSession( child, SigningConfig(), "Cedar Hill Church", null, "https://church.example/", _rockContext );
+
+            Assert.AreEqual( "age_restricted", bag.Session.Gate );
+            Assert.IsNull( bag.Session.ProjectUrl );
+            Assert.IsNull( bag.Token, "a person the gates refused was signed a token" );
+            Assert.AreEqual( 0, MarkerCount( _rockContext, child.Id ) );
+        }
+
+        [TestMethod]
+        public void ToPublicUrl_ARelativePhotoAddress_IsMadeWholeOnTheChurchsPublicSite()
+        {
+            // The web resolves Rock's relative photo address against its own page; the app has no
+            // page to resolve it against.
+            Assert.AreEqual( "https://church.example/GetImage.ashx?id=42", ChatSessionHelper.ToPublicUrl( "https://church.example/", "/GetImage.ashx?id=42" ) );
+            Assert.AreEqual( "https://church.example/GetImage.ashx?id=42", ChatSessionHelper.ToPublicUrl( "https://church.example", "GetImage.ashx?id=42" ) );
+            Assert.AreEqual( "https://cdn.example/p.jpg", ChatSessionHelper.ToPublicUrl( "https://church.example/", "https://cdn.example/p.jpg" ) );
+            Assert.IsNull( ChatSessionHelper.ToPublicUrl( "https://church.example/", null ) );
+        }
+
+        [TestMethod]
+        public void OpenMobileSession_NoPhoto_CarriesNone()
+        {
+            var person = Adult();
+            person.PhotoId = null;
+
+            var bag = ChatSessionHelper.OpenMobileSession( person, SigningConfig(), "Cedar Hill Church", null, "https://church.example/", _rockContext );
+
+            Assert.IsNull( bag.Session.PersonPhotoUrl );
+        }
+
+        #endregion
+
         #region Support
 
         private static Campus TestCampus( int id, string guid, string name, string shortCode, bool isActive, int order = 0 )
