@@ -116,11 +116,15 @@ namespace Rock.Configuration
         ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
         ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
         ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
-        ///     <para>The input will be returned as supplied for all other cases.</para>
+        ///     <para>The path of a "~/" or "~~/" input is normalized: backslashes become slashes, repeated slashes collapse, and "." and ".." segments are resolved. The query string and fragment are not changed.</para>
+        ///     <para>Leading and trailing whitespace is removed before the input is resolved. A <c>null</c> input returns <c>null</c>, and an empty or whitespace input returns an empty string.</para>
+        ///     <para>A full URL with a scheme (like "https://"), or an input starting with "/" is returned without other changes.</para>
+        ///     <para>Any other input (a relative path, a bare query string or fragment like "?a=1" or "#top", or a "~" or "~~" not followed by a separator) is not allowed.</para>
         /// </remarks>
         /// <param name="app">The RockApp instance.</param>
         /// <param name="url">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <returns>The resolved URL.</returns>
+        /// <exception cref="ArgumentException"><paramref name="url"/> is a relative path, or goes above the application root.</exception>
         public static string ResolveRockUrl( this RockApp app, string url )
         {
             return ResolveRockUrl( app, url, "Rock" );
@@ -134,38 +138,182 @@ namespace Rock.Configuration
         ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
         ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
         ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
-        ///     <para>The input will be returned as supplied for all other cases.</para>
+        ///     <para>The path of a "~/" or "~~/" input is normalized: backslashes become slashes, repeated slashes collapse, and "." and ".." segments are resolved. The query string and fragment are not changed.</para>
+        ///     <para>Leading and trailing whitespace is removed before the input is resolved. A <c>null</c> input returns <c>null</c>, and an empty or whitespace input returns an empty string.</para>
+        ///     <para>A full URL with a scheme (like "https://"), or an input starting with "/" is returned without other changes.</para>
+        ///     <para>Any other input (a relative path, a bare query string or fragment like "?a=1" or "#top", or a "~" or "~~" not followed by a separator) is not allowed.</para>
         /// </remarks>
         /// <param name="app">The RockApp instance.</param>
         /// <param name="url">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <param name="theme">The name of the theme when a "~~" is encountered.</param>
         /// <returns>The resolved URL.</returns>
+        /// <exception cref="ArgumentException"><paramref name="url"/> is a relative path, or goes above the application root.</exception>
         public static string ResolveRockUrl( this RockApp app, string url, string theme )
         {
             var appPath = app.HostingSettings.VirtualRootPath.RemoveTrailingForwardslash();
 
-            if ( url.IsNullOrWhiteSpace() )
+            /*
+                10/26/2026 - CLAUDE
+
+                Callers often resolve a URL that may be blank and then only use
+                the result when it is not, such as an optional setting or Lava
+                that rendered nothing. A blank URL is harmless, so null returns
+                null and whitespace returns an empty string instead of throwing.
+                Surrounding whitespace is never part of a URL, so it is removed
+                first; Lava output often has leading or trailing line breaks.
+
+                Reason: Blank URLs are harmless and should not throw.
+            */
+            if ( url == null )
+            {
+                return null;
+            }
+
+            url = url.Trim();
+
+            /*
+                10/26/2026 - CLAUDE
+
+                Full URLs and root-relative paths already mean the same thing
+                everywhere, so they are returned unchanged, the same as
+                Control.ResolveUrl does.
+
+                Reason: These do not need resolving.
+            */
+            if ( url.Length == 0 || url.StartsWith( "/" ) || HasUriScheme( url ) )
             {
                 return url;
             }
 
-            if ( url == "~" )
+            /*
+                10/26/2026 - CLAUDE
+
+                A relative path like "page/1" has no single meaning to resolve to.
+                RockPage.ResolveRockUrl resolves it against the layout's folder
+                while the Obsidian path returned it unchanged, so the browser
+                resolved it against the request URL. RockApp can match neither,
+                so reject it and require an explicit "~/" path instead. A bare
+                query string or fragment ("?a=1", "#top") and a "~" or "~~" not
+                followed by a separator are treated as relative too.
+
+                Reason: Make relative URLs fail loudly instead of resolving differently.
+            */
+            if ( !url.StartsWith( "~" ) )
+            {
+                throw new ArgumentException( $"The URL '{url}' must not be a relative path.", nameof( url ) );
+            }
+
+            // Only the path is normalized, the query string and fragment are
+            // kept exactly as supplied.
+            var suffixIndex = url.IndexOfAny( new[] { '?', '#' } );
+            var path = suffixIndex >= 0 ? url.Substring( 0, suffixIndex ) : url;
+            var suffix = suffixIndex >= 0 ? url.Substring( suffixIndex ) : string.Empty;
+
+            // Treat backslashes as separators, the same as VirtualPathUtility.ToAbsolute.
+            path = path.Replace( '\\', '/' );
+
+            if ( path == "~" )
             {
                 // Special case, make this end with slash.
-                return $"{appPath}/";
+                return $"{appPath}/{suffix}";
             }
 
-            if ( url.StartsWith( "~~" ) )
+            if ( path == "~~" )
             {
-                return $"{appPath}/Themes/{theme}{url.Substring( 2 )}";
+                // Special case, this does not end with a slash.
+                return $"{appPath}/Themes/{theme}{suffix}";
             }
 
-            if ( url.StartsWith( "~" ) )
+            var segments = new List<string>();
+            string relativePath;
+
+            if ( path.StartsWith( "~~/" ) )
             {
-                return $"{appPath}{url.Substring( 1 )}";
+                segments.Add( "Themes" );
+                segments.Add( theme );
+                relativePath = path.Substring( 3 );
+            }
+            else if ( path.StartsWith( "~/" ) )
+            {
+                relativePath = path.Substring( 2 );
+            }
+            else
+            {
+                // Something like "~foo" or "~~foo".
+                throw new ArgumentException( $"The URL '{url}' must start with \"~/\" or \"~~/\", or be exactly \"~\" or \"~~\".", nameof( url ) );
             }
 
-            return url;
+            /*
+                10/26/2026 - CLAUDE
+
+                Normalize the path the way VirtualPathUtility.ToAbsolute does:
+                repeated separators collapse, "." segments are dropped and ".."
+                segments remove the previous one. A ".." that would go above
+                the app root throws, matching RockApp.MapPath.
+
+                Reason: Match VirtualPathUtility.ToAbsolute normalization.
+            */
+            foreach ( var segment in relativePath.Split( '/' ) )
+            {
+                if ( segment.Length == 0 || segment == "." )
+                {
+                    continue;
+                }
+
+                if ( segment == ".." )
+                {
+                    if ( segments.Count == 0 )
+                    {
+                        throw new ArgumentException( $"The URL '{url}' must not go above the application root.", nameof( url ) );
+                    }
+
+                    segments.RemoveAt( segments.Count - 1 );
+                    continue;
+                }
+
+                segments.Add( segment );
+            }
+
+            var resolvedUrl = $"{appPath}/{string.Join( "/", segments )}";
+
+            // Keep the trailing slash for folder URLs like "~~/" and "~/Content/".
+            if ( segments.Count > 0 && ( relativePath.Length == 0 || relativePath.EndsWith( "/" ) ) )
+            {
+                resolvedUrl += "/";
+            }
+
+            return resolvedUrl + suffix;
+        }
+
+        /// <summary>
+        /// Determines if the URL starts with a URI scheme, such as "https:"
+        /// or "mailto:".
+        /// </summary>
+        /// <param name="url">The URL to check.</param>
+        /// <returns><c>true</c> if the URL starts with a scheme; otherwise, <c>false</c>.</returns>
+        private static bool HasUriScheme( string url )
+        {
+            if ( url.Length == 0 || !char.IsLetter( url[0] ) )
+            {
+                return false;
+            }
+
+            for ( var i = 1; i < url.Length; i++ )
+            {
+                var c = url[i];
+
+                if ( c == ':' )
+                {
+                    return true;
+                }
+
+                if ( !char.IsLetterOrDigit( c ) && c != '+' && c != '-' && c != '.' )
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

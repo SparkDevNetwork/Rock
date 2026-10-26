@@ -147,6 +147,85 @@ namespace Rock.Tests.Configuration
             }
         }
 
+        [TestMethod]
+        [DataRow( "", "" )]
+        [DataRow( " ", "" )]
+        [DataRow( "\t", "" )]
+        [DataRow( "\r\n", "" )]
+        [DataRow( "\n~/page/1\n", "/page/1" )]
+        [DataRow( "  ~~/Styles/x.css  ", "/Themes/Rock/Styles/x.css" )]
+        [DataRow( " https://example.com/x ", "https://example.com/x" )]
+        [DataRow( "~\\", "/" )]
+        [DataRow( "~\\abc\\def", "/abc/def" )]
+        [DataRow( "~//abc", "/abc" )]
+        [DataRow( "~/abc//def/", "/abc/def/" )]
+        [DataRow( "~/./abc", "/abc" )]
+        [DataRow( "~/abc/../def", "/def" )]
+        [DataRow( "~/abc/..", "/" )]
+        [DataRow( "~~/../abc", "/Themes/abc" )]
+        [DataRow( "~?a=1", "/?a=1" )]
+        [DataRow( "~~#top", "/Themes/Rock#top" )]
+        [DataRow( "~/page/1?returnUrl=/a/../b", "/page/1?returnUrl=/a/../b" )]
+        [DataRow( "~/a/../b#c/../d", "/b#c/../d" )]
+        [DataRow( "~/a b%20c", "/a b%20c" )]
+        [DataRow( "mailto:a@example.com", "mailto:a@example.com" )]
+        [DataRow( "/", "/" )]
+        [DataRow( "/a/../b", "/a/../b" )]
+        [DataRow( "http://example.com/a/../b", "http://example.com/a/../b" )]
+        [DataRow( "//cdn.example.com/x.js", "//cdn.example.com/x.js" )]
+        public void ResolveRockUrl_TranslatesUrls_Correctly( string source, string expected )
+        {
+            using ( var appScope = TestHelper.CreateScopedRockApp() )
+            {
+                var actual = appScope.App.ResolveRockUrl( source, "Rock" );
+
+                Assert.AreEqual( expected, actual );
+            }
+        }
+
+        [TestMethod]
+        public void ResolveRockUrl_Null_ReturnsNull()
+        {
+            using ( var appScope = TestHelper.CreateScopedRockApp() )
+            {
+                Assert.IsNull( appScope.App.ResolveRockUrl( null, "Rock" ) );
+            }
+        }
+
+        [TestMethod]
+        [DataRow( "~/.." )]
+        [DataRow( "~/../outside" )]
+        [DataRow( "~/abc/../../outside" )]
+        [DataRow( "~~/../../../outside" )]
+        public void ResolveRockUrl_AboveRoot_ThrowsArgumentException( string url )
+        {
+            using ( var appScope = TestHelper.CreateScopedRockApp() )
+            {
+                Assert.ThrowsExactly<ArgumentException>( () => appScope.App.ResolveRockUrl( url, "Rock" ) );
+            }
+        }
+
+        [TestMethod]
+        [DataRow( "page/1" )]
+        [DataRow( "../page/1" )]
+        [DataRow( "./page/1" )]
+        [DataRow( "x.txt" )]
+        [DataRow( "~foo" )]
+        [DataRow( "~foo/bar?a=1" )]
+        [DataRow( "~~foo" )]
+        [DataRow( "~~Styles/x.css" )]
+        [DataRow( "?a=1" )]
+        [DataRow( "#top" )]
+        [DataRow( "#" )]
+        [DataRow( "?a=1#top" )]
+        public void ResolveRockUrl_RelativeUrl_ThrowsArgumentException( string url )
+        {
+            using ( var appScope = TestHelper.CreateScopedRockApp() )
+            {
+                Assert.ThrowsExactly<ArgumentException>( () => appScope.App.ResolveRockUrl( url, "Rock" ) );
+            }
+        }
+
         #endregion
 
         #region MapPath
