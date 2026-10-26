@@ -145,7 +145,16 @@ namespace Rock.Net
             {
                 // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
                 // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-                if ( _page.Request.IsSecureConnection || _page.Request.UrlProxySafe().Scheme == "https" )
+                /*
+                    10/26/2026 - MSE
+
+                    The Secure flag must follow the scheme the browser actually used. UrlProxySafe now uses the
+                    PublicApplicationRoot scheme on hosts that are not site domains, which would mark cookies
+                    Secure on a plain http request and the browser would drop them.
+
+                    Reason: Decide the Secure flag from the received scheme.
+                */
+                if ( _page.Request.IsSecureConnection || _page.Request.UrlForwardedUnvalidated().Scheme == "https" )
                 {
                     webFormsCookie.Secure = true;
                 }
