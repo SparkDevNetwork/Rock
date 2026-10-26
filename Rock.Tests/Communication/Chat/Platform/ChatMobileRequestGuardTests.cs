@@ -149,6 +149,18 @@ namespace Rock.Tests.Communication.Chat.Platform
         }
 
         [TestMethod]
+        public void MayUseChat_ALoginWithNoConfirmationRecorded_May()
+        {
+            // Rock's web sign-in counts a login with no confirmation recorded as confirmed, so
+            // nobody who can sign in today loses chat.
+            var login = Login();
+            login.IsConfirmed = null;
+            login.IsLockedOut = null;
+
+            Assert.IsTrue( ChatSessionHelper.MayUseChat( "ted.decker", login ) );
+        }
+
+        [TestMethod]
         public void MayUseChat_ALockedOutOrUnconfirmedLogin_MayNot()
         {
             // Rock's mobile launch treats these as signed out, so chat does too.
@@ -156,12 +168,9 @@ namespace Rock.Tests.Communication.Chat.Platform
             lockedOut.IsLockedOut = true;
             var unconfirmed = Login();
             unconfirmed.IsConfirmed = false;
-            var neverConfirmed = Login();
-            neverConfirmed.IsConfirmed = null;
 
             Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", lockedOut ), "locked out" );
             Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", unconfirmed ), "unconfirmed" );
-            Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", neverConfirmed ), "never confirmed" );
             Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", null ), "no login" );
         }
 

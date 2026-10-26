@@ -628,8 +628,8 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <summary>
         /// Decides whether a sign-in may use chat at all. An impersonation link gets none: it
         /// signs in under the person's token, and whoever opened it is not the person. A login
-        /// that is locked out or not confirmed gets none either, as Rock's mobile launch treats
-        /// it as signed out.
+        /// that is locked out or marked unconfirmed gets none either, as Rock treats it as
+        /// signed out.
         /// </summary>
         /// <param name="signInName">The name the request is signed in under.</param>
         /// <param name="userLogin">The login that name resolved to, or null.</param>
@@ -641,10 +641,12 @@ namespace Rock.Communication.Chat.Platform.Session
                 return false;
             }
 
-            // The web makes up a login with no id for an impersonation, so only a stored login counts.
+            // The web makes up a login with no id for an impersonation, so only a stored login
+            // counts. A login with no confirmation recorded counts as confirmed, as Rock's web
+            // sign-in treats it.
             return userLogin != null
                 && userLogin.Id > 0
-                && userLogin.IsConfirmed == true
+                && userLogin.IsConfirmed != false
                 && userLogin.IsLockedOut != true;
         }
 
