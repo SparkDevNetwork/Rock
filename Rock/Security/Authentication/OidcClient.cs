@@ -789,8 +789,17 @@ namespace Rock.Security.ExternalAuthentication
                 SameSite = SameSiteMode.Lax,
 
                 // Only add the Secure option if the request site is using HTTPS.
+                /*
+                    10/26/2026 - MSE
+
+                    The Secure flag must follow the scheme the browser actually used. UrlProxySafe now uses the
+                    PublicApplicationRoot scheme on hosts that are not site domains, which would mark this
+                    cookie Secure on a plain http request and the browser would drop it.
+
+                    Reason: Decide the Secure flag from the received scheme.
+                */
                 Secure = HttpContext.Current.Request.IsSecureConnection
-                         || string.Equals( HttpContext.Current.Request.UrlProxySafe().Scheme, "https", StringComparison.OrdinalIgnoreCase ),
+                         || string.Equals( HttpContext.Current.Request.UrlForwardedUnvalidated().Scheme, "https", StringComparison.OrdinalIgnoreCase ),
 
                 // Encrypt the cookie value as an extra layer of security.
                 Value = Encryption.EncryptString( cookieValue ),
