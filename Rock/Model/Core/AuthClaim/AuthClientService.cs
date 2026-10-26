@@ -318,9 +318,78 @@ namespace Rock.Model
         {
             var clientHash = authClient.Id != 0
                 ? IdHasher.Instance.GetHash( authClient.Id )
-                : authClient.ClientId.XxHash();
+                : authClient.ClientId.Sha256Hash();
 
             return $"{ScopeCookiePrefix}{clientHash}-{IdHasher.Instance.GetHash( userLogin.Id )}";
+        }
+
+        /// <summary>
+        /// Gets the encrypted scope approval cookie value for the <see cref="AuthClient"/> and <see cref="UserLogin"/>
+        /// combination. The value names both, so an approval can't be reused by any other client or login.
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> whose scopes were approved.</param>
+        /// <param name="userLogin">The <see cref="UserLogin"/> that approved the scopes.</param>
+        /// <returns>The encrypted scope approval cookie value.</returns>
+        [RockInternal( "19.8", true )]
+        public static string GetScopeCookieValue( AuthClient authClient, UserLogin userLogin )
+        {
+            var cookieData = new ScopeApprovalCookieData
+            {
+                ClientId = authClient.ClientId,
+                UserLoginId = userLogin.Id,
+                AllowedScopes = authClient.AllowedScopes
+            };
+
+            return Encryption.EncryptString( cookieData.ToJson() );
+        }
+
+        /// <summary>
+        /// Determines whether a scope approval cookie value was issued for this exact <see cref="AuthClient"/> and
+        /// <see cref="UserLogin"/>, and for the client's current allowed scopes.
+        /// </summary>
+        /// <param name="cookieValue">The encrypted scope approval cookie value.</param>
+        /// <param name="authClient">The <see cref="AuthClient"/> for which authorization is being requested.</param>
+        /// <param name="userLogin">The <see cref="UserLogin"/> that is currently logged in.</param>
+        /// <returns><c>true</c> if the cookie value approves this client for this login; otherwise, <c>false</c>.</returns>
+        [RockInternal( "19.8", true )]
+        public static bool IsScopeCookieValueValid( string cookieValue, AuthClient authClient, UserLogin userLogin )
+        {
+            if ( cookieValue.IsNullOrWhiteSpace() || authClient == null || userLogin == null )
+            {
+                return false;
+            }
+
+            var cookieData = Encryption.DecryptString( cookieValue )?.FromJsonOrNull<ScopeApprovalCookieData>();
+
+            if ( cookieData == null )
+            {
+                return false;
+            }
+
+            return string.Equals( cookieData.ClientId, authClient.ClientId, StringComparison.Ordinal )
+                && cookieData.UserLoginId == userLogin.Id
+                && string.Equals( cookieData.AllowedScopes, authClient.AllowedScopes, StringComparison.Ordinal );
+        }
+
+        /// <summary>
+        /// The data stored, encrypted, in a scope approval cookie.
+        /// </summary>
+        private class ScopeApprovalCookieData
+        {
+            /// <summary>
+            /// The client identifier of the <see cref="AuthClient"/> whose scopes were approved.
+            /// </summary>
+            public string ClientId { get; set; }
+
+            /// <summary>
+            /// The identifier of the <see cref="UserLogin"/> that approved the scopes.
+            /// </summary>
+            public int UserLoginId { get; set; }
+
+            /// <summary>
+            /// The client's allowed scopes at the time they were approved.
+            /// </summary>
+            public string AllowedScopes { get; set; }
         }
 
         /// <summary>
