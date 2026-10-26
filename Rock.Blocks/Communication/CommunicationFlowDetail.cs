@@ -639,6 +639,22 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
+            /*
+                10/25/2026 - MSE
+
+                The SMS From list sent to the client only contains numbers the person
+                can view, but the posted number was saved and used for test sends
+                without checking it. This must run before ApplyBagToCommunicationTemplate
+                because that call overwrites the number stored on the template.
+
+                Reason: Prevent sending SMS from system phone numbers the person cannot view.
+            */
+            if ( !IsSmsFromNumberAllowed( communicationTemplate, bag, currentPerson ) )
+            {
+                errorResult = new ValidationResult( "Invalid SMS from number." );
+                return false;
+            }
+
             ApplyBagToCommunicationTemplate( this.RockContext, communicationTemplate, bag );
 
             if ( !ValidateCommunicationTemplate( this.RockContext, currentPerson, communicationTemplate, out errorResult ) )
@@ -1009,6 +1025,38 @@ namespace Rock.Blocks.Communication
             }
 
             return communicationTemplate;
+        }
+
+        /// <summary>
+        /// Determines whether the SMS from number in the request is one offered
+        /// in the SMS from number list or the number already stored on the
+        /// communication template.
+        /// </summary>
+        /// <param name="communicationTemplate">The existing or new communication template.</param>
+        /// <param name="bag">The template bag sent by the client.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns><c>true</c> if the SMS from number is allowed; otherwise <c>false</c>.</returns>
+        private bool IsSmsFromNumberAllowed( CommunicationTemplate communicationTemplate, CommunicationFlowDetailCommunicationTemplateBag bag, Person currentPerson )
+        {
+            var smsFromNumberGuid = bag.SmsFromSystemPhoneNumber?.Value?.AsGuidOrNull();
+
+            if ( !smsFromNumberGuid.HasValue )
+            {
+                return true;
+            }
+
+            // Keep the number already stored on the template so people with
+            // EDIT on it can still edit it.
+            if ( communicationTemplate.SmsFromSystemPhoneNumberId.HasValue
+                 && SystemPhoneNumberCache.GetGuid( communicationTemplate.SmsFromSystemPhoneNumberId.Value ) == smsFromNumberGuid.Value )
+            {
+                return true;
+            }
+
+            // Same filter used to build the SmsFromSystemPhoneNumbers option list.
+            return SystemPhoneNumberCache.All( false )
+                .Any( spn => spn.Guid == smsFromNumberGuid.Value
+                    && spn.IsAuthorized( Authorization.VIEW, currentPerson ) );
         }
 
         private void ApplyBagToCommunicationTemplate( RockContext rockContext, CommunicationTemplate communicationTemplate, CommunicationFlowDetailCommunicationTemplateBag bag )
