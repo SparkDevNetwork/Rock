@@ -40,7 +40,7 @@ const team: SidebarRow = sidebarRow({ channel_id: "c0000001-0000-4000-8000-00000
 const dmAnna: SidebarRow = sidebarRow({
     channel_id: "c0000005-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Anna Kim"],
+    dm_people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }],
     dm_other_count: 1,
     room_kind: "person",
     title: "Anna Kim"
@@ -65,6 +65,7 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
         last_message_type: null,
         last_sender_nick_name: null,
         last_sender_last_name: null,
+        last_sender_avatar_url: null,
         last_sender_listed: false,
         last_message_preview: null,
         last_message_is_own: false,
@@ -74,7 +75,7 @@ function sidebarRow(overrides: Partial<SidebarRow> & { channel_id: string }): Si
         mention_count: 0,
         all_mention_count: 0,
         can_mention: true,
-        dm_names: null,
+        dm_people: null,
         dm_other_count: null,
         room_kind: "channel",
         title: overrides.name ?? "",
@@ -628,6 +629,7 @@ function roomFacts(overrides: Partial<ChannelFacts> & { channel_id: string }): C
         is_public: true,
         member_count: 0,
         leaders: [],
+        faces: [],
         people: [],
         ...overrides
     };
@@ -1596,7 +1598,7 @@ describe("a named group direct message", () => {
         channel_id: "c0000009-0000-4000-8000-000000000000",
         channel_type: "dm",
         name: "Hike planning",
-        dm_names: [],
+        dm_people: [],
         dm_other_count: 0,
         room_kind: "group",
         title: "Hike planning"
@@ -1635,7 +1637,7 @@ describe("a named group direct message", () => {
         const listedOut = sidebarRow({
             channel_id: "c0000011-0000-4000-8000-000000000000",
             channel_type: "dm",
-            dm_names: ["Anna Kim"],
+            dm_people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }],
             dm_other_count: 1,
             room_kind: "group",
             title: "Anna and 1 more"
@@ -1653,7 +1655,7 @@ describe("a named group direct message", () => {
         const trio = sidebarRow({
             channel_id: "c0000010-0000-4000-8000-000000000000",
             channel_type: "dm",
-            dm_names: ["Anna Kim", "Ben Ortiz"],
+            dm_people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }, { person_alias_guid: "ben-ortiz", nick_name: "Ben", last_name: "Ortiz", avatar_url: null }],
             dm_other_count: 2,
             room_kind: "group",
             title: "Anna and Ben"
@@ -3004,7 +3006,7 @@ describe("the profile card", () => {
 // The header's title opens the conversation's details, as does the phone's overflow; Leave and a
 // group's Rename go to the shell's rooms, and the dialog closes once the person has left.
 describe("the conversation's details", () => {
-    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", dm_names: ["Caleb", "Hannah"], dm_other_count: 2, room_kind: "group", title: "Caleb and Hannah" });
+    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", dm_people: [{ person_alias_guid: "caleb", nick_name: "Caleb", last_name: null, avatar_url: null }, { person_alias_guid: "hannah", nick_name: "Hannah", last_name: null, avatar_url: null }], dm_other_count: 2, room_kind: "group", title: "Caleb and Hannah" });
 
     function detailsDialog(): HTMLElement | null {
         return document.querySelector<HTMLElement>("[data-testid='details-close']")?.closest<HTMLElement>("[role='dialog']") ?? null;
@@ -3174,7 +3176,7 @@ describe("the conversation's details", () => {
 // button, the intro's Members and the details dialog's member count; a second press closes it.
 // A member row opens the person's card beside the panel, and Escape gives focus back to the row.
 describe("the members panel", () => {
-    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_names: ["Caleb", "Hannah"], dm_other_count: 2, room_kind: "group", title: "Hike planning" });
+    const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_people: [{ person_alias_guid: "caleb", nick_name: "Caleb", last_name: null, avatar_url: null }, { person_alias_guid: "hannah", nick_name: "Hannah", last_name: null, avatar_url: null }], dm_other_count: 2, room_kind: "group", title: "Hike planning" });
 
     /** Anna as chat_list_members answers her, exactly its keys. */
     const annaMember = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, is_leader: false, details: { campus_id: null, badge_keys: ["serving"] }, can_message: true };

@@ -296,3 +296,33 @@ describe("a person's chip, where people can be opened", () => {
         expect(listed.findAll("[data-testid='piece-mention']").some(chip => chip.element.tagName === "BUTTON")).toBe(false);
     });
 });
+
+// A mention chip draws the person's own face in its small circle: their photo when they have one,
+// their initial only when they have none.
+describe("a mention chip's face", () => {
+    test("is the person's photo when the piece carries one, with no initial drawn over it", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "mention", text: "@Lee Leader", person_alias_guid: "a0000007-0000-4000-8000-000000000000", nick_name: "Lee", last_name: "Leader", avatar_url: "https://photos.example/lee.jpg" }
+            ]
+        });
+
+        const face = body.get("[data-testid='piece-mention'] .chat-mn-av");
+        expect(face.get("img").attributes("src")).toBe("https://photos.example/lee.jpg");
+        expect(face.attributes("data-initial")).toBeUndefined();
+    });
+
+    test("is the person's initial when they have no photo", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "mention", text: "@Lee Leader", person_alias_guid: "a0000007-0000-4000-8000-000000000000", nick_name: "Lee", last_name: "Leader", avatar_url: null }
+            ]
+        });
+
+        const face = body.get("[data-testid='piece-mention'] .chat-mn-av");
+        expect(face.find("img").exists()).toBe(false);
+        expect(face.attributes("data-initial")).toBe("L");
+    });
+});

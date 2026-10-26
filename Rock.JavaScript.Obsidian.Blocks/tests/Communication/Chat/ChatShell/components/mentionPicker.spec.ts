@@ -621,3 +621,24 @@ describe("the picker in the composer", () => {
         expect(boxText(w)).toBe("<@all> ");
     });
 });
+
+// The picker draws each person as their face, their photo when they have one.
+describe("a person's face in the picker", () => {
+    test("is their photo, or their initials when they have none", () => {
+        drawPicker({ people: [{ ...annaPerson, avatar_url: "https://photos.example/anna.jpg" }, { ...benPerson, avatar_url: null }] });
+
+        const options = Array.from(document.querySelectorAll("[data-testid='mention-option']"));
+        expect(options[0].querySelector(".chat-av img")?.getAttribute("src")).toBe("https://photos.example/anna.jpg");
+        expect(options[1].querySelector(".chat-av img")).toBeNull();
+        expect(options[1].querySelector(".chat-av")?.textContent?.trim()).toBe("BO");
+    });
+
+    test("chooses a person with their photo, so the chip draws it", async () => {
+        const { w } = drawPicker({ people: [{ ...annaPerson, avatar_url: "https://photos.example/anna.jpg" }] });
+
+        (document.querySelector("[data-testid='mention-option']") as HTMLElement).click();
+        await nextTick();
+
+        expect(w.emitted("choose")?.[0]).toEqual([`<@${anna}>`, "Anna Reyes", "https://photos.example/anna.jpg"]);
+    });
+});

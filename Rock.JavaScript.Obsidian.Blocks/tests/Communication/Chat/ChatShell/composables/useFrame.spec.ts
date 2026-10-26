@@ -82,8 +82,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
         // A channel and a conversation of two with Anna.
         channels: {
             rows: [
-                { channel_id: team, channel_type: "shared", name: "Team", dm_names: null, dm_other_count: null, room_kind: "channel", title: "Team" },
-                { channel_id: pairWithAnna, channel_type: "dm", name: null, dm_names: ["Anna Reyes"], dm_other_count: 1, room_kind: "person", title: "Anna Reyes" }
+                { channel_id: team, channel_type: "shared", name: "Team", dm_people: null, dm_other_count: null, room_kind: "channel", title: "Team" },
+                { channel_id: pairWithAnna, channel_type: "dm", name: null, dm_people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Anna Reyes" }
             ]
         },
         members: {

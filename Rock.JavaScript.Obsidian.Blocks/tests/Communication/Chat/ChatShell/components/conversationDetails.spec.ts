@@ -85,6 +85,7 @@ function personFacts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
         is_public: false,
         member_count: 2,
         leaders: [],
+        faces: [],
         people: [person(4, "Anna", "Reyes", { campus_id: downtown.guid, badge_keys: [] })],
         ...overrides
     });
@@ -103,6 +104,7 @@ function groupFacts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
         is_public: false,
         member_count: 4,
         leaders: [],
+        faces: [],
         people: [person(5, "Caleb", "Brooks"), person(6, "Hannah", "Diaz"), person(7, "Luis", "Romero")],
         ...overrides
     });

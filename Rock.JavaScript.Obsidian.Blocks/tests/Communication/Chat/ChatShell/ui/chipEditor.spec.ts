@@ -360,3 +360,42 @@ describe("the @ query at the caret", () => {
         expect(queries[queries.length - 1]).toEqual([query]);
     });
 });
+
+// A chip in the box draws the person's photo as the message will, from the picker's person or the
+// message's pieces, and their initial only when there is none.
+describe("a chip's face", () => {
+    function insertMention(w: VueWrapper, token: string, name: string, photoUrl: string | null): void {
+        (w.vm as unknown as { insertMention: (token: string, name: string, photoUrl: string | null) => void }).insertMention(token, name, photoUrl);
+    }
+
+    test("is the photo the picker chose the person with", async () => {
+        const w = draw("@an", null);
+        caretAtEnd(w);
+
+        insertMention(w, `<@${anna}>`, "Anna Reyes", "https://photos.example/anna.jpg");
+        await nextTick();
+
+        const face = chips(w)[0].querySelector(".chat-mn-av") as HTMLElement;
+        expect(face.querySelector("img")?.getAttribute("src")).toBe("https://photos.example/anna.jpg");
+        expect(face.dataset.initial).toBeUndefined();
+    });
+
+    test("is the photo a stored piece carries when an edit loads the body", () => {
+        const w = draw(`Hi <@${lee}>`, [{ ...mentionLee, nick_name: "Lee", last_name: "Leader", avatar_url: "https://photos.example/lee.jpg" }]);
+
+        const face = chips(w)[0].querySelector(".chat-mn-av") as HTMLElement;
+        expect(face.querySelector("img")?.getAttribute("src")).toBe("https://photos.example/lee.jpg");
+    });
+
+    test("is the initial for a person with no photo", async () => {
+        const w = draw("@an", null);
+        caretAtEnd(w);
+
+        insertMention(w, `<@${anna}>`, "Anna Reyes", null);
+        await nextTick();
+
+        const face = chips(w)[0].querySelector(".chat-mn-av") as HTMLElement;
+        expect(face.querySelector("img")).toBeNull();
+        expect(face.dataset.initial).toBe("A");
+    });
+});

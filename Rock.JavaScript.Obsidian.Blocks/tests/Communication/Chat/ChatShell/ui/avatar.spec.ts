@@ -19,6 +19,8 @@
 // by name: keyed on anything else, one person would wear two colors on one screen. A pile is the
 // same faces overlapped, each ringed so no initials are cut.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 
 type Person = { name: string, photoUrl?: string | null };
@@ -139,5 +141,78 @@ describe("a pile", () => {
 
         expect(pile.map(face => face.textContent!.trim())).toEqual(["AL", "BL"]);
         expect(hueOf(pile[1])).toBe(hueOf(alone));
+    });
+});
+
+// Every face the chat builds carries the person's photo beside their name, null only for someone
+// with none: a face built from a name alone draws initials even for a person with a photo, which
+// is how the sidebar's direct messages, the header and the @ picker once drew everyone. This reads
+// every chat source that draws a face and fails on a face object written without photoUrl.
+describe("every face the chat builds", () => {
+    const chatFolder = join(__dirname, "../../../../../src/Communication/Chat");
+
+    /** The chat's components and scripts, the block and everything under its folder. */
+    function sources(folder: string): string[] {
+        return readdirSync(folder, { withFileTypes: true }).flatMap(entry => {
+            const path = join(folder, entry.name);
+            if (entry.isDirectory()) {
+                return sources(path);
+            }
+            return /\.(obs|ts)$/.test(entry.name) ? [path] : [];
+        });
+    }
+
+    /**
+     * The lines of each object in a face drawing source that opens with a name, as a face is
+     * written, and lacks photoUrl. A source draws faces when it uses the avatar component or its
+     * face type; the component itself is where a face is read, not built.
+     */
+    function facesWithoutPhoto(text: string): number[] {
+        if (!/avatar\.partial\.obs|AvatarPerson|\bFace\b/.test(text)) {
+            return [];
+        }
+
+        const lines: number[] = [];
+        // a template's {{ name }} is text, not an object
+        const opening = /(?<!\{)\{(?!\{)\s*name\s*[:,}]/g;
+        let match: RegExpExecArray | null;
+        while ((match = opening.exec(text)) !== null) {
+            let depth = 0;
+            let end = match.index;
+            for (; end < text.length; end++) {
+                depth += text[end] === "{" ? 1 : text[end] === "}" ? -1 : 0;
+                if (depth === 0) {
+                    break;
+                }
+            }
+
+            if (!/\bphotoUrl\b/.test(text.slice(match.index, end))) {
+                lines.push(text.slice(0, match.index).split("\n").length);
+            }
+        }
+
+        return lines;
+    }
+
+    test("carries photoUrl beside its name", () => {
+        const bare = sources(chatFolder)
+            .filter(path => !path.endsWith("avatar.partial.obs"))
+            .flatMap(path => facesWithoutPhoto(readFileSync(path, "utf8")).map(line => `${path.slice(chatFolder.length + 1)}:${line}`));
+
+        expect(bare).toEqual([]);
+    });
+
+    test("is caught when written by name alone, and passes with a photo or an explicit none", () => {
+        const source = [
+            "import Avatar from \"../ui/avatar.partial.obs\";",
+            "const alone = people.map(name => ({ name }));",
+            "const named = [{ name: person.name }];",
+            "const photo = { name: person.name, photoUrl: person.avatar_url };",
+            "const none = { name: person.name, photoUrl: null };"
+        ].join("\n");
+
+        expect(facesWithoutPhoto(source)).toEqual([2, 3]);
+        expect(facesWithoutPhoto("const icon = { name: \"users\" };")).toEqual([]);
+        expect(facesWithoutPhoto("<Avatar :people=\"faces\" /><h2>{{ name }}</h2>")).toEqual([]);
     });
 });

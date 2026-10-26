@@ -89,7 +89,7 @@ describe("the title and subtitle", () => {
         expect(hasIcon(w, w.get(".chat-header-ic"), "lock")).toBe(true);
         expect(hasIcon(w, w.get(".chat-header-ic"), "hash")).toBe(false);
 
-        await w.setProps({ title: "Anna Kim", kind: "person", people: ["Anna Kim"] });
+        await w.setProps({ title: "Anna Kim", kind: "person", people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }] });
         expect(w.get("[data-testid='header-title']").text()).toBe("Anna Kim");
         expect(w.find(".chat-header-ic").exists()).toBe(false);
     });
@@ -117,6 +117,7 @@ describe("the subtitle, from the room's facts", () => {
             is_public: true,
             member_count: 0,
             leaders: [],
+            faces: [],
             people: [],
             ...overrides
         };
@@ -139,7 +140,7 @@ describe("the subtitle, from the room's facts", () => {
     });
 
     test("is the other person's campus by name in a conversation of two, when they show their details", () => {
-        const w = mountHeader({ title: "Anna Reyes", kind: "person", people: ["Anna Reyes"], facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ campus_id: downtown.guid, badge_keys: [] })] }), campuses: [downtown] });
+        const w = mountHeader({ title: "Anna Reyes", kind: "person", people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ campus_id: downtown.guid, badge_keys: [] })] }), campuses: [downtown] });
 
         expect(w.get("[data-testid='header-subtitle']").text()).toBe("Downtown Campus");
     });
@@ -417,8 +418,8 @@ describe("the Mentions button", () => {
 describe("the details", () => {
     test.each([
         ["a channel", { title: "Worship Team", kind: "channel", isPublic: true }, "Worship Team, channel details"],
-        ["a direct message", { title: "Anna Kim", kind: "person", people: ["Anna Kim"] }, "Anna Kim, conversation details"],
-        ["a group", { title: "Hike planning", kind: "group", people: ["Caleb Brooks", "Hannah Diaz"] }, "Hike planning, conversation details"]
+        ["a direct message", { title: "Anna Kim", kind: "person", people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }] }, "Anna Kim, conversation details"],
+        ["a group", { title: "Hike planning", kind: "group", people: [{ person_alias_guid: "caleb-brooks", nick_name: "Caleb", last_name: "Brooks", avatar_url: null }, { person_alias_guid: "hannah-diaz", nick_name: "Hannah", last_name: "Diaz", avatar_url: null }] }, "Hike planning, conversation details"]
     ])("open from the title, a button naming %s's details", async (_kind, props, label) => {
         const w = mountHeader(props);
 
@@ -454,7 +455,7 @@ describe("the details", () => {
         ["person", "Conversation details"],
         ["group", "Conversation details"]
     ])("are the phone's last overflow item for a %s", async (kind, label) => {
-        const w = mountHeader({ isPhone: true, kind, isThreadsOffered: true, people: ["Anna Kim"] });
+        const w = mountHeader({ isPhone: true, kind, isThreadsOffered: true, people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }] });
 
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
@@ -488,8 +489,8 @@ describe("the end of an outage", () => {
 });
 
 // A channel's facepile and a group's Members button open the members panel, before Threads. The
-// facepile draws up to three of the room's leaders over the head count, or the people icon where
-// there are none to show; a conversation of two has neither. On a phone they fold into the menu.
+// facepile draws up to three of the room's people, its leaders first, over the head count, or the
+// people icon where there are none to show; a conversation of two has neither. On a phone they fold into the menu.
 describe("the way into the members panel", () => {
     /** A room's facts in the exact shape chat_get_channel answers. */
     function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
@@ -510,6 +511,7 @@ describe("the way into the members panel", () => {
             is_public: true,
             member_count: 42,
             leaders: [],
+            faces: [],
             people: [],
             ...overrides
         };
@@ -523,8 +525,8 @@ describe("the way into the members panel", () => {
     const grace = leader(2, "Grace", "Kim");
     const jordan = leader(3, "Jordan", "Lee");
 
-    test("is a channel's facepile of its leaders' faces then the count, before Threads", async () => {
-        const w = mountHeader({ kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts({ leaders: [tom, grace, jordan] }) });
+    test("is a channel's facepile of its faces then the count, before Threads", async () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts({ leaders: [tom], faces: [tom, grace, jordan] }) });
 
         const pile = w.get("[data-testid='header-members']");
         expect(pile.element.tagName).toBe("BUTTON");
@@ -541,7 +543,7 @@ describe("the way into the members panel", () => {
         expect(w.emitted("members")).toHaveLength(1);
     });
 
-    test("draws the people icon and the count where no leader can be shown, and says one member", () => {
+    test("draws the people icon and the count where no face can be shown, and says one member", () => {
         const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 1 }) });
 
         const pile = w.get("[data-testid='header-members']");
@@ -551,7 +553,7 @@ describe("the way into the members panel", () => {
     });
 
     test("shows no faces to someone not in the room, only the icon and the count", () => {
-        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ is_member: false, leaders: [tom] }) });
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ is_member: false, leaders: [tom], faces: [tom] }) });
 
         const pile = w.get("[data-testid='header-members']");
         expect(pile.findAll(".chat-av")).toHaveLength(0);
@@ -559,7 +561,7 @@ describe("the way into the members panel", () => {
     });
 
     test("is a group's Members button naming its head count, and nothing for a conversation of two", async () => {
-        const group = mountHeader({ title: "Hike planning", kind: "group", people: ["Caleb Brooks", "Hannah Diaz"], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
+        const group = mountHeader({ title: "Hike planning", kind: "group", people: [{ person_alias_guid: "caleb-brooks", nick_name: "Caleb", last_name: "Brooks", avatar_url: null }, { person_alias_guid: "hannah-diaz", nick_name: "Hannah", last_name: "Diaz", avatar_url: null }], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
 
         const members = group.get("[data-testid='header-members']");
         expect(members.classes()).toContain("chat-icon-btn");
@@ -569,7 +571,7 @@ describe("the way into the members panel", () => {
         expect(group.emitted("members")).toHaveLength(1);
         group.unmount();
 
-        const pair = mountHeader({ title: "Anna Kim", kind: "person", people: ["Anna Kim"], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });
+        const pair = mountHeader({ title: "Anna Kim", kind: "person", people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });
         expect(pair.find("[data-testid='header-members']").exists()).toBe(false);
     });
 
@@ -712,5 +714,45 @@ describe("the notify menu and Star", () => {
 
         const order = w.findAll(".chat-header-actions > [data-testid]").map(b => b.attributes("data-testid"));
         expect(order).toEqual(["header-threads", "header-mentions", "header-notify", "header-star"]);
+    });
+});
+
+// The header draws people's own faces: a direct message's other person, a group's first two, and
+// a channel's stack of up to three of its people, leaders first, as the room's facts send them.
+describe("the faces in the header", () => {
+    const anna = { person_alias_guid: "anna", nick_name: "Anna", last_name: "Reyes", avatar_url: "https://photos.example/anna.jpg" };
+    const ben = { person_alias_guid: "ben", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+
+    test("is a direct message's other person's photo", () => {
+        const w = mountHeader({ title: "Anna Reyes", kind: "person", people: [anna] });
+
+        const faces = w.findAll(".chat-av");
+        expect(faces).toHaveLength(1);
+        expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
+    });
+
+    test("is a group's first two people's photos, initials for one with none", () => {
+        const w = mountHeader({ title: "Anna and Ben", kind: "group", people: [anna, ben] });
+
+        const faces = w.findAll(".chat-av");
+        expect(faces).toHaveLength(2);
+        expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
+        expect(faces[1].find("img").exists()).toBe(false);
+        expect(faces[1].text()).toBe("BO");
+    });
+
+    test("is a channel's faces, which need not be leaders, with their photos", () => {
+        const facts = {
+            channel_id: "c0000001-0000-4000-8000-000000000000", name: "young-adults", icon_url: null, channel_type: "shared",
+            is_member: true, can_post: true, can_post_code: null, can_post_reason: null, max_length: 5000, can_leave: true,
+            description: null, group_type_name: null, campus_id: null, is_public: true, member_count: 42,
+            leaders: [anna], faces: [anna, ben], people: []
+        };
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts });
+
+        const faces = w.get("[data-testid='header-members']").findAll(".chat-av");
+        expect(faces).toHaveLength(2);
+        expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
+        expect(faces[1].text()).toBe("BO");
     });
 });

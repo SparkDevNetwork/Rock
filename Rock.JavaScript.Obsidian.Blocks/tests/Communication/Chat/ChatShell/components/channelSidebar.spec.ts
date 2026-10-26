@@ -48,6 +48,7 @@ function row(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRo
         last_message_type: "text",
         last_sender_nick_name: "Marcus",
         last_sender_last_name: "Reed",
+        last_sender_avatar_url: null,
         last_sender_listed: true,
         last_message_preview: "Are we doing the extended bridge again?",
         last_message_is_own: false,
@@ -57,7 +58,7 @@ function row(overrides: Partial<SidebarRow> & { channel_id: string }): SidebarRo
         mention_count: 0,
         all_mention_count: 0,
         can_mention: true,
-        dm_names: null,
+        dm_people: null,
         dm_other_count: null,
         room_kind: "channel",
         title: overrides.name ?? "",
@@ -77,13 +78,14 @@ const muted = row({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "A
 const dmAnna = row({
     channel_id: "c0000005-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Anna Kim"],
+    dm_people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }],
     dm_other_count: 1,
     room_kind: "person",
     title: "Anna Kim",
     preview_line: "Do you have a minute after rehearsal?",
     last_sender_nick_name: "Anna",
     last_sender_last_name: "Kim",
+    last_sender_avatar_url: null,
     last_message_preview: "Do you have a minute after rehearsal?",
     is_unread: true
 });
@@ -91,7 +93,7 @@ const dmAnna = row({
 const dmGroup = row({
     channel_id: "c0000006-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Anna", "Marcus"],
+    dm_people: [{ person_alias_guid: "anna", nick_name: "Anna", last_name: null, avatar_url: null }, { person_alias_guid: "marcus", nick_name: "Marcus", last_name: null, avatar_url: null }],
     dm_other_count: 2,
     room_kind: "group",
     title: "Anna and Marcus",
@@ -102,7 +104,7 @@ const dmGroup = row({
 const dmBig = row({
     channel_id: "c0000007-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Anna", "Ben", "Cara", "Dee"],
+    dm_people: [{ person_alias_guid: "anna", nick_name: "Anna", last_name: null, avatar_url: null }, { person_alias_guid: "ben", nick_name: "Ben", last_name: null, avatar_url: null }, { person_alias_guid: "cara", nick_name: "Cara", last_name: null, avatar_url: null }, { person_alias_guid: "dee", nick_name: "Dee", last_name: null, avatar_url: null }],
     dm_other_count: 6,
     room_kind: "group",
     title: "Anna, Ben, Cara, Dee and 2 more",
@@ -112,7 +114,7 @@ const dmBig = row({
 const dmRead = row({
     channel_id: "c0000008-0000-4000-8000-000000000000",
     channel_type: "dm",
-    dm_names: ["Priya Shah"],
+    dm_people: [{ person_alias_guid: "priya-shah", nick_name: "Priya", last_name: "Shah", avatar_url: null }],
     dm_other_count: 1,
     room_kind: "person",
     title: "Priya Shah",
@@ -387,7 +389,7 @@ describe("a row's look, by the room's kind", () => {
 
     test("draws a direct message by the kind the platform sent: a group showing one other person still draws a group's faces", () => {
         // Three people, one of them on the Chat Ban List, so the names show only one other.
-        const banListGroup = { ...dmGroup, dm_names: ["Anna"], dm_other_count: 1, room_kind: "group" as const };
+        const banListGroup = { ...dmGroup, dm_people: [{ person_alias_guid: "anna", nick_name: "Anna", last_name: null, avatar_url: null }], dm_other_count: 1, room_kind: "group" as const };
         const w = mountSidebar({ rows: [banListGroup, dmRead] });
 
         expect(rowOf(w, dmGroup.channel_id).findComponent(Avatar).props("size")).toBe(22);
@@ -692,5 +694,33 @@ describe("the sidebar's foot", () => {
 
         const side = w.get("[data-testid='channel-sidebar']").element;
         expect(side.lastElementChild?.contains(w.get("[data-testid='sidebar-me']").element)).toBe(true);
+    });
+});
+
+// A direct message's row draws its people's own faces: the other person's photo, or a group's
+// first two, each their initials only when they have no photo.
+describe("a direct message's faces", () => {
+    test("is the other person's photo", () => {
+        const withPhoto = { ...dmAnna, dm_people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: "https://photos.example/anna.jpg" }] };
+        const w = mountSidebar({ rows: [withPhoto] });
+
+        expect(rowOf(w, dmAnna.channel_id).get(".chat-av img").attributes("src")).toBe("https://photos.example/anna.jpg");
+    });
+
+    test("is a group's first two people's photos, initials for one with none", () => {
+        const withPhotos = {
+            ...dmGroup,
+            dm_people: [
+                { person_alias_guid: "anna", nick_name: "Anna", last_name: "Reyes", avatar_url: "https://photos.example/anna.jpg" },
+                { person_alias_guid: "marcus", nick_name: "Marcus", last_name: "Reed", avatar_url: null }
+            ]
+        };
+        const w = mountSidebar({ rows: [withPhotos] });
+
+        const faces = rowOf(w, dmGroup.channel_id).findAll(".chat-av");
+        expect(faces).toHaveLength(2);
+        expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
+        expect(faces[1].find("img").exists()).toBe(false);
+        expect(faces[1].text()).toBe("M");
     });
 });

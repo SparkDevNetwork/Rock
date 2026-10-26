@@ -350,6 +350,7 @@ function memberFacts(channelId: string, extra: Record<string, unknown> = {}): Re
         is_public: false,
         member_count: 12,
         leaders: [],
+        faces: [],
         people: [],
         ...extra
     };
@@ -1859,6 +1860,7 @@ describe("the live sidebar", () => {
             last_message_type: "text",
             last_sender_nick_name: "Ada",
             last_sender_last_name: "Member",
+            last_sender_avatar_url: null,
             last_sender_listed: true,
             last_message_preview: "old",
             last_message_is_own: false,
@@ -1868,7 +1870,7 @@ describe("the live sidebar", () => {
             mention_count: 0,
             all_mention_count: 0,
             can_mention: true,
-            dm_names: null,
+            dm_people: null,
             dm_other_count: null,
             room_kind: "channel",
             title: extra.name ?? "Room",
@@ -1883,7 +1885,7 @@ describe("the live sidebar", () => {
             channels: [
                 sidebarRow(channelA, { read_cursor: 9 }),
                 sidebarRow(channelB),
-                sidebarRow(dmD, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1, room_kind: "person", title: "Ben Okafor" }),
+                sidebarRow(dmD, { name: null, channel_type: "dm", dm_people: [{ person_alias_guid: "ben-okafor", nick_name: "Ben", last_name: "Okafor", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Ben Okafor" }),
                 sidebarRow(channelE, { last_message_id: 12, read_cursor: 10, is_unread: true, mention_count: 1 })
             ],
             reactions: [],
@@ -2525,7 +2527,7 @@ describe("settings", () => {
             is_favorite: false, notify_mode: "all", is_leader: false, can_post_announcements: false, can_mention_all: false, last_message_id: 10,
             last_message_at: "2026-10-19T09:00:00Z", last_message_type: "text", last_sender_nick_name: "Ada", last_sender_last_name: "Member",
             last_sender_listed: true, last_message_preview: "old", last_message_is_own: false, last_message_posted_by_rock: false, read_cursor: 10,
-            is_unread: false, mention_count: 0, all_mention_count: 0, can_mention: true, dm_names: null, dm_other_count: null,
+            is_unread: false, mention_count: 0, all_mention_count: 0, can_mention: true, dm_people: null, dm_other_count: null,
             room_kind: "channel", title: "Room", preview_line: ""
         };
         const h = await startedWith({ channels: [row], me: { unread_mentions: [] } });

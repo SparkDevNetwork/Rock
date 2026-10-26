@@ -42,6 +42,7 @@ function row(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
         last_message_type: "text",
         last_sender_nick_name: "Ada",
         last_sender_last_name: "Lovelace",
+        last_sender_avatar_url: null,
         last_sender_listed: true,
         last_message_preview: "hi",
         last_message_is_own: false,
@@ -51,7 +52,7 @@ function row(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
         mention_count: 0,
         all_mention_count: 0,
         can_mention: true,
-        dm_names: null,
+        dm_people: null,
         dm_other_count: null,
         room_kind: "channel",
         title: "Room",
@@ -258,7 +259,7 @@ describe("dm.preview", () => {
 
     /** A direct message's row, read up to its last message. */
     function dm(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
-        return row(channelId, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1, room_kind: "person", title: "Ben Okafor", ...extra });
+        return row(channelId, { name: null, channel_type: "dm", dm_people: [{ person_alias_guid: "ben-okafor", nick_name: "Ben", last_name: "Okafor", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Ben Okafor", ...extra });
     }
 
     /** dm.preview exactly as the platform sends it. */
@@ -295,6 +296,7 @@ describe("dm.preview", () => {
             last_message_preview: "message 11",
             last_sender_nick_name: "Ben",
             last_sender_last_name: "Okafor",
+            last_sender_avatar_url: null,
             last_message_is_own: false
         }));
         expect(reloads()).toBe(0);
@@ -364,6 +366,7 @@ describe("dm.preview", () => {
             last_message_preview: null,
             last_sender_nick_name: null,
             last_sender_last_name: null,
+            last_sender_avatar_url: null,
             last_message_is_own: false,
             is_unread: false
         }));
@@ -573,7 +576,7 @@ describe("the person's own preferences", () => {
     test("a direct message's new message does the same, and one walked back to an older message does not", () => {
         const dmOne = "d0000001-0000-4000-8000-000000000000";
         const dmTwo = "d0000002-0000-4000-8000-000000000000";
-        const dmRow = (channelId: string): SidebarRow => row(channelId, { name: null, channel_type: "dm", dm_names: ["Ben Okafor"], dm_other_count: 1, room_kind: "person", title: "Ben Okafor" });
+        const dmRow = (channelId: string): SidebarRow => row(channelId, { name: null, channel_type: "dm", dm_people: [{ person_alias_guid: "ben-okafor", nick_name: "Ben", last_name: "Okafor", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Ben Okafor" });
         const preview = (channelId: string, messageId: number | null): Record<string, unknown> => ({
             channel_id: channelId,
             message_id: messageId,
@@ -602,5 +605,21 @@ describe("the person's own preferences", () => {
         s.applyPrefs(hidden, { is_favorite: true });
 
         expect(s.rows.map(r => r.channel_id)).toEqual([one, two]);
+    });
+});
+
+// dm.preview names its sender as a person, so the row keeps the sender's photo beside their name.
+describe("dm.preview's sender", () => {
+    test("moves the row's sender photo with the name", () => {
+        const s = createChannelStore({ reloadSidebar: () => undefined });
+        s.setSidebar([row("c0000099-0000-4000-8000-000000000000", { name: null, channel_type: "dm", room_kind: "person", title: "Ben Okafor" })]);
+
+        s.applyPersonalEvent("dm.preview", {
+            channel_id: "c0000099-0000-4000-8000-000000000000", message_id: 11, preview: "hi", sent_at: "2026-10-19T11:00:00Z",
+            sender: { person_alias_guid: "ben", nick_name: "Ben", last_name: "Okafor", avatar_url: "https://photos.example/ben.jpg" },
+            is_own: false, posted_by_rock: false, preview_line: "hi", id: "5e000002-0000-4000-8000-000000000000"
+        });
+
+        expect(s.rows[0].last_sender_avatar_url).toBe("https://photos.example/ben.jpg");
     });
 });

@@ -46,6 +46,7 @@ function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
         is_public: true,
         member_count: 42,
         leaders: [],
+        faces: [],
         people: [],
         ...overrides
     };

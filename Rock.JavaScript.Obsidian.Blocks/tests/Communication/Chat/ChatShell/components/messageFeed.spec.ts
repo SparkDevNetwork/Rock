@@ -950,6 +950,7 @@ describe("the channel intro", () => {
         is_public: true,
         member_count: 42,
         leaders: [],
+        faces: [],
         people: []
     };
 

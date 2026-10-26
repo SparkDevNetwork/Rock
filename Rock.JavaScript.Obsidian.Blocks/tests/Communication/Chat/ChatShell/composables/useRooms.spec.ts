@@ -125,6 +125,7 @@ function sidebarRow(channelId: string, extra: Partial<SidebarRow> = {}): Sidebar
         last_message_type: "text",
         last_sender_nick_name: "Ada",
         last_sender_last_name: "Member",
+        last_sender_avatar_url: null,
         last_sender_listed: true,
         last_message_preview: "old",
         last_message_is_own: false,
@@ -134,7 +135,7 @@ function sidebarRow(channelId: string, extra: Partial<SidebarRow> = {}): Sidebar
         mention_count: 0,
         all_mention_count: 0,
         can_mention: true,
-        dm_names: null,
+        dm_people: null,
         dm_other_count: null,
         room_kind: "channel",
         title: extra.name ?? "Room",
@@ -918,7 +919,7 @@ function sidebarOfThree(s: Setup): void {
     s.channels.setSidebar([
         sidebarRow(team, { name: "Tech Team" }),
         sidebarRow(volunteers, { name: "Volunteers" }),
-        sidebarRow(group, { name: null, channel_type: "dm", is_public: false, dm_names: ["Caleb", "Hannah"], dm_other_count: 2, room_kind: "group", title: "Caleb and Hannah" })
+        sidebarRow(group, { name: null, channel_type: "dm", is_public: false, dm_people: [{ person_alias_guid: "caleb", nick_name: "Caleb", last_name: null, avatar_url: null }, { person_alias_guid: "hannah", nick_name: "Hannah", last_name: null, avatar_url: null }], dm_other_count: 2, room_kind: "group", title: "Caleb and Hannah" })
     ]);
 }
 
@@ -1138,7 +1139,7 @@ describe("Rename", () => {
 
     test("a name removed and saved reads the sidebar again, whose title of the group by its people is the platform's", async () => {
         const s = setup();
-        s.channels.setSidebar([sidebarRow(group, { name: "Trail crew", channel_type: "dm", is_public: false, dm_names: null, dm_other_count: 0, room_kind: "group", title: "Trail crew" })]);
+        s.channels.setSidebar([sidebarRow(group, { name: "Trail crew", channel_type: "dm", is_public: false, dm_people: null, dm_other_count: 0, room_kind: "group", title: "Trail crew" })]);
         s.active.value = group;
         void s.rooms.channelOpened(group);
         s.channelCalls[0].answer.resolve({

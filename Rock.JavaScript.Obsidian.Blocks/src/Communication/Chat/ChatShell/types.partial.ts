@@ -31,6 +31,17 @@ export type RoomKind = "channel" | "person" | "group";
  */
 export type SystemKind = "joined" | "left" | "added" | "removed" | "renamed";
 
+/**
+ * A person as every answer and live event names one: their primary alias, their name, and their
+ * photo, null only when they have none, so a face draws initials only for someone with no photo.
+ */
+export type ChatPerson = {
+    person_alias_guid: string;
+    nick_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+};
+
 /** One row of the sidebar, as chat_get_bootstrap returns it. */
 export type SidebarRow = {
     channel_id: string;
@@ -50,6 +61,7 @@ export type SidebarRow = {
     last_message_type: string | null;
     last_sender_nick_name: string | null;
     last_sender_last_name: string | null;
+    last_sender_avatar_url: string | null;
     last_sender_listed: boolean;
     last_message_preview: string | null;
 
@@ -73,7 +85,8 @@ export type SidebarRow = {
 
     /** Whether the @ picker lists people here: the reader may see the roster, or leads the room. */
     can_mention: boolean;
-    dm_names: string[] | null;
+    /** A direct message's other people without a name of its own, up to four, in its title's order. */
+    dm_people: ChatPerson[] | null;
     dm_other_count: number | null;
 
     /** What kind of room this is; every screen reads this rather than counting the names it is shown. */
@@ -104,12 +117,7 @@ export type SidebarRow = {
 };
 
 /** A leader of a channel, as chat_get_channel lists up to three of them by name. */
-export type ChannelLeader = {
-    person_alias_guid: string;
-    nick_name: string | null;
-    last_name: string | null;
-    avatar_url: string | null;
-};
+export type ChannelLeader = ChatPerson;
 
 /** One of the other people in a direct message, as chat_get_channel lists up to eight of them. */
 export type ChannelPerson = ChannelLeader & {
@@ -141,6 +149,12 @@ export type ChannelFacts = {
 
     /** Up to three listed leaders by name; empty for a direct message. */
     leaders: ChannelLeader[];
+
+    /**
+     * Up to three of the room's people for the header's stack, its leaders first; empty for a
+     * direct message and where the room hides its roster from the reader.
+     */
+    faces: ChatPerson[];
 
     /** For a direct message, up to eight of the others; empty for a channel. */
     people: ChannelPerson[];
@@ -531,12 +545,8 @@ export type ChatBadge = {
     sort_order: number;
 };
 
-/** One person chat_search_mentionable answers. It carries no photo; the picker draws initials. */
-export type MentionPerson = {
-    person_alias_guid: string;
-    nick_name: string;
-    last_name: string;
-};
+/** One person chat_search_mentionable answers. */
+export type MentionPerson = ChatPerson;
 
 /** What chat_search_mentionable returns. */
 export type MentionSearchAnswer = {
@@ -672,8 +682,8 @@ export type DmPreviewEvent = {
     preview: string | null;
     sent_at: string | null;
 
-    /** The sender's current names. */
-    sender: { nick_name: string | null, last_name: string | null } | null;
+    /** The sender, under their current name and photo. */
+    sender: ChatPerson | null;
 
     /** Whether the message is this reader's, true only on the sender's own topic. */
     is_own: boolean;
