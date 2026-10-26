@@ -89,7 +89,46 @@ internal sealed partial class PrayerSkill
             return helper.ErrorResult;
         }
 
-        helper.UpdateNavigationProperty( prayerRequest, pr => pr.RequestedByPersonAlias, personIdKey );
+        /*
+            10/25/2026 - MSE
+
+            The requester's name and email are copied onto a new request from
+            the person named by personIdKey, so that person must be one the
+            current person can view. On agents that are not internal, a request
+            can only be linked to the current person; requests for anyone else
+            must use first and last name. Anonymous callers cannot link a
+            person at all. Re-sending the existing requester of a request being
+            updated does not change the link, so it skips these checks.
+
+            Reason: Prevent filing prayer requests under another person's record.
+        */
+        var existingRequester = prayerRequest.Id != 0 ? prayerRequest.RequestedByPersonAlias?.Person : null;
+        var isExistingRequester = existingRequester != null
+            && ( personIdKey == existingRequester.IdKey || personIdKey.AsGuidOrNull() == existingRequester.Guid );
+
+        if ( personIdKey.IsNotNullOrWhiteSpace() && !isExistingRequester )
+        {
+            const string ownPersonOnlyMessage = "Prayer requests can only be linked to your own person record. Use firstName and lastName for anyone else.";
+
+            if ( AgentRequestContext.CurrentPerson == null )
+            {
+                return Error( ownPersonOnlyMessage );
+            }
+
+            helper.UpdateNavigationProperty( prayerRequest, pr => pr.RequestedByPersonAlias, personIdKey, checkSecurity: true );
+
+            if ( helper.HasErrors )
+            {
+                return helper.ErrorResult;
+            }
+
+            if ( AgentRequestContext.AudienceType != AudienceType.Internal
+                && prayerRequest.RequestedByPersonAlias?.PersonId != AgentRequestContext.CurrentPerson.Id )
+            {
+                return Error( ownPersonOnlyMessage );
+            }
+        }
+
         helper.UpdateNavigationProperty( prayerRequest, pr => pr.Category, categoryIdKey );
         helper.UpdateProperty( prayerRequest, pr => pr.IsPublic, isPublic );
         helper.UpdateProperty( prayerRequest, pr => pr.IsUrgent, isUrgent );
