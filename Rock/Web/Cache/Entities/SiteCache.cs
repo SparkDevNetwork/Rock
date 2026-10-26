@@ -856,6 +856,152 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Determines whether the host name is one of the domains configured on any site.
+        /// Reads the site cache only, so it does not query the database once the cache is warm
+        /// and does not add entries to the domain lookup map.
+        /// </summary>
+        /// <param name="host">The host name to check, without a port.</param>
+        /// <returns><c>true</c> if the host name is allowed by a configured site domain; otherwise, <c>false</c>.</returns>
+        internal static bool IsSiteDomain( string host )
+        {
+            return IsSiteDomain( host, All().Where( s => s.SiteDomainNames != null ).SelectMany( s => s.SiteDomainNames ) );
+        }
+
+        /// <summary>
+        /// Determines whether the host name matches one of the domain names, ignoring case: the domain
+        /// itself, any subdomain of it (www.church.org or es.church.org for church.org), the bare
+        /// name when the www name is listed (church.org for www.church.org), or any other subdomain
+        /// of that bare name when the www name is listed (es.church.org for www.church.org).
+        /// The loopback names localhost, 127.0.0.1 and ::1 always match.
+        /// A leading http:// or https:// and a trailing slash on a stored domain are ignored,
+        /// the same clean-up Site.DefaultDomainUri does.
+        /// </summary>
+        /// <param name="host">The host name to check, without a port.</param>
+        /// <param name="siteDomainNames">The configured site domain names.</param>
+        /// <returns><c>true</c> if the host name is allowed by one of the domain names; otherwise, <c>false</c>.</returns>
+        /// <remarks>Internal so that it can be unit tested.</remarks>
+        internal static bool IsSiteDomain( string host, IEnumerable<string> siteDomainNames )
+        {
+            if ( host.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            host = host.Trim();
+
+            /*
+                10/26/2026 - MSE
+
+                Only a plain host name or IP address can match. A value such as "evil.test/x.church.org"
+                ends with ".church.org" but a URL built from it points at evil.test, so anything with a
+                port, path, query, fragment or other delimiter is rejected before the suffix checks below.
+
+                Reason: Prevent a URL delimiter in the host from passing the domain check.
+            */
+            if ( !ExtensionMethods.IsPlainHostName( host ) )
+            {
+                return false;
+            }
+
+            /*
+                10/26/2026 - MSE
+
+                Loopback host names are always allowed. A link built on the loopback name points back at
+                the machine of the person who opens it, so it cannot carry a sign-in code to someone else.
+                Without this, a development or staging copy restored from production (where localhost is
+                not a site domain) would build every link on the production PublicApplicationRoot host.
+
+                Reason: Keep links on dev boxes local without trusting any other host.
+            */
+            if ( string.Equals( host, "localhost", StringComparison.OrdinalIgnoreCase )
+                || host == "127.0.0.1"
+                || host == "::1"
+                || host == "[::1]" )
+            {
+                return true;
+            }
+
+            if ( siteDomainNames == null )
+            {
+                return false;
+            }
+
+            foreach ( var siteDomainName in siteDomainNames )
+            {
+                var domain = siteDomainName?.Trim();
+                if ( domain.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                if ( domain.StartsWith( "http://", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    domain = domain.Substring( 7 );
+                }
+                else if ( domain.StartsWith( "https://", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    domain = domain.Substring( 8 );
+                }
+
+                domain = domain.TrimEnd( '/' );
+
+                /*
+                    10/26/2026 - MSE
+
+                    An IP address has no subdomains, so a listed IP address matches only itself.
+                    Without this, a forwarded host such as 1.10.0.0.5 would match a listed 10.0.0.5
+                    through the subdomain suffix rule below.
+
+                    Reason: Match listed IP addresses exactly, never as a suffix.
+                */
+                if ( System.Net.IPAddress.TryParse( domain.Trim( '[', ']' ), out var domainAddress ) )
+                {
+                    var isSameAddress = System.Net.IPAddress.TryParse( host.Trim( '[', ']' ), out var hostAddress )
+                        && domainAddress.Equals( hostAddress );
+
+                    if ( isSameAddress )
+                    {
+                        return true;
+                    }
+
+                    continue;
+                }
+
+                if ( string.Equals( domain, host, StringComparison.OrdinalIgnoreCase )
+                    || host.EndsWith( "." + domain, StringComparison.OrdinalIgnoreCase )
+                    || string.Equals( domain, "www." + host, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+
+                /*
+                    10/26/2026 - MSE
+
+                    A listed www name (www.church.org) also allows the other subdomains of its bare name
+                    (es.church.org for a Weglot language host, rock.church.org for an internal or webhook
+                    host). This is the same trust already given to every subdomain when the bare name
+                    itself is listed. The match still requires the dot, so evilchurch.org never matches,
+                    and the bare name must contain a dot so that a listing like www.org cannot allow a
+                    whole top level domain.
+
+                    Reason: Weglot and sibling hosts of a listed www domain keep their own links.
+                */
+                if ( domain.StartsWith( "www.", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    var bareDomain = domain.Substring( 4 );
+                    var isBareDomainValid = bareDomain.Contains( "." ) && !bareDomain.StartsWith( "." );
+
+                    if ( isBareDomainValid && host.EndsWith( "." + bareDomain, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns an iterator over all the active sites in the site cache.
         /// The iterator may be further acted upon and collected to any collections as required by the caller.
         /// </summary>
