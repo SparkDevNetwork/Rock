@@ -1896,10 +1896,20 @@ namespace Rock.Model
                     ( s.StructureType == StreakStructureType.InteractionMedium && s.StructureEntityId.Value == mediumId )
                 ) );
 
+            // Keep every streak type's error so a later success does not hide an earlier failure.
+            var errorMessages = new List<string>();
+
             foreach ( var streakType in matchedStreakTypes )
             {
-                MarkEngagement( streakType, personId, out errorMessage, interaction.InteractionDateTime, null );
+                MarkEngagement( streakType, personId, out var streakTypeErrorMessage, interaction.InteractionDateTime, null );
+
+                if ( !streakTypeErrorMessage.IsNullOrWhiteSpace() )
+                {
+                    errorMessages.Add( $"{streakType.Name}: {streakTypeErrorMessage}" );
+                }
             }
+
+            errorMessage = errorMessages.JoinStrings( "; " );
         }
 
         /// <summary>
