@@ -68,7 +68,7 @@ namespace Rock.Blocks.AI
         #region Constants
 
         private static readonly string DockedChatBotInitScript = @"(function () {
-    const panelContent = sessionStorage.getItem(""Rock.AI.ChatBot.DockedChat"");
+    const panelContent = sessionStorage.getItem(""Rock.AI.ChatBot.DockedChatPanel"");
 
     if (!panelContent) {
         return;

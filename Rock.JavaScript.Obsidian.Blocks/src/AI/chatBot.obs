@@ -235,7 +235,7 @@
             return;
         }
 
-        const storageKey = "Rock.AI.ChatBot.DockedChat";
+        const storageKey = "Rock.AI.ChatBot.DockedChatPanel";
         const data = safeParseJson<SessionState>(sessionStorage.getItem(storageKey));
 
         if (!data) {
@@ -249,7 +249,7 @@
 
     function saveSessionDataInternal(): void {
         nextTick(() => {
-            const storageKey = "Rock.AI.ChatBot.DockedChat";
+            const storageKey = "Rock.AI.ChatBot.DockedChatPanel";
             const dockedPanel = dockedChatContainer.value?.closest(".docked-panel-container");
             // The conversation container is the scroll element, so read its scroll position.
             const scrollContainer = dockedChatContainer.value?.querySelector(".conversation-container");
