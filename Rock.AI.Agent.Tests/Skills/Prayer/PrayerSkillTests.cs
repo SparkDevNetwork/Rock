@@ -297,6 +297,345 @@ public class PrayerSkillTests : MockDatabaseTestsBase
         }
     }
 
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_RequesterWithoutEdit_UpdatesRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetRequester( prayerRequest, person );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited" );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.AreEqual( "TM003-edited", prayerRequest.Text );
+            Assert.IsTrue( prayerRequest.IsApproved ?? false );
+        }
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_CreatorWithoutEdit_UpdatesRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetCreator( prayerRequest, person );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited" );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.AreEqual( "TM003-edited", prayerRequest.Text );
+        }
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_UnrelatedPersonWithoutEdit_ReturnsErrorAndLeavesRequestUnchanged()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var owner = CreatePerson( rockContext, 2 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetRequester( prayerRequest, owner );
+            SetCreator( prayerRequest, owner );
+
+            var skill = CreateSkill( rockContext, person, AudienceType.Public );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited" );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            CollectionAssert.Contains( result.ErrorMessages.ToList(), "You are not authorized to edit this prayer request." );
+            Assert.AreEqual( OriginalText, prayerRequest.Text );
+            Assert.IsTrue( prayerRequest.IsApproved ?? false );
+        }
+    }
+
+    [TestMethod]
+    public void DeletePrayerRequest_RequesterWithoutEdit_DeletesRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetRequester( prayerRequest, person );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.IsFalse( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
+    [TestMethod]
+    public void DeletePrayerRequest_CreatorWithoutEdit_DeletesRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetCreator( prayerRequest, person );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.IsFalse( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
+    [TestMethod]
+    public void DeletePrayerRequest_UnrelatedPersonWithoutEdit_ReturnsErrorAndKeepsRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var owner = CreatePerson( rockContext, 2 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetRequester( prayerRequest, owner );
+            SetCreator( prayerRequest, owner );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            CollectionAssert.Contains( result.ErrorMessages.ToList(), "You are not authorized to delete this prayer request." );
+            Assert.IsTrue( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
+    [TestMethod]
+    public void DeletePrayerRequest_WithoutView_ReturnsErrorAndKeepsRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+
+            // The person has EDIT on the request, so only the VIEW check on
+            // load can stop this.
+            AllowAllUsersEdit( rockContext );
+            DenyAllUsersViewPrayerRequest( rockContext );
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            Assert.IsTrue( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_PublicAgentAllowedEdit_ResetsApproval()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var approver = CreatePerson( rockContext, 2 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetRequester( prayerRequest, person );
+            prayerRequest.ApprovedByPersonAliasId = approver.PrimaryAliasId;
+            prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
+
+            var skill = CreateSkill( rockContext, person, AudienceType.Public );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited" );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.AreEqual( "TM003-edited", prayerRequest.Text );
+            Assert.IsFalse( prayerRequest.IsApproved ?? false );
+            Assert.IsNull( prayerRequest.ApprovedByPersonAliasId );
+            Assert.IsNull( prayerRequest.ApprovedOnDateTime );
+        }
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_InternalAgentAllowedEdit_KeepsApproval()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var approver = CreatePerson( rockContext, 2 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            var approvedOnDateTime = RockDateTime.Now;
+            SetRequester( prayerRequest, person );
+            prayerRequest.ApprovedByPersonAliasId = approver.PrimaryAliasId;
+            prayerRequest.ApprovedOnDateTime = approvedOnDateTime;
+
+            var skill = CreateSkill( rockContext, person );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited" );
+
+            Assert.AreEqual( ToolStatus.Success, result.Status, string.Join( " ", result.ErrorMessages ?? new List<string>() ) );
+            Assert.IsTrue( prayerRequest.IsApproved ?? false );
+            Assert.AreEqual( approver.PrimaryAliasId, prayerRequest.ApprovedByPersonAliasId );
+            Assert.AreEqual( approvedOnDateTime, prayerRequest.ApprovedOnDateTime );
+        }
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_PublicAgentRequesterWithOtherPersonKey_ReturnsErrorAndSavesNothing()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var person = CreatePerson( rockContext, 1 );
+            var approver = CreatePerson( rockContext, 2 );
+            var otherPerson = CreatePerson( rockContext, 3 );
+            var prayerRequest = CreatePrayerRequest( rockContext );
+            SetRequester( prayerRequest, person );
+            prayerRequest.ApprovedByPersonAliasId = approver.PrimaryAliasId;
+            prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
+
+            // Register the entity types the person security check needs now,
+            // so any save made while registering them happens before the call.
+            EntityTypeCache.Get<Person>( true, rockContext );
+            EntityTypeCache.Get<GlobalDefault>( true, rockContext );
+            rockContextMock.Invocations.Clear();
+
+            var skill = CreateSkill( rockContext, person, AudienceType.Public );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited", personIdKey: otherPerson.IdKey );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            CollectionAssert.Contains( result.ErrorMessages.ToList(), OwnPersonOnlyMessage );
+            Assert.AreEqual( OriginalText, prayerRequest.Text );
+
+            // The mock database shares the tracked entity, so the approval
+            // reset made before the error is visible in memory. The stored
+            // request only changes if the context is saved, so check that no
+            // save happened.
+            rockContextMock.Verify( m => m.SaveChanges(), Times.Never() );
+            rockContextMock.Verify( m => m.SaveChanges( It.IsAny<bool>() ), Times.Never() );
+            rockContextMock.Verify( m => m.SaveChanges( It.IsAny<SaveChangesArgs>() ), Times.Never() );
+        }
+    }
+
+    [TestMethod]
+    public void AddOrUpdatePrayerRequest_AnonymousWithAllUsersEdit_ReturnsErrorAndLeavesRequestUnchanged()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var prayerRequest = CreatePrayerRequest( rockContext );
+
+            // The request has no requester or creator, and all users have
+            // EDIT, so only the anonymous check can stop this.
+            AllowAllUsersEdit( rockContext );
+
+            var skill = CreateSkill( rockContext, null, AudienceType.Public );
+
+            var result = skill.AddOrUpdatePrayerRequest( prayerRequestIdKey: prayerRequest.IdKey, requestText: "TM003-edited" );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            CollectionAssert.Contains( result.ErrorMessages.ToList(), "You are not authorized to edit this prayer request." );
+            Assert.AreEqual( OriginalText, prayerRequest.Text );
+            Assert.IsTrue( prayerRequest.IsApproved ?? false );
+        }
+    }
+
+    [TestMethod]
+    public void DeletePrayerRequest_AnonymousWithAllUsersEdit_ReturnsErrorAndKeepsRequest()
+    {
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+        var rockContext = rockContextMock.Object;
+
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+        {
+            var prayerRequest = CreatePrayerRequest( rockContext );
+
+            // The request has no requester or creator, and all users have
+            // EDIT, so only the anonymous check can stop this.
+            AllowAllUsersEdit( rockContext );
+
+            var skill = CreateSkill( rockContext, null, AudienceType.Public );
+
+            var result = skill.DeletePrayerRequest( prayerRequest.IdKey );
+
+            Assert.AreEqual( ToolStatus.Error, result.Status );
+            CollectionAssert.Contains( result.ErrorMessages.ToList(), "You are not authorized to delete this prayer request." );
+            Assert.IsTrue( rockContext.Set<PrayerRequest>().Any( pr => pr.Id == PrayerRequestId ) );
+        }
+    }
+
+    private static void SetRequester( PrayerRequest prayerRequest, Person person )
+    {
+        prayerRequest.RequestedByPersonAlias = person.PrimaryAlias;
+        prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+    }
+
+    private static void SetCreator( PrayerRequest prayerRequest, Person person )
+    {
+        prayerRequest.CreatedByPersonAlias = person.PrimaryAlias;
+        prayerRequest.CreatedByPersonAliasId = person.PrimaryAliasId;
+    }
+
+    private static void DenyAllUsersViewPrayerRequest( RockContext rockContext )
+    {
+        rockContext.Set<Auth>().Add( new Auth
+        {
+            Id = 3,
+            EntityTypeId = EntityTypeCache.Get<PrayerRequest>( true, rockContext ).Id,
+            EntityId = PrayerRequestId,
+            SpecialRole = SpecialRole.AllUsers,
+            Action = Authorization.VIEW,
+            AllowOrDeny = "D"
+        } );
+    }
+
     private static PrayerSkill CreateSkill( RockContext rockContext, Person person, AudienceType audienceType = AudienceType.Internal )
     {
         var skill = new PrayerSkill( NullLogger<PrayerSkill>.Instance );
