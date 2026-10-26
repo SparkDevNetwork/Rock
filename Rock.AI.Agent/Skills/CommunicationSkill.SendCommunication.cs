@@ -16,11 +16,13 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -64,6 +66,11 @@ internal partial class CommunicationSkill
         else if ( communication != null && !IsAuthorizedToEditDraft( communication, currentPerson ) )
         {
             helper.AddError( "You are not authorized to send this communication." );
+        }
+        else if ( communication != null && HasMultipleRecipients( communication, rockContext ) )
+        {
+            helper.AddError( "This communication has more than one recipient and cannot be sent by the agent." );
+            helper.AddInstructions( "Tell the user to send it from the communication wizard, where it can go through approval, or offer to create a new draft for one person." );
         }
         else if ( communication != null && !IsSmsFromNumberAuthorized( communication, currentPerson ) )
         {
@@ -134,6 +141,45 @@ internal partial class CommunicationSkill
             CommunicationId = communicationId
         };
         transactionMsg.Send();
+    }
+
+    /// <summary>
+    /// Determines if the communication would be sent to more than one person.
+    /// </summary>
+    /// <param name="communication">The communication that will be sent.</param>
+    /// <param name="rockContext">The context used to read the recipients.</param>
+    /// <returns><c>true</c> if the communication has a communication list, more than one recipient or a recipient without a person; otherwise <c>false</c>.</returns>
+    private static bool HasMultipleRecipients( Model.Communication communication, RockContext rockContext )
+    {
+        /*
+            10/25/2026 - MSE
+
+            The agent's draft tool always targets one person, so a transient
+            communication that reaches more people (such as one created by a
+            grid's Communicate action) must go through the Communication Entry
+            Wizard, which applies the Maximum Recipients approval rule the
+            agent cannot read. Recipients are counted by distinct person alias
+            because re-drafting adds another row for the same person. A row
+            without a person alias (such as a push device row) cannot be
+            counted by person, so it is refused too. A communication list
+            adds its members at send time, so any communication with a list
+            is refused.
+
+            Reason: Prevent the agent from approving bulk communications.
+        */
+        if ( communication.ListGroupId.HasValue )
+        {
+            return true;
+        }
+
+        var recipientPersonAliasIds = new CommunicationRecipientService( rockContext ).Queryable()
+            .Where( cr => cr.CommunicationId == communication.Id )
+            .Select( cr => cr.PersonAliasId )
+            .Distinct()
+            .ToList();
+
+        return recipientPersonAliasIds.Count > 1
+            || recipientPersonAliasIds.Any( id => !id.HasValue );
     }
 
     /// <summary>
