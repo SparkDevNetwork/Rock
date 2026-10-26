@@ -168,6 +168,17 @@ describe("codes a released client was not built with", () => {
             .toBe("Your chat session has ended. Refresh the page to continue.");
     });
 
+    test("a read revoked from a conversation says conversation; from a channel, or a room of no known kind, channel", () => {
+        expect(messageForError({ code: "rt.read_revoked", severity: "permission", roomKind: "group" }))
+            .toBe("You no longer have access to this conversation.");
+        expect(messageForError({ code: "rt.read_revoked", severity: "permission", roomKind: "person" }))
+            .toBe("You no longer have access to this conversation.");
+        expect(messageForError({ code: "rt.read_revoked", severity: "permission", roomKind: "channel" }))
+            .toBe("You no longer have access to this channel.");
+        expect(messageForError({ code: "rt.read_revoked", severity: "permission" }))
+            .toBe("You no longer have access to this channel.");
+    });
+
     test("a server sentence that is only the code itself, or blank, counts as no sentence", () => {
         // An Edge refusal whose message repeats its code would otherwise show the person "rpc.unavailable".
         expect(classifyPlatformError({ message: "rpc.unavailable", hint: "rpc.unavailable", status: 503 }))

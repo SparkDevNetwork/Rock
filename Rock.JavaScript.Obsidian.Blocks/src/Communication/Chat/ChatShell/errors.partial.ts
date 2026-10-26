@@ -105,7 +105,11 @@ export function classifyPlatformError(error: PlatformErrorLike | unknown): ChatE
  */
 export function messageForError(error: ChatError): string {
     if (error.code === "rt.read_revoked") {
-        return "You no longer have access to this channel.";
+        // A direct message or group conversation is never called a channel; a room of unknown
+        // kind keeps the channel's wording, which is what most rooms are.
+        return error.roomKind === "person" || error.roomKind === "group"
+            ? "You no longer have access to this conversation."
+            : "You no longer have access to this channel.";
     }
 
     if (error.severity === "session") {

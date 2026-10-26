@@ -747,4 +747,7 @@ export type ChatError = {
     code: string;
     severity: ChatErrorSeverity;
     text?: string | null;
+
+    /** The kind of room a lost read was from, so the sentence calls a conversation a conversation. */
+    roomKind?: RoomKind | null;
 };

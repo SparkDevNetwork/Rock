@@ -24,6 +24,7 @@ import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } f
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
+import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -1939,6 +1940,38 @@ describe("the live sidebar", () => {
         await settle();
 
         expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ last_message_id: 11, read_cursor: 11, is_unread: false }));
+    });
+
+    test("a read revoked from the open room is reported with that room's kind, so a conversation is not called a channel", async () => {
+        const h = build();
+        const rows = snapshot();
+        rows.channels[0] = { ...rows.channels[0], room_kind: "group", channel_type: "dm", name: null, title: "Ben, Cara" };
+        h.bootstrap.value = rows;
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+
+        const revoked = h.shell.state.errors.find(e => e.code === "rt.read_revoked");
+        expect(revoked?.roomKind).toBe("group");
+        expect(messageForError(revoked!)).toBe("You no longer have access to this conversation.");
+    });
+
+    test("a read revoked from an open channel keeps the channel's sentence", async () => {
+        const h = await startedLive();
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+
+        const revoked = h.shell.state.errors.find(e => e.code === "rt.read_revoked");
+        expect(revoked?.roomKind).toBe("channel");
+        expect(messageForError(revoked!)).toBe("You no longer have access to this channel.");
     });
 
     afterEach(() => {

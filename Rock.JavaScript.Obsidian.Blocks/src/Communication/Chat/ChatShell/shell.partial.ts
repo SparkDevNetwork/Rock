@@ -1173,10 +1173,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // The hub has already left a channel whose read was revoked; the person is told,
                     // and the list is loaded again without it.
                     if (error?.code === "rt.read_revoked") {
+                        // Only the shell knows which room was open, so it names the room's kind
+                        // before closing it.
+                        const roomKind = channels.rows.find(row => row.channel_id === state.activeChannelId)?.room_kind ?? null;
+
                         // Nothing is open any more, so choosing the channel again, once the
                         // person may read it, opens it afresh.
                         closeActive();
-                        report(error);
+                        report({ ...error, roomKind });
                         void loadSidebar();
                         return;
                     }
