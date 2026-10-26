@@ -50,10 +50,12 @@ internal sealed partial class PrayerSkill
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
         PrayerRequest prayerRequest;
+        var isUpdate = false;
 
         if ( prayerRequestIdKey.IsNotNullOrWhiteSpace() )
         {
             prayerRequest = helper.GetRequiredEntity<PrayerRequest>( prayerRequestIdKey );
+            isUpdate = prayerRequest != null;
 
             /*
                 10/26/2026 - MSE
@@ -220,13 +222,15 @@ internal sealed partial class PrayerSkill
                 Id = prayerRequest.Id,
             } );
 
+        var action = isUpdate ? "updated" : "added";
+
         if ( prayerRequest.IsApproved == true )
         {
-            toolResult.WithInstructions( "The prayer request has been added and approved." );
+            toolResult.WithInstructions( $"The prayer request has been {action} and approved." );
         }
         else
         {
-            toolResult.WithInstructions( "The prayer request has been added and is pending approval." );
+            toolResult.WithInstructions( $"The prayer request has been {action} and is pending approval." );
         }
 
         return toolResult;

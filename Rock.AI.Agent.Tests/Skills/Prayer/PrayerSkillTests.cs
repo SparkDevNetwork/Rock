@@ -164,6 +164,7 @@ public class PrayerSkillTests : MockDatabaseTestsBase
             Assert.AreEqual( person.Email, newRequest.Email );
             Assert.AreEqual( person.Id, newRequest.RequestedByPersonAlias.PersonId );
             Assert.IsFalse( newRequest.IsApproved ?? false );
+            CollectionAssert.Contains( result.Instructions, "The prayer request has been added and is pending approval." );
         }
     }
 
@@ -488,6 +489,7 @@ public class PrayerSkillTests : MockDatabaseTestsBase
             Assert.IsFalse( prayerRequest.IsApproved ?? false );
             Assert.IsNull( prayerRequest.ApprovedByPersonAliasId );
             Assert.IsNull( prayerRequest.ApprovedOnDateTime );
+            CollectionAssert.Contains( result.Instructions, "The prayer request has been updated and is pending approval." );
         }
     }
 
@@ -516,6 +518,7 @@ public class PrayerSkillTests : MockDatabaseTestsBase
             Assert.IsTrue( prayerRequest.IsApproved ?? false );
             Assert.AreEqual( approver.PrimaryAliasId, prayerRequest.ApprovedByPersonAliasId );
             Assert.AreEqual( approvedOnDateTime, prayerRequest.ApprovedOnDateTime );
+            CollectionAssert.Contains( result.Instructions, "The prayer request has been updated and approved." );
         }
     }
 
