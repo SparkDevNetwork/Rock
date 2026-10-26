@@ -468,6 +468,15 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
+        public void ToPublicUrl_NoPublicAddressSet_GivesNoPhoto()
+        {
+            // A relative address is of no use to the app, which then draws the person's initials.
+            Assert.IsNull( ChatSessionHelper.ToPublicUrl( null, "/GetImage.ashx?id=42" ) );
+            Assert.IsNull( ChatSessionHelper.ToPublicUrl( " ", "/GetImage.ashx?id=42" ) );
+            Assert.AreEqual( "https://cdn.example/p.jpg", ChatSessionHelper.ToPublicUrl( null, "https://cdn.example/p.jpg" ) );
+        }
+
+        [TestMethod]
         public void OpenMobileSession_NoPhoto_CarriesNone()
         {
             var person = Adult();

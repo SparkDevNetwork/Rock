@@ -547,12 +547,18 @@ namespace Rock.Communication.Chat.Platform.Session
         /// </summary>
         /// <param name="publicApplicationRoot">The church's public address.</param>
         /// <param name="url">The address, relative or already whole, or null.</param>
-        /// <returns>The whole address, or null when there was none.</returns>
+        /// <returns>The whole address, or null when there was none or no public address is set.</returns>
         internal static string ToPublicUrl( string publicApplicationRoot, string url )
         {
             if ( url.IsNullOrWhiteSpace() || Uri.IsWellFormedUriString( url, UriKind.Absolute ) )
             {
                 return url;
+            }
+
+            // A relative address is of no use to the app, which draws the person's initials instead.
+            if ( publicApplicationRoot.IsNullOrWhiteSpace() )
+            {
+                return null;
             }
 
             return publicApplicationRoot.EnsureTrailingForwardslash() + url.RemoveLeadingForwardslash();
@@ -562,7 +568,8 @@ namespace Rock.Communication.Chat.Platform.Session
         /// Decides whether a request may reach the mobile app's chat routes. The person's session
         /// cookie is the credential there and a browser sends it on its own, so only the shape the
         /// native app sends passes: a JSON POST with no Origin, from a mobile application, signed
-        /// in by the cookie rather than an API key, OAuth client or web token.
+        /// in by the cookie rather than an API key, OAuth client or web token, and not by an
+        /// impersonation link.
         /// </summary>
         /// <param name="method">The request's HTTP method.</param>
         /// <param name="origin">The request's Origin header, or null when it carried none.</param>
@@ -605,12 +612,50 @@ namespace Rock.Communication.Chat.Platform.Session
 
             // Only the session cookie signs in as a forms identity; a REST user or an integration
             // key must never mint a chat token.
-            if ( !( identity is FormsIdentity ) )
+            if ( !( identity is FormsIdentity formsIdentity ) )
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            if ( IsImpersonation( identity.Name ) || Rock.Security.Authorization.GetUserData( formsIdentity.Ticket )?.IsImpersonated == true )
             {
                 return HttpStatusCode.Forbidden;
             }
 
             return HttpStatusCode.OK;
+        }
+
+        /// <summary>
+        /// Decides whether a sign-in may use chat at all. An impersonation link gets none: it
+        /// signs in under the person's token, and whoever opened it is not the person. A login
+        /// that is locked out or not confirmed gets none either, as Rock's mobile launch treats
+        /// it as signed out.
+        /// </summary>
+        /// <param name="signInName">The name the request is signed in under.</param>
+        /// <param name="userLogin">The login that name resolved to, or null.</param>
+        /// <returns><c>true</c> when chat may open for the login's person.</returns>
+        internal static bool MayUseChat( string signInName, UserLogin userLogin )
+        {
+            if ( IsImpersonation( signInName ) )
+            {
+                return false;
+            }
+
+            // The web makes up a login with no id for an impersonation, so only a stored login counts.
+            return userLogin != null
+                && userLogin.Id > 0
+                && userLogin.IsConfirmed == true
+                && userLogin.IsLockedOut != true;
+        }
+
+        /// <summary>
+        /// Whether a sign-in name is an impersonation link's, which names a person token.
+        /// </summary>
+        /// <param name="signInName">The name the request is signed in under.</param>
+        /// <returns><c>true</c> for an impersonation.</returns>
+        private static bool IsImpersonation( string signInName )
+        {
+            return signInName?.StartsWith( "rckipid=", StringComparison.OrdinalIgnoreCase ) == true;
         }
 
         /// <summary>

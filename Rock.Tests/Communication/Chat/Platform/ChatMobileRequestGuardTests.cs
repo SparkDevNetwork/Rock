@@ -113,6 +113,18 @@ namespace Rock.Tests.Communication.Chat.Platform
         }
 
         [TestMethod]
+        public void AnImpersonationCookie_IsRefused()
+        {
+            // An impersonation link signs in under the person's token, not their login, and
+            // whoever opened the link is not the person, so it gets no chat.
+            var byName = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( "rckipid=abc123", false, 30 ) ), null );
+            var byTicket = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( 1, "ted.decker", System.DateTime.Now, System.DateTime.Now.AddMinutes( 30 ), false, "true" ) ), null );
+
+            Assert.AreEqual( HttpStatusCode.Forbidden, CheckAs( byName ) );
+            Assert.AreEqual( HttpStatusCode.Forbidden, CheckAs( byTicket ) );
+        }
+
+        [TestMethod]
         public void NobodySignedIn_IsToldToSignIn()
         {
             Assert.AreEqual( HttpStatusCode.Unauthorized, CheckAs( null ) );
@@ -128,7 +140,108 @@ namespace Rock.Tests.Communication.Chat.Platform
 
         #endregion
 
+        #region Which logins may use chat
+
+        [TestMethod]
+        public void MayUseChat_AConfirmedLoginThatIsNotLockedOut_May()
+        {
+            Assert.IsTrue( ChatSessionHelper.MayUseChat( "ted.decker", Login() ) );
+        }
+
+        [TestMethod]
+        public void MayUseChat_ALockedOutOrUnconfirmedLogin_MayNot()
+        {
+            // Rock's mobile launch treats these as signed out, so chat does too.
+            var lockedOut = Login();
+            lockedOut.IsLockedOut = true;
+            var unconfirmed = Login();
+            unconfirmed.IsConfirmed = false;
+            var neverConfirmed = Login();
+            neverConfirmed.IsConfirmed = null;
+
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", lockedOut ), "locked out" );
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", unconfirmed ), "unconfirmed" );
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", neverConfirmed ), "never confirmed" );
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", null ), "no login" );
+        }
+
+        [TestMethod]
+        public void MayUseChat_AnImpersonation_MayNot()
+        {
+            // On the web an impersonation's login is made up for the request: the person's name,
+            // no id. On mobile the sign-in names the token.
+            var madeUp = new Rock.Model.UserLogin { UserName = "Ted Decker", PersonId = 1, IsConfirmed = true };
+
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "rckipid=abc123", madeUp ), "the web's impersonated login" );
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "ted.decker", madeUp ), "a login Rock never stored" );
+            Assert.IsFalse( ChatSessionHelper.MayUseChat( "rckipid=abc123", Login() ), "a token sign-in" );
+        }
+
+        #endregion
+
+        #region Wiring
+
+        [TestMethod]
+        public void BothMobileRoutes_RunTheGuardBeforeAnythingElse()
+        {
+            // Each route is called as a browser would call it. Were the guard skipped, the route
+            // would go on to read the database, which a unit test has none of.
+            var controller = new Rock.Rest.v2.ChatController();
+
+            foreach ( var route in new System.Func<System.Web.Http.IHttpActionResult>[] { controller.MobileSession, controller.MobileToken } )
+            {
+                controller.Request = BrowserRequest( System.Net.Http.HttpMethod.Post );
+                Assert.AreEqual( HttpStatusCode.Forbidden, ( ( System.Web.Http.Results.StatusCodeResult ) route() ).StatusCode, route.Method.Name );
+
+                controller.Request = BrowserRequest( System.Net.Http.HttpMethod.Get );
+                Assert.AreEqual( HttpStatusCode.MethodNotAllowed, ( ( System.Web.Http.Results.StatusCodeResult ) route() ).StatusCode, route.Method.Name );
+            }
+        }
+
+        [TestMethod]
+        public void TheWebChatBlock_AsksWhoMayUseChat_InEveryAction()
+        {
+            // The unit tests cannot load the blocks project, so its source is read: the block finds
+            // the person in one place, and that place asks the same question the mobile routes do.
+            var source = System.IO.File.ReadAllText( System.IO.Path.Combine( RepositoryRoot(), "Rock.Blocks", "Communication", "Chat", "ChatShell.cs" ) );
+
+            Assert.AreEqual( 1, System.Text.RegularExpressions.Regex.Matches( source, @"GetCurrentPerson\(\)" ).Count, "the block reads the person somewhere other than its chat person" );
+            Assert.IsTrue( source.Contains( "ChatSessionHelper.MayUseChat(" ), "the block's chat person does not ask who may use chat" );
+            var actions = System.Text.RegularExpressions.Regex.Matches( source, @"\[BlockAction\]" ).Count + 1;
+            Assert.AreEqual( actions, System.Text.RegularExpressions.Regex.Matches( source, @"(?<!Person )GetChatPerson\(\)" ).Count, "every action and the page load find the person as chat's" );
+        }
+
+        #endregion
+
         #region Support
+
+        private static Rock.Model.UserLogin Login()
+        {
+            return new Rock.Model.UserLogin { Id = 7, UserName = "ted.decker", PersonId = 1, IsConfirmed = true, IsLockedOut = false };
+        }
+
+        private static System.Net.Http.HttpRequestMessage BrowserRequest( System.Net.Http.HttpMethod method )
+        {
+            var request = new System.Net.Http.HttpRequestMessage( method, "https://church.example/api/v2/chat/mobile/session" )
+            {
+                Content = new System.Net.Http.StringContent( "{}", System.Text.Encoding.UTF8, "application/json" )
+            };
+            request.Headers.Add( "Origin", "https://evil.example" );
+
+            return request;
+        }
+
+        private static string RepositoryRoot()
+        {
+            var directory = new System.IO.DirectoryInfo( System.AppDomain.CurrentDomain.BaseDirectory );
+            while ( directory != null && !System.IO.Directory.Exists( System.IO.Path.Combine( directory.FullName, "Rock.Blocks" ) ) )
+            {
+                directory = directory.Parent;
+            }
+
+            Assert.IsNotNull( directory, "the test runs outside the repository" );
+            return directory.FullName;
+        }
 
         private static IPrincipal CookiePrincipal()
         {

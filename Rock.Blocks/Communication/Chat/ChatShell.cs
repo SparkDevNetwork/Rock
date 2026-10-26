@@ -99,7 +99,7 @@ namespace Rock.Blocks.Communication.Chat
             // stylesheet rather than a component, so it loads with the page and not with the script.
             RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Communication/Chat/chat.css" ), true );
 
-            var session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext );
+            var session = ChatSessionHelper.OpenSession( GetChatPerson(), RockContext );
             var box = ChatSessionHelper.BuildInitializationBox(
                 session,
                 GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME ),
@@ -115,6 +115,20 @@ namespace Rock.Blocks.Communication.Chat
 
         #endregion RockBlockType Implementation
 
+        #region Methods
+
+        /// <summary>
+        /// Finds the person chat opens for: nobody for an impersonation link, or for a login that
+        /// is locked out or not confirmed, so the gates answer that the person must sign in.
+        /// </summary>
+        /// <returns>The person signed in, or null.</returns>
+        private Rock.Model.Person GetChatPerson()
+        {
+            return ChatSessionHelper.MayUseChat( Rock.Model.UserLogin.GetCurrentUserName(), RequestContext.CurrentUser ) ? GetCurrentPerson() : null;
+        }
+
+        #endregion Methods
+
         #region Block Actions
 
         /// <summary>
@@ -125,7 +139,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult MintChurchToken()
         {
-            return ActionOk( ChatSessionHelper.MintToken( GetCurrentPerson(), RockContext ) );
+            return ActionOk( ChatSessionHelper.MintToken( GetChatPerson(), RockContext ) );
         }
 
         /// <summary>
@@ -139,7 +153,7 @@ namespace Rock.Blocks.Communication.Chat
         {
             var date = birthDate ?? new DatePartsPickerValueBag();
 
-            return ActionOk( ChatSessionHelper.SaveBirthdate( GetCurrentPerson(), date.Year, date.Month, date.Day, RockContext ) );
+            return ActionOk( ChatSessionHelper.SaveBirthdate( GetChatPerson(), date.Year, date.Month, date.Day, RockContext ) );
         }
 
         /// <summary>
@@ -152,7 +166,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> StartDirectMessage( List<Guid> personAliasGuids )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.StartDirectMessageAsync( person, personAliasGuids, context, RockContext ) );
@@ -168,7 +182,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> SavePersonSetting( string setting, bool value )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.SavePersonSettingAsync( person, setting, value, context, RockContext ) );
@@ -183,7 +197,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> JoinChannel( Guid channelGuid )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.JoinChannelAsync( person, channelGuid, context, RockContext ) );
@@ -197,7 +211,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> LeaveChannel( Guid channelGuid )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.LeaveChannelAsync( person, channelGuid, context, RockContext ) );
@@ -212,7 +226,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> AddMembers( Guid channelGuid, List<Guid> personAliasGuids )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.AddMembersAsync( person, channelGuid, personAliasGuids, context, RockContext ) );
@@ -229,7 +243,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> RemoveMember( Guid channelGuid, Guid personAliasGuid, Guid? replacementPersonAliasGuid = null )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.RemoveMemberAsync( person, channelGuid, personAliasGuid, replacementPersonAliasGuid, context, RockContext ) );
@@ -244,7 +258,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult GetMemberRights( Guid channelGuid )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( ChatDoorHelper.GetMemberRights( person, channelGuid, context, RockContext ) );
@@ -260,7 +274,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public async Task<BlockActionResult> RenameConversation( Guid channelGuid, string name )
         {
-            var person = GetCurrentPerson();
+            var person = GetChatPerson();
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.RenameConversationAsync( person, channelGuid, name, context, RockContext ) );

@@ -64,7 +64,7 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                return Ok( ChatSessionHelper.OpenMobileSession( GetPerson( rockContext ), rockContext ) );
+                return Ok( ChatSessionHelper.OpenMobileSession( GetChatPerson( rockContext ), rockContext ) );
             }
         }
 
@@ -91,8 +91,22 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                return Ok( ChatSessionHelper.MintToken( GetPerson( rockContext ), rockContext ) );
+                return Ok( ChatSessionHelper.MintToken( GetChatPerson( rockContext ), rockContext ) );
             }
+        }
+
+        /// <summary>
+        /// Finds the person chat opens for: nobody when the login is locked out or not confirmed,
+        /// so the gates answer that the person must sign in.
+        /// </summary>
+        /// <param name="rockContext">The context the login is read in.</param>
+        /// <returns>The login's person, or null.</returns>
+        private Model.Person GetChatPerson( Data.RockContext rockContext )
+        {
+            var signInName = RequestContext.Principal?.Identity?.Name;
+            var userLogin = signInName.IsNullOrWhiteSpace() ? null : new Model.UserLoginService( rockContext ).GetByUserName( signInName );
+
+            return ChatSessionHelper.MayUseChat( signInName, userLogin ) ? userLogin.Person : null;
         }
 
         /// <summary>
