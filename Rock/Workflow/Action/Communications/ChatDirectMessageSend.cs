@@ -114,8 +114,7 @@ namespace Rock.Workflow.Action.Communications
                 return false;
             }
 
-            var messageText = GetAttributeValueFromWorkflowTextOrAttribute( action, AttributeKey.Message )
-                .ResolveMergeFields( mergeFields );
+            var messageText = GetTextOrAttributeValue( action, AttributeKey.Message, mergeFields );
 
             if ( messageText.IsNullOrWhiteSpace() )
             {
