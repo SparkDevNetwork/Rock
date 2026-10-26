@@ -117,6 +117,7 @@ public partial class CommunicationSkillTests
         CollectionAssert.Contains( result.GetErrorMessages().ToList(), FromNumberNotAuthorizedMessage );
         Assert.AreEqual( CommunicationStatus.Transient, draft.Status );
         Assert.IsNull( draft.ReviewerPersonAliasId );
+        Assert.IsFalse( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any() );
     }
 
     [TestMethod]
@@ -141,6 +142,7 @@ public partial class CommunicationSkillTests
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
         CollectionAssert.Contains( result.GetErrorMessages().ToList(), FromNumberNotAuthorizedMessage );
         Assert.AreEqual( CommunicationStatus.Transient, draft.Status );
+        Assert.IsFalse( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any() );
     }
 
     [TestMethod]
@@ -163,6 +165,7 @@ public partial class CommunicationSkillTests
         SendCommunicationAndAssertSuccess( skill, IdHasher.Instance.GetHash( draft.Id ) );
 
         Assert.AreEqual( CommunicationStatus.Approved, draft.Status );
+        Assert.IsTrue( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any( m => m.CommunicationId == draft.Id ) );
     }
 
     [TestMethod]
@@ -184,6 +187,7 @@ public partial class CommunicationSkillTests
         SendCommunicationAndAssertSuccess( skill, IdHasher.Instance.GetHash( draft.Id ) );
 
         Assert.AreEqual( CommunicationStatus.Approved, draft.Status );
+        Assert.IsTrue( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any( m => m.CommunicationId == draft.Id ) );
     }
 
     [TestMethod]
@@ -208,6 +212,7 @@ public partial class CommunicationSkillTests
         CollectionAssert.Contains( result.GetErrorMessages().ToList(), MultipleRecipientsMessage );
         Assert.AreEqual( CommunicationStatus.Transient, draft.Status );
         Assert.IsNull( draft.ReviewerPersonAliasId );
+        Assert.IsFalse( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any() );
     }
 
     [TestMethod]
@@ -230,6 +235,7 @@ public partial class CommunicationSkillTests
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
         CollectionAssert.Contains( result.GetErrorMessages().ToList(), MultipleRecipientsMessage );
         Assert.AreEqual( CommunicationStatus.Transient, draft.Status );
+        Assert.IsFalse( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any() );
     }
 
     [TestMethod]
@@ -259,6 +265,7 @@ public partial class CommunicationSkillTests
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
         CollectionAssert.Contains( result.GetErrorMessages().ToList(), MultipleRecipientsMessage );
         Assert.AreEqual( CommunicationStatus.Transient, draft.Status );
+        Assert.IsFalse( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any() );
     }
 
     [TestMethod]
@@ -280,6 +287,7 @@ public partial class CommunicationSkillTests
         SendCommunicationAndAssertSuccess( skill, IdHasher.Instance.GetHash( draft.Id ) );
 
         Assert.AreEqual( CommunicationStatus.Approved, draft.Status );
+        Assert.IsTrue( scope.PublishedBusMessages.OfType<ProcessSendCommunication.Message>().Any( m => m.CommunicationId == draft.Id ) );
     }
 
     #endregion

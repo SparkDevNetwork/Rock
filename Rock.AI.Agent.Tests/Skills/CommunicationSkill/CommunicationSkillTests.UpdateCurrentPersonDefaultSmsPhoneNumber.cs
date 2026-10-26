@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -63,23 +62,10 @@ public partial class CommunicationSkillTests
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext, person ) );
 
-        // Saving the preference creates its own RockContext, which the mock
-        // cannot provide. Reaching the save shows the number was accepted; a
-        // refused number returns an error result instead.
-        var reachedSave = false;
+        var result = skill.UpdateCurrentPersonDefaultSmsPhoneNumber( IdHasher.Instance.GetHash( AllowedNumberId ) );
 
-        try
-        {
-            var result = skill.UpdateCurrentPersonDefaultSmsPhoneNumber( IdHasher.Instance.GetHash( AllowedNumberId ) );
-
-            Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
-        }
-        catch ( InvalidOperationException )
-        {
-            reachedSave = true;
-        }
-
-        Assert.IsTrue( reachedSave );
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new List<string>() ) );
+        Assert.IsTrue( rockContext.Set<PersonPreference>().Any( p => p.Value == AllowedNumberId.ToString() ) );
     }
 
     #endregion
