@@ -542,6 +542,21 @@ describe("the thread page", () => {
         expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42]);
     });
 
+    test("names a live reply by the name and photo it carries, before thread.updated lands", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)])];
+        await threads.openThread(channel, 40);
+
+        threads.applyEvent(channel, "message.created", {
+            id: 42, channel_id: channel, parent_id: 40, shown_in_channel: false, person_alias_guid: ben,
+            message_type: "text", body: "first time here", created_at: "2026-10-13T10:05:00Z",
+            sender_nick_name: "Ben", sender_last_name: "Okafor", sender_avatar_url: "/ben.png", sender_listed: true
+        });
+
+        const named = threads.state.thread?.replies.find(r => r.id === 42);
+        expect([named?.sender_nick_name, named?.sender_last_name, named?.sender_avatar_url]).toEqual(["Ben", "Okafor", "/ben.png"]);
+    });
+
     // The platform sends a reply's message.created before the thread.updated its recount sends,
     // so a first-time replier is usually named when thread.updated lands.
     test("names a first-time replier's live reply once thread.updated lists them", async () => {

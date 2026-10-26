@@ -295,6 +295,23 @@ describe("createTimelines", () => {
         expect(third.sender_nick_name).toBeUndefined();
     });
 
+    test("a live message that names its sender draws that name and photo, a newcomer's included", async () => {
+        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        await timelines.loadNewest(channel);
+
+        timelines.applyEvent(channel, "message.created", {
+            id: 3, channel_id: channel, parent_id: null, shown_in_channel: false,
+            person_alias_guid: "a0000009-0000-4000-8000-000000000000", message_type: "text", body: "new here", created_at: "2026-09-23T10:02:00Z",
+            sender_nick_name: "Nan", sender_last_name: "Newcomer", sender_avatar_url: "/nan.png", sender_listed: true
+        });
+
+        const [, live] = timelines.state(channel).messages;
+        expect(live.sender_nick_name).toBe("Nan");
+        expect(live.sender_last_name).toBe("Newcomer");
+        expect(live.sender_avatar_url).toBe("/nan.png");
+        expect(live.sender_listed).toBe(true);
+    });
+
     test("a thread-only reply on the channel topic is not a timeline message", async () => {
         const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
