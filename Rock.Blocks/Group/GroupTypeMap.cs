@@ -42,10 +42,10 @@ namespace Rock.Blocks.Group
 
     #region Block Attributes
 
-    [GroupTypeField(
+    [GroupTypesField(
         "Group Type",
-        Description = "The type of group to map.",
-        IsRequired = false,
+        Description = "The group types this block may map. Required. With one type selected, the map always shows that type. With more than one selected, the GroupTypeId page parameter picks the type to show and must be one of the selected types. No security is checked on the groups shown: their names, locations and members are shown to anyone who can view this page.",
+        IsRequired = true,
         Order = 0,
         Key = AttributeKey.GroupType )]
 
@@ -271,21 +271,21 @@ namespace Rock.Blocks.Group
                 UnmappedGroups = new List<GroupTypeMapUnmappedGroupBag>()
             };
 
-            // The group type comes from the block setting (a Guid) or, when that is blank, from
-            // the GroupTypeId query string parameter (a legacy integer Id).
+            // The group type comes from the types selected in the block setting. When more than
+            // one is selected, the GroupTypeId query string parameter picks which one to show.
             var settingGroupTypeValue = GetAttributeValue( AttributeKey.GroupType );
             var queryStringGroupTypeValue = PageParameter( PageParameterKey.GroupTypeId );
 
-            if ( settingGroupTypeValue.IsNullOrWhiteSpace() && queryStringGroupTypeValue.IsNullOrWhiteSpace() )
+            if ( settingGroupTypeValue.IsNullOrWhiteSpace() )
             {
-                bag.ErrorMessage = "<strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.";
+                bag.ErrorMessage = "<strong>Group Mapper</strong> Please select one or more group types in the block settings.";
                 return bag;
             }
 
             var groupType = ResolveGroupType( settingGroupTypeValue, queryStringGroupTypeValue );
             if ( groupType == null )
             {
-                bag.ErrorMessage = "<strong>Group Mapper</strong> Please configure a group type to display and a location type to use.";
+                bag.ErrorMessage = "<strong>Group Mapper</strong> Pass a GroupTypeId page parameter for one of the group types selected in the block settings.";
                 return bag;
             }
 
@@ -352,24 +352,29 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Resolves the group type to map from the block setting (Guid) or the GroupTypeId query
-        /// string parameter (legacy integer Id). The block setting takes precedence.
+        /// Resolves the group type to map from the group types selected in the block setting.
+        /// With one type selected it is always used and the GroupTypeId query string parameter is
+        /// ignored. With more than one selected, the parameter must name one of the selected types;
+        /// any other value resolves nothing, so the block never maps a type the block was not
+        /// configured to show.
         /// </summary>
-        /// <param name="settingGroupTypeValue">The raw Group Type block setting value (a Guid).</param>
-        /// <param name="queryStringGroupTypeValue">The raw GroupTypeId query string value (an Id).</param>
-        /// <returns>The resolved group type, or <c>null</c> when neither value resolves one.</returns>
+        /// <param name="settingGroupTypeValue">The raw Group Type block setting value (comma-separated Guids).</param>
+        /// <param name="queryStringGroupTypeValue">The raw GroupTypeId query string value (an Id, IdKey or Guid).</param>
+        /// <returns>The resolved group type, or <c>null</c> when no selected type is picked.</returns>
         private GroupTypeCache ResolveGroupType( string settingGroupTypeValue, string queryStringGroupTypeValue )
         {
-            var settingGroupTypeGuid = settingGroupTypeValue.AsGuidOrNull();
-            if ( settingGroupTypeGuid.HasValue )
+            var allowedGroupTypeGuids = settingGroupTypeValue.SplitDelimitedValues().AsGuidList();
+
+            if ( allowedGroupTypeGuids.Count == 1 )
             {
-                return GroupTypeCache.Get( settingGroupTypeGuid.Value );
+                return GroupTypeCache.Get( allowedGroupTypeGuids[0] );
             }
 
-            var queryStringGroupTypeId = queryStringGroupTypeValue.AsIntegerOrNull();
-            if ( queryStringGroupTypeId.HasValue )
+            var queryStringGroupType = GroupTypeCache.Get( queryStringGroupTypeValue, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( allowedGroupTypeGuids.Count > 1 && queryStringGroupType != null && allowedGroupTypeGuids.Contains( queryStringGroupType.Guid ) )
             {
-                return GroupTypeCache.Get( queryStringGroupTypeId.Value );
+                return queryStringGroupType;
             }
 
             return null;
