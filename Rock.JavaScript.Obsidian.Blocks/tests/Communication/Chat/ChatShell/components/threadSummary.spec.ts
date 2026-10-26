@@ -29,7 +29,7 @@
 //   marks: root data-testid="thread-summary", class is-unread while unread; data-testid
 //          thread-count, thread-faces (the faces drawn with the shared avatar), thread-unread-dot.
 //          The pill's tooltip, role="tooltip" inside it once the pointer has rested, reads
-//          "Last reply 9:41 AM".
+//          "Last reply 9:41 AM" today, else the day as the feed's divider names it.
 //
 // The message row draws the summary under any root with a live reply, a tombstone included, in
 // its reactions row (.chat-reacts), and re-emits its open as openThread(rootId). In a channel
@@ -160,6 +160,21 @@ describe("the pill, in a direct message", () => {
         expect(pill.attributes("data-testid")).toBe("thread-summary");
         expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM. Open thread");
         expect(await tooltipOf(pill)).toBe("Last reply 9:41 AM");
+    });
+
+    test("a last reply from an earlier day names the day as the feed's divider does, not a time", async () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(9, 41, 0, 0);
+        const yesterdays = draw(root({ last_reply_at: yesterday.toISOString() }));
+
+        expect(plain(yesterdays.attributes("aria-label"))).toBe("3 replies, last reply yesterday. Open thread");
+        expect(await tooltipOf(yesterdays)).toBe("Last reply yesterday");
+
+        const older = draw(root({ last_reply_at: new Date(2020, 2, 5, 9, 41).toISOString() }));
+
+        expect(plain(older.attributes("aria-label"))).toBe("3 replies, last reply March 5, 2020. Open thread");
+        expect(await tooltipOf(older)).toBe("Last reply March 5, 2020");
     });
 
     test("unread: marked, dotted and said so in its label", () => {
