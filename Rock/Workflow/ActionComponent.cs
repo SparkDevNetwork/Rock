@@ -209,6 +209,44 @@ namespace Rock.Workflow
             return GetAttributeValue( action, key, checkWorkflowAttributeValue:true );
         }
 
+        /*
+            10/26/2026 - MSE
+
+            A text or attribute setting can either hold text the administrator typed or
+            select a workflow attribute. The selected attribute's value often comes from
+            untrusted input (entry forms, page parameters, webhooks, SMS), so it must be
+            used as data. Only text typed into the setting is rendered as Lava. Actions
+            should use GetTextOrAttributeValue instead of chaining GetAttributeValue( ...,
+            true ) with ResolveMergeFields.
+
+            Reason: Attribute values selected by an action setting must not run as Lava.
+        */
+        /// <summary>
+        /// Determines whether a text or attribute setting selects an attribute. When it does,
+        /// GetAttributeValue( action, key, true ) returns that attribute's value instead of
+        /// text the administrator typed into the setting.
+        /// </summary>
+        internal static bool IsAttributeSourcedSetting( WorkflowAction action, string key )
+        {
+            var attributeGuid = GetActionAttributeValue( action, key ).AsGuidOrNull();
+            return attributeGuid.HasValue && AttributeCache.Get( attributeGuid.Value ) != null;
+        }
+
+        /// <summary>
+        /// Gets the value of a text or attribute setting. Text typed into the setting is
+        /// rendered as Lava once. A value read from the selected attribute is data and is
+        /// returned without rendering.
+        /// </summary>
+        internal string GetTextOrAttributeValue( WorkflowAction action, string key, Dictionary<string, object> mergeFields )
+        {
+            if ( IsAttributeSourcedSetting( action, key ) )
+            {
+                return GetAttributeValue( action, key, checkWorkflowAttributeValue: true ) ?? string.Empty;
+            }
+
+            return GetActionAttributeValue( action, key ).ResolveMergeFields( mergeFields );
+        }
+
         /// <summary>
         /// Splits the delimited email addresses and returns only the valid ones.
         /// Any skipped address is noted in the workflow log.
