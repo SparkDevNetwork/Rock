@@ -81,23 +81,6 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            // Get the note
-            string noteValue = GetAttributeValue( action, "Note", true );
-            string note = string.Empty;
-            Guid? noteGuid = noteValue.AsGuidOrNull();
-            if ( noteGuid.HasValue )
-            {
-                var attribute = AttributeCache.Get( noteGuid.Value, rockContext );
-                if ( attribute != null )
-                {
-                    note  = action.GetWorkflowAttributeValue( noteGuid.Value );
-                }
-            }
-            else
-            {
-                note = noteValue;
-            }
-
             // Get the connector
             int? personAliasId = null;
             Guid? personAttributeGuid = GetAttributeValue( action, "PersonAttribute" ).AsGuidOrNull();
@@ -114,13 +97,19 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // A Guid that matches no attribute points at a deleted attribute and is not note text.
+            var noteSetting = GetActionAttributeValue( action, "Note" );
+            var note = noteSetting.AsGuidOrNull().HasValue && !IsAttributeSourcedSetting( action, "Note" )
+                ? string.Empty
+                : GetTextOrAttributeValue( action, "Note", mergeFields );
+
             // Add the activity
             var activity = new ConnectionRequestActivity();
             activity.ConnectionRequestId = request.Id;
             activity.ConnectionActivityTypeId = activityType.Id;
             activity.ConnectionOpportunityId = request.ConnectionOpportunityId;
             activity.ConnectorPersonAliasId = personAliasId;
-            activity.Note = note.ResolveMergeFields( mergeFields );
+            activity.Note = note;
             var connectionRequestActivityService  =  new ConnectionRequestActivityService( rockContext );
             connectionRequestActivityService.Add( activity );
             rockContext.SaveChanges();
