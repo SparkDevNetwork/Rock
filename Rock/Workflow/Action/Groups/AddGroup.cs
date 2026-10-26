@@ -169,7 +169,16 @@ namespace Rock.Workflow.Action.Groups
                 }
             }
 
-            var groupName = GetAttributeValue( action, AttributeKey.GroupName, true ).ResolveMergeFields( mergeFields );
+            /*
+                10/26/2026 - MSE
+
+                Values read from a selected workflow attribute are data and are not rendered
+                as Lava; only text typed into the setting is rendered. See
+                ActionComponent.GetTextOrAttributeValue.
+
+                Reason: Attribute values can hold untrusted input and must not run as Lava.
+            */
+            var groupName = GetTextOrAttributeValue( action, AttributeKey.GroupName, mergeFields );
             if ( string.IsNullOrWhiteSpace( groupName ) )
             {
                 var errorMessage = "A group name was not provided for the group.";
