@@ -614,6 +614,12 @@ export type MessageCreatedEvent = {
 
     /** Whether the sender leads this channel now; false in a direct message and on a system line. */
     sender_is_leader?: boolean;
+
+    /** The sender under their primary alias, as a page names them; none on a system line. */
+    sender_nick_name?: string | null;
+    sender_last_name?: string | null;
+    sender_avatar_url?: string | null;
+    sender_listed?: boolean;
     created_at: string;
 
     /** The key the message was sent under; null for a message sent without one. */

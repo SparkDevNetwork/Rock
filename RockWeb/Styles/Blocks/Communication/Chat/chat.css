@@ -687,8 +687,13 @@
     vertical-align: -4px;
 }
 
-.chat-mn-av::before {
+/* The letter only where the person has no photo; a photo fills the face instead. */
+.chat-mn-av[data-initial]::before {
     content: attr(data-initial);
+}
+
+.chat-mn-av > .chat-av-photo {
+    display: block;
 }
 
 /* The room's mark, 16px with a 10px glyph centred by its top padding, sunk like the faces. */

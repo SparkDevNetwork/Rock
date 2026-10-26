@@ -31,9 +31,9 @@
                           :aria-label="piece.label"
                           @click="isOpenable(piece) && onPerson(piece, $event)"><span v-if="piece.mention === 'all'" class="chat-mn-glyph" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
                           class="chat-av chat-mn-av"
-                          :data-initial="piece.initial"
+                          :data-initial="piece.photoUrl ? undefined : piece.initial"
                           :style="{ '--chat-av-hue': piece.hue }"
-                          aria-hidden="true"></span><span v-if="piece.mention !== 'all'" class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
+                          aria-hidden="true"><img v-if="piece.photoUrl" class="chat-av-photo" :src="piece.photoUrl" alt="" /></span><span v-if="piece.mention !== 'all'" class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
                     <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
                     <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
                     <template v-else>{{ piece.text }}</template>
@@ -159,6 +159,9 @@ button.chat-mn {
         name?: string;
         initial?: string;
         hue?: string;
+
+        /** A person's photo, drawn in the chip's face in place of their initial; null for none. */
+        photoUrl?: string | null;
 
         /** A person's chip: the alias it names, as the server sent it. */
         guid?: string;
@@ -359,6 +362,7 @@ button.chat-mn {
             label: isReader ? `@${name}, you` : undefined,
             initial: Array.from(name.trim())[0]?.toUpperCase() ?? "",
             hue: String(avatarHue(name)),
+            photoUrl: textOf(piece.avatar_url) || null,
             guid: textOf(piece.person_alias_guid)
         };
     }

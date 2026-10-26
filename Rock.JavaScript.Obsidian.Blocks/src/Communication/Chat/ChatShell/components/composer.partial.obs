@@ -600,8 +600,8 @@
     }
 
     /** A row was chosen: its chip and a space replace the @ query, which closes the picker. */
-    function onMentionChoose(token: string, name: string): void {
-        editor.value?.insertMention(token, name);
+    function onMentionChoose(token: string, name: string, photoUrl: string | null): void {
+        editor.value?.insertMention(token, name, photoUrl);
     }
 
     // #endregion Event Handlers

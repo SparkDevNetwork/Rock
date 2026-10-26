@@ -259,7 +259,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             return;
         }
 
-        const sender = signal.sender as Partial<Record<"nick_name" | "last_name", unknown>> | null | undefined;
+        const sender = signal.sender as Partial<Record<"nick_name" | "last_name" | "avatar_url", unknown>> | null | undefined;
         const isOwn = signal.is_own === true;
         row.last_message_id = messageId;
         movedAt.set(row.channel_id, ++moves);
@@ -269,6 +269,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         row.last_message_type = messageId !== null ? "text" : null;
         row.last_sender_nick_name = typeof sender?.nick_name === "string" ? sender.nick_name : null;
         row.last_sender_last_name = typeof sender?.last_name === "string" ? sender.last_name : null;
+        row.last_sender_avatar_url = typeof sender?.avatar_url === "string" ? sender.avatar_url : null;
         row.last_message_is_own = isOwn;
         row.last_message_posted_by_rock = signal.posted_by_rock === true;
         // the line the platform worked out for this reader, so the row never composes its own

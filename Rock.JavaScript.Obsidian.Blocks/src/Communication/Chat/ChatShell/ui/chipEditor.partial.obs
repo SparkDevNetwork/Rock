@@ -168,6 +168,9 @@
     /** Every chip's name this editor has drawn, by its guid in lower case or "all", so a pasted token can be drawn again. */
     const drawnNames = new Map<string, string>();
 
+    /** The photo each chip the picker inserted was drawn with, by its guid in lower case. */
+    const drawnPhotos = new Map<string, string | null>();
+
     // #endregion Values
 
     // #region Event Handlers
@@ -332,11 +335,13 @@
      * Inserts a mention chip and a space after it for a mention picker, in place of the @ query
      * at the caret when there is one, else at the caret.
      */
-    function insertMention(token: string, name: string): void {
+    function insertMention(token: string, name: string, photoUrl: string | null = null): void {
         const element = editorElement.value;
         if (!element) {
             return;
         }
+
+        drawnPhotos.set(token.slice(2, -1).toLowerCase(), photoUrl);
 
         const typed = mentionQueryAtCaret();
         let range: Range;
@@ -682,6 +687,24 @@
     }
 
     /**
+     * A person's photo for their chip, as the message will draw it: the one the picker chose them
+     * with, else the message's own piece, else the picker's people; null for none.
+     */
+    function photoOf(guid: string): string | null {
+        if (drawnPhotos.has(guid)) {
+            return drawnPhotos.get(guid) ?? null;
+        }
+
+        const piece = (props.pieces ?? []).find(p => p.type === "mention" && typeof p.person_alias_guid === "string"
+            && p.person_alias_guid.toLowerCase() === guid);
+        if (piece) {
+            return typeof piece.avatar_url === "string" ? piece.avatar_url : null;
+        }
+
+        return props.people.find(person => person.person_alias_guid.toLowerCase() === guid)?.avatar_url ?? null;
+    }
+
+    /**
      * A chip as the message body draws one. A span, not a button: a button inside an editable
      * box takes focus and clicks away from the caret. The editor never draws the "you" chip,
      * since nobody is their own mention target.
@@ -707,7 +730,17 @@
         else {
             const face = document.createElement("span");
             face.className = "chat-av chat-mn-av";
-            face.dataset.initial = Array.from(name.trim())[0]?.toUpperCase() ?? "";
+            const photoUrl = photoOf(token.slice(2, -1).toLowerCase());
+            if (photoUrl) {
+                const photo = document.createElement("img");
+                photo.className = "chat-av-photo";
+                photo.src = photoUrl;
+                photo.alt = "";
+                face.append(photo);
+            }
+            else {
+                face.dataset.initial = Array.from(name.trim())[0]?.toUpperCase() ?? "";
+            }
             face.style.setProperty("--chat-av-hue", String(avatarHue(name)));
             face.setAttribute("aria-hidden", "true");
             const at = document.createElement("span");
@@ -748,6 +781,7 @@
     // A name drawn in one conversation is not one its next may draw: that person may not be in it.
     watch(() => props.conversationKey, () => {
         drawnNames.clear();
+        drawnPhotos.clear();
     });
 
     // #endregion Watchers

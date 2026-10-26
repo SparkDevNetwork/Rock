@@ -246,7 +246,8 @@ describe("the @all row", () => {
 
         await press(target, "Enter");
 
-        expect(w.emitted("choose")?.[0]).toEqual(["<@all>", "@all"]);
+        // the room has no photo
+        expect(w.emitted("choose")?.[0]).toEqual(["<@all>", "@all", null]);
     });
 });
 

@@ -20,10 +20,13 @@
 
     // #region Types
 
-    /** One face: the name the chat shows for the person, and their photo when the wire has one. */
+    /**
+     * One face: the name the chat shows for the person, and their photo, null only for someone
+     * with none. The photo is never left out, so a face is never drawn from a name alone.
+     */
     export type AvatarPerson = {
         name: string;
-        photoUrl?: string | null;
+        photoUrl: string | null;
     };
 
     // #endregion Types

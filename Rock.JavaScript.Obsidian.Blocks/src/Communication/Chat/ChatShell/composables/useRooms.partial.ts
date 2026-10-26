@@ -360,6 +360,7 @@ function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url
         last_message_type: null,
         last_sender_nick_name: null,
         last_sender_last_name: null,
+        last_sender_avatar_url: null,
         last_sender_listed: false,
         last_message_preview: null,
         last_message_is_own: false,
@@ -369,7 +370,7 @@ function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url
         mention_count: 0,
         all_mention_count: 0,
         can_mention: false,
-        dm_names: null,
+        dm_people: null,
         dm_other_count: null,
         // only a channel is ever previewed, and a channel's row draws its name and no line under it
         room_kind: "channel",

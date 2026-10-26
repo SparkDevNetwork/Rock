@@ -449,10 +449,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             return;
         }
 
-        // the live copy carries only the message row, so the name and photo come from the
-        // sender's newest message already held here
+        // the live copy names its sender; one from a platform that does not takes the name and
+        // photo from the sender's newest message already held here
         const held = [...thread.replies].reverse().concat(thread.root ? [thread.root] : []);
-        const sender = held.find(m => m.person_alias_guid === created.person_alias_guid && m.sender_nick_name !== undefined);
+        const sender = created.sender_nick_name !== undefined
+            ? created
+            : held.find(m => m.person_alias_guid === created.person_alias_guid && m.sender_nick_name !== undefined);
         const message = {
             ...created,
             sender_nick_name: sender?.sender_nick_name,

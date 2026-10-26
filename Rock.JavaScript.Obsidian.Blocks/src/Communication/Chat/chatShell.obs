@@ -679,7 +679,7 @@
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { joinNames } from "./ChatShell/stores/channelStore.partial";
-    import { ChannelFacts, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
+    import { ChannelFacts, ChatPerson, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
@@ -841,8 +841,8 @@
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
     const isActiveDirectMessage = computed((): boolean => activeRow.value?.room_kind === "person");
 
-    /** The other people of the open direct message, by the names the sidebar shows. */
-    const activePeople = computed((): string[] => activeRow.value?.dm_names ?? []);
+    /** The other people of the open direct message, with their photos, as the sidebar sent them. */
+    const activePeople = computed((): ChatPerson[] => activeRow.value?.dm_people ?? []);
 
     const activeKind = computed((): HeaderRoomKind | null => activeRow.value?.room_kind ?? null);
 

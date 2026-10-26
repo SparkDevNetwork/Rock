@@ -32,7 +32,7 @@
                         <span v-if="row.isAll" class="chat-mention-all" aria-hidden="true">
                             <span class="chat-mention-all-glyph"><Icon name="users" size="xs" /></span>
                         </span>
-                        <Avatar v-else :people="[{ name: row.name }]" :size="28" />
+                        <Avatar v-else :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="28" />
                         <span class="chat-mention-main">
                             <b>{{ row.isAll ? "@all" : row.name }}</b>
                             <span v-if="row.isAll">Notify everyone in this {{ place }}</span>
@@ -169,6 +169,7 @@
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { MentionPerson } from "../types.partial";
+    import { personName } from "../ui/face.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import Icon from "../ui/icon.partial.obs";
@@ -189,10 +190,11 @@
         isAwaitingFirstAnswer?: boolean;
     };
 
-    /** One row: the token its chip carries and the name the chip shows. */
+    /** One row: the token its chip carries, and the name and photo the chip shows. */
     type PickerRow = {
         token: string;
         name: string;
+        photoUrl: string | null;
         isAll: boolean;
     };
 
@@ -243,8 +245,8 @@
     });
 
     const emit = defineEmits<{
-        /** A row was chosen: its token and the name its chip shows. */
-        (e: "choose", token: string, name: string): void;
+        /** A row was chosen: its token, and the name and photo its chip shows. */
+        (e: "choose", token: string, name: string, photoUrl: string | null): void;
         /** Escape, or a press outside the picker and its editor. */
         (e: "close"): void;
     }>();
@@ -309,11 +311,12 @@
     const rows = computed((): PickerRow[] => {
         const people = drawnPeople.value.map(person => ({
             token: `<@${person.person_alias_guid}>`,
-            name: [person.nick_name, person.last_name].filter(part => !!part).join(" "),
+            name: personName(person),
+            photoUrl: person.avatar_url,
             isAll: false
         }));
 
-        return props.isAllOffered ? [{ token: "<@all>", name: "@all", isAll: true }, ...people] : people;
+        return props.isAllOffered ? [{ token: "<@all>", name: "@all", photoUrl: null, isAll: true }, ...people] : people;
     });
 
     /**
@@ -402,7 +405,7 @@
 
     function choose(row: PickerRow): void {
         isChosen = true;
-        emit("choose", row.token, row.name);
+        emit("choose", row.token, row.name, row.photoUrl);
     }
 
     /** Marks the editor as this picker's combobox, pointing at the active row. */

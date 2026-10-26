@@ -504,8 +504,9 @@ button.chat-header-id:hover .chat-header-chev {
     import { computed, PropType, ref, watch } from "vue";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { notifyOptionsFor } from "../composables/usePrefs.partial";
-    import { ChannelFacts, ChatError } from "../types.partial";
+    import { ChannelFacts, ChatError, ChatPerson } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import { personFace } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
@@ -570,9 +571,9 @@ button.chat-header-id:hover .chat-header-chev {
             default: false
         },
 
-        /** The other people of a direct message or group, by the names the sidebar shows them under. */
+        /** The other people of a direct message or group, with their photos, as the sidebar sent them. */
         people: {
-            type: Array as PropType<string[]>,
+            type: Array as PropType<ChatPerson[]>,
             default: () => []
         },
 
@@ -721,15 +722,13 @@ button.chat-header-id:hover .chat-header-chev {
     });
 
     /** A person's one face, or a group's first two. */
-    const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(name => ({ name })));
+    const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(personFace));
 
     /** Which way into the members panel the room offers: a channel's facepile, a group's button, or none. */
     const membersKind = computed((): "channel" | "group" | null => props.isMembersOffered && (props.kind === "channel" || props.kind === "group") ? props.kind : null);
 
-    /** Up to three of the room's leaders, only for someone in it, as the panel would list them. */
-    const pileFaces = computed((): AvatarPerson[] => props.facts?.is_member
-        ? props.facts.leaders.slice(0, 3).map(leader => ({ name: `${leader.nick_name ?? ""} ${leader.last_name ?? ""}`.trim(), photoUrl: leader.avatar_url }))
-        : []);
+    /** Up to three of the room's people, its leaders first, only for someone in it. */
+    const pileFaces = computed((): AvatarPerson[] => props.facts?.is_member ? props.facts.faces.slice(0, 3).map(personFace) : []);
 
     const memberCountLabel = computed((): string => {
         const count = props.facts?.member_count ?? 0;

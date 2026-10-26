@@ -563,10 +563,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         if (event === "message.created") {
             const created = payload as MessageCreatedEvent;
             if (isTimelineMessage(created)) {
-                // The live copy carries only the message row, so the sender's name and photo
-                // come from their newest message already held, until a page brings the rest.
+                // The live copy names its sender; one from a platform that does not takes the
+                // name and photo from the sender's newest message already held.
                 const messages = state(channelId).messages;
-                let sender: TimelineMessage | undefined;
+                let sender: Pick<TimelineMessage, "sender_nick_name" | "sender_last_name" | "sender_avatar_url" | "sender_listed"> | undefined
+                    = created.sender_nick_name !== undefined ? created : undefined;
                 for (let i = messages.length - 1; i >= 0 && !sender; i--) {
                     if (messages[i].person_alias_guid === created.person_alias_guid && messages[i].sender_nick_name !== undefined) {
                         sender = messages[i];

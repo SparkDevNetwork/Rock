@@ -955,7 +955,7 @@
     type RowState = "message" | "sending" | "sent" | "failed" | "deleted" | "hidden" | "removed" | "unknown" | "system" | "card";
 
     /** One face, in the avatar's own shape. */
-    type Face = { name: string, photoUrl?: string | null };
+    type Face = { name: string, photoUrl: string | null };
 
     // #endregion Types
 
