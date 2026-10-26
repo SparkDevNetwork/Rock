@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,7 +25,10 @@ using Rock.AI.Agent.Skills;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
+using Rock.SystemKey;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.AI.Agent.Tests.Skills.CommunicationSkill;
 
@@ -35,7 +39,88 @@ namespace Rock.AI.Agent.Tests.Skills.CommunicationSkill;
 [TestClass]
 public partial class CommunicationSkillTests
 {
+    private const int AllowedNumberId = 1;
+    private const int RestrictedNumberId = 2;
+    private const string InvalidNumberMessage = "does not correspond to a valid active SMS-enabled system phone number";
+    private const string FromNumberNotAuthorizedMessage = "You are not authorized to send from this communication's SMS 'from' number.";
+    private const string MultipleRecipientsMessage = "This communication has more than one recipient and cannot be sent by the agent.";
+
     #region Support
+
+    /// <summary>
+    /// Seeds an allowed SMS number with no security rules and a restricted
+    /// SMS number that denies VIEW to all users.
+    /// </summary>
+    private static void SeedSystemPhoneNumbers( RockContext rockContext, Rock.Model.Person restrictedNumberAssignedTo = null, Rock.Model.Person allowedNumberAssignedTo = null )
+    {
+        rockContext.Set<SystemPhoneNumber>().Add( new SystemPhoneNumber
+        {
+            Id = AllowedNumberId,
+            Guid = Guid.NewGuid(),
+            Name = "Main",
+            Number = "6235559001",
+            IsActive = true,
+            IsSmsEnabled = true,
+            AssignedToPersonAliasId = allowedNumberAssignedTo?.PrimaryAliasId
+        } );
+
+        rockContext.Set<SystemPhoneNumber>().Add( new SystemPhoneNumber
+        {
+            Id = RestrictedNumberId,
+            Guid = Guid.NewGuid(),
+            Name = "Pastor",
+            Number = "6235559002",
+            IsActive = true,
+            IsSmsEnabled = true,
+            AssignedToPersonAliasId = restrictedNumberAssignedTo?.PrimaryAliasId
+        } );
+
+        MockAuthorizationHelper.DenyAllUsers<SystemPhoneNumber>( rockContext, Authorization.VIEW, RestrictedNumberId );
+    }
+
+    /// <summary>
+    /// Seeds the person's saved default SMS 'from' number preference.
+    /// </summary>
+    private static void SeedSavedDefaultSmsNumber( RockContext rockContext, Rock.Model.Person person, int systemPhoneNumberId )
+    {
+        rockContext.Set<PersonPreference>().Add( new PersonPreference
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = person.PrimaryAliasId.Value,
+            PersonAlias = person.Aliases.First(),
+            Key = PersonPreferenceService.GetGlobalPreferencePrefix() + PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER,
+            Value = systemPhoneNumberId.ToString(),
+            LastAccessedDateTime = RockDateTime.Now
+        } );
+    }
+
+    /// <summary>
+    /// Seeds a recipient row for the person on the communication.
+    /// </summary>
+    private static void SeedRecipient( RockContext rockContext, int id, Rock.Model.Communication communication, Rock.Model.Person recipient )
+    {
+        rockContext.Set<CommunicationRecipient>().Add( new CommunicationRecipient
+        {
+            Id = id,
+            Guid = Guid.NewGuid(),
+            CommunicationId = communication.Id,
+            Communication = communication,
+            PersonAliasId = recipient.PrimaryAliasId.Value,
+            PersonAlias = recipient.Aliases.First()
+        } );
+    }
+
+    /// <summary>
+    /// Calls SendCommunication for a communication that is expected to pass
+    /// every check and asserts that it succeeded.
+    /// </summary>
+    private static void SendCommunicationAndAssertSuccess( Rock.AI.Agent.Skills.CommunicationSkill skill, string communicationIdKey )
+    {
+        var result = skill.SendCommunication( communicationIdKey );
+
+        Assert.AreEqual( ToolStatus.Success, result.GetStatus(), string.Join( " ", result.GetErrorMessages() ?? new System.Collections.Generic.List<string>() ) );
+    }
 
     private static Rock.AI.Agent.Skills.CommunicationSkill CreateSkill( System.IServiceProvider serviceProvider, AgentRequestContext agentRequestContext )
     {
