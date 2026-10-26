@@ -82,7 +82,7 @@ namespace Rock.Rest.Controllers
 
                 Reason: Source authoring must have the same authority through every v1 write.
             */
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var storedMetric = new MetricService( rockContext ).Get( entity.Id );
                 if ( storedMetric == null )
