@@ -97,8 +97,9 @@
                 <div v-if="state === 'failed'" class="chat-meta is-failed" data-testid="message-meta">
                     <Icon name="alert" size="xs" />
                     <span data-testid="message-state">Not sent.</span>
-                    <button type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
-                    <button type="button" class="chat-link-button is-quiet" data-testid="discard-send" @click="onDiscard">Delete</button>
+                    <span v-if="refusalSentence" data-testid="message-refusal">{{ refusalSentence }}</span>
+                    <button v-else type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
+                    <button type="button" class="chat-link-button" :class="{ 'is-quiet': !refusalSentence }" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
                 <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
@@ -171,8 +172,9 @@
                 <template v-if="state === 'failed'">
                     <Icon name="alert" size="xs" />
                     <span data-testid="message-state">Not sent.</span>
-                    <button type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
-                    <button type="button" class="chat-link-button is-quiet" data-testid="discard-send" @click="onDiscard">Delete</button>
+                    <span v-if="refusalSentence" data-testid="message-refusal">{{ refusalSentence }}</span>
+                    <button v-else type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
+                    <button type="button" class="chat-link-button" :class="{ 'is-quiet': !refusalSentence }" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </template>
                 <template v-else-if="state === 'sending'">
                     <Icon name="clock" size="xs" />
@@ -201,7 +203,7 @@
                      @close="onSheetClose" />
 
         <!-- A failed send is spoken at once, wherever the person is looking. -->
-        <span v-if="state === 'failed'" class="chat-sr-only" aria-live="assertive">Your message was not sent. Try again.</span>
+        <span v-if="state === 'failed'" class="chat-sr-only" aria-live="assertive">Your message was not sent. {{ refusalSentence || "Try again." }}</span>
     </div>
 </template>
 
@@ -943,6 +945,7 @@
     import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
+    import { messageForError } from "../errors.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, Reaction, SystemKind, TimelineMessage } from "../types.partial";
 
@@ -1226,6 +1229,9 @@
 
     /** The meta sits under a group's last bubble, and under any send still going or failed. */
     const isMetaShown = computed((): boolean => isLastOfGroup.value || !!props.pending);
+
+    /** Why a send refused for good ended, said in place of a retry that could only be refused again. */
+    const refusalSentence = computed((): string => props.pending?.refusal ? messageForError(props.pending.refusal) : "");
 
     const isEditedUnder = computed((): boolean => isEdited.value && !isMetaShown.value);
 

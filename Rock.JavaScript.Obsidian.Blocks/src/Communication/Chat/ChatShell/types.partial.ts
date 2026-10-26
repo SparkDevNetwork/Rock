@@ -730,6 +730,19 @@ export type PendingMessage = {
     quotedMessageId?: number;
 
     /**
+     * The refusal that ended this send for good, set only on such a failure: the row shows its
+     * sentence and offers Delete alone, since the same text under the same key can only be
+     * refused again.
+     */
+    refusal?: ChatError;
+
+    /**
+     * Set on a direct message's first message, whose conversation the platform may not hold yet,
+     * so a refusal as not a member is not taken as final.
+     */
+    isFirstMessage?: boolean;
+
+    /**
      * The stored message's id once a copy of it reached the page, set as the row goes, so the
      * feed knows the send went rather than was discarded.
      */

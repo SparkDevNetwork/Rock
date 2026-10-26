@@ -382,7 +382,14 @@ describe("a send into a room the person has not joined", () => {
 
         expect(sent).toHaveLength(1);
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "hello room", status: "failed", errorCode: "door.not_allowed" }
+            {
+                localId: "local-1",
+                channelId: channel,
+                body: "hello room",
+                status: "failed",
+                errorCode: "door.not_allowed",
+                refusal: { code: "door.not_allowed", severity: "permission", text: "You can't join this channel." }
+            }
         ]);
     });
 
@@ -438,6 +445,77 @@ describe("a send into a room the person has not joined", () => {
         expect(await sender.send(channel, "hello room")).toBe(false);
 
         expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "authz.join_required" });
+        expect(sender.pending(channel)[0].refusal).toBeUndefined();
+    });
+});
+
+// A refusal that the same text under the same key can only meet again ends the message: its row
+// keeps the sentence and Delete, and is never sent again. A refusal that can pass later, a join
+// still reaching the platform, a failure to reach anything, keeps the row's Try again.
+describe("a send refused for good", () => {
+    const refusals: Array<[string, string]> = [
+        ["authz.not_member", "You're not a member of this channel."],
+        ["authz.no_mention_all_right", "You can't mention everyone in this channel."],
+        ["authz.no_announcement_right", "You can't post announcements in this channel."],
+        ["authz.wrong_scope", "This sign-in can't be used for chat."]
+    ];
+
+    test.each(refusals)("%s keeps its sentence on the row and is never sent again", async (code, text) => {
+        const error = { code, severity: "permission" as const, text };
+        const { sender, sent } = await setup([{ ok: false, error }]);
+
+        expect(await sender.send(channel, "hello <@all>")).toBe(false);
+
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: code, refusal: error });
+        expect(await sender.retry("local-1")).toBe(false);
+        expect(sent).toHaveLength(1);
+        expect(sender.pending(channel)[0].status).toBe("failed");
+
+        sender.discard("local-1");
+        expect(sender.pending(channel)).toEqual([]);
+    });
+
+    test.each([
+        ["rpc.transport", "failed"],
+        ["door.unreachable", "failed"],
+        ["rpc.unavailable", "failed"],
+        ["rpc.rate_limited", "failed"],
+        ["authz.join_required", "permission"],
+        ["sign_in_required", "permission"],
+        ["age_verification_required", "permission"],
+        ["authz.some_later_code", "permission"]
+    ] as const)("%s keeps the row's retry", async (code, severity) => {
+        const { sender, sent } = await setup([
+            { ok: false, error: { code, severity, text: "Not now." } },
+            { ok: true, id: 61, createdAt: "2026-10-26T10:00:00Z" }
+        ]);
+
+        await sender.send(channel, "again");
+
+        expect(sender.pending(channel)[0].refusal).toBeUndefined();
+        expect(await sender.retry("local-1")).toBe(true);
+        expect(sent).toEqual(["again", "again"]);
+    });
+
+    test("a first message refused as not a member keeps its retry, since the conversation may still be reaching the platform", async () => {
+        const { sender } = await setup([
+            { ok: false, error: { code: "authz.not_member", severity: "permission", text: "You're not a member of this channel." } },
+            { ok: true, id: 62, createdAt: "2026-10-26T10:00:00Z" }
+        ]);
+
+        expect(await sender.send(channel, "hi", { localId: "local-9", isLast: true })).toBe(false);
+
+        expect(sender.pending(channel)[0].refusal).toBeUndefined();
+        expect(await sender.retry("local-9")).toBe(true);
+    });
+
+    test("a first message refused for good still ends", async () => {
+        const error = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
+        const { sender } = await setup([{ ok: false, error }]);
+
+        await sender.send(channel, "<@all>", { localId: "local-9", isLast: true });
+
+        expect(sender.pending(channel)[0].refusal).toEqual(error);
     });
 });
 

@@ -624,6 +624,49 @@ describe("a failed send's links", () => {
     });
 });
 
+// A send refused for good can only be refused again, so its row says why and offers Delete alone.
+describe("a send refused for good", () => {
+    const refusal = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("shows its sentence and Delete, and no Try again, in %s", async (_kind, isChannel) => {
+        const wrapper = draw({
+            pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal }),
+            isOwn: true,
+            isChannel,
+            position: "single"
+        });
+
+        expect(root(wrapper).getAttribute("data-state")).toBe("failed");
+        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent.");
+        expect(wrapper.get("[data-testid='message-refusal']").text()).toBe("You can't mention everyone in this channel.");
+        expect(wrapper.find("[data-testid='retry-send']").exists()).toBe(false);
+        expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
+        expect(wrapper.get("[aria-live='assertive']").text()).toBe("Your message was not sent. You can't mention everyone in this channel.");
+
+        await wrapper.get("[data-testid='discard-send']").trigger("click");
+        expect(wrapper.emitted("discard")).toEqual([["local-1"]]);
+    });
+
+    test("a refusal with no sentence of its own says the person has no access", () => {
+        const wrapper = draw({
+            pending: pendingRow({ status: "failed", errorCode: "authz.not_member", refusal: { code: "authz.not_member", severity: "permission" } }),
+            isOwn: true,
+            position: "single"
+        });
+
+        expect(wrapper.get("[data-testid='message-refusal']").text()).toBe("You do not have access to that.");
+        expect(wrapper.find("[data-testid='retry-send']").exists()).toBe(false);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("an ordinary failure still offers Try again and no sentence in %s", (_kind, isChannel) => {
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport" }), isOwn: true, isChannel, position: "single" });
+
+        expect(wrapper.find("[data-testid='message-refusal']").exists()).toBe(false);
+        expect(wrapper.get("[data-testid='retry-send']").text()).toBe("Try again");
+        expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
+    });
+});
+
 // A message that quotes another draws the quote above it, in the conversation's look, and a jump
 // asked from the quote is the row's to pass on as jump(quotedMessageId).
 describe("a message that quotes another", () => {

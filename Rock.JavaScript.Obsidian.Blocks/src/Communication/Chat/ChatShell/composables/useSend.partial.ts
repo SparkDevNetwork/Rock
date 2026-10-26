@@ -52,6 +52,40 @@ const joinRequiredCode = "authz.join_required";
  */
 const joinWaits = 4;
 
+/**
+ * The refusals of a send that the same text under the same key can only meet again: the person is
+ * not in the room (removed or banned, or a Rock join door that will not let them in), or lacks a
+ * right the text needs, or the sign-in can never post. Anything else, a code a later platform adds
+ * included, keeps its retry: a join or a session gate can still open, and a failure to reach the
+ * platform can pass.
+ */
+const finalRefusalCodes = new Set([
+    "authz.not_member",
+    "authz.no_announcement_right",
+    "authz.no_mention_all_right",
+    "authz.wrong_scope",
+    "door.not_allowed",
+    "door.not_found"
+]);
+
+/**
+ * Whether a failed send can never pass on another try.
+ *
+ * @param error The failure that ended the try.
+ * @param isFirstMessage Whether the row is a direct message's first message.
+ *
+ * @returns True when the row should offer Delete alone.
+ */
+export function isFinalRefusal(error: ChatError, isFirstMessage: boolean): boolean {
+    // A conversation just started may not be on the platform yet, so "not a member" there can
+    // still pass once it arrives.
+    if (isFirstMessage && error.code === "authz.not_member") {
+        return false;
+    }
+
+    return finalRefusalCodes.has(error.code);
+}
+
 /** What the platform's send answers. */
 export type SendResult =
     | { ok: true, id: number, createdAt: string, notice?: string | null, pieces?: DisplayPiece[] | null, blocks?: MessageBlock[] | null }
@@ -308,6 +342,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
     async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
         row.status = "sending";
         row.errorCode = null;
+        delete row.refusal;
 
         let endTry!: () => void;
         const copyLanded = new Promise<boolean>(resolve => endTry = () => resolve(true));
@@ -343,6 +378,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
             row.status = "failed";
             row.errorCode = result.error.code;
+            if (isFinalRefusal(result.error, row.isFirstMessage === true)) {
+                row.refusal = result.error;
+            }
             return false;
         }
 
@@ -434,6 +472,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 body,
                 status: "sending",
                 errorCode: null,
+                // only a direct message's first message is sent with a try of its own
+                ...(attempt ? { isFirstMessage: true } : {}),
                 ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {}),
                 ...(typeof quotedMessageId === "number" ? { quotedMessageId } : {})
             });
@@ -446,7 +486,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
         retry: async (localId: string): Promise<boolean> => {
             const row = rows.find(r => r.localId === sendKey(localId));
 
-            if (!row || row.status !== "failed") {
+            // a row refused for good offers no retry, and one asked for anyway sends nothing
+            if (!row || row.status !== "failed" || row.refusal) {
                 return false;
             }
 
