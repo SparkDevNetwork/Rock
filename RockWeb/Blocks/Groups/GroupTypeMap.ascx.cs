@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Displays groups on a map." )]
 
-    [GroupTypeField( "Group Type", "The type of group to map.", false, "", "", 0 )]
+    [GroupTypesField( "Group Type", "The group types this block may map. Required. With one type selected, the map always shows that type. With more than one selected, the GroupTypeId page parameter picks the type to show and must be one of the selected types. No security is checked on the groups shown: their names, locations and members are shown to anyone who can view this page.", true, "", "", 0, "GroupType" )]
     //[GroupRoleField("", "Display Group Role", "")]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 2 )]
     [LinkedPage( "Group Detail Page", "Page to use as a link to the group details (optional).", false, "", "", 3 )]
@@ -188,13 +188,13 @@ namespace RockWeb.Blocks.Groups
 
             lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( "MapHeight" ) );
 
-            string settingGroupTypeId = GetAttributeValue( "GroupType" );
+            var allowedGroupTypeGuids = GetAttributeValue( "GroupType" ).SplitDelimitedValues().AsGuidList();
             string queryStringGroupTypeId = PageParameter( "GroupTypeId" );
 
-            if ( ( string.IsNullOrWhiteSpace(settingGroupTypeId) && string.IsNullOrWhiteSpace(queryStringGroupTypeId) )  )
+            if ( !allowedGroupTypeGuids.Any() )
             {
                 pnlMap.Visible = false;
-                lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.</div>";
+                lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please select one or more group types in the block settings.</div>";
             }
             else
             {
@@ -211,15 +211,16 @@ namespace RockWeb.Blocks.Groups
                 Guid? groupType = null;
                 int groupTypeId = -1;
 
-                if ( !string.IsNullOrWhiteSpace( settingGroupTypeId ) )
+                if ( allowedGroupTypeGuids.Count == 1 )
                 {
-                    groupType = new Guid( settingGroupTypeId );
+                    groupType = allowedGroupTypeGuids[0];
                 }
-                else
+                else if ( Int32.TryParse( queryStringGroupTypeId, out groupTypeId ) )
                 {
-                    if ( !string.IsNullOrWhiteSpace( queryStringGroupTypeId ) && Int32.TryParse( queryStringGroupTypeId, out groupTypeId ) )
+                    var queryStringGroupType = GroupTypeCache.Get( groupTypeId );
+                    if ( queryStringGroupType != null && allowedGroupTypeGuids.Contains( queryStringGroupType.Guid ) )
                     {
-                        groupType = new GroupTypeService( rockContext ).Get( groupTypeId ).Guid;
+                        groupType = queryStringGroupType.Guid;
                     }
                 }
 
@@ -614,7 +615,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     pnlMap.Visible = false;
-                    lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display and a location type to use.</div>";
+                    lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Pass a GroupTypeId page parameter for one of the group types selected in the block settings.</div>";
                 }
             }
         }
