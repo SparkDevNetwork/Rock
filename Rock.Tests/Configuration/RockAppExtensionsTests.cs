@@ -161,6 +161,22 @@ namespace Rock.Tests.Configuration
         [DataRow( "~~/", @"D:\RockWeb\Themes\Rock\" )]
         [DataRow( "~~/Styles", @"D:\RockWeb\Themes\Rock\Styles" )]
         [DataRow( "~~/Styles/theme.css", @"D:\RockWeb\Themes\Rock\Styles\theme.css" )]
+        [DataRow( "/", @"D:\RockWeb\" )]
+        [DataRow( "/Obsidian", @"D:\RockWeb\Obsidian" )]
+        [DataRow( "/Obsidian/", @"D:\RockWeb\Obsidian\" )]
+        [DataRow( "/Obsidian/test.txt", @"D:\RockWeb\Obsidian\test.txt" )]
+        [DataRow( "~\\", @"D:\RockWeb\" )]
+        [DataRow( "~\\Obsidian\\test.txt", @"D:\RockWeb\Obsidian\test.txt" )]
+        [DataRow( "~/Obsidian//test.txt", @"D:\RockWeb\Obsidian\test.txt" )]
+        [DataRow( "~//Obsidian", @"D:\RockWeb\Obsidian" )]
+        [DataRow( "//Obsidian", @"D:\RockWeb\Obsidian" )]
+        [DataRow( "/Obsidian/\\test.txt", @"D:\RockWeb\Obsidian\test.txt" )]
+        [DataRow( "~/Obsidian/./test.txt", @"D:\RockWeb\Obsidian\test.txt" )]
+        [DataRow( "~/Obsidian/sub/../test.txt", @"D:\RockWeb\Obsidian\test.txt" )]
+        [DataRow( "~/Obsidian/..", @"D:\RockWeb" )]
+        [DataRow( "~/Obsidian/../", @"D:\RockWeb\" )]
+        [DataRow( "~~/../Styles", @"D:\RockWeb\Themes\Styles" )]
+        [DataRow( "~/Obsidian/a#b %20.txt", @"D:\RockWeb\Obsidian\a#b %20.txt" )]
         public void MapPath_TranslatesPaths_Correctly( string source, string expected )
         {
             void configureApp( ServiceCollection services )
@@ -182,7 +198,11 @@ namespace Rock.Tests.Configuration
         }
 
         [TestMethod]
-        public void MapPath_NullPath_ReturnsNull()
+        [DataRow( null )]
+        [DataRow( "" )]
+        [DataRow( " " )]
+        [DataRow( "\t" )]
+        public void MapPath_BlankPath_ThrowsArgumentNullException( string path )
         {
             void configureApp( ServiceCollection services )
             {
@@ -196,14 +216,23 @@ namespace Rock.Tests.Configuration
 
             using ( var appScope = TestHelper.CreateScopedRockApp( configureApp ) )
             {
-                var actual = appScope.App.MapPath( null, "Rock" );
-
-                Assert.IsNull( actual );
+                Assert.ThrowsExactly<ArgumentNullException>( () => appScope.App.MapPath( path, "Rock" ) );
             }
         }
 
         [TestMethod]
-        public void MapPath_EmptyPath_ReturnsEmpty()
+        [DataRow( "~/Obsidian/file?query=1" )]
+        [DataRow( "~/Obsidian/a*b.txt" )]
+        [DataRow( "~/Obsidian/a:b.txt" )]
+        [DataRow( "~/a:b" )]
+        [DataRow( "~/Obsidian/a<b>.txt" )]
+        [DataRow( "~/Obsidian/a|b.txt" )]
+        [DataRow( "~/Obsidian/a\"b.txt" )]
+        [DataRow( "~/Obsidian/a\tb.txt" )]
+        [DataRow( "~/Obsidian/a\0b.txt" )]
+        [DataRow( "~~/a?b" )]
+        [DataRow( "/a:b" )]
+        public void MapPath_InvalidCharacters_ThrowsArgumentException( string path )
         {
             void configureApp( ServiceCollection services )
             {
@@ -217,14 +246,17 @@ namespace Rock.Tests.Configuration
 
             using ( var appScope = TestHelper.CreateScopedRockApp( configureApp ) )
             {
-                var actual = appScope.App.MapPath( string.Empty, "Rock" );
-
-                Assert.IsEmpty( actual );
+                Assert.ThrowsExactly<ArgumentException>( () => appScope.App.MapPath( path, "Rock" ) );
             }
         }
 
         [TestMethod]
-        public void MapPath_WithoutTilde_ReturnsOriginalPath()
+        [DataRow( "~/.." )]
+        [DataRow( "~/../outside" )]
+        [DataRow( "~/Obsidian/../../outside" )]
+        [DataRow( "/../outside" )]
+        [DataRow( "~~/../../../outside" )]
+        public void MapPath_AboveRoot_ThrowsArgumentException( string path )
         {
             void configureApp( ServiceCollection services )
             {
@@ -238,9 +270,37 @@ namespace Rock.Tests.Configuration
 
             using ( var appScope = TestHelper.CreateScopedRockApp( configureApp ) )
             {
-                var actual = appScope.App.MapPath( "test", "Rock" );
+                Assert.ThrowsExactly<ArgumentException>( () => appScope.App.MapPath( path, "Rock" ) );
+            }
+        }
 
-                Assert.AreEqual( "test", actual );
+        [TestMethod]
+        [DataRow( "test" )]
+        [DataRow( "./test" )]
+        [DataRow( "../test" )]
+        [DataRow( "Content/test" )]
+        [DataRow( "C:\\RockWeb\\test" )]
+        [DataRow( "\\\\server\\share\\test" )]
+        [DataRow( "http://example.com/test" )]
+        [DataRow( "~test" )]
+        [DataRow( "~Obsidian/test.txt" )]
+        [DataRow( "~~test" )]
+        [DataRow( "~~~" )]
+        public void MapPath_WithoutTildeOrSlash_ThrowsArgumentException( string path )
+        {
+            void configureApp( ServiceCollection services )
+            {
+                var hostingMock = new Mock<IHostingSettings>( MockBehavior.Loose );
+
+                hostingMock.Setup( a => a.WebRootPath )
+                    .Returns( "D:\\RockWeb" );
+
+                services.AddSingleton( hostingMock.Object );
+            }
+
+            using ( var appScope = TestHelper.CreateScopedRockApp( configureApp ) )
+            {
+                Assert.ThrowsExactly<ArgumentException>( () => appScope.App.MapPath( path, "Rock" ) );
             }
         }
 
