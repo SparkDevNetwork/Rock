@@ -724,3 +724,15 @@ describe("a direct message's faces", () => {
         expect(faces[1].text()).toBe("M");
     });
 });
+
+// A platform older than this client sends a direct message's names without its people; the row
+// still draws their initials.
+describe("a direct message from an older platform", () => {
+    test("draws its names' initials when it carries no people", () => {
+        const older = { ...dmGroup, dm_people: undefined, dm_names: ["Anna", "Marcus"] } as unknown as typeof dmGroup;
+        const w = mountSidebar({ rows: [older] });
+
+        const faces = rowOf(w, dmGroup.channel_id).findAll(".chat-av");
+        expect(faces.map(face => face.text())).toEqual(["A", "M"]);
+    });
+});

@@ -756,3 +756,20 @@ describe("the faces in the header", () => {
         expect(faces[1].text()).toBe("BO");
     });
 });
+
+// A platform older than this client sends a room's facts without faces; the header still draws.
+describe("facts from an older platform", () => {
+    test("without faces draw the people icon and the count", () => {
+        const facts = {
+            channel_id: "c0000001-0000-4000-8000-000000000000", name: "young-adults", icon_url: null, channel_type: "shared",
+            is_member: true, can_post: true, can_post_code: null, can_post_reason: null, max_length: 5000, can_leave: true,
+            description: null, group_type_name: null, campus_id: null, is_public: true, member_count: 42,
+            leaders: [], people: []
+        };
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts });
+
+        const pile = w.get("[data-testid='header-members']");
+        expect(pile.findAll(".chat-av")).toHaveLength(0);
+        expect(pile.text()).toContain("42");
+    });
+});
