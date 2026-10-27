@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -82,6 +83,24 @@ public partial class PrayerSkillTests
         rockContext.Set<PrayerRequest>().Add( prayerRequest );
 
         return prayerRequest;
+    }
+
+    /// <summary>
+    /// Sets the person who requested the prayer request.
+    /// </summary>
+    private static void SetRequester( PrayerRequest prayerRequest, Rock.Model.Person person )
+    {
+        prayerRequest.RequestedByPersonAlias = person.Aliases.First();
+        prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+    }
+
+    /// <summary>
+    /// Sets the person who created the prayer request.
+    /// </summary>
+    private static void SetCreator( PrayerRequest prayerRequest, Rock.Model.Person person )
+    {
+        prayerRequest.CreatedByPersonAlias = person.Aliases.First();
+        prayerRequest.CreatedByPersonAliasId = person.PrimaryAliasId;
     }
 
     #endregion
