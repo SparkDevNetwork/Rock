@@ -850,6 +850,11 @@ namespace Rock.SystemGuid
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "82F9C803-C998-46B2-B354-783D4D1E3B43";
 
         /// <summary>
+        /// The obsidian example sample data installer block entity type.
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_SAMPLE_DATA_INSTALLER = "9FAF7796-F6E7-47F9-B949-E4ED251447DC";
+
+        /// <summary>
         /// The obsidian form builder detail
         /// </summary>
         public const string OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE = "BB44D8ED-DEDC-4C9B-A30D-C636019BC960";

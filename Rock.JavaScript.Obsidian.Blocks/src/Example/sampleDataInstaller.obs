@@ -1,0 +1,662 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Panel v-else
+           title="Sample Data Installer"
+           titleIconCssClass="ti ti-database-import"
+           type="block"
+           class="sample-data-installer">
+        <NotificationBox v-if="!isDatabaseReady"
+                         :alertType="AlertType.Danger"
+                         heading="This database can't take sample data">
+            <p v-for="problem in databaseProblems" :key="problem">{{ problem }}</p>
+            <p class="mb-0">The steps below are turned off for this database.</p>
+        </NotificationBox>
+
+        <NotificationBox v-if="installState === 'succeeded'"
+                         :alertType="AlertType.Success"
+                         heading="Sample data installed">
+            <p>Happy tire-kicking! The sample data is in your database. The install took {{ elapsedText }}.</p>
+            <p v-for="warning in completionWarnings" :key="warning"><strong>{{ warning }}</strong></p>
+            <p class="mb-0">Hint: try <a :href="personSearchUrl">searching for the Decker family</a>.</p>
+        </NotificationBox>
+
+        <div v-else-if="installState === 'installing'">
+            <h4>Installing {{ chosenDatasetName }}</h4>
+            <p class="text-muted">This can take several minutes. Keep this page open until it finishes.</p>
+            <ProgressBar :percent="progressPercent" showCompletionText />
+            <p class="mb-1"><strong>{{ progressStep }}</strong></p>
+            <p v-if="progressDetail" class="text-muted mb-0"><small>{{ progressDetail }}</small></p>
+        </div>
+
+        <ContentSectionContainer v-else :sidebar="false">
+            <ContentSection title="1. Choose a Dataset" icon="ti ti-package" disableCollapse>
+                <p v-if="packageIndex.status === 'loading'" class="dataset-cards-loading">
+                    <i class="ti ti-rotate-clockwise-2 ti-spin"></i>Checking for a download...
+                </p>
+
+                <NotificationBox v-else-if="packageIndex.status === 'unavailable'" :alertType="AlertType.Info">
+                    {{ packageIndex.message }}
+                </NotificationBox>
+
+                <div v-else class="dataset-cards" role="radiogroup" aria-label="Dataset">
+                    <label v-for="card in datasetCards"
+                           :key="card.key"
+                           class="dataset-card"
+                           :class="{ 'selected': card.key === selectedDatasetKey, 'disabled': !card.isSelectable }">
+                        <input v-model="selectedDatasetKey"
+                               type="radio"
+                               :name="radioGroupName"
+                               :value="card.key"
+                               :disabled="!card.isSelectable" />
+
+                        <span class="dataset-card-header">
+                            <span class="dataset-card-name">{{ card.name }}</span>
+                            <i v-if="card.isSelectable"
+                               class="dataset-card-radio-mark"
+                               :class="card.key === selectedDatasetKey ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
+                        </span>
+
+                        <span v-if="card.package.summary" class="dataset-card-summary">{{ card.package.summary }}</span>
+                        <span v-if="card.package.bestFor" class="dataset-card-best-for"><strong>Best for:</strong> {{ card.package.bestFor }}</span>
+
+                        <span v-if="card.package.highlights?.length" class="dataset-card-highlights">
+                            <span v-for="highlight in card.package.highlights" :key="highlight" class="dataset-card-highlight">
+                                <i class="ti ti-check"></i>{{ highlight }}
+                            </span>
+                        </span>
+
+                        <span v-if="card.facts.length" class="dataset-card-facts">
+                            <span v-for="fact in card.facts" :key="fact.iconCssClass" class="dataset-card-fact">
+                                <i :class="fact.iconCssClass"></i>{{ fact.text }}
+                            </span>
+                        </span>
+
+                        <span v-if="!card.package.isInstallable" class="dataset-card-footer">
+                            <i class="ti ti-lock"></i>Not available for this version of Rock yet.
+                        </span>
+                    </label>
+                </div>
+            </ContentSection>
+
+            <ContentSection title="2. Choose What to Include" icon="ti ti-list-check" disableCollapse>
+                <p class="text-muted">Church setup and people are always included. Turn off any part you don't need.</p>
+
+                <div v-for="part in parts" :key="part.key ?? ''" class="sample-data-part">
+                    <CheckBox :modelValue="isPartIncluded(part)"
+                              label=""
+                              :text="part.name ?? ''"
+                              :disabled="isFormDisabled || !!getMissingDependency(part)"
+                              @update:modelValue="onPartToggled(part, $event)" />
+                    <p class="text-muted mb-0">
+                        <small>
+                            {{ part.description }}
+                            <template v-if="getMissingDependency(part)">
+                                <strong>Off because {{ getMissingDependency(part)?.name }} is off.</strong>
+                            </template>
+                        </small>
+                    </p>
+                </div>
+            </ContentSection>
+
+            <ContentSection title="3. Advanced Options" icon="ti ti-adjustments" isCollapsed>
+                <div class="row">
+                    <div class="col-md-4">
+                        <NumberBox v-model="historyYears"
+                                   label="History Years"
+                                   help="The number of years of history to generate before the anchor date."
+                                   :minimumValue="1"
+                                   :decimalCount="0"
+                                   :disabled="isFormDisabled"
+                                   rules="required" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <DatePicker v-model="anchorDate"
+                                    label="Anchor Date"
+                                    help="The date every relative date counts back from."
+                                    :disabled="isFormDisabled" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <TextBox v-model="seed"
+                                 label="Seed"
+                                 help="The text every random choice starts from. The same seed and anchor date give the same data."
+                                 :disabled="isFormDisabled" />
+                    </div>
+                </div>
+            </ContentSection>
+
+            <ContentSection title="4. Install" icon="ti ti-player-play" disableCollapse>
+                <NotificationBox v-if="installState === 'failed'"
+                                 :alertType="AlertType.Danger"
+                                 heading="The install stopped">
+                    <p v-for="message in failureMessages" :key="message">{{ message }}</p>
+                    <p class="mb-0">Nothing was saved. The install runs as one transaction, so your database is just as it was.</p>
+                </NotificationBox>
+
+                <NotificationBox v-if="startError" :alertType="AlertType.Danger">
+                    {{ startError }}
+                </NotificationBox>
+
+                <p v-if="chosenDatasetName">
+                    Ready to install <strong>{{ chosenDatasetName }}</strong> with {{ includedPartCount }} of {{ parts.length }} optional parts.
+                </p>
+                <p v-else class="text-muted">Choose a dataset in step 1 to install it.</p>
+
+                <RockButton :btnType="BtnType.Primary"
+                            :disabled="!isInstallReady"
+                            :isLoading="installState === 'starting'"
+                            loadingText="Starting..."
+                            @click="onInstallClick">
+                    Install Sample Data
+                </RockButton>
+            </ContentSection>
+        </ContentSectionContainer>
+    </Panel>
+</template>
+
+<style scoped>
+.dataset-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--spacing-large);
+}
+
+.dataset-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin: 0;
+    padding: var(--spacing-large);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--border-radius-base);
+    background-color: var(--color-interface-softest);
+    font-weight: var(--font-weight-regular);
+    cursor: pointer;
+}
+
+.dataset-card.selected {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+}
+
+.dataset-card.disabled {
+    background-color: transparent;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.dataset-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.dataset-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dataset-card-name {
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-interface-stronger);
+}
+
+.dataset-card-radio-mark {
+    font-size: var(--font-size-h4);
+    color: var(--color-interface-medium);
+}
+
+.dataset-card.selected .dataset-card-radio-mark {
+    color: var(--color-primary);
+}
+
+.dataset-card-summary,
+.dataset-card-best-for {
+    color: var(--color-interface-strong);
+}
+
+.dataset-card-highlights,
+.dataset-card-facts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.dataset-card-facts {
+    padding-top: var(--spacing-medium);
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+.dataset-card-highlight,
+.dataset-card-fact,
+.dataset-card-footer {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-small);
+    font-size: var(--font-size-small);
+}
+
+.dataset-card-highlight i {
+    color: var(--color-success-strong);
+}
+
+.dataset-card-fact i,
+.dataset-card-footer i {
+    color: var(--color-interface-medium);
+}
+
+.dataset-card-footer {
+    margin-top: auto;
+    color: var(--color-interface-medium);
+}
+
+.dataset-cards-loading {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-small);
+    color: var(--color-interface-medium);
+}
+
+.sample-data-part + .sample-data-part {
+    margin-top: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { SampleDataInstallerBag } from "@Obsidian/ViewModels/Blocks/Example/SampleDataInstaller/sampleDataInstallerBag";
+    import { SampleDataInstallerInstallBag } from "@Obsidian/ViewModels/Blocks/Example/SampleDataInstaller/sampleDataInstallerInstallBag";
+    import { SampleDataInstallerOptionsBag } from "@Obsidian/ViewModels/Blocks/Example/SampleDataInstaller/sampleDataInstallerOptionsBag";
+    import { SampleDataInstallerPackageBag } from "@Obsidian/ViewModels/Blocks/Example/SampleDataInstaller/sampleDataInstallerPackageBag";
+    import { SampleDataInstallerPartBag } from "@Obsidian/ViewModels/Blocks/Example/SampleDataInstaller/sampleDataInstallerPartBag";
+    import { TaskActivityProgressLogBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressLogBag";
+    import { TaskActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressStatusBag";
+    import { TaskActivityProgressUpdateBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressUpdateBag";
+
+    // #region Types
+
+    /** The life of one install, from the button click to the result. */
+    type InstallState = "idle" | "starting" | "installing" | "succeeded" | "failed";
+
+    /** What the block knows about the hosted package index. */
+    type PackageIndexState =
+        | { status: "loading" }
+        | { status: "loaded", packages: SampleDataInstallerPackageBag[] }
+        | { status: "unavailable", message: string };
+
+    /** One fact line on a dataset card, such as the number of people. */
+    type DatasetCardFact = {
+        iconCssClass: string;
+        text: string;
+    };
+
+    /** One hosted package as a dataset card. */
+    type DatasetCard = {
+        key: string;
+        name: string;
+        package: SampleDataInstallerPackageBag;
+        facts: DatasetCardFact[];
+        isSelectable: boolean;
+    };
+
+    // #endregion Types
+
+    const config = useConfigurationValues<CustomBlockBox<SampleDataInstallerBag, SampleDataInstallerOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const databaseProblems = config.bag?.databaseProblems ?? [];
+    const personSearchUrl = config.bag?.personSearchUrl ?? "";
+    const parts = config.options?.parts ?? [];
+    const radioGroupName = `sample-data-dataset-${newGuid()}`;
+
+    const packageIndex = ref<PackageIndexState>({ status: "loading" });
+    const selectedDatasetKey = ref("");
+
+    /** The parts the person turned off. Every other part is on. */
+    const excludedPartKeys = ref<string[]>([]);
+
+    const historyYears = ref<number | null>(config.bag?.historyYears ?? null);
+    const anchorDate = ref<string | null>(config.bag?.anchorDate ?? null);
+    const seed = ref(config.bag?.seed ?? "");
+
+    const installState = ref<InstallState>("idle");
+    const startError = ref("");
+    const progressPercent = ref(0);
+    const progressStep = ref("");
+    const progressDetail = ref("");
+    const failureMessages = ref<string[]>([]);
+    const completionWarnings = ref<string[]>([]);
+    const elapsedMilliseconds = ref(0);
+
+    let realTimeConnectionId = "";
+
+    /** The task this block started. Other blocks on the page report on the same topic. */
+    let currentTaskId = "";
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isDatabaseReady = computed((): boolean => databaseProblems.length === 0);
+
+    const isFormDisabled = computed((): boolean => !isDatabaseReady.value || installState.value === "starting");
+
+    /** Every hosted package as a card. A card can be chosen only when its package installs here. */
+    const datasetCards = computed((): DatasetCard[] => {
+        const index = packageIndex.value;
+
+        if (index.status !== "loaded") {
+            return [];
+        }
+
+        return index.packages.map(hostedPackage => ({
+            key: hostedPackage.dataset ?? "",
+            name: hostedPackage.name || hostedPackage.dataset || "",
+            package: hostedPackage,
+            facts: getDatasetCardFacts(hostedPackage),
+            isSelectable: hostedPackage.isInstallable && !isFormDisabled.value
+        }));
+    });
+
+    /** The name of the dataset that would be installed, or an empty string when none is chosen. */
+    const chosenDatasetName = computed((): string => {
+        return datasetCards.value.find(card => card.isSelectable && card.key === selectedDatasetKey.value)?.name ?? "";
+    });
+
+    const includedPartCount = computed((): number => parts.filter(part => isPartIncluded(part)).length);
+
+    const isInstallReady = computed((): boolean => {
+        return !isFormDisabled.value
+            && !!chosenDatasetName.value
+            && (historyYears.value ?? 0) >= 1;
+    });
+
+    const elapsedText = computed((): string => formatElapsed(elapsedMilliseconds.value));
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Records that the person turned a part on or off.
+     *
+     * @param part The part that changed.
+     * @param isIncluded Whether the part is now on.
+     */
+    function onPartToggled(part: SampleDataInstallerPartBag, isIncluded: boolean): void {
+        // CheckBox echoes every modelValue change back as an update, so a part
+        // forced off by a dependency would otherwise be recorded as turned off
+        // by the person and stay off when the dependency comes back.
+        if (isIncluded === isPartIncluded(part)) {
+            return;
+        }
+
+        const key = part.key ?? "";
+
+        excludedPartKeys.value = isIncluded
+            ? excludedPartKeys.value.filter(excludedKey => excludedKey !== key)
+            : [...excludedPartKeys.value, key];
+    }
+
+    /**
+     * Starts the install on the server. Progress arrives over RealTime.
+     */
+    async function onInstallClick(): Promise<void> {
+        if (!isInstallReady.value) {
+            return;
+        }
+
+        installState.value = "starting";
+        startError.value = "";
+        failureMessages.value = [];
+        progressPercent.value = 0;
+        progressStep.value = "Opening the sample data package...";
+        progressDetail.value = "";
+
+        const bag: SampleDataInstallerInstallBag = {
+            dataset: selectedDatasetKey.value,
+            parts: parts.filter(part => isPartIncluded(part)).map(part => part.key ?? ""),
+            historyYears: historyYears.value ?? 1,
+            anchorDate: anchorDate.value,
+            seed: seed.value,
+            realTimeConnectionId
+        };
+
+        const result = await invokeBlockAction("Install", { bag });
+
+        if (!result.isSuccess) {
+            installState.value = "idle";
+            startError.value = result.errorMessage ?? "The install could not be started.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the first part this part needs that is off. A part is off when
+     * the person turned it off or when a part it needs is off.
+     *
+     * @param part The part to check.
+     *
+     * @returns The part that is off, or undefined when every needed part is on.
+     */
+    function getMissingDependency(part: SampleDataInstallerPartBag): SampleDataInstallerPartBag | undefined {
+        return (part.dependsOn ?? [])
+            .map(key => parts.find(candidate => candidate.key === key))
+            .find(dependency => !!dependency && !isPartIncluded(dependency));
+    }
+
+    /**
+     * Determines whether a part will be installed.
+     *
+     * @param part The part to check.
+     *
+     * @returns True when the part is on and every part it needs is on.
+     */
+    function isPartIncluded(part: SampleDataInstallerPartBag): boolean {
+        return !excludedPartKeys.value.includes(part.key ?? "") && !getMissingDependency(part);
+    }
+
+    /**
+     * Gets the fact lines for a dataset card. An older package index leaves
+     * some facts at 0, and those are left out.
+     *
+     * @param hostedPackage The hosted package on the card.
+     *
+     * @returns The facts to show, in display order.
+     */
+    function getDatasetCardFacts(hostedPackage: SampleDataInstallerPackageBag): DatasetCardFact[] {
+        const facts: DatasetCardFact[] = [];
+
+        if (hostedPackage.people > 0) {
+            facts.push({ iconCssClass: "ti ti-users", text: formatAboutCount(hostedPackage.people, "person", "people") });
+        }
+
+        if (hostedPackage.households > 0) {
+            facts.push({ iconCssClass: "ti ti-home", text: formatAboutCount(hostedPackage.households, "household", "households") });
+        }
+
+        if (hostedPackage.campuses > 0) {
+            facts.push({ iconCssClass: "ti ti-building-church", text: `${hostedPackage.campuses} ${pluralConditional(hostedPackage.campuses, "campus", "campuses")}` });
+        }
+
+        if (hostedPackage.typicalInstallSeconds > 0) {
+            facts.push({ iconCssClass: "ti ti-clock", text: `Installs in ${formatAboutDuration(hostedPackage.typicalInstallSeconds)}` });
+        }
+
+        return facts;
+    }
+
+    /**
+     * Formats a measured count for a person to read. The count varies a
+     * little with the seed and history years, so it is rounded to two
+     * significant digits.
+     *
+     * @param count The measured count.
+     * @param singular The word for one thing.
+     * @param plural The word for many things.
+     *
+     * @returns The rounded count, such as "about 25,000 people".
+     */
+    function formatAboutCount(count: number, singular: string, plural: string): string {
+        const step = count < 100 ? 1 : Math.pow(10, Math.floor(Math.log10(count)) - 1);
+        const rounded = Math.round(count / step) * step;
+
+        return `about ${asFormattedString(rounded)} ${pluralConditional(rounded, singular, plural)}`;
+    }
+
+    /**
+     * Formats a typical duration for a person to read.
+     *
+     * @param totalSeconds The duration in seconds.
+     *
+     * @returns The duration, such as "about 4 seconds" or "about 3 minutes".
+     */
+    function formatAboutDuration(totalSeconds: number): string {
+        if (totalSeconds < 60) {
+            return `about ${totalSeconds} ${pluralConditional(totalSeconds, "second", "seconds")}`;
+        }
+
+        const minutes = Math.round(totalSeconds / 60);
+
+        return `about ${minutes} ${pluralConditional(minutes, "minute", "minutes")}`;
+    }
+
+    /**
+     * Formats an elapsed time for a person to read.
+     *
+     * @param milliseconds The elapsed time in milliseconds.
+     *
+     * @returns The elapsed time, such as "4 minutes 12 seconds".
+     */
+    function formatElapsed(milliseconds: number): string {
+        const totalSeconds = Math.round(milliseconds / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const secondsText = `${seconds} ${pluralConditional(seconds, "second", "seconds")}`;
+
+        return minutes > 0
+            ? `${minutes} ${pluralConditional(minutes, "minute", "minutes")} ${secondsText}`
+            : secondsText;
+    }
+
+    /**
+     * Loads one hosted package per dataset to show as the dataset cards.
+     */
+    async function loadHostedPackages(): Promise<void> {
+        const result = await invokeBlockAction<SampleDataInstallerPackageBag[]>("GetHostedPackages");
+
+        packageIndex.value = result.isSuccess && result.data
+            ? { status: "loaded", packages: result.data }
+            : { status: "unavailable", message: result.errorMessage ?? "Sample data packages aren't available to download yet." };
+    }
+
+    /**
+     * Connects to the TaskActivityProgress RealTime topic and maps its
+     * messages onto the install state.
+     */
+    async function startRealTime(): Promise<void> {
+        const topic = await getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
+
+        topic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        topic.onReconnected(async () => {
+            realTimeConnectionId = topic.connectionId ?? "";
+        });
+
+        topic.on("taskStarted", (bag: TaskActivityProgressStatusBag) => {
+            if (installState.value !== "starting") {
+                return;
+            }
+
+            currentTaskId = bag.taskId ?? "";
+            installState.value = "installing";
+        });
+
+        topic.on("updateTaskProgress", (data: TaskActivityProgressUpdateBag) => {
+            if (data.taskId !== currentTaskId) {
+                return;
+            }
+
+            progressPercent.value = data.completionPercentage;
+
+            if (data.message) {
+                progressStep.value = data.message;
+                progressDetail.value = "";
+            }
+        });
+
+        topic.on("updateTaskLog", (data: TaskActivityProgressLogBag) => {
+            if (data.taskId !== currentTaskId) {
+                return;
+            }
+
+            if (data.message) {
+                progressDetail.value = data.message;
+            }
+        });
+
+        topic.on("taskCompleted", (bag: TaskActivityProgressStatusBag) => {
+            if (bag.taskId !== currentTaskId) {
+                return;
+            }
+
+            if (bag.errors?.length) {
+                installState.value = "failed";
+                failureMessages.value = bag.errors;
+            }
+            else {
+                installState.value = "succeeded";
+                completionWarnings.value = bag.warnings ?? [];
+                elapsedMilliseconds.value = bag.elapsedMilliseconds;
+            }
+        });
+
+        realTimeConnectionId = topic.connectionId ?? "";
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    if (!config.errorMessage) {
+        startRealTime();
+        loadHostedPackages();
+    }
+
+    // #endregion Lifecycle Hooks
+</script>
