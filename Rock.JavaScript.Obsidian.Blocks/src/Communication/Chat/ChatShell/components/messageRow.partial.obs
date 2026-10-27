@@ -80,7 +80,7 @@
                     <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
                     <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
-                    <span v-if="isMentionTagShown" class="chat-cm-mention" data-testid="mention-tag"><Icon name="at" size="xs" />Mentioned you</span>
+                    <span v-if="isMentionTagShown" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned you</span>
                 </div>
                 <MessageEditor v-if="isEditorShown && message"
                                :message="message"
@@ -95,7 +95,7 @@
                     <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
-                    <span v-if="isMentionTagShown && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag"><Icon name="at" size="xs" />Mentioned you</span>
+                    <span v-if="isMentionTagShown && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned you</span>
                 </div>
                 <div v-if="state === 'failed'" class="chat-meta is-failed" data-testid="message-meta">
                     <Icon name="alert" size="xs" />
@@ -724,6 +724,19 @@
     border-radius: var(--chat-cm-radius);
 }
 
+/* The reader's own chip takes a thin amber ring, so it stands off the wash it sits on. */
+.chat-msg.is-community.is-mention-me :deep(.chat-mn.is-you) {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--chat-warning) 35%, transparent);
+}
+
+/*
+    The bar is docked to the row, which stands in from the feed's edge; pushed back out by the
+    same inset, it holds its place against the feed, wherever its own placement puts it.
+*/
+.chat-msg.is-community.is-mention-me :deep(.chat-tools) {
+    margin-right: calc(-1 * var(--chat-cm-inset));
+}
+
 .is-community.is-failed {
     background-color: var(--chat-danger-soft);
     box-shadow: inset 2px 0 0 var(--chat-danger);
@@ -801,7 +814,10 @@
     white-space: nowrap;
 }
 
-/* "Mentioned you", the wash's words, so the signal is never color alone. */
+/*
+    "Mentioned you", the wash's words, so the signal is never color alone. Hidden from a screen
+    reader, which hears ", mentions you" in the row's label instead of twice.
+*/
 .chat-cm-mention {
     display: inline-flex;
     gap: 3px;
