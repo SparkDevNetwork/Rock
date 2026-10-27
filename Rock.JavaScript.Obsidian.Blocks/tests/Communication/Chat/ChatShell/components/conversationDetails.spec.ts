@@ -353,13 +353,24 @@ describe("a direct message's identity", () => {
 });
 
 describe("a group's identity", () => {
-    test("draws a pile of faces, the name, the head count and Group message", () => {
+    test("draws the group's mark, the name, the head count and Group message", () => {
         const w = mountGroup();
 
-        const identity = w.get("[data-testid='details-identity']");
-        expect(identity.findComponent(Avatar).props("people")).toHaveLength(3);
+        const mark = w.get("[data-testid='details-identity'] [data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("56px");
+        expect(mark.findAll(".chat-av").map(face => face.text())).toEqual(["C", "H", "L"]);
         expect(w.get("[data-testid='details-name']").text()).toBe("Caleb, Hannah and Luis");
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["4 people", "Group message"]);
+    });
+
+    test("draws a named group's first two and a count of everyone else by its head count", () => {
+        const people = [person(5, "Caleb", "Brooks"), person(6, "Hannah", "Diaz"), person(7, "Luis", "Romero"), person(8, "Mia", "Ford"), person(9, "Noah", "Kent")];
+        const w = mountGroup({ title: "Trail crew", facts: groupFacts({ name: "Trail crew", member_count: 9, people }) });
+
+        const mark = w.get("[data-testid='details-identity'] [data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect(mark.get("[data-testid='group-face-more']").text()).toBe("+6");
     });
 
     test("lists everyone in it as a chip, the person included", () => {

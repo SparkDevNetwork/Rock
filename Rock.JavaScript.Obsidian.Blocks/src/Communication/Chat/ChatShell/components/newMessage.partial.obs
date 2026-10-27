@@ -74,7 +74,8 @@
 
             <template v-else>
                 <div v-if="isFound" class="chat-nd-found" role="status" data-testid="nd-found">
-                    <Avatar :people="foundFaces" :size="chosen.length === 1 ? 36 : 28" />
+                    <Avatar v-if="chosen.length === 1" :people="faces.slice(0, 1)" :size="36" />
+                    <GroupFace v-else :people="faces" :size="36" />
                     <span class="chat-nd-found-t">
                         <b>You already have this conversation</b>
                         <span>{{ foundTitle }}. What you send goes there.</span>
@@ -94,7 +95,8 @@
                     <p v-if="isFound && recent && recent.length === 0" class="chat-nd-none" data-testid="nd-history-empty">No messages yet.</p>
 
                     <div v-if="!isFound" class="chat-nd-start" data-testid="nd-start">
-                        <Avatar :people="startFaces" :size="chosen.length === 1 ? 56 : 48" />
+                        <Avatar v-if="chosen.length === 1" :people="faces.slice(0, 1)" :size="56" />
+                        <GroupFace v-else :people="faces" :size="56" />
                         <b data-testid="nd-start-title">{{ startTitle }}</b>
                         <p v-if="chosen.length === 1">This is the start of your conversation with <strong>{{ chosen[0].nick_name }}</strong>. Only the two of you can see it.</p>
                         <p v-else>This is the start of a group conversation. Only the {{ chosen.length + 1 }} people here can see it.</p>
@@ -303,11 +305,6 @@
     padding-top: 56px;
 }
 
-/* A pile's faces stand apart from each other by a ring of the surface. */
-.chat-nd-start :deep(.chat-pile.is-pile .chat-av) {
-    box-shadow: 0 0 0 3px var(--chat-surface);
-}
-
 .chat-nd-start b {
     margin-top: 6px;
     font-size: 18px;
@@ -359,8 +356,10 @@
     height: 13px;
 }
 
-/* Centred on the 780px column with a 24px gutter, as the To field above it. */
+/* Centred on the 780px column with a 24px gutter, as the To field above it; a group's mark is ringed in its color. */
 .chat-nd-found {
+    --chat-av-ring: var(--chat-sidebar);
+
     display: flex;
     flex: none;
     gap: 12px;
@@ -377,10 +376,6 @@
 .chat-nd.is-phone .chat-nd-found {
     margin-right: 12px;
     margin-left: 12px;
-}
-
-.chat-nd-found :deep(.chat-pile.is-pile .chat-av) {
-    box-shadow: 0 0 0 2px var(--chat-sidebar);
 }
 
 .chat-nd-found-t {
@@ -588,6 +583,7 @@
     import { joinNames } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import GroupFace from "../ui/groupFace.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import PeoplePicker from "../ui/peoplePicker.partial.obs";
@@ -786,9 +782,8 @@
         ? nameOf(props.chosen[0])
         : joinNames(props.chosen.map(person => person.nick_name), 0));
 
-    const startFaces = computed((): AvatarPerson[] => props.chosen.slice(0, 3).map(faceOf));
-
-    const foundFaces = computed((): AvatarPerson[] => props.chosen.slice(0, props.chosen.length === 1 ? 1 : 2).map(faceOf));
+    /** The people chosen, the one face or the group's mark the found strip and the start draw. */
+    const faces = computed((): AvatarPerson[] => props.chosen.map(faceOf));
 
     /** The church's campus names by guid in lower case, which name the campus under each person found. */
     const campusNames = computed((): Record<string, string> => Object.fromEntries(props.campuses

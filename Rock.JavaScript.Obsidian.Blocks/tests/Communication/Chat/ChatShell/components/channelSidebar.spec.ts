@@ -424,7 +424,8 @@ describe("a row's look, by the room's kind", () => {
         const banListGroup = { ...dmGroup, dm_people: [{ person_alias_guid: "anna", nick_name: "Anna", last_name: null, avatar_url: null }], dm_other_count: 1, room_kind: "group" as const };
         const w = mountSidebar({ rows: [banListGroup, dmRead] });
 
-        expect(rowOf(w, dmGroup.channel_id).findComponent(Avatar).props("size")).toBe(22);
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='group-face']").attributes("data-shape")).toBe("pair");
+        expect(rowOf(w, dmRead.channel_id).find("[data-testid='group-face']").exists()).toBe(false);
         expect(rowOf(w, dmRead.channel_id).findComponent(Avatar).props("size")).toBe(36);
     });
 
@@ -866,6 +867,44 @@ describe("a direct message's faces", () => {
         expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
         expect(faces[1].find("img").exists()).toBe(false);
         expect(faces[1].text()).toBe("M");
+    });
+});
+
+// A group's mark: two other people a diagonal pair, three or more a triangle whose third bubble
+// counts everyone past the first two, by the head count the row carries rather than the four people
+// it names.
+describe("a group direct message's mark", () => {
+    test("is a diagonal pair for two other people", () => {
+        const w = mountSidebar({ rows: [dmGroup] });
+
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='group-face']").attributes("data-shape")).toBe("pair");
+        expect(rowOf(w, dmGroup.channel_id).find("[data-testid='group-face-more']").exists()).toBe(false);
+    });
+
+    test("is a triangle of the three for three other people", () => {
+        const three = { ...dmBig, dm_people: dmBig.dm_people!.slice(0, 3), dm_other_count: 3, title: "Anna, Ben and Cara" };
+        const w = mountSidebar({ rows: [three] });
+
+        const mark = rowOf(w, dmBig.channel_id).get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect(mark.findAll(".chat-av").map(face => face.text())).toEqual(["A", "B", "C"]);
+    });
+
+    test("counts everyone past the first two from the row's head count", () => {
+        const w = mountSidebar({ rows: [dmBig] });
+
+        const mark = rowOf(w, dmBig.channel_id).get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect(mark.get("[data-testid='group-face-more']").text()).toBe("+4");
+    });
+
+    test("is the people icon for a named group, which the platform sends without its people", () => {
+        const named = { ...dmBig, name: "Trail crew", title: "Trail crew", dm_people: null, dm_names: null, dm_other_count: null };
+        const w = mountSidebar({ rows: [named] });
+
+        const mark = rowOf(w, dmBig.channel_id).get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("none");
+        expect(mark.find(".chat-av svg").exists()).toBe(true);
     });
 });
 

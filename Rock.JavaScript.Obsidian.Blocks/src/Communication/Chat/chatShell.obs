@@ -69,6 +69,7 @@
                                 :kind="activeKind"
                                 :isPublic="activeRow?.is_public ?? false"
                                 :people="activePeople"
+                                :otherCount="activeRow?.dm_other_count ?? null"
                                 :connection="shell.state.connection"
                                 :banner="shell.state.banner"
                                 :isUpdateRequired="shell.state.isUpdateRequired"

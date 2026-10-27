@@ -1,0 +1,195 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="chat-gf"
+          :data-shape="shape"
+          :style="{ '--chat-gf-s': `${size}px` }"
+          data-testid="group-face"
+          aria-hidden="true">
+        <Avatar v-if="shape === 'none'" :people="[nobody]" :size="size" />
+        <template v-else>
+            <span v-for="bubble in bubbles"
+                  :key="bubble.place"
+                  class="chat-gf-bubble"
+                  :class="[`is-${bubble.place}`, { 'has-photo': !!bubble.face?.photoUrl }]">
+                <Avatar v-if="bubble.face" :people="[bubble.face]" :size="faceSize" isOneLetter />
+                <span v-else class="chat-av chat-gf-more" data-testid="group-face-more" :style="moreStyle">+{{ bubble.more }}</span>
+            </span>
+        </template>
+    </span>
+</template>
+
+<style scoped>
+/*
+    A group conversation's mark in the slot a one-person face fills. Every offset is a share of the
+    slot, written against the 36px sidebar slot it was drawn for, so the header and the details
+    dialog draw the same shape larger.
+*/
+.chat-gf {
+    position: relative;
+    display: inline-block;
+    flex: none;
+    width: var(--chat-gf-s);
+    height: var(--chat-gf-s);
+}
+
+.chat-gf-bubble {
+    position: absolute;
+    display: flex;
+}
+
+.chat-gf-bubble :deep(.chat-av) {
+    box-sizing: border-box;
+}
+
+/* Two people: the first at the back, top left, the second in front, ringed in what it sits on. */
+.is-back {
+    top: 0;
+    left: 0;
+}
+
+/* An initial at the back is centred in the part the front face leaves showing; a photo stays whole. */
+.is-back:not(.has-photo) :deep(.chat-av) {
+    padding: 0 calc(var(--chat-gf-s) * 7 / 36) calc(var(--chat-gf-s) * 7 / 36) 0;
+}
+
+.is-front {
+    right: 0;
+    bottom: 0;
+}
+
+.is-front :deep(.chat-av) {
+    box-shadow: 0 0 0 calc(var(--chat-gf-s) * 2 / 36) var(--chat-av-ring, var(--chat-surface));
+}
+
+/* Three or more: a triangle of bubbles, each ringed so they read as separate. */
+.is-top :deep(.chat-av),
+.is-left :deep(.chat-av),
+.is-right :deep(.chat-av) {
+    box-shadow: 0 0 0 calc(var(--chat-gf-s) * 1.5 / 36) var(--chat-av-ring, var(--chat-surface));
+}
+
+.is-top {
+    top: 0;
+    left: calc(var(--chat-gf-s) * 8 / 36);
+}
+
+.is-left {
+    bottom: 0;
+    left: 0;
+}
+
+.is-left:not(.has-photo) :deep(.chat-av) {
+    padding-right: calc(var(--chat-gf-s) * 3 / 36);
+}
+
+.is-right {
+    right: 0;
+    bottom: 0;
+}
+
+/* The count of everyone past the first two, a quiet disc rather than a person's hue. */
+.chat-gf-more {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.03em;
+    color: var(--chat-text-2);
+    background: var(--chat-line-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Avatar, { AvatarPerson } from "./avatar.partial.obs";
+
+    // #region Types
+
+    /** Where a bubble sits: a pair's back and front, or a triangle's top, left and right. */
+    type BubblePlace = "back" | "front" | "top" | "left" | "right";
+
+    /** One bubble of the mark: a person's face, or the count of everyone not drawn. */
+    type Bubble = {
+        place: BubblePlace;
+        face: AvatarPerson | null;
+        more: number;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The group's other people that can be shown, in the order its title names them. */
+        people: {
+            type: Array as PropType<AvatarPerson[]>,
+            required: true
+        },
+
+        /**
+         * How many other people the group holds, which can be more than the people sent. Null or
+         * left out counts the people given.
+         */
+        count: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The slot in pixels, the size a one-person face would be in the same place. */
+        size: {
+            type: Number as PropType<number>,
+            default: 36
+        }
+    });
+
+    // #region Values
+
+    /** A face with no name draws the people icon, for a group whose people are not known here. */
+    const nobody: AvatarPerson = { name: "", photoUrl: null };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const others = computed((): number => Math.max(props.count ?? 0, props.people.length));
+
+    /**
+     * Nobody known draws the people icon in the whole slot; up to two others a diagonal pair; more
+     * a triangle.
+     */
+    const shape = computed((): "none" | "pair" | "trio" => {
+        if (props.people.length === 0) {
+            return "none";
+        }
+
+        return others.value <= 2 ? "pair" : "trio";
+    });
+
+    const bubbles = computed((): Bubble[] => {
+        const people = props.people;
+
+        if (shape.value === "pair") {
+            // A group can show one other person when the rest are on the Chat Ban List; the people
+            // icon behind them keeps it from reading as a conversation with one person.
+            const [back, front] = people.length >= 2 ? [people[0], people[1]] : [nobody, people[0]];
+            return [{ place: "back", face: back, more: 0 }, { place: "front", face: front, more: 0 }];
+        }
+
+        const third = others.value === 3 && people.length >= 3
+            ? { place: "right" as const, face: people[2], more: 0 }
+            : { place: "right" as const, face: null, more: others.value - 2 };
+
+        return [
+            { place: "top", face: people[0], more: 0 },
+            { place: "left", face: people[1] ?? nobody, more: 0 },
+            third
+        ];
+    });
+
+    /** A pair's faces are 25 of the 36px slot, big enough for a photo and one clear initial; a triangle's are 20. */
+    const faceSize = computed((): number => Math.round(props.size * (shape.value === "pair" ? 25 : 20) / 36));
+
+    const moreStyle = computed((): Record<string, string> => ({
+        width: `${faceSize.value}px`,
+        height: `${faceSize.value}px`,
+        fontSize: `${Math.round(faceSize.value * 0.42 * 100) / 100}px`
+    }));
+
+    // #endregion Computed Values
+</script>
