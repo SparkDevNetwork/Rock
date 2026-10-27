@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -295,7 +297,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override List<RegistrationRegistrant> GetListItems( IQueryable<RegistrationRegistrant> queryable, RockContext rockContext )
         {
-            RockContext.Database.CommandTimeout = 180;
+            RockContext.Database.SetCommandTimeout( 180 );
 
             var items = queryable.ToList();
 

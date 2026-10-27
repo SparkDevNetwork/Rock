@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock;
@@ -261,7 +262,7 @@ namespace RockWeb.Blocks.CheckIn
             databaseTimeoutSeconds = GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
             var rockContextAnalytics = new RockContextAnalytics();
-            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+            rockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
             cbShowInactive.Checked = GetBlockPersonPreferences().GetValue( "show-inactive" ).AsBoolean();
 
@@ -1270,7 +1271,7 @@ var headerText = dp.label;
             var scheduleIds = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
 
             var rockContextAnalytics = new RockContextAnalytics();
-            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+            rockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
             var chartData = new AttendanceService( rockContextAnalytics ).GetChartData( groupBy, graphBy, start, end, groupIds, campusIds, dataView, scheduleIds );
 
@@ -1428,7 +1429,7 @@ var headerText = dp.label;
                     taskInfos.Add( ti );
 
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     DataTable dtAttendeeDates = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeDatesDataSet(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
@@ -1470,7 +1471,7 @@ var headerText = dp.label;
                     taskInfos.Add( ti );
 
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     dtAttendeeLastAttendance = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeLastAttendanceDataSet(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
@@ -1486,7 +1487,7 @@ var headerText = dp.label;
                     taskInfos.Add( ti );
 
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     dtAttendees = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeesDataSet(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
@@ -1508,7 +1509,7 @@ var headerText = dp.label;
                         personIdsWhoDidNotMiss = new List<int>();
 
                         var threadRockContextAnalytics = new RockContextAnalytics();
-                        threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                        threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                         DataTable dtAttendeeDatesMissed = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeDatesDataSet(
                             groupIdList, attendedMissedDateRange.Start.Value, attendedMissedDateRange.End.Value,
@@ -1562,7 +1563,7 @@ var headerText = dp.label;
                     taskInfos.Add( ti );
 
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     dtAttendeeFirstDates = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsAttendeeFirstDatesDataSet(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
@@ -1579,7 +1580,7 @@ var headerText = dp.label;
                     taskInfos.Add( ti );
 
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     DataSet ds = new AttendanceService( threadRockContextAnalytics ).GetAttendanceAnalyticsNonAttendeesDataSet(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
@@ -1660,7 +1661,7 @@ var headerText = dp.label;
                 if ( dataViewId.HasValue )
                 {
                     var threadRockContextAnalytics = new RockContextAnalytics();
-                    threadRockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    threadRockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     dataViewPersonIds = new List<int>();
                     var dataView = new DataViewService( threadRockContextAnalytics ).Get( dataViewId.Value );
@@ -2014,7 +2015,7 @@ var headerText = dp.label;
             UpdatePossibleAttendances( dateRange, groupBy );
 
             var rockContextAnalytics = new RockContextAnalytics();
-            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+            rockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
             // pre-load the schedule names since FriendlyScheduleText requires building the ICal object, etc
             _scheduleNameLookup = new ScheduleService( rockContextAnalytics ).Queryable()
@@ -2092,7 +2093,7 @@ var headerText = dp.label;
             Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
 
             var rockContextAnalytics = new RockContextAnalytics();
-            rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+            rockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
             if ( familyGroupType != null && homeAddressGuid.HasValue && personIds != null )
             {
@@ -2500,7 +2501,7 @@ var headerText = dp.label;
                     bool showGroupAncestry = GetAttributeValue( AttributeKeys.ShowGroupAncestry ).AsBoolean( true );
 
                     var rockContextAnalytics = new RockContextAnalytics();
-                    rockContextAnalytics.Database.CommandTimeout = databaseTimeoutSeconds;
+                    rockContextAnalytics.Database.SetCommandTimeout( databaseTimeoutSeconds );
 
                     var groupService = new GroupService( rockContextAnalytics );
 

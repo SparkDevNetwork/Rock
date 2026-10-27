@@ -21,6 +21,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Configuration;
@@ -280,7 +283,7 @@ namespace RockWeb.Blocks.Communication
             {
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
-                    rockContext.Database.CommandTimeout = this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                    rockContext.Database.SetCommandTimeout( this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
                     if ( PopulateCharts( rockContext ) )
                     {
                         pnlCharts.Visible = true;

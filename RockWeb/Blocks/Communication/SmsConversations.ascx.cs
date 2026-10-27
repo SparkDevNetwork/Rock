@@ -23,6 +23,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Configuration;
@@ -339,7 +341,7 @@ namespace RockWeb.Blocks.Communication
             {
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                    rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
                     var communicationResponseService = new CommunicationResponseService( rockContext );
 
@@ -400,7 +402,7 @@ namespace RockWeb.Blocks.Communication
             try
             {
                 var rockContext = RockApp.Current.CreateRockContext();
-                rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
                 var communicationResponseService = new CommunicationResponseService( rockContext );
                 List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversationForPerson( recipientPersonId, smsSystemPhoneNumber );
 
