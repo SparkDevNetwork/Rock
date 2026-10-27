@@ -728,7 +728,7 @@ button.chat-header-id:hover .chat-header-chev {
     const membersKind = computed((): "channel" | "group" | null => props.isMembersOffered && (props.kind === "channel" || props.kind === "group") ? props.kind : null);
 
     /** Up to three of the room's people, its leaders first, only for someone in it. */
-    const pileFaces = computed((): AvatarPerson[] => props.facts?.is_member ? props.facts.faces.slice(0, 3).map(personFace) : []);
+    const pileFaces = computed((): AvatarPerson[] => props.facts?.is_member ? (props.facts.faces ?? []).slice(0, 3).map(personFace) : []);
 
     const memberCountLabel = computed((): string => {
         const count = props.facts?.member_count ?? 0;

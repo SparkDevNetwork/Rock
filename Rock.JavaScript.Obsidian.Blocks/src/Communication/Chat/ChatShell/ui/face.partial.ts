@@ -18,7 +18,7 @@
 // A person as the platform sends one, made into the face the avatar draws. Here rather than in the
 // avatar component because a component's setup script exports no functions, and the sidebar, the
 // header and the @ picker all draw the platform's people.
-import { ChatPerson } from "../types.partial";
+import { ChatPerson, SidebarRow } from "../types.partial";
 import type { AvatarPerson } from "./avatar.partial.obs";
 
 /**
@@ -40,5 +40,17 @@ export function personName(person: ChatPerson): string {
  * @returns The face the avatar draws.
  */
 export function personFace(person: ChatPerson): AvatarPerson {
-    return { name: personName(person), photoUrl: person.avatar_url };
+    return { name: personName(person), photoUrl: person.avatar_url ?? null };
+}
+
+/**
+ * A direct message's other people as its sidebar row sends them. A platform older than the people
+ * sends their names alone, which are drawn as people with no photo.
+ *
+ * @param row The sidebar row.
+ *
+ * @returns The people, empty for a room with none.
+ */
+export function rowPeople(row: Pick<SidebarRow, "dm_people" | "dm_names">): ChatPerson[] {
+    return row.dm_people ?? (row.dm_names ?? []).map(name => ({ person_alias_guid: "", nick_name: name, last_name: null, avatar_url: null }));
 }

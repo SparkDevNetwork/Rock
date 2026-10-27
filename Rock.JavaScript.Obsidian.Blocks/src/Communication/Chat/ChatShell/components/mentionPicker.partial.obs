@@ -312,7 +312,7 @@
         const people = drawnPeople.value.map(person => ({
             token: `<@${person.person_alias_guid}>`,
             name: personName(person),
-            photoUrl: person.avatar_url,
+            photoUrl: person.avatar_url ?? null,
             isAll: false
         }));
 

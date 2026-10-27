@@ -61,7 +61,7 @@ export type SidebarRow = {
     last_message_type: string | null;
     last_sender_nick_name: string | null;
     last_sender_last_name: string | null;
-    last_sender_avatar_url: string | null;
+    last_sender_avatar_url?: string | null;
     last_sender_listed: boolean;
     last_message_preview: string | null;
 
@@ -85,8 +85,14 @@ export type SidebarRow = {
 
     /** Whether the @ picker lists people here: the reader may see the roster, or leads the room. */
     can_mention: boolean;
-    /** A direct message's other people without a name of its own, up to four, in its title's order. */
-    dm_people: ChatPerson[] | null;
+    /** The same people by name only, which a platform older than the people sends alone. */
+    dm_names?: string[] | null;
+
+    /**
+     * A direct message's other people without a name of its own, up to four, in its title's order;
+     * absent from a platform older than this field.
+     */
+    dm_people?: ChatPerson[] | null;
     dm_other_count: number | null;
 
     /** What kind of room this is; every screen reads this rather than counting the names it is shown. */
@@ -154,7 +160,7 @@ export type ChannelFacts = {
      * Up to three of the room's people for the header's stack, its leaders first; empty for a
      * direct message and where the room hides its roster from the reader.
      */
-    faces: ChatPerson[];
+    faces?: ChatPerson[];
 
     /** For a direct message, up to eight of the others; empty for a channel. */
     people: ChannelPerson[];

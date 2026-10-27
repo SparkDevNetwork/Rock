@@ -646,7 +646,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
-    import { personFace } from "../ui/face.partial";
+    import { personFace, rowPeople } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
@@ -802,7 +802,7 @@
      * comes without its people, so it draws one face with the people icon in it.
      */
     function facesOf(row: SidebarRow): AvatarPerson[] {
-        const people = row.dm_people ?? [];
+        const people = rowPeople(row);
         if (row.room_kind === "person") {
             return [people.length > 0 ? personFace(people[0]) : { name: row.title, photoUrl: null }];
         }

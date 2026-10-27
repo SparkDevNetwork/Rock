@@ -48,8 +48,8 @@ import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipE
 const anna = "a0000002-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
 
-const annaPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes" };
-const benPerson = { person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor" };
+const annaPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null };
+const benPerson = { person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor", avatar_url: null };
 
 /** Eight people, more than the picker draws. */
 const many = Array.from({ length: 8 }, (_, index) => ({
@@ -211,7 +211,7 @@ describe("the picker's rows", () => {
         options()[1].click();
         await nextTick();
 
-        expect(w.emitted("choose")?.[0]).toEqual([`<@${ben}>`, "Ben Okafor"]);
+        expect(w.emitted("choose")?.[0]).toEqual([`<@${ben}>`, "Ben Okafor", null]);
     });
 });
 
@@ -333,7 +333,7 @@ describe("the picker's keys, pressed in the editor", () => {
         const event = await press(target, key);
 
         expect(event.defaultPrevented).toBe(true);
-        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor"]]);
+        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor", null]]);
     });
 
     test("Escape closes, and keeps the key from the editor", async () => {
@@ -393,7 +393,7 @@ describe("the picker while its answer is on its way", () => {
 
         await w.setProps({ people: [benPerson], isAwaitingAnswer: false });
         await nextTick();
-        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor"]]);
+        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor", null]]);
     });
 
     test("a key typed after a waiting Enter takes the wait back", async () => {
@@ -428,7 +428,7 @@ describe("the picker while its answer is on its way", () => {
 
         await press(target, "Enter");
 
-        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor"]]);
+        expect(w.emitted("choose")).toEqual([[`<@${ben}>`, "Ben Okafor", null]]);
     });
 });
 
