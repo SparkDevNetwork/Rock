@@ -91,6 +91,8 @@
     --chat-bubble-hover: rgba(13, 17, 23, .07);
     --chat-on-info: #ffffff;
     --chat-row-mention: #FCF6EE;
+    /* The ring on the reader's own chip in a washed row: warning at 35 percent, written out. */
+    --chat-mention-ring: rgba(229, 134, 0, .35);
     --chat-strip-bg: #FAEBED;
     --chat-strip-line: #E1B2BD;
     --chat-new-rule: rgba(215, 0, 21, .55);
@@ -285,6 +287,7 @@
     --chat-mn-all-bg: #0A2241;
     --chat-bubble-hover: rgba(248, 248, 252, .07);
     --chat-row-mention: #201C15;
+    --chat-mention-ring: rgba(229, 134, 0, .35);
     --chat-strip-bg: #1B1017;
     --chat-strip-line: #4A1E29;
     --chat-av-sat: 28%;
@@ -359,6 +362,7 @@
         --chat-mn-all-bg: #0A2241;
         --chat-bubble-hover: rgba(248, 248, 252, .07);
         --chat-row-mention: #201C15;
+        --chat-mention-ring: rgba(229, 134, 0, .35);
         --chat-strip-bg: #1B1017;
         --chat-strip-line: #4A1E29;
         --chat-av-sat: 28%;

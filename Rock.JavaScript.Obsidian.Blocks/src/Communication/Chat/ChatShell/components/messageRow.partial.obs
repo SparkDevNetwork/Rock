@@ -726,7 +726,7 @@
 
 /* The reader's own chip takes a thin amber ring, so it stands off the wash it sits on. */
 .chat-msg.is-community.is-mention-me :deep(.chat-mn.is-you) {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--chat-warning) 35%, transparent);
+    box-shadow: 0 0 0 1px var(--chat-mention-ring);
 }
 
 /*

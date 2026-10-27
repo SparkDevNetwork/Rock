@@ -532,7 +532,7 @@ describe("Community, in a channel", () => {
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-        expect(rule).toMatch(/box-shadow:\s*0 0 0 1px color-mix\(in srgb, var\(--chat-warning\) 35%, transparent\)/);
+        expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
     });
 
     // The row stands in from the feed's edge, and its bar, docked to the row, would follow it in;
