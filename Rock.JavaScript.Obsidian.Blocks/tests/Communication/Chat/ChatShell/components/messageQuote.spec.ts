@@ -16,7 +16,7 @@
 //
 // A message's quote, mounted: the message it quotes, drawn above it. In a direct message it is a
 // quiet ghost of the original under a label saying who quoted whom; in a channel it is one reply
-// line joined to the avatar by a spine. Either way a click jumps to the original. An original
+// line in the text column, opened by a reply arrow, with nothing reaching the author's face. Either way a click jumps to the original. An original
 // that was deleted or hidden since is said so, and offers no jump.
 //
 // The component these tests are written to, components/messageQuote.partial.obs:
@@ -34,6 +34,8 @@
 //
 // The quote is the element marked data-testid="message-quote", its label data-testid="quote-label"
 // and its preview or gone sentence data-testid="quote-body".
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -174,11 +176,12 @@ describe("an original that is gone", () => {
 });
 
 describe("the reply line, in a channel", () => {
-    test("is joined to the avatar by a spine and names the quoted person over a one-line preview", () => {
+    test("opens with a reply arrow, draws no connector, and names the quoted person over a one-line preview", () => {
         const w = draw(reply(ben, quoted()), { isCommunity: true });
 
         expect(quote(w).classes()).toContain("is-community");
-        expect(w.find("[data-testid='quote-spine']").exists()).toBe(true);
+        expect(w.find("[data-testid='quote-spine']").exists()).toBe(false);
+        expect(w.get("button [data-testid='quote-arrow']").exists()).toBe(true);
         expect(w.get("[data-testid='quote-name']").text()).toBe("Anna Reyes");
         expect(plain(w.get("[data-testid='quote-body']").text())).toBe("Morning all");
     });
@@ -187,6 +190,28 @@ describe("the reply line, in a channel", () => {
         const w = draw(reply(ben, quoted({ person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Ellis" })), { isCommunity: true });
 
         expect(w.get("[data-testid='quote-name']").text()).toBe("You");
+    });
+
+    test("is a button named for who was quoted, the preview and the jump", () => {
+        const w = draw(reply(ben, quoted()), { isCommunity: true });
+
+        expect(plain(w.get("button").attributes("aria-label") ?? "")).toBe("Replied to Anna: Morning all. Jump to the original");
+    });
+
+    test("a gone original keeps the reply arrow, with the sentence and no jump", () => {
+        const w = draw(reply(ben, quoted({ visibility: "hidden", body: null })), { isCommunity: true });
+
+        expect(w.find("[data-testid='quote-arrow']").exists()).toBe(true);
+        expect(w.find("[data-testid='quote-spine']").exists()).toBe(false);
+        expect(plain(w.get("[data-testid='quote-body']").text())).toBe("Original message is unavailable.");
+    });
+
+    test("its style starts the line at the text column and draws no connector", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(style).not.toMatch(/spine/);
+        expect(style).toMatch(/\.chat-quote-row\s*>\s*\*\s*\{[^}]*grid-column:\s*2/);
     });
 
     test("a click asks to jump to the original", async () => {

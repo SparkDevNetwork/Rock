@@ -699,6 +699,14 @@ describe("a message that quotes another", () => {
         expect(quote.props("personAliasGuid")).toBe(me);
     });
 
+    test.each([["its head row", "single"], ["a grouped continuation row", "middle"]] as const)("in a channel, on %s, the quote is a reply line with an arrow and no connector to the face", (_row, position) => {
+        const wrapper = draw({ message: message({ quoted_message_id: 40, quoted } as Partial<TimelineMessage>), isChannel: true, position });
+
+        expect(wrapper.find("[data-testid='quote-arrow']").exists()).toBe(true);
+        expect(wrapper.find("[data-testid='quote-spine']").exists()).toBe(false);
+        expect(wrapper.find(".chat-cm-gutter [data-testid='message-quote']").exists()).toBe(false);
+    });
+
     test("passes on a jump to the original", async () => {
         const wrapper = draw({ message: message({ quoted_message_id: 40, quoted } as Partial<TimelineMessage>), position: "single" });
         expect(wrapper.findComponent(MessageQuote).exists()).toBe(true);
@@ -1192,11 +1200,12 @@ describe("the Leader pill", () => {
     });
 });
 
-describe("the author's face against the quote connector", () => {
-    test("the face is positioned, so it paints over the connector line instead of under it", () => {
+describe("the author's face, with no quote connector to paint over", () => {
+    test("the face takes no stacking position, since nothing is drawn under it any more", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
-        expect(style).toMatch(/\.chat-cm-av\s*\{[^}]*position:\s*relative/);
+        expect(style).toMatch(/\.chat-cm-av\s*\{/);
+        expect(style).not.toMatch(/\.chat-cm-av\s*\{[^}]*position:/);
     });
 });
