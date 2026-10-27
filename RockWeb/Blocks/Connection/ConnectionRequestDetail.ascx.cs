@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Connection
             var placementGroupId = ViewState["PlacementGroupId"] as int?;
             if ( placementGroupId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     /*
                         10/27/2026 - MSE
