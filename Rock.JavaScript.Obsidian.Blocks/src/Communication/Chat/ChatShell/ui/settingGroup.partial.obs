@@ -38,12 +38,22 @@
     cursor: pointer;
 }
 
-/* The rounded group its rows sit in, ruled apart by the rows themselves. */
+/*
+    The rounded group its rows sit in, ruled apart by the rows themselves. It sets its rows' least
+    height, larger on a phone's settings sheet, so every row in it keeps one measure, a setting row
+    or another kind such as the name field's.
+*/
 .chat-sg {
+    --chat-sg-row-min: 44px;
+
     overflow: hidden;
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-lg);
+}
+
+.chat-modal.is-sheet .chat-sg {
+    --chat-sg-row-min: 48px;
 }
 </style>
 

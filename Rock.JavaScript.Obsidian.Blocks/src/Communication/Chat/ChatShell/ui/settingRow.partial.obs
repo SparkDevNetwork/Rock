@@ -31,7 +31,7 @@
     gap: 10px;
     align-items: center;
     width: 100%;
-    min-height: 44px;
+    min-height: var(--chat-sg-row-min);
     padding: 8px 12px 8px 14px;
     margin: 0;
     font: inherit;
@@ -39,11 +39,6 @@
     text-align: left;
     background: transparent;
     border: 0;
-}
-
-/* A phone's settings sheet gives each row a larger target. */
-.chat-modal.is-sheet .chat-sg-row {
-    min-height: 48px;
 }
 
 /* Rows in one group are ruled apart. */

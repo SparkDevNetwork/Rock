@@ -427,11 +427,12 @@
     opacity: .5;
 }
 
-/* The name field fills its row of the group, Save at its end. */
+/* The name field fills its row of the group, Save at its end, the row as tall as the group's others. */
 .chat-rn {
     display: flex;
     gap: 8px;
     align-items: center;
+    min-height: var(--chat-sg-row-min);
     padding: 6px 6px 6px 14px;
 }
 

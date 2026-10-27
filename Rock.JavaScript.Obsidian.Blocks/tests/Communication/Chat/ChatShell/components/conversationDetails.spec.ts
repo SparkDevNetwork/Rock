@@ -1013,9 +1013,12 @@ describe("the grouped list's measures", () => {
         expect(icon).not.toMatch(/margin-top/);
     });
 
-    test("draws a row 44px high at least, and 48px on a phone", () => {
-        expect(bodyOf("ui/settingRow.partial.obs", ".chat-sg-row")).toMatch(/min-height:\s*44px;/);
-        expect(bodyOf("ui/settingRow.partial.obs", ".chat-modal.is-sheet .chat-sg-row")).toMatch(/min-height:\s*48px;/);
+    test("draws a group's rows 44px high at least, and 48px on a phone, the name field's row too", () => {
+        // The group owns its rows' height, so a row that is not a setting row, the name field's, is held to it too.
+        expect(bodyOf("ui/settingGroup.partial.obs", ".chat-sg")).toMatch(/--chat-sg-row-min:\s*44px;/);
+        expect(bodyOf("ui/settingGroup.partial.obs", ".chat-modal.is-sheet .chat-sg")).toMatch(/--chat-sg-row-min:\s*48px;/);
+        expect(bodyOf("ui/settingRow.partial.obs", ".chat-sg-row")).toMatch(/min-height:\s*var\(--chat-sg-row-min\);/);
+        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-rn")).toMatch(/min-height:\s*var\(--chat-sg-row-min\);/);
     });
 
     test("draws the notify segments 32px high, and 40px on a phone", () => {
