@@ -1161,6 +1161,10 @@ describe("a first message whose conversation cannot be shown yet", () => {
             calls.push(`find ${people.length}`);
             return { ok: true, channelId: shared };
         };
+        const held: Array<[string, string]> = [];
+        dependencies.holdText = (channelId, text) => {
+            held.push([channelId, text]);
+        };
         const dm = createDirectMessages(dependencies);
         dm.choose(person(1));
         await dm.open();
@@ -1175,13 +1179,13 @@ describe("a first message whose conversation cannot be shown yet", () => {
 
         expect(calls.slice(-1)).toEqual([`open ${existing}`]);
         expect(dm.draft).toBeNull();
-        expect(dm.held?.body).toBe("hello");
+        expect(held).toEqual([[existing, "hello"]]);
 
         // Handed over once: the next draft to the same people opens empty.
         shared = null;
         dm.choose(person(1));
         await dm.open();
-        expect(dm.held).toBeNull();
+        expect(held).toHaveLength(1);
         expect(dm.draft?.body).toBe("");
     });
 

@@ -33,6 +33,7 @@ import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/comp
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
+import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
 
 // #region Stand-ins
 
@@ -98,6 +99,9 @@ let mockShell: Record<string, unknown> | null = null;
 
 /** What the block built its last shell with, which carries the frame's views for a mention's jump. */
 let mockShellOptions: ShellOptions | null = null;
+
+/** The device's storage the drafts keep to, kept across a test's mounts as a browser keeps it over a reload. */
+const mockStorage = new Map<string, string>();
 
 /** The block's actions, as the page asks Rock for them; answered by each test that asks. */
 const mockInvoke = jest.fn();
@@ -195,9 +199,23 @@ function fakeShell(): Record<string, unknown> {
             state: timelineOf
         },
         sender: { pending: () => [], retry: jest.fn(), discard: jest.fn() },
+        // the real drafts, on a storage that outlives the block as a browser's does
+        drafts: createDrafts({
+            storage: {
+                get length(): number {
+                    return mockStorage.size;
+                },
+                key: (index: number) => Array.from(mockStorage.keys())[index] ?? null,
+                getItem: (key: string) => mockStorage.get(key) ?? null,
+                setItem: (key: string, value: string) => void mockStorage.set(key, value),
+                removeItem: (key: string) => void mockStorage.delete(key)
+            },
+            tenantId: "t0000001-0000-4000-8000-000000000000",
+            personAliasGuid: (mockConfig.session as { personAliasGuid: string }).personAliasGuid,
+            signInMark: { isSet: () => true, set: () => undefined }
+        }),
         directMessages: reactive({
             draft: null,
-            held: null,
             chosen: [],
             error: null,
             refused: null,
@@ -220,7 +238,9 @@ function fakeShell(): Record<string, unknown> {
                 state.activeChannelId = (mockConfig.channelGuid as string).toLowerCase();
             }
         }),
-        stop: jest.fn(async () => undefined),
+        stop: jest.fn(async () => {
+            (mockShell?.drafts as { stop: () => void } | undefined)?.stop();
+        }),
         selectChannel: jest.fn(async (channelId: string) => {
             state.activeChannelId = channelId;
         }),
@@ -674,6 +694,7 @@ afterEach(() => {
     mockThreadPages = null;
     mockOlderAnswers.length = 0;
     mockTimelines.clear();
+    mockStorage.clear();
     resetConfig();
     FakeResizeObserver.all = [];
     document.body.innerHTML = "";
@@ -723,6 +744,80 @@ describe("a conversation switch", () => {
 
         await openRow(w, dmAnna.channel_id);
         expect(isFeedEntering(w)).toBe(true);
+    });
+});
+
+describe("drafts", () => {
+    // What the person typed and has not sent belongs to the conversation, or the thread, it was
+    // typed in: another conversation's box never shows it, and coming back finds it as it was
+    // left, after a reload too.
+
+    /** Types into a box as a browser does, the text and then input. */
+    async function typeInto(w: VueWrapper, pane: string, text: string): Promise<void> {
+        const editor = w.get(`[data-testid='${pane}'] [data-testid='composer-input']`).element as HTMLElement;
+        editor.replaceChildren(document.createTextNode(text));
+        editor.dispatchEvent(new Event("input", { bubbles: true }));
+        await settle();
+    }
+
+    function boxText(w: VueWrapper, pane: string): string {
+        return w.get(`[data-testid='${pane}'] [data-testid='composer-input']`).element.textContent ?? "";
+    }
+
+    async function openThread(w: VueWrapper, index = 0): Promise<void> {
+        await w.findAll("[data-testid='frame-main'] [data-testid='thread-summary']")[index].trigger("click");
+        await settle();
+    }
+
+    test("stays with its conversation: the next conversation's box is its own, and coming back finds the text", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await typeInto(w, "frame-main", "half a thought");
+
+        await openRow(w, dmAnna.channel_id);
+        expect(boxText(w, "frame-main")).toBe("");
+
+        await typeInto(w, "frame-main", "for Anna");
+        await openRow(w, team.channel_id);
+        expect(boxText(w, "frame-main")).toBe("half a thought");
+
+        await openRow(w, dmAnna.channel_id);
+        expect(boxText(w, "frame-main")).toBe("for Anna");
+    });
+
+    test("a thread's reply is its own draft, apart from its conversation's and other threads', and is there when the thread opens again", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const root = { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>;
+        timelineOf(team.channel_id).messages.push(storedMessage(40, root), storedMessage(50, root));
+        await settle();
+        await typeInto(w, "frame-main", "to the channel");
+        await openThread(w, 0);
+
+        expect(boxText(w, "frame-panel")).toBe("");
+        await typeInto(w, "frame-panel", "to the thread");
+        expect(boxText(w, "frame-main")).toBe("to the channel");
+
+        await openThread(w, 1);
+        expect(boxText(w, "frame-panel")).toBe("");
+
+        await openThread(w, 0);
+        expect(boxText(w, "frame-panel")).toBe("to the thread");
+    });
+
+    test("comes back after a reload, in the box on its first frame", async () => {
+        let w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await typeInto(w, "frame-main", "before the reload");
+        w.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+
+        w = await mountBlock(1200);
+        (mockShell!.state as { activeChannelId: string | null }).activeChannelId = team.channel_id;
+        await nextTick();
+
+        expect(boxText(w, "frame-main")).toBe("before the reload");
     });
 });
 

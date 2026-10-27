@@ -27,10 +27,12 @@
 //          isChannel: boolean, isDirectMessage: boolean, isPhone: boolean, isFromList: boolean,
 //          personAliasGuid: string (required)
 //          mentionSource: MentionPickerSource | null (the reply composer's @ picker; null offers none)
+//          draft: ComposerDraft (the reply its owner keeps for the thread)
 //   emits: close, back, follow(isFollowing: boolean), send(body: string, isShownInChannel: boolean),
 //          seen(messageId: number), loadOlder, retry(localId: string), discard(localId: string),
 //          mentionQuery(query: string | null) (the reply composer's @ query, for the search),
-//          composerFocus (focus came into the reply composer)
+//          composerFocus (focus came into the reply composer),
+//          draftText(text: string), draftMention(piece) (the reply composer's changes, for its owner)
 //   marks: thread-divider, thread-follow (aria-pressed), and the composer's composer-input and
 //          composer-also (the foot's label around its checkbox).
 //
@@ -100,9 +102,12 @@ function replies(count: number): TimelineMessage[] {
 
 let wrapper: VueWrapper | null = null;
 
+/** Mounts the drawer, its owner keeping the reply composer's text as the shell keeps each thread's. */
 function draw(props: Record<string, unknown> = {}): VueWrapper {
-    wrapper = mount(ThreadDrawer, {
+    const drawn: VueWrapper = mount(ThreadDrawer, {
         props: {
+            draft: { text: "", mentions: [] },
+            onDraftText: (text: string) => drawn.setProps({ draft: { text, mentions: [] } }),
             root: rootWith(3),
             replies: replies(3),
             pending: [],
@@ -117,6 +122,7 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
         },
         attachTo: document.body
     });
+    wrapper = drawn;
     return wrapper;
 }
 

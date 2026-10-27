@@ -152,6 +152,11 @@
         (e: "upWhenEmpty"): void;
         /** After each change, the @ query at the caret for a mention picker, or null for none. */
         (e: "mentionQuery", query: string | null): void;
+        /**
+         * A chip was drawn, as a mention piece with the name and photo it shows, so a host that
+         * keeps the text can draw the chip again from it.
+         */
+        (e: "mention", piece: DisplayPiece): void;
     }>();
 
     // #region Values
@@ -720,6 +725,12 @@
         chip.dataset.testid = "editor-chip";
 
         const isAll = token.toLowerCase() === "<@all>";
+        const guid = token.slice(2, -1).toLowerCase();
+        const photoUrl = isAll ? null : photoOf(guid);
+        emit("mention", isAll
+            ? { type: "mention", text: "@all", all: true }
+            : { type: "mention", text: `@${name}`, person_alias_guid: guid, avatar_url: photoUrl });
+
         if (isAll) {
             chip.classList.add("is-all");
             chip.setAttribute("aria-label", `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}`);
@@ -732,7 +743,6 @@
         else {
             const face = document.createElement("span");
             face.className = "chat-av chat-mn-av";
-            const photoUrl = photoOf(token.slice(2, -1).toLowerCase());
             if (photoUrl) {
                 const photo = document.createElement("img");
                 photo.className = "chat-av-photo";

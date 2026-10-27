@@ -153,8 +153,8 @@
                               :isLocked="!shell.state.isComposerOpen"
                               :lockedReason="lockedReason(activeRow, shell.state.service)"
                               :maxLength="activeRow?.max_length ?? 0"
-                              :heldText="held?.body ?? ''"
-                              :heldBy="held"
+                              :text="conversationDraft?.text ?? ''"
+                              :mentions="conversationDraft?.mentions ?? []"
                               :quote="conversationQuote"
                               :isQuoteOwn="isOwnQuote(conversationQuote)"
                               :emojiSource="emojiSource"
@@ -163,6 +163,8 @@
                               @mentionQuery="onMentionQuery(activeRow, $event)"
                               @focus="onComposerFocus(activeRow)"
                               @send="shell.send"
+                              @update:text="onDraftText(conversationQuoteKey, $event)"
+                              @mention="onDraftMention(conversationQuoteKey, $event)"
                               @editLast="onEditLast"
                               @cancelQuote="onCancelQuote(conversationQuoteKey)"
                               @emojiPickerOpen="onEmojiPickerOpen"
@@ -331,6 +333,7 @@
                                   :personPhotoUrl="personPhotoUrl"
                                   :isPersonLeader="threadRow?.is_leader ?? false"
                                   :organizationName="organizationName"
+                                  :draft="threadDraft ?? undefined"
                                   :quote="threadQuote"
                                   :isQuoteOwn="isOwnQuote(threadQuote)"
                                   :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
@@ -351,6 +354,8 @@
                                   @retry="onRetry"
                                   @discard="shell.sender.discard"
                                   @cancelQuote="onCancelQuote(threadQuoteKey)"
+                                  @draftText="onDraftText(threadQuoteKey, $event)"
+                                  @draftMention="onDraftMention(threadQuoteKey, $event)"
                                   @editLast="onEditLastReply"
                                   @jump="onJump($event, true)"
                                   @messageAction="onMessageAction($event, drawnThread.rootId)"
@@ -683,6 +688,7 @@
     import ProfileCard from "./ChatShell/components/profileCard.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
+    import { ComposerDraft } from "./ChatShell/composables/useDrafts.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
@@ -693,7 +699,7 @@
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { joinNames } from "./ChatShell/stores/channelStore.partial";
-    import { ChannelFacts, ChatPerson, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
+    import { ChannelFacts, ChatPerson, DisplayPiece, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
     import { rowPeople } from "./ChatShell/ui/face.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
@@ -838,9 +844,6 @@
         return id ? campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     });
 
-    /** Text Rock refused earlier, for the box of the conversation the same people now share. */
-    const held = computed((): { body: string } | null => shell.value.directMessages.held);
-
     /** The sidebar row of the open conversation, which carries everything the header draws. */
     const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
 
@@ -926,6 +929,13 @@
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete
     } = useMessageActionsView({ shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker, openCard });
+
+    /**
+     * What the conversation's box holds, kept by the shell for the conversation, so text typed in
+     * one never shows in another; a thread's reply is its own, under the thread's key.
+     */
+    const conversationDraft = computed((): ComposerDraft | null => conversationQuoteKey.value ? shell.value.drafts.of(conversationQuoteKey.value) : null);
+    const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
 
     /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
     const publicRooms = computed((): Record<string, boolean> => {
@@ -1105,6 +1115,20 @@
     function onComposerFocus(row: SidebarRow | null): void {
         if (row) {
             shell.value.mentions.warm(row);
+        }
+    }
+
+    /** A box's text changed: it is kept for the conversation or thread the box types into. */
+    function onDraftText(place: string | null, text: string): void {
+        if (place) {
+            shell.value.drafts.write(place, text);
+        }
+    }
+
+    /** A chip was drawn in a box: its name and photo are kept with that place's draft. */
+    function onDraftMention(place: string | null, piece: DisplayPiece): void {
+        if (place) {
+            shell.value.drafts.addMention(place, piece);
         }
     }
 

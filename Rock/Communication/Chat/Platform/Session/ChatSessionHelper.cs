@@ -69,6 +69,13 @@ namespace Rock.Communication.Chat.Platform.Session
         /// </summary>
         public const string PushCookieName = "rock_chat_push";
 
+        /// <summary>
+        /// The cookie the Chat block sets while nobody has signed out on this browser. Sign-out
+        /// expires it, and a Chat block that finds it gone forgets the unsent drafts the browser
+        /// keeps, so the next person on a shared computer never sees the last one's words.
+        /// </summary>
+        public const string SignedInCookieName = "rock_chat_signed_in";
+
         #endregion Constants
 
         #region Methods
