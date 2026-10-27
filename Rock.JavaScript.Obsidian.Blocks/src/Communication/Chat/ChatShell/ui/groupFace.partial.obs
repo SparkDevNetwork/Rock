@@ -57,15 +57,23 @@
     bottom: 0;
 }
 
+/*
+    The ring is what the mark sits on, drawn as the owner draws it: its fill, translucent on hover,
+    over its base, so the ring matches the surface behind it in every state.
+*/
 .is-front :deep(.chat-av) {
-    box-shadow: 0 0 0 calc(var(--chat-gf-s) * 2 / 36) var(--chat-av-ring, var(--chat-surface));
+    box-shadow:
+        0 0 0 calc(var(--chat-gf-s) * 2 / 36) var(--chat-av-ring-over, transparent),
+        0 0 0 calc(var(--chat-gf-s) * 2 / 36) var(--chat-av-ring, var(--chat-surface));
 }
 
 /* Three or more: a triangle of bubbles, each ringed so they read as separate. */
 .is-top :deep(.chat-av),
 .is-left :deep(.chat-av),
 .is-right :deep(.chat-av) {
-    box-shadow: 0 0 0 calc(var(--chat-gf-s) * 1.5 / 36) var(--chat-av-ring, var(--chat-surface));
+    box-shadow:
+        0 0 0 calc(var(--chat-gf-s) * 1.5 / 36) var(--chat-av-ring-over, transparent),
+        0 0 0 calc(var(--chat-gf-s) * 1.5 / 36) var(--chat-av-ring, var(--chat-surface));
 }
 
 .is-top {
