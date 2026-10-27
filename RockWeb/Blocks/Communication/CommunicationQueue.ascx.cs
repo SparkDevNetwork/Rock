@@ -158,7 +158,21 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gCommunicationQueue_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.CommunicationId, e.RowKeyId );
+            /*
+                10/27/2026 - MSE
+
+                The Communication Detail page is an Obsidian block that only accepts a Guid or
+                IdKey for the CommunicationId page parameter. Passing the numeric Id caused the
+                detail page to load blank, so pass the hashed IdKey instead.
+
+                Reason: Communication Detail rejects numeric Ids (GitHub #7101).
+            */
+            var queryParams = new Dictionary<string, string>
+            {
+                { PageParameterKey.CommunicationId, Rock.Utility.IdHasher.Instance.GetHash( e.RowKeyId ) }
+            };
+
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>
