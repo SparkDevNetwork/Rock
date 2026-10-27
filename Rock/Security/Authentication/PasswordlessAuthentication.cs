@@ -48,6 +48,11 @@ namespace Rock.Security.Authentication
         /// </summary>
         private const string AuthenticationStateEncryptionPurpose = "Rock.Security.PasswordlessAuthenticationState";
 
+        /// <summary>
+        /// The purpose used when encrypting the passwordless matching person state.
+        /// </summary>
+        private const string MatchingPersonStateEncryptionPurpose = "Rock.Security.PasswordlessMatchingPersonState";
+
         /// <inheritdoc/>
         public override bool RequiresRemoteAuthentication
         {
@@ -631,7 +636,7 @@ namespace Rock.Security.Authentication
         /// <returns>The decrypted state.</returns>
         private static PasswordlessMatchingPersonState GetDecryptedMatchingPersonState( string state )
         {
-            return Encryption.DecryptString( state )?.FromJsonOrNull<PasswordlessMatchingPersonState>();
+            return Encryption.DecryptStringForPurpose( state, MatchingPersonStateEncryptionPurpose )?.FromJsonOrNull<PasswordlessMatchingPersonState>();
         }
 
         /// <summary>
@@ -641,7 +646,7 @@ namespace Rock.Security.Authentication
         /// <returns>The encrypted matching person state.</returns>
         private static string GetEncryptedMatchingPersonState( PasswordlessMatchingPersonState state )
         {
-            return Encryption.EncryptString( state?.ToJson() );
+            return Encryption.EncryptStringForPurpose( state?.ToJson(), MatchingPersonStateEncryptionPurpose );
         }
 
         /// <summary>
