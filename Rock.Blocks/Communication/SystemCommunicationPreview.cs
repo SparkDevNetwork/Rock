@@ -148,6 +148,7 @@ namespace Rock.Blocks.Communication
 
             // Get System Communication Guid from Block Settings or QueryString.
             Guid? systemCommunicationGuid = GetAttributeValue( AttributeKey.SystemCommunication ).AsGuidOrNull();
+            var isFromBlockSetting = systemCommunicationGuid.HasValue;
 
             if ( systemCommunicationGuid == null )
             {
@@ -167,6 +168,15 @@ namespace Rock.Blocks.Communication
 
             var systemCommunicationService = new SystemCommunicationService( rockContext );
             var systemCommunication = systemCommunicationService.Get( systemCommunicationGuid.Value );
+
+            // A system communication chosen in the block setting was picked by an admin, so only the URL value is checked.
+            if ( systemCommunication != null && !isFromBlockSetting && !systemCommunication.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return new SystemCommunicationPreviewInitializationBox
+                {
+                    ErrorMessage = "You are not authorized to view this system communication."
+                };
+            }
 
             if ( systemCommunication != null )
             {
@@ -379,6 +389,11 @@ namespace Rock.Blocks.Communication
                 }
             }
 
+            if ( systemCommunication != null && systemCommunicationGuid.IsEmpty() && !systemCommunication.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to view this system communication." );
+            }
+
             if ( systemCommunication != null )
             {
                 var rockEmailMessage = new RockEmailMessage( systemCommunicationGuid );
@@ -486,6 +501,11 @@ namespace Rock.Blocks.Communication
                 if ( systemCommunication == null )
                 {
                     return ActionNotFound( "System Communication not found" );
+                }
+
+                if ( systemCommunicationGuid.IsEmpty() && !systemCommunication.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "You are not authorized to view this system communication." );
                 }
 
                 // Fetch the target person
