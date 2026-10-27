@@ -187,7 +187,15 @@ namespace Rock.Reporting.DataSelect.Group
         /// <inheritdoc/>
         public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new HtmlObsidianGridField();
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+
+            // Only the link markup built in GetExpression is safe to render as HTML; a plain name must render as text.
+            if ( showAsLink )
+            {
+                return new HtmlObsidianGridField();
+            }
+
+            return new TextObsidianGridField();
         }
 
         /// <summary>
