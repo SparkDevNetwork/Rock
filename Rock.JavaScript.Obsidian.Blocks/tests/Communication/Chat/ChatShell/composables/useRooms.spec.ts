@@ -1171,7 +1171,7 @@ describe("Leave", () => {
 });
 
 describe("Rename", () => {
-    test("saving, then saved: the door is asked for the trimmed name, and the new name is announced", async () => {
+    test("the door is asked for the trimmed name; once saved the rename is idle again, and the new name is announced", async () => {
         const s = setup();
         sidebarOfThree(s);
 
@@ -1182,7 +1182,7 @@ describe("Rename", () => {
         s.renameCalls[0].answer.resolve(door("ok"));
         await settle();
 
-        expect(s.rooms.renameOf(group)).toEqual({ kind: "saved" });
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "idle" });
         expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
     });
 
@@ -1236,7 +1236,7 @@ describe("Rename", () => {
         expect(s.rooms.factsOf(group)?.name).toBeNull();
     });
 
-    test("pending leaves the row as it was, for the platform's own signal to change", async () => {
+    test("pending has saved too, so it names the group at once, with no reload before the platform has it", async () => {
         const s = setup();
         sidebarOfThree(s);
 
@@ -1244,7 +1244,20 @@ describe("Rename", () => {
         s.renameCalls[0].answer.resolve(door("ok", null, true));
         await settle();
 
+        expect(s.channels.rows.find(r => r.channel_id === group)?.name).toBe("Trail crew");
+        expect(s.reloads.value).toBe(0);
+    });
+
+    test("a name removed and pending is no name at once, with no reload that would read the old one back", async () => {
+        const s = setup();
+        s.channels.setSidebar([sidebarRow(group, { name: "Trail crew", channel_type: "dm", is_public: false, dm_people: null, dm_other_count: 0, room_kind: "group", title: "Trail crew" })]);
+
+        void s.rooms.rename(group, "");
+        s.renameCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
         expect(s.channels.rows.find(r => r.channel_id === group)?.name).toBeNull();
+        expect(s.reloads.value).toBe(0);
     });
 
     test("a blank name goes back to everyone's names, and says so", async () => {
@@ -1259,7 +1272,7 @@ describe("Rename", () => {
         expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Name removed. Showing everyone's names." }));
     });
 
-    test("pending says it can take a minute, by its own state", async () => {
+    test("pending shows nothing more than a save that landed", async () => {
         const s = setup();
         sidebarOfThree(s);
 
@@ -1267,7 +1280,8 @@ describe("Rename", () => {
         s.renameCalls[0].answer.resolve(door("ok", null, true));
         await settle();
 
-        expect(s.rooms.renameOf(group)).toEqual({ kind: "pending" });
+        expect(s.rooms.renameOf(group)).toEqual({ kind: "idle" });
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
     });
 
     test("refused keeps the door's own sentence", async () => {

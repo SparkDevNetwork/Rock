@@ -271,8 +271,6 @@ function fakeShell(): Record<string, unknown> {
 function fakePrefs(): Record<string, unknown> {
     const state = reactive({
         me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true },
-        meSave: null,
-        meSaving: {},
         meNotes: {},
         rooms: {} as Record<string, unknown>,
         announcement: null
@@ -280,7 +278,7 @@ function fakePrefs(): Record<string, unknown> {
 
     return {
         state,
-        roomOf: (channelId: string) => state.rooms[channelId] ?? { save: null, notes: {} },
+        roomOf: (channelId: string) => state.rooms[channelId] ?? { notes: {} },
         setMe: jest.fn(),
         setNotifyMode: jest.fn(async () => undefined),
         setStarred: jest.fn(async () => undefined),

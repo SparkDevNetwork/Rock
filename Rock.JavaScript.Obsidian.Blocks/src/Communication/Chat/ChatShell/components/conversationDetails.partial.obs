@@ -6,7 +6,6 @@
             :isPhone="isPhone"
             @close="emit('close')">
         <template #tools>
-            <SaveIndicator :state="headSave.state" :mark="headSave.mark" data-testid="details-save" />
             <IconButton icon="x" label="Close" data-testid="details-close" @click="emit('close')" />
         </template>
 
@@ -77,19 +76,13 @@
                         class="chat-rd-btn is-brand is-sm"
                         data-testid="rename-save"
                         :disabled="!canSaveName"
-                        @click="onRename">
-                    <template v-if="rename.kind === 'saving'"><span class="chat-spinner"></span>Saving</template>
-                    <template v-else>Save</template>
-                </button>
+                        @click="onRename">Save</button>
             </div>
         </SettingGroup>
         <template v-if="canRename">
-            <p v-if="renameNote" :id="`${renameId}-note`" class="chat-set-note" :data-kind="renameNote.kind" data-testid="rename-note">
-                <Icon :name="renameNote.kind === 'error' ? 'alert' : 'clock'" size="xs" /><span>{{ renameNote.text }}</span>
-            </p>
-            <p v-else-if="countText" :id="`${renameId}-note`" class="chat-set-note" data-kind="info" data-testid="rename-count">
-                <Icon name="info" size="xs" /><span>{{ countText }}</span>
-            </p>
+            <!-- A failed rename keeps the name typed, so Save beside it is its Try again. -->
+            <SettingNote v-if="renameNote" :id="`${renameId}-note`" class="chat-rd-note" :note="renameNote" data-testid="rename-note" />
+            <SettingNote v-else-if="countText" :id="`${renameId}-note`" class="chat-rd-note" :note="{ kind: 'info', text: countText }" data-testid="rename-count" />
             <p :id="`${renameId}-help`" class="chat-rd-cap" data-testid="rename-help">Everyone here sees it. Blank shows everyone's names.</p>
         </template>
 
@@ -127,7 +120,12 @@
                     <!-- Each mode's own line, read as the arrows reach it, since arrowing chooses and saves at once. -->
                     <span v-for="option in notifyOptions" :id="`${renameId}-notify-${option.value}`" :key="option.value" class="chat-sr-only">{{ option.caption }}</span>
                     <p class="chat-rd-cap" data-testid="notify-caption">{{ notifyCaption }}</p>
-                    <p v-if="prefsNotes.notify" :id="`${renameId}-notify-err`" class="chat-set-err chat-seg-err" data-testid="notify-error"><Icon name="alert" size="xs" /><span>{{ prefsNotes.notify.text }}</span></p>
+                    <SettingNote v-if="prefsNotes.notify"
+                                 :id="`${renameId}-notify-err`"
+                                 class="chat-rd-note"
+                                 :note="prefsNotes.notify"
+                                 data-testid="notify-error"
+                                 @retry="onNotifyRetry" />
                 </template>
             </SettingGroup>
 
@@ -364,10 +362,6 @@
     outline-offset: 0;
 }
 
-.chat-seg-err {
-    margin: 6px 0 0 2px;
-}
-
 /* The dialog's small buttons: outlined, in the church's color, or in danger. */
 .chat-rd-btn {
     display: inline-flex;
@@ -459,31 +453,12 @@
     color: var(--chat-muted);
 }
 
-.chat-rn-in:read-only {
-    color: var(--chat-text-2);
-}
-
-/* A note under a field: an answer that is pending, a refusal in danger, or the character count. */
-.chat-set-note {
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
+/* A note under a control outside a row: a refusal, or the name's character count. */
+.chat-rd-note {
     margin: 6px 0 0 2px;
     font-size: 12.5px;
-    font-weight: 600;
-    color: var(--chat-muted);
-    animation: chat-save-in var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-set-note[data-kind="error"] {
-    color: var(--chat-danger-ink);
-}
-
-.chat-set-note[data-kind="pending"] {
-    font-weight: 500;
-}
-
-.chat-set-note :deep(.chat-ic),
 .chat-set-err :deep(.chat-ic) {
     flex: none;
     margin-top: 2px;
@@ -493,7 +468,7 @@
 .chat-leave-box {
     padding: 14px 16px;
     background: var(--chat-danger-soft);
-    animation: chat-save-in var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-rd-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-leave-box b {
@@ -531,16 +506,15 @@
     justify-content: flex-end;
 }
 
-@keyframes chat-save-in {
+@keyframes chat-rd-in {
     from {
         opacity: 0;
         transform: translateY(2px);
     }
 }
 
-/* Reduced motion: the notes and the leave box only fade in. */
+/* Reduced motion: the leave box only fades in. */
 @media (prefers-reduced-motion: reduce) {
-    .chat-set-note,
     .chat-leave-box {
         animation-name: chat-rd-fade-in;
     }
@@ -557,7 +531,7 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
-    import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs, SaveMark } from "../composables/usePrefs.partial";
+    import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs } from "../composables/usePrefs.partial";
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -566,8 +540,8 @@
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-    import SaveIndicator, { SaveIndicatorState } from "../ui/saveIndicator.partial.obs";
     import SettingGroup from "../ui/settingGroup.partial.obs";
+    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import SettingRow from "../ui/settingRow.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
     import { HeaderRoomKind } from "./chatHeader.partial.obs";
@@ -684,13 +658,7 @@
             default: false
         },
 
-        /** The newest save of the room's settings, which the head's indicator shows when it is the newest. */
-        prefsSave: {
-            type: Object as PropType<SaveMark | null>,
-            default: null
-        },
-
-        /** The note under each of the room's settings. */
+        /** The note under each of the room's settings: what a change means, or a failed save's. */
         prefsNotes: {
             type: Object as PropType<RoomPrefs["notes"]>,
             default: () => ({})
@@ -747,9 +715,6 @@
 
     /** The rooms' announcement count as the dialog opened, so only news said since is read here. */
     const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
-
-    /** What the head's indicator shows: the newest save, the rename's or a setting's, and its count. */
-    const headSave = ref<{ state: SaveIndicatorState | null, mark: number }>({ state: null, mark: 0 });
 
     /** The newest sentence said while the dialog is open, the rooms' or the settings'. */
     const said = ref<{ text: string, isAssertive: boolean, key: string } | null>(null);
@@ -816,42 +781,24 @@
 
     const canSaveName = computed((): boolean => props.rename.kind !== "saving" && draftName.value.trim() !== (props.groupName ?? ""));
 
-    /** The door's answer under the field, until the name is typed in again. */
-    const renameNote = computed((): { kind: "error" | "pending", text: string } | null => {
+    /**
+     * Why the rename failed, under the field until the name is typed in again, with Try again
+     * asking the same name once more. A saved name says nothing: the title shows it.
+     */
+    const renameNote = computed((): Note | null => {
         if (isEditedSinceAnswer.value) {
             return null;
         }
 
         switch (props.rename.kind) {
             case "refused":
-                return { kind: "error", text: props.rename.text };
+                return { kind: "error", text: props.rename.text, retry: onRename };
 
             case "offline":
-                return { kind: "error", text: offlineText };
+                return { kind: "error", text: offlineText, retry: onRename };
 
             case "failed":
-                return { kind: "error", text: renameFailedText };
-
-            case "pending":
-                return { kind: "pending", text: "Saved. It can take a minute to reach everyone." };
-
-            default:
-                return null;
-        }
-    });
-
-    /** What the head's save indicator shows for the rename, nothing before one is asked. */
-    const renameSaveState = computed((): SaveIndicatorState | null => {
-        switch (props.rename.kind) {
-            case "saving":
-            case "saved":
-            case "pending":
-                return props.rename.kind;
-
-            case "refused":
-            case "offline":
-            case "failed":
-                return "refused";
+                return { kind: "error", text: renameFailedText, retry: onRename };
 
             default:
                 return null;
@@ -929,6 +876,12 @@
         }
     }
 
+    /** Try again takes its button away, so the mode it chose again takes focus. */
+    async function onNotifyRetry(): Promise<void> {
+        await nextTick();
+        notifyElements.value.find(element => element.getAttribute("aria-checked") === "true")?.focus();
+    }
+
     /** The arrows move between the modes and choose as they go, wrapping round, as a radio group does. */
     function onNotifyKeydown(event: KeyboardEvent): void {
         const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 0;
@@ -988,20 +941,13 @@
         }
     });
 
-    watch(() => props.rename.kind, kind => {
+    // A save that goes back to idle has landed, so the field holds the name as it was saved.
+    watch(() => props.rename.kind, (kind, was) => {
         isEditedSinceAnswer.value = false;
-        headSave.value = { state: renameSaveState.value, mark: headSave.value.mark + 1 };
-        if (kind === "saved" || kind === "pending") {
+        if (kind === "idle" && was === "saving") {
             draftName.value = draftName.value.trim();
         }
     });
-
-    // The head shows whichever save moved last, the rename's or one of the room's settings.
-    watch(() => props.prefsSave, save => {
-        if (save) {
-            headSave.value = { state: save.state, mark: headSave.value.mark + 1 };
-        }
-    }, { immediate: true });
 
     // The rooms' news and the settings' are read in the one live region, the newest last.
     watch(shownAnnouncement, announcement => {
