@@ -176,13 +176,20 @@
     --chat-feed-bottom-mask: 64px;
 }
 
-/* The edges fade, so text runs under the day pill and Jump to latest rather than into them. */
 .chat-feed {
     display: flex;
     flex: 1;
     flex-direction: column;
     padding: 8px 0 18px;
     overflow-y: auto;
+}
+
+/*
+    The edges fade, so text runs under the day pill and Jump to latest rather than into them; the
+    history skeleton drawn over the feed fades at the same edges.
+*/
+.chat-feed,
+.chat-feed-skeleton {
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
@@ -447,17 +454,21 @@
     background: var(--chat-brand-fill);
 }
 
-/* At the feed's foot, above its bottom padding, as the first messages will stand. */
+/*
+    Over the feed's whole box, its rows at the foot as the first messages will stand, inside the
+    feed's own padding; on a feed too short for them, the top rows are cut off rather than drawn
+    over the header.
+*/
 .chat-feed-skeleton {
     position: absolute;
-    right: 0;
-    bottom: 18px;
-    left: 0;
+    inset: 0;
     z-index: 1;
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
     gap: 14px;
-    padding: 20px;
+    padding: 28px 20px 38px;
+    overflow: hidden;
     pointer-events: none;
 }
 
@@ -491,7 +502,8 @@
 /* Community's flat rows: the 36px face in the gutter, a name and a line of text beside it. */
 .is-community .chat-feed-skeleton {
     gap: 18px;
-    padding: 20px 0;
+    padding-right: 0;
+    padding-left: 0;
 }
 
 .chat-skeleton-row.is-flat {
