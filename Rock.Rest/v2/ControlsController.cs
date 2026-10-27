@@ -11123,7 +11123,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6b39600f-3037-48d8-861e-6e7d0bb5972f" )]
         public IActionResult UniversalItemSearchPickerGetItems( [FromBody] UniversalItemSearchPickerOptionsBag options )
         {
-            var data = Encryption.DecryptString( options.Context ).FromJsonOrNull<UniversalItemSearchPickerFieldType.ContextData>();
+            var data = UniversalItemSearchPickerFieldType.DecryptContextData( options.Context );
 
             if ( data == null )
             {
@@ -11168,7 +11168,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "529df00f-2338-4d9b-a947-aa0ec5459f35" )]
         public IActionResult UniversalItemTreePickerGetItems( [FromBody] UniversalItemTreePickerOptionsBag options )
         {
-            var data = Encryption.DecryptString( options.Context ).FromJsonOrNull<UniversalItemTreePickerFieldType.ContextData>();
+            var data = UniversalItemTreePickerFieldType.DecryptContextData( options.Context );
 
             if ( data == null )
             {
