@@ -98,6 +98,11 @@
                 syncPersonSelection();
 
                 $('.js-merge-header-summary').off('click').on('click', function (event) {
+                    // Clicking a link in the header (such as View Profile) should only follow the link, not select this person.
+                    if ($(event.target).closest('a').length > 0) {
+                        return;
+                    }
+
                     // The checkbox in the header was clicked, so we want to set the checkbox/radiobuttons as checked for all the person's selection controls
                     var $checkboxIcon = $(this).children('.js-header-checkbox-icon');
 
