@@ -21,6 +21,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 
 using Rock.Configuration;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -67,6 +68,8 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
+            var rockRequestContext = context.GetRockRequestContext();
+
             // Get the current page object if it is available.
             RockPage page = null;
 
@@ -100,6 +103,8 @@ namespace Rock.Lava.Blocks
                             foreach ( var importFile in importFiles )
                             {
                                 var filePath = string.Empty;
+                                string fullPath = string.Empty;
+
                                 if ( !importFile.StartsWith( "~" ) )
                                 {
                                     filePath = $"~~/Styles/{importFile}";
@@ -109,19 +114,32 @@ namespace Rock.Lava.Blocks
                                     filePath = importFile;
                                 }
 
-                                if ( page != null )
+                                if ( rockRequestContext != null )
                                 {
-                                    filePath = page.ResolveRockUrl( filePath );
-
-                                    var fullPath = RockApp.Current.MapPath( "~/" ) + filePath;
-
-                                    // Only files the Less compiler is allowed to read are imported.
-                                    if ( StylesheetLessCompiler.IsAllowedPath( fullPath ) && File.Exists( fullPath ) )
+                                    try
                                     {
-                                        importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
+                                        filePath = rockRequestContext.ResolveRockUrl( filePath );
+                                        fullPath = RockApp.Current.MapPath( "~/" ) + filePath;
+                                    }
+                                    catch
+                                    {
+                                        // Intentionally ignore any errors. This prevents a single
+                                        // bad import from breaking the entire stylesheet.
                                     }
                                 }
+#if WEBFORMS
+                                else if ( page != null )
+                                {
+                                    filePath = page.ResolveRockUrl( filePath );
+                                    fullPath = RockApp.Current.MapPath( "~/" ) + filePath;
+                                }
+#endif
 
+                                // Only files the Less compiler is allowed to read are imported.
+                                if ( fullPath.IsNotNullOrWhiteSpace() && StylesheetLessCompiler.IsAllowedPath( fullPath ) && File.Exists( fullPath ) )
+                                {
+                                    importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
+                                }
                             }
 
                             stylesheet = $"{stylesheet}{Environment.NewLine}{importStatements}";

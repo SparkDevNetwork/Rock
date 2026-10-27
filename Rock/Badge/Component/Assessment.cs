@@ -148,7 +148,7 @@ namespace Rock.Badge.Component
                 badgeIcons = i % 2 == 0 ? badgeRow1 : badgeRow2;
 
                 var assessmentType = assessmentTypes[i];
-                var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={person.GetPersonActionIdentifier( "Assessment" ) }" );
+                var resultsPageUrl = RockApp.Current.ResolveRockUrl( $"~{assessmentType.AssessmentResultsPath}?Person={person.GetPersonActionIdentifier( "Assessment" ) }" );
                 var assessmentTitle = assessmentType.Title;
                 var mergeFields = new Dictionary<string, object>();
                 var mergedBadgeSummaryLava = "Not requested";

@@ -25,8 +25,6 @@ using Rock.Utility.HtmlSanitization;
 
 namespace Rock.Configuration
 {
-    // Use System.Web.VirtualPathUtility.ToAbsolute("~/") to get virtual root path.
-
     /// <summary>
     /// The RockApp class provides access to all the configuration information
     /// about a running Rock instance.

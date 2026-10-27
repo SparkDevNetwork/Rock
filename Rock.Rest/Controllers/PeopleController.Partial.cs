@@ -1178,7 +1178,7 @@ namespace Rock.Rest.Controllers
         /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
         private static void GetPersonSearchDetails( RockContext rockContext, PersonSearchResult personSearchResult, Person person, bool includeHtml )
         {
-            var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+            var appPath = RockApp.Current.ResolveRockUrl( "~" );
 
             // figure out Family, Address, Spouse
 
@@ -1505,7 +1505,7 @@ namespace Rock.Rest.Controllers
 
                         Reason: Stored names must not render as HTML.
                     */
-                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    var appPath = RockRequestContext.ResolveRockUrl( "~" );
                     html.AppendFormat(
                         "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                         Person.GetPersonPhotoImageTag( person, 65, 65 ),
@@ -1532,7 +1532,7 @@ namespace Rock.Rest.Controllers
                     {
                         if ( emailAsLink )
                         {
-                            html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                            html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( RockRequestContext.ResolveRockUrl( "~/" ) ) );
                         }
                         else
                         {

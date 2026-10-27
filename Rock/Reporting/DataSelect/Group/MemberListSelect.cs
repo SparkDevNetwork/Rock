@@ -142,8 +142,8 @@ namespace Rock.Reporting.DataSelect.Group
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
             var callbackField = new CallbackField();
-            string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
-            string baseGroupMemberUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/GroupMember/" );
+            string basePersonUrl = RockApp.Current.ResolveRockUrl( "~/Person/" );
+            string baseGroupMemberUrl = RockApp.Current.ResolveRockUrl( "~/GroupMember/" );
             var selectionParts = selection.Split( '|' );
             ShowAsLinkType showAsLinkType = selectionParts.Length > 0 ? selectionParts[0].ConvertToEnum<ShowAsLinkType>( ShowAsLinkType.NameOnly ) : ShowAsLinkType.NameOnly;
             callbackField.OnFormatDataValue += ( sender, e ) =>

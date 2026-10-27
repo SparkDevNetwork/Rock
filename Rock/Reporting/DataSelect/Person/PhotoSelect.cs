@@ -21,9 +21,9 @@ using System.ComponentModel.Composition;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -190,7 +190,7 @@ namespace Rock.Reporting.DataSelect.Person
             }
 
             // Construct the widthHeightHtmlParams strings
-            string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
+            string baseUrl = RockApp.Current.ResolveRockUrl( "~/" );
             string widthHeightUrlParams = string.Format( "&width={0}&height={1}", width, height );
             string widthHeightHtmlParams = string.Format( " width='{0}' height='{1}' ", width, height );
             string nophotoAdultFemaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-female.svg'" + widthHeightHtmlParams + " />";

@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -854,9 +855,7 @@ namespace Rock.Blocks.Core
                 return encodedCaption;
             }
 
-            string resolvedUrl = System.Web.HttpContext.Current == null
-                ? virtualUrl
-                : System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
+            string resolvedUrl = RockApp.Current.ResolveRockUrl( virtualUrl );
 
             return $"<a href='{resolvedUrl}'>{encodedCaption}</a>";
         }
