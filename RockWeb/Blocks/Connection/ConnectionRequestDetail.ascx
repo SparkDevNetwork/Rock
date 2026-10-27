@@ -232,7 +232,6 @@
                             </div>
                         </div>
 
-                        <asp:HiddenField ID="hfGroupMemberAttributeValues" runat="server" />
                         <Rock:DynamicPlaceholder ID="phGroupMemberAttributes" runat="server" />
 
                         <Rock:NotificationBox ID="nbRequirementsWarning" runat="server" NotificationBoxType="Warning" Visible="false" />

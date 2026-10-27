@@ -282,11 +282,32 @@ namespace RockWeb.Blocks.Connection
                 AddDynamicControls();
             }
 
-            BuildGroupMemberAttributes(
-                ViewState["PlacementGroupId"] as int?,
-                ViewState["PlacementGroupRoleId"] as int?,
-                ViewState["PlacementGroupStatus"] as GroupMemberStatus?,
-                false );
+            var placementGroupId = ViewState["PlacementGroupId"] as int?;
+            if ( placementGroupId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    /*
+                        10/27/2026 - MSE
+
+                        Display controls need saved values on every postback, even when edit
+                        controls must keep their posted values. Child hidden fields have not
+                        loaded yet, so resolve the request from the page and recheck access.
+
+                        Reason: Validation must not replace read-only values with defaults.
+                    */
+                    var connectionRequest = GetEditableConnectionRequest( rockContext, GetConnectionRequestIdPageParameter() );
+                    if ( connectionRequest != null )
+                    {
+                        BuildGroupMemberAttributes(
+                            placementGroupId,
+                            ViewState["PlacementGroupRoleId"] as int?,
+                            ViewState["PlacementGroupStatus"] as GroupMemberStatus?,
+                            false,
+                            connectionRequest );
+                    }
+                }
+            }
 
             IsEditAllowed = ViewState["IsEditAllowed"] as bool?;
         }
@@ -774,11 +795,12 @@ namespace RockWeb.Blocks.Connection
 
                     if ( oldState != ConnectionState.Connected )
                     {
+                        var groupMemberAttributeValues = GetGroupMemberAttributeValues( connectionRequest );
                         connectionRequest.CampusId = cpCampus.SelectedCampusId;
                         connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
                         connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
                         connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
-                        connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                        connectionRequest.AssignedGroupMemberAttributeValues = groupMemberAttributeValues;
                     }
 
                     connectionRequest.Comments = tbComments.Text.SanitizeHtml();
@@ -2380,10 +2402,11 @@ namespace RockWeb.Blocks.Connection
         /// edit it.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="requestId">The request identifier, or <c>null</c> to use the form's identifier.</param>
         /// <returns>The connection request, or <c>null</c> if it does not exist or the current person cannot edit it.</returns>
-        private ConnectionRequest GetEditableConnectionRequest( RockContext rockContext )
+        private ConnectionRequest GetEditableConnectionRequest( RockContext rockContext, int? requestId = null )
         {
-            var connectionRequestId = hfConnectionRequestId.ValueAsInt();
+            var connectionRequestId = requestId ?? hfConnectionRequestId.ValueAsInt();
             if ( connectionRequestId > 0 )
             {
                 var existingConnectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
@@ -2597,8 +2620,7 @@ namespace RockWeb.Blocks.Connection
                     string.Format( "<a href='{0}'>{1}</a>{2}", url, connectionRequest.AssignedGroup.Name, roleStatus ) :
                     connectionRequest.AssignedGroup.Name;
 
-                hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
-                BuildGroupMemberAttributes( connectionRequest.AssignedGroupId, connectionRequest.AssignedGroupMemberRoleId, connectionRequest.AssignedGroupMemberStatus, true );
+                BuildGroupMemberAttributes( connectionRequest.AssignedGroupId, connectionRequest.AssignedGroupMemberRoleId, connectionRequest.AssignedGroupMemberStatus, true, connectionRequest );
             }
             else
             {
@@ -2847,8 +2869,6 @@ namespace RockWeb.Blocks.Connection
             var campuses = CampusCache.All( false ).Where( c => campusIds.Contains( c.Id ) && ( c.IsActive ?? false ) ).ToList();
             cpCampus.Campuses = campuses;
             cpCampus.SelectedCampusId = connectionRequest.CampusId;
-
-            hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
 
             avcAttributes.AddEditControls( connectionRequest, Rock.Security.Authorization.EDIT, CurrentPerson );
 
@@ -3109,7 +3129,7 @@ namespace RockWeb.Blocks.Connection
             cpCampus.Enabled = enableConnectionRelatedControl;
             if ( enableConnectionRelatedControl )
             {
-                BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+                BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true, connectionRequest );
             }
         }
 
@@ -3157,7 +3177,15 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
-        private void BuildGroupMemberAttributes( int? groupId, int? groupMemberRoleId, GroupMemberStatus? groupMemberStatus, bool setValues )
+        /// <summary>
+        /// Builds the placement member's authorized edit and display controls.
+        /// </summary>
+        /// <param name="groupId">The placement group identifier.</param>
+        /// <param name="groupMemberRoleId">The placement member role identifier.</param>
+        /// <param name="groupMemberStatus">The placement member status.</param>
+        /// <param name="setValues">Whether to initialize the controls' values.</param>
+        /// <param name="sourceConnectionRequest">The authorized request with its previously saved placement and values.</param>
+        private void BuildGroupMemberAttributes( int? groupId, int? groupMemberRoleId, GroupMemberStatus? groupMemberStatus, bool setValues, ConnectionRequest sourceConnectionRequest )
         {
             phGroupMemberAttributes.Controls.Clear();
             phGroupMemberAttributesView.Controls.Clear();
@@ -3178,26 +3206,174 @@ namespace RockWeb.Blocks.Connection
 
                         groupMember.LoadAttributes();
 
-                        if ( setValues && !string.IsNullOrWhiteSpace( hfGroupMemberAttributeValues.Value ) )
+                        var savedValues = GetSavedGroupMemberAttributeValues( sourceConnectionRequest, groupMember, rockContext );
+                        foreach ( var item in savedValues )
                         {
-                            var savedValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( hfGroupMemberAttributeValues.Value );
-                            if ( savedValues != null )
+                            groupMember.SetAttributeValue( item.Key, item.Value );
+                        }
+
+                        /*
+                            10/27/2026 - MSE
+
+                            Use the same member attribute permissions as Group Member Detail.
+                            Saved values stay on the server so hidden attributes are not exposed
+                            through a client-controlled hidden field.
+
+                            Reason: Placement member attributes must honor their own security.
+                        */
+                        var editableKeys = GetEditableGroupMemberAttributeKeys( groupMember );
+                        var viewableKeys = GetViewableGroupMemberAttributeKeys( groupMember );
+                        var attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( groupMember );
+
+                        foreach ( var category in attributeCategories )
+                        {
+                            var editableAttributes = category.Attributes.Where( a => editableKeys.Contains( a.Key ) ).ToList();
+                            if ( editableAttributes.Any() )
                             {
-                                foreach ( var item in savedValues )
+                                var controlIndex = phGroupMemberAttributes.Controls.Count;
+                                Rock.Attribute.Helper.AddEditControlsForCategory( category.CategoryName, groupMember, phGroupMemberAttributes, BlockValidationGroup, setValues,
+                                    new AttributeAddEditControlsOptions
+                                    {
+                                        IncludedAttributes = editableAttributes,
+                                        NumberOfColumns = 2
+                                    } );
+
+                                /*
+                                    10/27/2026 - MSE
+
+                                    Rebinding can assign different automatic IDs to the helper's
+                                    wrappers. Keep category and row identities stable so the next
+                                    postback loads their state into the same control types.
+
+                                    Reason: A placement change must preserve editable ViewState.
+                                */
+                                var categoryControl = phGroupMemberAttributes.Controls[controlIndex];
+                                categoryControl.ID = "groupMemberAttributeCategory_" + ( category.Category?.Id ?? 0 ).ToString();
+                                foreach ( Control row in categoryControl.Controls )
                                 {
-                                    groupMember.SetAttributeValue( item.Key, item.Value );
+                                    row.ID = categoryControl.ID + ( row is DynamicControlsHtmlGenericControl ? "_attributes" : "_heading" );
                                 }
                             }
                         }
 
-                        Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, setValues, BlockValidationGroup, 2 );
-                        Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
+                        var viewableCategories = attributeCategories.Select( c => new AttributeCategory
+                        {
+                            Category = c.Category,
+                            Attributes = c.Attributes.Where( a => viewableKeys.Contains( a.Key ) ).ToList()
+                        } ).Where( c => c.Attributes.Any() ).ToList();
+                        // Display values are rebuilt from the trusted model on each edit postback.
+                        var viewValues = new PlaceHolder { ID = "groupMemberAttributeViewValues", EnableViewState = false };
+                        phGroupMemberAttributesView.Controls.Add( viewValues );
+                        Rock.Attribute.Helper.AddDisplayControls( groupMember, viewableCategories, viewValues, null, false );
+
+                        var viewOnlyCategories = viewableCategories.Select( c => new AttributeCategory
+                        {
+                            Category = c.Category,
+                            Attributes = c.Attributes.Where( a => !editableKeys.Contains( a.Key ) ).ToList()
+                        } ).Where( c => c.Attributes.Any() ).ToList();
+                        var readOnlyValues = new PlaceHolder { ID = "groupMemberAttributeReadOnlyValues", EnableViewState = false };
+                        phGroupMemberAttributes.Controls.Add( readOnlyValues );
+                        Rock.Attribute.Helper.AddDisplayControls( groupMember, viewOnlyCategories, readOnlyValues, null, false );
                     }
                 }
             }
         }
 
-        private string GetGroupMemberAttributeValues()
+        /// <summary>
+        /// Gets the placement member attributes the current person may edit.
+        /// </summary>
+        /// <param name="groupMember">The placement member with its group and attributes loaded.</param>
+        /// <returns>The editable attribute keys.</returns>
+        private List<string> GetEditableGroupMemberAttributeKeys( GroupMember groupMember )
+        {
+            if ( groupMember.Group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            {
+                return groupMember.Attributes.Keys.ToList();
+            }
+
+            return groupMember.Attributes
+                .Where( a => a.Value.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                .Select( a => a.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the placement member attributes the current person may view.
+        /// </summary>
+        /// <param name="groupMember">The placement member with its group and attributes loaded.</param>
+        /// <returns>The viewable attribute keys.</returns>
+        private List<string> GetViewableGroupMemberAttributeKeys( GroupMember groupMember )
+        {
+            if ( groupMember.Group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            {
+                return groupMember.Attributes.Keys.ToList();
+            }
+
+            return groupMember.Attributes
+                .Where( a => a.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .Select( a => a.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets saved values that still represent the same attributes in the selected placement.
+        /// </summary>
+        /// <param name="sourceConnectionRequest">The authorized request with its original placement and values.</param>
+        /// <param name="targetGroupMember">The selected placement member with its attributes loaded.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The saved values whose source and target attribute identifiers match.</returns>
+        private Dictionary<string, string> GetSavedGroupMemberAttributeValues( ConnectionRequest sourceConnectionRequest, GroupMember targetGroupMember, RockContext rockContext )
+        {
+            var values = new Dictionary<string, string>();
+            if ( sourceConnectionRequest == null
+                || !sourceConnectionRequest.AssignedGroupId.HasValue
+                || !sourceConnectionRequest.AssignedGroupMemberRoleId.HasValue
+                || !sourceConnectionRequest.AssignedGroupMemberStatus.HasValue
+                || string.IsNullOrWhiteSpace( sourceConnectionRequest.AssignedGroupMemberAttributeValues ) )
+            {
+                return values;
+            }
+
+            /*
+                10/27/2026 - MSE
+
+                A different group or role can define another attribute with the same key.
+                Carry saved values only when they still belong to the same attribute,
+                before the request's original placement is replaced on Save.
+
+                Reason: Attribute keys alone must not transfer protected values.
+            */
+            var sourceGroupMember = new GroupMember
+            {
+                GroupId = sourceConnectionRequest.AssignedGroupId.Value,
+                GroupRoleId = sourceConnectionRequest.AssignedGroupMemberRoleId.Value,
+                GroupMemberStatus = sourceConnectionRequest.AssignedGroupMemberStatus.Value
+            };
+            sourceGroupMember.LoadAttributes( rockContext );
+
+            var savedValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( sourceConnectionRequest.AssignedGroupMemberAttributeValues );
+            if ( savedValues != null )
+            {
+                foreach ( var attribute in targetGroupMember.Attributes )
+                {
+                    if ( sourceGroupMember.Attributes.TryGetValue( attribute.Key, out var sourceAttribute )
+                        && sourceAttribute.Id == attribute.Value.Id
+                        && savedValues.TryGetValue( attribute.Key, out var savedValue ) )
+                    {
+                        values.Add( attribute.Key, savedValue );
+                    }
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Merges editable placement member values with the request's previously saved values.
+        /// </summary>
+        /// <param name="sourceConnectionRequest">The authorized request with its original placement and values.</param>
+        /// <returns>The applicable placement member values as JSON.</returns>
+        private string GetGroupMemberAttributeValues( ConnectionRequest sourceConnectionRequest )
         {
             var groupId = ddlPlacementGroup.SelectedValueAsInt();
             var groupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
@@ -3221,11 +3397,31 @@ namespace RockWeb.Blocks.Connection
                         groupMember.GroupMemberStatus = groupMemberStatus.Value;
 
                         groupMember.LoadAttributes();
+
+                        /*
+                            10/27/2026 - MSE
+
+                            Recheck Edit permissions when saving and preserve values authored
+                            by another person from the stored request, not from posted data.
+                            Missing controls must not replace those values with defaults.
+
+                            Reason: A connector may not edit every placement member attribute.
+                        */
+                        var savedValues = GetSavedGroupMemberAttributeValues( sourceConnectionRequest, groupMember, rockContext );
+                        var editableKeys = GetEditableGroupMemberAttributeKeys( groupMember );
+                        var editControls = Rock.Attribute.Helper.GetAttributeEditControls( phGroupMemberAttributes, groupMember );
                         Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
-                        foreach ( var attrValue in groupMember.AttributeValues )
+                        foreach ( var attribute in groupMember.Attributes )
                         {
-                            values.Add( attrValue.Key, attrValue.Value.Value );
+                            if ( editableKeys.Contains( attribute.Key ) && editControls.ContainsKey( attribute.Value ) )
+                            {
+                                values.Add( attribute.Key, groupMember.GetAttributeValue( attribute.Key ) );
+                            }
+                            else if ( savedValues.TryGetValue( attribute.Key, out var savedValue ) )
+                            {
+                                values.Add( attribute.Key, savedValue );
+                            }
                         }
 
                         return JsonConvert.SerializeObject( values, Formatting.None );
