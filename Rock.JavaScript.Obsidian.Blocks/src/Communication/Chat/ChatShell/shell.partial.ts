@@ -280,8 +280,8 @@ export type ChatShell = {
     /** Whether a thread is the one open in the drawer while the page is visible, for the push worker. */
     isThreadOnScreen: (rootId: number) => boolean;
 
-    /** The unread mentions in the rooms the sidebar lists, for the app badge. */
-    mentionBadge: () => number;
+    /** The app icon's count: each unread conversation between people, and each channel's mentions by name. */
+    appBadge: () => number;
 
     /** Fetches older messages of the open channel. */
     loadOlder: () => Promise<void>;
@@ -1371,9 +1371,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 && options.pageTargets.document.visibilityState === "visible";
         },
 
-        // Mentions, never messages: the icon counts what was meant for the person, as the
-        // platform's mention push does, and the sidebar lists the same rooms that push counts.
-        mentionBadge: (): number => channels.rows.reduce((sum, row) => sum + (row.mention_count ?? 0), 0),
+        // What waits for the person, as the phone app's icon counts it: a conversation between
+        // people is addressed to them, so it counts once however many messages it holds; a
+        // channel counts only its mentions by name, as a mention push does. The room on screen is
+        // being read, and one not joined has no reading of theirs to be behind.
+        appBadge: (): number => channels.rows.reduce((sum, row) => {
+            if (!row.is_member || row.channel_id === state.activeChannelId) {
+                return sum;
+            }
+            return sum + (row.room_kind === "channel" ? row.mention_count ?? 0 : row.is_unread ? 1 : 0);
+        }, 0),
 
         loadOlder: async (): Promise<void> => {
             if (state.activeChannelId) {

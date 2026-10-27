@@ -819,8 +819,8 @@
         closeThreadDrawer
     });
 
-    /** The unread mentions on the app icon, from the sidebar, so reading a mention clears it. */
-    const mentionBadge = computed((): number => shell.value.mentionBadge());
+    /** The count on the app icon, from the sidebar, so reading what it counts clears it. */
+    const appBadge = computed((): number => shell.value.appBadge());
 
     /** Whether the open channel's catch-up failed and is trying again, so messages may be missing. */
     const isActiveBehind = computed((): boolean => !!activeChannelId.value && shell.value.timelines.state(activeChannelId.value).isBehind);
@@ -1363,7 +1363,7 @@
 
     // From the first sidebar the page loads, a count of none included, so a badge a mention push
     // left behind is cleared once the person has read it.
-    watch([mentionBadge, (): string => shell.value.state.phase], ([count, phase]) => {
+    watch([appBadge, (): string => shell.value.state.phase], ([count, phase]) => {
         if (phase !== "ready") {
             return;
         }

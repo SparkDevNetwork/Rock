@@ -225,7 +225,7 @@ function fakeShell(): Record<string, unknown> {
         isChannelOnScreen: () => false,
         // as the shell answers it: the thread open in the drawer, on a page the test calls visible
         isThreadOnScreen: (rootId: number) => (threads.state as { thread: { rootId: number } | null }).thread?.rootId === rootId,
-        mentionBadge: () => 0,
+        appBadge: () => 0,
         loadOlder: jest.fn(),
         dismissError: jest.fn(),
         sendReply: jest.fn(),

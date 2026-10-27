@@ -1175,41 +1175,57 @@ describe("what the page tells push", () => {
         expect(h.shell.isChannelOnScreen(channelA)).toBe(true);
     });
 
-    test("the badge is the sidebar's unread mentions, never its unread messages", async () => {
+    /** A sidebar row of the given kind, read and named nowhere unless the cell says otherwise. */
+    function badgeRow(channelId: string, roomKind: "channel" | "person" | "group", extra: Partial<SidebarRow> = {}): Partial<SidebarRow> {
+        return { channel_id: channelId, name: channelId, room_kind: roomKind, is_member: true, is_unread: false, unread_count: 0, mention_count: 0, all_mention_count: 0, ...extra };
+    }
+
+    async function badgeOf(rows: Partial<SidebarRow>[]): Promise<number> {
         const h = build();
-        h.bootstrap.value = {
-            channels: [
-                { channel_id: channelA, name: "General", unread_count: 40, mention_count: 2 },
-                { channel_id: "another-channel", name: "Youth", unread_count: 7, mention_count: 1 },
-                { channel_id: "third-channel", name: "Staff", unread_count: 3, mention_count: 0 }
-            ]
-        };
+        h.bootstrap.value = { channels: rows };
         const starting = h.shell.start();
         await settle();
         answerHistory(h, channelA, 10);
         await starting;
         await settle();
+        return h.shell.appBadge();
+    }
 
-        expect(h.shell.mentionBadge()).toBe(3);
+    // What waits for the person: a conversation between people is addressed to them, so it counts
+    // once however many messages it holds, as its dot shows; a channel counts only what named them.
+    test("the badge counts each unread conversation between people once and each channel's mentions by name", async () => {
+        const badge = await badgeOf([
+            badgeRow(channelA, "channel"),
+            badgeRow("youth", "channel", { is_unread: true, unread_count: 7, mention_count: 2 }),
+            badgeRow("staff", "channel", { is_unread: true, unread_count: 3 }),
+            badgeRow("ben", "person", { is_unread: true, unread_count: 5 }),
+            badgeRow("trail-crew", "group", { is_unread: true, unread_count: 2, mention_count: 1 }),
+            badgeRow("cara", "person", { unread_count: 0 })
+        ]);
+
+        expect(badge).toBe(4);
     });
 
     // A mention push's badge counts mentions by name, so the icon does too, or the two would
     // disagree; @all raises only the sidebar's own badge.
     test("the badge leaves out the @all mentions the sidebar's rows count", async () => {
-        const h = build();
-        h.bootstrap.value = {
-            channels: [
-                { channel_id: channelA, name: "General", unread_count: 40, mention_count: 2, all_mention_count: 4 },
-                { channel_id: "another-channel", name: "Youth", unread_count: 7, mention_count: 0, all_mention_count: 1 }
-            ]
-        };
-        const starting = h.shell.start();
-        await settle();
-        answerHistory(h, channelA, 10);
-        await starting;
-        await settle();
+        const badge = await badgeOf([
+            badgeRow(channelA, "channel"),
+            badgeRow("youth", "channel", { is_unread: true, mention_count: 2, all_mention_count: 4 }),
+            badgeRow("staff", "channel", { is_unread: true, all_mention_count: 1 })
+        ]);
 
-        expect(h.shell.mentionBadge()).toBe(2);
+        expect(badge).toBe(2);
+    });
+
+    test("the badge leaves out the conversation on screen, which is being read, and a room the person has not joined", async () => {
+        const badge = await badgeOf([
+            badgeRow(channelA, "person", { is_unread: true, unread_count: 4 }),
+            badgeRow("youth", "channel", { is_member: false, is_public: true, mention_count: 3 }),
+            badgeRow("ben", "person", { is_unread: true })
+        ]);
+
+        expect(badge).toBe(1);
     });
 });
 
