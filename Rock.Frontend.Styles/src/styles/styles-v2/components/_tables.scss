@@ -249,7 +249,7 @@ td.wrap-contents {
     background-color: var(--color-interface-softest); // TODO darken the ui soft by 3%
   }
   > tbody > tr:nth-of-type(even) {
-    color:            var(--color-interface-softest);
+    color:            var(--color-interface-stronger);
     background-color: var(--color-interface-softer);
   }
 }
