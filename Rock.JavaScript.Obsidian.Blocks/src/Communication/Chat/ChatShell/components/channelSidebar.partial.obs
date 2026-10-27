@@ -957,7 +957,8 @@
 
     // #region Watchers
 
-    // A row glows once for news: a room new to the list; a direct message reached live by a
+    // A row glows once for news: a room new to the list, but not a direct message whose last message
+    // the person typed, as one they began on another device; a direct message reached live by a
     // message the person did not type (someone else's, or Rock's post in their name), moved or not,
     // as the design's incoming message glows; a channel turning starred. Every star control acts
     // on the room on screen, which never glows, so that last is a star made on another device
@@ -984,7 +985,8 @@
             }
             const was = before.get(row.id);
             if (!was) {
-                return true;
+                // a direct message joins the list with its first message, no news to the one who typed it
+                return !(row.isDm && row.isTyped);
             }
             if (row.isDm) {
                 return !isReread && !row.isTyped && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);

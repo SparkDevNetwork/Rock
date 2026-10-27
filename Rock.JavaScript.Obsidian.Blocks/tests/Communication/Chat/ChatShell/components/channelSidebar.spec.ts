@@ -701,6 +701,16 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
+    test("a conversation new to the list glows with someone else's first message, not with the reader's own, as from another of their devices", async () => {
+        const w = mountSidebar({ rows: [dmGroup] });
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_is_own: true }, { ...dmAnna, is_unread: true }, dmGroup] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, dmAnna.channel_id).classes()).toContain("is-flash");
+    });
+
     test("on a post Rock made in the reader's name, which is news to them as its bold says", async () => {
         const w = mountSidebar({ rows: [dmGroup, dmRead] });
 
