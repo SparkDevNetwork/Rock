@@ -770,9 +770,9 @@ describe("the flash on a live message", () => {
     });
 
     test("a direct message glows on its first live message after the page's first sidebar, which glows nothing", async () => {
-        const w = mountSidebar({ rows: [], sidebarReads: 0 });
+        const w = mountSidebar({ rows: [], sidebarReads: 0, loadState: "loading" });
 
-        await w.setProps({ rows: [dmRead, dmGroup], sidebarReads: 1 });
+        await w.setProps({ rows: [dmRead, dmGroup], sidebarReads: 1, loadState: "loaded" });
         await nextTick();
         expect(w.findAll(".is-flash")).toHaveLength(0);
 
