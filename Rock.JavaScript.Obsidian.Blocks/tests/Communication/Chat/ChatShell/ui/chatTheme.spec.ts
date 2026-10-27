@@ -653,6 +653,26 @@ describe("the components' own styles", () => {
         expect(reducedFrames).not.toContain("transform");
     });
 
+    // The panel column opens from 0px wide with focus already inside it, so it clips rather than
+    // hides, as the frame does: a box that hides its overflow can still be scrolled by a focus or a
+    // find on the page, which would drag the panel in from the column's edge instead of sliding it.
+    // The oldest Safari Rock supports has no clip and keeps hidden.
+    test("the panel column and the frame around it clip their overflow where the browser can, so nothing scrolls them", () => {
+        const shellPath = resolve(components, "../../chatShell.obs");
+        const isClipSupported = (rule: Rule): boolean => rule.media === normalize("@supports (overflow: clip)");
+        const selectors = selectorsOf(readSheet(shellPath));
+
+        for (const selector of [".chat-frame", ".chat-frame-panel"]) {
+            expect(declarationOf(shellPath, selector, "overflow")).toBe("hidden");
+            expect(declarationOf(shellPath, selector, "overflow", isClipSupported)).toBe("clip");
+
+            // Both rules weigh the same, so the clip holds only when it comes after the fallback.
+            const hidden = selectors.findIndex(s => s.selector === selector && s.rule.media === "" && s.rule.declarations.has("overflow"));
+            const clip = selectors.findIndex(s => s.selector === selector && isClipSupported(s.rule) && s.rule.declarations.has("overflow"));
+            expect(clip).toBeGreaterThan(hidden);
+        }
+    });
+
     test("a block image keeps its 16 to 7 shape in a browser without aspect-ratio, by a padding box", () => {
         const card = readSheet(resolve(components, "blockCard.partial.obs"));
         const fallback = card.rules.filter(r => r.media.includes("@supportsnot(aspect-ratio"));

@@ -513,6 +513,13 @@
     background: var(--chat-surface);
 }
 
+/* Clipped where the browser can, so focus put inside the column as it opens from 0px never scrolls it. */
+@supports (overflow: clip) {
+    .chat-frame-panel {
+        overflow: clip;
+    }
+}
+
 /* Its dividing line only while open, so the closed column is 0px wide and not a 1px sliver. */
 .chat-frame[data-panel-open="true"] .chat-frame-panel {
     border-left: 1px solid var(--chat-line);

@@ -65,11 +65,12 @@ let isQuietFocus = false;
  * or X only so the keyboard starts inside it, which is not the person reaching for that button.
  *
  * @param element The element to focus.
+ * @param options How to focus it, such as without scrolling a panel that is still opening.
  */
-export function focusQuietly(element: HTMLElement): void {
+export function focusQuietly(element: HTMLElement, options?: FocusOptions): void {
     isQuietFocus = true;
     try {
-        element.focus();
+        element.focus(options);
     }
     finally {
         isQuietFocus = false;

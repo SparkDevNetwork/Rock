@@ -116,6 +116,7 @@ type Mounted = {
     state: ReturnType<typeof fakeShell>["state"];
     wrapper: VueWrapper;
     hasJoinBar: { value: boolean };
+    hasPanelField: { value: boolean };
 };
 
 /**
@@ -127,6 +128,7 @@ function mountFrame(): Mounted {
     const calls: Calls = [];
     const { shell, state } = fakeShell(calls);
     const hasJoinBar = ref(false);
+    const hasPanelField = ref(false);
     let frame!: Frame;
 
     const Host = defineComponent({
@@ -153,13 +155,16 @@ function mountFrame(): Mounted {
                         ? h("div", { "data-testid": "main-view" }, [h("input", { "data-autofocus": "" })])
                         : null
                 ]),
-                h("aside", { ref: frame.panelElement }, [h("button", { "data-testid": "panel-close" }, "Close")])
+                h("aside", { ref: frame.panelElement }, [
+                    hasPanelField.value ? h("input", { "data-testid": "panel-field", "data-autofocus": "" }) : null,
+                    h("button", { "data-testid": "panel-close" }, "Close")
+                ])
             ]);
         }
     });
 
     const wrapper = mount(Host, { attachTo: document.body });
-    return { frame, calls, state, wrapper, hasJoinBar };
+    return { frame, calls, state, wrapper, hasJoinBar, hasPanelField };
 }
 
 async function settle(): Promise<void> {
@@ -562,5 +567,91 @@ describe("on a phone", () => {
         await frame.openMainView("directory");
 
         expect(focused()).not.toBe("autofocus");
+    });
+});
+
+// A panel or pane is still sliding in when focus is put inside it. A focus that scrolls would
+// scroll the clipping box around it, the panel column growing from 0px or the frame with a phone's
+// pane waiting off to its right, which drags the content in from the edge instead of letting it
+// slide. jsdom does not scroll, so these cells pin the focus call that keeps the box still.
+describe("focus into what is opening", () => {
+    /** Each focus the frame makes from here on, by the element's test id and the options it passed. */
+    function recordFocus(): Array<{ target: string | null, options: FocusOptions | undefined }> {
+        const focuses: Array<{ target: string | null, options: FocusOptions | undefined }> = [];
+        const focus = HTMLElement.prototype.focus;
+        jest.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+            focuses.push({ target: this.getAttribute("data-testid") ?? (this.hasAttribute("data-autofocus") ? "autofocus" : null), options });
+            focus.call(this, options);
+        });
+
+        return focuses;
+    }
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test.each(["threads", "mentions", "members"] as const)("the %s list's first control takes focus without scrolling the opening column", async kind => {
+        mounted = mountFrame();
+        const { frame, state, hasPanelField } = mounted;
+        state.activeChannelId = team;
+        hasPanelField.value = true;
+        await settle();
+        const focuses = recordFocus();
+
+        await frame.onListPanel(kind);
+
+        expect(focuses).toEqual([{ target: "panel-field", options: { preventScroll: true } }]);
+    });
+
+    test.each(["threads", "mentions", "members"] as const)("the %s list with no control yet puts focus on its X without scrolling the opening column", async kind => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        const focuses = recordFocus();
+
+        await frame.onListPanel(kind);
+
+        expect(focuses).toEqual([{ target: "panel-close", options: { preventScroll: true } }]);
+        expect(focused()).toBe("panel-close");
+    });
+
+    test("on a phone, a list opened as the panel pane takes focus without scrolling the frame", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        resize(frame, 390);
+        state.activeChannelId = team;
+        await settle();
+        const focuses = recordFocus();
+
+        await frame.onListPanel("threads");
+
+        expect(frame.pane.value).toBe("panel");
+        expect(focuses).toEqual([{ target: "panel-close", options: { preventScroll: true } }]);
+    });
+
+    test("on a phone, a row's conversation sliding in takes focus at its title without scrolling the frame", async () => {
+        mounted = mountFrame();
+        const { frame } = mounted;
+        resize(frame, 390);
+        await settle();
+        const focuses = recordFocus();
+
+        await frame.onSelect(team);
+
+        expect(focuses).toEqual([{ target: "header-title", options: { preventScroll: true } }]);
+    });
+
+    test.each([[false, "directory"], [false, "newdm"], [true, "newdm"]] as const)("a full view opening (phone %s, %s) takes focus without scrolling what holds it", async (isPhone, kind) => {
+        mounted = mountFrame();
+        const { frame } = mounted;
+        resize(frame, isPhone ? 390 : 1200);
+        await settle();
+        const focuses = recordFocus();
+
+        await frame.openMainView(kind);
+
+        expect(focuses).toEqual([{ target: "autofocus", options: { preventScroll: true } }]);
     });
 });
