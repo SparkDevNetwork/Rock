@@ -711,4 +711,34 @@ describe("the components' own styles", () => {
         expect(normalize(box?.declarations.get("padding-top") ?? "")).toBe("43.75%");
         expect(normalize(image?.declarations.get("position") ?? "")).toBe("absolute");
     });
+
+    // A mention chip sits on the text line, its name on the text's baseline and the chip centred
+    // on the line's capitals. The browser's measurement runs with the parity check; these hold the
+    // rule that makes it so. The pill's own 20px line, rather than the paragraph's leading, keeps
+    // it from reaching down past the descenders; the face and the room's mark, an inline block
+    // whose baseline is its bottom edge, each sink half their size less 5px, so both centre 5px
+    // above the baseline, on the capitals, whatever their size.
+    test("a mention chip and its face or mark centre on the text line", () => {
+        const sheet = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
+        const centre = (selector: string): number =>
+            parseFloat(declarationOf(sheet, selector, "height")) / 2 + parseFloat(declarationOf(sheet, selector, "vertical-align"));
+
+        expect(declarationOf(sheet, ".chat-mn", "display")).toBe("inline-block");
+        expect(declarationOf(sheet, ".chat-mn", "line-height")).toBe("20px");
+        expect(declarationOf(sheet, ".chat-mn", "padding")).toBe(normalize("0 6px 0 2px"));
+        expect(declarationOf(sheet, ".chat-mn-av", "height")).toBe("18px");
+        expect(declarationOf(sheet, ".chat-mn-glyph", "height")).toBe("16px");
+        expect(centre(".chat-mn-av")).toBe(5);
+        expect(centre(".chat-mn-glyph")).toBe(5);
+    });
+
+    // A chip that is a button must take the sheet's line, not its parent's, or the pill grows
+    // back to the paragraph's leading; where a chip runs inline instead (the editor and the two
+    // lists), it takes its parent's line so it never makes that line taller.
+    test("a message's chip keeps the sheet's line; an inline chip takes its parent's", () => {
+        expect(declarationOf(resolve(components, "messageBody.partial.obs"), "button.chat-mn", "line-height")).toBe("");
+        expect(declarationOf(resolve(components, "../ui/chipEditor.partial.obs"), ".chat-ed :deep(.chat-mn)", "line-height")).toBe("inherit");
+        expect(declarationOf(resolve(components, "threadsPanel.partial.obs"), ".chat-ls-text :deep(.chat-mn)", "line-height")).toBe("inherit");
+        expect(declarationOf(resolve(components, "mentionsPanel.partial.obs"), ".chat-ls-text :deep(.chat-mn)", "line-height")).toBe("inherit");
+    });
 });
