@@ -656,11 +656,13 @@ describe("the page load", () => {
 
         personal(h, "membership.changed", { channel_id: channelB });
         await settle();
-        expect(h.heldBootstraps.value).toHaveLength(2);
+        // the newer read is asked once the one out answers
+        expect(h.heldBootstraps.value).toHaveLength(1);
 
         h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [] }));
         await settle();
         expect(h.shell.state.isOpening).toBe(true);
+        expect(h.heldBootstraps.value).toHaveLength(2);
 
         h.heldBootstraps.value[1].resolve(fakeResponse(200, { channels: [{ channel_id: channelB } as SidebarRow] }));
         await settle();
@@ -2326,18 +2328,64 @@ describe("the live sidebar", () => {
             askReload(h);
             askReload(h);
             await settle();
-            expect(h.heldBootstraps.value).toHaveLength(2);
+            expect(h.heldBootstraps.value).toHaveLength(1);
+
+            const older = snapshot();
+            older.channels[1] = sidebarRow(channelB, { name: "Stale" });
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, older));
+            await settle();
+            expect(rowOf(h, channelB)?.name).toBe("Room");
 
             const newer = snapshot();
             newer.channels[1] = sidebarRow(channelB, { name: "Renamed" });
             newer.me.unread_mentions = [];
             h.heldBootstraps.value[1].resolve(fakeResponse(200, newer));
             await settle();
-            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
-            await settle();
 
             expect(rowOf(h, channelB)?.name).toBe("Renamed");
             expect(h.shell.mentions.state.hasDot).toBe(false);
+        });
+
+        test("reloads asked while one is out make one more read once it answers, however many", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+            askReload(h);
+            askReload(h);
+            personal(h, "channel.updated", { channel_id: dmD, id: "5e0000c1-0000-4000-8000-000000000000" });
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(1);
+
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(2);
+
+            const newer = snapshot();
+            newer.channels[1] = sidebarRow(channelB, { name: "Renamed" });
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, newer));
+            await settle();
+
+            expect(h.heldBootstraps.value).toHaveLength(2);
+            expect(rowOf(h, channelB)?.name).toBe("Renamed");
+        });
+
+        test("a change that arrives while the read that follows is out is replayed over its answer", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            askReload(h);
+            await settle();
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(2);
+
+            personal(h, "channel.unread", { channel_id: channelB, message_id: 11, id: "5e0000c2-0000-4000-8000-000000000000" });
+            await settle();
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, snapshot()));
+            await settle();
+
+            expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ is_unread: true, last_message_id: 11 }));
         });
 
         test("nothing lands once the shell stops, neither the answer nor a rejoin's wait", async () => {
