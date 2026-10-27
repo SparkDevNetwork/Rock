@@ -1357,10 +1357,15 @@
     });
 
     /**
-     * Community's "Mentioned you". A direct message's bubbles draw neither it nor the wash: the
-     * whole conversation reaches the reader, and the you chip already says who was named.
+     * Community's "Mentioned you", on a message only. A direct message's bubbles draw neither it
+     * nor the wash: the whole conversation reaches the reader, and the you chip already says who
+     * was named. A system line is a quiet note of what happened and a card a post from the church,
+     * neither a message to the reader, so they draw neither either.
      */
-    const isMentionTagShown = computed((): boolean => layout.value === "community" && isMentionOfReader.value);
+    const isMentionTagShown = computed((): boolean => layout.value === "community"
+        && state.value !== "system"
+        && state.value !== "card"
+        && isMentionOfReader.value);
 
     const ariaLabel = computed((): string => {
         const who = props.isOwn ? "You" : displayName.value;

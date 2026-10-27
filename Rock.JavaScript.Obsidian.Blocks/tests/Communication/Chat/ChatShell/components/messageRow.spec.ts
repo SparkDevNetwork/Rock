@@ -483,6 +483,24 @@ describe("Community, in a channel", () => {
         expect(w.get("[data-testid='mention-tag']").text()).toBe("Mentioned you");
     });
 
+    // A system line is a quiet note of what happened and a card a post from the church; neither is
+    // a message to the reader, so neither takes the wash, the words or the label's suffix.
+    test.each([
+        ["a system line", { message_type: "system", person_alias_guid: null, system_kind: "added" }],
+        ["a block card", { message_type: "system", blocks: [{ type: "text", text: "hi", pieces: null, fallback: { type: "text", text: "hi" } }] }]
+    ] as const)("%s that names the reader has no mention treatment", (_kind, extra) => {
+        const w = draw({
+            message: message({ body: `Grace Kim added <@${me}>`, pieces: [{ type: "text", text: "Grace Kim added " }, mentionMe], ...extra } as Partial<TimelineMessage>),
+            isChannel: true,
+            position: "first"
+        });
+
+        expect(["system", "card"]).toContain(root(w).getAttribute("data-state"));
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+        expect(root(w).getAttribute("aria-label") ?? "").not.toContain("mentions you");
+    });
+
     test("the reader's own message naming themselves is not a mention of them", () => {
         const w = draw({ message: ownConfirmed({ body: `me <@${me}>`, pieces: [{ type: "text", text: "me " }, mentionMe] }), isOwn: true, isChannel: true, position: "first" });
 
