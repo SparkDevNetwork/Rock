@@ -28,7 +28,11 @@
 
         <slot name="top" />
 
-        <div class="chat-panel-body" data-chat-scroller>
+        <!-- Entering while the first page waterfalls in; the chat's sheet plays each marked row's rise from it. -->
+        <div class="chat-panel-body"
+             :class="{ 'is-entering': isEntering }"
+             data-chat-scroller
+             @animationend="onAnimationEnd">
             <slot />
         </div>
 
@@ -104,7 +108,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import IconButton from "./iconButton.partial.obs";
 
     const props = defineProps({
@@ -136,6 +140,15 @@
         closeLabel: {
             type: String as PropType<string>,
             default: "Close panel"
+        },
+
+        /**
+         * The keys of the rows the panel draws, in order, each marked chat-enter with its place as
+         * --chat-enter-i; null while its first page is still loading. The first rows drawn enter.
+         */
+        entranceKeys: {
+            type: Array as PropType<readonly string[] | null>,
+            default: null
         }
     });
 
@@ -144,14 +157,36 @@
         (e: "back"): void
     }>();
 
+    // #region Values
+
+    /** The rows rising in the entrance under way, or null when none is. */
+    const entering = ref<ReadonlySet<string> | null>(null);
+
+    /** Whether the next rows drawn are a first page, which is so from the open and after each load from nothing. */
+    let isAwaitingFirstPage = true;
+
+    /** How many of the entering rows have still to finish rising. */
+    let rising = 0;
+
+    // #endregion Values
+
     // #region Computed Values
 
     /** A phone always leaves by the chevron; a wide block shows one only when there is somewhere to go back to. */
     const isBackShown = computed((): boolean => props.isPhone || props.backLabel !== null);
 
+    const isEntering = computed((): boolean => entering.value !== null);
+
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /** The mark goes once every row has risen, so no row's own later motion is held under it. */
+    function onAnimationEnd(event: AnimationEvent): void {
+        if (entering.value && event.animationName === "chat-enter" && --rising <= 0) {
+            entering.value = null;
+        }
+    }
 
     function onKeydown(event: KeyboardEvent): void {
         if (event.key === "Escape" && !event.defaultPrevented) {
@@ -175,4 +210,31 @@
     }
 
     // #endregion Functions
+
+    // #region Watchers
+
+    // Only a first page enters. Read before the render, so a row added after it mounts with the
+    // mark already gone and does not rise; a removed one ends it too, as a filter or a removal
+    // changes the list under it.
+    watch(() => props.entranceKeys, keys => {
+        if (keys === null) {
+            isAwaitingFirstPage = true;
+            entering.value = null;
+            return;
+        }
+
+        if (isAwaitingFirstPage) {
+            isAwaitingFirstPage = false;
+            rising = keys.length;
+            entering.value = keys.length > 0 ? new Set(keys) : null;
+            return;
+        }
+
+        const drawn = entering.value;
+        if (drawn && (keys.length !== drawn.size || keys.some(key => !drawn.has(key)))) {
+            entering.value = null;
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
 </script>

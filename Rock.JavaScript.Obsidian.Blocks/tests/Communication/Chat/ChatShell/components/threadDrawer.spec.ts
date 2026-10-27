@@ -665,3 +665,36 @@ describe("the root's menu", () => {
         expect(w.emitted("messageAction")).toEqual([[{ kind: "copy", message: root }]]);
     });
 });
+
+// A thread waterfalls in when it opens: the root, the replies line and each run of replies rise
+// one after another as the first page is drawn. A reply that arrives later rises on its own, as
+// in the conversation, and the opening does not play again.
+describe("the thread's entrance", () => {
+    function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
+        return {
+            isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
+            order: w.findAll(".chat-enter").map(e => (e.element as HTMLElement).style.getPropertyValue("--chat-enter-i"))
+        };
+    }
+
+    test("the root, the replies line and the replies rise in, in order, as the first page is drawn", async () => {
+        const w = draw({ root: null, replies: [], isLoading: true });
+        expect(entered(w).isEntering).toBe(false);
+
+        const mixed = [...replies(1), message(42, { parent_id: 40 }), ...replies(1).map(r => ({ ...r, id: 43 }))];
+        await w.setProps({ root: rootWith(3), replies: mixed, isLoading: false });
+
+        const drawn = entered(w);
+        expect(drawn.isEntering).toBe(true);
+        expect(drawn.order).toEqual(["0", "1", "2", "3", "4"]);
+        expect(w.get("[data-testid='thread-divider']").classes()).toContain("chat-enter");
+    });
+
+    test("a reply that arrives after the thread opened ends the entrance", async () => {
+        const w = draw({ root: rootWith(1), replies: replies(1).map(r => ({ ...r, person_alias_guid: anna, sender_nick_name: "Anna", sender_last_name: "Reyes" })) });
+        expect(entered(w).isEntering).toBe(true);
+
+        await w.setProps({ replies: [...replies(1).map(r => ({ ...r, person_alias_guid: anna, sender_nick_name: "Anna", sender_last_name: "Reyes" })), message(60, { parent_id: 40, person_alias_guid: ben, sender_nick_name: "Ben", sender_last_name: "Okafor" })] });
+        expect(entered(w).isEntering).toBe(false);
+    });
+});

@@ -359,3 +359,30 @@ describe("loading, empty and failed", () => {
         expect(plain(w.get("[data-testid='mentions-error']").text())).toContain("Chat is busy. Try again in a minute.");
     });
 });
+
+// The inbox waterfalls in when the panel opens with its first page, one row after another across
+// its day headings; an older page and a live mention are simply there.
+describe("the inbox's entrance", () => {
+    function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
+        return {
+            isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
+            order: w.findAll(".chat-ls-row").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+        };
+    }
+
+    test("the first page's rows rise in, in order through every day", async () => {
+        const w = draw({ isLoading: true, rows: [] });
+        expect(entered(w).isEntering).toBe(false);
+
+        await w.setProps({ isLoading: false, rows: [row(52, { created_at: at(10, 0) }), row(51, { created_at: at(9, 0) }), row(50, { created_at: at(9, 0, 1) })] });
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
+    });
+
+    test("an older page does not rise in", async () => {
+        const w = draw({ hasMore: true, rows: [row(52), row(51)] });
+
+        await w.setProps({ isLoadingOlder: true });
+        await w.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50, { created_at: at(9, 0, 1) })] });
+        expect(entered(w).isEntering).toBe(false);
+    });
+});

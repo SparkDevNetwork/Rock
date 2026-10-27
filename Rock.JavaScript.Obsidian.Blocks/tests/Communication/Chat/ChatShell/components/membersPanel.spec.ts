@@ -243,9 +243,10 @@ describe("paging", () => {
         expect(draw({ hasMore: true }).find("[data-testid='members-end']").exists()).toBe(false);
     });
 
-    test("the rows a page brought rise in and the first of them takes focus", async () => {
+    // Only the panel's first page waterfalls in; a later page is simply there, its first row
+    // taking focus so the keyboard carries on where the list grew.
+    test("the rows a page brought do not rise in, and the first of them takes focus", async () => {
         const w = draw({ hasMore: true, members: [tom, grace, anna] });
-        expect(w.findAll("[data-testid='member-row'].is-in")).toHaveLength(0);
 
         await w.get("[data-testid='members-more']").trigger("focus");
         (w.get("[data-testid='members-more']").element as HTMLElement).focus();
@@ -253,8 +254,7 @@ describe("paging", () => {
         await w.setProps({ isLoadingMore: false, members: [tom, grace, anna, ben, self] });
         await nextTick();
 
-        const fresh = w.findAll("[data-testid='member-row'].is-in");
-        expect(fresh).toHaveLength(2);
+        expect(w.get(".chat-panel-body").classes()).not.toContain("is-entering");
         expect(document.activeElement).toBe(w.findAll("[data-testid='member-who']")[3].element);
     });
 });
@@ -525,5 +525,40 @@ describe("removing a row", () => {
         await nextTick();
 
         expect(document.activeElement).toBe(filter);
+    });
+});
+
+// The roster waterfalls in when the panel opens with its first page, as the threads and mentions
+// lists do: one row after another through Leaders and then Members. A filter, a later page and
+// a removal never play it.
+describe("the roster's entrance", () => {
+    function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
+        return {
+            isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
+            order: w.findAll("[data-testid='member-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+        };
+    }
+
+    test("the first page's rows rise in, in order through both sections", async () => {
+        const w = draw({ isLoading: true, members: [] });
+        expect(entered(w).isEntering).toBe(false);
+
+        await w.setProps({ isLoading: false, members: [tom, grace, anna, ben, self] });
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2", "3", "4"] });
+    });
+
+    test("a filter's rows do not rise in", async () => {
+        const w = draw();
+
+        await w.setProps({ query: "an", members: [anna, ben] });
+        expect(entered(w).isEntering).toBe(false);
+    });
+
+    test("a first page that failed and was tried again rises in once it lands", async () => {
+        const w = draw({ isLoading: false, members: [], error: { code: "rpc.transport", severity: "failed" } });
+
+        await w.setProps({ isLoading: true, error: null });
+        await w.setProps({ isLoading: false, members: [tom, anna] });
+        expect(entered(w).isEntering).toBe(true);
     });
 });
