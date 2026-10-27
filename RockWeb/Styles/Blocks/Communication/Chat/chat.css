@@ -22,7 +22,6 @@
     --chat-reaction-mine-line: var(--chat-reaction-mine-line-light, rgba(255, 121, 29, .55));
     --chat-own-hairline: var(--chat-own-hairline-light, transparent);
     --chat-flash: var(--chat-flash-light, rgba(255, 121, 29, .20));
-    --chat-intro-k: 8%;
 
     /* Surfaces, text and lines. */
     --chat-surface: var(--color-interface-softest, #fdfdfd);
@@ -142,7 +141,7 @@
     --chat-r-org: 10px;
     --chat-r-search: 10px;
     --chat-r-option: 10px;
-    --chat-r-intro: 14px;
+    --chat-r-intro: 12px;
     --chat-r-details: 16px;
     --chat-r-radio-ic: 10px;
     --chat-r-empty-sm: 14px;
@@ -255,7 +254,6 @@
     --chat-composer-line: var(--chat-composer-line-dark, #A75824);
     --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
     --chat-row-name: #CCCCD9;
-    --chat-intro-k: 13%;
     --chat-surface: #0D1117;
     --chat-sidebar: #0a0c10;
     --chat-raised: #161B22;
@@ -329,7 +327,6 @@
         --chat-composer-line: var(--chat-composer-line-dark, #A75824);
         --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
         --chat-row-name: #CCCCD9;
-        --chat-intro-k: 13%;
         --chat-surface: #0D1117;
         --chat-sidebar: #0a0c10;
         --chat-raised: #161B22;

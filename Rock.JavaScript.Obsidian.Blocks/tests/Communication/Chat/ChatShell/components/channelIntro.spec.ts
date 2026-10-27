@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-// The channel intro, mounted: what a channel is, read from its facts, at the top of its history.
-// The mark says whether the room is public or private, the meta line its group type, campus,
-// visibility and size, the description stands as a sentence or falls back to one, "Led by" names
-// up to three leaders, a room the person cannot post in says why and how they hear of it, and an
-// empty room says whether it waits for them or for someone else.
+// The channel intro, mounted: what a channel is, read from its facts, centered at the top of its
+// history. The mark says whether the room is public or private, the name stands alone, one quiet
+// line gives its visibility, size and campus, and the description follows when the room has one.
+// Nothing the header already offers is repeated: no buttons, no leaders. A room the person cannot
+// post in says why and how they hear of it, and an empty room says whether it waits for them or
+// for someone else.
 import { mount, VueWrapper } from "@vue/test-utils";
 import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/components/channelIntro.partial.obs";
 import { ChannelFacts } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -75,6 +76,7 @@ describe("the mark and the title", () => {
         const w = mountIntro();
 
         const mark = w.get("[data-testid='intro-mark']");
+        expect(mark.attributes("aria-hidden")).toBe("true");
         expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "hash" && mark.element.contains(icon.element))).toBe(true);
         expect(w.get("[data-testid='intro-title']").text()).toBe("Volunteers");
         expect(w.get("[data-testid='channel-intro']").attributes("aria-labelledby")).toBe(w.get("[data-testid='intro-title']").attributes("id"));
@@ -87,28 +89,36 @@ describe("the mark and the title", () => {
         expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "lock" && mark.element.contains(icon.element))).toBe(true);
     });
 
-    test("draws the cover behind the mark, out of a screen reader's way", () => {
-        const w = mountIntro();
+    test("the title is the room's name alone, never a sentence about the start of the room", () => {
+        const w = mountIntro({ facts: facts({ description: null }) });
 
-        expect(w.get("[data-testid='intro-cover']").attributes("aria-hidden")).toBe("true");
+        expect(w.text()).not.toContain("This is the start of");
+    });
+
+    test("falls back to a plain name for a room with none", () => {
+        const w = mountIntro({ facts: facts({ name: "  " }) });
+
+        expect(w.get("[data-testid='intro-title']").text()).toBe("this channel");
     });
 });
 
-describe("the meta line", () => {
-    test("reads the group type, the campus by name, Public with its icon and the member count", () => {
+describe("the quiet line", () => {
+    test("reads Public, the member count and the campus by name, and nothing else", () => {
         const w = mountIntro();
 
-        expect(w.findAll("[data-testid='intro-meta'] > span").map(part => part.text())).toEqual(["Serving Team", "Downtown Campus", "Public", "42 members"]);
-        const visibility = w.get("[data-testid='intro-visibility']");
-        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "hash" && visibility.element.contains(icon.element))).toBe(true);
+        expect(w.findAll("[data-testid='intro-meta'] > span").map(part => part.text())).toEqual(["Public", "42 members", "Downtown Campus"]);
     });
 
-    test("says Private with the lock, and leaves out what the room does not carry", () => {
-        const w = mountIntro({ facts: facts({ is_public: false, group_type_name: null, campus_id: null }) });
+    test("says Private, and leaves out a campus the room does not carry", () => {
+        const w = mountIntro({ facts: facts({ is_public: false, campus_id: null }) });
 
         expect(w.findAll("[data-testid='intro-meta'] > span").map(part => part.text())).toEqual(["Private", "42 members"]);
-        const visibility = w.get("[data-testid='intro-visibility']");
-        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "lock" && visibility.element.contains(icon.element))).toBe(true);
+    });
+
+    test("leaves out the group type, which the details dialog carries", () => {
+        const w = mountIntro();
+
+        expect(w.get("[data-testid='intro-meta']").text()).not.toContain("Serving Team");
     });
 
     test("counts one member in the singular and many with separators", () => {
@@ -123,7 +133,7 @@ describe("the meta line", () => {
     test("leaves out a campus the church no longer lists", () => {
         const w = mountIntro({ campuses: [] });
 
-        expect(w.findAll("[data-testid='intro-meta'] > span").map(part => part.text())).toEqual(["Serving Team", "Public", "42 members"]);
+        expect(w.findAll("[data-testid='intro-meta'] > span").map(part => part.text())).toEqual(["Public", "42 members"]);
     });
 });
 
@@ -140,49 +150,49 @@ describe("the description", () => {
         expect(w.get("[data-testid='intro-description']").text()).toBe("Who's serving this Sunday?");
     });
 
-    test("falls back for a private room with none", () => {
-        const w = mountIntro({ facts: facts({ is_public: false, description: null }) });
+    // The two-line cut is only visual, so a screen reader still reads every word of a long one.
+    test("keeps every word of a long one in the page, however few lines it shows", () => {
+        const long = `${"Service times, volunteer needs, parking updates and what is coming up this month ".repeat(6).trim()}.`;
+        const w = mountIntro({ facts: facts({ description: long }) });
 
-        expect(w.get("[data-testid='intro-description']").text()).toBe("Only invited members can see this channel.");
+        expect(w.get("[data-testid='intro-description']").text()).toBe(long);
     });
 
-    test("falls back for a public room with none, or only spaces, to the room's start", () => {
-        const w = mountIntro({ facts: facts({ description: "   " }) });
+    test.each([
+        ["a public room", true],
+        ["a private room", false]
+    ])("is left out for %s with none, or only spaces", (_name, isPublic) => {
+        const w = mountIntro({ facts: facts({ is_public: isPublic, description: "   " }) });
 
-        expect(w.get("[data-testid='intro-description']").text()).toBe("This is the start of Volunteers.");
+        expect(w.find("[data-testid='intro-description']").exists()).toBe(false);
     });
 });
 
-describe("Led by", () => {
-    test("is left out for a room with no listed leaders", () => {
-        const w = mountIntro();
-
-        expect(w.find("[data-testid='intro-leaders']").exists()).toBe(false);
-    });
-
-    test("names one leader with their 20px face", () => {
-        const w = mountIntro({ facts: facts({ leaders: [leader("Tom", "Hale", 1)] }) });
-
-        const leaders = w.get("[data-testid='intro-leaders']");
-        expect(leaders.get("[data-testid='intro-leaders-text']").text()).toBe("Led by Tom Hale");
-        expect(leaders.findAll("b").map(name => name.text())).toEqual(["Tom Hale"]);
-        const pile = leaders.getComponent(Avatar);
-        expect(pile.props("size")).toBe(20);
-        expect(pile.props("people")).toEqual([{ name: "Tom Hale", photoUrl: null }]);
-    });
-
-    test("joins two leaders with and", () => {
+// The header carries the room's actions and its leaders, so the intro repeats none of them.
+describe("what the header already says", () => {
+    test("no leaders line, however many leaders the room lists", () => {
         const w = mountIntro({ facts: facts({ leaders: [leader("Tom", "Hale", 1), leader("Grace", "Kim", 2)] }) });
 
-        expect(w.get("[data-testid='intro-leaders-text']").text()).toBe("Led by Tom Hale and Grace Kim");
+        expect(w.find("[data-testid='intro-leaders']").exists()).toBe(false);
+        expect(w.text()).not.toContain("Led by");
+        expect(w.findComponent(Avatar).exists()).toBe(false);
     });
 
-    test("joins three leaders with a comma and and, each face drawn", () => {
-        const w = mountIntro({ facts: facts({ leaders: [leader("Tom", "Hale", 1), leader("Grace", "Kim", 2), leader("Ana", "Ruiz", 3)] }) });
+    test("no cover behind the mark", () => {
+        const w = mountIntro();
 
-        const leaders = w.get("[data-testid='intro-leaders']");
-        expect(leaders.get("[data-testid='intro-leaders-text']").text()).toBe("Led by Tom Hale, Grace Kim and Ana Ruiz");
-        expect((leaders.getComponent(Avatar).props("people") as unknown[]).length).toBe(3);
+        expect(w.find("[data-testid='intro-cover']").exists()).toBe(false);
+    });
+
+    test.each([
+        ["a member who can post", facts()],
+        ["a member who cannot post", facts({ can_post: false, can_post_code: "authz.leaders_only", can_post_reason: "Only leaders can post." })],
+        ["a person previewing the room", facts({ is_member: false, can_post: false, can_post_code: "authz.join_required", can_post_reason: "Join this channel to post." })]
+    ])("no buttons for %s", (_name, roomFacts) => {
+        const w = mountIntro({ facts: roomFacts });
+
+        expect(w.find("button").exists()).toBe(false);
+        expect(w.find("[data-testid='intro-actions']").exists()).toBe(false);
     });
 });
 
@@ -202,9 +212,7 @@ describe("the posting note", () => {
     test("says the server's reason, then how the person hears of every post", () => {
         const w = mountIntro({ facts: facts({ can_post: false, can_post_code: "authz.leaders_only", can_post_reason: "Only leaders can post in Announcements." }) });
 
-        const note = w.get("[data-testid='intro-note']");
-        expect(note.text()).toBe("Only leaders can post in Announcements. You're notified of every post.");
-        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "speaker" && note.element.contains(icon.element))).toBe(true);
+        expect(w.get("[data-testid='intro-note']").text()).toBe("Only leaders can post in Announcements. You're notified of every post.");
     });
 
     test("says the person hears only of mentions, or nothing, by their setting for the room", () => {
@@ -252,112 +260,10 @@ describe("an empty room's foot", () => {
     });
 });
 
-// Members opens the members panel, offered to someone in the room beside Star; where they cannot
-// post, the room's notify mode takes its place.
-describe("the actions' Members", () => {
-    test("are Members, a button with the people icon, then Star, for someone in the room", async () => {
-        const w = mountIntro();
+describe("on a phone", () => {
+    test("is marked as the phone's, for its tighter spacing", () => {
+        const w = mountIntro({ isPhone: true });
 
-        const actions = w.get("[data-testid='intro-actions']");
-        expect(actions.findAll("button").map(b => b.attributes("data-testid"))).toEqual(["intro-members-button", "intro-star"]);
-        const members = w.get("[data-testid='intro-members-button']");
-        expect(members.text()).toBe("Members");
-        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "users" && members.element.contains(icon.element))).toBe(true);
-
-        await members.trigger("click");
-        expect(w.emitted("members")).toHaveLength(1);
-    });
-
-    test("give Members' place to the notify mode where the person cannot post", () => {
-        const w = mountIntro({ facts: facts({ can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: "Only leaders can post." }) });
-
-        expect(w.find("[data-testid='intro-members-button']").exists()).toBe(false);
-        expect(w.find("[data-testid='intro-notify']").exists()).toBe(true);
-    });
-
-    test("are not drawn for someone not in the room", () => {
-        const w = mountIntro({ facts: facts({ is_member: false }) });
-
-        expect(w.find("[data-testid='intro-actions']").exists()).toBe(false);
-        expect(w.find("button").exists()).toBe(false);
-    });
-});
-
-// The intro's actions, for a member: Star, pressed while the room is starred, and in a room the
-// person cannot post in, its notify mode in words ("All posts", "Mentions only", "Off"), opening
-// the same notify menu as the header's bell. A person not in the room is offered neither.
-describe("the actions", () => {
-    beforeAll(() => {
-        // jsdom has no ResizeObserver, and the floating menu keeps its place with one.
-        if (typeof window.ResizeObserver === "undefined") {
-            window.ResizeObserver = class {
-                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
-                unobserve(): void { /* As above. */ }
-                disconnect(): void { /* As above. */ }
-            } as unknown as typeof ResizeObserver;
-        }
-    });
-
-    afterEach(() => {
-        document.body.innerHTML = "";
-    });
-
-    function mountAttached(props: Record<string, unknown>): VueWrapper {
-        wrapper = mount(ChannelIntro, {
-            props: { facts: facts(), campuses: [downtown], notifyMode: "all", isEmpty: false, isPhone: false, ...props },
-            attachTo: document.body
-        });
-        return wrapper;
-    }
-
-    test("Star is pressed while the room is starred, and asks to change it", async () => {
-        const w = mountAttached({ isStarred: false });
-        const star = w.get("[data-testid='intro-star']");
-
-        expect(star.attributes("aria-pressed")).toBe("false");
-        expect(star.attributes("aria-label")).toBe("Star");
-
-        await w.setProps({ isStarred: true });
-        expect(w.get("[data-testid='intro-star']").attributes("aria-pressed")).toBe("true");
-        expect(w.get("[data-testid='intro-star']").attributes("aria-label")).toBe("Unstar");
-
-        await w.get("[data-testid='intro-star']").trigger("click");
-        expect(w.emitted("star")).toHaveLength(1);
-    });
-
-    test("a room the person cannot post in offers its notify mode in words, opening the notify menu", async () => {
-        const reason = "Only leaders can post in Announcements.";
-        const w = mountAttached({ facts: facts({ can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: reason }), notifyMode: "mentions" });
-
-        const notify = w.get("[data-testid='intro-notify'] button");
-        expect(notify.text()).toBe("Mentions only");
-        expect(notify.attributes("aria-haspopup")).toBe("menu");
-
-        await notify.trigger("click");
-        await new Promise(resolve => setTimeout(resolve, 0));
-        const radios = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
-        expect(radios.map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
-
-        radios[0].click();
-        expect(w.emitted("notify")).toEqual([["all"]]);
-
-        await w.setProps({ notifyMode: "silent" });
-        expect(w.get("[data-testid='intro-notify'] button").text()).toBe("Off");
-        await w.setProps({ notifyMode: "all" });
-        expect(w.get("[data-testid='intro-notify'] button").text()).toBe("All posts");
-    });
-
-    test("a room the person can post in offers no notify mode", () => {
-        const w = mountAttached({});
-
-        expect(w.find("[data-testid='intro-notify']").exists()).toBe(false);
-        expect(w.find("[data-testid='intro-star']").exists()).toBe(true);
-    });
-
-    test("a person not in the room is offered neither", () => {
-        const w = mountAttached({ facts: facts({ is_member: false, can_post: false, can_post_code: "authz.join_required", can_post_reason: "Join this channel to post." }) });
-
-        expect(w.find("[data-testid='intro-star']").exists()).toBe(false);
-        expect(w.find("[data-testid='intro-notify']").exists()).toBe(false);
+        expect(w.get("[data-testid='channel-intro']").classes()).toContain("is-phone");
     });
 });

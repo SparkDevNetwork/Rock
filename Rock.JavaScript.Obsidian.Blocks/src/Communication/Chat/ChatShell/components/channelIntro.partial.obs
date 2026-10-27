@@ -1,161 +1,83 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <section class="chat-intro" :class="{ 'is-phone': isPhone }" data-testid="channel-intro" :aria-labelledby="titleId">
-        <div class="chat-intro-cover" data-testid="intro-cover" aria-hidden="true"></div>
-        <div class="chat-intro-body">
-            <span class="chat-intro-mark" data-testid="intro-mark" aria-hidden="true">
-                <Icon :name="facts.is_public ? 'hash' : 'lock'" />
-            </span>
+        <span class="chat-intro-mark" data-testid="intro-mark" aria-hidden="true">
+            <Icon :name="facts.is_public ? 'hash' : 'lock'" />
+        </span>
 
-            <div class="chat-intro-head">
-                <h2 :id="titleId" data-testid="intro-title">{{ name }}</h2>
-                <div class="chat-intro-meta" data-testid="intro-meta">
-                    <span v-if="facts.group_type_name">{{ facts.group_type_name }}</span>
-                    <span v-if="campusName">{{ campusName }}</span>
-                    <span data-testid="intro-visibility"><Icon :name="facts.is_public ? 'hash' : 'lock'" size="xs" />{{ facts.is_public ? "Public" : "Private" }}</span>
-                    <span data-testid="intro-members">{{ memberText }}</span>
-                </div>
-            </div>
+        <h2 :id="titleId" data-testid="intro-title">{{ name }}</h2>
 
-            <!-- A member's own: the notify mode in words where they read but cannot post, else Members, then Star. -->
-            <div v-if="facts.is_member" class="chat-intro-actions" data-testid="intro-actions">
-                <span v-if="!canPostOnceIn" class="chat-intro-notify" data-testid="intro-notify">
-                    <Menu :icon="notifyIcon"
-                          :label="`Notifications, ${notifyLabel}`"
-                          :buttonText="notifyLabel"
-                          heading="Notify me about"
-                          :items="notifyItems"
-                          @select="onNotifySelect" />
-                </span>
-                <button v-else type="button" class="chat-intro-btn" data-testid="intro-members-button" @click="emit('members')"><Icon name="users" size="xs" />Members</button>
-                <IconButton :icon="isStarred ? 'star-f' : 'star'"
-                            :label="isStarred ? 'Unstar' : 'Star'"
-                            :aria-pressed="isStarred ? 'true' : 'false'"
-                            class="chat-intro-star"
-                            data-testid="intro-star"
-                            @click="emit('star')" />
-            </div>
-
-            <p class="chat-intro-desc" data-testid="intro-description">{{ description }}</p>
-
-            <div v-if="leaders.length > 0" class="chat-intro-facts" data-testid="intro-leaders">
-                <Avatar :people="leaderFaces" :size="20" />
-                <span data-testid="intro-leaders-text">Led by <template v-for="(leader, index) in leaders" :key="leader.key">{{ separatorBefore(index) }}<b>{{ leader.name }}</b></template></span>
-            </div>
-
-            <div v-if="note" class="chat-intro-note" data-testid="intro-note">
-                <Icon name="speaker" size="sm" />
-                <span>{{ note }}</span>
-            </div>
-
-            <div v-if="isEmpty" class="chat-intro-foot" data-testid="intro-foot">
-                <Icon name="message" size="xs" />{{ canPostOnceIn && !isJoinRefused ? "No messages yet. Be the first to say hello." : "Nothing has been posted yet." }}
-            </div>
+        <div class="chat-intro-meta" data-testid="intro-meta">
+            <span>{{ facts.is_public ? "Public" : "Private" }}</span>
+            <span data-testid="intro-members">{{ memberText }}</span>
+            <span v-if="campusName">{{ campusName }}</span>
         </div>
+
+        <!-- Cut at two lines by its style only, so a screen reader reads it whole; details shows it all. -->
+        <p v-if="description" class="chat-intro-desc" data-testid="intro-description">{{ description }}</p>
+
+        <p v-if="note" class="chat-intro-line" data-testid="intro-note">{{ note }}</p>
+
+        <p v-if="isEmpty" class="chat-intro-line" data-testid="intro-foot">
+            {{ canPostOnceIn && !isJoinRefused ? "No messages yet. Be the first to say hello." : "Nothing has been posted yet." }}
+        </p>
     </section>
 </template>
 
 <style scoped>
-/* Full width across the feed's top, quiet, ruled off from the first day below it. */
+/* A quiet start of the channel, centered over the feed; the header carries its actions and leaders. */
 .chat-intro {
-    margin: 0 0 4px;
-    border-bottom: 1px solid var(--chat-line);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 26px 32px 16px;
+    text-align: center;
 }
 
-.chat-intro-cover {
-    position: relative;
-    height: 52px;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--chat-brand) var(--chat-intro-k), var(--chat-surface)) 0%, var(--chat-surface) 100%);
+.chat-intro.is-phone {
+    padding: 22px 16px 14px;
 }
 
-/* A faint dot texture, strongest at the top left and gone by the middle. */
-.chat-intro-cover::after {
-    position: absolute;
-    inset: 0;
-    content: "";
-    background-image: radial-gradient(color-mix(in srgb, var(--chat-brand) 22%, transparent) 1px, transparent 1.3px);
-    background-size: 14px 14px;
-    opacity: .35;
-    -webkit-mask-image: radial-gradient(60% 120% at 0% 0%, var(--chat-mask-solid), transparent 70%);
-    mask-image: radial-gradient(60% 120% at 0% 0%, var(--chat-mask-solid), transparent 70%);
-}
-
-/* The mark, the heading and the actions on one row, everything after it across the full width. */
-.chat-intro-body {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    column-gap: 14px;
-    align-items: end;
-    padding: 0 24px 16px;
-}
-
-.chat-intro.is-phone .chat-intro-body {
-    grid-template-columns: auto minmax(0, 1fr);
-    padding: 0 16px 14px;
-}
-
-/* Overlapping the cover, ringed in the surface so it reads as set on the card. */
 .chat-intro-mark {
-    position: relative;
     display: grid;
     place-items: center;
-    align-self: start;
-    width: 48px;
-    height: 48px;
-    margin-top: -24px;
-    overflow: hidden;
+    width: 40px;
+    height: 40px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-intro);
-    box-shadow: 0 0 0 3px var(--chat-surface);
 }
 
 .chat-intro-mark :deep(.chat-ic) {
-    width: 22px;
-    height: 22px;
-}
-
-.chat-intro.is-phone .chat-intro-mark {
-    width: 44px;
-    height: 44px;
-    margin-top: -22px;
-}
-
-.chat-intro-head {
-    min-width: 0;
-    padding-bottom: 1px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Rock's theme styles every heading, so this one states its whole face. */
 .chat-intro h2 {
-    margin: 0;
+    max-width: 100%;
+    margin: 4px 0 0;
     font-family: inherit;
-    font-size: 18px;
+    font-size: 15.5px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.3;
     color: var(--chat-text);
-    letter-spacing: -.01em;
     text-wrap: balance;
     overflow-wrap: anywhere;
-}
-
-.chat-intro.is-phone h2 {
-    font-size: 17px;
 }
 
 .chat-intro-meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin-top: 1px;
+    justify-content: center;
     font-size: 12.5px;
     color: var(--chat-muted);
 }
 
 .chat-intro-meta > span {
     display: inline-flex;
-    gap: 4px;
     align-items: center;
 }
 
@@ -163,142 +85,35 @@
 .chat-intro-meta > span + span::before {
     width: 3px;
     height: 3px;
-    margin: 0 8px;
+    margin: 0 7px;
     content: "";
     background: currentColor;
     border-radius: 50%;
     opacity: .55;
 }
 
-.chat-intro-meta :deep(.chat-ic) {
-    color: var(--chat-icon);
-}
-
-/* Beside the heading on a wide block, on their own row on a phone. */
-.chat-intro-actions {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    align-self: center;
-}
-
-.chat-intro.is-phone .chat-intro-actions {
-    grid-column: 1 / -1;
-    margin-top: 10px;
-}
-
-/* A small outlined button. */
-.chat-intro-btn {
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    height: 28px;
-    padding: 0 11px;
-    font: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-intro-btn:hover {
-    border-color: var(--chat-icon);
-}
-
-.chat-intro.is-phone .chat-intro-btn {
-    height: 36px;
-}
-
-.chat-intro-btn :deep(.chat-ic) {
-    width: 14px;
-    height: 14px;
-    color: var(--chat-icon);
-}
-
-.chat-intro-actions :deep(.chat-intro-star) {
-    width: 30px;
-    height: 30px;
-}
-
-.chat-intro-notify {
-    display: inline-flex;
-}
-
+/* Two lines at most; the header's subtitle and the details dialog carry the rest. */
 .chat-intro-desc {
-    grid-column: 1 / -1;
-    max-width: 72ch;
-    margin: 12px 0 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--chat-text-2);
-    overflow-wrap: anywhere;
-}
-
-/* "Led by" reads as one sentence after the leaders' faces. */
-.chat-intro-facts {
-    display: flex;
-    grid-column: 1 / -1;
-    flex-wrap: wrap;
-    row-gap: 6px;
-    gap: 8px;
-    align-items: center;
-    margin-top: 8px;
-    font-size: 12.5px;
-    color: var(--chat-muted);
-}
-
-.chat-intro-facts b {
-    font-weight: 600;
-    color: var(--chat-text-2);
-}
-
-/*
-    The leaders' 20px faces overlap a fixed 5px, one letter at 8px, ringed in the surface. The
-    avatar sets its own size ratio and overlap inline, so these must win over it.
-*/
-.chat-intro-facts :deep(.chat-av) {
-    font-size: 8px !important;
-    box-shadow: 0 0 0 2px var(--chat-surface);
-}
-
-.chat-intro-facts :deep(.chat-pile.is-pile .chat-av + .chat-av) {
-    margin-left: -5px !important;
-}
-
-.chat-intro-note {
-    display: flex;
-    grid-column: 1 / -1;
-    gap: 8px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    margin-top: 10px;
-    font-size: 13px;
+    display: -webkit-box;
+    max-width: 52ch;
+    margin: 0;
+    overflow: hidden;
+    font-size: 13.5px;
     line-height: 1.45;
-    color: var(--chat-text-2);
-    background: color-mix(in srgb, var(--chat-brand) 7%, var(--chat-surface));
-    border-radius: var(--chat-r-md);
-}
-
-.chat-intro-note :deep(.chat-ic) {
-    margin-top: 1px;
-    color: var(--chat-brand-ink);
-}
-
-.chat-intro-foot {
-    display: flex;
-    grid-column: 1 / -1;
-    gap: 8px;
-    align-items: center;
-    padding: 10px 0 0;
-    font-size: 13px;
     color: var(--chat-muted);
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
-.chat-intro-foot :deep(.chat-ic) {
-    color: var(--chat-icon);
+/* Why the person cannot post, or an empty room's word: one muted line each. */
+.chat-intro-line {
+    max-width: 52ch;
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--chat-muted);
 }
 </style>
 
@@ -306,11 +121,7 @@
     import { computed, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
-    import { NotifyMode, notifyOptionsFor } from "../composables/usePrefs.partial";
-    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import IconButton from "../ui/iconButton.partial.obs";
-    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { ChannelFacts } from "../types.partial";
 
     const props = defineProps({
@@ -347,24 +158,8 @@
         isPhone: {
             type: Boolean,
             default: false
-        },
-
-        /** Whether the room is in the person's Starred, which presses Star. */
-        isStarred: {
-            type: Boolean,
-            default: false
         }
     });
-
-    const emit = defineEmits<{
-        /** Members, which opens the members panel. */
-        (e: "members"): void;
-        (e: "star"): void;
-        /** A notify mode other than the room's own was chosen. */
-        (e: "notify", mode: NotifyMode): void;
-        /** The menu's last item. */
-        (e: "details"): void;
-    }>();
 
     // #region Values
 
@@ -380,13 +175,6 @@
 
     /** The one reason to be unable to post that the join bar already says, so the note leaves it out. */
     const joinRequiredCode = "authz.join_required";
-
-    /** A room read but not posted in names its mode by the posts it notifies about. */
-    const notifyLabels: Record<string, string> = {
-        all: "All posts",
-        mentions: "Mentions only",
-        silent: "Off"
-    };
 
     // #endregion Values
 
@@ -405,24 +193,15 @@
         return `${count.toLocaleString()} ${count === 1 ? "member" : "members"}`;
     });
 
-    /** The room's description as a sentence, or what stands in for one. */
-    const description = computed((): string => {
+    /** The room's description as a sentence, or nothing: the quiet line already says Public or Private. */
+    const description = computed((): string | null => {
         const text = props.facts.description?.trim() ?? "";
-        if (text) {
-            return /[.!?]$/.test(text) ? text : `${text}.`;
+        if (!text) {
+            return null;
         }
 
-        return props.facts.is_public ? `This is the start of ${name.value}.` : "Only invited members can see this channel.";
+        return /[.!?]$/.test(text) ? text : `${text}.`;
     });
-
-    /** Up to three listed leaders, by the name the chat shows each under. */
-    const leaders = computed((): Array<{ key: string, name: string, photoUrl: string | null }> => props.facts.leaders.slice(0, 3).map(leader => ({
-        key: leader.person_alias_guid,
-        name: `${leader.nick_name ?? ""} ${leader.last_name ?? ""}`.trim(),
-        photoUrl: leader.avatar_url
-    })));
-
-    const leaderFaces = computed((): AvatarPerson[] => leaders.value.map(leader => ({ name: leader.name, photoUrl: leader.photoUrl })));
 
     /**
      * Whether the person may post, or would once in: a person previewing the room need only join,
@@ -443,41 +222,5 @@
         return text || null;
     });
 
-    const notifyLabel = computed((): string => notifyLabels[props.notifyMode ?? ""] ?? notifyLabels.all);
-
-    const notifyIcon = computed((): string => props.notifyMode === "silent" ? "bell-off" : props.notifyMode === "mentions" ? "at-bell" : "bell");
-
-    /** The header's notify menu, the same words and the same save. */
-    const notifyItems = computed((): MenuItem[] => [
-        ...notifyOptionsFor("channel").map(option => ({ key: option.value, label: option.title, description: option.description, isChecked: option.value === props.notifyMode })),
-        { key: "details", label: "Channel details", icon: "settings", isSeparatorBefore: true }
-    ]);
-
     // #endregion Computed Values
-
-    // #region Event Handlers
-
-    function onNotifySelect(key: string): void {
-        if (key === "details") {
-            emit("details");
-        }
-        else if (key !== props.notifyMode && (key === "all" || key === "mentions" || key === "silent")) {
-            emit("notify", key);
-        }
-    }
-
-    // #endregion Event Handlers
-
-    // #region Functions
-
-    /** Names in a list join as "A and B" or "A, B and C". */
-    function separatorBefore(index: number): string {
-        if (index === 0) {
-            return "";
-        }
-
-        return index === leaders.value.length - 1 ? " and " : ", ";
-    }
-
-    // #endregion Functions
 </script>

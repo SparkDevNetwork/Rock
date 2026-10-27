@@ -175,7 +175,6 @@ const tokens: Token[] = [
     { name: "brand-ring", light: "rgba(255,121,29,.32)", computed: true },
     { name: "own-hairline", light: "transparent", dark: "rgba(255,121,29,.24)", computed: true },
     { name: "flash", light: "rgba(255,121,29,.20)", dark: "rgba(255,121,29,.26)", computed: true },
-    { name: "intro-k", light: "8%", dark: "13%" },
 
     // Surfaces, text and lines.
     { name: "surface", light: "#fdfdfd", dark: "#0D1117", rock: "color-interface-softest" },
@@ -303,7 +302,7 @@ const namedLiterals: Named[] = [
     { name: "r-org", value: "10px" },
     { name: "r-search", value: "10px" },
     { name: "r-option", value: "10px" },
-    { name: "r-intro", value: "14px" },
+    { name: "r-intro", value: "12px" },
     { name: "r-details", value: "16px" },
     { name: "r-radio-ic", value: "10px" },
     { name: "r-empty-sm", value: "14px" },
@@ -560,6 +559,18 @@ describe("the components' own styles", () => {
         const spacer = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed-fill");
 
         expect(normalize(spacer?.declarations.get("flex") ?? "")).toMatch(/^1/);
+    });
+
+    // The channel's intro is centered, and a long description shows two lines and is cut there;
+    // the rest stays in the page for a screen reader, and the header and details carry it whole.
+    test("the channel intro is centered and cuts its description at two lines", () => {
+        const introPath = resolve(components, "channelIntro.partial.obs");
+
+        expect(declarationOf(introPath, ".chat-intro", "text-align")).toBe("center");
+        expect(declarationOf(introPath, ".chat-intro-desc", "-webkit-line-clamp")).toBe("2");
+        expect(declarationOf(introPath, ".chat-intro-desc", "line-clamp")).toBe("2");
+        expect(declarationOf(introPath, ".chat-intro-desc", "-webkit-box-orient")).toBe("vertical");
+        expect(declarationOf(introPath, ".chat-intro-desc", "overflow")).toBe("hidden");
     });
 
     // The history skeleton hands over to the first page as a cross-fade: it fades out over the
