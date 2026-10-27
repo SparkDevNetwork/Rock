@@ -2827,14 +2827,14 @@ describe("the channel intro", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='intro-title']").text()).toBe("Worship Team");
     });
 
-    test("hands its Star to the settings as a menu's choice for the room", async () => {
+    test("offers no actions of its own, leaving Star and the members to the header", async () => {
         const w = await mountBlock(1200);
         roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
         await openRow(w, team.channel_id);
 
-        await w.get("[data-testid='frame-main'] [data-testid='intro-star']").trigger("click");
-
-        expect((mockShell!.prefs as Record<string, jest.Mock>).choose).toHaveBeenCalledWith(team.channel_id, { kind: "star" });
+        expect(w.findAll("[data-testid='channel-intro'] button")).toHaveLength(0);
+        expect(w.find("[data-testid='frame-main'] [data-testid='header-star']").exists()).toBe(true);
+        expect(w.find("[data-testid='frame-main'] [data-testid='header-members']").exists()).toBe(true);
     });
 
     test("is never drawn in a direct message", async () => {
@@ -3318,7 +3318,7 @@ describe("the conversation's details", () => {
 });
 
 // The members panel opens for the open conversation from a channel's facepile, a group's Members
-// button, the intro's Members and the details dialog's member count; a second press closes it.
+// button, the phone's overflow menu and the details dialog's member count; a second press closes it.
 // A member row opens the person's card beside the panel, and Escape gives focus back to the row.
 describe("the members panel", () => {
     const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_people: [{ person_alias_guid: "caleb", nick_name: "Caleb", last_name: null, avatar_url: null }, { person_alias_guid: "hannah", nick_name: "Hannah", last_name: null, avatar_url: null }], dm_other_count: 2, room_kind: "group", title: "Hike planning" });
@@ -3333,6 +3333,21 @@ describe("the members panel", () => {
     async function openTeam(w: VueWrapper): Promise<void> {
         roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
         await openRow(w, team.channel_id);
+    }
+
+    /** Opens the members panel the way the header offers it: the facepile, or Members in a phone's overflow menu. */
+    async function openMembers(w: VueWrapper): Promise<void> {
+        const pile = w.find("[data-testid='frame-main'] [data-testid='header-members']");
+        if (pile.exists()) {
+            await pile.trigger("click");
+        }
+        else {
+            await w.get("[data-testid='header-more'] button").trigger("click");
+            await settle();
+            Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Members")!.click();
+        }
+
+        await settle();
     }
 
     test("opens from a channel's facepile, named with its count, and closes on a second press", async () => {
@@ -3374,18 +3389,13 @@ describe("the members panel", () => {
         expect(w.find("[data-testid='header-members']").exists()).toBe(false);
     });
 
-    test("opens from the intro's Members and closes on a second press", async () => {
-        const w = await mountBlock(1200);
+    test("opens from the phone's overflow menu, where the header has no facepile", async () => {
+        const w = await mountBlock(390);
         await openTeam(w);
 
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
+        await openMembers(w);
         expect(membersOf().open).toHaveBeenCalledWith(team.channel_id);
         expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
-
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
-        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
     });
 
     test("opens from the details dialog's member count, closing the dialog", async () => {
@@ -3433,8 +3443,7 @@ describe("the members panel", () => {
     test.each([1200, 390])("a member's Message opens New message with that person chosen at width %i", async width => {
         const w = await mountBlock(width);
         await openTeam(w);
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
+        await openMembers(w);
         membersOf().state.rows = [annaMember];
         roomsOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: null });
         await settle();
@@ -3455,8 +3464,7 @@ describe("the members panel", () => {
     test.each([1200, 390])("a member's Message opens their existing conversation at width %i", async width => {
         const w = await mountBlock(width);
         await openTeam(w);
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
+        await openMembers(w);
         membersOf().state.rows = [annaMember];
         roomsOf().readPerson.mockResolvedValue({ ...annaMember, is_self: false, dm_channel_id: dmAnna.channel_id });
         await settle();
@@ -3474,8 +3482,7 @@ describe("the members panel", () => {
     test("a member's Message drops a profile answer after another conversation was selected", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
+        await openMembers(w);
         membersOf().state.rows = [annaMember];
         let resolvePerson!: (person: unknown) => void;
         roomsOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
@@ -3493,8 +3500,7 @@ describe("the members panel", () => {
     test("a member's Message drops a profile answer after the same members panel was closed and reopened", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
+        await openMembers(w);
         membersOf().state.rows = [annaMember];
         let resolvePerson!: (person: unknown) => void;
         roomsOf().readPerson.mockReturnValue(new Promise(resolve => { resolvePerson = resolve; }));
@@ -3503,8 +3509,7 @@ describe("the members panel", () => {
         await w.get("[data-testid='member-message']").trigger("click");
         await w.get("[data-testid='panel-close']").trigger("click");
         await settle();
-        await w.get("[data-testid='intro-members-button']").trigger("click");
-        await settle();
+        await openMembers(w);
         resolvePerson({ ...annaMember, is_self: false, dm_channel_id: dmAnna.channel_id });
         await settle();
 

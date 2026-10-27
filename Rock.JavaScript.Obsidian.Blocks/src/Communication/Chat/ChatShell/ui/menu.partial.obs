@@ -1,18 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button v-if="buttonText"
-            ref="textAnchor"
-            v-bind="anchorAttrs"
-            type="button"
-            class="chat-menu-text-btn"
-            aria-haspopup="menu"
-            :aria-expanded="isOpen ? 'true' : 'false'"
-            @click="onAnchorClick">
-        <!-- A button in words where the menu names its choice, as the intro's notify mode; else an icon. -->
-        <Icon :name="icon" size="xs" />{{ buttonText }}
-    </button>
-    <IconButton v-else
-                ref="anchor"
+    <IconButton ref="anchor"
                 v-bind="anchorAttrs"
                 :icon="icon"
                 :label="label"
@@ -135,33 +123,6 @@
     color: var(--chat-muted);
     text-transform: uppercase;
     letter-spacing: .06em;
-}
-
-/* The small outlined button in words, as the intro draws its actions. */
-.chat-menu-text-btn {
-    display: inline-flex;
-    flex: none;
-    gap: 5px;
-    align-items: center;
-    height: 28px;
-    padding: 0 11px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-menu-text-btn:hover {
-    border-color: var(--chat-icon);
-}
-
-.chat-menu-text-btn :deep(.chat-ic) {
-    width: 14px;
-    height: 14px;
-    color: var(--chat-icon);
 }
 
 .chat-menu-hint {
@@ -320,12 +281,6 @@
         heading: {
             type: String,
             default: ""
-        },
-
-        /** Draws the button in words with the icon before them, rather than as an icon alone. */
-        buttonText: {
-            type: String,
-            default: ""
         }
     });
 
@@ -337,7 +292,6 @@
     // #region Values
 
     const anchor = ref<InstanceType<typeof IconButton>>();
-    const textAnchor = ref<HTMLButtonElement>();
     const anchorElement = ref<HTMLElement>();
     const menuElement = ref<HTMLElement>();
     const isOpen = ref(false);
@@ -387,7 +341,7 @@
             return;
         }
 
-        anchorElement.value = anchor.value?.buttonElement ?? textAnchor.value ?? undefined;
+        anchorElement.value = anchor.value?.buttonElement ?? undefined;
         isOpen.value = true;
         await nextTick();
         menuItems()[0]?.focus();
@@ -451,7 +405,7 @@
     function close(isFocusReturned: boolean): void {
         isOpen.value = false;
         if (isFocusReturned) {
-            (anchor.value ?? textAnchor.value)?.focus();
+            anchor.value?.focus();
         }
     }
 
@@ -475,7 +429,7 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        overlayHost.value = overlayHostOf(anchor.value?.buttonElement ?? textAnchor.value);
+        overlayHost.value = overlayHostOf(anchor.value?.buttonElement);
     });
 
     onBeforeUnmount(() => {

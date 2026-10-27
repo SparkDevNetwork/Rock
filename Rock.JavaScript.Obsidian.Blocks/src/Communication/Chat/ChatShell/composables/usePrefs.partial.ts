@@ -85,8 +85,8 @@ export type PrefsState = {
 };
 
 /**
- * A choice from a room's controls: its details, or the header's and the intro's menus, which a
- * missing isFromMenu means. Star with no value turns the room's star over.
+ * A choice from a room's controls: its details, or the header's menus, which a missing
+ * isFromMenu means. Star with no value turns the room's star over.
  */
 export type RoomChoice =
     | { kind: "notify", mode: NotifyMode, isFromMenu?: boolean }

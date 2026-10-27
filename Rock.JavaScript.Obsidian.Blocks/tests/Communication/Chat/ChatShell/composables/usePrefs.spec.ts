@@ -503,8 +503,8 @@ describe("the person's own switches", () => {
 });
 
 // The block hands every room control's choice here as it came: the details say so, the header's
-// and the intro's menus leave it out, which tells the save in a toast; the header's Star turns the
-// room's star over from its row. Chat settings' switches go where each is owned.
+// menus leave it out, which tells the save in a toast; the header's Star turns the room's star
+// over from its row. Chat settings' switches go where each is owned.
 describe("a room's choice and Chat settings' switches", () => {
     test("a menu's notify mode is told in a toast and the details' is not", async () => {
         const s = setup();

@@ -39,12 +39,7 @@
                           :notifyMode="notifyMode"
                           :isEmpty="timeline.messages.length === 0 && pending.length === 0"
                           :isJoinRefused="isJoinRefused"
-                          :isPhone="isPhone"
-                          :isStarred="isStarred"
-                          @members="emit('members')"
-                          @star="emit('introAction', { kind: 'star' })"
-                          @notify="emit('introAction', { kind: 'notify', mode: $event })"
-                          @details="emit('introAction', { kind: 'details' })" />
+                          :isPhone="isPhone" />
 
             <!--
                 The room above the messages, so a short conversation sits at the bottom by the composer
@@ -577,7 +572,6 @@
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import ChannelIntro from "./channelIntro.partial.obs";
-    import { NotifyMode } from "../composables/usePrefs.partial";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
@@ -686,12 +680,6 @@
             default: null
         },
 
-        /** Whether the room is in the person's Starred, which the intro's Star shows. */
-        isStarred: {
-            type: Boolean,
-            default: false
-        },
-
         /** The message open in the editor, which draws no bar, or null. */
         editingId: {
             type: Number as PropType<number | null>,
@@ -732,10 +720,7 @@
         (e: "markRead", messageId: number): void,
         (e: "openThread", rootId: number): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void,
-        (e: "members"): void,
-        /** One of the intro's actions: Star, a notify mode, or the room's details. */
-        (e: "introAction", action: { kind: "star" } | { kind: "notify", mode: NotifyMode } | { kind: "details" }): void
+        (e: "messageAction", request: MessageActionRequest): void
     }>();
 
     // #region Values
