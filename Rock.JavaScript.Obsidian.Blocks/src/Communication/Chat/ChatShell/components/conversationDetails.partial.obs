@@ -20,7 +20,11 @@
             <span class="chat-rd-main">
                 <b class="chat-rd-name" data-testid="details-name">{{ title }}</b>
                 <span class="chat-rd-meta">
-                    <span v-for="item in metaItems" :key="item" data-testid="details-meta-item">{{ item }}</span>
+                    <!-- The dots between the parts are drawn for the eye; a screen reader hears commas. -->
+                    <template v-for="(item, index) in metaItems" :key="item">
+                        <span v-if="index > 0" class="chat-sr-only">, </span>
+                        <span class="chat-rd-meta-item" data-testid="details-meta-item">{{ item }}</span>
+                    </template>
                 </span>
             </span>
         </div>
@@ -104,7 +108,7 @@
                     <div class="chat-seg"
                          role="radiogroup"
                          :aria-labelledby="labelId"
-                         :aria-describedby="notifyDescribedBy"
+                         :aria-describedby="prefsNotes.notify ? `${renameId}-notify-err` : undefined"
                          @keydown="onNotifyKeydown">
                         <button v-for="option in notifyOptions"
                                 :key="option.value"
@@ -117,11 +121,14 @@
                                 :data-autofocus="option.value === shownNotifyMode ? '' : undefined"
                                 data-testid="notify-option"
                                 :data-value="option.value"
+                                :aria-describedby="`${renameId}-notify-${option.value}`"
                                 @click="onNotify(option.value)">
                             <Icon :name="option.icon" size="sm" />{{ option.label }}
                         </button>
                     </div>
-                    <p :id="`${renameId}-notify-cap`" class="chat-rd-cap" data-testid="notify-caption">{{ notifyCaption }}</p>
+                    <!-- Each mode's own line, read as the arrows reach it, since arrowing chooses and saves at once. -->
+                    <span v-for="option in notifyOptions" :id="`${renameId}-notify-${option.value}`" :key="option.value" class="chat-sr-only">{{ option.caption }}</span>
+                    <p class="chat-rd-cap" data-testid="notify-caption">{{ notifyCaption }}</p>
                     <p v-if="prefsNotes.notify" :id="`${renameId}-notify-err`" class="chat-set-err chat-seg-err" data-testid="notify-error"><Icon name="alert" size="xs" /><span>{{ prefsNotes.notify.text }}</span></p>
                 </template>
             </SettingGroup>
@@ -257,7 +264,7 @@
 }
 
 /* The facts joined by 3px dots, as the channel's intro joins them. */
-.chat-rd-meta > span + span::before {
+.chat-rd-meta-item ~ .chat-rd-meta-item::before {
     display: inline-block;
     width: 3px;
     height: 3px;
@@ -336,6 +343,11 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
+/* A phone's settings sheet gives each segment a larger target. */
+.chat-modal.is-sheet .chat-seg-opt {
+    height: 40px;
+}
+
 .chat-seg-opt:hover:not([aria-checked="true"]) {
     color: var(--chat-text-2);
 }
@@ -371,7 +383,7 @@
     color: var(--chat-text);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -854,9 +866,6 @@
 
     /** The one line under the control, saying what only the mode Tab lands on means. */
     const notifyCaption = computed((): string => notifyOptions.value.find(option => option.value === shownNotifyMode.value)?.caption ?? "");
-
-    /** The control is described by its line, and by a refusal's sentence while one shows. */
-    const notifyDescribedBy = computed((): string => props.prefsNotes.notify ? `${renameId}-notify-cap ${renameId}-notify-err` : `${renameId}-notify-cap`);
 
     /** The rooms' newest sentence, once it is one said since the dialog opened. */
     const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);

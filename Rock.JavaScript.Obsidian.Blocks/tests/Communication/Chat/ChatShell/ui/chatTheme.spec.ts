@@ -305,8 +305,6 @@ const namedLiterals: Named[] = [
     { name: "r-search", value: "10px" },
     { name: "r-option", value: "10px" },
     { name: "r-intro", value: "12px" },
-    { name: "r-details", value: "16px" },
-    { name: "r-radio-ic", value: "10px" },
     { name: "r-empty-sm", value: "14px" },
     { name: "r-empty", value: "16px" },
     { name: "r-tip", value: "8px" },

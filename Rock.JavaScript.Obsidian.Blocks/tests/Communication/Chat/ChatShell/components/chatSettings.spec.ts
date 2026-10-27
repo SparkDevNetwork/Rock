@@ -108,13 +108,16 @@ describe("the dialog", () => {
         const w = mountSettings();
 
         expect(w.get("[data-testid='settings-name']").text()).toBe("Jordan Lee");
-        expect(w.findAll("[data-testid='settings-meta'] > span").map(item => item.text())).toEqual(["Downtown Campus", "From your Cedar Hill profile"]);
+        expect(w.findAll("[data-testid='settings-meta-item']").map(item => item.text())).toEqual(["Downtown Campus", "From your Cedar Hill profile"]);
+        // The dot between them is drawn for the eye, so a screen reader hears the two apart.
+        expect(plain(w.get("[data-testid='settings-meta']").text())).toBe("Downtown Campus, From your Cedar Hill profile");
     });
 
     test("leaves the campus out for a person with none", () => {
         const w = mountSettings({ campusName: null });
 
-        expect(w.findAll("[data-testid='settings-meta'] > span").map(item => item.text())).toEqual(["From your Cedar Hill profile"]);
+        expect(w.findAll("[data-testid='settings-meta-item']").map(item => item.text())).toEqual(["From your Cedar Hill profile"]);
+        expect(plain(w.get("[data-testid='settings-meta']").text())).toBe("From your Cedar Hill profile");
     });
 
     test("keeps its help to a few short lines", () => {
@@ -247,7 +250,7 @@ describe("this browser's notifications", () => {
         ["asking", null, "Choose Allow in your browser", "Turn on"],
         ["on", "On", null, "Turn off"],
         ["blocked", "Blocked", "Allow it in browser settings, then reload", null],
-        ["unavailable", "Not available", null, null]
+        ["unavailable", "Not available", "Not set up for Cedar Hill yet", null]
     ];
 
     test.each(rows)("in its %s state says so and offers what it can", (state, status, description, action) => {
