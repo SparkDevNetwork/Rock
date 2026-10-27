@@ -33,7 +33,7 @@ const anna = "a0000002-0000-4000-8000-000000000000";
 
 const message = { id: 41, body: "Hello" } as TimelineMessage;
 
-function setUp(activeChannelId: string | null, thread: { channelId: string, rootId: number } | null = null): { view: MessageActionsView, actions: { startQuote: jest.Mock, askDelete: jest.Mock }, openCard: jest.Mock } {
+function setUp(activeChannelId: string | null, thread: { channelId: string, rootId: number } | null = null): { view: MessageActionsView, actions: { startQuote: jest.Mock, askDelete: jest.Mock }, openCard: jest.Mock, openReactionPicker: jest.Mock } {
     const state = reactive({ quotes: {} as Record<string, TimelineMessage>, editing: null, confirmingDelete: null as { channelId: string, message: TimelineMessage } | null });
     const actions = {
         state,
@@ -44,6 +44,7 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
     };
     const shell = shallowRef({ messageActions: actions } as unknown as ChatShell);
     const openCard = jest.fn();
+    const openReactionPicker = jest.fn();
     const view = useMessageActionsView({
         shell,
         activeChannelId: ref(activeChannelId),
@@ -53,10 +54,10 @@ function setUp(activeChannelId: string | null, thread: { channelId: string, root
         roomKinds: ref({ [team]: "channel", [pair]: "person" }),
         rootElement: ref(undefined),
         panelElement: ref(undefined),
-        openReactionPicker: jest.fn(),
+        openReactionPicker,
         openCard
     });
-    return { view, actions, openCard };
+    return { view, actions, openCard, openReactionPicker };
 }
 
 test("an author pressed opens their card through the block, for the room it was pressed in", () => {
@@ -67,6 +68,17 @@ test("an author pressed opens their card through the block, for the room it was 
     view.onMessageAction({ kind: "person", personAliasGuid: anna, anchor } as MessageActionRequest, 7);
 
     expect(openCard.mock.calls).toEqual([[anchor, anna, team], [anchor, anna, pair]]);
+});
+
+test("the picker opens for the room it was asked in, with what opened it and where it starts", () => {
+    const { view, openReactionPicker } = setUp(team);
+    const anchor = document.createElement("div");
+    const opener = document.createElement("button");
+
+    view.onMessageAction({ kind: "openPicker", message, anchor, opener } as MessageActionRequest, null);
+    view.onMessageAction({ kind: "openPicker", message, anchor, startsOn: "full" } as MessageActionRequest, null);
+
+    expect(openReactionPicker.mock.calls).toEqual([[team, message, anchor, opener, undefined], [team, message, anchor, undefined, "full"]]);
 });
 
 test("a quote waits under its place's key, and nothing is done once that place is gone", () => {

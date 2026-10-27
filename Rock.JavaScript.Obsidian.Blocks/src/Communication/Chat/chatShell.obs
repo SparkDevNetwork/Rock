@@ -382,6 +382,7 @@
             <EmojiPicker v-if="reactionPicker"
                          :key="reactionPicker.key"
                          mode="react"
+                         :startsOn="reactionPicker.startsOn"
                          :source="emojiSource"
                          :mine="pickerMine"
                          :anchor="reactionPicker.anchor"

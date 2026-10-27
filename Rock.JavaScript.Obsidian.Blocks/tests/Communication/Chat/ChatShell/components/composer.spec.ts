@@ -427,6 +427,10 @@ describe("the composer's emoji button", () => {
 
         await mounted.get("[data-testid='composer-emoji']").trigger("click");
         await settle();
+
+        // The picker draws one section at a time; the church's own emoji is under Objects.
+        document.querySelector<HTMLElement>("[role='tab'][aria-label='Objects']")?.click();
+        await settle();
         pickerCell("cedar_hill").click();
         await settle();
 

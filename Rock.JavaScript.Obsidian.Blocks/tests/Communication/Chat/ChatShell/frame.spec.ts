@@ -2333,7 +2333,7 @@ describe("reactions", () => {
         expect(reactionsOf().toggleCode).toHaveBeenCalledWith(team.channel_id, 7, "pray");
     });
 
-    test("the picker opens beside what asked for it, fetches the catalog, and a choice reacts, is kept as recent and closes", async () => {
+    test("the picker opens on its quick tray beside what asked for it, fetches the catalog, and a choice reacts, is kept as recent and closes", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
         const anchor = document.createElement("button");
@@ -2344,7 +2344,8 @@ describe("reactions", () => {
 
         expect(reactionsOf().loadCatalog).toHaveBeenCalledTimes(1);
         expect(anchor.getAttribute("aria-expanded")).toBe("true");
-        const cell = document.querySelector<HTMLElement>("[role='dialog'][aria-label='Add reaction'] [role='gridcell'][data-code='pray']");
+        expect(document.querySelector("[role='dialog'][aria-label='Add reaction'] [role='grid']")).toBeNull();
+        const cell = document.querySelector<HTMLElement>("[role='dialog'][aria-label='Add reaction'] [role='toolbar'] [data-code='pray']");
         expect(cell).not.toBeNull();
 
         cell?.click();
@@ -2358,6 +2359,19 @@ describe("reactions", () => {
     });
 
     const pickerOf = (): Element | null => document.querySelector("[role='dialog'][aria-label='Add reaction']");
+
+    test("asked for past the quick tray, as by the phone's sheet, opens on the full picker", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = document.createElement("button");
+        shellRoot(w).append(anchor);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor, startsOn: "full" });
+        await settle();
+
+        expect(pickerOf()?.querySelector("[role='toolbar']")).toBeNull();
+        expect(pickerOf()?.querySelector("[role='grid'] [role='gridcell'][data-code='pray']")).not.toBeNull();
+    });
 
     test("asked for again by what opened it, closes", async () => {
         const w = await mountBlock(1200);
@@ -2409,13 +2423,13 @@ describe("reactions", () => {
 
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: timeline.messages[0], anchor });
         await settle();
-        expect(document.querySelector("[role='gridcell'][data-code='pray']")?.getAttribute("aria-pressed")).not.toBe("true");
+        expect(pickerOf()?.querySelector("[data-code='pray']")?.getAttribute("aria-pressed")).not.toBe("true");
 
         // A page merge puts a new object in the message's place, carrying the reader's reaction.
         timeline.messages.splice(0, 1, storedMessage(7, { reactions: [{ code: "pray", count: 1, mine: true, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>));
         await settle();
 
-        expect(document.querySelector("[role='gridcell'][data-code='pray']")?.getAttribute("aria-pressed")).toBe("true");
+        expect(pickerOf()?.querySelector("[data-code='pray']")?.getAttribute("aria-pressed")).toBe("true");
     });
 
     test("closes with the thread drawer it was opened in", async () => {

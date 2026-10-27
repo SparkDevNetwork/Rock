@@ -1269,6 +1269,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
             await runPageLoad();
 
+            // The emoji catalog, once the first conversation is drawn, so the picker never waits
+            // on it: the quick tray draws a recent by the catalog's glyph, the full picker its
+            // categories. Small, and fetched once for the page.
+            if (!isStopped) {
+                void reactions.loadCatalog();
+            }
+
             // After the first channel is on screen, so push never delays it; a stop during the
             // page load leaves it unstarted.
             if (options.push && !isStopped) {

@@ -14,17 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
-// The emoji picker, mounted: a search over a grid of sections, Recently used when there are any,
-// the church's favorites, then eight categories, with a tab per section under it and a foot naming
-// the emoji in focus. One picker serves two modes: from a message it reacts, the reader's own
-// reactions marked; from the composer it inserts, a Unicode emoji as its glyph and an image emoji
-// as its :code:. The grid is one tab stop moved by the arrows across section edges, the tabs a
-// tablist, and typing on the grid goes to the search.
+// The emoji picker, mounted. Reacting opens on a quick tray of eight glyphs, the reader's recents
+// then the church's favorites, with the full picker one press away; the composer's insert opens
+// straight on the full picker. The full picker is a search, a tab per section under it, and one
+// section drawn at a time, Recently used when there are any, the church's favorites first, then
+// eight categories, with a foot naming the emoji in focus. Only what is on screen is in the page:
+// eight cells for the tray, one section's cells for the full picker, at most ten rows for a search.
+// From a message it reacts, the reader's own reactions marked; from the composer it inserts, a
+// Unicode emoji as its glyph and an image emoji as its :code:. The grid is one tab stop moved by
+// the arrows, the tabs a tablist, the tray a toolbar, and typing on the grid goes to the search.
 //
 // The component these tests are written to, components/emojiPicker.partial.obs:
 //
 //   props: {
 //       mode: "react" | "insert",
+//       startsOn: "tray" | "full",          where it opens; "full" by default, the tray in react mode only
 //       source: {
 //           favorites: [{ code, label, emoji, image_url }],      the bootstrap's 24, in order
 //           catalog: [{ code, emoji, image_url, label, category, keywords }] | null,   null while it loads
@@ -39,11 +43,13 @@
 //
 // A category's id is the catalog's category: smileys, people, symbols, nature, food, activities,
 // travel, objects. The picker is drawn while mounted. It is role="dialog", "Add reaction" in react
-// mode; its search is the input "Search emoji"; the grid role="grid", each section a
-// role="rowgroup" named for its heading, rows of eight role="row", each emoji a role="gridcell"
-// button with data-code; the tabs role="tablist" "Emoji categories", one role="tab" per section
-// named as it is. The live line is data-testid="emoji-live", the empty line data-testid="emoji-empty",
-// the foot data-testid="emoji-preview". A cell left out by a search is not drawn or is hidden.
+// mode. The tray is role="toolbar" "Quick reactions", each glyph a button with data-code, then the
+// button "All emoji". The full picker's search is the input "Search emoji"; the tabs role="tablist"
+// "Emoji categories", one role="tab" per section named as it is, above the grid; the grid
+// role="grid", its one section a role="rowgroup" named for its heading, rows of eight role="row",
+// each emoji a role="gridcell" button with data-code. The live line is data-testid="emoji-live",
+// the empty line data-testid="emoji-empty", a search cut short data-testid="emoji-more", the foot
+// data-testid="emoji-preview".
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import EmojiPicker from "../../../../../src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs";
@@ -130,6 +136,10 @@ const catalog: Emoji[] = [...smileys, ...people, ...symbols, ...rest, ...favorit
 
 const categoryLabels = ["Smileys", "People and gestures", "Hearts and symbols", "Nature", "Food and drink", "Activities and celebrations", "Travel and places", "Objects"];
 
+/** A catalog the size the church offers, 439 emoji, its largest category 77, every one named "sample face". */
+const fullSizes: Array<[string, number]> = [["smileys", 77], ["people", 70], ["symbols", 50], ["nature", 60], ["food", 50], ["activities", 40], ["travel", 50], ["objects", 42]];
+const fullCatalog: Emoji[] = fullSizes.flatMap(([category, size]) => Array.from({ length: size }, (_, i) => emoji(`${category}_${i}`, "😀", `sample face ${category} ${i}`, category)));
+
 // #endregion Fixtures
 
 // #region Helpers
@@ -137,7 +147,7 @@ const categoryLabels = ["Smileys", "People and gestures", "Hearts and symbols", 
 let wrapper: VueWrapper | null = null;
 let anchor: HTMLButtonElement;
 
-type PickerProps = { mode?: "react" | "insert", recents?: string[], catalog?: Emoji[] | null, mine?: string[] };
+type PickerProps = { mode?: "react" | "insert", startsOn?: "tray" | "full", recents?: string[], catalog?: Emoji[] | null, mine?: string[] };
 
 async function settle(): Promise<void> {
     for (let i = 0; i < 3; i++) {
@@ -155,6 +165,7 @@ async function open(props: PickerProps = {}): Promise<VueWrapper> {
     wrapper = mount(EmojiPicker, {
         props: {
             mode: props.mode ?? "react",
+            ...(props.startsOn ? { startsOn: props.startsOn } : {}),
             source: { favorites, catalog: props.catalog === undefined ? catalog : props.catalog, recents: props.recents ?? [], churchName: "Cedar Hill" },
             mine: props.mine ?? [],
             anchor
@@ -204,6 +215,11 @@ function cells(): HTMLElement[] {
     return cellsOf(document.querySelector("[role='grid']") as Element);
 }
 
+/** Every emoji button in the page, tray or grid, which is what the browser has to lay out and paint. */
+function drawnGlyphs(): number {
+    return document.querySelectorAll("[role='dialog'] button[data-code]").length;
+}
+
 function codesOf(list: HTMLElement[]): string[] {
     return list.map(c => c.getAttribute("data-code") ?? "");
 }
@@ -229,6 +245,35 @@ function tabs(): HTMLElement[] {
     return Array.from(document.querySelectorAll<HTMLElement>("[role='tablist'] [role='tab']"));
 }
 
+function tab(label: string): HTMLElement {
+    const found = tabs().find(t => t.getAttribute("aria-label") === label);
+    if (!found) {
+        throw new Error(`No tab ${label}`);
+    }
+    return found;
+}
+
+async function showSection(label: string): Promise<void> {
+    tab(label).click();
+    await settle();
+}
+
+function selectedTab(): string | null {
+    return tabs().find(t => t.getAttribute("aria-selected") === "true")?.getAttribute("aria-label") ?? null;
+}
+
+function trayGlyphs(): HTMLElement[] {
+    return Array.from(document.querySelectorAll<HTMLElement>("[role='toolbar'][aria-label='Quick reactions'] button[data-code]"));
+}
+
+function allEmoji(): HTMLElement {
+    const button = document.querySelector<HTMLElement>("[role='toolbar'][aria-label='Quick reactions'] button[aria-label='All emoji']");
+    if (!button) {
+        throw new Error("No All emoji");
+    }
+    return button;
+}
+
 beforeAll(() => {
     // jsdom has no ResizeObserver, and floating placement keeps the popover beside its anchor with one.
     if (typeof window.ResizeObserver === "undefined") {
@@ -249,39 +294,158 @@ afterEach(() => {
 
 // #endregion Helpers
 
-describe("the sections", () => {
-    test("are the church's favorites, then the eight categories, in order, with no Recently used before any", async () => {
-        await open();
+describe("the quick tray", () => {
+    test("draws eight glyphs, the recents newest first then the favorites, each once, and nothing else of the picker", async () => {
+        await open({ startsOn: "tray", recents: ["fire", "grinning", "thumbsup"] });
 
-        expect(sectionLabels()).toEqual(["Cedar Hill favorites", ...categoryLabels]);
+        expect(codesOf(trayGlyphs())).toEqual(["fire", "grinning", "thumbsup", "heart", "joy", "open_mouth", "cry", "pray"]);
+        expect(drawnGlyphs()).toBe(8);
+        expect(document.querySelector("[role='grid']")).toBeNull();
+        expect(document.querySelector("input[aria-label='Search emoji']")).toBeNull();
     });
 
-    test("Recently used comes first once there are any, drawn newest first", async () => {
-        await open({ recents: ["fire", "grinning"] });
+    test("with no recents is the first eight favorites, and leaves out a recent it no longer knows", async () => {
+        await open({ startsOn: "tray", recents: ["retired_code"] });
 
-        expect(sectionLabels()[0]).toBe("Recently used");
-        expect(codesOf(cellsOf(section("Recently used")))).toEqual(["fire", "grinning"]);
+        expect(codesOf(trayGlyphs())).toEqual(favorites.slice(0, 8).map(f => f.code));
     });
 
-    test("the favorites are the 24 in the church's order, three rows of eight", async () => {
+    test("draws a recent from the catalog by its glyph, and a recent the catalog has not brought yet is left out", async () => {
+        await open({ startsOn: "tray", recents: ["wave", "pray"], catalog: null });
+
+        expect(codesOf(trayGlyphs())).toEqual(["pray", "thumbsup", "heart", "joy", "open_mouth", "cry", "tada", "raised_hands"]);
+    });
+
+    test("is a toolbar in a dialog named Add reaction, its first glyph focused on open and the one tab stop", async () => {
+        await open({ startsOn: "tray" });
+
+        expect(document.querySelector("[role='dialog']")?.getAttribute("aria-label")).toBe("Add reaction");
+        expect(document.activeElement).toBe(trayGlyphs()[0]);
+        const stops = Array.from(document.querySelectorAll("[role='toolbar'] button")).filter(b => b.getAttribute("tabindex") === "0");
+        expect(stops).toEqual([trayGlyphs()[0]]);
+    });
+
+    test("Right, Left, Home and End move along it, All emoji last", async () => {
+        await open({ startsOn: "tray" });
+        const glyphs = trayGlyphs();
+
+        await press(glyphs[0], "ArrowRight");
+        expect(document.activeElement).toBe(glyphs[1]);
+
+        await press(glyphs[1], "ArrowLeft");
+        expect(document.activeElement).toBe(glyphs[0]);
+
+        await press(glyphs[0], "End");
+        expect(document.activeElement).toBe(allEmoji());
+        expect(allEmoji().getAttribute("tabindex")).toBe("0");
+
+        await press(allEmoji(), "Home");
+        expect(document.activeElement).toBe(glyphs[0]);
+    });
+
+    test("names each glyph and marks the reader's own", async () => {
+        await open({ startsOn: "tray", mine: ["heart"] });
+
+        expect(trayGlyphs()[0].getAttribute("aria-label")).toBe("Thumbs up");
+        expect(trayGlyphs()[1].getAttribute("aria-label")).toBe("Red heart, you reacted");
+        expect(trayGlyphs()[1].getAttribute("aria-pressed")).toBe("true");
+        expect(trayGlyphs()[0].getAttribute("aria-pressed")).not.toBe("true");
+    });
+
+    test("a glyph reacts with its code, closes, and gives focus back to what opened it", async () => {
+        const w = await open({ startsOn: "tray" });
+
+        trayGlyphs()[5].click();
+        await settle();
+
+        expect(w.emitted("react")).toEqual([["pray"]]);
+        expect(w.emitted("close")).toHaveLength(1);
+        expect(document.activeElement).toBe(anchor);
+    });
+
+    test("Escape closes and gives focus back", async () => {
+        const w = await open({ startsOn: "tray" });
+
+        await press(trayGlyphs()[0], "Escape");
+
+        expect(w.emitted("close")).toHaveLength(1);
+        expect(document.activeElement).toBe(anchor);
+    });
+
+    test("All emoji opens the full picker in its place, on the favorites, the search focused, nothing chosen or closed", async () => {
+        const w = await open({ startsOn: "tray" });
+
+        allEmoji().click();
+        await settle();
+
+        expect(trayGlyphs()).toHaveLength(0);
+        expect(sectionLabels()).toEqual(["Cedar Hill favorites"]);
+        expect(drawnGlyphs()).toBe(24);
+        expect(document.activeElement).toBe(search());
+        expect(document.querySelector("[role='dialog']")?.getAttribute("aria-label")).toBe("Add reaction");
+        expect(w.emitted("react")).toBeUndefined();
+        expect(w.emitted("close")).toBeUndefined();
+    });
+
+    test("is never drawn in insert mode, which opens on the full picker", async () => {
+        await open({ mode: "insert", startsOn: "tray" });
+
+        expect(trayGlyphs()).toHaveLength(0);
+        expect(sectionLabels()).toEqual(["Cedar Hill favorites"]);
+    });
+});
+
+describe("the full picker's sections", () => {
+    test("opens on the church's favorites alone, the 24 in order, three rows of eight", async () => {
         await open();
 
+        expect(sectionLabels()).toEqual(["Cedar Hill favorites"]);
         expect(codesOf(cellsOf(section("Cedar Hill favorites")))).toEqual(favorites.map(f => f.code));
         expect(section("Cedar Hill favorites").querySelectorAll("[role='row']")).toHaveLength(3);
+    });
+
+    test("draws one section at a time, never the whole catalog: 24 cells on open, a category's own on its tab", async () => {
+        await open({ catalog: fullCatalog });
+        expect(drawnGlyphs()).toBe(24);
+
+        for (const [index, [, size]] of fullSizes.entries()) {
+            await showSection(categoryLabels[index]);
+            expect(sectionLabels()).toEqual([categoryLabels[index]]);
+            expect(drawnGlyphs()).toBe(size);
+        }
     });
 
     test("a category holds the catalog's emoji of that category, in the catalog's order", async () => {
         await open();
 
-        expect(codesOf(cellsOf(section("Smileys")))).toEqual(smileys.map(e => e.code));
-        expect(codesOf(cellsOf(section("Hearts and symbols")))).toEqual(["heart", "orange_heart"]);
+        await showSection("Smileys");
+        expect(codesOf(cells())).toEqual(smileys.map(e => e.code));
+
+        await showSection("Hearts and symbols");
+        expect(codesOf(cells())).toEqual(["heart", "orange_heart"]);
     });
 
-    test("while the catalog loads, the favorites are drawn at once", async () => {
-        await open({ catalog: null });
+    test("Recently used is drawn newest first on its tab, which comes first", async () => {
+        await open({ recents: ["fire", "grinning"] });
 
-        expect(sectionLabels()[0]).toBe("Cedar Hill favorites");
+        await showSection("Recently used");
+
+        expect(sectionLabels()).toEqual(["Recently used"]);
+        expect(codesOf(cells())).toEqual(["fire", "grinning"]);
+    });
+
+    test("while the catalog loads, the favorites are drawn at once and a category holds its place until it comes", async () => {
+        const w = await open({ catalog: null });
         expect(cellsOf(section("Cedar Hill favorites"))).toHaveLength(24);
+
+        await showSection("Nature");
+        expect(cells()).toHaveLength(0);
+        expect(document.querySelector("[role='grid']")?.getAttribute("aria-busy")).toBe("true");
+
+        await w.setProps({ source: { favorites, catalog, recents: [], churchName: "Cedar Hill" } });
+        await settle();
+        expect(sectionLabels()).toEqual(["Nature"]);
+        expect(codesOf(cells())).toEqual(["sunflower"]);
     });
 
     test("is a dialog named Add reaction, its grid a grid, its search focused on open", async () => {
@@ -294,7 +458,7 @@ describe("the sections", () => {
 });
 
 describe("the search", () => {
-    test("matches names, each glyph once though it sits in two sections, and says how many", async () => {
+    test("matches names across every section, each glyph once though it sits in two, and says how many", async () => {
         await open();
 
         await typeSearch("heart");
@@ -334,15 +498,30 @@ describe("the search", () => {
         expect(w.emitted("react")).toBeUndefined();
     });
 
-    test("hides the tabs while searching, and brings every section back once cleared", async () => {
+    test("draws at most ten rows, counts every match, and asks for more letters past them", async () => {
+        await open({ catalog: fullCatalog });
+
+        await typeSearch("sample");
+
+        expect(drawnGlyphs()).toBe(80);
+        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("439 results");
+        expect(document.querySelector("[data-testid='emoji-more']")?.textContent?.trim()).toBe("Showing the first 80. Keep typing to narrow it down.");
+
+        await typeSearch("sample face travel 4");
+        expect(document.querySelector("[data-testid='emoji-more']")).toBeNull();
+    });
+
+    test("hides the tabs while searching, and once cleared draws the chosen tab's section again", async () => {
         await open();
+        await showSection("Nature");
 
         await typeSearch("heart");
         expect(tabs().filter(isShown)).toHaveLength(0);
 
         await typeSearch("");
         expect(tabs().filter(isShown).length).toBeGreaterThan(0);
-        expect(sectionLabels()).toEqual(["Cedar Hill favorites", ...categoryLabels]);
+        expect(sectionLabels()).toEqual(["Nature"]);
+        expect(selectedTab()).toBe("Nature");
     });
 });
 
@@ -353,77 +532,67 @@ describe("the grid's keyboard", () => {
         expect(cells().filter(c => c.getAttribute("tabindex") === "0")).toHaveLength(1);
     });
 
-    test("Down or Tab from the search enters the grid", async () => {
+    test("Down from the search enters the grid", async () => {
         await open();
 
         await press(search(), "ArrowDown");
         expect(document.activeElement).toBe(cellAt("Cedar Hill favorites", 0, 0));
-
-        search().focus();
-        const tab = await press(search(), "Tab");
-        expect(tab.defaultPrevented).toBe(true);
-        expect(document.activeElement).toBe(cellAt("Cedar Hill favorites", 0, 0));
     });
 
-    test("Right and Left cross from one section into the next and back", async () => {
+    test("Right and Left run in reading order from one row into the next and back", async () => {
         await open();
-        const lastFavorite = cellAt("Cedar Hill favorites", 2, 7);
-        lastFavorite.focus();
+        const endOfRow = cellAt("Cedar Hill favorites", 0, 7);
+        endOfRow.focus();
 
-        await press(lastFavorite, "ArrowRight");
-        expect(document.activeElement).toBe(cellAt("Smileys", 0, 0));
+        await press(endOfRow, "ArrowRight");
+        expect(document.activeElement).toBe(cellAt("Cedar Hill favorites", 1, 0));
 
         await press(document.activeElement as HTMLElement, "ArrowLeft");
-        expect(document.activeElement).toBe(lastFavorite);
+        expect(document.activeElement).toBe(endOfRow);
     });
 
-    test("Down keeps the column across a section's edge, and lands on a short row's last cell", async () => {
+    test("Down keeps the column, and lands on a short row's last cell", async () => {
         await open();
-        const start = cellAt("Cedar Hill favorites", 2, 5);
+        await showSection("Smileys");
+        const start = cellAt("Smileys", 0, 5);
         start.focus();
 
         await press(start, "ArrowDown");
-        expect(document.activeElement).toBe(cellAt("Smileys", 0, 5));
-
-        await press(document.activeElement as HTMLElement, "ArrowDown");
         expect(document.activeElement).toBe(cellAt("Smileys", 1, 1));
-
-        await press(document.activeElement as HTMLElement, "ArrowDown");
-        expect(document.activeElement).toBe(cellAt("People and gestures", 0, 1));
     });
 
-    test("Up crosses back into the section above, and from the top row returns to the search", async () => {
+    test("Up moves a row, and from the top row returns to the search", async () => {
         await open();
-        const start = cellAt("People and gestures", 0, 2);
+        const start = cellAt("Cedar Hill favorites", 1, 2);
         start.focus();
 
         await press(start, "ArrowUp");
-        expect(document.activeElement).toBe(cellAt("Smileys", 1, 1));
+        expect(document.activeElement).toBe(cellAt("Cedar Hill favorites", 0, 2));
 
-        const top = cellAt("Cedar Hill favorites", 0, 3);
-        top.focus();
-        await press(top, "ArrowUp");
+        await press(document.activeElement as HTMLElement, "ArrowUp");
         expect(document.activeElement).toBe(search());
     });
 
-    test("Home and End go to the grid's first and last emoji", async () => {
+    test("Home and End go to the section's first and last emoji", async () => {
         await open();
-        const middle = cellAt("Smileys", 0, 3);
+        const middle = cellAt("Cedar Hill favorites", 1, 3);
         middle.focus();
 
         await press(middle, "End");
-        expect(document.activeElement).toBe(cells()[cells().length - 1]);
+        expect(document.activeElement).toBe(cellAt("Cedar Hill favorites", 2, 7));
 
         await press(document.activeElement as HTMLElement, "Home");
         expect(document.activeElement).toBe(cellAt("Cedar Hill favorites", 0, 0));
     });
 
-    test("Page Down and Page Up move by section, to its first emoji", async () => {
+    test("Page Down and Page Up draw the next and the previous section, focus on its first emoji", async () => {
         await open();
         const start = cellAt("Cedar Hill favorites", 1, 4);
         start.focus();
 
         await press(start, "PageDown");
+        expect(sectionLabels()).toEqual(["Smileys"]);
+        expect(selectedTab()).toBe("Smileys");
         expect(document.activeElement).toBe(cellAt("Smileys", 0, 0));
 
         await press(document.activeElement as HTMLElement, "PageDown");
@@ -446,7 +615,7 @@ describe("the grid's keyboard", () => {
 
     test("typing a letter on the grid goes to the search", async () => {
         await open();
-        const start = cellAt("Smileys", 0, 2);
+        const start = cellAt("Cedar Hill favorites", 0, 2);
         start.focus();
 
         await press(start, "p");
@@ -456,23 +625,26 @@ describe("the grid's keyboard", () => {
 });
 
 describe("the tabs", () => {
-    test("are a tablist, one per section, the favorites selected at first", async () => {
+    test("are a tablist above the grid, one per section, the favorites selected at first", async () => {
         await open({ recents: ["fire"] });
 
-        expect(document.querySelector("[role='tablist']")?.getAttribute("aria-label")).toBe("Emoji categories");
+        const tablist = document.querySelector("[role='tablist']") as Element;
+        expect(tablist.getAttribute("aria-label")).toBe("Emoji categories");
+        expect(tablist.compareDocumentPosition(document.querySelector("[role='grid']") as Element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(tabs().map(t => t.getAttribute("aria-label"))).toEqual(["Recently used", "Cedar Hill favorites", ...categoryLabels]);
         expect(tabs().map(t => t.getAttribute("aria-selected"))).toEqual(["false", "true", ...categoryLabels.map(() => "false")]);
     });
 
-    test("a tab chosen is selected", async () => {
+    test("a tab chosen is selected, draws its section in place of the one before, and starts it at its top", async () => {
         await open();
-        const nature = tabs().find(t => t.getAttribute("aria-label") === "Nature") as HTMLElement;
+        const body = document.querySelector<HTMLElement>("[role='grid']") as HTMLElement;
+        body.scrollTop = 60;
 
-        nature.click();
-        await settle();
+        await showSection("Nature");
 
-        expect(nature.getAttribute("aria-selected")).toBe("true");
-        expect(tabs().filter(t => t.getAttribute("aria-selected") === "true")).toEqual([nature]);
+        expect(tabs().filter(t => t.getAttribute("aria-selected") === "true")).toEqual([tab("Nature")]);
+        expect(sectionLabels()).toEqual(["Nature"]);
+        expect(body.scrollTop).toBe(0);
     });
 
     test("Right, Left, Home and End move between the tabs", async () => {
@@ -491,78 +663,6 @@ describe("the tabs", () => {
 
         await press(all[all.length - 1], "Home");
         expect(document.activeElement).toBe(all[0]);
-    });
-
-    // jsdom lays nothing out, so each section is given a place 100px below the one before, in a
-    // body 200px high, as a browser would measure them.
-    function layOut(): HTMLElement {
-        const body = document.querySelector<HTMLElement>("[role='grid']") as HTMLElement;
-        Array.from(body.querySelectorAll<HTMLElement>("[data-sec]")).forEach((section, index) => {
-            Object.defineProperty(section, "offsetTop", { configurable: true, get: () => index * 100 });
-        });
-        Object.defineProperty(body, "clientHeight", { configurable: true, value: 200 });
-        Object.defineProperty(body, "scrollHeight", { configurable: true, value: 2000 });
-        return body;
-    }
-
-    async function scrollBody(body: HTMLElement, top: number): Promise<void> {
-        body.scrollTop = top;
-        body.dispatchEvent(new Event("scroll"));
-        await settle();
-    }
-
-    function selectedTab(): string | null {
-        return tabs().find(t => t.getAttribute("aria-selected") === "true")?.getAttribute("aria-label") ?? null;
-    }
-
-    test("follow the scroll: the section at the top, and the last at the end", async () => {
-        await open();
-        const body = layOut();
-
-        await scrollBody(body, 300);
-        expect(selectedTab()).toBe("Hearts and symbols");
-
-        await scrollBody(body, 108);
-        expect(selectedTab()).toBe("Smileys");
-
-        await scrollBody(body, 1800);
-        expect(selectedTab()).toBe("Objects");
-
-        await scrollBody(body, 0);
-        expect(selectedTab()).toBe("Cedar Hill favorites");
-    });
-
-    test("a tab chosen stays selected while its smooth scroll passes the sections between, then the tabs follow again", async () => {
-        jest.useFakeTimers();
-        await open();
-        const body = layOut();
-        body.scrollTo = jest.fn() as unknown as typeof body.scrollTo;
-        const nature = tabs().find(t => t.getAttribute("aria-label") === "Nature") as HTMLElement;
-
-        nature.click();
-        await settle();
-        await scrollBody(body, 100);
-        await scrollBody(body, 300);
-        expect(selectedTab()).toBe("Nature");
-
-        // The reader takes the scroll over before it arrives; once the hold is up the tabs follow them.
-        jest.advanceTimersByTime(450);
-        await scrollBody(body, 100);
-        expect(selectedTab()).toBe("Smileys");
-        jest.useRealTimers();
-    });
-
-    test("once a search is cleared, select the section the grid is back at", async () => {
-        await open();
-        const body = layOut();
-        await scrollBody(body, 300);
-        expect(selectedTab()).toBe("Hearts and symbols");
-
-        await typeSearch("c");
-        await typeSearch("");
-
-        expect(body.scrollTop).toBe(0);
-        expect(selectedTab()).toBe("Cedar Hill favorites");
     });
 });
 
@@ -674,16 +774,16 @@ describe("closing", () => {
         const w = mount(EmojiPicker, {
             // The toggle takes the last chip back at once, and the row is redrawn without it, add
             // chip and all, before the next tick.
-            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: ["grinning"], anchor: bubble, opener: add, onReact: () => queueMicrotask(() => add.remove()) },
+            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: ["thumbsup"], anchor: bubble, opener: add, onReact: () => queueMicrotask(() => add.remove()) },
             attachTo: document.body
         });
         wrapper = w;
         await settle();
 
-        cellAt("Smileys", 0, 0).click();
+        cellAt("Cedar Hill favorites", 0, 0).click();
         await settle();
 
-        expect(w.emitted("react")).toEqual([["grinning"]]);
+        expect(w.emitted("react")).toEqual([["thumbsup"]]);
         expect(document.activeElement).toBe(row);
     });
 
@@ -733,6 +833,7 @@ describe("closing", () => {
 describe("choosing in react mode", () => {
     test("asks to react with the emoji's code, closes, and gives focus back to what opened it", async () => {
         const w = await open();
+        await showSection("Smileys");
 
         cellAt("Smileys", 0, 0).click();
         await settle();
@@ -785,6 +886,7 @@ describe("choosing in insert mode", () => {
     test("asks to insert an image emoji as its code, which the message draws", async () => {
         const w = await open({ mode: "insert" });
 
+        await showSection("Objects");
         const custom = cellsOf(section("Objects")).find(c => c.getAttribute("data-code") === "cedar_hill") as HTMLElement;
         custom.click();
         await settle();

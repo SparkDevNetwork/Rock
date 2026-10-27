@@ -2,8 +2,9 @@
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <div ref="pickerElement"
+             :key="step"
              class="chat-picker"
-             :class="{ 'is-leaving': isClosing }"
+             :class="{ 'is-tray': step === 'tray', 'is-leaving': isClosing }"
              role="dialog"
              :aria-label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
              tabindex="-1"
@@ -13,101 +14,129 @@
             <!--
                 Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
                 a picker drawn inside it; left in place where there is no root, as when a part is drawn alone.
+                Drawn afresh for each step, so the full picker pops in where the tray was.
             -->
-            <div class="chat-picker-head">
-                <label class="chat-picker-search">
-                    <Icon name="search" size="sm" />
-                    <input ref="searchElement"
-                           type="text"
-                           placeholder="Search emoji"
-                           autocomplete="off"
-                           spellcheck="false"
-                           aria-label="Search emoji"
-                           :aria-controls="gridId"
-                           :value="query"
-                           @input="onSearchInput"
-                           @keydown="onSearchKeydown" />
-                </label>
-            </div>
-
-            <div :id="gridId"
-                 ref="bodyElement"
-                 class="chat-picker-body"
-                 role="grid"
-                 aria-label="Emoji"
-                 :aria-busy="source.catalog === null ? 'true' : undefined"
-                 @scroll.passive="onBodyScroll"
-                 @mouseover="onCellHover"
-                 @focusin="onCellHover">
-                <div v-for="section in drawnSections"
-                     :key="section.id"
-                     class="chat-picker-section"
-                     role="rowgroup"
-                     :data-sec="section.id"
-                     :aria-label="section.label">
-                    <div class="chat-picker-label" role="presentation">{{ section.label }}</div>
-                    <div class="chat-picker-grid">
-                        <div v-for="(row, rowIndex) in section.rows" :key="rowIndex" class="chat-picker-row" role="row">
-                            <button v-for="cell in row"
-                                    :key="cell.key"
-                                    type="button"
-                                    role="gridcell"
-                                    :class="{ 'is-first': cell.key === firstResultKey }"
-                                    :tabindex="cell.key === stopKey ? 0 : -1"
-                                    :data-code="cell.item.code"
-                                    :data-key="cell.key"
-                                    :aria-label="cellLabel(cell.item)"
-                                    :aria-pressed="isMine(cell.item) ? 'true' : undefined"
-                                    @click="choose(cell.item)">
-                                <img v-if="!cell.item.emoji && cell.item.image_url" class="chat-picker-glyph" :src="cell.item.image_url" alt="" />
-                                <span v-else class="chat-picker-glyph" aria-hidden="true">{{ cell.item.emoji }}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- The categories' place while the catalog loads, the favorites above drawn at once. -->
-                <div v-if="source.catalog === null && !isSearching" class="chat-picker-loading" data-sec="loading" aria-hidden="true">
-                    <div class="chat-skeleton chat-picker-loading-label"></div>
-                    <div class="chat-picker-grid">
-                        <div v-for="index in 16" :key="index" class="chat-skeleton chat-picker-loading-cell"></div>
-                    </div>
-                </div>
-
-                <div v-if="isSearching && results.length === 0" class="chat-picker-empty" data-testid="emoji-empty">No emoji match “{{ query.trim() }}”</div>
-            </div>
-
-            <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
-                <button v-for="tab in tabs"
-                        :key="tab.id"
+            <div v-if="step === 'tray'" class="chat-picker-tray" role="toolbar" aria-label="Quick reactions" aria-orientation="horizontal">
+                <button v-for="(item, index) in trayItems"
+                        :key="item.code"
                         type="button"
-                        role="tab"
-                        :aria-label="tab.label"
-                        :title="tab.label"
-                        :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
-                        :tabindex="tab.id === tabStop ? 0 : -1"
-                        @click="onTabClick(tab.id)">
-                    <Icon v-if="tab.id === recentId" name="clock" size="sm" />
-                    <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
+                        class="chat-picker-cell"
+                        :tabindex="index === trayStop ? 0 : -1"
+                        :data-code="item.code"
+                        :aria-label="cellLabel(item)"
+                        :aria-pressed="isMine(item) ? 'true' : undefined"
+                        @click="choose(item)">
+                    <img v-if="!item.emoji && item.image_url" class="chat-picker-glyph" :src="item.image_url" alt="" />
+                    <span v-else class="chat-picker-glyph" aria-hidden="true">{{ item.emoji }}</span>
+                </button>
+                <span class="chat-picker-tray-sep" aria-hidden="true"></span>
+                <button type="button"
+                        class="chat-picker-tray-more"
+                        aria-label="All emoji"
+                        title="All emoji"
+                        :tabindex="trayStop === trayItems.length ? 0 : -1"
+                        @click="showAll">
+                    <Icon name="plus" size="sm" />
                 </button>
             </div>
 
-            <div class="chat-picker-foot" data-testid="emoji-preview">
-                <template v-if="preview">
-                    <img v-if="!preview.emoji && preview.image_url" class="chat-picker-prev" :src="preview.image_url" alt="" />
-                    <span v-else class="chat-picker-prev" aria-hidden="true">{{ preview.emoji }}</span>
-                    <span class="chat-picker-name">
-                        {{ capitalized(preview.label) }}{{ isMine(preview) ? " (yours)" : "" }}
-                        <span>:{{ preview.code }}:</span>
-                    </span>
-                </template>
-                <span v-else class="chat-picker-name">
-                    {{ mode === "react" ? "Pick a reaction" : "Pick an emoji" }}
-                    <span>Hover or arrow to preview</span>
-                </span>
-            </div>
+            <template v-else>
+                <div class="chat-picker-head">
+                    <label class="chat-picker-search">
+                        <Icon name="search" size="sm" />
+                        <input ref="searchElement"
+                               type="text"
+                               placeholder="Search emoji"
+                               autocomplete="off"
+                               spellcheck="false"
+                               aria-label="Search emoji"
+                               :aria-controls="gridId"
+                               :value="query"
+                               @input="onSearchInput"
+                               @keydown="onSearchKeydown" />
+                    </label>
+                </div>
 
-            <div class="chat-sr-only" aria-live="polite" data-testid="emoji-live">{{ liveLine }}</div>
+                <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
+                    <button v-for="tab in tabs"
+                            :key="tab.id"
+                            type="button"
+                            role="tab"
+                            :aria-label="tab.label"
+                            :title="tab.label"
+                            :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
+                            :aria-controls="gridId"
+                            :tabindex="tab.id === tabStop ? 0 : -1"
+                            @click="onTabClick(tab.id)">
+                        <Icon v-if="tab.id === recentId" name="clock" size="sm" />
+                        <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
+                    </button>
+                </div>
+
+                <div :id="gridId"
+                     ref="bodyElement"
+                     class="chat-picker-body"
+                     role="grid"
+                     aria-label="Emoji"
+                     :aria-busy="drawnSection === null ? 'true' : undefined"
+                     @mouseover="onCellHover"
+                     @focusin="onCellHover">
+                    <div v-if="drawnSection && drawnSection.rows.length > 0"
+                         :key="drawnSection.id"
+                         class="chat-picker-section"
+                         role="rowgroup"
+                         :aria-label="drawnSection.label">
+                        <div class="chat-picker-label" role="presentation">{{ drawnSection.label }}</div>
+                        <div class="chat-picker-grid">
+                            <div v-for="(row, rowIndex) in drawnSection.rows" :key="rowIndex" class="chat-picker-row" role="row">
+                                <button v-for="cell in row"
+                                        :key="cell.key"
+                                        type="button"
+                                        role="gridcell"
+                                        class="chat-picker-cell"
+                                        :class="{ 'is-first': cell.key === firstResultKey }"
+                                        :tabindex="cell.key === stopKey ? 0 : -1"
+                                        :data-code="cell.item.code"
+                                        :data-key="cell.key"
+                                        :aria-label="cellLabel(cell.item)"
+                                        :aria-pressed="isMine(cell.item) ? 'true' : undefined"
+                                        @click="choose(cell.item)">
+                                    <img v-if="!cell.item.emoji && cell.item.image_url" class="chat-picker-glyph" :src="cell.item.image_url" alt="" />
+                                    <span v-else class="chat-picker-glyph" aria-hidden="true">{{ cell.item.emoji }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- A category's place while the catalog loads; the recents and the favorites need none. -->
+                    <div v-if="drawnSection === null" class="chat-picker-loading" aria-hidden="true">
+                        <div class="chat-skeleton chat-picker-loading-label"></div>
+                        <div class="chat-picker-grid">
+                            <div v-for="index in 16" :key="index" class="chat-skeleton chat-picker-loading-cell"></div>
+                        </div>
+                    </div>
+
+                    <div v-if="isSearching && searchTotal === 0" class="chat-picker-empty" data-testid="emoji-empty">No emoji match “{{ query.trim() }}”</div>
+                    <div v-if="searchTotal > searchLimit" class="chat-picker-more" data-testid="emoji-more">Showing the first {{ searchLimit }}. Keep typing to narrow it down.</div>
+                </div>
+
+                <div class="chat-picker-foot" data-testid="emoji-preview">
+                    <template v-if="preview">
+                        <img v-if="!preview.emoji && preview.image_url" class="chat-picker-prev" :src="preview.image_url" alt="" />
+                        <span v-else class="chat-picker-prev" aria-hidden="true">{{ preview.emoji }}</span>
+                        <span class="chat-picker-name">
+                            {{ capitalized(preview.label) }}{{ isMine(preview) ? " (yours)" : "" }}
+                            <span>:{{ preview.code }}:</span>
+                        </span>
+                    </template>
+                    <span v-else class="chat-picker-name">
+                        {{ mode === "react" ? "Pick a reaction" : "Pick an emoji" }}
+                        <span>Hover or arrow to preview</span>
+                    </span>
+                </div>
+
+                <div class="chat-sr-only" aria-live="polite" data-testid="emoji-live">{{ liveLine }}</div>
+            </template>
         </div>
     </Teleport>
 </template>
@@ -129,6 +158,12 @@
     animation: chat-picker-in var(--chat-t-base) var(--chat-ease-in);
 }
 
+/* The tray is a pill as wide as its glyphs, the bar's quick reactions grown to eight. */
+.chat-picker.is-tray {
+    width: auto;
+    border-radius: var(--chat-r-full);
+}
+
 /* Leaves half as far and faster than it came, and takes no press on its way out. */
 .chat-picker.is-leaving {
     pointer-events: none;
@@ -137,6 +172,46 @@
 
 .chat-picker [hidden] {
     display: none !important;
+}
+
+.chat-picker-tray {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    padding: 4px;
+}
+
+.chat-picker-tray-sep {
+    flex: none;
+    width: 1px;
+    height: 20px;
+    margin: 0 3px;
+    background: var(--chat-line);
+}
+
+.chat-picker-tray-more {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--chat-icon);
+    cursor: pointer;
+    background: var(--chat-sidebar);
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-picker-tray-more:hover {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+}
+
+.chat-picker-tray-more:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--chat-brand-ring);
 }
 
 .chat-picker-head {
@@ -175,23 +250,22 @@
     outline: 0;
 }
 
-/* Stops at its own ends, so a scroll past the last row never scrolls the feed under it. */
+/*
+    One section at a time in a body of one height, so a short category does not shrink the picker
+    under the pointer; it stops at its own ends, so a scroll past the last row never scrolls the feed.
+*/
 .chat-picker-body {
     position: relative;
-    flex: 1 1 auto;
+    flex: 1 1 228px;
     min-height: 0;
-    max-height: 252px;
+    height: 228px;
     padding: 0 9px 8px 10px;
     overflow-y: auto;
     overscroll-behavior: contain;
-    scroll-padding-top: 26px;
     scrollbar-width: thin;
 }
 
 .chat-picker-label {
-    position: sticky;
-    top: 0;
-    z-index: 1;
     padding: 8px 4px 4px;
     margin: 0;
     font-size: 11px;
@@ -200,7 +274,6 @@
     color: var(--chat-muted);
     text-transform: uppercase;
     letter-spacing: .06em;
-    background: var(--chat-raised);
 }
 
 .chat-picker-grid {
@@ -214,8 +287,9 @@
     display: contents;
 }
 
-.chat-picker-grid button {
+.chat-picker-cell {
     display: grid;
+    flex: none;
     place-items: center;
     width: 36px;
     height: 36px;
@@ -229,6 +303,11 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
+/* The tray's glyphs are round, as the pill they sit in. */
+.chat-picker-tray .chat-picker-cell {
+    border-radius: var(--chat-r-full);
+}
+
 .chat-picker-glyph {
     display: block;
     transition: transform var(--chat-d-glyph) var(--chat-ease-spring);
@@ -240,35 +319,35 @@ img.chat-picker-glyph {
     object-fit: contain;
 }
 
-.chat-picker-grid button:hover {
+.chat-picker-cell:hover {
     background: var(--chat-hover);
 }
 
-.chat-picker-grid button:hover .chat-picker-glyph,
-.chat-picker-grid button:focus-visible .chat-picker-glyph {
+.chat-picker-cell:hover .chat-picker-glyph,
+.chat-picker-cell:focus-visible .chat-picker-glyph {
     transform: scale(1.15);
 }
 
-.chat-picker-grid button:active .chat-picker-glyph {
+.chat-picker-cell:active .chat-picker-glyph {
     transform: scale(.92);
     transition-duration: var(--chat-d-glyph-press);
 }
 
 /* The keyboard's cell, and the first search result, which Enter takes. */
-.chat-picker-grid button:focus-visible,
-.chat-picker-grid button.is-first {
+.chat-picker-cell:focus-visible,
+.chat-picker-cell.is-first {
     background: var(--chat-hover);
     outline: none;
     box-shadow: inset 0 0 0 2px var(--chat-brand-ring);
 }
 
 /* The reader's own reaction: choosing it takes it back. */
-.chat-picker-grid button[aria-pressed="true"] {
+.chat-picker-cell[aria-pressed="true"] {
     background: var(--chat-brand-tint);
     box-shadow: inset 0 0 0 1px var(--chat-brand-line);
 }
 
-.chat-picker-grid button[aria-pressed="true"]:focus-visible {
+.chat-picker-cell[aria-pressed="true"]:focus-visible {
     box-shadow: inset 0 0 0 2px var(--chat-brand-ring), inset 0 0 0 1px var(--chat-brand-line);
 }
 
@@ -290,6 +369,14 @@ img.chat-picker-glyph {
     text-align: center;
 }
 
+.chat-picker-more {
+    padding: 10px 4px 2px;
+    font-size: 12px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+/* Above the one section they choose, as a tab strip sits over what it switches. */
 .chat-picker-tabs {
     display: flex;
     flex: none;
@@ -298,7 +385,8 @@ img.chat-picker-glyph {
     justify-content: space-between;
     height: 36px;
     padding: 0 8px;
-    border-top: 1px solid var(--chat-line);
+    margin-top: 6px;
+    border-bottom: 1px solid var(--chat-line);
 }
 
 .chat-picker-tabs button {
@@ -346,10 +434,11 @@ img.chat-picker-glyph {
     color: var(--chat-brand-ink);
 }
 
+/* On the strip's rule, under the chosen tab. */
 .chat-picker-tabs button[aria-selected="true"]::after {
     position: absolute;
     right: 7px;
-    bottom: -4px;
+    bottom: -5px;
     left: 7px;
     height: 2px;
     content: "";
@@ -415,6 +504,15 @@ img.chat-picker-prev {
     }
 }
 
+/* A phone too narrow for eight glyphs at 36px keeps the eight, a little smaller. */
+@media (max-width: 380px) {
+    .chat-picker-tray .chat-picker-cell,
+    .chat-picker-tray-more {
+        width: 32px;
+        height: 32px;
+    }
+}
+
 /* Reduced motion: no glyph scaling. The pop's distance and scale are already off in the tokens. */
 @media (prefers-reduced-motion: reduce) {
     .chat-picker-glyph {
@@ -467,8 +565,14 @@ img.chat-picker-prev {
         churchName: string;
     };
 
+    /**
+     * Where the picker opens: the quick tray of eight, the full picker one press past it, or the
+     * full picker straight away, for a control that has already offered the quick reactions.
+     */
+    export type PickerStep = "tray" | "full";
+
     /** One drawn cell. The key tells a glyph in two sections apart, as favorites and a category. */
-    type Cell = { key: string, item: PickerEmoji, sectionIndex: number };
+    type Cell = { key: string, item: PickerEmoji };
 
     type Section = { id: string, label: string, rows: Cell[][] };
 
@@ -478,6 +582,12 @@ img.chat-picker-prev {
         mode: {
             type: String as PropType<"react" | "insert">,
             default: "react"
+        },
+
+        /** Where the picker opens. The tray is for reacting; inserting always opens the full picker. */
+        startsOn: {
+            type: String as PropType<PickerStep>,
+            default: "full"
         },
 
         source: {
@@ -530,11 +640,18 @@ img.chat-picker-prev {
 
     const recentId = "recent";
     const favoritesId = "favorites";
+    const resultsId = "results";
     const recentLimit = 8;
     const rowLength = 8;
 
-    /** How long a tab's own scroll holds the tabs still, as the design's picker holds them. */
-    const tabLockMs = 450;
+    /** The tray's glyphs, the bar's three quick reactions grown to a row a reader can scan at once. */
+    const trayLength = 8;
+
+    /**
+     * How many search results are drawn: ten rows, about a category's worth. A letter or two can
+     * match most of the catalog, and drawing every match would be the whole catalog's paint again.
+     */
+    const searchLimit = rowLength * 10;
 
     /** The way out's length when the sheet is not on the page, the sheet's own fast motion. */
     const fallbackOutMs = 120;
@@ -545,19 +662,25 @@ img.chat-picker-prev {
      */
     const outGraceMs = 50;
 
-    /** Names this picker's grid, so its search can say which grid it controls. */
+    /** Names this picker's grid, so its search and tabs can say which grid they control. */
     const gridId = `chat-picker-grid-${getCurrentInstance()?.uid ?? 0}`;
 
     const pickerElement = ref<HTMLElement>();
     const searchElement = ref<HTMLInputElement>();
     const bodyElement = ref<HTMLElement>();
 
+    /** The step on screen; inserting has no tray, since the composer's button offers no quick reactions. */
+    const step = ref<PickerStep>(props.mode === "react" ? props.startsOn : "full");
+
+    /** The tray's one tab stop, by place; the last place is All emoji. */
+    const trayStop = ref(0);
+
     const query = ref("");
 
     /** The grid's one tab stop, by cell key; null means the first cell. */
     const chosenStop = ref<string | null>(null);
 
-    /** The tab the reader's place is in; the favorites at first, as the design opens on them. */
+    /** The section drawn; the favorites at first, as the design opens on them. */
     const selectedTab = ref(favoritesId);
 
     /** The tablist's one tab stop, which follows the selection until the arrows take it. */
@@ -568,15 +691,6 @@ img.chat-picker-prev {
 
     /** Set once the picker is on its way out, so nothing chosen or pressed after counts twice. */
     const isClosing = ref(false);
-
-    /**
-     * Set while a tab press's smooth scroll runs. It passes the sections between on its way, and
-     * the tabs would flicker through them if the scroll were let move them. Held for a time rather
-     * than until the scroll arrives, since a reader who takes the scroll over before it arrives
-     * must find the tabs following them again.
-     */
-    let isTabLocked = false;
-    let tabLockTimer: number | undefined;
 
     /** Watches for what opened the picker leaving the page, which nothing else would tell it. */
     let anchorObserver: MutationObserver | null = null;
@@ -621,33 +735,43 @@ img.chat-picker-prev {
         return map;
     });
 
-    /** Every section with all its emoji, before a search narrows them. */
-    const fullSections = computed((): Array<{ id: string, label: string, items: PickerEmoji[] }> => {
-        const list: Array<{ id: string, label: string, items: PickerEmoji[] }> = [];
+    /**
+     * The recents the picker can draw, newest first. A code it does not know is left out, not drawn
+     * blank: one since retired, or one from the catalog before the catalog has come.
+     */
+    const recents = computed((): PickerEmoji[] => props.source.recents.slice(0, recentLimit)
+        .map(code => byCode.value.get(code))
+        .filter((item): item is PickerEmoji => !!item));
 
-        // A recent code the picker no longer knows, as one since retired, is left out, not drawn blank.
-        const recents = props.source.recents.slice(0, recentLimit)
-            .map(code => byCode.value.get(code))
-            .filter((item): item is PickerEmoji => !!item);
-        if (recents.length > 0) {
-            list.push({ id: recentId, label: "Recently used", items: recents });
+    const favoriteItems = computed((): PickerEmoji[] => props.source.favorites.map(item => byCode.value.get(item.code) ?? item));
+
+    /** The tray: the reader's recents, then the church's favorites, each once, eight in all. */
+    const trayItems = computed((): PickerEmoji[] => {
+        return eachOnce([...recents.value, ...favoriteItems.value]).slice(0, trayLength);
+    });
+
+    const favoritesLabel = computed(() => `${props.source.churchName} favorites`);
+
+    /** A tab per section: Recently used while there are any, the favorites, and every category. */
+    const tabs = computed((): Array<{ id: string, label: string, glyph: string }> => [
+        ...(recents.value.length > 0 ? [{ id: recentId, label: "Recently used", glyph: "" }] : []),
+        { id: favoritesId, label: favoritesLabel.value, glyph: "⭐" },
+        ...categories
+    ]);
+
+    /** A section's emoji by its tab, in order; null for a category while the catalog is on its way. */
+    function sectionItems(id: string): PickerEmoji[] | null {
+        if (id === recentId) {
+            return recents.value;
         }
 
-        list.push({
-            id: favoritesId,
-            label: `${props.source.churchName} favorites`,
-            items: props.source.favorites.map(item => byCode.value.get(item.code) ?? item)
-        });
+        if (id === favoritesId) {
+            return favoriteItems.value;
+        }
 
         const catalog = props.source.catalog;
-        if (catalog) {
-            for (const category of categories) {
-                list.push({ id: category.id, label: category.label, items: catalog.filter(item => item.category === category.id) });
-            }
-        }
-
-        return list;
-    });
+        return catalog ? catalog.filter(item => item.category === id) : null;
+    }
 
     const isSearching = computed(() => terms.value.length > 0);
 
@@ -657,54 +781,52 @@ img.chat-picker-prev {
         return text ? text.split(/\s+/) : [];
     });
 
-    /** The sections as drawn: whole, or narrowed to matches with each glyph once, in its first section. */
-    const drawnSections = computed((): Section[] => {
-        const seen = new Set<string>();
-        const sections: Section[] = [];
-
-        for (const section of fullSections.value) {
-            let items = section.items;
-            if (isSearching.value) {
-                // A glyph is kept only in the first section that holds it, so a search lists each
-                // emoji once and the arrows never pass the same glyph twice.
-                items = items.filter(item => {
-                    if (seen.has(item.code) || !matches(item)) {
-                        return false;
-                    }
-
-                    seen.add(item.code);
-                    return true;
-                });
-
-                // A section the search empties goes with its label, so no heading stands over nothing.
-                if (items.length === 0) {
-                    continue;
-                }
-            }
-
-            // Rows are cut here rather than left to the grid's wrapping, since the arrows move by
-            // row and column and the page lays nothing out that script could read cheaply.
-            const sectionIndex = sections.length;
-            const rows: Cell[][] = [];
-            for (let i = 0; i < items.length; i += rowLength) {
-                rows.push(items.slice(i, i + rowLength).map(item => ({ key: `${section.id}:${item.code}`, item, sectionIndex })));
-            }
-
-            sections.push({ id: section.id, label: section.label, rows });
+    /**
+     * Every match of the search across the sections in their order, each glyph once, where it is
+     * first held, so the arrows never pass the same glyph twice.
+     */
+    const matches = computed((): PickerEmoji[] => {
+        if (!isSearching.value) {
+            return [];
         }
 
-        return sections;
+        return eachOnce(tabs.value.flatMap(tab => sectionItems(tab.id) ?? []).filter(isMatch));
     });
 
-    /** Every drawn row in order across sections, which is what the arrows move through. */
-    const rows = computed((): Cell[][] => drawnSections.value.flatMap(section => section.rows));
+    const searchTotal = computed(() => matches.value.length);
+
+    /**
+     * The one section drawn: the search's first results, or the chosen tab's emoji. Null while a
+     * category waits on the catalog. Only this section's cells are ever in the page, so opening,
+     * hovering and scrolling cost one section's paint, not the catalog's.
+     */
+    const drawnSection = computed((): Section | null => {
+        const id = isSearching.value ? resultsId : selectedTab.value;
+        const items = isSearching.value ? matches.value.slice(0, searchLimit) : sectionItems(id);
+        if (!items) {
+            return null;
+        }
+
+        // Rows are cut here rather than left to the grid's wrapping, since the arrows move by
+        // row and column and the page lays nothing out that script could read cheaply.
+        const rows: Cell[][] = [];
+        for (let i = 0; i < items.length; i += rowLength) {
+            rows.push(items.slice(i, i + rowLength).map(item => ({ key: `${id}:${item.code}`, item })));
+        }
+
+        const label = isSearching.value ? "Search results" : tabs.value.find(tab => tab.id === id)?.label ?? "";
+        return { id, label, rows };
+    });
+
+    /** Every drawn row, which is what the arrows move through. */
+    const rows = computed((): Cell[][] => drawnSection.value?.rows ?? []);
 
     /** Every drawn cell in order, the same order as they stand in the page. */
     const results = computed((): Cell[] => rows.value.flat());
 
     /**
      * The grid's one tab stop: the cell the arrows last left it on while that cell is still drawn,
-     * else the first, so a search that takes the cell away never leaves the grid unreachable.
+     * else the first, so a search or a tab that takes the cell away never leaves the grid unreachable.
      */
     const stopKey = computed((): string | null => {
         const chosen = chosenStop.value;
@@ -719,20 +841,13 @@ img.chat-picker-prev {
             return "";
         }
 
-        const count = results.value.length;
+        const count = searchTotal.value;
         if (count === 0) {
             return "No emoji match";
         }
 
         return `${count} ${count === 1 ? "result" : "results"}`;
     });
-
-    /** A tab per section: Recently used while there are any, the favorites, and every category. */
-    const tabs = computed((): Array<{ id: string, label: string, glyph: string }> => [
-        ...(fullSections.value[0].id === recentId ? [{ id: recentId, label: "Recently used", glyph: "" }] : []),
-        { id: favoritesId, label: fullSections.value.find(section => section.id === favoritesId)?.label ?? "", glyph: "⭐" },
-        ...categories
-    ]);
 
     /**
      * The placement, with the pop grown from what opened it: from its middle along the picker's
@@ -764,16 +879,14 @@ img.chat-picker-prev {
             bodyElement.value.scrollTop = 0;
         }
 
-        // Back at the top with every section drawn, where the first section is; a scroll event
-        // cannot say so, since a body already at the top fires none.
-        if (!isSearching.value) {
-            selectTab(fullSections.value[0].id);
-        }
-
         preview.value = isSearching.value ? results.value[0]?.item ?? null : null;
     }
 
-    /** Enter takes the first result; Down or Tab enters the grid where its tab stop is. */
+    /**
+     * Enter takes the first result; Down enters the grid where its tab stop is. Tab goes on in the
+     * page's order, to the tabs, then the grid, or straight to the first result while the tabs are
+     * hidden by a search.
+     */
     function onSearchKeydown(event: KeyboardEvent): void {
         const first = results.value[0];
         if (event.key === "Enter") {
@@ -782,11 +895,11 @@ img.chat-picker-prev {
                 choose(first.item);
             }
         }
-        else if ((event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey)) && first) {
+        else if (event.key === "ArrowDown" && first) {
             event.preventDefault();
 
             // While searching, the first result, which Enter would take; otherwise the cell the
-            // reader last left the grid on, so Tab back in returns them to their place.
+            // reader last left the grid on, so Down returns them to their place.
             const stop = isSearching.value ? first : results.value.find(cell => cell.key === stopKey.value);
             focusCell(stop ?? first);
         }
@@ -802,15 +915,32 @@ img.chat-picker-prev {
             return;
         }
 
-        // One handler for the dialog, sent on by the role of what has focus, since the tabs and the
+        // One handler for the dialog, sent on by what has focus, since the tray, the tabs and the
         // grid move by different keys and the search has its own.
         const target = event.target as HTMLElement;
-        if (target.getAttribute("role") === "tab") {
+        if (target.closest("[role='toolbar']")) {
+            onTrayKeydown(event, target);
+        }
+        else if (target.getAttribute("role") === "tab") {
             onTabKeydown(event, target);
         }
         else if (target.getAttribute("role") === "gridcell") {
             onGridKeydown(event, target);
         }
+    }
+
+    /** Left, Right, Home and End move along the tray, its glyphs then All emoji. */
+    function onTrayKeydown(event: KeyboardEvent, target: HTMLElement): void {
+        const all = Array.from(pickerElement.value?.querySelectorAll<HTMLElement>("[role='toolbar'] button") ?? []);
+        const index = all.indexOf(target);
+        const next = ({ ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: all.length - 1 } as Record<string, number>)[event.key];
+        if (next === undefined || !all[next]) {
+            return;
+        }
+
+        event.preventDefault();
+        trayStop.value = next;
+        all[next].focus();
     }
 
     /** Left, Right, Home and End move between the tabs; choosing one is a press. */
@@ -822,7 +952,7 @@ img.chat-picker-prev {
             return;
         }
 
-        // Focus moves without choosing, so passing over the tabs scrolls nothing; Enter or Space
+        // Focus moves without choosing, so passing over the tabs draws nothing; Enter or Space
         // presses the tab, which chooses it.
         event.preventDefault();
         tabStop.value = tabs.value[next].id;
@@ -830,9 +960,9 @@ img.chat-picker-prev {
     }
 
     /**
-     * The arrows move in two dimensions across section edges, a column kept and a short row's last
-     * cell taken; Home and End go to the ends, Page Up and Down by section, and Up from the top row
-     * back to the search. Typing a letter goes to the search, where the letter lands.
+     * The arrows move in two dimensions, a column kept and a short row's last cell taken; Home and
+     * End go to the section's ends, Page Up and Down draw the section before or after, and Up from
+     * the top row goes back to the search. Typing a letter goes to the search, where it lands.
      */
     function onGridKeydown(event: KeyboardEvent, target: HTMLElement): void {
         const all = results.value;
@@ -841,19 +971,15 @@ img.chat-picker-prev {
             return;
         }
 
-        const cell = all[index];
-        const rowIndex = rows.value.findIndex(row => row.includes(cell));
-        const column = rows.value[rowIndex].indexOf(cell);
+        const rowIndex = Math.floor(index / rowLength);
+        const column = index % rowLength;
 
-        // Up and Down keep the column; a section's short last row gives its last cell instead, so
-        // Down from a far column still moves a row rather than skipping the short one.
+        // Up and Down keep the column; a short last row gives its last cell instead, so Down from
+        // a far column still moves a row rather than stopping above the short one.
         const inRow = (row: Cell[] | undefined): Cell | undefined => row?.[Math.min(column, row.length - 1)];
-        const firstOfSection = (sectionIndex: number): Cell | undefined => all.find(c => c.sectionIndex === sectionIndex);
 
         let next: Cell | undefined;
         switch (event.key) {
-            // Left and Right run through the cells in reading order, off one section's end and
-            // into the next, since the rows hold no gap between sections.
             case "ArrowRight":
                 next = all[index + 1];
                 break;
@@ -877,11 +1003,11 @@ img.chat-picker-prev {
             case "End":
                 next = all[all.length - 1];
                 break;
-            // Past the first or last section there is nowhere to go, and focus stays where it is.
             case "PageDown":
             case "PageUp":
-                next = firstOfSection(cell.sectionIndex + (event.key === "PageDown" ? 1 : -1));
-                break;
+                event.preventDefault();
+                void turnSection(event.key === "PageDown" ? 1 : -1);
+                return;
             default:
                 // Focus moves before the key's own default runs, so the letter is typed into the
                 // search. Space presses the cell, and a key held with a modifier is a shortcut.
@@ -896,7 +1022,7 @@ img.chat-picker-prev {
         focusCell(next);
     }
 
-    /** One listener on the grid for hover and focus alike, rather than one per cell of hundreds. */
+    /** One listener on the grid for hover and focus alike, rather than one per cell. */
     function onCellHover(event: Event): void {
         const key = (event.target as HTMLElement).closest?.<HTMLElement>("[role='gridcell']")?.dataset.key;
         const cell = key ? results.value.find(c => c.key === key) : undefined;
@@ -905,88 +1031,27 @@ img.chat-picker-prev {
         }
     }
 
-    /** A tab scrolls its section to the top, clearing a search first so every section is there. */
-    async function onTabClick(id: string): Promise<void> {
-        // A search drops the sections that hold no match, so the section is only there to scroll
-        // to once the search is cleared and the grid drawn whole again.
+    /** A tab draws its section, clearing a search first so the section is what is drawn. */
+    function onTabClick(id: string): void {
         if (query.value) {
             query.value = "";
             preview.value = null;
-            await nextTick();
         }
 
-        selectTab(id);
-        tabStop.value = id;
-        const body = bodyElement.value;
-
-        // A category's section is not there until the catalog arrives; its loading place stands in.
-        const section = body?.querySelector<HTMLElement>(`[data-sec="${id}"]`) ?? body?.querySelector<HTMLElement>("[data-sec='loading']");
-        if (!body || !section) {
-            return;
-        }
-
-        const isSmooth = !isReducedMotion();
-        const top = section.offsetTop;
-        if (typeof body.scrollTo === "function") {
-            body.scrollTo({ top, behavior: isSmooth ? "smooth" : "auto" });
-        }
-        else {
-            body.scrollTop = top;
-        }
-
-        // The tab chosen is selected at once and held while the scroll passes the sections between.
-        window.clearTimeout(tabLockTimer);
-        isTabLocked = isSmooth;
-        if (isSmooth) {
-            tabLockTimer = window.setTimeout(() => {
-                isTabLocked = false;
-            }, tabLockMs);
-        }
+        showSection(id);
     }
 
-    /**
-     * The selected tab follows the section at the top as the reader scrolls: the last section that
-     * starts at or above the top, with 8px of give for a label just under it. A last section too
-     * short to reach the top is still selected once the body is scrolled to its end.
-     */
-    function onBodyScroll(): void {
-        const body = bodyElement.value;
-        if (!body || isSearching.value || isTabLocked) {
-            return;
-        }
-
-        const isAtEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - 2;
-
-        const sections = Array.from(body.querySelectorAll<HTMLElement>("[data-sec]"));
-        if (sections.length === 0) {
-            return;
-        }
-
-        // Read from the drawn sections on each scroll rather than kept, since the catalog arriving
-        // or a search clearing redraws them; a section's offset is read against the body it
-        // scrolls in, as the tab press scrolls it.
-        let current = sections[0];
-        if (isAtEnd) {
-            current = sections[sections.length - 1];
-        }
-        else {
-            for (const section of sections) {
-                if (section.offsetTop <= body.scrollTop + 8) {
-                    current = section;
-                }
-            }
-        }
-
-        const id = current.dataset.sec ?? favoritesId;
-
-        // The loading place stands for the categories, so its tab is the first of them.
-        selectTab(id === "loading" ? categories[0].id : id);
+    /** All emoji: the full picker in the tray's place, the search focused as on any open. */
+    async function showAll(): Promise<void> {
+        step.value = "full";
+        await nextTick();
+        focusOnOpen();
     }
 
     /** Focus leaving the picker for somewhere else on the page closes it, as Tab past its end does. */
     function onFocusOut(event: FocusEvent): void {
-        // No next element means focus went nowhere on the page, as when the window lost it, and
-        // the reader comes back to the picker they left.
+        // No next element means focus went nowhere on the page, as when the window lost it or the
+        // tray gave way to the full picker, and the reader is still in the picker.
         const next = event.relatedTarget as Node | null;
         if (next && !pickerElement.value?.contains(next) && !isOfOpener(next)) {
             close(false);
@@ -1008,11 +1073,24 @@ img.chat-picker-prev {
 
     // #region Functions
 
+    /** The emoji in order with each code kept where it first stands, as a favorite also in its category. */
+    function eachOnce(items: PickerEmoji[]): PickerEmoji[] {
+        const seen = new Set<string>();
+        return items.filter(item => {
+            if (seen.has(item.code)) {
+                return false;
+            }
+
+            seen.add(item.code);
+            return true;
+        });
+    }
+
     /**
      * Whether every word typed is found in the emoji's name, its keywords or its code. A word may
      * match within another, so "pra" finds folded hands by its keyword pray while it is typed.
      */
-    function matches(item: PickerEmoji): boolean {
+    function isMatch(item: PickerEmoji): boolean {
         const words = `${item.label} ${(item.keywords ?? []).join(" ")} ${item.code.replace(/_/g, " ")}`.toLowerCase();
         return terms.value.every(term => words.includes(term));
     }
@@ -1030,10 +1108,36 @@ img.chat-picker-prev {
         return capitalized(item.label) + (isMine(item) ? ", you reacted" : "");
     }
 
-    /** The drawn button of a cell, found by its place, since the page holds the cells in order. */
+    /** Draws a tab's section from its top, the tab selected and the grid's stop back on its first cell. */
+    function showSection(id: string): void {
+        selectedTab.value = id;
+        tabStop.value = id;
+        chosenStop.value = null;
+        if (bodyElement.value) {
+            bodyElement.value.scrollTop = 0;
+        }
+    }
+
+    /** Page Down and Up: the section after or before, focus on its first emoji once it is drawn. */
+    async function turnSection(by: number): Promise<void> {
+        if (isSearching.value) {
+            return;
+        }
+
+        const index = tabs.value.findIndex(tab => tab.id === selectedTab.value);
+        const next = tabs.value[index + by];
+        if (!next) {
+            return;
+        }
+
+        showSection(next.id);
+        await nextTick();
+        focusCell(results.value[0]);
+    }
+
+    /** The drawn button of a cell, found by its key. */
     function cellElement(cell: Cell): HTMLElement | null {
-        const index = results.value.indexOf(cell);
-        return bodyElement.value?.querySelectorAll<HTMLElement>("[role='gridcell']")[index] ?? null;
+        return bodyElement.value?.querySelector<HTMLElement>(`[data-key="${cell.key}"]`) ?? null;
     }
 
     /** Moves the grid's tab stop to a cell and focus with it, scrolled just into view. */
@@ -1045,8 +1149,8 @@ img.chat-picker-prev {
         chosenStop.value = cell.key;
         const element = cellElement(cell);
 
-        // Focus alone would scroll the cell to wherever the browser likes, a sticky label over it;
-        // nearest moves the body only as far as the cell needs.
+        // Focus alone would scroll the cell to wherever the browser likes; nearest moves the body
+        // only as far as the cell needs.
         element?.focus({ preventScroll: true });
         element?.scrollIntoView?.({ block: "nearest" });
         preview.value = cell.item;
@@ -1131,24 +1235,21 @@ img.chat-picker-prev {
         emit("close");
     }
 
-    function isReducedMotion(): boolean {
-        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    }
-
-    /** Selects a tab without taking its focus away from a tab the arrows are on. */
-    function selectTab(id: string): void {
-        selectedTab.value = id;
-        if (!pickerElement.value?.querySelector("[role='tablist']")?.contains(document.activeElement)) {
-            tabStop.value = id;
-        }
+    /**
+     * Focus for the step on screen: the tray's first glyph, or the full picker's search. On a touch
+     * screen the dialog itself takes it, as focus in the search would raise the keyboard over the
+     * grid, and Escape and the arrows still reach it.
+     */
+    function focusOnOpen(): void {
+        const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
+        const first = step.value === "tray" ? pickerElement.value?.querySelector<HTMLElement>("[role='toolbar'] button") : searchElement.value;
+        (isTouch ? pickerElement.value : first)?.focus({ preventScroll: true });
     }
 
     // #endregion Functions
 
     // #region Lifecycle Hooks
 
-    // The search is focused on open, except on a touch screen, where focus would raise the keyboard
-    // over the grid; there the dialog itself takes focus, so Escape and the arrows still reach it.
     onMounted(async () => {
         document.addEventListener("pointerdown", onDocumentPointerDown, true);
 
@@ -1159,14 +1260,12 @@ img.chat-picker-prev {
         }
 
         await nextTick();
-        const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
-        (isTouch ? pickerElement.value : searchElement.value)?.focus({ preventScroll: true });
+        focusOnOpen();
     });
 
     onBeforeUnmount(() => {
         document.removeEventListener("pointerdown", onDocumentPointerDown, true);
         anchorObserver?.disconnect();
-        window.clearTimeout(tabLockTimer);
     });
 
     // #endregion Lifecycle Hooks

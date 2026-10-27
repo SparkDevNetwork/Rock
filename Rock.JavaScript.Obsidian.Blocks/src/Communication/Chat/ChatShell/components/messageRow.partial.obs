@@ -1505,7 +1505,7 @@
         isCommunity: layout.value === "community",
         senderName: displayName.value,
         favorites: props.reactionHost?.favorites ?? [],
-        pickerAnchor: props.reactionHost?.pickerAnchor ?? null
+        pickerAnchor: props.message ? props.reactionHost?.pickerAnchorOf(props.message.id) ?? null : null
     }));
 
     /** The reactions row's props; a previewer sees the chips but cannot press them, and a touch screen has no add chip. */

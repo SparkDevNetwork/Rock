@@ -28,6 +28,7 @@ import MessageRow from "../../../../../src/Communication/Chat/ChatShell/componen
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
+import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -1120,16 +1121,33 @@ describe("the phone's action sheet", () => {
         sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
         await nextTick();
 
-        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement }];
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, startsOn?: string }];
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(isChannel ? root(w) : w.get(".chat-bubble").element);
+        expect(request.startsOn).toBe("full");
     });
 });
 
 /** What the shell hands every row of the reactions: the favorites, who reacted, the picker's message. */
 function host(favorites: unknown[], reactorNames: jest.Mock = jest.fn(async () => null)): Record<string, unknown> {
-    return { favorites, reactorNames, pickerAnchor: null };
+    return { favorites, reactorNames, pickerAnchorOf: () => null };
 }
+
+// The bar holding the open picker stays drawn; every other row asks only about its own message,
+// so opening the picker on one message touches no other row.
+describe("the open picker", () => {
+    test("is handed to the bar of the message it is open on, and to no other row's", () => {
+        const anchor = document.createElement("button");
+        const target = message();
+        const reactionHost = { ...host([]), pickerAnchorOf: (messageId: number) => messageId === target.id ? anchor : null };
+
+        const opened = draw({ message: target, reactionHost });
+        const other = draw({ message: message({ id: target.id + 1 }), reactionHost });
+
+        expect(opened.findComponent(ActionBar).props("pickerAnchor")).toBe(anchor);
+        expect(other.findComponent(ActionBar).props("pickerAnchor")).toBeNull();
+    });
+});
 
 const heart = { code: "heart", count: 3, mine: true, emoji: "❤️", image_url: null, label: "red heart" };
 
@@ -1155,10 +1173,11 @@ describe("the reactions row", () => {
 
         await w.get("[data-testid='reaction-add']").trigger("click");
 
-        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement }];
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement, startsOn?: string }];
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(bubble ? w.get(bubble).element : root(w));
         expect(request.opener).toBe(w.get("[data-testid='reaction-add']").element);
+        expect(request.startsOn).toBeUndefined();
     });
 
     test("tucks into the bubble, which grows its foot to make room", () => {
