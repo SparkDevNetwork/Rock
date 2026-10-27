@@ -173,6 +173,17 @@ namespace Rock.Blocks.Communication
                 )
                 .FirstOrDefault();
 
+            if ( communicationFlowPerformanceBag == null )
+            {
+                return null;
+            }
+
+            var communicationFlow = new CommunicationFlowService( rockContext ).Get( communicationFlowId );
+            if ( communicationFlow == null || !communicationFlow.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return null;
+            }
+
             // Get message instances. These are the actual messages that were (or will be) sent to recipients.
             communicationFlowPerformanceBag.Messages = ctx.CommunicationFlowInstanceCommunications
                 .Where( ic => ic.CommunicationFlowCommunication.CommunicationFlowId == communicationFlowId )
