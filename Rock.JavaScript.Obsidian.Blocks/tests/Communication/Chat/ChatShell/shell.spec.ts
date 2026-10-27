@@ -2135,6 +2135,31 @@ describe("the live sidebar", () => {
         expect(messageForError(revoked!)).toBe("You no longer have access to this channel.");
     });
 
+    // The two reads say different things, so the person is told both, and closing one leaves the other.
+    test("a channel's lost read and then a conversation's are each told in their own words", async () => {
+        const h = await startedLive();
+        const revokedText = "You do not have permissions to read from this Channel topic: x";
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: revokedText });
+        await settle();
+
+        const opening = h.shell.selectChannel(dmD);
+        await settle();
+        answerHistory(h, dmD, 10);
+        await opening;
+        await settle();
+        topicOf(h, channelTopic(tenant, dmD)).status?.("SUBSCRIBED");
+        await settle();
+        topicOf(h, channelTopic(tenant, dmD)).listeners["system"]?.({ status: "error", message: revokedText });
+        await settle();
+
+        const revoked = h.shell.state.errors.filter(e => e.code === "rt.read_revoked");
+        expect(revoked.map(e => messageForError(e))).toEqual(["You no longer have access to this channel.", "You no longer have access to this conversation."]);
+
+        h.shell.dismissError(revoked[1]);
+        expect(h.shell.state.errors.filter(e => e.code === "rt.read_revoked").map(e => messageForError(e))).toEqual(["You no longer have access to this channel."]);
+    });
+
     afterEach(() => {
         jest.useRealTimers();
         jest.restoreAllMocks();

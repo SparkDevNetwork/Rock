@@ -23,7 +23,7 @@
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError } from "./errors.partial";
+import { classifyActionFailure, classifyPlatformError, errorKey } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
@@ -405,15 +405,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return error.code === "rpc.transport";
     }
 
-    /** Tells the person about a failure, once per code until it is dismissed. */
+    /** Tells the person about a failure, once per sentence until it is dismissed. */
     function report(error: ChatError): void {
         if (state.connection && isConnectionFailure(error)) {
             return;
         }
 
-        // The same failure twice shows once; two refused messages under one code are two
-        // different sentences, so the text is part of what makes an error the same one.
-        if (!state.errors.some(e => e.code === error.code && e.text === error.text)) {
+        const key = errorKey(error);
+        if (!state.errors.some(e => errorKey(e) === key)) {
             state.errors.push(error);
         }
     }
@@ -1388,10 +1387,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
         },
 
-        // Two failures can share a code with different sentences, so the one closed is matched
-        // the way the toast keys it, by code and text, never by the code alone.
+        // Matched the way the toast keys it, so closing one of two failures under a code closes that one.
         dismissError: (error: ChatError): void => {
-            const index = state.errors.findIndex(e => e.code === error.code && e.text === error.text);
+            const key = errorKey(error);
+            const index = state.errors.findIndex(e => errorKey(e) === key);
             if (index >= 0) {
                 state.errors.splice(index, 1);
             }
