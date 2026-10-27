@@ -1132,7 +1132,18 @@ namespace Rock.Rest
                 var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
                 var proxyModel = rockContext.Set<T>().Create();
 
-                service.Add( proxyModel );
+                /*
+                    10/27/2026 - MSE
+
+                    Attach the copy with the DbSet instead of service.Add. SetValues needs the
+                    copy to be tracked, but some services run their own rules in Add (for example
+                    StepService checks the StepTypeId), and the copy is still empty at this point,
+                    so those rules fail for valid values. On POST the real insert still goes
+                    through service.Add, so those rules still run on the record that is saved.
+
+                    Reason: Creating a Step through the REST API failed for a valid step type.
+                */
+                rockContext.Set<T>().Add( proxyModel );
                 service.SetValues( ( T ) securedModel, proxyModel );
 
                 /*
