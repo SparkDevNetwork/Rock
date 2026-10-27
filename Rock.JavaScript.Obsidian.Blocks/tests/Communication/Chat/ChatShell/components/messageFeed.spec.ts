@@ -944,13 +944,15 @@ describe("the history skeleton", () => {
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
     });
 
-    test("sits at the bottom by the composer, as the messages it stands for will, after the feed's free room", async () => {
+    test("stands over the feed rather than in it, so it can fade out over the first page as that page rises in", async () => {
         const wrapper = draw({ timeline: timeline([], { isLoaded: false }) });
 
         jest.advanceTimersByTime(1000);
         await nextTick();
 
-        expect(isBefore(wrapper.get("[data-testid='feed-fill']").element, wrapper.get("[data-testid='history-skeleton']").element)).toBe(true);
+        const skeleton = wrapper.get("[data-testid='history-skeleton']").element;
+        expect(wrapper.get("[data-testid='message-feed']").element.contains(skeleton)).toBe(false);
+        expect(wrapper.element.contains(skeleton)).toBe(true);
     });
 
     test("draws a channel's flat rows with 36px faces and a direct message's bubbles", async () => {

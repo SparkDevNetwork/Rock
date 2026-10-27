@@ -610,6 +610,36 @@ describe("the page load", () => {
         expect(h.shell.state.isOpening).toBe(false);
     });
 
+    test("a Try again that loads the first sidebar goes on with the page load, opening what it would have", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+        await h.shell.start();
+
+        h.bootstrap.value = { channels: [{ channel_id: channelB } as SidebarRow] };
+        h.shell.channels.retryLoad();
+        await settle();
+        expect(h.shell.state.isOpening).toBe(true);
+
+        answerHistory(h, channelB, 20);
+        await settle();
+
+        expect(h.shell.channels.loadState).toBe("loaded");
+        expect(h.shell.state.activeChannelId).toBe(channelB);
+        expect(h.shell.state.isOpening).toBe(false);
+    });
+
+    test("a Try again that fails again leaves the list failed and the page no longer opening", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+        await h.shell.start();
+
+        h.shell.channels.retryLoad();
+        await settle();
+
+        expect(h.shell.channels.loadState).toBe("failed");
+        expect(h.shell.state.isOpening).toBe(false);
+    });
+
     test("a reload in flight after the first sidebar never takes the list back to loading", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();

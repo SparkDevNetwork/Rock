@@ -579,7 +579,10 @@
     height: 15px;
 }
 
-/* The members panel's skeleton row in a conversation row's place; the fill and pulse are the sheet's one skeleton. */
+/*
+    A loading row in a conversation row's place, shaped as the members panel's skeleton row is;
+    the fill and pulse are the sheet's one skeleton.
+*/
 .chat-side-skel {
     display: flex;
     gap: 10px;

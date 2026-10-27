@@ -39,6 +39,9 @@ import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, D
 export type ChannelStoreDependencies = {
     /** Fetches the sidebar again and hands it to setSidebar. */
     reloadSidebar: () => void;
+
+    /** Fetches the first sidebar again after it failed, going on with whatever waited on it. */
+    retryFirstLoad: () => void;
 };
 
 /** The sidebar a shell holds. */
@@ -394,7 +397,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         retryLoad: (): void => {
             if (store.loadState === "failed") {
                 store.loadState = "loading";
-                dependencies.reloadSidebar();
+                dependencies.retryFirstLoad();
             }
         },
 
