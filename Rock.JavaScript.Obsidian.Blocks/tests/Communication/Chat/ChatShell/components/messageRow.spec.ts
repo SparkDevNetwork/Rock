@@ -520,10 +520,35 @@ describe("Community, in a channel", () => {
         expect(rule).toMatch(/background-color:\s*var\(--chat-row-mention\)/);
         expect(rule).toMatch(/--chat-cm-radius:\s*10px/);
         expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius\)/);
-        expect(rule).toMatch(/margin:\s*2px\s+var\(--chat-cm-inset\)/);
+        expect(rule).toMatch(/margin-inline:\s*var\(--chat-cm-inset\)/);
+        expect(rule).not.toMatch(/(^|[\s;])margin(-top|-bottom|-block)?:/);
         // The text column stays where every other row has it: the inset comes out of the padding.
         expect(rule).toMatch(/padding-inline:\s*calc\(var\(--chat-cm-pad\)\s*-\s*var\(--chat-cm-inset\)\)/);
         expect(rule).not.toMatch(/box-shadow/);
+    });
+
+    // Rows sit in a flex group, where margins never collapse, so a margin around the wash would add
+    // space. A clear 1px edge above and below, taken from the padding, keeps every row's height and
+    // still parts two washed rows in a row; the wash is drawn inside it.
+    test("a washed row is exactly as tall as an unwashed one, and two washed rows stand apart", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        /** The declarations of the rule written for exactly this selector. */
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp(selector.split(".").join("\\.") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+        /** A declaration's pixel value, read from the start of a line so a longer property never matches. */
+        const px = (rule: string, property: string): number => parseFloat(new RegExp("(?:^|[\\s;])" + property + ":\\s*([\\d.]+)px").exec(rule)?.[1] ?? "NaN");
+
+        const washed = block(".chat-msg.is-community.is-mention-me");
+        expect(washed).toMatch(/border-block:\s*1px solid transparent/);
+        expect(washed).toMatch(/background-clip:\s*padding-box/);
+
+        const row = block(".chat-msg.is-community");
+        const rowPad = parseFloat(/padding:\s*([\d.]+)px/.exec(row)?.[1] ?? "NaN");
+        expect(1 + px(washed, "padding-block")).toBe(rowPad);
+        expect(1 + px(block(".chat-msg.is-community.is-mention-me.is-head"), "padding-top")).toBe(px(block(".chat-msg.is-community.is-head"), "padding-top"));
     });
 
     // The reader's own chip in a washed row takes a thin amber ring, so it stands off the wash.
@@ -543,6 +568,8 @@ describe("Community, in a channel", () => {
         const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-tools\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/margin-right:\s*calc\(-1 \* var\(--chat-cm-inset\)\)/);
+        // The bar's top is measured from inside the row's clear 1px top edge; it is lifted back by it.
+        expect(rule).toMatch(/margin-top:\s*-1px/);
     });
 
     // A click's focus drops the ring and squares an ordinary row; a washed row keeps its corners.

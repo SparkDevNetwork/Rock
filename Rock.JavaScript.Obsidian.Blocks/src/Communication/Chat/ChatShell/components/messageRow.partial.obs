@@ -714,14 +714,24 @@
     A row that names the reader: a soft rounded wash stood in from the feed's edges, as a hover is,
     rather than a full-width tint with an edge, which read as a warning and ran together when
     several rows in a row named the reader. The inset comes out of the side padding, so the text
-    keeps its column; hover and focus lay over it as over any row.
+    keeps its column. Above and below, a clear 1px edge comes out of the padding and the wash is
+    drawn inside it: the rows sit in a flex group, where a margin never collapses and would make
+    the row taller, and the edge still parts two washed rows. Hover and focus lay over it as over
+    any row.
 */
 .chat-msg.is-community.is-mention-me {
     --chat-cm-radius: 10px;
-    margin: 2px var(--chat-cm-inset);
+    margin-inline: var(--chat-cm-inset);
+    padding-block: 1px;
     padding-inline: calc(var(--chat-cm-pad) - var(--chat-cm-inset));
     background-color: var(--chat-row-mention);
+    background-clip: padding-box;
+    border-block: 1px solid transparent;
     border-radius: var(--chat-cm-radius);
+}
+
+.chat-msg.is-community.is-mention-me.is-head {
+    padding-top: 5px;
 }
 
 /* The reader's own chip takes a thin amber ring, so it stands off the wash it sits on. */
@@ -731,9 +741,11 @@
 
 /*
     The bar is docked to the row, which stands in from the feed's edge; pushed back out by the
-    same inset, it holds its place against the feed, wherever its own placement puts it.
+    same inset, it holds its place against the feed, wherever its own placement puts it. Its top
+    is measured from inside the row's clear 1px top edge, so it is lifted back by that pixel.
 */
 .chat-msg.is-community.is-mention-me :deep(.chat-tools) {
+    margin-top: -1px;
     margin-right: calc(-1 * var(--chat-cm-inset));
 }
 
