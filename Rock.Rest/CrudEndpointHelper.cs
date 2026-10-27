@@ -962,7 +962,17 @@ namespace Rock.Rest
                 var newService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), newContext );
                 var asNew = newContext.Set<TEntity>().Create();
 
-                newService.Add( asNew );
+                /*
+                    10/27/2026 - MSE
+
+                    Attach the copy with the DbSet instead of newService.Add. SetValues needs the
+                    copy to be tracked, but some services run their own rules in Add (for example
+                    StepService checks the StepTypeId), and the copy is still empty at this point,
+                    so those rules fail for valid values. This copy is never saved.
+
+                    Reason: Changing the step type of a Step through the REST API failed.
+                */
+                newContext.Set<TEntity>().Add( asNew );
                 newService.SetValues( entity, asNew );
 
                 // Clear these before any navigation property is read.
