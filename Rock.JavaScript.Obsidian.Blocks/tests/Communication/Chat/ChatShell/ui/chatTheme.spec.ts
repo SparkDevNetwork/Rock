@@ -208,6 +208,9 @@ const tokens: Token[] = [
     { name: "mn-all-bg", light: "#DFEAF8", dark: "#0A2241" },
     // A row that names the reader: warning at 6 percent over the surface in light, 9 in dark.
     { name: "row-mention", light: "#FCF6EE", dark: "#201C15" },
+    // The ring on the reader's own chip in that row: warning at 35 percent, written out, since the
+    // browsers Rock supports cannot mix it.
+    { name: "mention-ring", light: "rgba(229,134,0,.35)", dark: "rgba(229,134,0,.35)" },
 
     // An initials avatar's saturation and lightness; the hue is the person's own.
     { name: "av-sat", light: "70%", dark: "28%" },

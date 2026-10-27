@@ -454,6 +454,8 @@ describe("Community, in a channel", () => {
         expect(head.get("[data-testid='mention-tag']").text()).toBe("Mentioned you");
         expect(parts.indexOf("mention-tag")).toBe(parts.indexOf("message-time") + 1);
         expect(head.get("[data-testid='mention-tag']").findComponent(Icon).props("name")).toBe("at");
+        // The row's label already says ", mentions you", so the words are not read a second time.
+        expect(head.get("[data-testid='mention-tag']").attributes("aria-hidden")).toBe("true");
     });
 
     // A row under its group's head has no name line, so the words ride at the end of the text,
@@ -466,7 +468,9 @@ describe("Community, in a channel", () => {
         const tag = text.get("[data-testid='mention-tag']");
         expect(tag.text()).toBe("Mentioned you");
         expect(text.element.lastElementChild).toBe(tag.element);
+        expect(tag.attributes("aria-hidden")).toBe("true");
         expect(root(w).classList.contains("is-mention-me")).toBe(true);
+        expect(plain(root(w).getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM, mentions you");
     });
 
     // An announcement owns the brand tint and its edge; one that names the reader keeps them,
@@ -481,6 +485,24 @@ describe("Community, in a channel", () => {
         expect(root(w).classList.contains("is-announcement")).toBe(true);
         expect(root(w).classList.contains("is-mention-me")).toBe(false);
         expect(w.get("[data-testid='mention-tag']").text()).toBe("Mentioned you");
+    });
+
+    // A system line is a quiet note of what happened and a card a post from the church; neither is
+    // a message to the reader, so neither takes the wash, the words or the label's suffix.
+    test.each([
+        ["a system line", { message_type: "system", person_alias_guid: null, system_kind: "added" }],
+        ["a block card", { message_type: "system", blocks: [{ type: "text", text: "hi", pieces: null, fallback: { type: "text", text: "hi" } }] }]
+    ] as const)("%s that names the reader has no mention treatment", (_kind, extra) => {
+        const w = draw({
+            message: message({ body: `Grace Kim added <@${me}>`, pieces: [{ type: "text", text: "Grace Kim added " }, mentionMe], ...extra } as Partial<TimelineMessage>),
+            isChannel: true,
+            position: "first"
+        });
+
+        expect(["system", "card"]).toContain(root(w).getAttribute("data-state"));
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+        expect(root(w).getAttribute("aria-label") ?? "").not.toContain("mentions you");
     });
 
     test("the reader's own message naming themselves is not a mention of them", () => {
@@ -498,10 +520,56 @@ describe("Community, in a channel", () => {
         expect(rule).toMatch(/background-color:\s*var\(--chat-row-mention\)/);
         expect(rule).toMatch(/--chat-cm-radius:\s*10px/);
         expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius\)/);
-        expect(rule).toMatch(/margin:\s*2px\s+var\(--chat-cm-inset\)/);
+        expect(rule).toMatch(/margin-inline:\s*var\(--chat-cm-inset\)/);
+        expect(rule).not.toMatch(/(^|[\s;])margin(-top|-bottom|-block)?:/);
         // The text column stays where every other row has it: the inset comes out of the padding.
         expect(rule).toMatch(/padding-inline:\s*calc\(var\(--chat-cm-pad\)\s*-\s*var\(--chat-cm-inset\)\)/);
         expect(rule).not.toMatch(/box-shadow/);
+    });
+
+    // Rows sit in a flex group, where margins never collapse, so a margin around the wash would add
+    // space. A clear 1px edge above and below, taken from the padding, keeps every row's height and
+    // still parts two washed rows in a row; the wash is drawn inside it.
+    test("a washed row is exactly as tall as an unwashed one, and two washed rows stand apart", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        /** The declarations of the rule written for exactly this selector. */
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp(selector.split(".").join("\\.") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+        /** A declaration's pixel value, read from the start of a line so a longer property never matches. */
+        const px = (rule: string, property: string): number => parseFloat(new RegExp("(?:^|[\\s;])" + property + ":\\s*([\\d.]+)px").exec(rule)?.[1] ?? "NaN");
+
+        const washed = block(".chat-msg.is-community.is-mention-me");
+        expect(washed).toMatch(/border-block:\s*1px solid transparent/);
+        expect(washed).toMatch(/background-clip:\s*padding-box/);
+
+        const row = block(".chat-msg.is-community");
+        const rowPad = parseFloat(/padding:\s*([\d.]+)px/.exec(row)?.[1] ?? "NaN");
+        expect(1 + px(washed, "padding-block")).toBe(rowPad);
+        expect(1 + px(block(".chat-msg.is-community.is-mention-me.is-head"), "padding-top")).toBe(px(block(".chat-msg.is-community.is-head"), "padding-top"));
+    });
+
+    // The reader's own chip in a washed row takes a thin amber ring, so it stands off the wash.
+    test("the reader's chip in a washed row is ringed in the warning color", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+    });
+
+    // The row stands in from the feed's edge, and its bar, docked to the row, would follow it in;
+    // it is pushed back out by the same inset, so the bar holds its place against the feed.
+    test("a washed row's action bar keeps its place against the feed", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-tools\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/margin-right:\s*calc\(-1 \* var\(--chat-cm-inset\)\)/);
+        // The bar's top is measured from inside the row's clear 1px top edge; it is lifted back by it.
+        expect(rule).toMatch(/margin-top:\s*-1px/);
     });
 
     // A click's focus drops the ring and squares an ordinary row; a washed row keeps its corners.
