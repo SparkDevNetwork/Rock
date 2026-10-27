@@ -675,6 +675,12 @@
             default: null
         },
 
+        /** How many fresh sidebars the rows have come from; a change that comes with a new one is a reread, not live. */
+        sidebarReads: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
         isNewMessageShown: {
             type: Boolean,
             default: false
@@ -884,20 +890,24 @@
 
     // #region Watchers
 
-    // A row glows once for news: a room new to the list; a direct message reached by a message
-    // the person did not type (someone else's, or Rock's post in their name), moved or not, as the
-    // design's incoming message glows; a channel just starred, moving up into Starred. A channel
-    // turning unread does not glow, its bold and darker mark say it. Nor does a channel's new place
-    // in a reread sidebar: channels only reorder when the sidebar is read again, for reasons of its
-    // own (a membership change, a rename, a reconnect), so a place is no sign of news, and a room
-    // leaving or being unstarred shifts the others without any of them moving. The person's own
-    // send, an edit and a walk-back after a delete are not news, nor the conversation on screen,
-    // and the first list a page loads glows nothing.
+    // A row glows once for news: a room new to the list; a direct message reached live by a
+    // message the person did not type (someone else's, or Rock's post in their name), moved or not,
+    // as the design's incoming message glows; a channel turning starred. Every star control acts
+    // on the room on screen, which never glows, so that last is a star made on another device
+    // and seen when the sidebar is read again. A sidebar is read again for reasons of its own (a
+    // reconnect, a membership change, a rename) and shows at once every message that landed since,
+    // so what a reread changes is not news: a direct message's newer message, a channel's new
+    // place, or a channel turning unread, which its bold and darker mark say anyway. A room leaving
+    // or being unstarred shifts the others without any of them moving. The person's own send, an
+    // edit and a walk-back after a delete are not news, nor the conversation on screen, and the
+    // first list a page loads glows nothing.
+    let readsSeen = props.sidebarReads;
     watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.room_kind !== "channel", lastId: row.last_message_id, isTyped: isTypedByReader(row), isStarred: row.is_favorite })), (rows, previous) => {
         if (!previous || previous.length === 0) {
             return;
         }
 
+        const isReread = props.sidebarReads !== readsSeen;
         const before = new Map(previous.map(row => [row.id, row]));
         const flashed = rows.filter(row => {
             // the conversation on screen is where the news is already shown, as in the design
@@ -909,7 +919,7 @@
                 return true;
             }
             if (row.isDm) {
-                return !row.isTyped && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
+                return !isReread && !row.isTyped && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
             }
             return row.isStarred && !was.isStarred;
         }).map(row => row.id);
@@ -918,6 +928,12 @@
             flashIds.value = new Set([...flashIds.value, ...flashed]);
         }
     });
+
+    // Taken after the glow above has judged the change, every time, so a read it skipped (the
+    // page's first list) is not mistaken for a reread at the next live change.
+    watch(() => props.sidebarReads, reads => {
+        readsSeen = reads;
+    }, { flush: "post" });
 
     // #endregion Watchers
 </script>

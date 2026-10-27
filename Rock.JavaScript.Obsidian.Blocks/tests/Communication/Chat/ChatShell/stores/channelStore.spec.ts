@@ -285,6 +285,17 @@ describe("dm.preview", () => {
         return { store: s, reloads: () => reloads };
     }
 
+    test("counts each fresh sidebar read and not a live preview, so the sidebar can tell a reread from news", () => {
+        const { store: s } = dmStore([dm(dmOne)]);
+        expect(s.sidebarReads).toBe(1);
+
+        s.applyPersonalEvent("dm.preview", preview(dmOne, 11));
+        expect(s.sidebarReads).toBe(1);
+
+        s.setSidebar([dm(dmOne, { last_message_id: 12 })]);
+        expect(s.sidebarReads).toBe(2);
+    });
+
     test("moves the row's preview, time, pointer, sender and own flag", () => {
         const { store: s, reloads } = dmStore([dm(dmOne)]);
 

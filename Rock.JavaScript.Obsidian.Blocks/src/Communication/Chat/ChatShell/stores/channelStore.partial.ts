@@ -56,6 +56,12 @@ export type ChannelStore = {
     previewChannelId: string | null;
 
     /**
+     * How many fresh sidebars have been set. A row changed by a reread is not news the moment it
+     * shows: a reconnect or a membership change reads every message that landed since at once.
+     */
+    sidebarReads: number;
+
+    /**
      * Replaces every row with a fresh sidebar. A previewed room's row is kept after them, unless
      * the fresh sidebar holds the room itself, which ends the preview.
      */
@@ -121,7 +127,8 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         rows: [] as SidebarRow[],
         activeChannelId: null as string | null,
         previewChannelId: null as string | null,
-        badges: [] as ChatBadge[]
+        badges: [] as ChatBadge[],
+        sidebarReads: 0
     });
 
     /**
@@ -361,6 +368,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
                 store.previewChannelId = null;
             }
             store.rows = [...rows, ...kept];
+            store.sidebarReads++;
             answerPointers = new Map(rows.map(row => [row.channel_id, row.last_message_id]));
             const at = ++moves;
             movedAt.clear();

@@ -688,6 +688,39 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmGroup.channel_id).classes()).toContain("is-flash");
     });
 
+    test("a direct message a reread sidebar shows newer messages for does not glow, as after a reconnect; a live one after it does", async () => {
+        const w = mountSidebar({ rows: [dmRead, dmGroup], sidebarReads: 1 });
+
+        await w.setProps({
+            rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, { ...dmGroup, last_message_id: 12, is_unread: true }, dmAnna],
+            sidebarReads: 2
+        });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
+        // a room the reread brings that was not listed is still news
+        expect(rowOf(w, dmAnna.channel_id).classes()).toContain("is-flash");
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 13, last_message_preview: "Here", is_unread: true }, { ...dmGroup, last_message_id: 12, is_unread: true }, dmAnna] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+    });
+
+    test("a direct message glows on its first live message after the page's first sidebar, which glows nothing", async () => {
+        const w = mountSidebar({ rows: [], sidebarReads: 0 });
+
+        await w.setProps({ rows: [dmRead, dmGroup], sidebarReads: 1 });
+        await nextTick();
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
+        await nextTick();
+
+        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+    });
+
     test("a channel's row does not glow on turning unread where it does not move: its bold and darker mark say it", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 

@@ -28,6 +28,7 @@
                  :inert="isSidebarHidden || undefined"
                  :style="isSidebarGone ? goneStyle : undefined">
                 <ChannelSidebar :rows="shell.channels.rows"
+                                :sidebarReads="shell.channels.sidebarReads"
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"
                                 :organizationName="organizationName"
