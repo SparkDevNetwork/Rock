@@ -1957,6 +1957,18 @@ namespace Rock.Blocks.Security
             var mfaTicket = MultiFactorAuthenticationTicket.Decrypt( bag?.MfaTicket );
             var isFromMfa = mfaTicket != null;
 
+            if ( !isFromMfa && bag?.MfaTicket.IsNotNullOrWhiteSpace() == true )
+            {
+                // A ticket was sent but could not be read; refuse it instead of silently continuing as a fresh attempt.
+                var errorMessage = "The two-factor authentication session has expired. Please sign in again.";
+
+                return Response(
+                    ResponseHelper.PasswordlessLogin.Error( errorMessage ),
+                    LoginFailureReason.RequiresVerification,
+                    errorMessage
+                );
+            }
+
             if ( !isPasswordlessLoginEnabled && !isFromMfa )
             {
                 // A passwordless confirmation link was clicked after Passwordless was disabled in the block.
@@ -2278,6 +2290,11 @@ namespace Rock.Blocks.Security
         private class MultiFactorAuthenticationTicket
         {
             /// <summary>
+            /// Purpose string that binds this ticket's authenticated encryption to this block.
+            /// </summary>
+            private const string EncryptionPurpose = "Rock.Blocks.Security.Login.MultiFactorAuthenticationTicket";
+
+            /// <summary>
             /// Gets or sets the auth cookie settings.
             /// </summary>
             /// <value>
@@ -2286,12 +2303,14 @@ namespace Rock.Blocks.Security
             public AuthCookieSettings AuthCookieSettings { get; set; }
 
             /// <summary>
-            /// Gets the expiration date and time for the ticket.
+            /// Gets the expiration date and time for the ticket. Set once when the ticket is first
+            /// created and restored from the ticket on every decrypt.
             /// </summary>
             /// <value>
             /// The expiration date and time for the ticket.
             /// </value>
-            public DateTimeOffset ExpiresOn { get; } = RockDateTime.Now.AddHours( 1 );
+            [Newtonsoft.Json.JsonProperty]
+            public DateTimeOffset ExpiresOn { get; private set; } = RockDateTime.Now.AddHours( 1 );
 
             /// <summary>
             /// Unique identifier for this MFA state.
@@ -2394,7 +2413,7 @@ namespace Rock.Blocks.Security
             /// <returns>The decrypted <see cref="MultiFactorAuthenticationTicket"/> or null if not valid.</returns>
             public static MultiFactorAuthenticationTicket Decrypt( string encryptedMfaTicket )
             {
-                return Encryption.DecryptString( encryptedMfaTicket )?.FromJsonOrNull<MultiFactorAuthenticationTicket>();
+                return Encryption.DecryptStringForPurpose( encryptedMfaTicket, EncryptionPurpose )?.FromJsonOrNull<MultiFactorAuthenticationTicket>();
             }
 
             /// <summary>
@@ -2403,7 +2422,7 @@ namespace Rock.Blocks.Security
             /// <returns>This MFA ticket as an encrypted string.</returns>
             public string Encrypt()
             {
-                return Encryption.EncryptString( this.ToJson() );
+                return Encryption.EncryptStringForPurpose( this.ToJson(), EncryptionPurpose );
             }
         }
 
