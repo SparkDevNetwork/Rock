@@ -957,6 +957,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      */
     function resync(): void {
         void loadSidebar().catch(() => undefined);
+        mentions.forgetPeople();
         const channelId = state.activeChannelId;
         if (channelId) {
             // The newest page alone redraws only the latest messages, so the channel then catches up

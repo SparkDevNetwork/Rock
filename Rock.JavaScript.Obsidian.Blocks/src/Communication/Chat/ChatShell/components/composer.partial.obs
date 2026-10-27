@@ -17,7 +17,7 @@
                 <IconButton icon="x" icon-size="sm" label="Cancel quote" @click="emit('cancelQuote')" />
             </div>
 
-            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit">
+            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit" @focusin="onBoxFocusIn">
                 <IconButton ref="emojiButton"
                             icon="smile"
                             label="Add emoji"
@@ -431,6 +431,8 @@
         (e: "emojiChosen", code: string): void;
         /** The @ query at the caret whenever it changes, for the shell's search; null for none. */
         (e: "mentionQuery", query: string | null): void;
+        /** Focus came into the box from outside it, so the shell can ready what typing here needs. */
+        (e: "focus"): void;
         /** A send over the room's limit was held back; the block says why, naming the limit. */
         (e: "overLimit", maxLength: number): void
     }>();
@@ -584,6 +586,13 @@
         isEmojiOpen.value = false;
         if (emojiAnchor.value && document.activeElement === emojiAnchor.value) {
             editor.value?.focus();
+        }
+    }
+
+    /** Focus came into the box; a move between its own parts is not news to the shell. */
+    function onBoxFocusIn(event: FocusEvent): void {
+        if (!boxElement.value?.contains(event.relatedTarget as Node | null)) {
+            emit("focus");
         }
     }
 

@@ -17,7 +17,9 @@
 // Mentions: the @ picker's search, the mentions inbox, the inbox's last visit on this device and
 // the header's dot.
 //
-// The search waits for a pause in typing, and an answer older than the newest query is dropped.
+// The opening @ asks at once; a later keystroke waits for a pause in typing, and an answer older
+// than the newest query is dropped. Each conversation's bare-@ answer is held for the page, so the
+// next open draws it at once while a fresh answer replaces it.
 // @all is offered, without asking the platform, only where the person holds the right and what
 // they typed is nothing yet or the start of "all" or "everyone". Where the person may not see who
 // is in the room, the platform is not asked at all.
@@ -68,7 +70,10 @@
 //   }
 //
 //   mentionSearchPause: 150, the pause in milliseconds.
-import { createMentions, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
+//   mentionHeldConversations: how many conversations' opening people are held.
+//   warm(channel): asks a conversation's opening people ahead of its first @.
+//   forgetPeople(): forgets every conversation's held people, as a resync does.
+import { createMentions, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -89,7 +94,7 @@ const annaPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Rey
 const benPerson = { person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor" };
 
 /** A row of the sidebar as the picker reads it. */
-const room = { channel_id: channel, can_mention: true, can_mention_all: false };
+const room = { channel_id: channel, can_mention: true, can_mention_all: false, is_member: true };
 
 /** A message in the shape a history page carries. */
 function message(id: number, extra: Record<string, unknown> = {}): TimelineMessage {
@@ -310,22 +315,35 @@ describe("the picker's search", () => {
         jest.useRealTimers();
     });
 
-    test("asks the platform only once typing pauses, for the newest query", async () => {
+    test("asks for the opening query at once, with no pause, since it has no keystrokes to gather", () => {
         const h = setup();
+
+        h.mentions.search(room, "");
+        jest.advanceTimersByTime(0);
+
+        const searches = h.callsTo("chat_search_mentionable");
+        expect(searches).toHaveLength(1);
+        expect(searches[0].args).toEqual(expect.objectContaining({ p_channel_id: channel, p_query: "" }));
+        expect(typeof searches[0].args.p_limit).toBe("number");
+    });
+
+    test("asks for a later keystroke only once typing pauses, for the newest query", async () => {
+        const h = setup();
+        h.mentions.search(room, "");
+        await settle();
 
         h.mentions.search(room, "a");
         jest.advanceTimersByTime(100);
         h.mentions.search(room, "an");
         jest.advanceTimersByTime(149);
-        expect(h.callsTo("chat_search_mentionable")).toHaveLength(0);
+        expect(h.callsTo("chat_search_mentionable")).toHaveLength(1);
 
         jest.advanceTimersByTime(1);
         await settle();
 
         const searches = h.callsTo("chat_search_mentionable");
-        expect(searches).toHaveLength(1);
-        expect(searches[0].args).toEqual(expect.objectContaining({ p_channel_id: channel, p_query: "an" }));
-        expect(typeof searches[0].args.p_limit).toBe("number");
+        expect(searches).toHaveLength(2);
+        expect(searches[1].args).toEqual(expect.objectContaining({ p_channel_id: channel, p_query: "an" }));
     });
 
     test("searches a bare @ too, which lists the room's first people", async () => {
@@ -507,6 +525,247 @@ describe("the picker's search", () => {
 
             expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
             expect(h.mentions.state.picker.isAwaitingAnswer).toBe(false);
+        });
+    });
+
+    describe("in a conversation it has opened on before", () => {
+        const priyaPerson = { person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Priya", last_name: "Shah", avatar_url: "https://example.org/priya.jpg" };
+        const anotherRoom = { channel_id: otherChannel, can_mention: true, can_mention_all: false, is_member: true };
+
+        test("a bare @ in a conversation warmed by its composer shows its people at once, photos and all", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson, priyaPerson]), deferred<CallResult>()];
+
+            h.mentions.warm(room);
+            await settle();
+            expect(h.callsTo("chat_search_mentionable")[0]?.args).toEqual(expect.objectContaining({ p_channel_id: channel, p_query: "" }));
+
+            h.mentions.search(room, "");
+
+            expect(h.mentions.state.picker.people).toEqual([annaPerson, priyaPerson]);
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+
+            // and still asks, after the pause since rows are on screen, so a person who joined or
+            // was renamed since is drawn once it answers
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(true);
+            jest.advanceTimersByTime(mentionSearchPause);
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(2);
+        });
+
+        test("with held rows drawn, a fast @ and letter ask once, for the letter", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson, benPerson])];
+            h.mentions.warm(room);
+            await settle();
+
+            h.mentions.search(room, "");
+            jest.advanceTimersByTime(60);
+            h.mentions.search(room, "b");
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([ben]);
+            jest.advanceTimersByTime(mentionSearchPause);
+
+            const searches = h.callsTo("chat_search_mentionable");
+            expect(searches).toHaveLength(2);
+            expect(searches[1].args).toEqual(expect.objectContaining({ p_query: "b" }));
+        });
+
+        test("a room no longer a member's draws nothing held", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson])];
+            h.mentions.warm(room);
+            await settle();
+
+            h.mentions.search({ ...room, is_member: false }, "");
+
+            expect(h.mentions.state.picker.people).toEqual([]);
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+        });
+
+        test.each(["membership.changed", "channel.updated"])("%s for the room forgets its people, and an answer asked before it is not held", async event => {
+            const h = setup();
+            const late = deferred<CallResult>();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson]), late];
+            h.mentions.warm(room);
+            h.mentions.warm(anotherRoom);
+            await settle();
+
+            h.mentions.applyPersonalEvent(event, { channel_id: channel });
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+            h.mentions.closeSearch();
+
+            // the other room's ask, still out when that room changes too, lists people from before
+            h.mentions.applyPersonalEvent(event, { channel_id: otherChannel });
+            late.resolve(peopleAnswer([benPerson]));
+            await settle();
+            h.mentions.search(anotherRoom, "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+        });
+
+        test("a room whose roster is now hidden forgets its people", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson])];
+            h.mentions.warm(room);
+            await settle();
+
+            h.mentions.search({ ...room, can_mention: false }, "");
+            h.mentions.closeSearch();
+            h.mentions.search(room, "");
+
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+        });
+
+        test("forgets every room's people when asked, as on a resync", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson])];
+            h.mentions.warm(room);
+            await settle();
+
+            h.mentions.forgetPeople();
+            h.mentions.search(room, "");
+
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+        });
+
+        test("the next open draws the last answer at once, and the new answer replaces it in place", async () => {
+            const h = setup();
+            const renamed = { ...annaPerson, nick_name: "Annie" };
+            const fresh = deferred<CallResult>();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson, benPerson]), fresh];
+            h.mentions.search(room, "");
+            await settle();
+            h.mentions.closeSearch();
+
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([anna, ben]);
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+
+            jest.advanceTimersByTime(mentionSearchPause);
+            fresh.resolve(peopleAnswer([renamed, benPerson]));
+            await settle();
+            expect(h.mentions.state.picker.people.map(p => p.nick_name)).toEqual(["Annie", "Ben"]);
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(false);
+
+            // the renamed list is what the next open draws
+            h.mentions.closeSearch();
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.people.map(p => p.nick_name)).toEqual(["Annie", "Ben"]);
+        });
+
+        test("an answer the same as the rows drawn leaves them as they are, so the row the person moved to stays", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson, benPerson]), peopleAnswer([annaPerson, benPerson])];
+            h.mentions.search(room, "");
+            await settle();
+            h.mentions.closeSearch();
+
+            h.mentions.search(room, "");
+            const drawn = h.mentions.state.picker.people;
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+
+            expect(h.mentions.state.picker.people).toBe(drawn);
+            expect(h.mentions.state.picker.isAwaitingAnswer).toBe(false);
+        });
+
+        test("holds each conversation's own people", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson]), peopleAnswer([benPerson])];
+            h.mentions.warm(room);
+            h.mentions.warm(anotherRoom);
+            await settle();
+
+            h.mentions.search(anotherRoom, "");
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([ben]);
+        });
+
+        test("a query typed at the opening still waits for its answer, since the people held are only the first by name", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson, benPerson])];
+            h.mentions.warm(room);
+            await settle();
+
+            h.mentions.search(room, "b");
+
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(2);
+        });
+
+        test("warms each conversation once, and an open while the warm is on its way shares its answer", async () => {
+            const h = setup();
+            const answer = deferred<CallResult>();
+            h.answers.chat_search_mentionable = [answer];
+
+            h.mentions.warm(room);
+            h.mentions.warm(room);
+            h.mentions.search(room, "");
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(1);
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+
+            answer.resolve(peopleAnswer([annaPerson]));
+            await settle();
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([anna]);
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+
+            h.mentions.closeSearch();
+            h.mentions.warm(room);
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(1);
+        });
+
+        test("a refusal forgets the people held, so they are not drawn on the next open", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson]), noRosterRight];
+            h.mentions.warm(room);
+            await settle();
+            h.mentions.search(room, "");
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+            expect(h.mentions.state.picker.people).toEqual([]);
+            h.mentions.closeSearch();
+
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+        });
+
+        test("a call that never reached the platform keeps the people held", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson]), offline];
+            h.mentions.warm(room);
+            await settle();
+            h.mentions.search(room, "");
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+            h.mentions.closeSearch();
+
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([anna]);
+        });
+
+        test("keeps a bounded number of conversations, dropping the one used longest ago", async () => {
+            const h = setup();
+            const rooms = Array.from({ length: mentionHeldConversations + 1 }, (_, i) => ({ channel_id: `c1000000-0000-4000-8000-${String(i).padStart(12, "0")}`, can_mention: true, can_mention_all: false, is_member: true }));
+            for (const each of rooms) {
+                h.answers.chat_search_mentionable = [peopleAnswer([annaPerson])];
+                h.mentions.warm(each);
+                await settle();
+            }
+
+            h.mentions.search(rooms[0], "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+            h.mentions.closeSearch();
+            h.mentions.search(rooms[1], "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+        });
+
+        test("warms nothing where the person may not see who is in the room, and nothing once stopped", async () => {
+            const h = setup();
+
+            h.mentions.warm({ ...room, can_mention: false });
+            h.mentions.stop();
+            h.mentions.warm(room);
+            await settle();
+
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(0);
         });
     });
 

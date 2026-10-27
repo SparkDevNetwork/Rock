@@ -18,7 +18,9 @@
 // the header's dot.
 //
 // The search waits for a pause in typing and drops an answer older than the newest query, so a
-// slow answer never overwrites a newer one. The inbox's last visit is kept on the device by church
+// slow answer never overwrites a newer one. The @ that opens the picker asks at once and draws the
+// conversation's last bare-@ answer while it does, so the picker opens on people rather than on a
+// wait; the composer's focus warms that answer before the first @. The inbox's last visit is kept on the device by church
 // and person; a browser that refuses its storage still works, the dot then showing for any unread
 // mention. Once stopped, nothing more is fetched and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -32,11 +34,18 @@ import { PlatformLimits } from "./useSession.partial";
 /**
  * How long the picker waits after the last keystroke before it searches. An estimate, not a
  * measurement: about the gap between keystrokes of steady typing, so a typed name asks once.
+ * The @ that opens the picker has no keystrokes to gather, so it asks at once.
  */
 export const mentionSearchPause = 150;
 
 /** How many people the picker asks for: the six rows it draws. */
 export const mentionPickerSize = 6;
+
+/**
+ * How many conversations' bare-@ answers are held for the page, the one used longest ago dropped
+ * first. An estimate: more rooms than a person types in at one sitting, at six people each.
+ */
+export const mentionHeldConversations = 20;
 
 /** What the picker draws for the newest query. */
 export type MentionPickerState = {
@@ -126,8 +135,14 @@ export type MentionsDependencies = {
 /** The mentions a shell holds. */
 export type Mentions = {
     state: MentionsState;
-    search: (channel: Pick<SidebarRow, "channel_id" | "can_mention" | "can_mention_all">, query: string) => void;
+    search: (channel: Pick<SidebarRow, "channel_id" | "can_mention" | "can_mention_all" | "is_member">, query: string) => void;
     closeSearch: () => void;
+
+    /** Asks a conversation's bare-@ people ahead of its first @, as its composer takes focus. */
+    warm: (channel: Pick<SidebarRow, "channel_id" | "can_mention" | "is_member">) => void;
+
+    /** Forgets every conversation's held people, as a resync says what this client holds may be out of date. */
+    forgetPeople: () => void;
     openInbox: () => Promise<void>;
     refreshInbox: () => Promise<void>;
     loadOlder: () => Promise<void>;
@@ -176,6 +191,24 @@ function narrowPeople(people: MentionPerson[], query: string): MentionPerson[] {
 }
 
 /**
+ * Whether two lists draw the same rows: the same people in the same order, by the same names and photos.
+ *
+ * @param drawn The people drawn.
+ * @param answered The people an answer lists.
+ *
+ * @returns True when nothing on screen would change.
+ */
+function isSamePeople(drawn: MentionPerson[], answered: MentionPerson[]): boolean {
+    return drawn.length === answered.length && drawn.every((person, index) => {
+        const other = answered[index];
+        return person.person_alias_guid === other.person_alias_guid
+            && person.nick_name === other.nick_name
+            && person.last_name === other.last_name
+            && (person.avatar_url ?? null) === (other.avatar_url ?? null);
+    });
+}
+
+/**
  * Reads a channel.mention payload, which arrives untyped off the wire.
  *
  * @param payload The event's payload.
@@ -218,6 +251,15 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
     // Each search, close and stop moves this on, so an answer to an older query is dropped.
     let searchGeneration = 0;
     let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // Each conversation's latest bare-@ answer, the one used longest ago first. Drawn at an open
+    // only until that open's own answer replaces it, so a person who joined, left or was renamed
+    // since is put right within one round trip.
+    const heldOpenings = new Map<string, MentionPerson[]>();
+
+    // The bare-@ answer asked for a conversation and not yet in, shared by a warm and an open
+    // that comes before it answers, so they ask once.
+    const askingOpenings = new Map<string, Promise<CallResult>>();
 
     // Each open, refresh, close and stop moves this on, so a page meant for an inbox since
     // replaced or closed never lands in the one on screen.
@@ -270,16 +312,84 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
 
     // #region The picker
 
+    /** The people in a search's answer; a refusal lists nobody. */
+    function answeredPeople(result: CallResult): MentionPerson[] {
+        return result.ok ? ((result.data as Partial<MentionSearchAnswer> | null)?.people ?? []) : [];
+    }
+
+    /** Holds a conversation's bare-@ people as the one used last, dropping the one used longest ago past the bound. */
+    function holdOpening(channelId: string, people: MentionPerson[]): void {
+        heldOpenings.delete(channelId);
+        heldOpenings.set(channelId, people);
+        if (heldOpenings.size > mentionHeldConversations) {
+            heldOpenings.delete(heldOpenings.keys().next().value as string);
+        }
+    }
+
+    /**
+     * Asks a conversation's bare-@ people, or joins the ask already on its way, and holds the
+     * answer. A refusal forgets what was held, since the platform no longer lists those people
+     * here; a call that never reached it keeps them.
+     */
+    function askOpening(channelId: string): Promise<CallResult> {
+        const asking = askingOpenings.get(channelId);
+        if (asking) {
+            return asking;
+        }
+
+        // Read only once the answer is in, by which time it holds this ask.
+        let ask: Promise<CallResult> | null = null;
+        ask = (async (): Promise<CallResult> => {
+            const result = await dependencies.call("chat_search_mentionable", { p_channel_id: channelId, p_query: "", p_limit: mentionPickerSize });
+
+            // An answer to an ask the conversation was forgotten after, as on a membership
+            // change, may list the people from before it, so it is not held.
+            if (askingOpenings.get(channelId) !== ask) {
+                return result;
+            }
+
+            askingOpenings.delete(channelId);
+            if (result.ok) {
+                holdOpening(channelId, answeredPeople(result));
+            }
+            else if (result.status !== 0) {
+                heldOpenings.delete(channelId);
+            }
+            return result;
+        })();
+        askingOpenings.set(channelId, ask);
+        return ask;
+    }
+
+    /** Forgets a conversation's held people and any ask for them still on its way. */
+    function forgetConversation(channelId: string): void {
+        heldOpenings.delete(channelId);
+        askingOpenings.delete(channelId);
+    }
+
+    /** Forgets every conversation's held people. */
+    function forgetPeople(): void {
+        heldOpenings.clear();
+        askingOpenings.clear();
+    }
+
     /** Asks the platform for the people matching a query, if it is still the newest. */
     async function runSearch(generation: number, channelId: string, query: string): Promise<void> {
         searchTimer = null;
-        const result = await dependencies.call("chat_search_mentionable", { p_channel_id: channelId, p_query: query, p_limit: mentionPickerSize });
+        const result = query === ""
+            ? await askOpening(channelId)
+            : await dependencies.call("chat_search_mentionable", { p_channel_id: channelId, p_query: query, p_limit: mentionPickerSize });
         if (isStopped || generation !== searchGeneration) {
             return;
         }
 
-        // A refusal lists nobody rather than the people an earlier query found.
-        state.picker.people = result.ok ? ((result.data as Partial<MentionSearchAnswer> | null)?.people ?? []) : [];
+        // A refusal lists nobody rather than the people an earlier query found. An answer the
+        // same as the rows drawn, as the held ones mostly are, leaves them be, so the row the
+        // person moved to stays where it is.
+        const people = answeredPeople(result);
+        if (!isSamePeople(state.picker.people, people)) {
+            state.picker.people = people;
+        }
         state.picker.isAwaitingAnswer = false;
         state.picker.isAwaitingFirstAnswer = false;
     }
@@ -402,23 +512,53 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             // Where the roster is hidden from the person the platform would only refuse, so it is
             // not asked; @all, when they hold the right, is offered alone.
             if (!channel.can_mention) {
+                forgetConversation(channel.channel_id);
                 state.picker.people = [];
                 state.picker.isAwaitingAnswer = false;
                 state.picker.isAwaitingFirstAnswer = false;
                 return;
             }
 
-            // Until the answer comes the rows held are narrowed to what was typed, so Enter after
-            // a fast keystroke never takes a person the query no longer matches.
-            state.picker.people = narrowPeople(state.picker.people, query);
+            // A bare @ opens on the conversation's last bare-@ answer, the same list its own answer
+            // will be unless the room changed, so the picker shows at once and its rows stay put.
+            // A query typed at the opening is not drawn from it: the people held are only the
+            // first by name, and the rows would grow as the answer came. Only a member's room
+            // draws it, since the people held are the ones they could see while one.
+            const held = isOpening && query === "" && channel.is_member ? heldOpenings.get(channel.channel_id) : undefined;
+            if (held) {
+                holdOpening(channel.channel_id, held);
+                state.picker.people = held;
+            }
+            else {
+                // Until the answer comes the rows held are narrowed to what was typed, so Enter
+                // after a fast keystroke never takes a person the query no longer matches.
+                state.picker.people = narrowPeople(state.picker.people, query);
+            }
             state.picker.isAwaitingAnswer = true;
-            if (isOpening) {
+            if (isOpening && !held) {
                 state.picker.isAwaitingFirstAnswer = true;
             }
 
+            // With nothing on screen the opening @ asks at once, having no keystrokes to gather.
+            // Held rows already drawn, the refresh waits the pause like any keystroke, so a fast
+            // @ and letter still ask once.
             const generation = searchGeneration;
-            searchTimer = setTimeout(() => void runSearch(generation, channel.channel_id, query), mentionSearchPause);
+            if (isOpening && !held) {
+                void runSearch(generation, channel.channel_id, query);
+            }
+            else {
+                searchTimer = setTimeout(() => void runSearch(generation, channel.channel_id, query), mentionSearchPause);
+            }
         },
+
+        warm: (channel): void => {
+            // Once per conversation: after that its opens keep the held answer fresh.
+            if (!isStopped && channel.can_mention && channel.is_member && !heldOpenings.has(channel.channel_id)) {
+                void askOpening(channel.channel_id);
+            }
+        },
+
+        forgetPeople,
 
         closeSearch: (): void => {
             searchGeneration++;
@@ -537,6 +677,13 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
                 channelRead(read.channel_id, read.read_cursor);
                 return;
             }
+
+            // A membership or a room that changed may list other people now, or hide its roster,
+            // so its held people are not drawn again: someone just banned must not be offered.
+            if ((event === "membership.changed" || event === "channel.updated") && typeof read?.channel_id === "string") {
+                forgetConversation(read.channel_id);
+                return;
+            }
             if (event !== "channel.mention") {
                 return;
             }
@@ -571,6 +718,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             searchGeneration++;
             inboxGeneration++;
             cancelPause();
+            forgetPeople();
         }
     };
 }
