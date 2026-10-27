@@ -19,6 +19,8 @@
 // are exactly three and otherwise a count of everyone past the first two. Each face is a photo, or
 // one initial in the person's hue, and the whole mark keeps the slot a one-person face would fill.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { readFileSync } from "fs";
+import { join } from "path";
 import GroupFace from "../../../../../src/Communication/Chat/ChatShell/ui/groupFace.partial.obs";
 
 type Person = { name: string, photoUrl: string | null };
@@ -159,5 +161,58 @@ describe("a group's face at another size", () => {
 
     test("is hidden from a screen reader, since the conversation's name says who is in it", () => {
         expect(root(draw([anna, marcus])).getAttribute("aria-hidden")).toBe("true");
+    });
+});
+
+// The ring around a face must be the color behind the mark, or it shows as a band of another
+// color. What a hovered or current row draws is its own fill over the sidebar, so the ring is two
+// layers in the same order: the owner's fill over the owner's base. jsdom applies no stylesheet
+// and has no hover, so these read the rules: every ring draws both layers, and every state of an
+// owner that changes its background changes it only through the fill the ring reads.
+describe("a group's face ring", () => {
+    const shell = join(__dirname, "../../../../../src/Communication/Chat/ChatShell");
+
+    /** Each rule of a component's style block whose selector matches, as its declarations. */
+    function rules(file: string, selector: RegExp): string[] {
+        const text = readFileSync(join(shell, file), "utf8");
+        const style = text.slice(text.indexOf("<style"), text.indexOf("</style>"));
+        return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g))
+            .filter(match => match[1].replace(/\/\*[\s\S]*?\*\//g, "").split(",").some(part => selector.test(part.trim())))
+            .map(match => match[2]);
+    }
+
+    test("lays the owner's fill over its base in every ring", () => {
+        const rings = rules("ui/groupFace.partial.obs", /./).filter(body => /box-shadow/.test(body));
+
+        expect(rings.length).toBeGreaterThan(0);
+        for (const body of rings) {
+            expect(body).toMatch(/var\(--chat-av-ring-over, transparent\)[^;]*var\(--chat-av-ring, var\(--chat-surface\)\)/);
+        }
+    });
+
+    test.each([
+        ["a sidebar row", "components/channelSidebar.partial.obs", /^\.chat-row(\[|:|$)/, "--chat-row-fill"],
+        ["the header's title button", "components/chatHeader.partial.obs", /^(button)?\.chat-header-id(\[|:|$)/, "--chat-header-id-fill"]
+    ])("follows %s's hover and current state through its fill", (_name, file, selector, fill) => {
+        const states = rules(file, selector);
+        const backgrounds = states.flatMap(body => Array.from(body.matchAll(/(?:^|[;\s])background(?:-color)?:\s*([^;]+);/g)).map(match => match[1].trim()));
+
+        expect(states.some(body => body.includes(`--chat-av-ring-over: var(${fill})`))).toBe(true);
+        expect(backgrounds.length).toBeGreaterThan(0);
+        expect(backgrounds.every(value => value === `var(${fill})`)).toBe(true);
+    });
+
+    test("follows a sidebar row's arrival flash, its fill registered as a color so it fades", () => {
+        const text = readFileSync(join(shell, "components/channelSidebar.partial.obs"), "utf8");
+        const flash = /@keyframes chat-row-flash\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}/.exec(text);
+        const registered = /@property --chat-row-fill\s*\{([^{}]*)\}/.exec(text);
+
+        expect(flash).not.toBeNull();
+        expect(flash![1]).not.toMatch(/background/);
+        expect(flash![1]).toMatch(/0%\s*\{\s*--chat-row-fill: var\(--chat-flash\);/);
+        expect(flash![1]).toMatch(/100%\s*\{\s*--chat-row-fill: transparent;/);
+        expect(registered).not.toBeNull();
+        expect(registered![1]).toMatch(/syntax: "<color>";/);
+        expect(registered![1]).toMatch(/initial-value: transparent;/);
     });
 });

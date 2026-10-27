@@ -172,6 +172,10 @@
     padding so the mark still lines up with the feed's edge.
 */
 .chat-header-id {
+    /* the button's fill, set by its state alone, which a group's mark rings its faces in over the bar */
+    --chat-header-id-fill: transparent;
+    --chat-av-ring-over: var(--chat-header-id-fill);
+
     display: flex;
     flex: 0 1 auto;
     gap: 12px;
@@ -182,18 +186,18 @@
     font: inherit;
     color: inherit;
     text-align: left;
-    background: transparent;
+    background: var(--chat-header-id-fill);
     border: 0;
     border-radius: var(--chat-r-lg);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
 button.chat-header-id:hover {
-    background: var(--chat-hover);
+    --chat-header-id-fill: var(--chat-hover);
 }
 
 button.chat-header-id:active {
-    background: var(--chat-press);
+    --chat-header-id-fill: var(--chat-press);
 }
 
 .chat-header-name-row {

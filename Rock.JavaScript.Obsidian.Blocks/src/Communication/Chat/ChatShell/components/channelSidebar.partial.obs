@@ -382,8 +382,13 @@
     Its left padding is a channel row's, so faces and channel icons start on one edge.
 */
 .chat-row {
-    /* a group's mark is ringed in what the row sits on, so its faces read as separate */
+    /*
+        The row's fill, set by its state alone: a group's mark rings its faces in the same fill over
+        the sidebar, so the ring always matches what is behind it.
+    */
+    --chat-row-fill: transparent;
     --chat-av-ring: var(--chat-sidebar);
+    --chat-av-ring-over: var(--chat-row-fill);
 
     position: relative;
     display: flex;
@@ -394,20 +399,18 @@
     font: inherit;
     color: inherit;
     text-align: left;
-    background: none;
+    background: var(--chat-row-fill);
     border: 0;
     border-radius: var(--chat-r-lg);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
 .chat-row:hover {
-    background: var(--chat-hover);
+    --chat-row-fill: var(--chat-hover);
 }
 
 .chat-row[aria-current="true"] {
-    --chat-av-ring: var(--chat-brand-wash);
-
-    background: var(--chat-brand-wash);
+    --chat-row-fill: var(--chat-brand-wash);
 }
 
 /* A person's face, or a group's mark, centred in 36px. */
@@ -507,18 +510,28 @@
     color: var(--chat-brand-ink);
 }
 
-/* A room that arrives or moves up glows once in the church color and fades. */
+/*
+    A room that arrives or moves up glows once in the church color and fades. The glow is the row's
+    fill, so a group's ring glows with it; registered as a color so it fades, and where a browser
+    cannot register it the glow steps off at the end instead.
+*/
+@property --chat-row-fill {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
 .chat-row.is-flash {
     animation: chat-row-flash var(--chat-d-row-flash) var(--chat-ease-state);
 }
 
 @keyframes chat-row-flash {
     0% {
-        background: var(--chat-flash);
+        --chat-row-fill: var(--chat-flash);
     }
 
     100% {
-        background: transparent;
+        --chat-row-fill: transparent;
     }
 }
 
