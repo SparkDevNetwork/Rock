@@ -995,6 +995,12 @@
             default: null
         },
 
+        /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
+        isPersonLeader: {
+            type: Boolean,
+            default: false
+        },
+
         /** The church's name, the sender of a block post nobody signed. */
         organizationName: {
             type: String as PropType<string>,
@@ -1214,9 +1220,14 @@
     /**
      * The Leader pill beside the name: a fact about the sender in this channel now, so only a
      * channel's rows draw it. Those are always Community rows, so the bubbles never need it. A
-     * sender who is not listed is drawn with no name, and a role would say who they are.
+     * sender who is not listed is drawn with no name, and a role would say who they are. The
+     * reader's own row reads the reader's own fact, as its name and face do: a send not stored yet
+     * has no copy to read, and a room that hides its roster sends its live copy saying no for
+     * everyone, so reading the copy would pop the pill in, or drop it, as the copies replace it.
      */
-    const isLeaderShown = computed((): boolean => props.isChannel && props.message?.sender_is_leader === true && props.message.sender_listed !== false);
+    const isLeaderShown = computed((): boolean => props.isChannel && (props.isOwn
+        ? props.isPersonLeader
+        : props.message?.sender_is_leader === true && props.message.sender_listed !== false));
 
     const isEdited = computed((): boolean => !isTomb.value && !props.pending && !!props.message?.edited_at);
 

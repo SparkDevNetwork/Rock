@@ -67,6 +67,7 @@
                                 :personAliasGuid="personAliasGuid"
                                 :personName="personName"
                                 :personPhotoUrl="personPhotoUrl"
+                                :isPersonLeader="isPersonLeader"
                                 :organizationName="organizationName"
                                 :isChannel="isChannel"
                                 :position="row.position"
@@ -392,6 +393,12 @@
         personPhotoUrl: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
+        isPersonLeader: {
+            type: Boolean,
+            default: false
         },
 
         /** The church's name, the sender of a block post nobody signed. */
