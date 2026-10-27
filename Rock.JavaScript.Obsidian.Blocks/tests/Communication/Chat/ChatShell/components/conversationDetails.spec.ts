@@ -24,6 +24,8 @@
 // The dialog draws a room's facts in the exact shape chat_get_channel answers, and the leave and
 // rename states in the exact shape useRooms keeps; what it asks for comes out as its events.
 /* eslint-disable @typescript-eslint/naming-convention */
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ConversationDetails from "../../../../../src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs";
@@ -965,5 +967,47 @@ describe("the save indicator for the room's settings", () => {
         await w.setProps({ prefsAnnouncement: { text: "Mentions only. Saved.", isAssertive: false, count: 4 } });
 
         expect(w.get("[data-testid='details-announcement']").text()).toBe("Mentions only. Saved.");
+    });
+});
+
+// The grouped list's measures, read from the components' own styles, since the test renderer lays
+// nothing out: a row's icon centred on its words, 48px rows and 40px segments on a phone, and the
+// dialog's buttons as pills.
+describe("the grouped list's measures", () => {
+    /** A component's style rules, selector and body, read from its source with comments left out. */
+    function rulesOf(relativePath: string): Array<{ selector: string, body: string }> {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell", relativePath), "utf8");
+        const style = source.slice(source.indexOf(">", source.indexOf("<style")) + 1, source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] }));
+    }
+
+    function bodyOf(relativePath: string, selector: string): string {
+        return rulesOf(relativePath).filter(rule => rule.selector === selector).map(rule => rule.body).join("");
+    }
+
+    test("centres a row's icon on its words, never lifting it to the top", () => {
+        const icon = bodyOf("ui/settingRow.partial.obs", ".chat-sg-ic");
+
+        expect(bodyOf("ui/settingRow.partial.obs", ".chat-sg-row")).toMatch(/align-items:\s*center;/);
+        expect(icon).not.toMatch(/align-self/);
+        expect(icon).not.toMatch(/margin-top/);
+    });
+
+    test("draws a row 44px high at least, and 48px on a phone", () => {
+        expect(bodyOf("ui/settingRow.partial.obs", ".chat-sg-row")).toMatch(/min-height:\s*44px;/);
+        expect(bodyOf("ui/settingRow.partial.obs", ".chat-modal.is-sheet .chat-sg-row")).toMatch(/min-height:\s*48px;/);
+    });
+
+    test("draws the notify segments 32px high, and 40px on a phone", () => {
+        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-seg-opt")).toMatch(/height:\s*32px;/);
+        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-modal.is-sheet .chat-seg-opt")).toMatch(/height:\s*40px;/);
+    });
+
+    test("rounds the dialog's buttons, Leave's Cancel and Leave and the name's Save, as pills", () => {
+        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-rd-btn")).toMatch(/border-radius:\s*var\(--chat-r-full\);/);
+    });
+
+    test("rounds Chat settings' Turn on and Turn off as pills too", () => {
+        expect(bodyOf("components/chatSettings.partial.obs", ".chat-ms-btn")).toMatch(/border-radius:\s*var\(--chat-r-full\);/);
     });
 });

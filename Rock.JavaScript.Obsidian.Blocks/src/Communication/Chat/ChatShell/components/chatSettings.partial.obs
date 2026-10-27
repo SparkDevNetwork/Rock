@@ -170,7 +170,7 @@
     color: var(--chat-text);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -184,8 +184,8 @@
 }
 
 .chat-ms-btn.is-line {
-    background: var(--chat-raised);
-    border: 1px solid var(--chat-line);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
 }
 
 .chat-ms-btn.is-line:hover {

@@ -41,6 +41,11 @@
     border: 0;
 }
 
+/* A phone's settings sheet gives each row a larger target. */
+.chat-modal.is-sheet .chat-sg-row {
+    min-height: 48px;
+}
+
 /* Rows in one group are ruled apart. */
 .chat-sg-row + .chat-sg-row {
     border-top: 1px solid var(--chat-line);
@@ -66,8 +71,6 @@
 
 .chat-sg-ic {
     flex: none;
-    align-self: flex-start;
-    margin-top: 2px;
     color: var(--chat-icon);
 }
 

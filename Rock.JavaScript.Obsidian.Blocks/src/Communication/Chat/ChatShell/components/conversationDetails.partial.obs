@@ -348,6 +348,11 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
+/* A phone's settings sheet gives each segment a larger target. */
+.chat-modal.is-sheet .chat-seg-opt {
+    height: 40px;
+}
+
 .chat-seg-opt:hover:not([aria-checked="true"]) {
     color: var(--chat-text-2);
 }
@@ -383,7 +388,7 @@
     color: var(--chat-text);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
