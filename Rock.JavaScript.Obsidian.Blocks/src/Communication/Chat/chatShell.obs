@@ -27,7 +27,7 @@
                  :aria-hidden="isSidebarHidden ? 'true' : undefined"
                  :inert="isSidebarHidden || undefined"
                  :style="isSidebarGone ? goneStyle : undefined">
-                <ChannelSidebar :rows="shell.channels.rows"
+                <ChannelSidebar :rows="shell.channels.listed"
                                 :sidebarReads="shell.channels.sidebarReads"
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"

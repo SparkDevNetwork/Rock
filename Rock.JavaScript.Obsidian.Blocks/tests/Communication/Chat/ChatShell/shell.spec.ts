@@ -2619,6 +2619,59 @@ describe("the live sidebar", () => {
             expect(h.shell.state.activeChannelId).toBe(channelA);
         });
     });
+
+    // Rock's door makes the group and awaits the immediate sync, whose membership signal reloads
+    // the sidebar before the door answers; the first message is posted after, and its dm.preview
+    // reaches every member's topic, the sender's own included.
+    describe("a direct message the person starts", () => {
+        const created = "d0000010-0000-4000-8000-000000000000";
+        const ben = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null };
+
+        test("appears once, at the top of the list, as its first message posts", async () => {
+            let door!: (result: DoorResult) => void;
+            const h = await startedLive({ startDirectMessage: () => new Promise<DoorResult>(resolve => door = resolve) });
+            const listed = (): string[] => h.shell.channels.listed.map(r => r.channel_id);
+            const orders: string[][] = [];
+
+            h.shell.directMessages.begin([ben]);
+            await settle();
+            const sending = h.shell.directMessages.sendFirst("hello");
+            await settle();
+
+            // the immediate sync: the platform's sidebar now holds the conversation, with nothing in it
+            h.bootstrap.value = {
+                ...snapshot(),
+                channels: [...snapshot().channels, sidebarRow(created, {
+                    name: null, channel_type: "dm", room_kind: "person", title: "Bo Picked", dm_people: [ben], dm_other_count: 1,
+                    last_message_id: null, last_message_at: null, last_message_type: null, last_message_preview: null,
+                    last_sender_nick_name: null, last_sender_last_name: null, read_cursor: null, preview_line: "No messages yet"
+                })]
+            };
+            personal(h, "membership.changed", { channel_id: created, id: "5e0000d1-0000-4000-8000-000000000000" });
+            await settle();
+            orders.push(listed());
+
+            door({ code: "ok", channelGuid: created, isPending: false, message: null, personAliasGuid: null });
+            await settle();
+            answerHistory(h, created, 0);
+            await sending;
+            await settle();
+            orders.push(listed());
+
+            personal(h, "dm.preview", {
+                channel_id: created, message_id: 901, preview: "hello", sent_at: "2026-10-19T10:00:00Z", sender: { nick_name: "Ada", last_name: "Member" },
+                is_own: true, posted_by_rock: false, preview_line: "You: hello", id: "5e0000d2-0000-4000-8000-000000000000"
+            });
+            await settle();
+            orders.push(listed());
+
+            expect(h.sent.map(s => s.channelId)).toEqual([created]);
+            expect(h.shell.state.activeChannelId).toBe(created);
+            // not listed while it has nothing in it, then listed first, never drawn low and moved
+            expect(orders.map(order => order.indexOf(created))).toEqual([-1, -1, 0]);
+            expect(orders.map(order => order.length)).toEqual([4, 4, 5]);
+        });
+    });
 });
 
 // The person's settings ride the shell: the bootstrap's me is where the settings start, a room's

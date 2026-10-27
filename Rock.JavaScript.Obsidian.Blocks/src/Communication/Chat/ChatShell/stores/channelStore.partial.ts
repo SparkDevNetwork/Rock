@@ -28,10 +28,17 @@
 // A direct message's row is kept whole instead: its preview, time and order follow every change
 // to the room's last message, on the sender's own devices too. A channel's row only bolds.
 //
+// A direct message is begun by its first message, but Rock makes it in two steps, the group and
+// then the post, and the group's membership signal reloads the sidebar between them. So one that a
+// later sidebar brings with nothing in it is held, for the conversation opened on it to draw from,
+// and listed with its first message, in that message's place, rather than drawn last and moved.
+// The first sidebar a page loads is listed as the platform answers it, and a listed conversation
+// emptied by deletes stays listed, saying it has no messages.
+//
 // The person's own star, hide and notify mode show on the row the moment they are chosen. A room
 // hidden from the conversation on screen stays while it is open, since the person is still in it,
 // and leaves once another opens, as the platform's sidebar leaves it out from then on.
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
 import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
 
@@ -46,8 +53,11 @@ export type ChannelStoreDependencies = {
 
 /** The sidebar a shell holds. */
 export type ChannelStore = {
-    /** The rows in the platform's order. */
+    /** The rows in the platform's order, every room the store holds. */
     rows: SidebarRow[];
+
+    /** The rows the sidebar lists, in the same order: all but a direct message waiting for its first message. */
+    listed: SidebarRow[];
 
     /**
      * Where the first sidebar stands: on its way, arrived, or failed. Until it has arrived, no rows
@@ -142,8 +152,12 @@ export function isTypedByReader(row: Pick<SidebarRow, "last_message_is_own" | "l
  * @returns The store.
  */
 export function createChannelStore(dependencies: ChannelStoreDependencies): ChannelStore {
+    // Direct messages a sidebar brought with nothing in them since the page's first sidebar.
+    const awaitingFirst = reactive(new Set<string>());
+
     const store = reactive({
         rows: [] as SidebarRow[],
+        listed: computed((): SidebarRow[] => store.rows.filter(row => !awaitingFirst.has(row.channel_id))),
         loadState: "loading" as SidebarLoadState,
         activeChannelId: null as string | null,
         previewChannelId: null as string | null,
@@ -288,6 +302,9 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
         const sender = signal.sender as Partial<Record<"nick_name" | "last_name" | "avatar_url", unknown>> | null | undefined;
         const isOwn = signal.is_own === true;
+        if (messageId !== null) {
+            awaitingFirst.delete(row.channel_id);
+        }
         row.last_message_id = messageId;
         movedAt.set(row.channel_id, ++moves);
         row.last_message_at = messageId !== null && typeof signal.sent_at === "string" ? signal.sent_at : null;
@@ -387,6 +404,13 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             if (!preview || !kept.includes(preview)) {
                 store.previewChannelId = null;
             }
+
+            const wasListed = new Set(store.listed.map(row => row.channel_id));
+            const isFirst = store.loadState !== "loaded";
+            awaitingFirst.clear();
+            rows.filter(row => !isFirst && row.room_kind !== "channel" && row.last_message_id === null && !wasListed.has(row.channel_id))
+                .forEach(row => awaitingFirst.add(row.channel_id));
+
             store.rows = [...rows, ...kept];
             store.loadState = "loaded";
             store.sidebarReads++;
