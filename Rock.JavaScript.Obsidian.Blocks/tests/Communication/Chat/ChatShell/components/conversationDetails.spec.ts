@@ -283,6 +283,8 @@ describe("a channel's identity", () => {
     test("reads Public, or Private for a private room, the campus by name and the group type", async () => {
         const w = mountDetails();
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Public", "Downtown Campus", "Small Group"]);
+        // The dots between them are drawn for the eye, so a screen reader hears the parts apart.
+        expect(spoken(w.get(".chat-rd-meta"))).toBe("Public, Downtown Campus, Small Group");
 
         await w.setProps({ facts: channelFacts({ is_public: false, group_type_name: null, campus_id: null }) });
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Private"]);
@@ -385,6 +387,8 @@ describe("Leave", () => {
         const channel = mountDetails();
         expect(channel.get("[data-testid='details-leave']").text()).toBe("Leave channel");
         expect(channel.get("[data-testid='details-leave']").element.closest("[data-testid='details-leave-group']")).not.toBeNull();
+        // A group with no label is no named group, so a screen reader announces no empty one around the row.
+        expect(channel.findAll("[data-testid='details-leave-group'] [role='group']")).toHaveLength(0);
         channel.unmount();
 
         const group = mountGroup();
@@ -782,14 +786,23 @@ describe("Notifications", () => {
         ["all", "Every new message."],
         ["mentions", "Your name or @all."],
         ["silent", "Only mentions of your name."]
-    ])("says in one line what only the chosen mode, %s, means, and the group is described by it", (mode, words) => {
+    ])("says in one line what only the chosen mode, %s, means", (mode, words) => {
         const w = mountDetails({ notifyMode: mode });
 
         const caption = w.get("[data-testid='notify-caption']");
         expect(caption.text()).toBe(words);
         expect(w.findAll("[data-testid='notify-caption']")).toHaveLength(1);
-        const group = w.get("[data-testid='details-notify'] [role='radiogroup']");
-        expect(group.attributes("aria-describedby")).toBe(caption.attributes("id"));
+    });
+
+    test("describes each mode by its own line, so a screen reader arrowing between them hears what each means", () => {
+        const w = mountDetails({ notifyMode: "all" });
+
+        expect(radios(w).map(r => document.getElementById(r.getAttribute("aria-describedby") ?? "")?.textContent?.trim())).toEqual([
+            "Every new message.",
+            "Your name or @all.",
+            "Only mentions of your name."
+        ]);
+        expect(w.get("[data-testid='details-notify'] [role='radiogroup']").attributes("aria-describedby")).toBeUndefined();
     });
 
     test("with no mode of its own, says what All means, the mode Tab lands on", () => {

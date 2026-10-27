@@ -15,7 +15,11 @@
             <span class="chat-ms-main">
                 <b class="chat-ms-name" data-testid="settings-name">{{ personName }}</b>
                 <span class="chat-ms-meta" data-testid="settings-meta">
-                    <span v-for="item in metaItems" :key="item">{{ item }}</span>
+                    <!-- The dot between the parts is drawn for the eye; a screen reader hears a comma. -->
+                    <template v-for="(item, index) in metaItems" :key="item">
+                        <span v-if="index > 0" class="chat-sr-only">, </span>
+                        <span class="chat-ms-meta-item" data-testid="settings-meta-item">{{ item }}</span>
+                    </template>
                 </span>
             </span>
         </div>
@@ -108,7 +112,7 @@
 }
 
 /* The facts joined by 3px dots, as the details dialog joins them. */
-.chat-ms-meta > span + span::before {
+.chat-ms-meta-item ~ .chat-ms-meta-item::before {
     display: inline-block;
     width: 3px;
     height: 3px;
@@ -328,7 +332,7 @@
                 return { status: "Blocked", sub: "Allow it in browser settings, then reload" };
 
             default:
-                return { status: "Not available", sub: null };
+                return { status: "Not available", sub: `Not set up for ${props.organizationName} yet` };
         }
     });
 

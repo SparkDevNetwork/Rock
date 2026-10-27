@@ -9,8 +9,10 @@
              since a comment beside it makes a fragment that drops the caller's attributes. -->
         <Icon v-if="icon" :name="icon" class="chat-sg-ic" />
         <span class="chat-sg-txt">
-            <!-- On one line, so the space between the label and its line is kept for a reader. -->
-            <b v-if="title" :id="`${baseId}-l`" class="chat-sg-title">{{ title }}</b> <slot name="text"></slot> <span v-if="sub" :id="`${baseId}-d`" class="chat-sg-sub">{{ sub }}</span>
+            <!-- Spaced apart in words, so a reader never hears the label and its line as one. -->
+            <b v-if="title" :id="`${baseId}-l`" class="chat-sg-title">{{ title }}</b>{{ " " }}
+            <slot name="text"></slot>{{ " " }}
+            <span v-if="sub" :id="`${baseId}-d`" class="chat-sg-sub">{{ sub }}</span>
             <span v-if="note"
                   :id="`${baseId}-n`"
                   class="chat-sg-note"

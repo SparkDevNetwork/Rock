@@ -9,7 +9,7 @@
         <slot v-if="isBare" :labelId="labelId"></slot>
         <div v-else
              class="chat-sg"
-             :role="isList ? 'list' : 'group'"
+             :role="groupRole"
              :aria-labelledby="label && !ariaLabel ? labelId : undefined"
              :aria-label="ariaLabel ?? undefined">
             <slot :labelId="labelId"></slot>
@@ -48,10 +48,10 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
 
-    defineProps({
+    const props = defineProps({
         /** The short label over the group, or null for a group with none, such as Leave's. */
         label: {
             type: String as PropType<string | null>,
@@ -85,4 +85,7 @@
 
     /** Ties the label to the group, or to a bare control through the slot, once per group. */
     const labelId = `chat-sg-${newGuid()}`;
+
+    /** A list, a named group, or no role at all, since a group with no name is only noise to a screen reader. */
+    const groupRole = computed((): string | undefined => props.isList ? "list" : props.label || props.ariaLabel ? "group" : undefined);
 </script>
