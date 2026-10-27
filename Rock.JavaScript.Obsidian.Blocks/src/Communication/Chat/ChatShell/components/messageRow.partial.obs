@@ -80,6 +80,7 @@
                     <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
                     <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
+                    <span v-if="isMentionTagShown" class="chat-cm-mention" data-testid="mention-tag"><Icon name="at" size="xs" />Mentioned you</span>
                 </div>
                 <MessageEditor v-if="isEditorShown && message"
                                :message="message"
@@ -93,6 +94,8 @@
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
                     <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
+                    <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
+                    <span v-if="isMentionTagShown && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag"><Icon name="at" size="xs" />Mentioned you</span>
                 </div>
                 <div v-if="state === 'failed'" class="chat-meta is-failed" data-testid="message-meta">
                     <Icon name="alert" size="xs" />
@@ -252,7 +255,7 @@
 
     .chat-msg.is-community:focus:not(:focus-visible) {
         outline: none;
-        border-radius: 0;
+        border-radius: var(--chat-cm-radius, 0);
     }
 }
 
@@ -669,12 +672,15 @@
     column-gap: var(--chat-cm-gap);
     padding: 2px var(--chat-cm-pad);
     border-radius: 0;
+    /* How far a washed row stands in from the feed's edges. */
+    --chat-cm-inset: 8px;
 }
 
 .chat-msg.is-community.is-phone {
     --chat-cm-gut: 32px;
     --chat-cm-gap: 10px;
     --chat-cm-pad: 12px;
+    --chat-cm-inset: 4px;
 }
 
 .chat-msg.is-community.is-head {
@@ -704,9 +710,18 @@
     box-shadow: inset 2px 0 0 var(--chat-brand);
 }
 
-.is-community.is-mention-me {
+/*
+    A row that names the reader: a soft rounded wash stood in from the feed's edges, as a hover is,
+    rather than a full-width tint with an edge, which read as a warning and ran together when
+    several rows in a row named the reader. The inset comes out of the side padding, so the text
+    keeps its column; hover and focus lay over it as over any row.
+*/
+.chat-msg.is-community.is-mention-me {
+    --chat-cm-radius: 10px;
+    margin: 2px var(--chat-cm-inset);
+    padding-inline: calc(var(--chat-cm-pad) - var(--chat-cm-inset));
     background-color: var(--chat-row-mention);
-    box-shadow: inset 2px 0 0 var(--chat-warning);
+    border-radius: var(--chat-cm-radius);
 }
 
 .is-community.is-failed {
@@ -784,6 +799,24 @@
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
     white-space: nowrap;
+}
+
+/* "Mentioned you", the wash's words, so the signal is never color alone. */
+.chat-cm-mention {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    align-self: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--chat-warning-ink);
+    white-space: nowrap;
+}
+
+.chat-cm-mention.is-inline {
+    margin-left: 8px;
+    vertical-align: 1px;
 }
 
 .chat-cm-text {
@@ -1315,7 +1348,7 @@
     /** The head time's tooltip, such as "Today at 9:02 AM". */
     const longTime = computed((): string => `${dayLabel(at.value, new Date())} at ${time.value}`);
 
-    /** A mention of the reader by name, never @all, which Community tints the row for. */
+    /** A mention of the reader by name, never @all, which Community washes the row for and says in words. */
     const isMentionOfReader = computed((): boolean => {
         const me = props.personAliasGuid.toLowerCase();
         return !!me && !props.isOwn && !isTomb.value && (serverPieces.value ?? []).some(piece => piece.type === "mention"
@@ -1323,9 +1356,15 @@
             && piece.person_alias_guid.toLowerCase() === me);
     });
 
+    /**
+     * Community's "Mentioned you". A direct message's bubbles draw neither it nor the wash: the
+     * whole conversation reaches the reader, and the you chip already says who was named.
+     */
+    const isMentionTagShown = computed((): boolean => layout.value === "community" && isMentionOfReader.value);
+
     const ariaLabel = computed((): string => {
         const who = props.isOwn ? "You" : displayName.value;
-        const mentions = layout.value === "community" && isMentionOfReader.value ? ", mentions you" : "";
+        const mentions = isMentionTagShown.value ? ", mentions you" : "";
         return `${who}, ${time.value}${mentions}`;
     });
 
@@ -1440,7 +1479,8 @@
         "is-head": isHead.value,
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,
-        "is-mention-me": layout.value === "community" && isMentionOfReader.value,
+        // An announcement owns its own tint and edge; one naming the reader keeps them and the words.
+        "is-mention-me": isMentionTagShown.value && !isAnnouncement.value,
         "is-arriving": isArrivalDrawn,
         "is-flashing": props.isFlashing,
         "has-thread": hasThread.value,

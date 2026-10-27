@@ -435,13 +435,82 @@ describe("Community, in a channel", () => {
         expect(announcement.get("[data-testid='announcement-pill']").text()).toBe("Announcement");
     });
 
-    test("a mention of the reader by name tints the row and says so; @all does not", () => {
+    test("a mention of the reader by name washes the row and says so; @all does not", () => {
         const byName = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), isChannel: true });
         const toAll = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel: true });
 
         expect(root(byName).classList.contains("is-mention-me")).toBe(true);
         expect(plain(root(byName).getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM, mentions you");
         expect(root(toAll).classList.contains("is-mention-me")).toBe(false);
+        expect(toAll.find("[data-testid='mention-tag']").exists()).toBe(false);
+    });
+
+    // The wash is color alone, so the words carry the same signal for anyone who cannot see it.
+    test("a head row says Mentioned you in its head, after the time", () => {
+        const w = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), isChannel: true, position: "first" });
+
+        const head = w.get("[data-testid='message-head']");
+        const parts = Array.from(head.element.children).map(c => (c as HTMLElement).dataset.testid);
+        expect(head.get("[data-testid='mention-tag']").text()).toBe("Mentioned you");
+        expect(parts.indexOf("mention-tag")).toBe(parts.indexOf("message-time") + 1);
+        expect(head.get("[data-testid='mention-tag']").findComponent(Icon).props("name")).toBe("at");
+    });
+
+    // A row under its group's head has no name line, so the words ride at the end of the text,
+    // where (edited) rides, and never add a line.
+    test("a row without a head says Mentioned you at the end of its text", () => {
+        const w = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), isChannel: true, position: "middle" });
+
+        expect(w.find("[data-testid='message-head']").exists()).toBe(false);
+        const text = w.get(".chat-cm-text");
+        const tag = text.get("[data-testid='mention-tag']");
+        expect(tag.text()).toBe("Mentioned you");
+        expect(text.element.lastElementChild).toBe(tag.element);
+        expect(root(w).classList.contains("is-mention-me")).toBe(true);
+    });
+
+    // An announcement owns the brand tint and its edge; one that names the reader keeps them,
+    // and still says so in words.
+    test("an announcement that names the reader keeps its own look and still says Mentioned you", () => {
+        const w = draw({
+            message: message({ message_type: "announcement", body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }),
+            isChannel: true,
+            position: "first"
+        });
+
+        expect(root(w).classList.contains("is-announcement")).toBe(true);
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.get("[data-testid='mention-tag']").text()).toBe("Mentioned you");
+    });
+
+    test("the reader's own message naming themselves is not a mention of them", () => {
+        const w = draw({ message: ownConfirmed({ body: `me <@${me}>`, pieces: [{ type: "text", text: "me " }, mentionMe] }), isOwn: true, isChannel: true, position: "first" });
+
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+    });
+
+    test("the wash is a rounded card inset from the row's edges, with no edge bar", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/background-color:\s*var\(--chat-row-mention\)/);
+        expect(rule).toMatch(/--chat-cm-radius:\s*10px/);
+        expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius\)/);
+        expect(rule).toMatch(/margin:\s*2px\s+var\(--chat-cm-inset\)/);
+        // The text column stays where every other row has it: the inset comes out of the padding.
+        expect(rule).toMatch(/padding-inline:\s*calc\(var\(--chat-cm-pad\)\s*-\s*var\(--chat-cm-inset\)\)/);
+        expect(rule).not.toMatch(/box-shadow/);
+    });
+
+    // A click's focus drops the ring and squares an ordinary row; a washed row keeps its corners.
+    test("a click's focus keeps the wash's corners", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-msg\.is-community:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius,\s*0\)/);
     });
 });
 
@@ -466,6 +535,17 @@ describe("mentions", () => {
         expect(chips.map(chip => chip.attributes("data-mention"))).toEqual(["person", "you", "all"]);
         expect(chips[1].attributes("aria-label")).toBe("@Jordan Lee, you");
         expect(chips[2].attributes("aria-label")).toBe("@all, everyone in this channel");
+    });
+
+    // A direct message reaches the reader whole, so a bubble naming them needs no wash or words:
+    // the you chip says it, and its label says "you" to a screen reader.
+    test("a bubble naming the reader is neither washed nor tagged; its you chip carries it", () => {
+        const w = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), position: "single" });
+
+        expect(root(w).classList.contains("is-conversational")).toBe(true);
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+        expect(w.get("[data-testid='piece-mention']").attributes("aria-label")).toBe("@Jordan Lee, you");
     });
 
     test("the @all chip in a direct message or group says conversation, not channel", () => {

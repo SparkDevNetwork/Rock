@@ -207,6 +207,8 @@ const tokens: Token[] = [
     { name: "success", light: "#01A11E", rock: "base-success" },
     { name: "mn-me-bg", light: "#F7E0C0", dark: "#4E3410" },
     { name: "mn-all-bg", light: "#DFEAF8", dark: "#0A2241" },
+    // A row that names the reader: warning at 6 percent over the surface in light, 9 in dark.
+    { name: "row-mention", light: "#FCF6EE", dark: "#201C15" },
 
     // An initials avatar's saturation and lightness; the hue is the person's own.
     { name: "av-sat", light: "70%", dark: "28%" },
