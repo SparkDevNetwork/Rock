@@ -1215,6 +1215,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // A room's facts change with its members and with its own name, description or kind.
                     if (event === "membership.changed" || event === "channel.updated") {
                         rooms.roomChanged(typeof changed === "string" ? changed : null);
+                        members.roomChanged(typeof changed === "string" ? changed : null);
                     }
                     if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
                         recheck();

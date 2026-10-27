@@ -193,6 +193,12 @@ export type Members = {
     close: () => void;
     stop: () => void;
 
+    /**
+     * Who is in a room, or the room itself, changed on the person's topic: the panel holding that
+     * room reads its roster and the reader's rights again, in place.
+     */
+    roomChanged: (channelId: string | null) => void;
+
     /** Opens the remove confirm, or the last leader's dialog, for a person on the roster. */
     askRemove: (personAliasGuid: string) => void;
     cancelRemove: () => void;
@@ -670,6 +676,16 @@ export function createMembers(dependencies: MembersDependencies): Members {
         },
 
         close: reset,
+
+        roomChanged: (channelId): void => {
+            if (isStopped || !channelId || channelId !== state.channelId) {
+                return;
+            }
+
+            // Read as after the panel's own add or remove: whoever came or went may have been a
+            // leader, and the reader's own role may be what changed.
+            void Promise.all([refreshRoster(channelId), loadRights(channelId)]);
+        },
 
         stop: (): void => {
             isStopped = true;

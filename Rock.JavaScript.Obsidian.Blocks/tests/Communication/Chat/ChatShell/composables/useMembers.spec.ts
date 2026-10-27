@@ -17,14 +17,15 @@
 // The members panel's roster: who is in a room, a page at a time, leaders first as the platform
 // orders them, and a search of the whole room.
 //
-// The roster is fetched on open, on Load more and on Try again, never live. A page shorter than
-// the size asked for is the end. A room the person has not joined, or one that keeps its member
-// list from them, is refused by the platform with its own code, which the panel draws as a state
-// of its own rather than a failure. A query waits for the people search's pause, then asks the
-// platform for the whole room; until it answers, the rows already loaded that match show at once,
-// by the platform's own rule (a nick name, a last name or the whole name starting with the text,
-// in any letter case). An answer older than the newest query is dropped. Once stopped, nothing
-// more is fetched and no answer still on its way reaches the screen.
+// The roster is fetched on open, on Load more, on Try again and when the room changes elsewhere,
+// never from a live event's payload. A page shorter than the size asked for is the end. A room the
+// person has not joined, or one that keeps its member list from them, is refused by the platform
+// with its own code, which the panel draws as a state of its own rather than a failure. A query
+// waits for the people search's pause, then asks the platform for the whole room; until it answers,
+// the rows already loaded that match show at once, by the platform's own rule (a nick name, a last
+// name or the whole name starting with the text, in any letter case). An answer older than the
+// newest query is dropped. Once stopped, nothing more is fetched and no answer still on its way
+// reaches the screen.
 //
 // The composable these tests are written to, in useMembers.partial.ts:
 //
@@ -990,3 +991,63 @@ describe("adding people", () => {
 });
 
 // #endregion Changing who is in a room
+
+// #region A room changed elsewhere
+
+// Someone else added or removed a person, or the room changed: the platform tells the person's
+// topic, and the panel holding that room reads who is in it, and what the reader may do there,
+// again in place, as it does after its own add and remove.
+describe("a room changed elsewhere", () => {
+    test("the panel holding the room reads its first page and the reader's rights again, with no loading state", async () => {
+        const { members, calls, doorCalls } = doorHarness({ calls: [page([tom, anna]), page([tom, anna, ben])], rights: [{ canManageMembers: false }, { canManageMembers: true }] });
+        await members.open(channel);
+        await settle();
+
+        members.roomChanged(channel);
+        expect(members.state.isLoading).toBe(false);
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna"]);
+        await settle();
+
+        expect(calls.map(c => c.args)).toEqual([
+            { p_channel_id: channel, p_after: null, p_limit: memberPageSize, p_query: null },
+            { p_channel_id: channel, p_after: null, p_limit: memberPageSize, p_query: null }
+        ]);
+        expect(doorCalls.map(c => c.args[0])).toEqual([channel, channel]);
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna", "Ben"]);
+        expect(members.state.canManageMembers).toBe(true);
+    });
+
+    test("another room, a closed panel or a stopped one asks nothing", async () => {
+        const { members, calls, doorCalls } = doorHarness({ calls: [page([tom])] });
+
+        members.roomChanged(channel);
+        await members.open(channel);
+        members.roomChanged(otherChannel);
+        members.roomChanged(null);
+        await settle();
+        expect(calls).toHaveLength(1);
+
+        members.stop();
+        members.roomChanged(channel);
+        await settle();
+
+        expect(calls).toHaveLength(1);
+        expect(doorCalls).toHaveLength(1);
+    });
+
+    test("an answer for a room since left is dropped", async () => {
+        const held = deferred<CallResult>();
+        const { members } = doorHarness({ calls: [page([tom]), held, page([ben])] });
+        await members.open(channel);
+
+        members.roomChanged(channel);
+        await members.open(otherChannel);
+        held.resolve(page([tom, anna]));
+        await settle();
+
+        expect(members.state.channelId).toBe(otherChannel);
+        expect(names(members.state.rows)).toEqual(["Ben"]);
+    });
+});
+
+// #endregion A room changed elsewhere
