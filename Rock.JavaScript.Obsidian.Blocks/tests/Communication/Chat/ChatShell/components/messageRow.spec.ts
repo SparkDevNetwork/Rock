@@ -747,6 +747,24 @@ describe("a send refused for good", () => {
         expect(wrapper.find("[data-testid='message-refusal']").exists()).toBe(false);
         expect(wrapper.get("[data-testid='retry-send']").text()).toBe("Try again");
         expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
+        expect(wrapper.get("[data-testid='message-meta']").classes()).not.toContain("has-refusal");
+    });
+
+    // A flex row squeezes each piece into its own column at a phone's width, "Not sent." broken
+    // beside a tall narrow sentence; a sentence wraps as text, the icon and Delete in its run.
+    test.each([["a direct message", false], ["a channel", true]] as const)("its sentence wraps as one run of text with Delete at its end in %s", (_kind, isChannel) => {
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal }), isOwn: true, isChannel, position: "single" });
+        const meta = wrapper.get("[data-testid='message-meta']");
+
+        expect(meta.classes()).toContain("has-refusal");
+        expect([...meta.element.children].map(child => child.getAttribute("data-testid") ?? child.tagName.toLowerCase()))
+            .toEqual(["svg", "message-state", "message-refusal", "discard-send"]);
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-meta\.has-refusal\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        expect(rule).toMatch(/display:\s*block/);
+        expect(style).not.toMatch(/\.has-refusal[^{]*\{[^}]*white-space:\s*nowrap/);
     });
 });
 

@@ -97,7 +97,7 @@
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
                     <span v-if="isMentionTagShown && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag"><Icon name="at" size="xs" />Mentioned you</span>
                 </div>
-                <div v-if="state === 'failed'" class="chat-meta is-failed" data-testid="message-meta">
+                <div v-if="state === 'failed'" class="chat-meta is-failed" :class="{ 'has-refusal': !!refusalSentence }" data-testid="message-meta">
                     <Icon name="alert" size="xs" />
                     <span data-testid="message-state">Not sent.</span>
                     <span v-if="refusalSentence" data-testid="message-refusal">{{ refusalSentence }}</span>
@@ -171,7 +171,7 @@
                 </template>
             </MessageReactions>
             <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
-            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
+            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed', 'has-refusal': state === 'failed' && !!refusalSentence }" data-testid="message-meta">
                 <template v-if="state === 'failed'">
                     <Icon name="alert" size="xs" />
                     <span data-testid="message-state">Not sent.</span>
@@ -526,6 +526,22 @@
 .chat-meta.is-failed {
     font-weight: 600;
     color: var(--chat-danger-ink);
+}
+
+/*
+    A refusal is a sentence, so its line runs as text and wraps at any width with the icon and
+    Delete in its run, rather than a row of columns each squeezed to its own narrow wrap.
+*/
+.chat-meta.has-refusal {
+    display: block;
+}
+
+.chat-meta.has-refusal > * + * {
+    margin-inline-start: 6px;
+}
+
+.chat-meta.has-refusal .chat-ic {
+    vertical-align: middle;
 }
 
 .chat-meta-sent,
