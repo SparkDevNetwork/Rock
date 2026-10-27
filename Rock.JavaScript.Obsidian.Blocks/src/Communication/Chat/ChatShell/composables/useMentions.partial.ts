@@ -18,11 +18,13 @@
 // the header's dot.
 //
 // The search waits for a pause in typing and drops an answer older than the newest query, so a
-// slow answer never overwrites a newer one. The @ that opens the picker asks at once and draws the
-// conversation's last bare-@ answer while it does, so the picker opens on people rather than on a
-// wait; the composer's focus warms that answer before the first @. The inbox's last visit is kept on the device by church
-// and person; a browser that refuses its storage still works, the dot then showing for any unread
-// mention. Once stopped, nothing more is fetched and no answer still on its way reaches the screen.
+// slow answer never overwrites a newer one. The @ that opens the picker draws the conversation's
+// last bare-@ answer, while it is young, and asks again; with nothing held it asks at once. The
+// composer's focus warms that answer before the first @.
+//
+// The inbox's last visit is kept on the device by church and person; a browser that refuses its
+// storage still works, the dot then showing for any unread mention. Once stopped, nothing more is
+// fetched and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
@@ -46,6 +48,20 @@ export const mentionPickerSize = 6;
  * first. An estimate: more rooms than a person types in at one sitting, at six people each.
  */
 export const mentionHeldConversations = 20;
+
+/**
+ * How long a held bare-@ answer may still be drawn after it was asked. An estimate: nothing tells
+ * the reader when someone else is put on the Ban List or a room starts hiding its roster, so this
+ * bounds how long such a person can be offered, at one small call a minute in a room typed in.
+ */
+export const mentionHeldAge = 60_000;
+
+/**
+ * How long a bare-@ ask still out is shared with an open, before the open asks afresh. An
+ * estimate: well past a normal answer, so a warm and the @ just after it ask once, while an ask
+ * stalled on a dropped connection never holds the picker for good.
+ */
+export const mentionAskShared = 5_000;
 
 /** What the picker draws for the newest query. */
 export type MentionPickerState = {
@@ -252,14 +268,14 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
     let searchGeneration = 0;
     let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Each conversation's latest bare-@ answer, the one used longest ago first. Drawn at an open
-    // only until that open's own answer replaces it, so a person who joined, left or was renamed
-    // since is put right within one round trip.
-    const heldOpenings = new Map<string, MentionPerson[]>();
+    // Each conversation's latest bare-@ answer and when it was asked, the one used longest ago
+    // first. Drawn at an open only while young and only until that open's own answer replaces it,
+    // so a person who joined, left or was renamed since is put right within one round trip.
+    const heldOpenings = new Map<string, { people: MentionPerson[], askedAt: number }>();
 
     // The bare-@ answer asked for a conversation and not yet in, shared by a warm and an open
-    // that comes before it answers, so they ask once.
-    const askingOpenings = new Map<string, Promise<CallResult>>();
+    // that comes soon after, so they ask once.
+    const askingOpenings = new Map<string, { answer: Promise<CallResult>, askedAt: number }>();
 
     // Each open, refresh, close and stop moves this on, so a page meant for an inbox since
     // replaced or closed never lands in the one on screen.
@@ -317,48 +333,62 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         return result.ok ? ((result.data as Partial<MentionSearchAnswer> | null)?.people ?? []) : [];
     }
 
-    /** Holds a conversation's bare-@ people as the one used last, dropping the one used longest ago past the bound. */
-    function holdOpening(channelId: string, people: MentionPerson[]): void {
+    /**
+     * Holds a conversation's bare-@ entry as the one used last, dropping the one used longest ago
+     * past the bound. Using an entry keeps it from being dropped, never makes it younger.
+     */
+    function holdOpening(channelId: string, entry: { people: MentionPerson[], askedAt: number }): void {
         heldOpenings.delete(channelId);
-        heldOpenings.set(channelId, people);
+        heldOpenings.set(channelId, entry);
         if (heldOpenings.size > mentionHeldConversations) {
             heldOpenings.delete(heldOpenings.keys().next().value as string);
         }
     }
 
+    /** A conversation's held bare-@ entry while it is young enough to draw. */
+    function youngOpening(channelId: string): { people: MentionPerson[], askedAt: number } | undefined {
+        const entry = heldOpenings.get(channelId);
+        return entry && Date.now() - entry.askedAt < mentionHeldAge ? entry : undefined;
+    }
+
     /**
-     * Asks a conversation's bare-@ people, or joins the ask already on its way, and holds the
-     * answer. A refusal forgets what was held, since the platform no longer lists those people
-     * here; a call that never reached it keeps them.
+     * Asks a conversation's bare-@ people, or joins an ask for them made moments ago, and holds the
+     * answer. An older ask still out may have stalled, so it is replaced, and its answer, should it
+     * come, is not held. A refusal forgets what was held, since the platform no longer lists those
+     * people here; a call that never reached it keeps them.
      */
     function askOpening(channelId: string): Promise<CallResult> {
         const asking = askingOpenings.get(channelId);
-        if (asking) {
-            return asking;
+        if (asking && Date.now() - asking.askedAt < mentionAskShared) {
+            return asking.answer;
         }
 
+        const askedAt = Date.now();
         // Read only once the answer is in, by which time it holds this ask.
-        let ask: Promise<CallResult> | null = null;
-        ask = (async (): Promise<CallResult> => {
-            const result = await dependencies.call("chat_search_mentionable", { p_channel_id: channelId, p_query: "", p_limit: mentionPickerSize });
+        let ask: { answer: Promise<CallResult>, askedAt: number } | null = null;
+        ask = {
+            askedAt,
+            answer: (async (): Promise<CallResult> => {
+                const result = await dependencies.call("chat_search_mentionable", { p_channel_id: channelId, p_query: "", p_limit: mentionPickerSize });
 
-            // An answer to an ask the conversation was forgotten after, as on a membership
-            // change, may list the people from before it, so it is not held.
-            if (askingOpenings.get(channelId) !== ask) {
+                // An answer to an ask since replaced, or one the conversation was forgotten after,
+                // as on a membership change, may list the people from before it, so it is not held.
+                if (askingOpenings.get(channelId) !== ask) {
+                    return result;
+                }
+
+                askingOpenings.delete(channelId);
+                if (result.ok) {
+                    holdOpening(channelId, { people: answeredPeople(result), askedAt });
+                }
+                else if (result.status !== 0) {
+                    heldOpenings.delete(channelId);
+                }
                 return result;
-            }
-
-            askingOpenings.delete(channelId);
-            if (result.ok) {
-                holdOpening(channelId, answeredPeople(result));
-            }
-            else if (result.status !== 0) {
-                heldOpenings.delete(channelId);
-            }
-            return result;
-        })();
+            })()
+        };
         askingOpenings.set(channelId, ask);
-        return ask;
+        return ask.answer;
     }
 
     /** Forgets a conversation's held people and any ask for them still on its way. */
@@ -523,11 +553,13 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             // will be unless the room changed, so the picker shows at once and its rows stay put.
             // A query typed at the opening is not drawn from it: the people held are only the
             // first by name, and the rows would grow as the answer came. Only a member's room
-            // draws it, since the people held are the ones they could see while one.
-            const held = isOpening && query === "" && channel.is_member ? heldOpenings.get(channel.channel_id) : undefined;
+            // draws it, since the people held are the ones they could see while one, and only a
+            // young one, since a fast letter cancels the refresh and no event says someone else
+            // was banned or the roster hidden.
+            const held = isOpening && query === "" && channel.is_member ? youngOpening(channel.channel_id) : undefined;
             if (held) {
                 holdOpening(channel.channel_id, held);
-                state.picker.people = held;
+                state.picker.people = held.people;
             }
             else {
                 // Until the answer comes the rows held are narrowed to what was typed, so Enter
@@ -552,8 +584,9 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         },
 
         warm: (channel): void => {
-            // Once per conversation: after that its opens keep the held answer fresh.
-            if (!isStopped && channel.can_mention && channel.is_member && !heldOpenings.has(channel.channel_id)) {
+            // Only where nothing young is held: a held answer is kept fresh by its opens, and asked
+            // again here once it is too old to draw.
+            if (!isStopped && channel.can_mention && channel.is_member && !youngOpening(channel.channel_id)) {
                 void askOpening(channel.channel_id);
             }
         },
