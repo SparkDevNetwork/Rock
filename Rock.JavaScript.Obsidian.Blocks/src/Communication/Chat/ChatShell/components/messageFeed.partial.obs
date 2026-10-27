@@ -17,15 +17,16 @@
 
         <!--
             The day of the messages at the feed's top, over the band where the feed fades out rather
-            than stuck inside the feed, where it would sit on the text scrolling under it. Each day's
-            own pill says it for assistive technology. Always drawn, so its place can be read.
+            than stuck inside the feed, where it would sit on the text scrolling under it. Its box is
+            that band; the label stands where the pill it carries is, and parks at the band's top.
+            Each day's own pill says it for assistive technology. Always drawn, so the band can be read.
         -->
         <div ref="dayFloat"
              class="chat-day-float"
-             :class="{ 'is-on': topDay !== null }"
-             :style="{ '--chat-feed-gutter': `${gutterPx}px` }"
+             :class="{ 'is-on': carried !== null }"
+             :style="{ '--chat-feed-gutter': `${gutterPx}px`, '--chat-day-offset': `${carried?.offset ?? 0}px` }"
              data-testid="day-float"
-             aria-hidden="true"><span>{{ topDay }}</span></div>
+             aria-hidden="true"><span>{{ carried?.label }}</span></div>
 
         <div ref="feed"
              class="chat-feed"
@@ -61,7 +62,7 @@
             <div class="chat-feed-fill" data-testid="feed-fill" aria-hidden="true"></div>
 
             <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
-                <div class="chat-day-pill" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
+                <div class="chat-day-pill" :class="{ 'is-carried': section.key === carried?.key }" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
 
                 <template v-for="item in section.items" :key="item.key">
                     <div v-if="item.kind === 'divider'"
@@ -257,9 +258,15 @@
     margin: 14px 0 6px;
 }
 
+/* The label over the feed draws this pill while it carries it; the pill keeps its room and its words. */
+.chat-day-pill.is-carried {
+    opacity: 0;
+}
+
 /*
-    The day on top, over the feed and centred on its column, the scrollbar left out; it changes as
-    the next day's pill reaches its place, where that pill has gone out of sight under it.
+    The day on top, over the feed and centred on its column, the scrollbar left out. Its box is the
+    band the feed fades in under, so the pill the label carries is measured against it; the label
+    stands where that pill is and parks at the band's top.
 */
 .chat-day-float {
     position: absolute;
@@ -268,9 +275,15 @@
     left: 0;
     z-index: 2;
     display: flex;
+    align-items: flex-start;
     justify-content: center;
+    height: calc(var(--chat-day-height) + var(--chat-day-fade));
     pointer-events: none;
     visibility: hidden;
+}
+
+.chat-day-float span {
+    transform: translateY(var(--chat-day-offset));
 }
 
 .chat-day-float.is-on {
@@ -772,8 +785,11 @@
     const feed = ref<HTMLElement | null>(null);
     const dayFloat = ref<HTMLElement | null>(null);
 
-    /** The day of the messages at the feed's top, once its own pill has gone up under the label's place. */
-    const topDay = ref<string | null>(null);
+    /**
+     * The day the floating label carries: the last day whose pill has entered the band over the
+     * feed's top, and how far below the band's top that pill stands, none while every pill is below.
+     */
+    const carried = ref<{ key: string, label: string, offset: number } | null>(null);
 
     /** The width of the feed's scrollbar, so the label centres over the column the pills centre in. */
     const gutterPx = ref(0);
@@ -993,8 +1009,12 @@
     }
 
     /**
-     * Labels the day at the feed's top: the last day whose own pill has reached the label's place,
-     * where the feed's fade has taken that pill out of sight, or none while every pill is in view.
+     * Hands the day at the feed's top to the floating label. A pill whose top has entered the band
+     * over the feed's top (the label's place and the fade under it) is carried by the label from
+     * there: the label says its day where the pill stands and the pill is not drawn, so the band
+     * never shows a pill fading under the label. The label parks at the band's top once the pill
+     * passes it, and lets the pill go as it leaves the band below. Read from where the pills are,
+     * so a fling, a jump or a page drawn above lands right in one frame.
      */
     function placeTopDay(): void {
         const scroller = feed.value;
@@ -1002,18 +1022,24 @@
             return;
         }
 
-        const place = dayFloat.value.getBoundingClientRect().top;
+        const band = dayFloat.value.getBoundingClientRect();
         const pills = scroller.querySelectorAll<HTMLElement>("[data-testid='day-pill']");
-        let day: string | null = null;
+        let day: { key: string, label: string, offset: number } | null = null;
         for (let index = 0; index < pills.length; index++) {
-            // Half a pixel either way is the browser's rounding, not a pill below the place.
-            if (pills[index].getBoundingClientRect().top > place + 0.5) {
+            const top = pills[index].getBoundingClientRect().top;
+
+            // Half a pixel either way is the browser's rounding, not a pill inside the band.
+            if (top > band.bottom - 0.5) {
                 break;
             }
-            day = sections.value[index]?.label ?? null;
+
+            const section = sections.value[index];
+            if (section) {
+                day = { key: section.key, label: section.label, offset: Math.max(0, top - band.top) };
+            }
         }
 
-        topDay.value = day;
+        carried.value = day;
         gutterPx.value = scroller.offsetWidth - scroller.clientWidth;
     }
 

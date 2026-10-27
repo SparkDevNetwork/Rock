@@ -59,7 +59,7 @@ export type FeedItem =
     | { kind: "card", key: string, message: TimelineMessage }
     | { kind: "group", key: string, isOwn: boolean, senderGuid: string | null, rows: FeedRow[] };
 
-/** One day of the feed, so only that day's pill sticks while its messages are on screen. */
+/** One day of the feed, its pill where the day starts. */
 export type FeedSection = {
     key: string;
     label: string;
