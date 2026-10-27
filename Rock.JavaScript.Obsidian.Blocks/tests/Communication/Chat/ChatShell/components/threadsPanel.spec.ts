@@ -491,9 +491,9 @@ describe("the keyboard", () => {
 });
 
 describe("a row's text", () => {
-    // A mention in a row's text is quiet, an inline pill whose padding takes no room in the line,
-    // so two lines of a root holding a chip are as tall as two without. In the conversation a
-    // chip is an inline block that may grow its line; the list must not.
+    // A mention in a row's text is quiet: its pill is as tall as the list's own line, so two lines
+    // of a root holding a chip are as tall as two without. In the conversation a chip stands on its
+    // own 20px line; the list must not.
 
     /** The panel's own style rules, selector and body, read from the component's source. */
     function panelRules(): Array<{ selector: string, body: string }> {
@@ -502,10 +502,10 @@ describe("a row's text", () => {
         return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] }));
     }
 
-    test("draws a mention chip inline, so a chip never makes its line taller", () => {
+    test("draws a mention chip on the list's own line, so a chip never makes its line taller", () => {
         const chip = panelRules().find(r => r.selector === ".chat-ls-text :deep(.chat-mn)");
 
-        expect(chip?.body).toMatch(/display:\s*inline;/);
-        expect(chip?.body).toMatch(/box-decoration-break:\s*clone;/);
+        expect(chip?.body).toMatch(/line-height:\s*inherit;/);
+        expect(chip?.body).not.toMatch(/display:/);
     });
 });

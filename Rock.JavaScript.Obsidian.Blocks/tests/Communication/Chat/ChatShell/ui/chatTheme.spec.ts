@@ -205,7 +205,6 @@ const tokens: Token[] = [
     { name: "info-soft", light: "#E6EFFA", dark: "#0A203D" },
     { name: "success", light: "#01A11E", rock: "base-success" },
     { name: "mn-me-bg", light: "#F7E0C0", dark: "#4E3410" },
-    { name: "mn-all-bg", light: "#DFEAF8", dark: "#0A2241" },
     // A row that names the reader: warning at 6 percent over the surface in light, 9 in dark.
     { name: "row-mention", light: "#FCF6EE", dark: "#201C15" },
     // The ring on the reader's own chip in that row: warning at 35 percent, written out, since the
@@ -726,33 +725,64 @@ describe("the components' own styles", () => {
         expect(normalize(image?.declarations.get("position") ?? "")).toBe("absolute");
     });
 
-    // A mention chip sits on the text line, its name on the text's baseline and the chip centred
-    // on the line's capitals. The browser's measurement runs with the parity check; these hold the
-    // rule that makes it so. The pill's own 20px line, rather than the paragraph's leading, keeps
-    // it from reaching down past the descenders; the face and the room's mark, an inline block
-    // whose baseline is its bottom edge, each sink half their size less 5px, so both centre 5px
-    // above the baseline, on the capitals, whatever their size.
-    test("a mention chip and its face or mark centre on the text line", () => {
+    // A mention chip sits on the text line, its name on the text's baseline. Its lead, a person's
+    // face or the room's group mark, is centred in the pill by the box itself, never by sinking it
+    // a set number of pixels below the baseline: that sum held only for one font's capitals and
+    // left the mark a pixel low in its pill. The pill is a flex box as tall as the name's line,
+    // which also gives it the name's baseline, so one rule centres every lead at every chip size.
+    // The browser's measurement runs with the parity check; these hold the rule that makes it so.
+    test("a mention chip centres its face or mark in the pill and keeps the name on the text's baseline", () => {
         const sheet = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
-        const centre = (selector: string): number =>
-            parseFloat(declarationOf(sheet, selector, "height")) / 2 + parseFloat(declarationOf(sheet, selector, "vertical-align"));
+        /** A property as the first rule naming the selector and declaring it gives it. */
+        const declared = (selector: string, property: string): string => normalize(selectorsOf(readSheet(sheet))
+            .find(s => s.rule.media === "" && s.selector === selector && s.rule.declarations.has(property))?.rule.declarations.get(property) ?? "");
 
-        expect(declarationOf(sheet, ".chat-mn", "display")).toBe("inline-block");
-        expect(declarationOf(sheet, ".chat-mn", "line-height")).toBe("20px");
-        expect(declarationOf(sheet, ".chat-mn", "padding")).toBe(normalize("0 6px 0 2px"));
-        expect(declarationOf(sheet, ".chat-mn-av", "height")).toBe("18px");
-        expect(declarationOf(sheet, ".chat-mn-glyph", "height")).toBe("16px");
-        expect(centre(".chat-mn-av")).toBe(5);
-        expect(centre(".chat-mn-glyph")).toBe(5);
+        expect(declared(".chat-mn", "display")).toBe("inline-flex");
+        expect(declared(".chat-mn", "align-items")).toBe("center");
+        expect(declared(".chat-mn", "line-height")).toBe("20px");
+        expect(declared(".chat-mn", "padding")).toBe(normalize("0 6px 0 2px"));
+        expect(declared(".chat-mn-name", "align-self")).toBe("baseline");
+
+        // The face and the mark fill one slot, the size the chip names once.
+        expect(declared(".chat-mn", "--chat-mn-face")).toBe("18px");
+        expect(declared(".chat-mn-av", "width")).toBe(normalize("var(--chat-mn-face)"));
+        expect(declared(".chat-mn-av", "height")).toBe(normalize("var(--chat-mn-face)"));
+        expect(declared(".chat-mn-glyph", "--chat-all-mark-s")).toBe(normalize("var(--chat-mn-face)"));
+        for (const lead of [".chat-mn-av", ".chat-mn-glyph"]) {
+            expect(declared(lead, "vertical-align")).toBe("");
+            expect(declared(lead, "margin-right")).toBe("4px");
+        }
+
+        // The group mark: a face-sized disc in the church's tint, its glyph centred by the box.
+        expect(declared(".chat-all-mark", "display")).toBe("grid");
+        expect(declared(".chat-all-mark", "place-items")).toBe("center");
+        expect(declared(".chat-all-mark", "width")).toBe(normalize("var(--chat-all-mark-s, 18px)"));
+        expect(declared(".chat-all-mark", "height")).toBe(normalize("var(--chat-all-mark-s, 18px)"));
+        expect(declared(".chat-all-mark", "color")).toBe(normalize("var(--chat-brand-ink)"));
+        expect(declared(".chat-all-mark", "background")).toBe(normalize("var(--chat-brand-tint)"));
+        expect(declared(".chat-all-mark", "box-shadow")).toBe(normalize("inset 0 0 0 1px var(--chat-brand-line)"));
+        expect(declared(".chat-shell .chat-all-mark .chat-ic", "width")).toBe(normalize("calc(var(--chat-all-mark-s, 18px) * 11 / 18)"));
+        expect(declared(".chat-shell .chat-all-mark .chat-ic", "height")).toBe(normalize("calc(var(--chat-all-mark-s, 18px) * 11 / 18)"));
+
+        // The @all chip is a person's chip with the mark for a face: no color of its own.
+        expect(declared(".chat-mn.is-all", "color")).toBe("");
+        expect(declared(".chat-mn.is-all", "background")).toBe("");
     });
 
     // A chip that is a button must take the sheet's line, not its parent's, or the pill grows
-    // back to the paragraph's leading; where a chip runs inline instead (the editor and the two
-    // lists), it takes its parent's line so it never makes that line taller.
-    test("a message's chip keeps the sheet's line; an inline chip takes its parent's", () => {
+    // back to the paragraph's leading. In the editor and the two lists a chip takes its parent's
+    // line instead, so it is exactly as tall as that line and never makes it taller; only the line
+    // changes there, so the one centring rule holds at every size.
+    test("a message's chip keeps the sheet's line; the editor's and the lists' take their parent's, and nothing else", () => {
         expect(declarationOf(resolve(components, "messageBody.partial.obs"), "button.chat-mn", "line-height")).toBe("");
-        expect(declarationOf(resolve(components, "../ui/chipEditor.partial.obs"), ".chat-ed :deep(.chat-mn)", "line-height")).toBe("inherit");
-        expect(declarationOf(resolve(components, "threadsPanel.partial.obs"), ".chat-ls-text :deep(.chat-mn)", "line-height")).toBe("inherit");
-        expect(declarationOf(resolve(components, "mentionsPanel.partial.obs"), ".chat-ls-text :deep(.chat-mn)", "line-height")).toBe("inherit");
+        for (const [file, selector] of [
+            ["../ui/chipEditor.partial.obs", ".chat-ed :deep(.chat-mn)"],
+            ["threadsPanel.partial.obs", ".chat-ls-text :deep(.chat-mn)"],
+            ["mentionsPanel.partial.obs", ".chat-ls-text :deep(.chat-mn)"]
+        ]) {
+            expect(declarationOf(resolve(components, file), selector, "line-height")).toBe("inherit");
+            expect(declarationOf(resolve(components, file), selector, "display")).toBe("");
+            expect(declarationOf(resolve(components, file), selector, "vertical-align")).toBe("");
+        }
     });
 });

@@ -227,6 +227,17 @@ describe("the @all row", () => {
         expect(all.getAttribute("aria-selected")).toBe("true");
     });
 
+    // The mark the @all chip carries, drawn at a face's size where the people's faces go.
+    test("leads with the group mark at a face's size", () => {
+        drawPicker({ isAllOffered: true });
+
+        const mark = options()[0].querySelector(".chat-all-mark") as HTMLElement | null;
+        expect(mark).not.toBeNull();
+        expect(mark?.getAttribute("aria-hidden")).toBe("true");
+        expect(mark?.style.getPropertyValue("--chat-all-mark-s")).toBe("28px");
+        expect(mark?.querySelector("svg")).not.toBeNull();
+    });
+
     test("is not drawn unless offered", () => {
         drawPicker();
 

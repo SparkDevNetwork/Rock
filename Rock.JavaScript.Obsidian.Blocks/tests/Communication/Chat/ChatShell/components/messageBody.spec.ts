@@ -20,6 +20,7 @@
 // client trusts, whatever the server sent.
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
+import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 
 function draw(props: { text: string | null, pieces?: unknown, blocks?: unknown }): VueWrapper {
     return mount(MessageBody, { props });
@@ -78,7 +79,9 @@ describe("a message body's pieces", () => {
         expect(links.map(link => link.attributes("href"))).toEqual(["https://cedarhill.church/hike", "HTTP://cedarhill.church"]);
     });
 
-    test("the room's chip reads @all on screen, where a person's chip shows only the name", () => {
+    // The room's chip is a person's chip with a group mark where the face goes: "all" on screen,
+    // its "@" spoken only, as a person's name is.
+    test("the room's chip shows the group mark and all, its @ spoken only, as a person's chip does", () => {
         const body = draw({
             text: "raw",
             pieces: [
@@ -89,8 +92,16 @@ describe("a message body's pieces", () => {
         });
         const names = body.findAll(".chat-mn-name").map(name => name.text());
 
-        expect(names).toEqual(["@all", "Lee Leader"]);
+        expect(names).toEqual(["all", "Lee Leader"]);
         expect(body.text()).toBe("@all and @Lee Leader");
+
+        const all = body.get("[data-mention='all']");
+        const lead = all.element.firstElementChild as HTMLElement;
+        expect(lead.classList.contains("chat-mn-glyph")).toBe(true);
+        expect(lead.classList.contains("chat-all-mark")).toBe(true);
+        expect(lead.getAttribute("aria-hidden")).toBe("true");
+        expect(all.findComponent(Icon).props("name")).toBe("users");
+        expect(Array.from(all.element.children).map(child => child.className)).toEqual(["chat-mn-glyph chat-all-mark", "chat-sr-only", "chat-mn-name"]);
     });
 
     test("punctuation right after a chip stays on the chip's line, and the text after it is kept", () => {

@@ -66,7 +66,6 @@
     --chat-conn-line-info: rgba(0, 93, 215, .30);
     --chat-success: var(--base-success, #01A11E);
     --chat-mn-me-bg: #F7E0C0;
-    --chat-mn-all-bg: #DFEAF8;
 
     /* The message row and the feed around it. The church color's mixes come from script, as above. */
     --chat-mn-bg: var(--chat-mn-bg-light, rgba(255, 121, 29, .11));
@@ -280,7 +279,6 @@
     --chat-info-ink: #7DB3FF;
     --chat-info-soft: #0A203D;
     --chat-mn-me-bg: #4E3410;
-    --chat-mn-all-bg: #0A2241;
     --chat-bubble-hover: rgba(248, 248, 252, .07);
     --chat-row-mention: #201C15;
     --chat-mention-ring: rgba(229, 134, 0, .35);
@@ -354,7 +352,6 @@
         --chat-info-ink: #7DB3FF;
         --chat-info-soft: #0A203D;
         --chat-mn-me-bg: #4E3410;
-        --chat-mn-all-bg: #0A2241;
         --chat-bubble-hover: rgba(248, 248, 252, .07);
         --chat-row-mention: #201C15;
         --chat-mention-ring: rgba(229, 134, 0, .35);
@@ -631,13 +628,19 @@
 }
 
 /*
-    A mention chip, shared by a message's body and the editor. An inline block on the text's
-    baseline, its pill as tall as its own 20px line: drawn on the paragraph's leading instead, the
-    pill reached past the descenders and sat low on the line. 20px still holds the 18px face with
-    a pixel each side, and a message line holding a chip is no taller than one without.
+    A mention chip, shared by a message's body, the editor and the lists. A flex box as tall as its
+    name's line, which gives it the name's baseline, so the name sits on the text's baseline. Its
+    lead, a person's face or the room's group mark, is centred in the pill by the box rather than
+    sunk a set number of pixels below the baseline: that sum held for one font's capitals only and
+    left the lead a pixel low in its pill. In a message the pill is its own 20px line: drawn on the
+    paragraph's leading instead, it reached past the descenders. 20px holds the 18px lead with a
+    pixel each side, and a message line holding a chip is no taller than one without. Where a chip
+    takes its parent's line instead, only the line changes, so the same rule centres every size.
 */
 .chat-mn {
-    display: inline-block;
+    --chat-mn-face: 18px;
+    display: inline-flex;
+    align-items: center;
     padding: 0 6px 0 2px;
     line-height: 20px;
     font-weight: 600;
@@ -657,9 +660,9 @@
     background: var(--chat-mn-me-bg);
 }
 
-.chat-mn.is-all {
-    color: var(--chat-info-ink);
-    background: var(--chat-mn-all-bg);
+/* The name alone sets the chip's baseline; the lead, centred, is never a baseline of its own. */
+.chat-mn-name {
+    align-self: baseline;
 }
 
 /* Punctuation right after a chip stays on its line, and the chip's end padding gives way to it. */
@@ -672,21 +675,12 @@
     margin-right: -1px;
 }
 
-/*
-    A one-letter face in the sheet's avatar colors, its letter drawn by the style so the chip's
-    text stays the mention as written. Its bottom sits 4px below the name's baseline, so its middle
-    is 5px above it, on the capitals: an inline block that clips takes its bottom edge as its
-    baseline, where a grid would take its letter's.
-*/
+/* A person's face, its letter drawn by the style so the chip's text stays the mention as written. */
 .chat-mn-av {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
+    width: var(--chat-mn-face);
+    height: var(--chat-mn-face);
     margin-right: 4px;
     font-size: 10px;
-    line-height: 18px;
-    text-align: center;
-    vertical-align: -4px;
 }
 
 /* The letter only where the person has no photo; a photo fills the face instead. */
@@ -698,30 +692,34 @@
     display: block;
 }
 
-/*
-    The room's mark, 16px with a 10px glyph centred by its top padding. Sunk 3px, so its middle
-    meets the 18px face's, 5px above the baseline; the face's 4px sank it a pixel low in its pill.
-*/
+/* @all's lead: the group mark, in the face's slot and at its size. */
 .chat-mn-glyph {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    padding-top: 3px;
+    --chat-all-mark-s: var(--chat-mn-face);
     margin-right: 4px;
-    overflow: hidden;
-    line-height: 0;
-    color: var(--chat-on-info);
-    text-align: center;
-    vertical-align: -3px;
-    background: var(--chat-info);
+}
+
+/*
+    The group mark that stands for everyone in the room wherever a face would: the @all chip and
+    the @ picker's @all row. A disc in the church's tint with a fine ring, its glyph centred by the
+    box at a share of the disc, so it draws the same at any size.
+*/
+.chat-all-mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--chat-all-mark-s, 18px);
+    height: var(--chat-all-mark-s, 18px);
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
     border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--chat-brand-line);
 }
 
 /* Under the root as well, so it outranks the icon's own scoped size. */
-.chat-shell .chat-mn-glyph .chat-ic {
-    width: 10px;
-    height: 10px;
-    stroke-width: 2.4;
+.chat-shell .chat-all-mark .chat-ic {
+    width: calc(var(--chat-all-mark-s, 18px) * 11 / 18);
+    height: calc(var(--chat-all-mark-s, 18px) * 11 / 18);
+    stroke-width: 2.3;
 }
 
 /*
