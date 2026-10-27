@@ -112,6 +112,7 @@
                       @emojiPickerOpen="emit('emojiPickerOpen')"
                       @emojiChosen="emit('emojiChosen', $event)"
                       @mentionQuery="emit('mentionQuery', $event)"
+                      @focus="emit('composerFocus')"
                       @overLimit="emit('overLimit', $event)" />
         </template>
     </PanelHost>
@@ -484,6 +485,8 @@
         (e: "emojiChosen", code: string): void,
         /** The reply composer's @ query whenever it changes, for the search; null for none. */
         (e: "mentionQuery", query: string | null): void,
+        /** Focus came into the reply composer, for the search to ready its people. */
+        (e: "composerFocus"): void,
         /** A reply over the room's limit was held back. */
         (e: "overLimit", maxLength: number): void
     }>();

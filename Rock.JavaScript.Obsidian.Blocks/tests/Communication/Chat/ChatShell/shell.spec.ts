@@ -838,6 +838,15 @@ describe("what the platform may send a released client", () => {
         expect(h.counts.mints).toBe(before.mints);
     });
 
+    test("a resync forgets the @ picker's held people, since who is in each room may have changed", async () => {
+        const h = await started();
+        const forget = jest.spyOn(h.shell.mentions, "forgetPeople");
+
+        personal(h, "resync", {});
+
+        expect(forget).toHaveBeenCalledTimes(1);
+    });
+
     test("after a resync reloads the open channel, it catches up from that page", async () => {
         const h = await started();
         // the join's own catch-up first
@@ -1824,7 +1833,7 @@ describe("mentions", () => {
         const h = await started();
 
         await h.shell.stop();
-        h.shell.mentions.search({ channel_id: channelA, can_mention: true, can_mention_all: true }, "a");
+        h.shell.mentions.search({ channel_id: channelA, can_mention: true, can_mention_all: true, is_member: true }, "a");
 
         expect(h.shell.mentions.state.picker.query).toBeNull();
     });

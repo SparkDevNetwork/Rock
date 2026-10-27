@@ -29,7 +29,8 @@
 //          mentionSource: MentionPickerSource | null (the reply composer's @ picker; null offers none)
 //   emits: close, back, follow(isFollowing: boolean), send(body: string, isShownInChannel: boolean),
 //          seen(messageId: number), loadOlder, retry(localId: string), discard(localId: string),
-//          mentionQuery(query: string | null) (the reply composer's @ query, for the search)
+//          mentionQuery(query: string | null) (the reply composer's @ query, for the search),
+//          composerFocus (focus came into the reply composer)
 //   marks: thread-divider, thread-follow (aria-pressed), and the composer's composer-input and
 //          composer-also (the foot's label around its checkbox).
 //
@@ -444,6 +445,14 @@ describe("the reply composer's @ picker", () => {
         expect(w.emitted("send")).toBeUndefined();
         expect(editor.querySelectorAll("[data-testid='editor-chip']")).toHaveLength(1);
         expect(document.querySelector("[data-testid='mention-picker']")).toBeNull();
+    });
+
+    test("tells the drawer's owner when the reply composer takes focus, so the picker's people are fetched before the @", () => {
+        const w = draw({ mentionSource: { canMention: true, people: [], isAllOffered: false } });
+
+        (w.get("[data-testid='composer-input']").element as HTMLElement).focus();
+
+        expect(w.emitted("composerFocus")).toHaveLength(1);
     });
 });
 

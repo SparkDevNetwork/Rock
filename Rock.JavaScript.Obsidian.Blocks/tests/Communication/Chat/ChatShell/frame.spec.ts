@@ -461,6 +461,7 @@ function fakeMentions(shellState: { activeChannelId: string | null }): Record<st
         state,
         search: jest.fn(),
         closeSearch: jest.fn(),
+        warm: jest.fn(),
         openInbox: jest.fn(async () => undefined),
         refreshInbox: jest.fn(async () => undefined),
         loadOlder: jest.fn(async () => undefined),
@@ -1586,6 +1587,22 @@ describe("mentions", () => {
 
         drawer.vm.$emit("mentionQuery", "b");
         expect(mentionsOf().search).toHaveBeenCalledWith(team, "b");
+    });
+
+    test("a composer taking focus warms the @ picker's people of its conversation", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+
+        w.findComponent(ComposerComponent).vm.$emit("focus");
+        expect(mentionsOf().warm).toHaveBeenCalledWith(team);
+
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        mentionsOf().warm.mockClear();
+        w.findComponent(ThreadDrawerComponent).vm.$emit("composerFocus");
+        expect(mentionsOf().warm).toHaveBeenCalledWith(team);
     });
 });
 

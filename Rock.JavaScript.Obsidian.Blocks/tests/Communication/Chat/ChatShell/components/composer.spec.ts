@@ -105,6 +105,28 @@ describe("the composer's box", () => {
     });
 });
 
+// The shell warms the @ picker's people on this, so a person who only reads costs nothing.
+describe("the composer's focus", () => {
+    test("is told once each time focus comes into the box, not as it moves within it", async () => {
+        const outside = document.createElement("button");
+        document.body.append(outside);
+        const wrapper = mount(Composer, { attachTo: document.body });
+        const emoji = wrapper.get("[data-testid='composer-emoji']").element as HTMLElement;
+
+        editorOf(wrapper).focus();
+        emoji.focus();
+        editorOf(wrapper).focus();
+        expect(wrapper.emitted("focus")).toHaveLength(1);
+
+        outside.focus();
+        editorOf(wrapper).focus();
+        expect(wrapper.emitted("focus")).toHaveLength(2);
+
+        wrapper.unmount();
+        outside.remove();
+    });
+});
+
 describe("the composer's held text", () => {
     test("is put back in the box whenever what holds it changes, so a new empty draft does not show text typed in a channel", async () => {
         const wrapper = mount(Composer, { props: { heldText: "", heldBy: null } });

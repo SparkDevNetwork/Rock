@@ -157,6 +157,7 @@
                               :mentionSource="mentionSourceFor(activeRow)"
                               :conversationKey="activeChannelId"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
+                              @focus="onComposerFocus(activeRow)"
                               @send="shell.send"
                               @editLast="onEditLast"
                               @cancelQuote="onCancelQuote(conversationQuoteKey)"
@@ -335,6 +336,7 @@
                                   :emojiSource="emojiSource"
                                   :mentionSource="mentionSourceFor(threadRow)"
                                   @mentionQuery="onMentionQuery(threadRow, $event)"
+                                  @composerFocus="onComposerFocus(threadRow)"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
@@ -1081,6 +1083,16 @@
         }
         else {
             shell.value.mentions.closeSearch();
+        }
+    }
+
+    /**
+     * A composer took focus: the @ picker's first people for its conversation are fetched now, so
+     * the first @ there draws them at once. Focus, not opening, so a person who only reads asks nothing.
+     */
+    function onComposerFocus(row: SidebarRow | null): void {
+        if (row) {
+            shell.value.mentions.warm(row);
         }
     }
 
