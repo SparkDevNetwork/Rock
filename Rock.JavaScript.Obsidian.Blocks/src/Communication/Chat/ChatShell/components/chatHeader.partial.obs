@@ -16,7 +16,8 @@
             <span v-if="kind === 'channel'" class="chat-header-ic">
                 <Icon :name="isPublic ? 'hash' : 'lock'" />
             </span>
-            <Avatar v-else-if="faces.length > 0" :people="faces" :size="kind === 'person' ? 36 : 28" />
+            <Avatar v-else-if="kind === 'person' && faces.length > 0" :people="faces" :size="36" />
+            <GroupFace v-else-if="kind === 'group'" :people="faces" :count="groupOtherCount" :size="36" />
 
             <span class="chat-header-title">
                 <span class="chat-header-name-row">
@@ -506,6 +507,7 @@ button.chat-header-id:hover .chat-header-chev {
     import { notifyOptionsFor } from "../composables/usePrefs.partial";
     import { ChannelFacts, ChatError, ChatPerson } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import GroupFace from "../ui/groupFace.partial.obs";
     import { personFace } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -575,6 +577,15 @@ button.chat-header-id:hover .chat-header-chev {
         people: {
             type: Array as PropType<ChatPerson[]>,
             default: () => []
+        },
+
+        /**
+         * How many other people a group holds as the sidebar counted them, which can be more than
+         * the people it sent; null for a named group, whose row carries no count.
+         */
+        otherCount: {
+            type: Number as PropType<number | null>,
+            default: null
         },
 
         /** The live connection's trouble, or null when it is healthy. */
@@ -721,8 +732,20 @@ button.chat-header-id:hover .chat-header-chev {
         }
     });
 
-    /** A person's one face, or a group's first two. */
-    const faces = computed((): AvatarPerson[] => props.people.slice(0, props.kind === "person" ? 1 : 2).map(personFace));
+    /**
+     * A person's one face, or a group's people. A named group's row carries none, so its people
+     * come from the room's facts once they are read.
+     */
+    const faces = computed((): AvatarPerson[] => {
+        if (props.kind === "person") {
+            return props.people.slice(0, 1).map(personFace);
+        }
+
+        return (props.people.length > 0 ? props.people : props.facts?.people ?? []).map(personFace);
+    });
+
+    /** How many other people a group holds: the row's count, else the room's head count less the reader. */
+    const groupOtherCount = computed((): number | null => props.otherCount ?? (props.facts ? props.facts.member_count - 1 : null));
 
     /** Which way into the members panel the room offers: a channel's facepile, a group's button, or none. */
     const membersKind = computed((): "channel" | "group" | null => props.isMembersOffered && (props.kind === "channel" || props.kind === "group") ? props.kind : null);

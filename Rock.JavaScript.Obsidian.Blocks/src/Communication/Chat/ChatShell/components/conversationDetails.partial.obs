@@ -15,9 +15,7 @@
                 <Icon :name="facts.is_public ? 'hash' : 'lock'" />
             </span>
             <Avatar v-else-if="kind === 'person'" :people="[otherFace]" :size="56" />
-            <span v-else class="chat-rd-pile">
-                <Avatar :people="groupFaces" :size="40" />
-            </span>
+            <GroupFace v-else class="chat-rd-group" :people="groupFaces" :count="facts.member_count - 1" :size="56" />
 
             <span class="chat-rd-main">
                 <b class="chat-rd-name" data-testid="details-name">{{ title }}</b>
@@ -216,9 +214,9 @@
     height: 26px;
 }
 
-/* A group's faces, ringed in the dialog's color; each overlaps the one before by the avatar's own measure. */
-.chat-rd-pile :deep(.chat-av) {
-    box-shadow: 0 0 0 2px var(--chat-raised);
+/* A group's mark, its faces ringed in the dialog's color. */
+.chat-rd-group {
+    --chat-av-ring: var(--chat-raised);
 }
 
 .chat-rd-main {
@@ -702,6 +700,7 @@
     import { joinNames } from "../stores/channelStore.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import GroupFace from "../ui/groupFace.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -908,7 +907,7 @@
         return { name: other ? fullName(other) || props.title : props.title, photoUrl: other?.avatar_url ?? null };
     });
 
-    const groupFaces = computed((): AvatarPerson[] => props.facts.people.slice(0, 3).map(person => ({ name: fullName(person), photoUrl: person.avatar_url })));
+    const groupFaces = computed((): AvatarPerson[] => props.facts.people.map(person => ({ name: fullName(person), photoUrl: person.avatar_url })));
 
     /** The line under the name: what kind of room it is and where, each part joined by a dot. */
     const metaItems = computed((): Array<{ text: string, icon?: string }> => {

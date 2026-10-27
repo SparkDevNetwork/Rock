@@ -717,7 +717,7 @@ describe("the notify menu and Star", () => {
     });
 });
 
-// The header draws people's own faces: a direct message's other person, a group's first two, and
+// The header draws people's own faces: a direct message's other person, a group's mark, and
 // a channel's stack of up to three of its people, leaders first, as the room's facts send them.
 describe("the faces in the header", () => {
     const anna = { person_alias_guid: "anna", nick_name: "Anna", last_name: "Reyes", avatar_url: "https://photos.example/anna.jpg" };
@@ -731,14 +731,46 @@ describe("the faces in the header", () => {
         expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
     });
 
-    test("is a group's first two people's photos, initials for one with none", () => {
+    test("is a group's diagonal pair in a person's 36px slot, photos and one initial for one with none", () => {
         const w = mountHeader({ title: "Anna and Ben", kind: "group", people: [anna, ben] });
 
-        const faces = w.findAll(".chat-av");
+        const mark = w.get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("pair");
+        expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("36px");
+        const faces = mark.findAll(".chat-av");
         expect(faces).toHaveLength(2);
         expect(faces[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
         expect(faces[1].find("img").exists()).toBe(false);
-        expect(faces[1].text()).toBe("BO");
+        expect(faces[1].text()).toBe("B");
+    });
+
+    test("is a larger group's triangle, counting everyone past the first two by the row's head count", () => {
+        const cara = { ...ben, person_alias_guid: "cara", nick_name: "Cara" };
+        const dee = { ...ben, person_alias_guid: "dee", nick_name: "Dee" };
+        const w = mountHeader({ title: "Anna, Ben, Cara, Dee and 2 more", kind: "group", people: [anna, ben, cara, dee], otherCount: 6 });
+
+        const mark = w.get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect(mark.get("[data-testid='group-face-more']").text()).toBe("+4");
+    });
+
+    test("is a named group's people from the room's facts, which the sidebar's row does not carry", () => {
+        const cara = { ...ben, person_alias_guid: "cara", nick_name: "Cara", details: null };
+        const named = {
+            channel_id: "c0000001-0000-4000-8000-000000000000", name: "Trail crew", icon_url: null, channel_type: "dm",
+            is_member: true, can_post: true, can_post_code: null, can_post_reason: null, max_length: 5000, can_leave: true,
+            description: null, group_type_name: null, campus_id: null, is_public: false, member_count: 6,
+            leaders: [], faces: [], people: [{ ...anna, details: null }, { ...ben, details: null }, cara]
+        };
+        const before = mountHeader({ title: "Trail crew", kind: "group" });
+        expect(before.get("[data-testid='group-face']").attributes("data-shape")).toBe("none");
+        before.unmount();
+
+        const w = mountHeader({ title: "Trail crew", kind: "group", facts: named });
+        const mark = w.get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect(mark.findAll(".chat-av")[0].get("img").attributes("src")).toBe("https://photos.example/anna.jpg");
+        expect(mark.get("[data-testid='group-face-more']").text()).toBe("+3");
     });
 
     test("is a channel's faces, which need not be leaders, with their photos", () => {

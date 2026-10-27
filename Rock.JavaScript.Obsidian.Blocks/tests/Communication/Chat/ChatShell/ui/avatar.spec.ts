@@ -72,6 +72,14 @@ describe("an initials avatar", () => {
         expect(Math.abs(parseFloat(face.style.fontSize) - size * 0.37)).toBeLessThanOrEqual(0.01);
     });
 
+    // A face in a group's mark is partly covered or crowded by the others, so it reads by one letter.
+    test.each([20, 25, 39])("draws one initial 0.42 of its size at %ipx when asked for one letter", size => {
+        const [face] = faces(mount(Avatar, { props: { people: [{ name: "Anna Lee", photoUrl: null }], size, isOneLetter: true } }));
+
+        expect(face.textContent!.trim()).toBe("A");
+        expect(Math.abs(parseFloat(face.style.fontSize) - size * 0.42)).toBeLessThanOrEqual(0.01);
+    });
+
     test("gives the same name the same hue on every draw", () => {
         const first = hueOf(faces(draw([{ name: "Nathan Hughes" }]))[0]);
         const again = hueOf(faces(draw([{ name: "Nathan Hughes" }], 20))[0]);

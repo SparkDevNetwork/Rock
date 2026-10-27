@@ -489,6 +489,15 @@ describe("the body", () => {
         expect(w.emitted("open")).toEqual([[existing]]);
     });
 
+    test("for a group they already have, draws its mark in a person's 36px slot", () => {
+        const w = mountView({ chosen: [anna, caleb, hannah], lookup: found, foundTitle: "Anna, Caleb and Hannah" });
+
+        const mark = w.get("[data-testid='nd-found'] [data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("trio");
+        expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("36px");
+        expect(mark.findAll(".chat-av")).toHaveLength(3);
+    });
+
     test("for one new person, starts their conversation by full name and says only the two can see it", () => {
         const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb]) });
 
@@ -500,11 +509,13 @@ describe("the body", () => {
         expect(w.get("[data-testid='nd-hint']").text()).toBe("Your first message starts the conversation.");
     });
 
-    test("for a new group, draws a pile, the title by the sidebar's rule, and how many can see it", () => {
+    test("for a new group, draws the group's mark, the title by the sidebar's rule, and how many can see it", () => {
         const w = mountView({ chosen: [caleb, hannah], lookup: fresh, draft: draftFor([caleb, hannah]) });
 
         const start = w.get("[data-testid='nd-start']");
-        expect(start.findComponent(Avatar).props("people")).toHaveLength(2);
+        const mark = start.get("[data-testid='group-face']");
+        expect(mark.attributes("data-shape")).toBe("pair");
+        expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("56px");
         expect(w.get("[data-testid='nd-start-title']").text()).toBe("Caleb and Hannah");
         expect(plain(start.get("p").text())).toBe("This is the start of a group conversation. Only the 3 people here can see it.");
     });

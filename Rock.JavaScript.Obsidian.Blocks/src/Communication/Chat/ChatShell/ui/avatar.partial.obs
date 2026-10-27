@@ -42,6 +42,15 @@
         size: {
             type: Number as PropType<number>,
             default: 32
+        },
+
+        /**
+         * Draws one initial, a touch larger, at any size: a face in a group's mark is partly
+         * covered or crowded by the others, and reads by one clear letter.
+         */
+        isOneLetter: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -65,7 +74,7 @@
         const first = Array.from(words[0])[0].toUpperCase();
         const last = words.length > 1 ? Array.from(words[words.length - 1])[0].toUpperCase() : "";
 
-        return props.size <= largestOneInitialSize ? first : first + last;
+        return props.isOneLetter || props.size <= largestOneInitialSize ? first : first + last;
     }
 
     /** The face's size and hue, and its overlap with the face before it in a pile. */
@@ -75,7 +84,7 @@
             "--chat-av-hue": String(avatarHue(person.name)),
             width: `${size}px`,
             height: `${size}px`,
-            fontSize: `${Math.round(size * 0.37 * 100) / 100}px`
+            fontSize: `${Math.round(size * (props.isOneLetter ? 0.42 : 0.37) * 100) / 100}px`
         };
 
         if (index > 0) {
