@@ -71,9 +71,11 @@
 //
 //   mentionSearchPause: 150, the pause in milliseconds.
 //   mentionHeldConversations: how many conversations' opening people are held.
+//   mentionHeldAge: how long, in milliseconds, held people may still be drawn after they were asked.
+//   mentionAskShared: how long, in milliseconds, an ask still out is shared before an open asks afresh.
 //   warm(channel): asks a conversation's opening people ahead of its first @.
 //   forgetPeople(): forgets every conversation's held people, as a resync does.
-import { createMentions, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
+import { createMentions, mentionAskShared, mentionHeldAge, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -754,6 +756,65 @@ describe("the picker's search", () => {
             expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
             h.mentions.closeSearch();
             h.mentions.search(rooms[1], "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+        });
+
+        // Nothing tells the reader when someone else is put on the Ban List or the room starts
+        // hiding its roster, so a held list is drawn only while young.
+        test("a held list past its age is not drawn, even one drawn since, and the open asks at once", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson, benPerson])];
+            h.mentions.warm(room);
+            await settle();
+
+            // drawn, then a fast letter cancels the bare refresh within its pause
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
+            h.mentions.search(room, "b");
+            jest.advanceTimersByTime(mentionSearchPause);
+            await settle();
+            h.mentions.closeSearch();
+
+            jest.advanceTimersByTime(mentionHeldAge);
+            const asked = h.callsTo("chat_search_mentionable").length;
+            h.mentions.search(room, "");
+
+            expect(h.mentions.state.picker.people).toEqual([]);
+            expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(asked + 1);
+        });
+
+        test("a warm asks again once the list held is past its age", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [peopleAnswer([annaPerson]), peopleAnswer([benPerson])];
+            h.mentions.warm(room);
+            await settle();
+            jest.advanceTimersByTime(mentionHeldAge - 1);
+            h.mentions.warm(room);
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(1);
+
+            jest.advanceTimersByTime(1);
+            h.mentions.warm(room);
+            await settle();
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(2);
+
+            h.mentions.search(room, "");
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([ben]);
+        });
+
+        test("an ask that never answers is shared only for a while, so a later open asks afresh and its answer is held", async () => {
+            const h = setup();
+            h.answers.chat_search_mentionable = [deferred<CallResult>(), peopleAnswer([benPerson])];
+            h.mentions.warm(room);
+
+            jest.advanceTimersByTime(mentionAskShared);
+            h.mentions.search(room, "");
+            expect(h.callsTo("chat_search_mentionable")).toHaveLength(2);
+            await settle();
+            expect(h.mentions.state.picker.people.map(p => p.person_alias_guid)).toEqual([ben]);
+
+            h.mentions.closeSearch();
+            h.mentions.search(room, "");
             expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(false);
         });
 
