@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
-    import { messageForError } from "../errors.partial";
+    import { errorKey, messageForError } from "../errors.partial";
     import { ChatError } from "../types.partial";
     import { tokenDuration } from "../ui/brand.partial";
     import Icon from "../ui/icon.partial.obs";
@@ -192,7 +192,7 @@
     const toasts = computed((): ShownToast[] => [
         ...props.errors
             .filter(e => e.severity !== "degraded")
-            .map(e => ({ key: `error ${e.code} ${e.text ?? ""}`, code: e.code, text: messageForError(e), icon: "alert", isError: true, dismiss: () => emit("dismiss", e) })),
+            .map(e => ({ key: `error ${errorKey(e)}`, code: e.code, text: messageForError(e), icon: "alert", isError: true, dismiss: () => emit("dismiss", e) })),
         ...props.notices
             .map(n => ({ key: `notice ${n.code}`, code: n.code, text: n.text, icon: n.icon, isError: false, dismiss: () => emit("dismissNotice", n) }))
     ]);

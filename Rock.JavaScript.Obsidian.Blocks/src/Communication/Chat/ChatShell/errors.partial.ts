@@ -126,6 +126,19 @@ export function messageForError(error: ChatError): string {
 }
 
 /**
+ * Which failure this is to the person: its code and the sentence they are shown. Two failures
+ * under one code that read differently, as two refused messages or a lost read from a channel and
+ * one from a conversation, are each told and each closed on their own; the same one twice is one.
+ *
+ * @param error The classified failure.
+ *
+ * @returns The key the shell and the toast both match a failure by.
+ */
+export function errorKey(error: ChatError): string {
+    return `${error.code} ${messageForError(error)}`;
+}
+
+/**
  * Classifies a failed call to one of the block's own actions on the Rock server.
  *
  * @param statusCode The HTTP status the action returned.

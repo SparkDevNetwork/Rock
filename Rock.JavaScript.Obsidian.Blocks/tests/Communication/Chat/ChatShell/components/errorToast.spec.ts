@@ -32,6 +32,20 @@ describe("the error toast", () => {
 
         expect(wrapper.emitted("dismiss")).toEqual([[errors[1]]]);
     });
+
+    test("draws a channel's lost read and a conversation's as two pills, each in its own words", async () => {
+        const errors: ChatError[] = [
+            { code: "rt.read_revoked", severity: "permission", roomKind: "channel" },
+            { code: "rt.read_revoked", severity: "permission", roomKind: "person" }
+        ];
+        const wrapper = mount(ErrorToast, { props: { errors } });
+
+        await wrapper.findAll("button[aria-label='Dismiss']")[1].trigger("click");
+
+        expect(wrapper.text()).toContain("You no longer have access to this channel.");
+        expect(wrapper.text()).toContain("You no longer have access to this conversation.");
+        expect(wrapper.emitted("dismiss")).toEqual([[errors[1]]]);
+    });
 });
 
 describe("the toast's pill", () => {
