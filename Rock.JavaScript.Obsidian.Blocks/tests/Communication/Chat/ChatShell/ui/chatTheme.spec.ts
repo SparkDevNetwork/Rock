@@ -562,6 +562,17 @@ describe("the components' own styles", () => {
         expect(normalize(spacer?.declarations.get("flex") ?? "")).toMatch(/^1/);
     });
 
+    // The history skeleton hands over to the first page as a cross-fade: it fades out over the
+    // view's own duration while the page rises in beneath it, never leaving the feed blank between.
+    test("the history skeleton fades out over the first page's entrance", () => {
+        const feed = readSheet(feedPath);
+        const leaving = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed-skeleton.is-leaving");
+        const gone = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed-skeleton.is-gone");
+
+        expect(normalize(leaving?.declarations.get("transition") ?? "")).toBe(normalize("opacity var(--chat-d-view) var(--chat-ease-state)"));
+        expect(gone?.declarations.get("opacity")).toBe("0");
+    });
+
     test("the sticky day pill steps to its place under the unread strip rather than animating top", () => {
         const feed = readSheet(feedPath);
         const moving = feed.rules.filter(r => r.selector.includes("chat-day-pill") && /(^|,|\s)top(\s|$)/.test(r.declarations.get("transition") ?? ""));

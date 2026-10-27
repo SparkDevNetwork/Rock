@@ -143,7 +143,7 @@ function setup(rows: SidebarRow[] = [sidebarRow(team), sidebarRow(prayer, { name
     const doorCalls: Setup["doorCalls"] = [];
     const toasts: Setup["toasts"] = [];
     const offline = { value: false };
-    const channels = createChannelStore({ reloadSidebar: () => undefined });
+    const channels = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
     channels.setSidebar(rows);
 
     const prefs = createPrefs({
@@ -491,7 +491,7 @@ describe("the person's own switches", () => {
     });
 
     test("a page with no door refuses a privacy switch and leaves it as it was", async () => {
-        const channels = createChannelStore({ reloadSidebar: () => undefined });
+        const channels = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
         const prefs = createPrefs({ setPrefs: async () => writtenMe({}), channels, isOffline: () => false, notify: () => undefined });
         prefs.setMe({ show_profile_details: true, is_open_dm_allowed: false, reaction_push: true });
 

@@ -603,9 +603,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload)
     });
 
-    // a reload asked while a rejoin's wait is pending is the one that wait will make
-    // A failed read is reported where it fails, so nothing is left to catch here.
-    const channels = createChannelStore({ reloadSidebar: () => sidebarWait === null ? void loadSidebar().catch(() => undefined) : undefined });
+    // A reload asked while a rejoin's wait is pending is the one that wait will make. A failed
+    // read is reported where it fails, so nothing is left to catch here or at any other reload.
+    const channels = createChannelStore({
+        reloadSidebar: () => sidebarWait === null ? void loadSidebar().catch(() => undefined) : undefined,
+        // A first visit's page load waits on the sidebar to choose its conversation, so a retry
+        // with nothing open runs the page load again; with a conversation open, only the list is owed.
+        retryFirstLoad: () => state.activeChannelId === null ? void runPageLoad() : void loadSidebar().catch(() => undefined)
+    });
 
     /** A save of the read position, applied to the row and the unread mentions. */
     function applySave(channelId: string, result: MarkReadResult, sentAt: number | undefined): void {
@@ -746,7 +751,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
         channels,
         // a reload asked while a rejoin's wait is pending is the one that wait will make
-        reloadSidebar: () => sidebarWait === null ? void loadSidebar() : undefined,
+        reloadSidebar: () => sidebarWait === null ? void loadSidebar().catch(() => undefined) : undefined,
         limits: () => session.settings().limits,
         activeChannelId: () => state.activeChannelId,
         // a lost connection is told by its banner, and a door asked then would not be reached
@@ -882,6 +887,29 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
     const replayedEvents = new Set(["channel.unread", "channel.mention", "dm.preview", "channel.read"]);
+
+    /**
+     * Opens the first conversation: the one a link names or this browser opened last, else the
+     * first the sidebar can open. The page says chat is opening until it settles.
+     */
+    async function runPageLoad(): Promise<void> {
+        if (isStopped) {
+            return;
+        }
+
+        state.isOpening = true;
+        try {
+            await startPageLoad({
+                linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
+                rememberedChannelId: readRememberedChannel(options.storage, storageKey),
+                loadSidebar,
+                open
+            });
+        }
+        finally {
+            state.isOpening = false;
+        }
+    }
 
     /** Fetches the sidebar and replaces the rows with it, unless a newer read was asked for meanwhile. */
     async function loadSidebar(): Promise<SidebarRow[]> {
@@ -1191,7 +1219,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         // person may read it, opens it afresh.
                         closeActive();
                         report({ ...error, roomKind });
-                        void loadSidebar();
+                        void loadSidebar().catch(() => undefined);
                         return;
                     }
                     state.connection = error;
@@ -1213,17 +1241,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachThreads = threads.attach(options.pageTargets);
             state.phase = "ready";
 
-            try {
-                await startPageLoad({
-                    linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
-                    rememberedChannelId: readRememberedChannel(options.storage, storageKey),
-                    loadSidebar,
-                    open
-                });
-            }
-            finally {
-                state.isOpening = false;
-            }
+            await runPageLoad();
 
             // After the first channel is on screen, so push never delays it; a stop during the
             // page load leaves it unstarted.

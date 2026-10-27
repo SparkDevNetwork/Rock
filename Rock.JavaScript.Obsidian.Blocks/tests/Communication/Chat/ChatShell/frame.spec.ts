@@ -878,6 +878,16 @@ describe("with nothing open", () => {
         expect(channels.retryLoad).toHaveBeenCalledTimes(1);
     });
 
+    test("asks for no conversation while the first sidebar has failed, as there is nothing to choose", async () => {
+        const w = await mountBlock(1200);
+        const channels = mockShell!.channels as { rows: SidebarRow[], loadState: string };
+        channels.rows = [];
+        channels.loadState = "failed";
+        await settle();
+
+        expect(w.get("[data-testid='main-empty']").text()).toBe("");
+    });
+
     test("the main column's opening state is busy for assistive technology", async () => {
         const w = await mountBlock(1200);
         (mockShell!.state as { isOpening: boolean }).isOpening = true;

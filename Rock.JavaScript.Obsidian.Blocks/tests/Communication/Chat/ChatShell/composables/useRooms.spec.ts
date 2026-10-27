@@ -191,7 +191,7 @@ function setup(options: { isCampusLimited?: boolean } = {}): Setup {
     const toasts: Setup["toasts"] = [];
     const active = { value: null as string | null };
     const offline = { value: false };
-    const channels = createChannelStore({ reloadSidebar: () => undefined });
+    const channels = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
 
     const rooms = createRooms({
         listDirectory: request => {

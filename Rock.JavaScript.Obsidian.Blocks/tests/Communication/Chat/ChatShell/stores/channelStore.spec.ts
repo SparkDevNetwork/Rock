@@ -63,14 +63,14 @@ function row(channelId: string, extra: Partial<SidebarRow> = {}): SidebarRow {
 
 function store(): { store: ReturnType<typeof createChannelStore>, reloads: () => number } {
     let reloads = 0;
-    const s = createChannelStore({ reloadSidebar: () => reloads++ });
+    const s = createChannelStore({ reloadSidebar: () => reloads++, retryFirstLoad: () => undefined });
     s.setSidebar([row(one), row(two)]);
     return { store: s, reloads: () => reloads };
 }
 
 describe("createChannelStore", () => {
     test("is loading until its first sidebar arrives, an empty one included, and stays loaded", () => {
-        const s = createChannelStore({ reloadSidebar: () => undefined });
+        const s = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
         expect(s.loadState).toBe("loading");
 
         s.setSidebar([]);
@@ -82,7 +82,7 @@ describe("createChannelStore", () => {
     });
 
     test("a previewed room's row does not make the sidebar loaded", () => {
-        const s = createChannelStore({ reloadSidebar: () => undefined });
+        const s = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
 
         s.setPreview(row(hidden));
 
@@ -92,7 +92,7 @@ describe("createChannelStore", () => {
 
     test("a failed first sidebar is failed until a retry, which loads again and reads it again", () => {
         let reloads = 0;
-        const s = createChannelStore({ reloadSidebar: () => reloads++ });
+        const s = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => reloads++ });
 
         s.setLoadFailed();
         expect(s.loadState).toBe("failed");
@@ -326,7 +326,7 @@ describe("dm.preview", () => {
 
     function dmStore(rows: SidebarRow[]): { store: ReturnType<typeof createChannelStore>, reloads: () => number } {
         let reloads = 0;
-        const s = createChannelStore({ reloadSidebar: () => reloads++ });
+        const s = createChannelStore({ reloadSidebar: () => reloads++, retryFirstLoad: () => undefined });
         s.setSidebar(rows);
         return { store: s, reloads: () => reloads };
     }
@@ -563,7 +563,7 @@ describe("a replayed channel.mention", () => {
 
 describe("badges", () => {
     test("the store starts with no badges and holds the ones it is given", () => {
-        const s = createChannelStore({ reloadSidebar: () => undefined });
+        const s = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
         expect(s.badges).toEqual([]);
 
         const badge = { badge_key: "b0000001-0000-4000-8000-000000000000", name: "Serving", icon_css: "fa fa-hands-helping", bg_color: "#E8F5E9", fg_color: "#1B5E20", sort_order: 1 };
@@ -642,7 +642,7 @@ describe("the person's own preferences", () => {
             sender: { nick_name: "Ben", last_name: "Okafor" },
             is_own: false
         });
-        const s = createChannelStore({ reloadSidebar: () => undefined });
+        const s = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
         s.setSidebar([dmRow(dmOne), dmRow(dmTwo)]);
 
         s.setActive(dmTwo);
@@ -668,7 +668,7 @@ describe("the person's own preferences", () => {
 // dm.preview names its sender as a person, so the row keeps the sender's photo beside their name.
 describe("dm.preview's sender", () => {
     test("moves the row's sender photo with the name", () => {
-        const s = createChannelStore({ reloadSidebar: () => undefined });
+        const s = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
         s.setSidebar([row("c0000099-0000-4000-8000-000000000000", { name: null, channel_type: "dm", room_kind: "person", title: "Ben Okafor" })]);
 
         s.applyPersonalEvent("dm.preview", {

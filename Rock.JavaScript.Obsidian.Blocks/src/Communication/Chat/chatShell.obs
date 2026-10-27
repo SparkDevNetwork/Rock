@@ -132,8 +132,9 @@
                                  @messageAction="onMessageAction($event, null)"
                                  @members="onListPanel('members')"
                                  @introAction="onRoomChoice" />
+                    <!-- With the first sidebar failed there is nothing to choose; the sidebar says why. -->
                     <div v-else class="chat-shell-empty" data-testid="main-empty" :aria-busy="shell.state.isOpening ? 'true' : undefined">
-                        {{ shell.state.isOpening ? "Opening chat…" : "Choose a conversation." }}
+                        {{ shell.state.isOpening ? "Opening chat…" : shell.channels.loadState === "failed" ? "" : "Choose a conversation." }}
                     </div>
 
                     <!-- A channel the person is previewing has the join bar in the composer's place. -->

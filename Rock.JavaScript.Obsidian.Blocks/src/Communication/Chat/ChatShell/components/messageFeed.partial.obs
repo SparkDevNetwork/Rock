@@ -53,24 +53,6 @@
             -->
             <div class="chat-feed-fill" data-testid="feed-fill" aria-hidden="true"></div>
 
-            <!-- Rows of the look the conversation will draw, so nothing jumps when the page lands. -->
-            <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
-                <template v-if="layout === 'community'">
-                    <div v-for="index in 5" :key="index" class="chat-skeleton-row is-flat" data-testid="skeleton-row">
-                        <span class="chat-skeleton chat-skeleton-face" data-testid="skeleton-face"></span>
-                        <span class="chat-skeleton-lines">
-                            <span class="chat-skeleton chat-skeleton-line is-name"></span>
-                            <span class="chat-skeleton chat-skeleton-line"></span>
-                        </span>
-                    </div>
-                </template>
-                <template v-else>
-                    <div v-for="index in 5" :key="index" class="chat-skeleton-row" :class="{ 'is-own': index % 3 === 0 }" data-testid="skeleton-row">
-                        <span class="chat-skeleton chat-skeleton-bubble" data-testid="skeleton-bubble"></span>
-                    </div>
-                </template>
-            </div>
-
             <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
                 <div class="chat-day-pill" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
 
@@ -133,6 +115,30 @@
                 </template>
             </section>
         </div>
+
+        <!--
+            Rows of the look the conversation will draw, standing at the feed's foot so nothing
+            jumps when the page lands. Over the feed rather than in it, so it fades out over the
+            first page while that page rises in beneath it.
+        -->
+        <Transition leave-active-class="is-leaving" leave-to-class="is-gone">
+            <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
+                <template v-if="layout === 'community'">
+                    <div v-for="index in 5" :key="index" class="chat-skeleton-row is-flat" data-testid="skeleton-row">
+                        <span class="chat-skeleton chat-skeleton-face" data-testid="skeleton-face"></span>
+                        <span class="chat-skeleton-lines">
+                            <span class="chat-skeleton chat-skeleton-line is-name"></span>
+                            <span class="chat-skeleton chat-skeleton-line"></span>
+                        </span>
+                    </div>
+                </template>
+                <template v-else>
+                    <div v-for="index in 5" :key="index" class="chat-skeleton-row" :class="{ 'is-own': index % 3 === 0 }" data-testid="skeleton-row">
+                        <span class="chat-skeleton chat-skeleton-bubble" data-testid="skeleton-bubble"></span>
+                    </div>
+                </template>
+            </div>
+        </Transition>
 
         <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
         <button type="button"
@@ -441,11 +447,26 @@
     background: var(--chat-brand-fill);
 }
 
+/* At the feed's foot, above its bottom padding, as the first messages will stand. */
 .chat-feed-skeleton {
+    position: absolute;
+    right: 0;
+    bottom: 18px;
+    left: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding: 20px;
+    pointer-events: none;
+}
+
+.chat-feed-skeleton.is-leaving {
+    transition: opacity var(--chat-d-view) var(--chat-ease-state);
+}
+
+.chat-feed-skeleton.is-gone {
+    opacity: 0;
 }
 
 .chat-skeleton-row {
