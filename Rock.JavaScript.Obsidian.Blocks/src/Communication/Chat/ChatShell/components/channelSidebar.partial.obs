@@ -510,18 +510,28 @@
     color: var(--chat-brand-ink);
 }
 
-/* A room that arrives or moves up glows once in the church color and fades. */
+/*
+    A room that arrives or moves up glows once in the church color and fades. The glow is the row's
+    fill, so a group's ring glows with it; registered as a color so it fades, and where a browser
+    cannot register it the glow steps off at the end instead.
+*/
+@property --chat-row-fill {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
 .chat-row.is-flash {
     animation: chat-row-flash var(--chat-d-row-flash) var(--chat-ease-state);
 }
 
 @keyframes chat-row-flash {
     0% {
-        background: var(--chat-flash);
+        --chat-row-fill: var(--chat-flash);
     }
 
     100% {
-        background: transparent;
+        --chat-row-fill: transparent;
     }
 }
 

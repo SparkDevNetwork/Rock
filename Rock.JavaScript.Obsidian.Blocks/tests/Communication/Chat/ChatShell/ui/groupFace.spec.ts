@@ -201,4 +201,18 @@ describe("a group's face ring", () => {
         expect(backgrounds.length).toBeGreaterThan(0);
         expect(backgrounds.every(value => value === `var(${fill})`)).toBe(true);
     });
+
+    test("follows a sidebar row's arrival flash, its fill registered as a color so it fades", () => {
+        const text = readFileSync(join(shell, "components/channelSidebar.partial.obs"), "utf8");
+        const flash = /@keyframes chat-row-flash\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}/.exec(text);
+        const registered = /@property --chat-row-fill\s*\{([^{}]*)\}/.exec(text);
+
+        expect(flash).not.toBeNull();
+        expect(flash![1]).not.toMatch(/background/);
+        expect(flash![1]).toMatch(/0%\s*\{\s*--chat-row-fill: var\(--chat-flash\);/);
+        expect(flash![1]).toMatch(/100%\s*\{\s*--chat-row-fill: transparent;/);
+        expect(registered).not.toBeNull();
+        expect(registered![1]).toMatch(/syntax: "<color>";/);
+        expect(registered![1]).toMatch(/initial-value: transparent;/);
+    });
 });
