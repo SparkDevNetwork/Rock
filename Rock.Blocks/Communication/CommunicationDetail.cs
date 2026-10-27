@@ -334,10 +334,14 @@ namespace Rock.Blocks.Communication
                     }
                     else
                     {
-                        // Get the selected attributes from cache.
+                        // Get the selected attributes the current person is authorized to view.
+                        var currentPerson = GetCurrentPerson();
                         _recipientGridAttributeColumns = AttributeCache
                             .GetByEntityType( PersonEntityTypeId )
-                            .Where( a => RecipientGridSettings.SelectedAttributes.Contains( a.Guid ) )
+                            .Where( a =>
+                                RecipientGridSettings.SelectedAttributes.Contains( a.Guid )
+                                && a.IsAuthorized( Authorization.VIEW, currentPerson )
+                            )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name )
                             .ThenBy( a => a.Id )
