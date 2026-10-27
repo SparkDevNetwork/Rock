@@ -5,7 +5,9 @@
 
         <asp:HiddenField ID="hfEmailTemplateId" runat="server" />
 
-        <div class="panel panel-block">
+        <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Warning" Visible="false" />
+
+        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="ti ti-mail"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
@@ -168,7 +170,7 @@
                 </div>
 
             </div>
-        </div>
+        </asp:Panel>
 
         <script>
 

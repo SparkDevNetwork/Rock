@@ -123,10 +123,19 @@ namespace Rock.Reporting.DataSelect.GroupMember
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
-            var result = new BoundField();
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
 
-            // Disable encoding of field content because the value contains markup.
-            result.HtmlEncode = false;
+            /*
+                10/27/26 - JMH
+
+                When the value is a link, the markup (and the encoded name inside it) is built in
+                GetExpression, so the grid must not encode it again. Otherwise the value is the raw
+                name, so the grid encodes it.
+
+                Reason: Display group names as text in reports.
+            */
+            var result = new BoundField();
+            result.HtmlEncode = !showAsLink;
 
             return result;
         }
@@ -161,8 +170,17 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             if ( showAsLink )
             {
+                /*
+                    10/27/26 - JMH
+
+                    The link markup is built in SQL, so the name is HTML encoded there (with REPLACE)
+                    before it is placed inside the anchor, so the grid does not encode it again.
+                    Only &, < and > are encoded because the name is element content and the href is built from the Id only.
+
+                    Reason: Display group names as text in reports.
+                */
                 // Return a string in the format: <a href='/group/{groupId}'>Group Name</a>
-                groupLinkQuery = memberQuery.Select( gm => "<a href='/group/" + gm.GroupId.ToString() + "'>" + gm.Group.Name + "</a>" );
+                groupLinkQuery = memberQuery.Select( gm => "<a href='/group/" + gm.GroupId.ToString() + "'>" + gm.Group.Name.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + "</a>" );
             }
             else
             {
