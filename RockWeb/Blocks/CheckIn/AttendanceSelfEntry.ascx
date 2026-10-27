@@ -92,13 +92,16 @@
                         <asp:Literal ID="lPanel3Text" runat="server" />
                     </div>
                     <Rock:NotificationBox ID="nbAccountWarning" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
-                    <Rock:RockTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
-                    <Rock:RockTextBox ID="txtPassword" runat="server" Label="Password" CssClass="input-medium" TextMode="Password" FormGroupCssClass="margin-b-none" />
-                    <div class="row margin-b-md">
-                        <div class="col-md-12">
-                            <a class="btn btn-link btn-xs pull-right js-show-password" href="#">Show Password</a>
+                    <Rock:NotificationBox ID="nbExistingPersonAccount" runat="server" NotificationBoxType="Info" Visible="false" Text="We found your existing record. To create or use an account, please log in or use Forgot Password." />
+                    <asp:Panel ID="pnlAccountInfo" runat="server">
+                        <Rock:RockTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
+                        <Rock:RockTextBox ID="txtPassword" runat="server" Label="Password" CssClass="input-medium" TextMode="Password" FormGroupCssClass="margin-b-none" />
+                        <div class="row margin-b-md">
+                            <div class="col-md-12">
+                                <a class="btn btn-link btn-xs pull-right js-show-password" href="#">Show Password</a>
+                            </div>
                         </div>
-                    </div>
+                    </asp:Panel>
                     <div class="actions">
                         <asp:LinkButton ID="btnAccountNext" runat="server" AccessKey="s" ToolTip="Alt+n" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnAccountNext_Click" />
                     </div>

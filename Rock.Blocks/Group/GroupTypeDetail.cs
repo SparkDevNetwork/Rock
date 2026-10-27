@@ -1438,6 +1438,20 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( validationMessage );
             }
 
+            // Make sure each attribute list only references attributes that are
+            // new or already belong to this group type, using the same entity
+            // type and qualifier that SaveAttributes() will save them with.
+            // Otherwise a tampered Guid could take over an unrelated attribute.
+            var attributeQualifierValue = entity.Id == 0 ? null : entity.Id.ToString();
+            var areGroupAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.GroupAttributes, new Rock.Model.Group().TypeId, "GroupTypeId", attributeQualifierValue, RockContext );
+            var areGroupMemberAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.GroupMemberAttributes, new GroupMember().TypeId, "GroupTypeId", attributeQualifierValue, RockContext );
+            var areGroupTypeAttributeEditsAllowed = PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.GroupTypeAttributes, new GroupType().TypeId, "Id", attributeQualifierValue, RockContext );
+
+            if ( !areGroupAttributeEditsAllowed || !areGroupMemberAttributeEditsAllowed || !areGroupTypeAttributeEditsAllowed )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             var isNew = entity.Id == 0;
             var triggersUpdated = false;
             Dictionary<Guid, GroupTypeRole> rolesByGuid = null;

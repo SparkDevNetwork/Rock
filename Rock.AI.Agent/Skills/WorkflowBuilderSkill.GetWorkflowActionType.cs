@@ -52,6 +52,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available actions." );
         }
 
+        var viewError = GetWorkflowTypeViewError( actionType.ActivityType?.WorkflowType );
+
+        if ( viewError != null )
+        {
+            return Error( viewError );
+        }
+
         // Setting values that point at an activity or attribute in the same workflow
         // get a readable name alongside the raw value, exactly as the tree read does.
         var workflowTypeId = actionType.ActivityType?.WorkflowTypeId;

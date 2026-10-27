@@ -356,7 +356,7 @@ namespace Rock.Blocks.Core
 
             if ( !IsAuthorized( entity, Rock.Security.Authorization.EDIT ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Tag.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Tag.FriendlyTypeName}." );
                 return false;
             }
 

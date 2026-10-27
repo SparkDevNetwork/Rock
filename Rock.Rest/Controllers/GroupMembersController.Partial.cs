@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
             // Security role membership must not be managed through this generic endpoint. Loading
             // the group directly (its navigation property is not populated on a posted entity) lets
             // us reject any group that is a security role or uses the security role group type.
-            var group = new GroupService( new RockContext() ).Get( value.GroupId );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( value.GroupId );
             if ( group != null && group.IsSecurityRoleOrSecurityGroupType() )
             {
                 var response = ControllerContext.Request.CreateErrorResponse(
@@ -96,6 +96,34 @@ namespace Rock.Rest.Controllers
             }
 
             return base.Post( value );
+        }
+
+        /// <summary>
+        /// Blocks PUT and PATCH from moving a member into or out of a security role.
+        /// </summary>
+        /// <param name="entity">The tracked GroupMember with the caller's values applied.</param>
+        protected override void CheckCanEditAfterUpdate( GroupMember entity )
+        {
+            base.CheckCanEditAfterUpdate( entity );
+
+            var originalGroupId = Service.Context.Entry( entity ).Property( m => m.GroupId ).OriginalValue;
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                var groupService = new GroupService( rockContext );
+
+                foreach ( var groupId in new[] { originalGroupId, entity.GroupId }.Distinct() )
+                {
+                    var group = groupService.Get( groupId );
+                    if ( group != null && group.IsSecurityRoleOrSecurityGroupType() )
+                    {
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.Forbidden,
+                            "Security role membership cannot be managed through this endpoint." );
+                        throw new HttpResponseException( response );
+                    }
+                }
+            }
         }
 
         /// <summary>

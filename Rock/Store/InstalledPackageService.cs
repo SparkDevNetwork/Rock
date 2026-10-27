@@ -17,11 +17,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Hosting;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 
 namespace Rock.Store
 {
@@ -43,7 +42,7 @@ namespace Rock.Store
         /// <returns></returns>
         public static List<InstalledPackage> GetInstalledPackages()
         {
-            string packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            string packageFile = RockApp.Current.MapPath( "~/App_Data/InstalledStorePackages.json" );
             if ( !File.Exists( packageFile ) )
             {
                 return new List<InstalledPackage>();
@@ -119,7 +118,7 @@ namespace Rock.Store
 
         private static void SaveInstalledPackages( List<InstalledPackage> packages )
         {
-            string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            string packageFile = RockApp.Current.MapPath( "~/App_Data/InstalledStorePackages.json" );
 
             string packagesAsJson = packages.ToJson();
 

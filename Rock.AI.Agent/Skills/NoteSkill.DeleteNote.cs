@@ -51,12 +51,25 @@ internal sealed partial class NoteSkill
             return helper.ErrorResult;
         }
 
-        if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+        // Note.IsAuthorized() only grants EDIT on an existing note to the
+        // person that created it or somebody with ADMINISTRATE. This matches
+        // the security used by the note blocks.
+        if ( !existingNote.IsAuthorized( Authorization.EDIT, currentPerson ) )
         {
             return Error( "You are not authorized to delete this note." );
         }
 
-        noteService.Delete( existingNote );
+        if ( !noteService.CanDeleteChildNotes( existingNote, currentPerson, out var errorMessage ) )
+        {
+            return Error( errorMessage );
+        }
+
+        if ( !noteService.CanDelete( existingNote, out errorMessage ) )
+        {
+            return Error( errorMessage );
+        }
+
+        noteService.Delete( existingNote, true );
 
         try
         {

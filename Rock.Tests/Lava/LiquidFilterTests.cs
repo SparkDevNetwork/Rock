@@ -16,13 +16,17 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+using Rock.Tests.Shared.Constants;
+
 namespace Rock.Tests.Lava
 {
     /// <summary>
     /// Tests the processing of standard Liquid filters where some variation has been identified between the Liquid frameworks supported by Rock.
     /// </summary>
     [TestClass]
-    public class LiquidFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class LiquidFilterTests
     {
         #region Slice
 
@@ -35,7 +39,12 @@ namespace Rock.Tests.Lava
             var template = @"{{ 'GX925' | Slice:2,3 }}";
             var expectedOutput = @"925";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -51,13 +60,14 @@ namespace Rock.Tests.Lava
 {% endfor %}
 ";
 
-            var expectedOutput = @"
-<li>3</li>
-<li>4</li>
-<li>5</li>
-";
+            var expectedOutput = "\n\n\n<li>3</li>\n<li>4</li>\n<li>5</li>\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion

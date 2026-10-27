@@ -69,6 +69,36 @@ async function doStreamingApiCallRaw(method: HttpMethod, url: string, params: Ht
     });
 }
 
+/**
+ * Gets the error message from the body of a failed streaming request. The
+ * request asks for a stream, so the error body is also a stream and must be
+ * read before the JSON error message can be found.
+ *
+ * @param data The response data from the failed request.
+ *
+ * @returns The error message or null if one was not found.
+ */
+async function getStreamingErrorMessage(data: unknown): Promise<string | null> {
+    let body: Record<string, unknown> | null = null;
+
+    try {
+        if (data instanceof ReadableStream) {
+            body = JSON.parse(await new Response(data).text());
+        }
+        else if (data && typeof data === "object") {
+            body = data as Record<string, unknown>;
+        }
+    }
+    catch {
+        // The body was not JSON, such as an HTML error page from a proxy.
+        return null;
+    }
+
+    const message = body?.Message ?? body?.message;
+
+    return typeof message === "string" && message ? message : null;
+}
+
 function getSignal(cancellationToken?: ICancellationToken): GenericAbortSignal | undefined {
     if (cancellationToken) {
         const controller = new AbortController();
@@ -236,13 +266,15 @@ export async function doStreamingApiCall<T>(method: HttpMethod, url: string, par
     }
     catch (e) {
         if (axios.isAxiosError(e)) {
-            if (e.response?.data?.Message || e?.response?.data?.message) {
+            const errorMessage = await getStreamingErrorMessage(e.response?.data);
+
+            if (errorMessage) {
                 return {
                     data: null,
                     isError: true,
                     isSuccess: false,
-                    statusCode: e.response.status,
-                    errorMessage: e?.response?.data?.Message ?? e.response.data.message
+                    statusCode: e.response?.status ?? 0,
+                    errorMessage
                 } as HttpResult<ReadableStream<T>>;
             }
 
@@ -289,6 +321,99 @@ export async function get<T>(url: string, params: HttpUrlParams = undefined): Pr
  */
 export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
     return await doApiCall<T>("POST", url, params, data, cancellationToken);
+}
+
+/**
+ * Gets the file name from a content-disposition response header. This is an
+ * internal function and should not be exported.
+ *
+ * @param contentDisposition The value of the content-disposition header.
+ *
+ * @returns The file name or null if one was not found or could not be read.
+ */
+function getContentDispositionFileName(contentDisposition: string | undefined): string | null {
+    if (!contentDisposition) {
+        return null;
+    }
+
+    const encodedMatch = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(contentDisposition);
+
+    if (encodedMatch) {
+        try {
+            return decodeURIComponent(encodedMatch[1].trim());
+        }
+        catch {
+            // Fall back to the plain file name.
+        }
+    }
+
+    const match = /filename\s*=\s*("([^"]*)"|[^;]+)/i.exec(contentDisposition);
+    const fileName = (match?.[2] ?? match?.[1] ?? "").trim();
+
+    // A non-ASCII name may be MIME encoded, which can't be used as is.
+    if (!fileName || fileName.startsWith("=?")) {
+        return null;
+    }
+
+    return fileName;
+}
+
+/**
+ * Make a POST HTTP request and get the response as binary data, such as a
+ * file to download. This is a special use function that should not normally
+ * be used. Instead call useDownloadBlockAction() to download a file from a
+ * block action. Unlike the functions returned by useHttp(), this does not go
+ * through the provided HTTP functions.
+ *
+ * @param url The endpoint to access.
+ * @param data This will be the body of the request.
+ *
+ * @returns The result of the request, including the file name sent by the server if there was one.
+ */
+export async function postForBlob(url: string, data: HttpBodyData = undefined): Promise<HttpResult<Blob> & { fileName: string | null }> {
+    try {
+        const result = await axios({
+            method: "POST",
+            url,
+            data: data ?? {},
+            responseType: "blob"
+        });
+
+        return {
+            data: result.data as Blob,
+            isError: false,
+            isSuccess: true,
+            statusCode: result.status,
+            errorMessage: null,
+            fileName: getContentDispositionFileName(result.headers["content-disposition"])
+        };
+    }
+    catch (e) {
+        let statusCode = 0;
+        let errorMessage: string | null = null;
+
+        if (axios.isAxiosError(e) && e.response) {
+            statusCode = e.response.status;
+
+            // The error body is a Blob because of the response type.
+            try {
+                const body = JSON.parse(await (e.response.data as Blob).text());
+                errorMessage = body?.Message ?? body?.message ?? null;
+            }
+            catch {
+                errorMessage = null;
+            }
+        }
+
+        return {
+            data: null,
+            isError: true,
+            isSuccess: false,
+            statusCode,
+            errorMessage,
+            fileName: null
+        };
+    }
 }
 
 const httpFunctionsSymbol = Symbol("http-functions");
@@ -467,6 +592,20 @@ export type UploadOptions = {
 };
 
 /**
+ * Adds the security grant token to the form data. The token is sent in the
+ * request body instead of the URL so that it is not written to server logs.
+ * This is an internal function and should not be exported.
+ *
+ * @param data The form data to send in the request body.
+ * @param options The options used for the upload.
+ */
+function appendSecurityGrantToken(data: FormData, options: UploadOptions | undefined): void {
+    if (options?.securityGrantToken) {
+        data.append("SecurityGrantToken", options.securityGrantToken);
+    }
+}
+
+/**
  * Uploads a file in the form data into Rock. This is an internal function and
  * should not be exported.
  *
@@ -527,6 +666,7 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
  */
 export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItemBag> {
     const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
+
     const formData = new FormData();
 
     formData.append("file", file);
@@ -534,6 +674,8 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
     if (folderPath) {
         formData.append("folderPath", folderPath);
     }
+
+    appendSecurityGrantToken(formData, options);
 
     const result = await uploadFile(url, formData, options?.progress);
 
@@ -555,6 +697,7 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
  */
 export async function uploadAssetProviderFile(file: File, folderPath: string, assetStorageId: string, options?: UploadOptions): Promise<ListItemBag> {
     const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=`;
+
     const formData = new FormData();
 
     if (!assetStorageId) {
@@ -565,6 +708,7 @@ export async function uploadAssetProviderFile(file: File, folderPath: string, as
     formData.append("StorageId", assetStorageId);
     formData.append("Key", folderPath);
     formData.append("IsAssetStorageProviderAsset", "true");
+    appendSecurityGrantToken(formData, options);
 
     const result = await uploadFile(url, formData, options?.progress);
 
@@ -604,12 +748,9 @@ export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, opt
         url += "&ParentEntityId=" + options.parentEntityId;
     }
 
-    if (options?.securityGrantToken) {
-        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
-    }
-
     const formData = new FormData();
     formData.append("file", file);
+    appendSecurityGrantToken(formData, options);
 
     const result = await uploadFile(url, formData, options?.progress);
 

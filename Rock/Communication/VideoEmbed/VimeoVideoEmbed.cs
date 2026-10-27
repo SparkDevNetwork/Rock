@@ -20,12 +20,13 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Xml;
 
 using Newtonsoft.Json;
 
 using RestSharp;
+
+using Rock.Configuration;
 
 namespace Rock.Communication.VideoEmbed
 {
@@ -87,7 +88,7 @@ namespace Rock.Communication.VideoEmbed
                 {
                     using ( var thumbnail = Image.FromStream( mem ) )
                     {
-                        return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}", HttpContext.Current.Server.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
+                        return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}", RockApp.Current.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
                     }
                 }
             }

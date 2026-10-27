@@ -33,6 +33,9 @@ export type ContentChannelItemMetricsInitializationBox = {
     /** Gets or sets the name of the content channel the item belongs to. */
     contentChannelName?: string | null;
 
+    /** Gets or sets the error message to show instead of the metrics. */
+    errorMessage?: string | null;
+
     /**
      * Gets or sets whether any interaction data has ever been collected for the item. When
      * false the block shows a single "tracking is off" notice instead of the metrics UI.

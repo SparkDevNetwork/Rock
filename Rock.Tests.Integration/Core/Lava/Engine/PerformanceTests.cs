@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -26,6 +27,7 @@ using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava.Engine
 {
@@ -62,21 +64,21 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
             var mergeFields = new LavaDataDictionary { { "Dictionary", standardLavaDictionary } };
 
-            var totalTime = TestHelper.ExecuteAndGetElapsedTime( () =>
+            var options = new LavaRenderOptions { MergeFields = mergeFields };
+
+            var totalTime = GetElapsedTime( () =>
             {
                 engine.ClearTemplateCache();
 
                 for ( int repeatCount = 1; repeatCount <= totalSets; repeatCount++ )
                 {
-                    var elapsedTime = TestHelper.ExecuteAndGetElapsedTime( () =>
+                    var elapsedTime = GetElapsedTime( () =>
                     {
                         for ( int i = 0; i < totalIterationsPerSet; i++ )
                         {
                             var template = "{{ Dictionary['" + i.ToString( formatString ) + "']}}";
 
-                            var options = new LavaTestRenderOptions { MergeFields = mergeFields };
-
-                            var output = TestHelper.GetTemplateOutput( engine, template, mergeFields );
+                            var output = LavaRenderTestHelper.Render( engine, template, options );
 
                             // Verify that the correct entry was retrieved.
                             Assert.AreEqual( i.ToString(), output );
@@ -106,19 +108,41 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
             var expectedOutput = @"
 Ted's other contact numbers are: (623) 555-3322,(623) 555-2444.'
-";
+".NormalizeLineEndings();
 
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var options = new LavaRenderOptions { MergeFields = mergeFields };
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 // Create a second instance of the engine, and verify that the template is resolved identically.
-                var secondEngine = LavaIntegrationTestHelper.NewEngineInstance( engine.GetType(), new LavaEngineConfigurationOptions { FileSystem = new MockFileProvider(), CacheService = null } );
+                var secondEngine = LavaTestEngineFactory.CreateFluidEngine( new LavaEngineConfigurationOptions { FileSystem = new MockFileProvider(), CacheService = null } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+                var firstOutput = LavaRenderTestHelper.Render( engine, templateInput, options );
 
-                TestHelper.AssertTemplateOutput( secondEngine, expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+                Assert.AreEqual( expectedOutput, firstOutput );
+
+                var secondOutput = LavaRenderTestHelper.Render( secondEngine, templateInput, options );
+
+                Assert.AreEqual( expectedOutput, secondOutput );
             } );
+        }
+
+        /// <summary>
+        /// Runs the action and returns how long it took.
+        /// </summary>
+        /// <param name="action">The action to time.</param>
+        /// <returns>The elapsed time.</returns>
+        private static TimeSpan GetElapsedTime( Action action )
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            action();
+
+            stopwatch.Stop();
+
+            return stopwatch.Elapsed;
         }
 
         private Person GetWhereFilterTestPersonTedDecker()

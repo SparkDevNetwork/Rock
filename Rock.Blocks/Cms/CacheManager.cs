@@ -225,7 +225,9 @@ namespace Rock.Blocks.Cms
                 // Update existing tag — only the description is editable.
                 var existingTag = definedValueService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( existingTag == null )
+                // Only values of the Cache Tags defined type are shown in the
+                // grid, so any other defined value is treated as not found.
+                if ( existingTag == null || existingTag.DefinedTypeId != cacheTagDefinedTypeId )
                 {
                     return ActionNotFound( "Cache tag not found." );
                 }
@@ -289,9 +291,16 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ClearCacheForTag( string idKey )
         {
-            var definedValue = DefinedValueCache.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to clear the cache." );
+            }
 
-            if ( definedValue == null )
+            var definedValue = DefinedValueCache.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS )?.Id;
+
+            // Only values of the Cache Tags defined type are shown in the grid.
+            if ( definedValue == null || definedValue.DefinedTypeId != cacheTagDefinedTypeId )
             {
                 return ActionNotFound( "Cache tag not found." );
             }
@@ -321,6 +330,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ClearCache( string cacheType )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to clear the cache." );
+            }
+
             if ( cacheType == "all" )
             {
                 RockCache.ClearAllCachedItems();
@@ -342,6 +356,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult SetEnableStatistics( bool enabled )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to change the cache statistics setting." );
+            }
+
             Rock.Web.SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS, enabled.ToString() );
             return ActionOk();
         }

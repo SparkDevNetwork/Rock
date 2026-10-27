@@ -125,6 +125,20 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( $"{FinancialPersonBankAccount.FriendlyTypeName} not found." );
             }
 
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {FinancialPersonBankAccount.FriendlyTypeName}." );
+            }
+
+            // Only allow deleting bank accounts that belong to the person
+            // this list is displaying.
+            var personId = GetPersonForBankAccountList( RockContext )?.Id;
+
+            if ( !personId.HasValue || entity.PersonAlias?.PersonId != personId.Value )
+            {
+                return ActionBadRequest( $"{FinancialPersonBankAccount.FriendlyTypeName} not found." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );

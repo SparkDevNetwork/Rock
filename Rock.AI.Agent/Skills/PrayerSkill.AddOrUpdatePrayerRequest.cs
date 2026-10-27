@@ -50,10 +50,48 @@ internal sealed partial class PrayerSkill
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
         PrayerRequest prayerRequest;
+        var isUpdate = false;
 
         if ( prayerRequestIdKey.IsNotNullOrWhiteSpace() )
         {
             prayerRequest = helper.GetRequiredEntity<PrayerRequest>( prayerRequestIdKey );
+            isUpdate = prayerRequest != null;
+
+            /*
+                10/26/2026 - MSE
+
+                Loading the request only checks VIEW, which every person has on
+                prayer requests by default. Changing an existing request is only
+                allowed for the person the request is for, the person that
+                created it, or a person with EDIT on it, so a person who can use
+                this skill cannot rewrite requests they could only see.
+                Anonymous callers are never allowed.
+
+                Reason: Prevent editing prayer requests the person does not own or cannot edit.
+            */
+            if ( prayerRequest != null && !IsAuthorizedToEditPrayerRequest( prayerRequest, AgentRequestContext.CurrentPerson ) )
+            {
+                return Error( "You are not authorized to edit this prayer request." );
+            }
+
+            /*
+                10/26/2026 - MSE
+
+                New requests from agents that are not internal wait for a
+                moderator. An edit from one of those agents must go back to
+                moderation too, otherwise the requester could approve a request
+                with harmless text and then change it to anything while it stays
+                approved. Every error after this point returns before saving, so
+                this change is never saved on its own.
+
+                Reason: Public agent edits must be approved again, the same as public agent creates.
+            */
+            if ( prayerRequest != null && AgentRequestContext.AudienceType != AudienceType.Internal )
+            {
+                prayerRequest.IsApproved = false;
+                prayerRequest.ApprovedByPersonAliasId = null;
+                prayerRequest.ApprovedOnDateTime = null;
+            }
         }
         else
         {
@@ -73,7 +111,46 @@ internal sealed partial class PrayerSkill
             return helper.ErrorResult;
         }
 
-        helper.UpdateNavigationProperty( prayerRequest, pr => pr.RequestedByPersonAlias, personIdKey );
+        /*
+            10/25/2026 - MSE
+
+            The requester's name and email are copied onto a new request from
+            the person named by personIdKey, so that person must be one the
+            current person can view. On agents that are not internal, a request
+            can only be linked to the current person; requests for anyone else
+            must use first and last name. Anonymous callers cannot link a
+            person at all. Re-sending the existing requester of a request being
+            updated does not change the link, so it skips these checks.
+
+            Reason: Prevent filing prayer requests under another person's record.
+        */
+        var existingRequester = prayerRequest.Id != 0 ? prayerRequest.RequestedByPersonAlias?.Person : null;
+        var isExistingRequester = existingRequester != null
+            && ( personIdKey == existingRequester.IdKey || personIdKey.AsGuidOrNull() == existingRequester.Guid );
+
+        if ( personIdKey.IsNotNullOrWhiteSpace() && !isExistingRequester )
+        {
+            const string ownPersonOnlyMessage = "Prayer requests can only be linked to your own person record. Use firstName and lastName for anyone else.";
+
+            if ( AgentRequestContext.CurrentPerson == null )
+            {
+                return Error( ownPersonOnlyMessage );
+            }
+
+            helper.UpdateNavigationProperty( prayerRequest, pr => pr.RequestedByPersonAlias, personIdKey, checkSecurity: true );
+
+            if ( helper.HasErrors )
+            {
+                return helper.ErrorResult;
+            }
+
+            if ( AgentRequestContext.AudienceType != AudienceType.Internal
+                && prayerRequest.RequestedByPersonAlias?.PersonId != AgentRequestContext.CurrentPerson.Id )
+            {
+                return Error( ownPersonOnlyMessage );
+            }
+        }
+
         helper.UpdateNavigationProperty( prayerRequest, pr => pr.Category, categoryIdKey );
         helper.UpdateProperty( prayerRequest, pr => pr.IsPublic, isPublic );
         helper.UpdateProperty( prayerRequest, pr => pr.IsUrgent, isUrgent );
@@ -145,13 +222,15 @@ internal sealed partial class PrayerSkill
                 Id = prayerRequest.Id,
             } );
 
+        var action = isUpdate ? "updated" : "added";
+
         if ( prayerRequest.IsApproved == true )
         {
-            toolResult.WithInstructions( "The prayer request has been added and approved." );
+            toolResult.WithInstructions( $"The prayer request has been {action} and approved." );
         }
         else
         {
-            toolResult.WithInstructions( "The prayer request has been added and is pending approval." );
+            toolResult.WithInstructions( $"The prayer request has been {action} and is pending approval." );
         }
 
         return toolResult;

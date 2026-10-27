@@ -1197,7 +1197,14 @@ namespace Rock.Blocks.Mobile.Connection
             var sourceOpportunityId = connectionRequest.ConnectionOpportunityId;
             var newOpportunity = new ConnectionOpportunityService( RockContext ).Get( request.NewOpportunityGuid );
 
-            if ( newOpportunity == null )
+            // GetTransferDetails only offers opportunities of the request's
+            // current connection type, so reject any other opportunity. This
+            // keeps a tampered transfer from moving the request into another
+            // type while it still holds a status of the old type.
+            var isNewOpportunityOffered = newOpportunity != null
+                && newOpportunity.ConnectionTypeId == connectionRequest.ConnectionOpportunity.ConnectionTypeId;
+
+            if ( !isNewOpportunityOffered )
             {
                 return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
             }

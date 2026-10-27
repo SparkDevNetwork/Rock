@@ -364,7 +364,7 @@ namespace Rock.Blocks.Event
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${EventItemOccurrence.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {EventItemOccurrence.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

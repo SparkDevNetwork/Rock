@@ -166,7 +166,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LavaApplication.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LavaApplication.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

@@ -517,12 +517,19 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             foreach ( var attribute in authorizedAttributes )
             {
-                var value = attribute.DefaultValue;
+                /*
+                    10/16/2026 - MSE
 
-                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
-                {
-                    value = group.AttributeValues[attribute.Key].ValueFormatted;
-                }
+                    The value is bound with v-html on the family card. Family
+                    attribute values can come from public forms such as Family
+                    Pre-Registration, so use the HTML value. Text and plain Memo
+                    values are encoded. Only field types that format as HTML
+                    (links, memos that allow HTML) keep their markup. It also
+                    falls back to the default value when the group has no value.
+
+                    Reason: Stored text rendered as HTML in the Group Members family card.
+                */
+                var value = group.GetAttributeHtmlValue( attribute.Key );
 
                 if ( value.IsNullOrWhiteSpace() )
                 {
@@ -627,7 +634,15 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return location.FormattedHtmlAddress;
             }
 
-            return $"{location.Street1}<br/>{location.Street2}<br/>{location.City}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : string.Empty )}, {location.State} {location.PostalCode}"
+            /*
+                10/19/2026 - MSE
+
+                The family card renders this with v-html, so each stored address part is
+                encoded before it is joined with <br/> tags.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return $"{location.Street1.EncodeHtml()}<br/>{location.Street2.EncodeHtml()}<br/>{location.City.EncodeHtml()}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County.EncodeHtml() : string.Empty )}, {location.State.EncodeHtml()} {location.PostalCode.EncodeHtml()}"
                 .ReplaceWhileExists( "  ", " " )
                 .ReplaceWhileExists( "<br/><br/>", "<br/>" );
         }

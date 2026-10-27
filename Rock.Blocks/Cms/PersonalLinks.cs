@@ -80,19 +80,6 @@ namespace Rock.Blocks.Cms
         private PersonalLinksInitializationBox _initBox;
 
         /// <summary>
-        /// Schemes allowed on personal-link URLs. Blocks javascript:, data:,
-        /// and other code-executing schemes that would run in the viewer's
-        /// session when clicked (critical for shared sections).
-        /// </summary>
-        private static readonly HashSet<string> _allowedUrlSchemes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
-        {
-            Uri.UriSchemeHttp,
-            Uri.UriSchemeHttps,
-            Uri.UriSchemeMailto,
-            "tel"
-        };
-
-        /// <summary>
         /// Template for the bookmark icon plus the inline addQuickReturn script.
         /// {storageKey} is substituted server-side with the JS-encoded per-person
         /// localStorage key. NOTE: keep this as a plain verbatim string (not
@@ -431,23 +418,22 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Returns true for relative URLs or absolute URLs whose scheme is in
-        /// <see cref="_allowedUrlSchemes"/>.
+        /// Returns true for relative URLs or absolute URLs whose scheme is
+        /// http, https, mailto or tel.
         /// </summary>
         private static bool IsUrlSchemeAllowed( string url )
         {
-            if ( url.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
+            /*
+                10/16/2026 - MSE
 
-            // Relative URLs resolve against the current origin and can't carry a foreign scheme.
-            if ( !Uri.TryCreate( url, UriKind.Absolute, out var uri ) )
-            {
-                return true;
-            }
+                The previous check treated any value that Uri.TryCreate could not parse
+                as relative, so "java<TAB>script:" was saved and then run by the browser,
+                which removes tab, CR and LF from URLs. Use the shared rule that reads
+                the scheme the same way the browser does.
 
-            return _allowedUrlSchemes.Contains( uri.Scheme );
+                Reason: Close the tab and newline bypass of the URL scheme check.
+            */
+            return PersonalLinkService.IsUrlSchemeAllowed( url );
         }
 
         #endregion Private Helpers

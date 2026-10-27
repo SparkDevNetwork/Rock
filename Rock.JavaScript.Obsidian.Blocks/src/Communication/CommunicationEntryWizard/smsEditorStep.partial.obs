@@ -72,8 +72,7 @@
                                                       :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
                                                       :disabled="isSaving || isSendingTest"
                                                       label="Attachments"
-                                                      :fileProcessor="smsAttachmentFileProcessor"
-                                                      :uploadAsTemporary="false" />
+                                                      :fileProcessor="smsAttachmentFileProcessor" />
 
                                         <NotificationBox v-if="attachmentSizeMessage">{{ attachmentSizeMessage }}</NotificationBox>
                                         <NotificationBox v-if="mimeTypeMessageHtml" :alertType="mimeTypeAlertType" v-html="mimeTypeMessageHtml" />

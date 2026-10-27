@@ -307,6 +307,51 @@ namespace Rock.Blocks.Communication
             return category != null && category.IsAuthorized( Rock.Security.Authorization.VIEW, person );
         }
 
+        /// <summary>
+        /// Determines whether the communication list passes the sync and campus
+        /// filters that <see cref="GetCommunicationListItems"/> applies when listing
+        /// the communication lists.
+        /// </summary>
+        /// <param name="communicationList">The communication list.</param>
+        /// <param name="hasMemberRecord"><c>true</c> if the person already has a group member record in the list.</param>
+        /// <returns><c>true</c> if the communication list would be offered to the person; otherwise, <c>false</c>.</returns>
+        private bool IsCommunicationListOffered( GroupCache communicationList, bool hasMemberRecord )
+        {
+            // A person who already has a membership record can always manage it.
+            // This also keeps a same-screen re-subscribe working for a list that
+            // is only shown because Always Include Subscribed Lists is enabled.
+            if ( hasMemberRecord )
+            {
+                return true;
+            }
+
+            // Lists whose default role is synced are hidden unless the person is already a member.
+            var defaultGroupRoleId = GroupTypeCache.Get( communicationList.GroupTypeId )?.DefaultGroupRoleId;
+            var isDefaultRoleSynced = new GroupSyncService( RockContext )
+                .Queryable()
+                .Any( a => a.GroupId == communicationList.Id && a.GroupTypeRoleId == defaultGroupRoleId );
+
+            if ( isDefaultRoleSynced )
+            {
+                return false;
+            }
+
+            // When filtering by campus, lists for other campuses are only allowed
+            // if the person already has a membership record in them.
+            var filterByCampus = GetAttributeValue( AttributeKey.FilterGroupsByCampusContext ).AsBoolean();
+            if ( !filterByCampus )
+            {
+                return true;
+            }
+
+            var contextCampus = RequestContext.GetContextEntity<Campus>();
+            var isOtherCampusList = contextCampus != null
+                && communicationList.CampusId != null
+                && communicationList.CampusId != contextCampus.Id;
+
+            return !isOtherCampusList;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -337,6 +382,13 @@ namespace Rock.Blocks.Communication
             var existingGroupMembers = groupMemberService.Queryable()
                 .Where( a => a.GroupId == group.Id && a.PersonId == person.Id )
                 .ToList();
+
+            // Apply the same sync and campus filters that GetCommunicationListItems
+            // uses so a list that is not offered to the person cannot be joined.
+            if ( !IsCommunicationListOffered( group, existingGroupMembers.Any() ) )
+            {
+                return ActionBadRequest( "Communication list not found." );
+            }
 
             if ( existingGroupMembers.Any() )
             {

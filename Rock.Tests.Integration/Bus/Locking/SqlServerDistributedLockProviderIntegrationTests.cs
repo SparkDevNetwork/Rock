@@ -48,6 +48,7 @@ namespace Rock.Tests.Integration.Bus.Locking;
 [TestCategory( "Distributed Locking" )]
 [DeploymentItem( "Microsoft.Data.SqlClient.SNI.x86.dll" )]
 [DeploymentItem( "Microsoft.Data.SqlClient.SNI.x64.dll" )]
+[DeploymentItem( "Microsoft.Data.SqlClient.SNI.arm64.dll" )]
 public class SqlServerDistributedLockProviderIntegrationTests
 {
     public TestContext TestContext { get; set; }
@@ -221,6 +222,7 @@ public class SqlServerDistributedLockProviderIntegrationTests
     }
 
     [TestMethod]
+    [Timeout( 30000, CooperativeCancellation = true )]
     public async Task TryAcquireAsync_WithTimeout_WaitsForRelease()
     {
         // A caller passing a non-zero timeout should block up to that
@@ -245,7 +247,19 @@ public class SqlServerDistributedLockProviderIntegrationTests
             await releaseHold.Task;
         }, TestContext.CancellationToken );
 
-        await holdReleased.Task;
+        /*
+            9/27/26 - CLAUDE
+
+            If the holder fails to acquire the lock, its assertion throws
+            inside the task before holdReleased is ever signaled. Awaiting
+            holdReleased alone then waits forever, which hung the whole
+            test run. Waiting on either signal lets a failed holder surface
+            its assertion as a normal test failure instead.
+
+            Reason: Prevent a failed lock acquisition from hanging the test run.
+        */
+        await Task.WhenAny( holdReleased.Task, holderTask );
+        await ( holderTask.IsFaulted ? holderTask : holdReleased.Task );
 
         // Start the waiter with a 5-second timeout, then release the
         // hold from the other thread. The waiter should acquire cleanly.
@@ -424,6 +438,7 @@ public class SqlServerDistributedLockProviderIntegrationTests
     #region Async
 
     [TestMethod]
+    [Timeout( 30000, CooperativeCancellation = true )]
     public async Task TryAcquireAsync_UncontestedLock_IsAcquired()
     {
         var provider = CreateProvider();
@@ -435,6 +450,7 @@ public class SqlServerDistributedLockProviderIntegrationTests
     }
 
     [TestMethod]
+    [Timeout( 30000, CooperativeCancellation = true )]
     public async Task TryAcquireAsync_ContentionOnSameKey_LoserReportsUnacquired()
     {
         // Async peer to TryAcquire_ContentionOnSameKey_OnlyOneWins. This
@@ -500,6 +516,7 @@ public class SqlServerDistributedLockProviderIntegrationTests
     }
 
     [TestMethod]
+    [Timeout( 30000, CooperativeCancellation = true )]
     public async Task TryAcquireAsync_InfrastructureFailure_ReturnsUnacquired()
     {
         // Async peer to TryAcquire_InfrastructureFailure_ReturnsUnacquired.
@@ -514,6 +531,7 @@ public class SqlServerDistributedLockProviderIntegrationTests
     }
 
     [TestMethod]
+    [Timeout( 30000, CooperativeCancellation = true )]
     public async Task TryAcquireAsync_CanceledBeforeAcquire_ReturnsUnacquired()
     {
         // Cancellation of an in-flight acquisition is a caller-directed

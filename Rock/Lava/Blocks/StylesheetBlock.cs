@@ -20,9 +20,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using dotless.Core;
-using dotless.Core.configuration;
-
+using Rock.Configuration;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -69,6 +68,8 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
+            var rockRequestContext = context.GetRockRequestContext();
+
             // Get the current page object if it is available.
             RockPage page = null;
 
@@ -90,9 +91,6 @@ namespace Rock.Lava.Blocks
                 {
                     if ( parms["compile"] == "less" )
                     {
-                        DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
-                        dotLessConfiguration.MinifyOutput = true;
-
                         if ( parms.ContainsKey( "import" ) )
                         {
                             // import statements should go at the end to allow for default variable assignment in the beginning
@@ -105,6 +103,8 @@ namespace Rock.Lava.Blocks
                             foreach ( var importFile in importFiles )
                             {
                                 var filePath = string.Empty;
+                                string fullPath = string.Empty;
+
                                 if ( !importFile.StartsWith( "~" ) )
                                 {
                                     filePath = $"~~/Styles/{importFile}";
@@ -114,18 +114,32 @@ namespace Rock.Lava.Blocks
                                     filePath = importFile;
                                 }
 
-                                if ( page != null )
+                                if ( rockRequestContext != null )
                                 {
-                                    filePath = page.ResolveRockUrl( filePath );
-
-                                    var fullPath = page.MapPath( "~/" ) + filePath;
-
-                                    if ( File.Exists( fullPath ) )
+                                    try
                                     {
-                                        importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
+                                        filePath = rockRequestContext.ResolveRockUrl( filePath );
+                                        fullPath = RockApp.Current.MapPath( "~/" ) + filePath;
+                                    }
+                                    catch
+                                    {
+                                        // Intentionally ignore any errors. This prevents a single
+                                        // bad import from breaking the entire stylesheet.
                                     }
                                 }
+#if WEBFORMS
+                                else if ( page != null )
+                                {
+                                    filePath = page.ResolveRockUrl( filePath );
+                                    fullPath = RockApp.Current.MapPath( "~/" ) + filePath;
+                                }
+#endif
 
+                                // Only files the Less compiler is allowed to read are imported.
+                                if ( fullPath.IsNotNullOrWhiteSpace() && StylesheetLessCompiler.IsAllowedPath( fullPath ) && File.Exists( fullPath ) )
+                                {
+                                    importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
+                                }
                             }
 
                             stylesheet = $"{stylesheet}{Environment.NewLine}{importStatements}";
@@ -134,7 +148,7 @@ namespace Rock.Lava.Blocks
                         // ok we have our less stylesheet let's see if it's been cached (less can take ~100ms to compile so let's try not to do that if necessary)
                         if ( parms.ContainsKey( "cacheduration" ) )
                         {
-                            var cacheKey = stylesheet.GetHashCode().ToString();
+                            var cacheKey = "Lava:StylesheetLess:" + stylesheet.Sha256Hash();
                             var cachedStylesheet = RockCache.Get( cacheKey ) as string;
 
                             if ( cachedStylesheet.IsNotNullOrWhiteSpace() )
@@ -143,7 +157,7 @@ namespace Rock.Lava.Blocks
                             }
                             else
                             {
-                                stylesheet = LessWeb.Parse( stylesheet, dotLessConfiguration );
+                                stylesheet = StylesheetLessCompiler.Compile( stylesheet );
 
                                 // check if we should cache this
                                 if ( parms.ContainsKey( "cacheduration" ) && stylesheet.IsNotNullOrWhiteSpace() )
@@ -161,7 +175,7 @@ namespace Rock.Lava.Blocks
                         }
                         else
                         {
-                            stylesheet = LessWeb.Parse( stylesheet, dotLessConfiguration );
+                            stylesheet = StylesheetLessCompiler.Compile( stylesheet );
                         }
                     }
 

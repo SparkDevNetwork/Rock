@@ -22,9 +22,11 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Rsvp.RsvpDetail;
@@ -97,7 +99,28 @@ namespace Rock.Blocks.Rsvp
                 return box;
             }
 
+            if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Rock.Model.Group.FriendlyTypeName );
+                return box;
+            }
+
             var occurrence = GetOccurrence();
+
+            // The OccurrenceId and GroupId page parameters are independent, so make
+            // sure the occurrence really belongs to the page's group.
+            if ( occurrence != null && occurrence.GroupId != group.Id )
+            {
+                box.ErrorMessage = "The AttendanceOccurrence does not exist.";
+                return box;
+            }
+
+            // A new occurrence opens in the edit form.
+            if ( occurrence == null && !CanEditRsvp( group ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName );
+                return box;
+            }
 
             box.Bag = BuildDetailBag( group, occurrence );
             box.Options = BuildOptions( group );
@@ -169,6 +192,7 @@ namespace Rock.Blocks.Rsvp
             {
                 GroupName = group.Name,
                 IsNewOccurrence = occurrence == null,
+                IsEditable = CanEditRsvp( group ),
                 OccurrenceIdKey = occurrence?.IdKey,
                 AllDeclineReasons = allDeclineReasons.Select( v => v.ToListItemBag() ).ToList(),
                 Attendees = new List<RsvpAttendeeBag>()
@@ -436,9 +460,21 @@ namespace Rock.Blocks.Rsvp
                 return ActionBadRequest( "A valid group is required." );
             }
 
+            if ( !CanEditRsvp( group ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName ) );
+            }
+
             var occurrenceService = new AttendanceOccurrenceService( RockContext );
             var occurrence = GetOccurrence();
             var isNew = occurrence == null;
+
+            // The OccurrenceId and GroupId page parameters are independent, so make
+            // sure an existing occurrence really belongs to the page's group.
+            if ( !isNew && occurrence.GroupId != group.Id )
+            {
+                return ActionBadRequest( "The AttendanceOccurrence does not exist." );
+            }
 
             var locationId = ResolveLocationId( request.Location );
             var scheduleId = ResolveScheduleId( request.Schedule );
@@ -526,8 +562,20 @@ namespace Rock.Blocks.Rsvp
                 return ActionBadRequest( "A valid group is required." );
             }
 
+            if ( !CanEditRsvp( group ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName ) );
+            }
+
             var occurrence = GetOccurrence();
             if ( occurrence == null )
+            {
+                return ActionBadRequest( "The AttendanceOccurrence does not exist." );
+            }
+
+            // The OccurrenceId and GroupId page parameters are independent, so make
+            // sure the occurrence really belongs to the page's group.
+            if ( occurrence.GroupId != group.Id )
             {
                 return ActionBadRequest( "The AttendanceOccurrence does not exist." );
             }
@@ -539,27 +587,12 @@ namespace Rock.Blocks.Rsvp
                 .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == personId.Value )
                 .FirstOrDefault();
 
+            // The grid only lists people who already have an attendance record for
+            // this occurrence (see LoadAttendees), so only those rows may be saved.
+            // Otherwise any person could be added, and on Accept joined to the group.
             if ( attendance == null )
             {
-                var primaryAliasId = new PersonAliasService( RockContext ).Queryable()
-                    .Where( pa => pa.PersonId == pa.AliasPersonId && pa.PersonId == personId.Value )
-                    .Select( pa => ( int? ) pa.Id )
-                    .FirstOrDefault();
-
-                if ( !primaryAliasId.HasValue )
-                {
-                    return ActionBadRequest( "Unable to resolve invitee's PersonAlias." );
-                }
-
-                attendance = new Attendance
-                {
-                    OccurrenceId = occurrence.Id,
-                    PersonAliasId = primaryAliasId.Value,
-                    StartDateTime = occurrence.Schedule != null && occurrence.Schedule.HasSchedule()
-                        ? occurrence.OccurrenceDate.Date.Add( occurrence.Schedule.StartTimeOfDay )
-                        : occurrence.OccurrenceDate
-                };
-                attendanceService.Add( attendance );
+                return ActionBadRequest( "A valid invitee is required." );
             }
 
             // The decline-reason lookup is only consulted by the Decline branch of
@@ -637,6 +670,30 @@ namespace Rock.Blocks.Rsvp
         #endregion Block Actions
 
         #region Helpers
+
+        /// <summary>
+        /// Determines whether the current person can edit the occurrences and RSVP responses of the group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can edit the RSVP details; otherwise, <c>false</c>.</returns>
+        private bool CanEditRsvp( Rock.Model.Group group )
+        {
+            /*
+                10/9/2026 - MSE
+
+                Changing RSVPs can add people to the group, so it needs the same
+                rights as managing the group's attendance: EDIT, MANAGE_MEMBERS or
+                TAKE_ATTENDANCE on the group. People who can only view the group
+                see the RSVP details read-only.
+
+                Reason: Limit RSVP changes to people who can manage the group.
+            */
+            var currentPerson = GetCurrentPerson();
+
+            return group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                || group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson );
+        }
 
         /// <summary>
         /// Resolves a Location selection (Guid string in <see cref="ListItemBag.Value"/>) to an integer Location.Id, or null.

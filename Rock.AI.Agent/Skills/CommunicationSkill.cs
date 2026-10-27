@@ -24,6 +24,7 @@ using Rock.AI.Agent.Utilities.CommunicationSkill;
 using Rock.AI.Agent.Utilities.CommunicationSkill.Mediums;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.SystemKey;
 using Rock.Web.Cache;
@@ -74,11 +75,22 @@ internal sealed partial class CommunicationSkill : AgentSkillComponent
         var prefs = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson );
         var savedId = prefs.GetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER ).AsIntegerOrNull();
 
+        /*
+            10/25/2026 - MSE
+
+            The saved preference can be written by the person through other
+            means (such as the person preferences API), so both the saved
+            number and the fallback number must be one the person can VIEW,
+            the same rule LookupSystemPhoneNumbers uses to offer numbers.
+
+            Reason: Prevent sending SMS from a system phone number the person cannot view.
+        */
+
         // If a saved default exists, use it—unless it's gone or inactive, then fall back.
         if ( savedId.HasValue && savedId.Value > 0 )
         {
             var saved = SystemPhoneNumberCache.Get( savedId.Value );
-            if ( saved != null && saved.IsActive && saved.IsSmsEnabled )
+            if ( saved != null && saved.IsActive && saved.IsSmsEnabled && saved.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
                 return saved;
             }
@@ -96,6 +108,7 @@ internal sealed partial class CommunicationSkill : AgentSkillComponent
                 spn.IsActive
                 && spn.AssignedToPersonAliasId == aliasId.Value
                 && spn.IsSmsEnabled
+                && spn.IsAuthorized( Authorization.VIEW, currentPerson )
             )
             .OrderByDescending( spn => spn.Id )
             .FirstOrDefault();
@@ -173,12 +186,22 @@ internal sealed partial class CommunicationSkill : AgentSkillComponent
         {
             var fromNumber = SystemPhoneNumberCache.Get( fromNumberIdKey, false );
 
-            if ( fromNumber != null && fromNumber.IsActive && fromNumber.IsSmsEnabled )
+            /*
+                10/25/2026 - MSE
+
+                The number must be one the person can VIEW. A number they
+                cannot view gets the same error as a missing one so the reply
+                does not confirm that a restricted number exists.
+
+                Reason: Prevent sending SMS from a system phone number the person cannot view.
+            */
+            if ( fromNumber != null && fromNumber.IsActive && fromNumber.IsSmsEnabled && fromNumber.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             {
                 return fromNumber.Id;
             }
 
             helper.AddError( "The provided fromNumberIdKey does not correspond to a valid active SMS-enabled system phone number." );
+            helper.AddInstructions( "Call the LookupSystemPhoneNumbers function, and prompt the user to pick from the list." );
         }
         else
         {
@@ -194,6 +217,31 @@ internal sealed partial class CommunicationSkill : AgentSkillComponent
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Determines if the person is allowed to make changes to an existing
+    /// draft communication. This follows the communication entry blocks,
+    /// which allow the person that created the communication or anybody with
+    /// EDIT access to it. The sender is also allowed because the draft tools
+    /// always set the sender to the person that created the draft.
+    /// </summary>
+    /// <param name="communication">The draft communication.</param>
+    /// <param name="person">The person that wants to change the draft.</param>
+    /// <returns><c>true</c> if the person can change the draft; otherwise <c>false</c>.</returns>
+    private static bool IsAuthorizedToEditDraft( Model.Communication communication, Model.Person person )
+    {
+        if ( person == null )
+        {
+            return false;
+        }
+
+        var isSender = communication.SenderPersonAlias?.PersonId == person.Id;
+        var isCreator = communication.CreatedByPersonAlias?.PersonId == person.Id;
+
+        return isSender
+            || isCreator
+            || communication.IsAuthorized( Authorization.EDIT, person );
     }
 
     #endregion

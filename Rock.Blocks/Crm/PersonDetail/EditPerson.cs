@@ -461,6 +461,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             var canEditRecordStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditRecordStatus, RequestContext.CurrentPerson );
             var canEditRecordSource = canAdministrate;
             var canEditFinancials = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
+            var isPhotoInvalid = false;
 
             box.IfValidProperty( nameof( box.Bag.Title ),
                 () => entity.TitleValueId = GetDefinedValueId( box.Bag.Title ) );
@@ -485,6 +486,17 @@ namespace Rock.Blocks.Crm.PersonDetail
                 {
                     var newPhotoGuid = box.Bag.Photo?.Value.AsGuidOrNull();
                     var newPhotoBinaryFile = newPhotoGuid.HasValue ? new BinaryFileService( RockContext ).Get( newPhotoGuid.Value ) : null;
+
+                    // Only accept a photo the current person uploaded (or the one
+                    // already set). Otherwise a tampered Guid could attach any file
+                    // as the photo, and a later change would mark that file
+                    // temporary so cleanup deletes it.
+                    if ( newPhotoBinaryFile != null && !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( newPhotoBinaryFile.Id, entity.PhotoId, RequestContext.CurrentPerson ) )
+                    {
+                        isPhotoInvalid = true;
+                        return;
+                    }
+
                     entity.PhotoId = newPhotoBinaryFile?.Id;
 
                     // A newly uploaded photo starts out temporary; keep it now that it is in use.
@@ -680,6 +692,11 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             box.IfValidProperty( nameof( box.Bag.SearchKeys ),
                 () => UpdateSearchKeys( entity, box.Bag.SearchKeys ) );
+
+            if ( isPhotoInvalid )
+            {
+                return false;
+            }
 
             return true;
         }

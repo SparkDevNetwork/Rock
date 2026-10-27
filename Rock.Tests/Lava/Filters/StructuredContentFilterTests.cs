@@ -16,12 +16,16 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class StructuredContentFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class StructuredContentFilterTests
     {
         [TestMethod]
         public void RenderStructuredContentAsHtml_ForValidStructuredContent_ProducesHtml()
@@ -70,7 +74,7 @@ namespace Rock.Tests.Lava.Filters
  }
 ";
 
-            const string expectedOutput = @"<h2>Things I love.</h2>
+            string expectedOutput = @"<h2>Things I love.</h2>
 <ol>
 <li>Reading a good book.</li>
 <li>Helping other's.</li>
@@ -80,9 +84,15 @@ namespace Rock.Tests.Lava.Filters
 
             var mergeValues = new LavaDataDictionary { { "JsonString", jsonString } };
 
-            TestHelper.AssertTemplateOutput( expectedOutput,
-                "{{ JsonString | RenderStructuredContentAsHtml }}",
-                mergeValues, true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ JsonString | RenderStructuredContentAsHtml }}", options );
+
+                // The expected value spans lines, so its terminators must be normalized to
+                // match the output, which Render already normalizes.
+                Assert.AreEqual( expectedOutput.NormalizeLineEndings(), output );
+            } );
         }
 
         [TestMethod]
@@ -120,9 +130,13 @@ namespace Rock.Tests.Lava.Filters
 
             var mergeValues = new LavaDataDictionary { { "JsonString", jsonString } };
 
-            TestHelper.AssertTemplateOutput( expectedOutput,
-                "{{ JsonString | RenderStructuredContentAsHtml }}",
-                mergeValues, true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ JsonString | RenderStructuredContentAsHtml }}", options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
     }
 }

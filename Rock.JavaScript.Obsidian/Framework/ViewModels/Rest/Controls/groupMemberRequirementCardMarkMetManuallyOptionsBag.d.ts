@@ -36,4 +36,10 @@ export type GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
 
     /** Identifier for the GroupRequirement */
     groupRequirementGuid: Guid;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

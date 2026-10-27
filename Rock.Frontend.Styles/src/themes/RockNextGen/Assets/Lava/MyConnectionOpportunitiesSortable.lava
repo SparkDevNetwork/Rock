@@ -50,13 +50,13 @@
           <tr>
             <td align="left"><div class="status-list">{{ statusIndicators }}</div></td>
             {% if LinkedPages.DetailPage %}
-              <td><a href="{{ LinkedPages.DetailPage }}?Request={{ connectionRequest.IdKey }}&ConnectionOpportunity={{ connectionRequest.ConnectionOpportunity.IdKey }}">{{ connectionRequest.PersonAlias.Person.LastName }}, {{ connectionRequest.PersonAlias.Person.NickName }} </a></td>
+              <td><a href="{{ LinkedPages.DetailPage }}?Request={{ connectionRequest.IdKey }}&ConnectionOpportunity={{ connectionRequest.ConnectionOpportunity.IdKey }}">{{ connectionRequest.PersonAlias.Person.LastName | Escape }}, {{ connectionRequest.PersonAlias.Person.NickName | Escape }} </a></td>
             {% else %}
-              <td>{{ connectionRequest.PersonAlias.Person.LastName }}, {{ connectionRequest.PersonAlias.Person.NickName }} </td>
+              <td>{{ connectionRequest.PersonAlias.Person.LastName | Escape }}, {{ connectionRequest.PersonAlias.Person.NickName | Escape }} </td>
             {% endif %}
             <td><i class="{{ connectionRequest.ConnectionOpportunity.IconCssClass }}"></i> {{ connectionRequest.ConnectionOpportunity.Name }}</td>
             <td>{{ lastActivity.ConnectionActivityType.Name }} (<span class="small">{{ lastActivity.CreatedDateTime | HumanizeDateTime }}</span>)</td>
-            <td>{{ lastActivity.Note }}</td>
+            <td>{{ lastActivity.Note | Escape }}</td>
             {% if connectionRequest.IsOverdue %}
               <td><span class="label label-danger">{{ connectionRequest.ConnectionStatus.Name }}</span></td>
             {% elseif connectionRequest.IsDueSoon %}

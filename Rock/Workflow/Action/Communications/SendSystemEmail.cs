@@ -85,7 +85,7 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.TextFieldType":
                             case "Rock.Field.Types.EmailFieldType":
                                 {
-                                    var recipientList = toValue.SplitDelimitedValues().ToList();
+                                    var recipientList = GetValidEmailAddresses( toValue, string.Empty, action );
                                     foreach ( string recipient in recipientList )
                                     {
                                         recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );
@@ -173,7 +173,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                var recipientList = to.ResolveMergeFields( mergeFields ).SplitDelimitedValues().ToList();
+                var recipientList = GetValidEmailAddresses( to.ResolveMergeFields( mergeFields ), string.Empty, action );
                 foreach ( string recipient in recipientList )
                 {
                     recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );

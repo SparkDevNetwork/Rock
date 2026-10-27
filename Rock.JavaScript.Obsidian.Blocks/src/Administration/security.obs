@@ -151,6 +151,37 @@
 </template>
 
 <style scoped>
+/* In a modal, restyle the action pills' well as the same full-width band the
+   TabbedBar pills use in the other tabbed modals. Styling only, so the existing
+   link-based pills keep their keyboard access and wrapping. The negative margins
+   offset the modal body's padding to pull the band up against the header and out
+   to the modal edges. */
+.modal-content .well-pillwrap {
+    min-height: 0;
+    margin: calc(0px - var(--spacing-large)) calc(0px - var(--spacing-large)) var(--spacing-large);
+    padding: var(--spacing-small) var(--spacing-large);
+    border: 0;
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-radius: 0;
+    background-color: var(--color-interface-softer);
+    box-shadow: none;
+}
+
+/* Match the TabbedBar pill sizing, shape, and spacing. */
+.modal-content .well-pillwrap .nav-pills > li > a {
+    padding: 6px var(--spacing-small);
+    border-radius: var(--rounded-xsmall);
+    font-weight: var(--font-weight-semibold);
+}
+
+.modal-content .well-pillwrap .nav-pills > li:not(.active):not(.pill-help) > a:not(:hover):not(:focus) {
+    color: inherit;
+}
+
+.modal-content .well-pillwrap .nav-pills > li + li {
+    margin-left: var(--spacing-xsmall);
+}
+
 /* Light grids have no border. Add a flat border (no drop shadow) so the
    permission grids read as bordered panels like the legacy block. overflow:hidden
    clips the cells' rounded backgrounds to the border so it shows on every corner;

@@ -145,15 +145,41 @@ namespace Rock.Reporting
         /// <summary>
         /// Converts an Obsidian bag tree into a <see cref="DataViewFilter"/> entity tree.
         /// </summary>
-        public static DataViewFilter ToEntity( DataViewFilterBag bag, Type filteredEntityType, RockContext rockContext, RockRequestContext requestContext )
+        /// <param name="bag">The filter tree posted by the client.</param>
+        /// <param name="filteredEntityType">The type of entity being filtered.</param>
+        /// <param name="existingFilter">The filter tree currently saved for the item being edited, or <c>null</c> if there is none. Only pass the item's own filter, never one identified by the client.</param>
+        /// <param name="rockContext">The context to use for database access.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>The new filter tree.</returns>
+        public static DataViewFilter ToEntity( DataViewFilterBag bag, Type filteredEntityType, DataViewFilter existingFilter, RockContext rockContext, RockRequestContext requestContext )
         {
-            return ToEntityInternal( bag, filteredEntityType, null, rockContext, requestContext );
+            var existingFilters = new Dictionary<Guid, DataViewFilter>();
+            var pendingFilters = new Queue<DataViewFilter>();
+
+            if ( existingFilter != null )
+            {
+                pendingFilters.Enqueue( existingFilter );
+            }
+
+            while ( pendingFilters.Count > 0 )
+            {
+                var pendingFilter = pendingFilters.Dequeue();
+
+                existingFilters[pendingFilter.Guid] = pendingFilter;
+
+                foreach ( var childFilter in pendingFilter.ChildFilters ?? new List<DataViewFilter>() )
+                {
+                    pendingFilters.Enqueue( childFilter );
+                }
+            }
+
+            return ToEntityInternal( bag, filteredEntityType, null, existingFilters, rockContext, requestContext );
         }
 
         /// <summary>
         /// Recursively converts a bag to an entity and assigns parent relationships.
         /// </summary>
-        private static DataViewFilter ToEntityInternal( DataViewFilterBag bag, Type filteredEntityType, DataViewFilter parentFilter, RockContext rockContext, RockRequestContext requestContext )
+        private static DataViewFilter ToEntityInternal( DataViewFilterBag bag, Type filteredEntityType, DataViewFilter parentFilter, Dictionary<Guid, DataViewFilter> existingFilters, RockContext rockContext, RockRequestContext requestContext )
         {
             if ( bag == null )
             {
@@ -180,9 +206,14 @@ namespace Rock.Reporting
                 if ( component != null )
                 {
                     var componentData = bag.ComponentData ?? new Dictionary<string, string>();
-                    filter.Selection = componentData.Any()
+                    var postedSelection = componentData.Any()
                         ? component.GetSelectionFromObsidianComponentData( filteredEntityType, componentData, rockContext, requestContext )
                         : bag.Selection;
+                    var existingSelection = existingFilters.TryGetValue( filter.Guid, out var existingFilter ) && existingFilter.EntityTypeId == filter.EntityTypeId
+                        ? existingFilter.Selection
+                        : null;
+
+                    filter.Selection = GetAuthorizedSelection( component, filteredEntityType, existingSelection, postedSelection, requestContext?.CurrentPerson );
                     filter.RelatedDataViewId = component.GetRelatedDataViewId( filteredEntityType, filter.Selection, rockContext );
                 }
                 else
@@ -193,7 +224,7 @@ namespace Rock.Reporting
 
             foreach ( var childBag in bag.ChildFilters ?? new List<DataViewFilterBag>() )
             {
-                var childFilter = ToEntityInternal( childBag, filteredEntityType, filter, rockContext, requestContext );
+                var childFilter = ToEntityInternal( childBag, filteredEntityType, filter, existingFilters, rockContext, requestContext );
 
                 if ( childFilter != null )
                 {
@@ -202,6 +233,42 @@ namespace Rock.Reporting
             }
 
             return filter;
+        }
+
+        /// <summary>
+        /// Gets the selection to save for a filter, keeping the existing
+        /// selection when the person is not authorized for it and rejecting
+        /// a posted selection the person is not authorized for.
+        /// </summary>
+        /// <param name="component">The filter component.</param>
+        /// <param name="filteredEntityType">The type of entity being filtered.</param>
+        /// <param name="existingSelection">The saved selection for this filter, or <c>null</c> if it is new.</param>
+        /// <param name="postedSelection">The selection built from the posted data.</param>
+        /// <param name="person">The person saving the filter.</param>
+        /// <returns>The selection to save.</returns>
+        private static string GetAuthorizedSelection( DataFilterComponent component, Type filteredEntityType, string existingSelection, string postedSelection, Person person )
+        {
+            /*
+                10/19/2026 - DSH
+
+                Same rule FilterField applies in WebForms (TH173). The existing
+                selection comes from the database, matched by Guid within the
+                item's own saved filter tree, so the client cannot supply it.
+
+                Reason: A crafted post could filter on a secured attribute, and
+                the editor could silently clear a filter the person cannot view.
+            */
+            if ( existingSelection != null && !component.IsSelectionAuthorizedForEdit( filteredEntityType, existingSelection, person ) )
+            {
+                return existingSelection;
+            }
+
+            if ( !component.IsSelectionAuthorizedForEdit( filteredEntityType, postedSelection, person ) )
+            {
+                return existingSelection ?? string.Empty;
+            }
+
+            return postedSelection;
         }
 
         private interface IDataViewFilterAdapter<TSource, TAdapter> where TAdapter : IDataViewFilterAdapter<TSource, TAdapter>

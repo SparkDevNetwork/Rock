@@ -1260,6 +1260,15 @@ namespace Rock.Jobs
                 && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
 
+            /*
+                10/21/2026 - MSE
+
+                Bound the in-memory ID list independently of the configured delete batch size.
+                Large Contains lists cause EF to project the key with an alias that bulk delete cannot join.
+
+                Reason: Keep workflow cleanup queries within the supported SQL translation complexity.
+            */
+            var workflowIdBatchSize = Math.Min( batchAmount, 1000 );
             List<int> workflowIdsSafeToDelete = new List<int>();
 
             // Now, verify and build a list of workflow Ids that are OK to be deleted.
@@ -1274,7 +1283,7 @@ namespace Rock.Jobs
                 }
 
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
-                if ( workflowIdsSafeToDelete.Count >= batchAmount )
+                if ( workflowIdsSafeToDelete.Count >= workflowIdBatchSize )
                 {
                     BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
@@ -1398,12 +1407,12 @@ namespace Rock.Jobs
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
-                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
+                    cacheDirectoryPath = RockApp.Current.MapPath( cacheDirectoryPath );
                 }
 
                 if ( !string.IsNullOrEmpty( avatarCachePath ) )
                 {
-                    avatarCachePath = System.Web.Hosting.HostingEnvironment.MapPath( avatarCachePath );
+                    avatarCachePath = RockApp.Current.MapPath( avatarCachePath );
                 }
             }
 
@@ -3064,6 +3073,7 @@ WHERE NOT EXISTS (
                 stalePersonAliasIds = personAliasService
                     .Queryable()
                     .Where( a => a.PersonId == anonymousVisitorId
+                        && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                         && a.LastVisitDateTime < staleAnonymousVisitorDate
                         && string.IsNullOrEmpty( a.InternalMessage ) )
                     .Select( a => a.Id )
@@ -3123,6 +3133,7 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
                     var aliasesToUpdate = personAliasService
                         .Queryable()
                         .Where( a => a.PersonId == anonymousVisitorId
+                            && ( !a.AliasPersonId.HasValue || a.AliasPersonId.Value != a.PersonId )
                             && !a.LastVisitDateTime.HasValue )
                         .Take( 500 )
                         .ToList();
@@ -3237,7 +3248,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
                 Browser = PuppeteerSharp.SupportedBrowser.Chrome,
-                Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
+                Path = RockApp.Current.MapPath( "~/App_Data/ChromeEngine" )
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );

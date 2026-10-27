@@ -154,7 +154,7 @@ namespace Rock.Blocks.Cms
                 EnableFileManager = GetAttributeValue( AttributeKey.EnableFileManager ).AsBoolean(),
                 HeightMode = GetAttributeValue( AttributeKey.HeightMode ),
                 Height = GetAttributeValue( AttributeKey.Height ),
-                RootFolder = Rock.Security.Encryption.EncryptString( GetAttributeValue( AttributeKey.RootFolder ) ),
+                RootFolder = Rock.Security.Encryption.EncryptRootFolder( GetAttributeValue( AttributeKey.RootFolder ) ),
                 BrowseMode = GetAttributeValue( AttributeKey.BrowseMode ),
                 FileEditorPage = this.GetLinkedPageUrl( AttributeKey.FileEditorPage ),
                 EnableZipUploader = GetAttributeValue( AttributeKey.ZipUploaderEnabled ).AsBoolean(),
@@ -179,11 +179,64 @@ namespace Rock.Blocks.Cms
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone. Anyone who
+            // can view the block may browse and select existing files within
+            // the block's root folder. Only block editors may upload, rename,
+            // move or delete files and folders.
+            if ( IsAssetManagerViewAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            }
+
+            if ( IsAssetManagerEditAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the folders and providers this block shows.
+                if ( GetAttributeValue( AttributeKey.EnableFileManager ).AsBoolean() )
+                {
+                    securityGrant.AddRule( new FileUploadSecurityGrantRule( GetAttributeValue( AttributeKey.RootFolder ) ) );
+                }
+
+                if ( GetAttributeValue( AttributeKey.EnableAssetProviders ).AsBoolean() )
+                {
+                    securityGrant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
+                }
+            }
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the current person may browse and select
+        /// existing files with the asset manager. Requires VIEW, EDIT or
+        /// ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerViewAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
+                    || IsAssetManagerEditAuthorized() );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may upload, rename, move
+        /// and delete files and folders with the asset manager. Requires EDIT
+        /// or ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerEditAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson )
+                    || BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, currentPerson ) );
         }
 
         #endregion

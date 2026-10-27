@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Utility;
@@ -673,16 +674,7 @@ namespace Rock.Model
                             string formattedCaption = caption;
                             if ( virtualUrl.IsNotNullOrWhiteSpace() )
                             {
-                                string resolvedUrl;
-
-                                if ( System.Web.HttpContext.Current == null )
-                                {
-                                    resolvedUrl = virtualUrl;
-                                }
-                                else
-                                {
-                                    resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
-                                }
+                                string resolvedUrl = RockApp.Current.ResolveRockUrl( virtualUrl );
 
                                 formattedCaption = string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
                             }

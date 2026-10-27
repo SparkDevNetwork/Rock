@@ -65,5 +65,34 @@ namespace Rock.Security.Authentication.Passwordless
         /// The one-time passcode lifetime.
         /// </summary>
         public TimeSpan CodeLifetime { get; set; }
+
+        /// <summary>
+        /// The identifier of the existing person that a confirmation code
+        /// was emailed to when linking this session to that person.
+        /// </summary>
+        public int? ConfirmationPersonId { get; set; }
+
+        /// <summary>
+        /// The one-time passcode that was emailed to the existing person.
+        /// </summary>
+        public string ConfirmationCode { get; set; }
+
+        /// <summary>
+        /// The issue date of the confirmation code that was emailed to the
+        /// existing person.
+        /// </summary>
+        public DateTime? ConfirmationCodeIssueDate { get; set; }
+
+        /// <summary>
+        /// Set only by PasswordlessAuthentication after the individual entered
+        /// the correct code and registration is required. Account Entry accepts
+        /// a state only when this code matches the remote authentication session.
+        /// </summary>
+        /// <remarks>
+        /// Internal because only Rock sets it. The JSON property attribute
+        /// makes sure it is kept when the state is encrypted and decrypted.
+        /// </remarks>
+        [Newtonsoft.Json.JsonProperty]
+        internal string RegistrationCode { get; set; }
     }
 }

@@ -42,10 +42,10 @@ namespace Rock.Blocks.Group
 
     #region Block Attributes
 
-    [GroupTypeField(
+    [GroupTypesField(
         "Group Type",
-        Description = "The type of group to map.",
-        IsRequired = false,
+        Description = "The group types this block may map. Required. With one type selected, the map always shows that type. With more than one selected, the GroupTypeId page parameter picks the type to show and must be one of the selected types. No security is checked on the groups shown: their names, locations and members are shown to anyone who can view this page.",
+        IsRequired = true,
         Order = 0,
         Key = AttributeKey.GroupType )]
 
@@ -165,21 +165,30 @@ namespace Rock.Blocks.Group
 
         #region Constants
 
+        /*
+            10/19/2026 - MSE
+
+            The info window is rendered as HTML. Group names, location fields, person names
+            and emails can be set by group editors or the people themselves, so the default
+            template escapes them.
+
+            Reason: Prevent stored XSS through names in the default info window.
+        */
         /// <summary>
         /// Default Lava template for the group info window. Kept identical to the WebForms block
         /// so existing customized templates continue to render against the same merge fields.
         /// </summary>
         private const string DefaultLavaTemplate = @"
 <div class='clearfix'>
-    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4>
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName | Escape}}</h4>
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
 </div>
 
 <div class='clearfix'>
     <div class='pull-left' style='padding-right: 24px'>
         <strong>{{GroupLocation.Name}}</strong><br>
-        {{GroupLocation.Street1}}
-        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.PostalCode}}
+        {{GroupLocation.Street1 | Escape}}
+        <br>{{GroupLocation.City | Escape}}, {{GroupLocation.State | Escape}} {{GroupLocation.PostalCode | Escape}}
         {% for attribute in Attributes %}
             {% if forloop.first %}<br/>{% endif %}
             <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
@@ -189,11 +198,11 @@ namespace Rock.Blocks.Group
         <strong>{{GroupMemberTerm}}s</strong><br>
         {% for GroupMember in GroupMembers -%}
             {% if PersonProfilePage != '' %}
-                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName | Escape}} {{GroupMember.LastName | Escape}}</a>
             {% else %}
-                {{GroupMember.NickName}} {{GroupMember.LastName}}
+                {{GroupMember.NickName | Escape}} {{GroupMember.LastName | Escape}}
             {% endif %}
-            - {{GroupMember.Email}}
+            - {{GroupMember.Email | Escape}}
             {% for PhoneType in GroupMember.PhoneTypes %}
                 <br>{{PhoneType.Name}}: {{PhoneType.Number}}
             {% endfor %}
@@ -262,21 +271,21 @@ namespace Rock.Blocks.Group
                 UnmappedGroups = new List<GroupTypeMapUnmappedGroupBag>()
             };
 
-            // The group type comes from the block setting (a Guid) or, when that is blank, from
-            // the GroupTypeId query string parameter (a legacy integer Id).
+            // The group type comes from the types selected in the block setting. When more than
+            // one is selected, the GroupTypeId query string parameter picks which one to show.
             var settingGroupTypeValue = GetAttributeValue( AttributeKey.GroupType );
             var queryStringGroupTypeValue = PageParameter( PageParameterKey.GroupTypeId );
 
-            if ( settingGroupTypeValue.IsNullOrWhiteSpace() && queryStringGroupTypeValue.IsNullOrWhiteSpace() )
+            if ( settingGroupTypeValue.IsNullOrWhiteSpace() )
             {
-                bag.ErrorMessage = "<strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.";
+                bag.ErrorMessage = "<strong>Group Mapper</strong> Please select one or more group types in the block settings.";
                 return bag;
             }
 
             var groupType = ResolveGroupType( settingGroupTypeValue, queryStringGroupTypeValue );
             if ( groupType == null )
             {
-                bag.ErrorMessage = "<strong>Group Mapper</strong> Please configure a group type to display and a location type to use.";
+                bag.ErrorMessage = "<strong>Group Mapper</strong> Pass a GroupTypeId page parameter for one of the group types selected in the block settings.";
                 return bag;
             }
 
@@ -343,24 +352,29 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Resolves the group type to map from the block setting (Guid) or the GroupTypeId query
-        /// string parameter (legacy integer Id). The block setting takes precedence.
+        /// Resolves the group type to map from the group types selected in the block setting.
+        /// With one type selected it is always used and the GroupTypeId query string parameter is
+        /// ignored. With more than one selected, the parameter must name one of the selected types;
+        /// any other value resolves nothing, so the block never maps a type the block was not
+        /// configured to show.
         /// </summary>
-        /// <param name="settingGroupTypeValue">The raw Group Type block setting value (a Guid).</param>
-        /// <param name="queryStringGroupTypeValue">The raw GroupTypeId query string value (an Id).</param>
-        /// <returns>The resolved group type, or <c>null</c> when neither value resolves one.</returns>
+        /// <param name="settingGroupTypeValue">The raw Group Type block setting value (comma-separated Guids).</param>
+        /// <param name="queryStringGroupTypeValue">The raw GroupTypeId query string value (an Id, IdKey or Guid).</param>
+        /// <returns>The resolved group type, or <c>null</c> when no selected type is picked.</returns>
         private GroupTypeCache ResolveGroupType( string settingGroupTypeValue, string queryStringGroupTypeValue )
         {
-            var settingGroupTypeGuid = settingGroupTypeValue.AsGuidOrNull();
-            if ( settingGroupTypeGuid.HasValue )
+            var allowedGroupTypeGuids = settingGroupTypeValue.SplitDelimitedValues().AsGuidList();
+
+            if ( allowedGroupTypeGuids.Count == 1 )
             {
-                return GroupTypeCache.Get( settingGroupTypeGuid.Value );
+                return GroupTypeCache.Get( allowedGroupTypeGuids[0] );
             }
 
-            var queryStringGroupTypeId = queryStringGroupTypeValue.AsIntegerOrNull();
-            if ( queryStringGroupTypeId.HasValue )
+            var queryStringGroupType = GroupTypeCache.Get( queryStringGroupTypeValue, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( allowedGroupTypeGuids.Count > 1 && queryStringGroupType != null && allowedGroupTypeGuids.Contains( queryStringGroupType.Guid ) )
             {
-                return GroupTypeCache.Get( queryStringGroupTypeId.Value );
+                return queryStringGroupType;
             }
 
             return null;
@@ -601,7 +615,19 @@ namespace Rock.Blocks.Group
             }
 
             var group = new GroupService( RockContext ).Get( request.GroupId );
-            if ( group == null )
+            var groupType = ResolveGroupType( GetAttributeValue( AttributeKey.GroupType ), PageParameter( PageParameterKey.GroupTypeId ) );
+            var includeInactiveGroups = GetAttributeValue( AttributeKey.IncludeInactiveGroups ).AsBoolean();
+
+            // The map only shows groups of the configured group type (and
+            // only active ones unless inactive groups are included), so any
+            // other group is treated as not found. Otherwise a tampered id
+            // could render the members of any group the person can view.
+            var isGroupMapped = group != null
+                && groupType != null
+                && group.GroupTypeId == groupType.Id
+                && ( includeInactiveGroups || group.IsActive );
+
+            if ( !isGroupMapped )
             {
                 return ActionBadRequest( "The group could not be found." );
             }

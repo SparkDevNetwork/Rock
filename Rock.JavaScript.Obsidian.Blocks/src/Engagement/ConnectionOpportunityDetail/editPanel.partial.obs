@@ -26,7 +26,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-spacing-sm">
-                        <ImageUploader v-model="photo" label="Photo" :uploadAsTemporary="false"
+                        <ImageUploader v-model="photo" label="Photo"
                                        :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload"
                                        :showDeleteButton="true" />
                     </div>

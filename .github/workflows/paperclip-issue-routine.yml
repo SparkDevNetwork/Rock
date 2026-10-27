@@ -1,0 +1,64 @@
+name: Paperclip Issue Routine
+
+# Fires a Paperclip routine (Spark organization) whenever an issue is opened or reopened.
+# Required repo secrets: PAPERCLIP_TRIGGER_ID, PAPERCLIP_API_BASE, PAPERCLIP_WEBHOOK_SECRET
+# If any secret is missing the job exits cleanly without doing anything.
+#
+# The payload is signed with HMAC SHA-256 in the same format GitHub uses for webhooks
+# (X-Hub-Signature-256). The Paperclip trigger must use the "github_hmac" signing mode.
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  fire-routine:
+    if: github.repository == 'SparkDevNetwork/Rock'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fire Paperclip routine trigger
+        env:
+          PAPERCLIP_TRIGGER_ID: ${{ secrets.PAPERCLIP_TRIGGER_ID }}
+          PAPERCLIP_API_BASE: ${{ secrets.PAPERCLIP_API_BASE }}
+          PAPERCLIP_WEBHOOK_SECRET: ${{ secrets.PAPERCLIP_WEBHOOK_SECRET }}
+          EVENT_ACTION: ${{ github.event.action }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
+          REPO: ${{ github.repository }}
+          DELIVERY_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          if [ -z "$PAPERCLIP_TRIGGER_ID" ] || [ -z "$PAPERCLIP_API_BASE" ] || [ -z "$PAPERCLIP_WEBHOOK_SECRET" ]; then
+            echo "::notice::Paperclip secrets not configured, skipping."
+            exit 0
+          fi
+
+          jq -n \
+            --arg source "github-issue" \
+            --arg action "$EVENT_ACTION" \
+            --arg repo "$REPO" \
+            --argjson number "$ISSUE_NUMBER" \
+            --arg title "$ISSUE_TITLE" \
+            --arg body "${ISSUE_BODY:0:4000}" \
+            --arg url "$ISSUE_URL" \
+            --arg author "$ISSUE_AUTHOR" \
+            --argjson labels "$ISSUE_LABELS" \
+            '{source:$source, action:$action, repo:$repo, issue:{number:$number, title:$title, body:$body, url:$url, author:$author, labels:$labels}}' \
+            > payload.json
+
+          signature=$(openssl dgst -sha256 -hmac "$PAPERCLIP_WEBHOOK_SECRET" -hex < payload.json | sed 's/^.* //')
+
+          curl --fail-with-body --silent --show-error \
+            -X POST "$PAPERCLIP_API_BASE/api/routine-triggers/public/$PAPERCLIP_TRIGGER_ID/fire" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: issues" \
+            -H "X-GitHub-Delivery: $DELIVERY_ID" \
+            -H "X-Hub-Signature-256: sha256=$signature" \
+            --data-binary @payload.json

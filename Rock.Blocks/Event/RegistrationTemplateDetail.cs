@@ -283,11 +283,56 @@ namespace Rock.Blocks.Event
         {
             var grant = base.GetSecurityGrant( entity );
 
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone. Anyone who
+            // can view the block may browse and select existing files within
+            // the block's root folder. Only block editors may upload, rename,
+            // move or delete files and folders.
+            if ( IsAssetManagerViewAuthorized() )
+            {
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            }
+
+            if ( IsAssetManagerEditAuthorized() )
+            {
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the default folder the editors use.
+                grant.AddRule( new FileUploadSecurityGrantRule( "~/Content" ) );
+            }
 
             return grant;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may browse and select
+        /// existing files with the asset manager. Requires VIEW, EDIT or
+        /// ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerViewAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || IsAssetManagerEditAuthorized() );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may upload, rename, move
+        /// and delete files and folders with the asset manager. Requires EDIT
+        /// or ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerEditAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
         }
 
         /// <summary>
@@ -2439,6 +2484,67 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the registrant attributes posted on the forms may be
+        /// saved. A posted attribute must be new, one of this template's own
+        /// registrant attributes, or an attribute that one of this template's
+        /// existing form fields already references (older data can share an
+        /// attribute across templates, which <see cref="SaveRegistrantAttributes"/>
+        /// also accounts for when deleting).
+        /// </summary>
+        /// <param name="entity">The template being saved.</param>
+        /// <param name="forms">The normalized incoming forms.</param>
+        /// <returns><c>true</c> if every posted registrant attribute may be saved; otherwise <c>false</c>.</returns>
+        private bool AreRegistrantAttributeEditsAllowed( RegistrationTemplate entity, List<RegistrationTemplateFormBag> forms )
+        {
+            var postedAttributeGuids = forms
+                .SelectMany( f => f.Fields )
+                .Where( f => f.FieldSource == RegistrationFieldSource.RegistrantAttribute && f.RegistrantAttribute?.Guid != null )
+                .Select( f => f.RegistrantAttribute.Guid.Value )
+                .Distinct()
+                .ToList();
+
+            if ( !postedAttributeGuids.Any() )
+            {
+                return true;
+            }
+
+            var existingAttributes = new AttributeService( RockContext ).Queryable()
+                .Where( a => postedAttributeGuids.Contains( a.Guid ) )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.EntityTypeId,
+                    a.EntityTypeQualifierColumn,
+                    a.EntityTypeQualifierValue
+                } )
+                .ToList();
+
+            if ( !existingAttributes.Any() )
+            {
+                return true;
+            }
+
+            // A new template has no attributes of its own yet.
+            if ( entity.Id == 0 )
+            {
+                return false;
+            }
+
+            var registrantEntityTypeId = EntityTypeCache.Get<RegistrationRegistrant>().Id;
+            var qualifierValue = entity.Id.ToString();
+
+            var referencedAttributeIds = new RegistrationTemplateFormFieldService( RockContext ).Queryable()
+                .Where( f => f.AttributeId.HasValue && f.RegistrationTemplateForm.RegistrationTemplateId == entity.Id )
+                .Select( f => f.AttributeId.Value )
+                .ToList();
+
+            return existingAttributes.All( a => ( a.EntityTypeId == registrantEntityTypeId
+                    && a.EntityTypeQualifierColumn == RegistrationTemplateQualifierColumn
+                    && a.EntityTypeQualifierValue == qualifierValue )
+                || referencedAttributeIds.Contains( a.Id ) );
+        }
+
+        /// <summary>
         /// Saves the registrant attributes defined on the forms and deletes the ones
         /// that were removed. An attribute that another template still references is
         /// left in place.
@@ -2927,6 +3033,20 @@ namespace Rock.Blocks.Event
 
             var isNew = entity.Id == 0;
 
+            // Saving an attribute by Guid would otherwise overwrite and re-home
+            // any attribute in the system, so only this template's own
+            // attributes (or new ones) may be edited.
+            if ( forms != null && !AreRegistrantAttributeEditsAllowed( entity, forms ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
+            if ( registrationAttributes != null
+                && !PublicAttributeHelper.AreAttributeEditsAllowed( registrationAttributes, EntityTypeCache.Get<Registration>().Id, RegistrationTemplateQualifierColumn, isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             try
             {
                 RockContext.WrapTransaction( () =>
@@ -3317,6 +3437,8 @@ namespace Rock.Blocks.Event
                 {
                     continue;
                 }
+
+                privateConfigurationValues = Field.Helper.RemoveDynamicListSources( privateConfigurationValues, RequestContext.CurrentPerson );
 
                 var isPersonField = field.FieldSource == RegistrationFieldSource.PersonField;
 

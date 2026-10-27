@@ -15,7 +15,7 @@
           @selectItem="onSelectItem"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
 
-        <ReorderColumn @orderChanged="(n, o) => $emit('reorderClick', n, o)" />
+        <ReorderColumn v-if="isAddEnabled" @orderChanged="(n, o) => $emit('reorderClick', n, o)" />
 
         <TextColumn name="name"
                     title="Name"

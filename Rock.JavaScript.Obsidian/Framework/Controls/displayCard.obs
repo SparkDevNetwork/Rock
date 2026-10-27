@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="displaycard"
+         :style="{ '--displaycard-min-width': minWidth, '--displaycard-heading-min-width': iconTitleAndDescMinWidth }"
          :class="{
             'is-hovering': isHovering && !isRadioSelectable,
             'is-selected': isSelected && !isRadioSelectable,

@@ -1204,16 +1204,16 @@ namespace Rock.Slingshot
             if ( groupSchedulesToInsert.Any() )
             {
                 // manually update Group.ScheduleId since BulkInsert doesn't
-                rockContext.Database.ExecuteSqlCommand( string.Format( @"
+                rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [Group]
 SET ScheduleId = [Schedule].[Id]
 FROM [Group]
 JOIN [Schedule]
 ON [Group].[ForeignId] = [Schedule].[ForeignId]
 AND [Group].[Name] = [Schedule].[Name]
-AND [Group].[ForeignKey] = '{0}'
-AND [Schedule].[ForeignKey] = '{0}'
-                ", foreignSystemKey ) );
+AND [Group].[ForeignKey] = @ForeignSystemKey
+AND [Schedule].[ForeignKey] = @ForeignSystemKey
+                ", new System.Data.SqlClient.SqlParameter( "@ForeignSystemKey", foreignSystemKey ?? string.Empty ) );
             }
 
             // Attribute Values
@@ -3097,12 +3097,13 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             // Update Person PhotoIds to the photos that were just Imported
-            rockContext.Database.ExecuteSqlCommand( $@"UPDATE p
+            rockContext.Database.ExecuteSqlCommand( @"UPDATE p
 SET p.PhotoId = b.Id
 FROM Person p
-INNER JOIN BinaryFile b ON p.ForeignId = Replace(b.ForeignKey, 'PersonForeignId_{foreignSystemKey}_', '')
-WHERE b.ForeignKey LIKE 'PersonForeignId_{foreignSystemKey}_%'
-	AND p.PhotoId IS NULL" );
+INNER JOIN BinaryFile b ON p.ForeignId = Replace(b.ForeignKey, @PersonPrefix, '')
+WHERE b.ForeignKey LIKE @PersonPrefix + '%'
+	AND p.PhotoId IS NULL",
+                new System.Data.SqlClient.SqlParameter( "@PersonPrefix", $"PersonForeignId_{foreignSystemKey}_" ) );
 
             // Update FamilyPhoto attribute for photos that were imported
             int? familyPhotoAttributeId = null;
@@ -3116,9 +3117,7 @@ WHERE b.ForeignKey LIKE 'PersonForeignId_{foreignSystemKey}_%'
 
             if ( familyPhotoAttributeId.HasValue )
             {
-                rockContext.Database.ExecuteSqlCommand( $@"
-DECLARE @AttributeId INT = {familyPhotoAttributeId.Value}
-
+                rockContext.Database.ExecuteSqlCommand( @"
 -- just in case the family photo was already saved but with No Photo
 DELETE
 FROM AttributeValue
@@ -3142,20 +3141,23 @@ SELECT 0
 	,b.[Guid]
 	,newid()
 FROM [Group] g
-INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, 'FamilyForeignId_{foreignSystemKey}_', '')
-WHERE g.GroupTypeId = {familyGroupTypeId.Value}
-	AND b.ForeignKey LIKE 'FamilyForeignId_{foreignSystemKey}_%'
+INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, @FamilyPrefix, '')
+WHERE g.GroupTypeId = @FamilyGroupTypeId
+	AND b.ForeignKey LIKE @FamilyPrefix + '%'
 	AND g.Id NOT IN (
 		SELECT EntityId
 		FROM AttributeValue
 		WHERE AttributeId = @AttributeId
 		)
-" );
+",
+                    new System.Data.SqlClient.SqlParameter( "@AttributeId", familyPhotoAttributeId.Value ),
+                    new System.Data.SqlClient.SqlParameter( "@FamilyGroupTypeId", familyGroupTypeId.Value ),
+                    new System.Data.SqlClient.SqlParameter( "@FamilyPrefix", $"FamilyForeignId_{foreignSystemKey}_" ) );
             }
 
             // Insert Financial Transaction Images (note: some transactions might have multiple images)
             rockContext.Database.ExecuteSqlCommand(
-            $@"
+            @"
 INSERT INTO [FinancialTransactionImage]
     ([TransactionId]
     ,[BinaryFileId]
@@ -3168,9 +3170,10 @@ select
     NEWID()[Guid],
     ROW_NUMBER() OVER (partition by bf.ForeignKey order by bf.[FileName] ) - 1 as [Order]
         FROM FinancialTransaction ft
-        INNER JOIN BinaryFile bf ON ft.ForeignId = Replace( bf.ForeignKey, 'FinancialTransactionForeignId_{foreignSystemKey}_', '')
-WHERE bf.ForeignKey LIKE 'FinancialTransactionForeignId_{foreignSystemKey}_%'
-and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
+        INNER JOIN BinaryFile bf ON ft.ForeignId = Replace( bf.ForeignKey, @TransactionPrefix, '')
+WHERE bf.ForeignKey LIKE @TransactionPrefix + '%'
+and ft.Id not in (select TransactionId from FinancialTransactionImage)",
+                new System.Data.SqlClient.SqlParameter( "@TransactionPrefix", $"FinancialTransactionForeignId_{foreignSystemKey}_" ) );
 
             stopwatchTotal.Stop();
 

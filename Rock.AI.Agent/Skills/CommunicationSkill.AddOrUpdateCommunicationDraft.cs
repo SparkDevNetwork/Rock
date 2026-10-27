@@ -73,6 +73,26 @@ internal partial class CommunicationSkill
                 .WithInstructions( "If you have not yet requested drafting guidance, call GetDraftCommunicationInstructions first so the draft honors the current person's From Name, closing phrase, and tone requirements." );
         }
 
+        /*
+            10/19/26 - JMH
+
+            Every transport renders the subject and body as Lava for each recipient
+            when the communication is sent. Agent drafts can carry text the user or the
+            model copied from records other people wrote, so merge syntax is removed
+            here, the same way Communication Entry does when Enable Lava is off.
+            SanitizeLava turns a blank value into an empty string, so a blank subject
+            is left alone to keep an SMS subject null.
+
+            Reason: Agent drafts must not run Lava when sent.
+        */
+        var sanitizedSubject = draftedSubject.IsNullOrWhiteSpace() ? draftedSubject : draftedSubject.SanitizeLava();
+        var sanitizedBody = draftedBody.SanitizeLava();
+
+        if ( sanitizedBody.IsNullOrWhiteSpace() )
+        {
+            return Error( "draftedBody contained only merge syntax. Compose the message as plain text with the real values." );
+        }
+
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
         var communicationService = new CommunicationService( rockContext );
@@ -100,6 +120,11 @@ internal partial class CommunicationSkill
             if ( draftCommunication != null && draftCommunication.Status != CommunicationStatus.Transient )
             {
                 helper.AddError( "This draft is not in a transient state. It has likely already been sent." );
+                helper.AddInstructions( "Ask the user if they would prefer you create a new draft." );
+            }
+            else if ( draftCommunication != null && !IsAuthorizedToEditDraft( draftCommunication, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this draft." );
                 helper.AddInstructions( "Ask the user if they would prefer you create a new draft." );
             }
         }
@@ -141,8 +166,8 @@ internal partial class CommunicationSkill
         var draftResult = new DraftResult
         {
             Type = communicationType,
-            Subject = draftedSubject,
-            Body = draftedBody,
+            Subject = sanitizedSubject,
+            Body = sanitizedBody,
             VerificationText = medium.GetVerificationText( currentPerson, recipients )
         };
 

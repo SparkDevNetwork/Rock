@@ -55,38 +55,73 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            // Get the current person alias if possible
-            PersonAlias personAlias = null;
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            // Get the attribute to set
+            Guid guid = GetAttributeValue( action, "PersonAttribute" ).AsGuid();
+            if ( guid.IsEmpty() )
             {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAlias = currentPerson.PrimaryAlias;
+                return true;
+            }
 
-                    // Get the attribute to set
-                    Guid guid = GetAttributeValue( action, "PersonAttribute" ).AsGuid();
-                    if ( !guid.IsEmpty() )
-                    {
-                        var personAttribute = AttributeCache.Get( guid, rockContext );
-                        if ( personAttribute != null )
-                        {
-                            // If this is a person type attribute
-                            if ( personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
-                            {
-                                SetWorkflowAttributeValue( action, guid, personAlias.Guid.ToString() );
-                            }
-                            else if ( personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid(), rockContext ).Id )
-                            {
-                                SetWorkflowAttributeValue( action, guid, currentPerson.FullName );
-                            }
-                        }
-                    }
+            var personAttribute = AttributeCache.Get( guid, rockContext );
+            if ( personAttribute == null )
+            {
+                return true;
+            }
+
+            var isPersonAttribute = personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id;
+            var isTextAttribute = personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid(), rockContext ).Id;
+
+            if ( !isPersonAttribute && !isTextAttribute )
+            {
+                return true;
+            }
+
+            var currentPerson = GetCurrentPerson();
+
+            if ( currentPerson == null || currentPerson.PrimaryAlias == null )
+            {
+                /*
+                    10/7/2026 - MSE
+
+                    When there is no current person during a web request, the
+                    attribute is reset to its default value instead of being
+                    left unchanged.
+
+                    Reason: Ensure the attribute only reflects the current person.
+                */
+                if ( HttpContext.Current != null )
+                {
+                    SetWorkflowAttributeValue( action, guid, personAttribute.DefaultValue );
+                    action.AddLogEntry( string.Format( "No person is signed in. Set '{0}' attribute to its default value.", personAttribute.Name ) );
                 }
+
+                return true;
+            }
+
+            if ( isPersonAttribute )
+            {
+                SetWorkflowAttributeValue( action, guid, currentPerson.PrimaryAlias.Guid.ToString() );
+            }
+            else
+            {
+                SetWorkflowAttributeValue( action, guid, currentPerson.FullName );
             }
 
             return true;
         }
 
+        /// <summary>
+        /// Gets the person that is signed in for the current request.
+        /// </summary>
+        /// <returns>The current person or <c>null</c> if no one is signed in.</returns>
+        private static Person GetCurrentPerson()
+        {
+            if ( HttpContext.Current != null && HttpContext.Current.Items["CurrentPerson"] is Person currentPerson )
+            {
+                return currentPerson;
+            }
+
+            return Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
+        }
     }
 }

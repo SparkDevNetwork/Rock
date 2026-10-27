@@ -299,12 +299,25 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
+            // The settings include the Guid of this block's stored filter,
+            // which SaveCustomSettings trusts, so only block administrators
+            // (the people who can open the settings modal) may read them.
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit block settings." );
+            }
+
             return GetSettingsForContentChannel( GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull() );
         }
 
         [BlockAction]
         public BlockActionResult GetCustomSettingsForContentChannel( Guid contentChannelGuid )
         {
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit block settings." );
+            }
+
             return GetSettingsForContentChannel( contentChannelGuid );
         }
 
@@ -388,11 +401,24 @@ namespace Rock.Blocks.Cms
                     }
                     else
                     {
-                        var dataViewFilter = DataFilterObsidianHelper.ToEntity( box.Settings.DataViewFilter, typeof( ContentChannelItem ), RockContext, RequestContext );
+                        // Pass this block's own saved filter so selections the person
+                        // is not authorized for are kept and cannot be replaced.
+                        var currentFilterId = block.GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
+                        var currentDataViewFilter = currentFilterId.HasValue ? dataViewFilterService.Get( currentFilterId.Value ) : null;
+                        var dataViewFilter = DataFilterObsidianHelper.ToEntity( box.Settings.DataViewFilter, typeof( ContentChannelItem ), currentDataViewFilter, RockContext, RequestContext );
 
                         // Look up any previously stored filter by GUID so we can decide whether to delete it.
                         // The bag carries the GUID of the filter that was last persisted for this block.
                         var oldDataViewFilter = dataViewFilterService.Get( dataViewFilter.Guid );
+
+                        // The Guid comes from the client, so only treat it as the old
+                        // filter when it is the filter this block currently uses.
+                        // Otherwise it could be used to delete another block's filter,
+                        // so fall back to this block's own filter.
+                        if ( oldDataViewFilter != null && oldDataViewFilter.Id != currentFilterId )
+                        {
+                            oldDataViewFilter = currentFilterId.HasValue ? dataViewFilterService.Get( currentFilterId.Value ) : null;
+                        }
 
                         // If another ContentChannelView block uses the same DataViewFilter don't delete it.
                         // In this case it likely means this block is a copy of, or was copied from another page/block.

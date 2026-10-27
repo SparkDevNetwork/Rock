@@ -93,6 +93,14 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
 
         #endregion Keys
 
+        #region Fields
+
+        private WorkflowTypeCache _workflowType;
+
+        private bool _hasAttemptedWorkflowTypeLoad;
+
+        #endregion Fields
+
         #region Properties
 
         /// <summary>
@@ -161,10 +169,52 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
 
         /// <summary>
         /// Returns the WorkflowType resolved from the WorkflowTypeId page parameter, or null if not found.
+        /// No security check is done here, use <see cref="GetWorkflowType"/> for anything that reads data.
+        /// </summary>
+        private WorkflowTypeCache GetRequestedWorkflowType()
+        {
+            return WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        /// <summary>
+        /// Returns the Form Builder WorkflowType from the WorkflowTypeId page parameter if the current
+        /// person can view (or edit) it, otherwise null. The result is cached for the request.
         /// </summary>
         private WorkflowTypeCache GetWorkflowType()
         {
-            return WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( _hasAttemptedWorkflowTypeLoad )
+            {
+                return _workflowType;
+            }
+
+            _hasAttemptedWorkflowTypeLoad = true;
+
+            /*
+                10/16/2026 - MSE
+
+                The workflow type comes from the page parameter, so a person could
+                swap in the IdKey of a form they are not allowed to see and get
+                every submission for it. Only Form Builder forms the person can
+                VIEW (or EDIT, which the Add button already uses) are returned.
+                This is the one choke point for the box, the grid rows, the grid
+                attributes, the preference keys and Delete.
+
+                Reason: Form Submission List skipped VIEW on the form.
+            */
+            var workflowType = GetRequestedWorkflowType();
+            if ( workflowType == null || !workflowType.IsFormBuilder )
+            {
+                return null;
+            }
+
+            if ( !workflowType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) && !GetCanEditWorkflowType() )
+            {
+                return null;
+            }
+
+            _workflowType = workflowType;
+
+            return _workflowType;
         }
 
         /// <summary>
@@ -173,9 +223,9 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private bool GetCanEditWorkflowType()
         {
-            var workflowType = GetWorkflowType();
+            var workflowType = GetRequestedWorkflowType();
 
-            if ( workflowType == null )
+            if ( workflowType == null || !workflowType.IsFormBuilder )
             {
                 return false;
             }
@@ -318,6 +368,16 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var workflow = workflowService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( workflow == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.Workflow.FriendlyTypeName} not found." );
+            }
+
+            // The grid only lists submissions of the page's workflow type, and the Edit
+            // check above is evaluated against that type. Reject workflows of any other
+            // type so Edit rights on one form cannot delete workflows of another.
+            var workflowType = GetWorkflowType();
+
+            if ( workflowType == null || workflow.WorkflowTypeId != workflowType.Id )
             {
                 return ActionBadRequest( $"{Rock.Model.Workflow.FriendlyTypeName} not found." );
             }

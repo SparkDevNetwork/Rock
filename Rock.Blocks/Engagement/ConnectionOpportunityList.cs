@@ -297,6 +297,17 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
+            // Only allow deleting an opportunity the grid would show: it must
+            // belong to the page's connection type and pass the same View filter
+            // that GetListItems applies to the rows.
+            var entityId = entity.Id;
+            var isListItem = GetListItems( GetListQueryable( RockContext ).Where( co => co.Id == entityId ), RockContext ).Any();
+
+            if ( !isListItem )
+            {
+                return ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
             if ( !IsAuthorizedToDelete( entity ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {ConnectionOpportunity.FriendlyTypeName}." );

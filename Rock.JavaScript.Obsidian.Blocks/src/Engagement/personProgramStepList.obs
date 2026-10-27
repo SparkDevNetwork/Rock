@@ -11,8 +11,7 @@
         </NotificationBox>
 
         <Panel v-if="isCardView"
-               :title="options.programName ?? ''"
-               :style="stepsPerRowStyle">
+               :title="options.programName ?? ''">
             <template #headerActions>
                 <button type="button"
                         class="btn btn-panel-action"
@@ -43,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
@@ -65,9 +64,7 @@
 
     const options: PersonProgramStepListOptionsBag = config.options ?? {
         isCampusColumnVisible: false,
-        isStartDateColumnVisible: false,
-        stepsPerRow: 5,
-        stepsPerRowMobile: 1
+        isStartDateColumnVisible: false
     };
 
     /** Load-time failure from the server; replaces the whole block. */
@@ -81,17 +78,6 @@
     const stepStatusColors = ref<Record<string, string>>(config.bag?.stepStatusColors ?? {});
 
     // #endregion Values
-
-    // #region Computed Values
-
-    const stepsPerRowStyle = computed((): Record<string, string> => {
-        return {
-            "--stepsPerRow": `${options.stepsPerRow ?? 5}`,
-            "--stepsPerRowMobile": `${options.stepsPerRowMobile ?? 1}`
-        };
-    });
-
-    // #endregion Computed Values
 
     // #region Event Handlers
 

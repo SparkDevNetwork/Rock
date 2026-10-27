@@ -23,9 +23,9 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility.Enums;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.PhoneNumberIdentification;
 using Rock.ViewModels.Utility;
@@ -172,6 +172,20 @@ namespace Rock.Blocks.Security
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The fewest digits a phone number (without its country code) may have to be accepted for verification.
+        /// </summary>
+        private static readonly int MinimumPhoneNumberLength = 7;
+
+        /// <summary>
+        /// The message shown when the matched person's account protection profile does not allow phone number sign-in.
+        /// </summary>
+        private static readonly string ProtectedAccountMessage = "It appears you have an account in our system that has security access which requires you to log in with a username and password.";
+
+        #endregion Fields
+
         #region Methods
 
         /// <inheritdoc/>
@@ -217,12 +231,25 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Please enter a phone number." );
             }
 
-            var countryCode = bag.CountryCode;
-            var smsRecipientNumber = PhoneNumber.CleanNumber( phoneNumber );
-            if ( countryCode.IsNotNullOrWhiteSpace() && countryCode != PhoneNumber.DefaultCountryCode() )
+            var countryCode = GetValidCountryCode( bag.CountryCode );
+            if ( countryCode == null )
             {
-                smsRecipientNumber = $"+{countryCode}{smsRecipientNumber}";
+                return ActionBadRequest( "Please select a valid country code." );
             }
+
+            var number = PhoneNumber.CleanNumber( phoneNumber );
+            if ( !IsFullNumber( number ) )
+            {
+                return ActionBadRequest( "Please enter your full phone number." );
+            }
+
+            var smsRecipientNumber = number;
+            if ( countryCode != PhoneNumber.DefaultCountryCode() )
+            {
+                smsRecipientNumber = $"+{countryCode}{number}";
+            }
+
+            var referenceNumber = GetReferenceNumber( countryCode, number );
 
             var ipLimit = GetAttributeValue( AttributeKey.IpThrottleLimit ).AsInteger();
             var messageTemplate = GetAttributeValue( AttributeKey.TextMessageTemplate );
@@ -230,7 +257,7 @@ namespace Rock.Blocks.Security
             try
             {
                 var identityVerificationService = new IdentityVerificationService( RockContext );
-                var identityVerification = identityVerificationService.CreateIdentityVerificationRecord( RequestContext.ClientInformation.IpAddress, ipLimit, phoneNumber );
+                var identityVerification = identityVerificationService.CreateIdentityVerificationRecord( RequestContext.ClientInformation.IpAddress, ipLimit, referenceNumber );
 
                 if ( identityVerification == null )
                 {
@@ -296,12 +323,12 @@ namespace Rock.Blocks.Security
 
             // Re-read the phone number from the verification record rather than trusting a client-supplied value.
             var phoneNumber = identityVerificationService.Get( identityVerificationId.Value )?.ReferenceNumber;
-            if ( phoneNumber.IsNullOrWhiteSpace() )
+            if ( !TryParseReferenceNumber( phoneNumber, out var countryCode, out var number ) )
             {
                 return ActionBadRequest( "Your session has expired. Please start over." );
             }
 
-            var personIds = new PhoneNumberService( RockContext ).GetPersonIdsByNumber( phoneNumber ).ToList();
+            var personIds = new PhoneNumberService( RockContext ).GetPersonIdsByExactNumber( countryCode, number ).ToList();
 
             if ( personIds.Count == 0 )
             {
@@ -310,6 +337,11 @@ namespace Rock.Blocks.Security
 
             if ( personIds.Count == 1 )
             {
+                if ( !IsSignInAllowed( personIds[0], phoneNumber ) )
+                {
+                    return ActionBadRequest( ProtectedAccountMessage );
+                }
+
                 return ActionOk( new PhoneNumberIdentificationVerifyResponseBag
                 {
                     RedirectUrl = AuthenticatePerson( personIds[0], phoneNumber )
@@ -350,7 +382,7 @@ namespace Rock.Blocks.Security
             }
 
             var phoneNumber = identityVerificationService.Get( identityVerificationId.Value )?.ReferenceNumber;
-            if ( phoneNumber.IsNullOrWhiteSpace() )
+            if ( !TryParseReferenceNumber( phoneNumber, out var countryCode, out var number ) )
             {
                 return ActionBadRequest( "Your session has expired. Please start over." );
             }
@@ -362,10 +394,15 @@ namespace Rock.Blocks.Security
             }
 
             // Only allow authenticating as a person that actually matches the verified phone number.
-            var matchedPersonIds = new PhoneNumberService( RockContext ).GetPersonIdsByNumber( phoneNumber ).ToList();
+            var matchedPersonIds = new PhoneNumberService( RockContext ).GetPersonIdsByExactNumber( countryCode, number ).ToList();
             if ( !matchedPersonIds.Contains( selectedPerson.Id ) )
             {
                 return ActionBadRequest( "We could not complete your request." );
+            }
+
+            if ( !IsSignInAllowed( selectedPerson.Id, phoneNumber ) )
+            {
+                return ActionBadRequest( ProtectedAccountMessage );
             }
 
             return ActionOk( AuthenticatePerson( selectedPerson.Id, phoneNumber ) );
@@ -415,18 +452,7 @@ namespace Rock.Blocks.Security
 
                     if ( userLogin != null )
                     {
-                        /*
-                            6/3/2026 - MSE
-
-                            When a protection profile requires two-factor authentication, this phone-verified login
-                            satisfies the second factor, so the auth cookie is created with the two-factor flag set
-                            to avoid prompting again. When 2FA is not required the flag is simply false.
-
-                            Reason: Two-Factor Authentication
-                        */
-                        var isTwoFactorAuthenticated = IsTwoFactorAuthenticationRequired( person.AccountProtectionProfile );
-
-                        Authorization.SetAuthCookie( userLogin.UserName, isPersisted: false, isImpersonated: false, isTwoFactorAuthenticated );
+                        Authorization.SetAuthCookie( userLogin.UserName, isPersisted: false, isImpersonated: false, isTwoFactorAuthenticated: false );
 
                         new HistoryLogin
                         {
@@ -468,14 +494,51 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Determines whether two-factor authentication is required for the specified protection profile.
+        /// Determines whether the specified person may be signed in by this block. At the Trusted Login level, people
+        /// whose account protection profile has passwordless sign-in disabled, or requires two-factor authentication,
+        /// must log in with a username and password instead. The Identified level only sets the unsecured person
+        /// identifier, so it is always allowed.
         /// </summary>
-        /// <param name="protectionProfile">The account protection profile to check.</param>
-        /// <returns><c>true</c> if two-factor authentication is required; otherwise <c>false</c>.</returns>
-        private static bool IsTwoFactorAuthenticationRequired( AccountProtectionProfile protectionProfile )
+        /// <param name="personId">The identifier of the person to check.</param>
+        /// <param name="phoneNumber">The verified phone number, recorded against the login history when refused.</param>
+        /// <returns><c>true</c> if the person may be signed in; otherwise <c>false</c>.</returns>
+        private bool IsSignInAllowed( int personId, string phoneNumber )
         {
+            var authenticationLevel = GetAttributeValue( AttributeKey.AuthenticationLevel ).AsInteger();
+            if ( authenticationLevel != ( int ) Authorization.AuthenticationLevel.TrustedLogin )
+            {
+                return true;
+            }
+
+            var person = new PersonService( RockContext ).Get( personId );
+            if ( person == null )
+            {
+                return true;
+            }
+
             var securitySettings = new SecuritySettingsService().SecuritySettings;
-            return securitySettings?.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( protectionProfile ) == true;
+            var protectionProfile = person.AccountProtectionProfile;
+            var isPasswordlessSignInDisabled = securitySettings?.DisablePasswordlessSignInForAccountProtectionProfiles?.Contains( protectionProfile ) == true;
+            var isTwoFactorAuthenticationRequired = securitySettings?.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( protectionProfile ) == true;
+
+            if ( !isPasswordlessSignInDisabled && !isTwoFactorAuthenticationRequired )
+            {
+                return true;
+            }
+
+            new HistoryLogin
+            {
+                UserName = phoneNumber,
+                PersonAliasId = person.PrimaryAliasId,
+                SourceSiteId = PageCache?.SiteId,
+                WasLoginSuccessful = false,
+                LoginFailureReason = LoginFailureReason.Other,
+                LoginFailureMessage = "The person's account protection profile does not allow phone number sign-in."
+            }
+            .WithContext( "Phone Number Lookup" )
+            .SaveAfterDelay();
+
+            return false;
         }
 
         /// <summary>
@@ -525,6 +588,117 @@ namespace Rock.Blocks.Security
             }
 
             return decodedUrl;
+        }
+
+        /// <summary>
+        /// Gets the active country codes configured in the phone country code defined type. These are the
+        /// same values the phone number box offers.
+        /// </summary>
+        /// <returns>The list of allowed country codes.</returns>
+        private static List<string> GetAllowedCountryCodes()
+        {
+            var countryCodes = new List<string>();
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+
+            if ( definedType != null )
+            {
+                countryCodes.AddRange( definedType.DefinedValues
+                    .Where( v => v.IsActive && v.Value.IsNotNullOrWhiteSpace() )
+                    .Select( v => v.Value.Trim() ) );
+            }
+
+            // A blank country code resolves to the default, which must always be accepted even if its
+            // defined value is inactive or no country codes are configured (the default is then "1").
+            countryCodes.Add( PhoneNumber.DefaultCountryCode() );
+
+            return countryCodes.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Determines whether the value is a full phone number: ASCII digits only and at least
+        /// <see cref="MinimumPhoneNumberLength"/> long.
+        /// </summary>
+        /// <param name="number">The number without its country code.</param>
+        /// <returns><c>true</c> if the value is a full phone number; otherwise <c>false</c>.</returns>
+        private static bool IsFullNumber( string number )
+        {
+            if ( number.IsNullOrWhiteSpace() || number.Length < MinimumPhoneNumberLength )
+            {
+                return false;
+            }
+
+            return number.All( c => c >= '0' && c <= '9' );
+        }
+
+        /// <summary>
+        /// Validates the country code supplied by the client. A blank value resolves to the default country
+        /// code; any other value must be one of the configured country codes.
+        /// </summary>
+        /// <param name="countryCode">The country code supplied by the client.</param>
+        /// <returns>The validated country code, or <c>null</c> if it is not allowed.</returns>
+        private static string GetValidCountryCode( string countryCode )
+        {
+            if ( countryCode.IsNullOrWhiteSpace() )
+            {
+                return PhoneNumber.DefaultCountryCode();
+            }
+
+            countryCode = countryCode.Trim();
+
+            return GetAllowedCountryCodes().Contains( countryCode ) ? countryCode : null;
+        }
+
+        /// <summary>
+        /// Builds the reference number stored on the verification record, which is the exact number the
+        /// verification code was texted to, in the same "+{CountryCode}{Number}" form that
+        /// <see cref="PhoneNumber.ToSmsNumber"/> produces.
+        /// </summary>
+        /// <param name="countryCode">The validated country code.</param>
+        /// <param name="number">The cleaned number, digits only and without the country code.</param>
+        /// <returns>The reference number.</returns>
+        private static string GetReferenceNumber( string countryCode, string number )
+        {
+            return $"+{countryCode}{number}";
+        }
+
+        /// <summary>
+        /// Splits a reference number created by <see cref="GetReferenceNumber(string, string)"/> back into its
+        /// country code and number.
+        /// </summary>
+        /// <param name="referenceNumber">The reference number from the verification record.</param>
+        /// <param name="countryCode">The country code, when parsing succeeds.</param>
+        /// <param name="number">The number without the country code, when parsing succeeds.</param>
+        /// <returns><c>true</c> if the reference number is a full number with a configured country code; otherwise <c>false</c>.</returns>
+        private static bool TryParseReferenceNumber( string referenceNumber, out string countryCode, out string number )
+        {
+            countryCode = null;
+            number = null;
+
+            if ( referenceNumber.IsNullOrWhiteSpace() || !referenceNumber.StartsWith( "+" ) )
+            {
+                return false;
+            }
+
+            var matchedCountryCode = GetAllowedCountryCodes()
+                .Where( cc => referenceNumber.StartsWith( $"+{cc}" ) )
+                .OrderByDescending( cc => cc.Length )
+                .FirstOrDefault();
+
+            if ( matchedCountryCode == null )
+            {
+                return false;
+            }
+
+            var remainingNumber = referenceNumber.Substring( matchedCountryCode.Length + 1 );
+            if ( !IsFullNumber( remainingNumber ) )
+            {
+                return false;
+            }
+
+            countryCode = matchedCountryCode;
+            number = remainingNumber;
+
+            return true;
         }
 
         /// <summary>

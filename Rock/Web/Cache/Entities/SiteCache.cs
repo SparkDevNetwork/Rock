@@ -42,6 +42,15 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Private Fields
+
+        /// <summary>
+        /// The site's Allowed Redirect Domain(s), parsed from the attribute value on first use.
+        /// </summary>
+        private readonly Lazy<List<string>> _redirectDomains;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -116,7 +125,7 @@ namespace Rock.Web.Cache
                 var editorTheme = request["EditorTheme"];
                 if (
                     editorTheme.IsNotNullOrWhiteSpace() &&
-                    System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + editorTheme ) ) )
+                    System.IO.Directory.Exists( RockApp.Current.MapPath( "~/Themes/" + editorTheme ) ) )
                 {
                     return editorTheme;
                 }
@@ -130,7 +139,7 @@ namespace Rock.Web.Cache
                     if ( theme.Trim() != string.Empty )
                     {
                         // Don't allow switching to an invalid theme
-                        if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
+                        if ( System.IO.Directory.Exists( RockApp.Current.MapPath( "~/Themes/" + theme ) ) )
                         {
                             // Add the cookie with the updated theme string to the response.
                             Rock.Web.UI.RockPage.AddOrUpdateCookie( new HttpCookie( cookieName, theme ) );
@@ -158,7 +167,7 @@ namespace Rock.Web.Cache
                 }
 
                 // Don't allow switching to an invalid theme
-                if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + cookie.Value ) ) )
+                if ( System.IO.Directory.Exists( RockApp.Current.MapPath( "~/Themes/" + cookie.Value ) ) )
                 {
                     return cookie.Value;
                 }
@@ -550,6 +559,17 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        /// <summary>
+        /// Creates a new instance of <see cref="SiteCache"/>.
+        /// </summary>
+        public SiteCache()
+        {
+            // Value List entries are pipe-delimited.
+            _redirectDomains = new Lazy<List<string>>( () => GetAttributeValue( "AllowedRedirectDomains" )
+                .SplitDelimitedValues( "|", StringSplitOptions.RemoveEmptyEntries )
+                .ToList() );
+        }
+
         #region Public Methods
 
         /// <summary>
@@ -789,6 +809,27 @@ namespace Rock.Web.Cache
             context.ApplicationInstance.CompleteRequest();
         }
 
+        /// <summary>
+        /// Determines whether the browser may be redirected to <paramref name="redirectUrl"/>. Relative URLs are
+        /// allowed, as are the current request's host, the organization's website, the public application root and
+        /// this site's Allowed Redirect Domains.
+        /// </summary>
+        /// <param name="redirectUrl">The URL the browser would be redirected to.</param>
+        /// <param name="requestUri">The URI of the current request.</param>
+        /// <returns><c>true</c> if the browser may be redirected to <paramref name="redirectUrl"/>; otherwise, <c>false</c>.</returns>
+        public bool IsSafeRedirectUrl( string redirectUrl, Uri requestUri )
+        {
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            return IsSafeRedirectUrl(
+                redirectUrl,
+                requestUri,
+                globalAttributes.GetValue( "OrganizationWebsite" ),
+                globalAttributes.GetValue( "PublicApplicationRoot" ),
+                _redirectDomains.Value
+            );
+        }
+
         #endregion
 
         #region Static Methods
@@ -826,6 +867,152 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Determines whether the host name is one of the domains configured on any site.
+        /// Reads the site cache only, so it does not query the database once the cache is warm
+        /// and does not add entries to the domain lookup map.
+        /// </summary>
+        /// <param name="host">The host name to check, without a port.</param>
+        /// <returns><c>true</c> if the host name is allowed by a configured site domain; otherwise, <c>false</c>.</returns>
+        internal static bool IsSiteDomain( string host )
+        {
+            return IsSiteDomain( host, All().Where( s => s.SiteDomainNames != null ).SelectMany( s => s.SiteDomainNames ) );
+        }
+
+        /// <summary>
+        /// Determines whether the host name matches one of the domain names, ignoring case: the domain
+        /// itself, any subdomain of it (www.church.org or es.church.org for church.org), the bare
+        /// name when the www name is listed (church.org for www.church.org), or any other subdomain
+        /// of that bare name when the www name is listed (es.church.org for www.church.org).
+        /// The loopback names localhost, 127.0.0.1 and ::1 always match.
+        /// A leading http:// or https:// and a trailing slash on a stored domain are ignored,
+        /// the same clean-up Site.DefaultDomainUri does.
+        /// </summary>
+        /// <param name="host">The host name to check, without a port.</param>
+        /// <param name="siteDomainNames">The configured site domain names.</param>
+        /// <returns><c>true</c> if the host name is allowed by one of the domain names; otherwise, <c>false</c>.</returns>
+        /// <remarks>Internal so that it can be unit tested.</remarks>
+        internal static bool IsSiteDomain( string host, IEnumerable<string> siteDomainNames )
+        {
+            if ( host.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            host = host.Trim();
+
+            /*
+                10/26/2026 - MSE
+
+                Only a plain host name or IP address can match. A value such as "evil.test/x.church.org"
+                ends with ".church.org" but a URL built from it points at evil.test, so anything with a
+                port, path, query, fragment or other delimiter is rejected before the suffix checks below.
+
+                Reason: Prevent a URL delimiter in the host from passing the domain check.
+            */
+            if ( !ExtensionMethods.IsPlainHostName( host ) )
+            {
+                return false;
+            }
+
+            /*
+                10/26/2026 - MSE
+
+                Loopback host names are always allowed. A link built on the loopback name points back at
+                the machine of the person who opens it, so it cannot carry a sign-in code to someone else.
+                Without this, a development or staging copy restored from production (where localhost is
+                not a site domain) would build every link on the production PublicApplicationRoot host.
+
+                Reason: Keep links on dev boxes local without trusting any other host.
+            */
+            if ( string.Equals( host, "localhost", StringComparison.OrdinalIgnoreCase )
+                || host == "127.0.0.1"
+                || host == "::1"
+                || host == "[::1]" )
+            {
+                return true;
+            }
+
+            if ( siteDomainNames == null )
+            {
+                return false;
+            }
+
+            foreach ( var siteDomainName in siteDomainNames )
+            {
+                var domain = siteDomainName?.Trim();
+                if ( domain.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                if ( domain.StartsWith( "http://", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    domain = domain.Substring( 7 );
+                }
+                else if ( domain.StartsWith( "https://", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    domain = domain.Substring( 8 );
+                }
+
+                domain = domain.TrimEnd( '/' );
+
+                /*
+                    10/26/2026 - MSE
+
+                    An IP address has no subdomains, so a listed IP address matches only itself.
+                    Without this, a forwarded host such as 1.10.0.0.5 would match a listed 10.0.0.5
+                    through the subdomain suffix rule below.
+
+                    Reason: Match listed IP addresses exactly, never as a suffix.
+                */
+                if ( System.Net.IPAddress.TryParse( domain.Trim( '[', ']' ), out var domainAddress ) )
+                {
+                    var isSameAddress = System.Net.IPAddress.TryParse( host.Trim( '[', ']' ), out var hostAddress )
+                        && domainAddress.Equals( hostAddress );
+
+                    if ( isSameAddress )
+                    {
+                        return true;
+                    }
+
+                    continue;
+                }
+
+                if ( string.Equals( domain, host, StringComparison.OrdinalIgnoreCase )
+                    || host.EndsWith( "." + domain, StringComparison.OrdinalIgnoreCase )
+                    || string.Equals( domain, "www." + host, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+
+                /*
+                    10/26/2026 - MSE
+
+                    A listed www name (www.church.org) also allows the other subdomains of its bare name
+                    (es.church.org for a Weglot language host, rock.church.org for an internal or webhook
+                    host). This is the same trust already given to every subdomain when the bare name
+                    itself is listed. The match still requires the dot, so evilchurch.org never matches,
+                    and the bare name must contain a dot so that a listing like www.org cannot allow a
+                    whole top level domain.
+
+                    Reason: Weglot and sibling hosts of a listed www domain keep their own links.
+                */
+                if ( domain.StartsWith( "www.", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    var bareDomain = domain.Substring( 4 );
+                    var isBareDomainValid = bareDomain.Contains( "." ) && !bareDomain.StartsWith( "." );
+
+                    if ( isBareDomainValid && host.EndsWith( "." + bareDomain, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns an iterator over all the active sites in the site cache.
         /// The iterator may be further acted upon and collected to any collections as required by the caller.
         /// </summary>
@@ -833,6 +1020,32 @@ namespace Rock.Web.Cache
         {
             return All()
                 .Where( site => site.IsActive );
+        }
+
+        /// <summary>
+        /// Determines whether the browser may be redirected to <paramref name="redirectUrl"/>. Relative URLs are
+        /// allowed, as are the current request's host, the organization's website, the public application root and
+        /// the allowed redirect domains.
+        /// </summary>
+        /// <param name="redirectUrl">The URL the browser would be redirected to.</param>
+        /// <param name="requestUri">The URI of the current request.</param>
+        /// <param name="organizationWebsite">The OrganizationWebsite global attribute value.</param>
+        /// <param name="publicApplicationRoot">The PublicApplicationRoot global attribute value.</param>
+        /// <param name="redirectDomains">The site's Allowed Redirect Domain(s).</param>
+        /// <returns><c>true</c> if the browser may be redirected to <paramref name="redirectUrl"/>; otherwise, <c>false</c>.</returns>
+        /// <remarks>This method is internal so that it can be used for unit testing.</remarks>
+        internal static bool IsSafeRedirectUrl( string redirectUrl, Uri requestUri, string organizationWebsite, string publicApplicationRoot, IEnumerable<string> redirectDomains )
+        {
+            var allowedHosts = new List<string>
+            {
+                requestUri?.Host,
+                organizationWebsite,
+                publicApplicationRoot
+            };
+
+            allowedHosts.AddRange( redirectDomains );
+
+            return redirectUrl.IsSafeRedirectUrl( allowedHosts );
         }
 
         #endregion

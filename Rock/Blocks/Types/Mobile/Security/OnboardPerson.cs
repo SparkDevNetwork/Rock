@@ -774,6 +774,24 @@ namespace Rock.Blocks.Types.Mobile.Security
         public int VerificationTimeLimit => GetAttributeValue( AttributeKeys.VerificationTimeLimit ).AsInteger();
 
         /// <summary>
+        /// The number of minutes the individual has to finish onboarding
+        /// after their code has been verified.
+        /// </summary>
+        private const int CompleteOnboardingTimeLimit = 60;
+
+        /// <summary>
+        /// The purpose used to encrypt and authenticate the state sent to
+        /// the client, so the state can only be read by this block.
+        /// </summary>
+        private const string StateEncryptionPurpose = "Rock.Mobile.OnboardPerson.State";
+
+        /// <summary>
+        /// The error message returned for any state that is not valid,
+        /// not verified or has expired.
+        /// </summary>
+        private const string ExpiredStateErrorMessage = "Your verification has expired, please try again.";
+
+        /// <summary>
         /// Gets the per-IP throttle limit.
         /// </summary>
         /// <value>
@@ -1520,10 +1538,27 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <param name="rockContext">The rock context.</param>
         private void UpdatePersonInterests( Person person, IEnumerable<Guid> topicGuids, RockContext rockContext )
         {
+            // The topic guids come from the client and cannot be trusted.
+            // Only allow the communication lists we would offer the
+            // individual to pick from.
+            var allowedGroupGuids = new HashSet<Guid>( GetInterests( rockContext ).Select( a => a.Key.AsGuid() ) );
+            var communicationListGroupTypeId = GroupTypeCache.GetId( SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() );
+
             foreach ( var groupGuid in topicGuids )
             {
+                if ( !allowedGroupGuids.Contains( groupGuid ) )
+                {
+                    continue;
+                }
+
                 var groupMemberService = new GroupMemberService( rockContext );
                 var group = new GroupService( rockContext ).Get( groupGuid );
+
+                if ( group == null || group.GroupTypeId != communicationListGroupTypeId || group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    continue;
+                }
+
                 var groupMemberRecordsForPerson = groupMemberService.Queryable()
                     .Where( a => a.GroupId == group.Id && a.PersonId == person.Id ).ToList();
 
@@ -1635,6 +1670,28 @@ namespace Rock.Blocks.Types.Mobile.Security
             smsMessage.CreateCommunicationRecord = false;
 
             return smsMessage.Send( out _ );
+        }
+
+        /// <summary>
+        /// Encrypts and authenticates the state so it can be sent to the client.
+        /// </summary>
+        /// <param name="state">The state to encrypt.</param>
+        /// <returns>The encrypted state.</returns>
+        private static string EncryptState( EncryptedState state )
+        {
+            return Rock.Security.Encryption.EncryptStringForPurpose( state.ToJson(), StateEncryptionPurpose );
+        }
+
+        /// <summary>
+        /// Decrypts the state sent back by the client. Any state that was not
+        /// issued by <see cref="EncryptState(EncryptedState)"/> or has been
+        /// modified returns <c>null</c>.
+        /// </summary>
+        /// <param name="encryptedState">The encrypted state.</param>
+        /// <returns>The decrypted state; otherwise <c>null</c>.</returns>
+        private static EncryptedState DecryptState( string encryptedState )
+        {
+            return Rock.Security.Encryption.DecryptStringForPurpose( encryptedState, StateEncryptionPurpose )?.FromJsonOrNull<EncryptedState>();
         }
 
         #endregion
@@ -1795,7 +1852,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 return ActionOk( new SendCodeResponse
                 {
                     IsSuccess = true,
-                    State = Rock.Security.Encryption.EncryptString( state.ToJson() )
+                    State = EncryptState( state )
                 } );
             }
         }
@@ -1832,7 +1889,15 @@ namespace Rock.Blocks.Types.Mobile.Security
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var identityVerificationService = new IdentityVerificationService( rockContext );
-                var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
+                var state = DecryptState( request.State );
+
+                if ( state == null )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
+                    {
+                        Error = ExpiredStateErrorMessage
+                    };
+                }
 
                 bool isCodeValid = identityVerificationService.VerifyIdentityVerificationCode( state.IdentityVerificationId, VerificationTimeLimit, request.Code, ValidationCodeAttempts );
 
@@ -1870,9 +1935,13 @@ namespace Rock.Blocks.Types.Mobile.Security
                     person = new PersonService( rockContext ).Get( state.MatchedPersonId.Value );
                 }
 
+                // Mark the state as verified so CreatePerson knows the
+                // code step was completed.
+                state.VerifiedDateTime = RockDateTime.Now;
+
                 return ActionOk( new VerifyCodeResponse
                 {
-                    State = Rock.Security.Encryption.EncryptString( state.ToJson() ),
+                    State = EncryptState( state ),
                     CreateLogin = person == null ? true : !person.Users.Any( a => ( a.IsConfirmed ?? true ) && !( a.IsLockedOut ?? false ) ),
                     InitialValues = GetInitialValues( person )
                 } );
@@ -1916,7 +1985,17 @@ namespace Rock.Blocks.Types.Mobile.Security
                 Person person = null;
                 var siteCache = PageCache.Layout.Site;
                 var personService = new PersonService( rockContext );
-                var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
+                var state = DecryptState( request.State );
+
+                // Make sure the code was verified and the individual has not
+                // taken too long to finish onboarding.
+                if ( state == null || !state.VerifiedDateTime.HasValue || state.VerifiedDateTime.Value.AddMinutes( CompleteOnboardingTimeLimit ) < RockDateTime.Now )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
+                    {
+                        Error = ExpiredStateErrorMessage
+                    };
+                }
 
                 if ( state.MatchedPersonId.HasValue )
                 {
@@ -2205,6 +2284,15 @@ namespace Rock.Blocks.Types.Mobile.Security
             /// The matched person identifier.
             /// </value>
             public int? MatchedPersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date and time the verification code was
+            /// successfully verified. This is only set by VerifyCode.
+            /// </summary>
+            /// <value>
+            /// The date and time the code was verified or <c>null</c>.
+            /// </value>
+            public DateTime? VerifiedDateTime { get; set; }
         }
 
         #endregion

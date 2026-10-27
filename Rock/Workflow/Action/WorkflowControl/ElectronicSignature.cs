@@ -334,6 +334,26 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
+            /*
+                10/18/2026 - MSE
+
+                The signature data is posted by the client and is later placed into
+                HTML that the server renders into a PDF. A drawn signature must be a
+                base64 PNG data URL, and a typed signature has no signature data.
+
+                Reason: Prevent SSRF and HTML injection in signed documents.
+            */
+            if ( template.SignatureType == SignatureType.Drawn && !ElectronicSignatureHelper.IsValidDrawnSignatureDataUrl( signatureData ) )
+            {
+                errorMessage = "Invalid signature data received.";
+                return false;
+            }
+
+            if ( template.SignatureType == SignatureType.Typed )
+            {
+                signatureData = null;
+            }
+
             // Get the person that will be signing the document.
             var signedByPersonAliasId = GetSignedByPersonAliasId( rockContext, action, requestContext.CurrentPerson?.PrimaryAliasId );
             var signedByPerson = signedByPersonAliasId.HasValue
@@ -449,14 +469,23 @@ namespace Rock.Workflow.Action
         /// <returns>An instance of <see cref="BinaryFile"/> that has been saved to the database or <c>null</c> on error.</returns>
         private BinaryFile CreateSignedDocumentPdf( SignatureDocumentTemplate template, SignatureDocument document, Person signedByPerson, RockContext rockContext, out string errorMessage )
         {
+            /*
+                10/18/2026 - MSE
+
+                The signed name and client IP address come from the request and are
+                placed into HTML that is rendered into the signed PDF. The helper
+                expects these to be encoded by the caller.
+
+                Reason: Prevent HTML injection in signed documents.
+            */
             var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
             {
                 SignatureType = template.SignatureType,
-                SignedName = document.SignedName,
+                SignedName = document.SignedName.EncodeHtml(),
                 DrawnSignatureDataUrl = document.SignatureData,
                 SignedByPerson = signedByPerson,
                 SignedDateTime = document.SignedDateTime,
-                SignedClientIp = document.SignedClientIp,
+                SignedClientIp = document.SignedClientIp.EncodeHtml(),
                 SignatureVerificationHash = document.SignatureVerificationHash
             };
 

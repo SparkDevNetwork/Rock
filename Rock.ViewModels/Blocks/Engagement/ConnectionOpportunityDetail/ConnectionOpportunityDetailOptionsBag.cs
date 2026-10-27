@@ -36,6 +36,14 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
         public bool? IsReOrderColumnVisible { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the Delete button should be shown.
+        /// </summary>
+        /// <value>
+        /// Whether the Delete button is visible.
+        /// </value>
+        public bool IsDeleteVisible { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of all active campuses in the system. This is used as a fallback
         /// for the Default Connectors section when the opportunity itself has no campuses selected,
         /// so that a Default Connector can be configured per active campus.

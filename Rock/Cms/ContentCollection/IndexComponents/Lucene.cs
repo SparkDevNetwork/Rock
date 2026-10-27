@@ -41,6 +41,7 @@ using Newtonsoft.Json.Linq;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Model;
 
 using Document = Lucene.Net.Documents.Document;
@@ -73,8 +74,15 @@ namespace Rock.Cms.ContentCollection.IndexComponents
         private static IndexSearcher _indexSearcher = null;
         private static FSDirectory _directory;
         private static Timer _timer = null;
-        private static readonly string _path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/LuceneContentCollectionIndex" );
+        private static readonly Lazy<string> _indexPath = new Lazy<string>( () => RockApp.Current.MapPath( "~/App_Data/LuceneContentCollectionIndex" ) );
         private static readonly object _lockWriter = new object();
+
+        /// <summary>
+        /// Gets the physical path of the index folder. This is computed on first
+        /// use, rather than when the type loads, so that RockApp has been
+        /// initialized by then.
+        /// </summary>
+        private static string IndexPath => _indexPath.Value;
 
         /// <summary>
         /// <c>true</c> if debugging and what an Explain field are included in the search results.
@@ -89,7 +97,7 @@ namespace Rock.Cms.ContentCollection.IndexComponents
         public override bool IsConnected => true;
 
         /// <inheritdoc/>
-        public override string IndexLocation => _path;
+        public override string IndexLocation => IndexPath;
 
         /// <summary>
         /// Gets the Lucene directory.
@@ -103,12 +111,12 @@ namespace Rock.Cms.ContentCollection.IndexComponents
             {
                 if ( _directory == null )
                 {
-                    if ( !System.IO.Directory.Exists( _path ) )
+                    if ( !System.IO.Directory.Exists( IndexPath ) )
                     {
-                        System.IO.Directory.CreateDirectory( _path );
+                        System.IO.Directory.CreateDirectory( IndexPath );
                     }
 
-                    _directory = FSDirectory.Open( new DirectoryInfo( _path ) );
+                    _directory = FSDirectory.Open( new DirectoryInfo( IndexPath ) );
                 }
 
                 return _directory;

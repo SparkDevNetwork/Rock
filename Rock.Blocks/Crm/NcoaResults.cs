@@ -550,12 +550,22 @@ namespace Rock.Blocks.Crm
                     FamilyMembers = i.MoveType != MoveType.Individual && familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
                     OtherFamilyMembers = otherFamilyMembersByAliasId.TryGetValue( i.PersonAliasId, out var otherMembers ) ? otherMembers : string.Empty,
 
+                    /*
+                        10/19/2026 - MSE
+
+                        OriginalAddress and NewAddress are rendered with v-html, so the address text
+                        is encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
                     OriginalAddress = FormattedAddress(
                             i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
+                        .EncodeHtml()
                         .ConvertCrLfToHtmlBr(),
 
                     NewAddress = FormattedAddress(
                             i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
+                        .EncodeHtml()
                         .ConvertCrLfToHtmlBr(),
 
                     MoveDate = i.MoveDate?.ToShortDateString(),

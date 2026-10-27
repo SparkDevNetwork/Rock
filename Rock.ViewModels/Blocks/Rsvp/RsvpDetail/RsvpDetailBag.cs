@@ -40,6 +40,12 @@ namespace Rock.ViewModels.Blocks.Rsvp.RsvpDetail
         public bool IsNewOccurrence { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the current person can edit the occurrence and the
+        /// invitee responses. When false, the block is shown read-only.
+        /// </summary>
+        public bool IsEditable { get; set; }
+
+        /// <summary>
         /// Gets or sets the IdKey of the AttendanceOccurrence being viewed or edited.
         /// Empty when <see cref="IsNewOccurrence"/> is true.
         /// </summary>

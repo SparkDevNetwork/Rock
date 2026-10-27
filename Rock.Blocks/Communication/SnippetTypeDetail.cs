@@ -288,7 +288,7 @@ namespace Rock.Blocks.Communication
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${SnippetType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {SnippetType.FriendlyTypeName}." );
                 return false;
             }
 

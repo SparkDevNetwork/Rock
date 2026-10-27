@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -205,7 +206,7 @@ namespace Rock.Reporting.DataSelect.Group
             var groupQry = new GroupService( context ).Queryable();
 
             IQueryable<string> groupLinkQry;
-            string baseGroupUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Group/" );
+            string baseGroupUrl = RockApp.Current.ResolveRockUrl( "~/Group/" );
 
             if ( showAsLink )
             {

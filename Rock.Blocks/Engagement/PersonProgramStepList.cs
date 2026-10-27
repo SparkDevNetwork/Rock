@@ -58,34 +58,18 @@ namespace Rock.Blocks.Engagement
         Order = 2,
         Key = AttributeKey.StepPage )]
 
-    [IntegerField(
-        "Steps Per Row",
-        Description = "The number of step cards that should be shown on a row",
-        Order = 3,
-        IsRequired = true,
-        Key = AttributeKey.StepsPerRow,
-        DefaultIntegerValue = AttributeDefault.StepsPerRow )]
-
-    [IntegerField(
-        "Steps Per Row Mobile",
-        Description = "The number of step cards that should be shown on a row on a mobile screen size",
-        Order = 4,
-        IsRequired = true,
-        Key = AttributeKey.StepsPerRowMobile,
-        DefaultIntegerValue = AttributeDefault.StepsPerRowMobile )]
-
     [BooleanField(
         "Show Campus Column",
         Description = "Should the campus should be shown on the grid and card display?",
         DefaultBooleanValue = true,
-        Order = 5,
+        Order = 3,
         Key = AttributeKey.ShowCampusColumn )]
 
     [BooleanField(
         "Show Start Date Column",
         Description = "Should the step start date be shown on the grid and card display?",
         DefaultBooleanValue = true,
-        Order = 6,
+        Order = 4,
         Key = AttributeKey.ShowStartedDateColumn )]
 
     #endregion Block Attributes
@@ -104,19 +88,8 @@ namespace Rock.Blocks.Engagement
         {
             public const string StepProgram = "StepProgram";
             public const string StepPage = "StepPage";
-            public const string StepsPerRow = "StepsPerRow";
-            public const string StepsPerRowMobile = "StepsPerRowMobile";
             public const string ShowCampusColumn = "ShowCampusColumn";
             public const string ShowStartedDateColumn = "ShowStartedDateColumn";
-        }
-
-        /// <summary>
-        /// Default values for block attributes.
-        /// </summary>
-        private static class AttributeDefault
-        {
-            public const int StepsPerRow = 5;
-            public const int StepsPerRowMobile = 1;
         }
 
         /// <summary>
@@ -430,8 +403,6 @@ namespace Rock.Blocks.Engagement
             {
                 ProgramName = program?.Name,
                 StepTerm = program?.StepTerm ?? "Step",
-                StepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow,
-                StepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRowMobile,
                 IsCampusColumnVisible = GetIsCampusVisible(),
                 IsStartDateColumnVisible = GetAttributeValue( AttributeKey.ShowStartedDateColumn ).AsBoolean(),
                 GridDefinition = GetGridBuilder().BuildDefinition(),

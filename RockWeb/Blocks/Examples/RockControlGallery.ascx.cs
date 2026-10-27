@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Examples
         private List<string> ReadExamples()
         {
             var list = new List<string>();
-            string[] lines = System.IO.File.ReadAllLines( Server.MapPath( "~/Blocks/Examples/RockControlGallery.ascx" ) );
+            string[] lines = System.IO.File.ReadAllLines( RockApp.Current.MapPath( "~/Blocks/Examples/RockControlGallery.ascx" ) );
             var foundExample = false;
             var firstLine = false;
             int numSpaces = 0;
@@ -422,7 +422,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fupContentFile_FileUploaded( object sender, EventArgs e )
         {
-            string physicalFileName = this.Request.MapPath( fuprExampleContentFile.UploadedContentFilePath );
+            string physicalFileName = RockApp.Current.MapPath( fuprExampleContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
 

@@ -21,6 +21,7 @@ using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -53,26 +54,90 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.BlockTypeGuid( "D4A5F720-493C-4DE8-B4B6-D6667D7ED2A2" )]
     public class ForgeContentDetail : RockBlockType, IHasCustomActions
     {
+        #region Fields
+
+        /// <summary>
+        /// The content record loaded for this request, so that
+        /// <see cref="GetObsidianBlockInitialization"/> and
+        /// <see cref="GetInitialHtmlContent"/> observe identical data and
+        /// only query it once.
+        /// </summary>
+        private ForgeContent _content;
+
+        /// <summary>
+        /// Indicates whether <see cref="_content"/> has been loaded, since a
+        /// block with no component yet legitimately has a null record.
+        /// </summary>
+        private bool _isContentLoaded;
+
+        #endregion Fields
+
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             var box = new ForgeContentDetailInitializationBox();
+            var content = GetContent();
 
-            using ( var rockContext = new RockContext() )
-            {
-                var content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-                box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-
-                // Every viewer receives the precompiled output for rendering.
-                // The clean source is never sent in view mode; the editor
-                // requests it on demand through GetEditContent.
-                box.CompiledContent = content?.CompiledContent;
-            }
+            // Every viewer receives the precompiled output for rendering.
+            // The clean source is never sent in view mode; the editor
+            // requests it on demand through GetEditContent.
+            box.CompiledContent = content?.CompiledContent;
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
+        {
+            /*
+                10/9/2026 - CLAUDE
+
+                The compiled component loads asynchronously after Vue mounts (it
+                imports vue and every Obsidian control it uses), and until it does
+                the block has nothing to render. The author can declare static HTML
+                in a top-level <placeholder> block of the source; it is rendered
+                into the page here so the block holds its space from the first
+                paint, and the view panel keeps showing it until the component
+                mounts. Only the placeholder is sent, never the rest of the source.
+
+                Reason: Prevent the layout jump while the authored component loads.
+            */
+            var content = GetContent();
+
+            // Without a compiled component the view panel never renders, so it
+            // would never swap the placeholder out.
+            if ( content == null || content.CompiledContent.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return ForgeContentCompiler.GetPlaceholderHtml( content.Source );
+        }
+
+        /// <summary>
+        /// Gets the content record owned by this block placement, loading it
+        /// once per request.
+        /// </summary>
+        /// <returns>The content record, or null when the block has no component yet.</returns>
+        private ForgeContent GetContent()
+        {
+            if ( _isContentLoaded )
+            {
+                return _content;
+            }
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                _content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
+            }
+
+            _isContentLoaded = true;
+
+            return _content;
         }
 
         #endregion Methods
@@ -115,7 +180,7 @@ namespace Rock.Blocks.Cms
                 return ActionForbidden( "You are not authorized to edit this component." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
 
@@ -183,7 +248,7 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( string.Join( "\n", compileResult.Errors ) );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new ForgeContentService( rockContext );
                 var content = service.GetOrCreateByBlockId( BlockId );

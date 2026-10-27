@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -78,6 +79,35 @@ internal sealed partial class PrayerSkill
             }
         }
 
+        /*
+            10/23/2026 - MSE
+
+            Public callers must stay within the configured prayer categories.
+            A supplied category or parent cannot widen that scope, and an invalid
+            configured parent must not fall back to an unrestricted query.
+
+            Reason: Keep public prayer lists within the configured category scope.
+        */
+        if ( AgentRequestContext.AudienceType != AudienceType.Internal
+            && ConfigurationValues.TryGetValue( ConfigurationKey.ParentCategory, out var configuredParentGuid ) )
+        {
+            var configuredParentId = CategoryCache.Get( configuredParentGuid.AsGuid(), AgentRequestContext.RockContext )?.Id;
+
+            if ( !configuredParentId.HasValue )
+            {
+                helper.AddError( "The configured parent category is not valid." );
+            }
+            else if ( categoryId.HasValue
+                && CategoryCache.Get( categoryId.Value, AgentRequestContext.RockContext )?.ParentCategoryId != configuredParentId )
+            {
+                helper.AddError( "That category is not available to this agent." );
+            }
+            else if ( !categoryId.HasValue )
+            {
+                parentCategoryId = configuredParentId;
+            }
+        }
+
         if ( helper.HasErrors )
         {
             return helper.ErrorResult;
@@ -102,6 +132,27 @@ internal sealed partial class PrayerSkill
         qry = helper.WhereOptionalProperty( qry, pr => pr.IsPublic, isPublic );
         qry = helper.WhereOptionalProperty( qry, pr => pr.IsUrgent, isUrgent );
         qry = helper.WhereOptionalProperty( qry, pr => pr.IsActive, isActive );
+
+        /*
+            10/23/2026 - MSE
+
+            Staff agents need the moderation queue, but public agents may only
+            list approved, public, active and unexpired requests. A signed-in
+            person can also see their own requests while awaiting approval.
+
+            Reason: Prevent public agents from disclosing private prayer requests.
+        */
+        if ( AgentRequestContext.AudienceType != AudienceType.Internal )
+        {
+            var currentPersonId = AgentRequestContext.CurrentPerson?.Id;
+            var now = RockDateTime.Now;
+
+            qry = qry.Where( pr => ( currentPersonId.HasValue && pr.RequestedByPersonAlias.PersonId == currentPersonId.Value )
+                || ( pr.IsApproved == true
+                    && pr.IsPublic == true
+                    && ( pr.IsActive ?? true )
+                    && ( !pr.ExpirationDate.HasValue || pr.ExpirationDate >= now ) ) );
+        }
 
         // Only match on first or last name if a person was not specified.
         if ( requestedByPersonIdKey.IsNullOrWhiteSpace() )

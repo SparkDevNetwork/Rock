@@ -22,6 +22,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -195,7 +196,7 @@ namespace Rock.Jobs
         private RockContext CreateRockContext()
         {
             var rockContext = RockApp.Current.CreateRockContext();
-            rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 300;
+            rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 300 );
             return rockContext;
         }
 

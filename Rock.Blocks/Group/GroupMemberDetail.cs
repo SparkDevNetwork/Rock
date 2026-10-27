@@ -290,9 +290,28 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
+            return IsSignUpOccurrenceOfGroup( groupId.Value );
+        }
+
+        /// <summary>
+        /// Determines whether the location and schedule page parameters name a
+        /// pair configured on the specified group.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns><c>true</c> when the location and schedule are one of the group's pairs.</returns>
+        private bool IsSignUpOccurrenceOfGroup( int groupId )
+        {
+            var locationId = LocationId ?? 0;
+            var scheduleId = ScheduleId ?? 0;
+
+            if ( locationId <= 0 || scheduleId <= 0 )
+            {
+                return false;
+            }
+
             return new GroupLocationService( RockContext )
                 .Queryable()
-                .Any( gl => gl.GroupId == groupId.Value
+                .Any( gl => gl.GroupId == groupId
                     && gl.LocationId == locationId
                     && gl.Schedules.Any( s => s.Id == scheduleId ) );
         }
@@ -531,9 +550,19 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            return group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
-                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson )
-                || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, RequestContext.CurrentPerson ) );
+            if ( group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
+
+            // Sign-up mode is decided from the page's member or group, but an
+            // action can post a member of another group. SCHEDULE only counts
+            // as edit rights when the sign-up occurrence belongs to the group
+            // being edited.
+            return IsSignUpMode
+                && IsSignUpOccurrenceOfGroup( group.Id )
+                && group.IsAuthorized( Authorization.SCHEDULE, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -1113,7 +1142,7 @@ namespace Rock.Blocks.Group
                     Text = r.Name,
                     Value = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, new Dictionary<string, string>
                     {
-                        [PageParameterKey.RegistrationId] = r.Id.ToString()
+                        [PageParameterKey.RegistrationId] = Rock.Utility.IdHasher.Instance.GetHash( r.Id )
                     } )
                 } )
                 .ToList();
@@ -2096,6 +2125,13 @@ namespace Rock.Blocks.Group
                         .Include( m => m.Group )
                         .FirstOrDefault( m => m.GroupId == entity.GroupId && m.PersonId == signUpPerson.Id );
 
+                    // System members are read-only, and TryGetEntityForEditAction
+                    // only checked the new member, so check the swapped-in one too.
+                    if ( existingMember != null && existingMember.IsSystem )
+                    {
+                        return ActionBadRequest( $"Not authorized to edit {GroupMember.FriendlyTypeName}." );
+                    }
+
                     if ( existingMember != null )
                     {
                         // Discard the blank insert that TryGetEntityForEditAction added and edit the existing member.
@@ -2273,7 +2309,9 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( GroupArchivedMessage );
             }
 
-            if ( !IsAuthorizedToEdit( groupMember.Group ) )
+            // System members are read-only (the Move button is hidden for
+            // them), and moving deletes or archives the source member.
+            if ( groupMember.IsSystem || !IsAuthorizedToEdit( groupMember.Group ) )
             {
                 return ActionBadRequest( "Not authorized to move this group member." );
             }

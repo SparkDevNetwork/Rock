@@ -149,7 +149,10 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( !IsValidRequest( request ) )
         {
-            response.Write( "Invalid request type." );
+            // Return 403 so Twilio records the failure in its debugger
+            // instead of treating the response as a successful reply.
+            response.StatusCode = 403;
+            response.Write( "Invalid request." );
         }
         else
         {
@@ -266,24 +269,34 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
             return false;
         }
 
-        // TODO Only check if enabled in TwilioComponent config
-        // otherwise return true;
+        // The From number is trusted as the sender's identity, so the request
+        // must always be signed by Twilio. The transport's "Enable Signature
+        // Validation" setting is no longer used to skip this check.
+        if ( !IsValidTwilioSignature( request, _logger ) )
+        {
+            _logger.LogWarning( "Rejected Twilio webhook request with a missing or invalid Twilio signature." );
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether the request carries a valid X-Twilio-Signature for
+    /// the auth token configured on the Twilio transport.
+    /// </summary>
+    /// <param name="request">The request to validate.</param>
+    /// <param name="logger">The logger to write validation failures to.</param>
+    /// <returns><c>true</c> if the signature is valid; otherwise <c>false</c>.</returns>
+    public static bool IsValidTwilioSignature( HttpRequest request, ILogger logger )
+    {
         var twilioComponent = new Rock.Communication.Transport.Twilio();
         twilioComponent.LoadAttributes();
-
-        if ( twilioComponent.AttributeValues.ContainsKey( TwilioAttributeKey.EnableValidation ) )
-        {
-            var continueValidation = twilioComponent.AttributeValues[TwilioAttributeKey.EnableValidation].Value.AsBoolean();
-            if ( !continueValidation )
-            {
-                return true;
-            }
-        }
 
         var signature = request.Headers["X-Twilio-Signature"];
         if ( signature.IsNullOrWhiteSpace() )
         {
-            _logger.LogDebug( "X-Twilio-Signature not found." );
+            logger.LogDebug( "X-Twilio-Signature not found." );
             return false;
         }
 
@@ -295,15 +308,38 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( authToken.IsNullOrWhiteSpace() )
         {
-            _logger.LogDebug( "No auth token found." );
+            logger.LogDebug( "No auth token found." );
             return false;
         }
 
         var requestValidator = new Twilio.Security.RequestValidator( authToken );
-        var isValid = requestValidator.Validate( request.UrlProxySafe().AbsoluteUri, request.Form, signature );
+
+        /*
+            10/26/2026 - MSE
+
+            Twilio signs the exact URL the webhook was configured with. UrlProxySafe now replaces hosts
+            that are not configured site domains with the PublicApplicationRoot host, so a webhook set up
+            on another host (for example rock.church.org when only www.church.org is listed) would stop
+            validating. Try the URL as the request was received first, then the proxy safe URL. The
+            signature is the security control here, not the host, so this does not weaken the check.
+
+            Reason: Keep inbound SMS working on webhook hosts that are not site domains.
+        */
+        var receivedRequestUrl = GetReceivedRequestUrl( request ).AbsoluteUri;
+        var isValid = requestValidator.Validate( receivedRequestUrl, request.Form, signature );
         if ( isValid )
         {
             return isValid;
+        }
+
+        var proxySafeRequestUrl = request.UrlProxySafe().AbsoluteUri;
+        if ( proxySafeRequestUrl != receivedRequestUrl )
+        {
+            isValid = requestValidator.Validate( proxySafeRequestUrl, request.Form, signature );
+            if ( isValid )
+            {
+                return isValid;
+            }
         }
 
         // Build public URL and append the given request's
@@ -316,10 +352,48 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( !isValid )
         {
-            _logger.LogDebug( "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.UrlProxySafe().AbsoluteUri, requestUrl, authToken );
+            logger.LogDebug( "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}", receivedRequestUrl, requestUrl );
         }
 
         return isValid;
+    }
+
+    /// <summary>
+    /// Gets the URL the request was received on: the forwarded host, scheme and port when
+    /// X-Forwarded-Proto and a forwarded host header are present, otherwise the request URL.
+    /// The host is NOT validated, so this must only be used to check the Twilio signature
+    /// and never to build a link. This is the same logic as the internal
+    /// Rock.ExtensionMethods.GetForwardedRequestUri, which App_Code cannot call.
+    /// </summary>
+    /// <param name="request">The request.</param>
+    /// <returns>The URL the request was received on.</returns>
+    private static Uri GetReceivedRequestUrl( HttpRequest request )
+    {
+        var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
+        var forwardedProto = request.Headers["X-Forwarded-Proto"];
+
+        if ( forwardedHost == null || forwardedProto == null )
+        {
+            return request.Url;
+        }
+
+        try
+        {
+            var builder = new UriBuilder( request.Url )
+            {
+                Scheme = forwardedProto,
+                Host = forwardedHost,
+                Port = request.Headers["X-Forwarded-Port"].AsIntegerOrNull() ?? -1
+            };
+
+            return builder.Uri;
+        }
+        catch
+        {
+            // Intentionally ignored: a malformed forwarded header cannot match the signed
+            // URL, so fall back to the URL the server received.
+            return request.Url;
+        }
     }
 
     private void LogRequest()

@@ -396,7 +396,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${ServiceJob.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {ServiceJob.FriendlyTypeName}." );
                 return false;
             }
 

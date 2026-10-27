@@ -195,6 +195,15 @@ namespace Rock.Blocks.Group
 
         #region Constants
 
+        /*
+            10/19/2026 - MSE
+
+            The info window is rendered as HTML. Group names, person names and emails can be
+            set by group editors or anonymous visitors (Family Pre-Registration), so the default
+            template escapes them.
+
+            Reason: Prevent stored XSS through names in the default info window.
+        */
         /// <summary>
         /// Default Lava template for the group map info window.
         /// </summary>
@@ -204,7 +213,7 @@ namespace Rock.Blocks.Group
         <span class='label label-campus'>{{ Campus.Name }}</span>
     {% endif %}
 
-    <div style='margin: var(--spacing-xsmall) 0 var(--spacing-tiny); font-size: var(--font-size-h5); font-weight: var(--font-weight-bold);'>{{ GroupName }}</div>
+    <div style='margin: var(--spacing-xsmall) 0 var(--spacing-tiny); font-size: var(--font-size-h5); font-weight: var(--font-weight-bold);'>{{ GroupName | Escape }}</div>
 
     {% if Location.Address and Location.Address != '' %}
         <div style='margin-bottom: var(--spacing-small); color: var(--color-interface-medium);'>{{ Location.Address }}</div>
@@ -228,7 +237,7 @@ namespace Rock.Blocks.Group
 
                 <div style='min-width: 0;'>
                     <div>
-                        <a href='{{ GroupMember.ProfilePageUrl }}' style='font-weight: var(--font-weight-bold); color: var(--color-link); text-decoration: none;'>{{ GroupMember.NickName }} {{ GroupMember.LastName }}</a>
+                        <a href='{{ GroupMember.ProfilePageUrl }}' style='font-weight: var(--font-weight-bold); color: var(--color-link); text-decoration: none;'>{{ GroupMember.NickName | Escape }} {{ GroupMember.LastName | Escape }}</a>
                             <span style='display: inline-flex; align-items: center; margin-left: var(--spacing-tiny); padding: 1px var(--spacing-tiny); border: 1px solid var(--color-interface-soft); border-radius: 999px; font-size: var(--font-size-xsmall); font-weight: var(--font-weight-bold); letter-spacing: .03em; text-transform: uppercase; color: var(--color-interface-medium); vertical-align: middle;'>{{ GroupMember.Role }}</span>
                     </div>
 
@@ -237,7 +246,7 @@ namespace Rock.Blocks.Group
                     {% endif %}
 
                     {% if GroupMember.Email and GroupMember.Email != '' %}
-                        <div style='display: flex; align-items: center; gap: var(--spacing-tiny); margin-top: var(--spacing-tiny);'><i class='ti ti-mail' style='width: 14px; text-align: center; color: var(--color-interface-medium);'></i>{{ GroupMember.Email }}</div>
+                        <div style='display: flex; align-items: center; gap: var(--spacing-tiny); margin-top: var(--spacing-tiny);'><i class='ti ti-mail' style='width: 14px; text-align: center; color: var(--color-interface-medium);'></i>{{ GroupMember.Email | Escape }}</div>
                     {% endif %}
 
                     {% for Phone in GroupMember.PhoneTypes %}
@@ -515,7 +524,16 @@ namespace Rock.Blocks.Group
                 mergeFields["Location"] = new Dictionary<string, object>
                 {
                     { "Type", DefinedValueCache.GetValue( groupLocation.GroupLocationTypeValueId ) ?? string.Empty },
-                    { "Address", groupLocation.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr() },
+                    /*
+                        10/19/2026 - MSE
+
+                        The address is used as HTML in the info window (line breaks become <br>)
+                        and can be entered by anonymous visitors (Family Pre-Registration) or
+                        group editors, so it is encoded before the line breaks are added.
+
+                        Reason: Prevent stored XSS through addresses in the map info window.
+                    */
+                    { "Address", groupLocation.Location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() },
                     { "Street1", groupLocation.Location.Street1 },
                     { "Street2", groupLocation.Location.Street2 },
                     { "City", groupLocation.Location.City },

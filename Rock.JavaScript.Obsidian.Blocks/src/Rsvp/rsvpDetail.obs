@@ -1,8 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="config.errorMessage" alertType="danger">
-        {{ config.errorMessage }}
-    </NotificationBox>
+    <NotificationBox v-if="config.errorMessage" alertType="danger" v-html="config.errorMessage"></NotificationBox>
 
     <template v-else-if="bag">
         <OccurrencePanel :bag="bag"

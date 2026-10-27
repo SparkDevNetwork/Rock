@@ -25,9 +25,30 @@ ALTER FUNCTION [dbo].[ufnCrm_GetSpousePersonIdFromPersonId] (
 RETURNS INT
 AS
 BEGIN
-    DECLARE @BibleStrictSpouse INT = (SELECT TOP (1) [Id] FROM [Attribute] WHERE [Key]= 'core_BibleStrictSpouse')
-    IF (@BibleStrictSpouse = NULL)
-        SET @BibleStrictSpouse = 0
+    DECLARE @BibleStrictSpouse BIT = 1;
+    DECLARE @BibleStrictSpouseValue NVARCHAR(MAX) = (
+        SELECT TOP (1) [DefaultValue]
+        FROM [Attribute]
+        WHERE [Key] = 'core_BibleStrictSpouse'
+            AND [EntityTypeId] IS NULL
+            AND [EntityTypeQualifierColumn] = 'SystemSetting'
+            AND ([EntityTypeQualifierValue] IS NULL OR [EntityTypeQualifierValue] = '')
+    );
+
+    /* Match AsBoolean(true): whitespace defaults to true, and only unpadded true tokens are true. */
+    DECLARE @WhitespaceCharacters NVARCHAR(25) =
+        NCHAR(9) + NCHAR(10) + NCHAR(11) + NCHAR(12) + NCHAR(13) + NCHAR(32) + NCHAR(133) + NCHAR(160) + NCHAR(5760)
+        + NCHAR(8192) + NCHAR(8193) + NCHAR(8194) + NCHAR(8195) + NCHAR(8196) + NCHAR(8197) + NCHAR(8198)
+        + NCHAR(8199) + NCHAR(8200) + NCHAR(8201) + NCHAR(8202) + NCHAR(8232) + NCHAR(8233) + NCHAR(8239) + NCHAR(8287) + NCHAR(12288);
+
+    IF @BibleStrictSpouseValue COLLATE Latin1_General_100_BIN2 LIKE N'%[^' + @WhitespaceCharacters + N']%'
+    BEGIN
+        SET @BibleStrictSpouse = CASE
+            WHEN LOWER(@BibleStrictSpouseValue) COLLATE Latin1_General_100_BIN2 IN (N'true', N'yes', N't', N'y', N'1')
+                AND DATALENGTH(@BibleStrictSpouseValue) = DATALENGTH(RTRIM(@BibleStrictSpouseValue)) THEN 1
+            ELSE 0
+        END;
+    END;
     RETURN (
         SELECT
             TOP 1 S.[Id]
@@ -49,7 +70,6 @@ BEGIN
             AND P.[MaritalStatusValueId] = 143 -- Person must be Married
             AND S.[MaritalStatusValueId] = 143 -- Potential spouse must be Married
             AND FM.[PersonId] != FM2.[PersonId] -- Cannot be married to yourself
-            -- In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic:
 
             AND( @BibleStrictSpouse = 0 OR P.[Gender] != S.[Gender] OR P.[Gender] = 0 OR S.[Gender] = 0 )-- Genders cannot match if both are known
 

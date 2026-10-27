@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="step-grid">
+    <div class="step-type-card-grid">
         <StepTypeCard v-for="stepType in stepTypes"
                       :key="stepType.idKey ?? stepType.id"
                       :stepType="stepType"
@@ -14,17 +14,15 @@
 </template>
 
 <style scoped>
-    .step-grid {
-        display: grid;
-        grid-template-columns: repeat(var(--stepsPerRowMobile, 1), minmax(0, 1fr));
-        gap: var(--spacing-medium);
-    }
-
-    @media (min-width: 1200px) {
-        .step-grid {
-            grid-template-columns: repeat(var(--stepsPerRow, 5), minmax(0, 1fr));
-        }
-    }
+/* Equal columns sized from the min width; auto-fit drops unused columns so a single row of cards can grow to the max. */
+.step-type-card-grid {
+    --step-card-min-width: 240px;
+    --step-card-max-width: 400px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--step-card-min-width)), 1fr));
+    justify-items: center;
+    gap: var(--spacing-medium);
+}
 </style>
 
 <script setup lang="ts">

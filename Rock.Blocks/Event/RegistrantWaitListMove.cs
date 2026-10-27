@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Event.RegistrantWaitListMove;
 using Rock.Web.Cache;
 
@@ -282,14 +283,17 @@ namespace Rock.Blocks.Event
         {
             var body = template.WaitListTransitionEmailTemplate ?? string.Empty;
 
-            return new RegistrantWaitListMoveEmailBag
+            using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
             {
-                FromName = template.WaitListTransitionFromName?.ResolveMergeFields( mergeFields ) ?? string.Empty,
-                FromEmail = template.WaitListTransitionFromEmail?.ResolveMergeFields( mergeFields ) ?? string.Empty,
-                Subject = template.WaitListTransitionSubject?.ResolveMergeFields( mergeFields ) ?? string.Empty,
-                Body = body,
-                PreviewHtml = body.ResolveMergeFields( mergeFields )
-            };
+                return new RegistrantWaitListMoveEmailBag
+                {
+                    FromName = template.WaitListTransitionFromName?.ResolveMergeFields( mergeFields ) ?? string.Empty,
+                    FromEmail = template.WaitListTransitionFromEmail?.ResolveMergeFields( mergeFields ) ?? string.Empty,
+                    Subject = template.WaitListTransitionSubject?.ResolveMergeFields( mergeFields ) ?? string.Empty,
+                    Body = body,
+                    PreviewHtml = body.ResolveMergeFields( mergeFields )
+                };
+            }
         }
 
         #endregion Methods
@@ -332,7 +336,13 @@ namespace Rock.Blocks.Event
                 .ToList();
 
             var mergeFields = BuildMergeFields( firstRegistration, firstRegistration.RegistrationInstance, transitionedRegistrants );
-            var resolvedHtml = messageBody.ResolveMergeFields( mergeFields );
+            string resolvedHtml;
+
+            // The preview goes back to its author, so only the author's own token may appear in it.
+            using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
+            {
+                resolvedHtml = messageBody.ResolveMergeFields( mergeFields );
+            }
 
             return ActionOk( resolvedHtml );
         }
@@ -349,7 +359,17 @@ namespace Rock.Blocks.Event
             var sendCount = 0;
             var errorMessage = "";
 
-            var registrationIds = request.RegistrationIds ?? new List<int>();
+            var transitionedByRegistration = ( GetRegistrantsFromEntitySet() ?? new List<RegistrationRegistrant>() )
+                .GroupBy( r => r.RegistrationId )
+                .ToDictionary( g => g.Key, g => g.ToList() );
+
+            // The registration identifiers come from the client, so only accept
+            // the registrations of the registrants that were moved off the wait
+            // list (the recipients the initial view lists). Otherwise this could
+            // be used to email any registration.
+            var registrationIds = ( request.RegistrationIds ?? new List<int>() )
+                .Where( id => transitionedByRegistration.ContainsKey( id ) )
+                .ToList();
 
             var registrations = new RegistrationService( RockContext )
                 .Queryable()
@@ -364,10 +384,6 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "No valid registrations found for the selected recipients." );
             }
 
-            var transitionedByRegistration = ( GetRegistrantsFromEntitySet() ?? new List<RegistrationRegistrant>() )
-                .GroupBy( r => r.RegistrationId )
-                .ToDictionary( g => g.Key, g => g.ToList() );
-
             var appRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var themeRoot = RequestContext.ResolveRockUrl( "~~/" );
 
@@ -378,9 +394,7 @@ namespace Rock.Blocks.Event
                     continue;
                 }
 
-                var transitionedRegistrants = transitionedByRegistration.TryGetValue( registration.Id, out var moved )
-                    ? moved
-                    : registration.Registrants.ToList();
+                var transitionedRegistrants = transitionedByRegistration[registration.Id];
 
                 var mergeFields = BuildMergeFields( registration, registration.RegistrationInstance, transitionedRegistrants );
 
@@ -397,7 +411,18 @@ namespace Rock.Blocks.Event
                 };
 
                 emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
-                if ( emailMessage.Send( out var errors) )
+
+                bool isSent;
+                List<string> errors;
+
+                // The email goes to this registration's confirmation address,
+                // so the registrar is the only person whose token belongs in it.
+                using ( PersonTokenScope.RestrictTo( registration.PersonAlias?.Person ) )
+                {
+                    isSent = emailMessage.Send( out errors );
+                }
+
+                if ( isSent )
                 {
                     sendCount++;
                 }

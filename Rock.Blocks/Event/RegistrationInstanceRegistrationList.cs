@@ -98,6 +98,7 @@ namespace Rock.Blocks.Event
         #region Fields
 
         private RegistrationInstance _registrationInstance;
+        private bool _hasAttemptedRegistrationInstanceLoad;
         private Dictionary<int, decimal> _registrationPayments = new Dictionary<int, decimal>();
         private bool? _instanceHasCost;
 
@@ -172,9 +173,18 @@ namespace Rock.Blocks.Event
             var box = new ListBlockBox<RegistrationInstanceRegistrationListOptionsBag>();
             var builder = GetGridBuilder();
 
-            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
-            box.IsAddEnabled = isAddDeleteEnabled;
-            box.IsDeleteEnabled = isAddDeleteEnabled;
+            /*
+                10/8/2026 - MSE
+
+                The Obsidian Registration Detail block does not create registrations;
+                a blank or 0 RegistrationId shows "not found". The Add button linked
+                there with RegistrationId=0, so it is turned off. Registrations are
+                created through the Registration Entry block.
+
+                Reason: Avoid an Add button that leads to a "not found" page.
+            */
+            box.IsAddEnabled = false;
+            box.IsDeleteEnabled = GetIsAddDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -545,10 +555,12 @@ namespace Rock.Blocks.Event
         /// <returns>The registration instance, or null if the parameter is missing or does not resolve.</returns>
         private RegistrationInstance GetRegistrationInstance()
         {
-            if ( _registrationInstance != null )
+            if ( _hasAttemptedRegistrationInstanceLoad )
             {
                 return _registrationInstance;
             }
+
+            _hasAttemptedRegistrationInstanceLoad = true;
 
             var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
 
@@ -560,8 +572,25 @@ namespace Rock.Blocks.Event
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            /*
+                10/16/2026 - MSE
+
+                The instance comes from the page parameter, so a person could swap in
+                the IdKey of an instance they are not allowed to see and get its
+                registrations, balances and totals. VIEW on the instance falls back to
+                the template and its category, which is eager loaded because the query
+                is AsNoTracking.
+
+                Reason: Registration instance lists skipped VIEW on the instance.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }
@@ -591,15 +620,22 @@ namespace Rock.Blocks.Event
         #region Block Actions
 
         /// <summary>
-        /// Deletes the specified registration. The payment plan (if active) is
-        /// deactivated in the same unit of work so the database never has a
-        /// cancelled plan referencing a deleted registration.
+        /// Deletes the specified registration. An active payment plan is
+        /// deactivated first and that deactivation is saved before the
+        /// registration is deleted.
         /// </summary>
         /// <param name="key">The identifier of the registration to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        /// <returns>A result that contains any warning raised while deactivating the payment plan.</returns>
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
+            // Every block action can also be called with a GET request, so this
+            // state changing action rejects anything else to block cross-site links.
+            if ( RequestContext.HttpMethod != "POST" )
+            {
+                return ActionBadRequest( "Invalid request method." );
+            }
+
             var registrationService = new RegistrationService( RockContext );
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
 
@@ -628,22 +664,32 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( cancelError ?? "An unknown error occurred while deactivating a payment plan. The registration was not cancelled." );
             }
 
-            if ( cancelWarning.IsNotNullOrWhiteSpace() )
+            /*
+                4/21/2026 - MSE (revised 10/6/2026 - MSE)
+
+                A successful cancel (with or without a warning) means the gateway
+                has stopped the payment plan (or the plan record no longer exists),
+                so the delete continues instead of aborting. A warning usually means
+                the plan was canceled on the gateway but not marked inactive in Rock,
+                so the plan is marked inactive to match the gateway.
+
+                The deactivation is saved immediately, before and outside of the
+                delete's transaction, so a later failure can never roll back a cancel
+                the gateway already confirmed. A retry then sees an inactive plan and
+                skips the cancel. A canceled plan that still references a live
+                registration is a legitimate state (the same as after a failed delete).
+
+                A failed cancel returns before anything is saved, which keeps the
+                in-memory InactivateDateTime set by the cancel attempt out of the
+                database.
+
+                Reason: Never lose or roll back a gateway-confirmed payment plan cancel.
+            */
+            if ( cancelWarning.IsNotNullOrWhiteSpace() && registration.PaymentPlanFinancialScheduledTransaction != null )
             {
-                return ActionBadRequest( cancelWarning );
+                registration.PaymentPlanFinancialScheduledTransaction.IsActive = false;
             }
 
-            /*
-                4/21/2026 - MSE
-
-                SaveChanges runs here — after TryCancelPaymentPlan has marked
-                the payment plan cancelled in-memory, but before deleting the
-                registration — so that any error/warning from the cancel flow
-                exits early without persisting a cancelled plan that still
-                references a live registration record.
-
-                Reason: Transactional safety for the payment-plan cancel + delete pair.
-            */
             RockContext.SaveChanges();
 
             var changes = new History.HistoryChangeList();
@@ -662,7 +708,7 @@ namespace Rock.Blocks.Event
                 RockContext.SaveChanges();
             } );
 
-            return ActionOk();
+            return ActionOk( cancelWarning.IsNotNullOrWhiteSpace() ? cancelWarning : null );
         }
 
         #endregion

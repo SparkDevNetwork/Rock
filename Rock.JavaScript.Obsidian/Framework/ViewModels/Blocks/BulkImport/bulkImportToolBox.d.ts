@@ -30,4 +30,7 @@ export type BulkImportToolBox = {
 
     /** Gets or sets the Encrypted Root Folder. */
     rootFolder?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

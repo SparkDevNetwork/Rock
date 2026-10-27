@@ -185,7 +185,8 @@ namespace Rock.Blocks.Tv
             var entityService = new SiteService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( entity == null )
+            // Only TV application sites shown in the list may be deleted.
+            if ( entity == null || entity.SiteType != SiteType.Tv )
             {
                 return ActionBadRequest( $"{Site.FriendlyTypeName} not found." );
             }
@@ -193,6 +194,11 @@ namespace Rock.Blocks.Tv
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {Site.FriendlyTypeName}." );
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"System {Site.FriendlyTypeName} cannot be deleted." );
             }
 
             var sitePages = new List<int> {

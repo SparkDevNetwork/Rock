@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -264,9 +265,20 @@ namespace Rock.Blocks.Core
                 Reason: Performance
             */
 
-            // Apply the History record Grouping to get the number of History list items.
-            // History records are grouped by Date Created, Entity, Category, etc)
-            var historyActionGroupQuery = historyQry
+            /*
+                10/26/2026 - MSE
+
+                The history rows are loaded flat and grouped in memory. Grouping in the query and
+                selecting each group's rows as a nested collection made EF join the History table back
+                to itself on every grouping key, matching the nullable RelatedEntityTypeId and
+                RelatedEntityId with IS NULL comparisons. SQL Server could then pick a plan that seeks
+                that join on IX_RelatedEntityTypeId_RelatedEntityId, reading every History row with no
+                related entity (millions on large databases) for each group. This block loads every
+                group for the entity anyway, so the flat query reads the same rows.
+
+                Reason: Performance (https://github.com/SparkDevNetwork/Rock/issues/7091)
+            */
+            var historyRows = historyQry
                 .GroupJoin( qryPerson, h => h.CreatedByPersonAlias.PersonId, p => p.Id,
                     ( h, p ) => new
                     {
@@ -282,11 +294,16 @@ namespace Rock.Blocks.Core
                         CategoryName = g.History.Category.Name,
                         RelatedEntityTypeId = g.History.RelatedEntityTypeId,
                         RelatedEntityId = g.History.RelatedEntityId,
-                        CreatedByPersonId = g.History.CreatedByPersonAlias.PersonId,
+                        CreatedByPersonId = ( int? ) g.History.CreatedByPersonAlias.PersonId,
                         CreatedByPersonNickName = p.NickName,
                         CreatedByPersonLastName = p.LastName,
                         History = g.History
                     } )
+                .ToList();
+
+            // Apply the History record Grouping to get the History list items.
+            // History records are grouped by Date Created, Entity, Category, etc)
+            var historyActionGroupQuery = historyRows
                 .GroupBy( a => new
                     {
                         a.CreatedDateTime,
@@ -307,7 +324,7 @@ namespace Rock.Blocks.Core
                         CategoryName = x.Key.CategoryName,
                         RelatedEntityTypeId = x.Key.RelatedEntityTypeId,
                         RelatedEntityId = x.Key.RelatedEntityId,
-                        CreatedByPersonId = ( int? ) x.Key.CreatedByPersonId,
+                        CreatedByPersonId = x.Key.CreatedByPersonId,
                         CreatedByPersonNickName = x.Key.CreatedByPersonNickName,
                         CreatedByPersonLastName = x.Key.CreatedByPersonLastName,
                         HistoryEntries = x.Select( h => h.History )
@@ -342,7 +359,17 @@ namespace Rock.Blocks.Core
                             // history row, producing a wasted DB roundtrip that returns null and appends
                             // nothing to the summary.
                             EntityId = h.EntityId,
-                            CreatedByPersonAliasId = h.CreatedByPersonAliasId
+                            CreatedByPersonAliasId = h.CreatedByPersonAliasId,
+
+                            /*
+                                10/16/2026 - MSE
+
+                                SummaryHtml uses RelatedEntityTypeId to find attribute value history,
+                                whose formatted values are rebuilt as safe HTML instead of encoded.
+
+                                Reason: Without it, attribute values lose their safe links and images.
+                            */
+                            RelatedEntityTypeId = h.RelatedEntityTypeId
                         }.SummaryHtml )
                         .ToList();
 
@@ -828,9 +855,7 @@ namespace Rock.Blocks.Core
                 return encodedCaption;
             }
 
-            string resolvedUrl = System.Web.HttpContext.Current == null
-                ? virtualUrl
-                : System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
+            string resolvedUrl = RockApp.Current.ResolveRockUrl( virtualUrl );
 
             return $"<a href='{resolvedUrl}'>{encodedCaption}</a>";
         }

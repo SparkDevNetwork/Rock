@@ -1729,6 +1729,27 @@ namespace Rock.Blocks.Engagement.SignUp
                 }
             }
 
+            /*
+                10/18/2026 - MSE
+
+                The member and member opportunity attributes may only reference attributes
+                that are new or already belong to this project, using the same entity type
+                and qualifier that SaveMemberAttributes() saves them with. The attribute Guids
+                come from the browser, and Helper.SaveAttributeEdits() would otherwise load
+                any attribute by Guid and move it under this project. This must run before
+                the transaction because the project is saved inside it.
+
+                Reason: Prevent taking over unrelated attributes through a tampered Save.
+            */
+            var memberAttributeQualifierValue = isNew ? null : entity.Id.ToString();
+            if ( ( box.IsValidProperty( nameof( box.Bag.MemberAttributes ) )
+                    && !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.MemberAttributes, EntityTypeCache.Get<GroupMember>().Id, "GroupId", memberAttributeQualifierValue, RockContext ) )
+                || ( box.IsValidProperty( nameof( box.Bag.MemberOpportunityAttributes ) )
+                    && !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.MemberOpportunityAttributes, EntityTypeCache.Get<GroupMemberAssignment>().Id, "GroupId", memberAttributeQualifierValue, RockContext ) ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 // Save the project first so a new project has the identifier its requirements

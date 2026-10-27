@@ -21,6 +21,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { escapeHtml, truncate } from "@Obsidian/Utility/stringUtils";
+import { isUrlSchemeSafe } from "@Obsidian/Utility/url";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -54,9 +55,23 @@ export class AudioUrlFieldType extends FieldTypeBase {
             return "";
         }
 
+        /*
+            10/16/2026 - MSE
+
+            The stored value can come from public forms that do not check
+            its format. Only an http or https (or relative) URL is placed in
+            the player's src, and it is encoded so a quote can't end the
+            attribute. Anything else is shown as plain encoded text.
+
+            Reason: Stored values were rendered as raw HTML.
+        */
+        if (!isUrlSchemeSafe(value)) {
+            return escapeHtml(value);
+        }
+
         const html = `
 <audio
-    src='${value}'
+    src='${escapeHtml(value)}'
     class='js-media-audio'
     controls>
 </audio>

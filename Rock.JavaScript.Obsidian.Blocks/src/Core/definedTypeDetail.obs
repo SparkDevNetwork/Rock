@@ -23,7 +23,7 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="definedTypeViewBag" :options="options" />
+            <ViewPanel :modelValue="definedTypeViewBag" :options="options" :isEditable="config.isEditable === true" />
         </template>
 
         <template #edit>

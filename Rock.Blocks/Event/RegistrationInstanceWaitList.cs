@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -150,7 +152,19 @@ namespace Rock.Blocks.Event
             var builder = GetGridBuilder();
 
             var isAddDeleteEnabled = GetIsAddDeleteEnabled();
-            box.IsAddEnabled = isAddDeleteEnabled;
+
+            /*
+                10/20/2026 - MSE
+
+                The Obsidian Registration Detail block does not create registrations;
+                a blank or 0 RegistrationId shows "not found". The Add button linked
+                there with RegistrationId=0, so it is turned off, matching the
+                Registrations tab. Registrations are created through the Registration
+                Entry block.
+
+                Reason: Avoid an Add button that leads to a "not found" page.
+            */
+            box.IsAddEnabled = false;
             box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -283,7 +297,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override List<RegistrationRegistrant> GetListItems( IQueryable<RegistrationRegistrant> queryable, RockContext rockContext )
         {
-            RockContext.Database.CommandTimeout = 180;
+            RockContext.Database.SetCommandTimeout( 180 );
 
             var items = queryable.ToList();
 
@@ -347,7 +361,6 @@ namespace Rock.Blocks.Event
                 .AddPersonField( "person", r => r.PersonAlias?.Person )
                 .AddTextField( "personIdKey", r => r.PersonAlias?.Person?.IdKey )
                 .AddTextField( "registrationIdKey", r => IdHasher.Instance.GetHash( r.RegistrationId ) )
-                .AddField( "registrantId", r => r.Id )
                 .AddField( "waitListOrder", r => GetWaitListOrder( r ) )
                 .AddTextField( "registeredBy", r => r.Registration?.PersonAlias?.Person?.FullName )
                 .AddDateTimeField( "createdDateTime", r => r.CreatedDateTime );
@@ -893,8 +906,25 @@ namespace Rock.Blocks.Event
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            /*
+                10/12/2026 - MSE
+
+                The instance comes from the page parameter, so a person could
+                list the wait list of an instance in a template or category they
+                can not view. VIEW on the instance falls back to the template
+                and its category. Every caller already handles a null instance,
+                so the grid, export, add, delete and move all close.
+
+                Reason: Enforce registration template security on the wait list.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }

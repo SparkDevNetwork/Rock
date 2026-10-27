@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Humanizer;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web;
@@ -220,7 +221,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     {
                         if ( fileName.ToLower() != overrideValues[variableName].ToLower().Replace( "'", "" ) )
                         {
-                            var fileSystemPath = Server.MapPath( "~" + overrideValues[variableName].Replace( "'", "" ).Replace( "\"", "" ) );
+                            var fileSystemPath = RockApp.Current.MapPath( "~" + overrideValues[variableName].Replace( "'", "" ).Replace( "\"", "" ) );
 
                             // Delete file
                             if ( File.Exists( fileSystemPath ) )

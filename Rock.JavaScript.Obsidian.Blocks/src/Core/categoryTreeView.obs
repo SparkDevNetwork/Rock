@@ -98,7 +98,7 @@
     import { Guid } from "@Obsidian/Types";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { emptyGuid } from "@Obsidian/Utility/guid";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
@@ -110,7 +110,7 @@
 
     const box = useConfigurationValues<CustomBlockBox<CategoryTreeViewBag, CategoryTreeViewOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrantToken = useSecurityGrantToken();
+    const securityGrant = getSecurityGrant(box.securityGrantToken);
     const reloadBlock = useReloadBlock();
 
     const bag: CategoryTreeViewBag = box.bag ?? {
@@ -273,7 +273,7 @@
         provider.rootCategoryGuid = blockProperties.rootCategoryGuid ?? undefined;
         provider.entityTypeQualifierColumn = blockProperties.entityTypeQualifierColumn ?? undefined;
         provider.entityTypeQualifierValue = blockProperties.entityTypeQualifierValue ?? undefined;
-        provider.securityGrantToken = securityGrantToken.value;
+        provider.securityGrantToken = securityGrant.token.value;
         provider.getCategorizedItems = blockProperties.showOnlyCategories === false;
         provider.includeUnnamedEntityItems = blockProperties.showUnnamedEntityItems === true;
         provider.includeInactiveItems = showInactiveItems.value;
@@ -309,9 +309,16 @@
         onHideInactiveChanged();
     });
 
+    // Keep the provider on the latest token after it is renewed, without reloading the tree.
+    watch(securityGrant.token, () => {
+        itemProvider.value.securityGrantToken = securityGrant.token.value;
+    });
+
     // #endregion Watchers
 
     // #region Lifecycle Hooks
+
+    provideSecurityGrant(securityGrant);
 
     // Reload the block when its settings change so the new configuration takes effect.
     onConfigurationValuesChanged(reloadBlock);

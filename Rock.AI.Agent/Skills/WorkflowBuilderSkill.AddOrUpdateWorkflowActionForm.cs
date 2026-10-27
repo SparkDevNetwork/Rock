@@ -103,6 +103,13 @@ internal sealed partial class WorkflowBuilderSkill
             return Error( "That action is not attached to a workflow type." );
         }
 
+        var editError = GetWorkflowTypeEditError( actionType.ActivityType.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         // Refused before anything is written. Form Builder reads a form only through
         // its sections, pulling the fields that point at each one
         // (FormBuilderDetail.cs:584). This tool writes fields with no section, so

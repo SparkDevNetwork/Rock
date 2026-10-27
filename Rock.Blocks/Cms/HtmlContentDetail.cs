@@ -641,8 +641,8 @@ namespace Rock.Blocks.Cms
                 IsApprovalRequired = IsApprovalRequired,
                 IsCurrentPersonApprover = IsCurrentPersonAuthorized( Authorization.APPROVE ),
                 IsCodeEditorDefault = GetAttributeValue( AttributeKey.UseCodeEditor ).AsBoolean(),
-                EncryptedDocumentRootFolder = Encryption.EncryptString( GetAttributeValue( AttributeKey.DocumentRootFolder ) ),
-                EncryptedImageRootFolder = Encryption.EncryptString( GetAttributeValue( AttributeKey.ImageRootFolder ) ),
+                EncryptedDocumentRootFolder = Encryption.EncryptRootFolder( GetAttributeValue( AttributeKey.DocumentRootFolder ) ),
+                EncryptedImageRootFolder = Encryption.EncryptRootFolder( GetAttributeValue( AttributeKey.ImageRootFolder ) ),
                 IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
                 MergeFields = GetEditorMergeFields()
             };
@@ -677,9 +677,19 @@ namespace Rock.Blocks.Cms
         {
             var securityGrant = new SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone, so only
+            // grant access to people who pass the editor's EDIT check.
+            if ( IsCurrentPersonAuthorized( Authorization.EDIT ) )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the folders the editor uses.
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( GetAttributeValue( AttributeKey.DocumentRootFolder ) ) );
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( GetAttributeValue( AttributeKey.ImageRootFolder ) ) );
+            }
 
             return securityGrant.ToToken();
         }

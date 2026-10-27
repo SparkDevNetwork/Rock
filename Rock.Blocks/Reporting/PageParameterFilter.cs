@@ -1071,7 +1071,10 @@ namespace Rock.Blocks.Reporting
 
             if ( filterGuid.HasValue && !filterGuid.Equals( Guid.Empty ) )
             {
-                var attribute = new AttributeService( this.RockContext ).Get( filterGuid.Value );
+                // Only this block instance's own filter attributes may be edited.
+                var attribute = new AttributeService( this.RockContext )
+                    .Get( this.BlockEntityTypeId, "Id", this.BlockId.ToString() )
+                    .FirstOrDefault( a => a.Guid == filterGuid.Value );
                 if ( attribute == null )
                 {
                     return ActionBadRequest( "Unable to find filter to edit." );
@@ -1099,6 +1102,13 @@ namespace Rock.Blocks.Reporting
             if ( bag == null )
             {
                 return ActionBadRequest();
+            }
+
+            // Make sure the filter attribute is either new or already belongs
+            // to this block.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( new[] { bag }, this.BlockEntityTypeId, "Id", this.BlockId.ToString(), this.RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
             }
 
             // Prevent duplicate key values.
@@ -1182,7 +1192,11 @@ namespace Rock.Blocks.Reporting
             }
 
             var attributeService = new AttributeService( this.RockContext );
-            var attribute = attributeService.Get( filterGuid );
+
+            // Only this block instance's own filter attributes may be deleted.
+            var attribute = attributeService
+                .Get( this.BlockEntityTypeId, "Id", this.BlockId.ToString() )
+                .FirstOrDefault( a => a.Guid == filterGuid );
             if ( attribute == null )
             {
                 return ActionBadRequest( "Unable to find filter to delete." );

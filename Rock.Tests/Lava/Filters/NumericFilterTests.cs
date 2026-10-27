@@ -19,24 +19,66 @@ using System.Globalization;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Lava.Fluid;
+using Rock.Tests.Lava.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Tests.Shared.Utility;
+
+using RockAppTestHelper = Rock.Tests.Shared.TestFramework.TestHelper;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class NumericFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class NumericFilterTests
     {
         [TestMethod]
         public void BigIntegerInput_ProducesValidValues()
         {
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "3536345354364353525", "{{ 3536345354364353525 | Abs }}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "true", "{% if 3536345354364353525 > 3536345354364353520 %}true{% else %}false{% endif %}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "false", "{% if 3536345354364353525 < 3536345354364353520 %}true{% else %}false{% endif %}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "true", "{% if 3536345354364353520 < 3536345354364353525 %}true{% else %}false{% endif %}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "false", "{% if 3536345354364353520 > 3536345354364353525 %}true{% else %}false{% endif %}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), $"{9_000_000_000_000_000_000}", $"{{{{ {4_500_000_000_000_000_000} | Times:2 }}}}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "353634535436435352.5", "{{ 3536345354364353525 | DividedBy:10,2 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 3536345354364353525 | Abs }}" );
+
+                Assert.AreEqual( "3536345354364353525", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 3536345354364353525 > 3536345354364353520 %}true{% else %}false{% endif %}" );
+
+                Assert.AreEqual( "true", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 3536345354364353525 < 3536345354364353520 %}true{% else %}false{% endif %}" );
+
+                Assert.AreEqual( "false", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 3536345354364353520 < 3536345354364353525 %}true{% else %}false{% endif %}" );
+
+                Assert.AreEqual( "true", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 3536345354364353520 > 3536345354364353525 %}true{% else %}false{% endif %}" );
+
+                Assert.AreEqual( "false", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, $"{{{{ {4_500_000_000_000_000_000} | Times:2 }}}}" );
+
+                Assert.AreEqual( $"{9_000_000_000_000_000_000}", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 3536345354364353525 | DividedBy:10,2 }}" );
+
+                Assert.AreEqual( "353634535436435352.5", output );
+            } );
         }
 
         [TestMethod]
@@ -52,27 +94,56 @@ Guess 1 was {{ myNumber | Minus:guess1 | Abs }} from the target number.<br>
 Guess 2 was {{ myNumber | Minus:guess2 | Abs }} from the target number.<br>
 Guess 3 was {{ myNumber | Minus:guess3 | Abs }} from the target number!<br>
 ";
-            var expectedOutput = @"
+            // Each of the four assign tags leaves the newline that followed it, so
+            // the output opens with five line feeds rather than the one that starts
+            // the literal below.
+            var expectedOutput = "\n\n\n\n" + @"
 Guess My Number - Results Summary<br>
 Guess 1 was 32 from the target number.<br>
 Guess 2 was 13 from the target number.<br>
 Guess 3 was 0.5 from the target number!<br>
-";
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, ignoreWhitespace: true );
+".NormalizeLineEndings();
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void Abs_NumericInput_ProducesAbsoluteValue()
         {
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "17", "{{ -17 | Abs }}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "4", "{{ 4 | Abs }}" );
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "19.86", @"{{ ""-19.86"" | Abs }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ -17 | Abs }}" );
+
+                Assert.AreEqual( "17", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 4 | Abs }}" );
+
+                Assert.AreEqual( "4", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, @"{{ ""-19.86"" | Abs }}" );
+
+                Assert.AreEqual( "19.86", output );
+            } );
         }
 
         [TestMethod]
         public void Abs_NonnumericInput_ProducesZero()
         {
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "0", "{{ 'abc' | Abs }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'abc' | Abs }}" );
+
+                Assert.AreEqual( "0", output );
+            } );
         }
 
         #region Filter Tests: Format
@@ -87,7 +158,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void Format_UsingValidDotNetCustomFormatString_ProducesValidNumber()
         {
-            TestHelper.AssertTemplateOutput( "1,234,567.89", "{{ '1234567.89' | Format:'#,##0.00' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1234567.89' | Format:'#,##0.00' }}" );
+
+                Assert.AreEqual( "1,234,567.89", output );
+            } );
         }
 
         /// <summary>
@@ -96,7 +172,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void Format_EmptyInput_ProducesZeroLengthStringOutput()
         {
-            TestHelper.AssertTemplateOutput( "", "{{ '' | Format:'#,##0.00' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | Format:'#,##0.00' }}" );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         /// <summary>
@@ -105,7 +186,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void Format_NonNumericInput_ProducesUnchangedOutput()
         {
-            TestHelper.AssertTemplateOutput( "not_a_number", "{{ 'not_a_number' | Format:'#,##0.00' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'not_a_number' | Format:'#,##0.00' }}" );
+
+                Assert.AreEqual( "not_a_number", output );
+            } );
         }
 
         /// <summary>
@@ -118,7 +204,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | Format:'" + format + "' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | Format:'" + format + "' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -133,7 +224,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | Format:'" + format + "' }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | Format:'" + format + "' }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -148,7 +244,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{{ '" + input + "' | Format:'" + format + "' }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'client' %}{{ '" + input + "' | Format:'" + format + "' }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -193,9 +294,12 @@ Guess 3 was 0.5 from the target number!<br>
                 .Replace( "$1", input )
                 .Replace( "$2", format );
 
-            TestHelper.AssertTemplateOutput( expectedOutput,
-                inputTemplate,
-                ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -207,9 +311,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void Format_DecimalFormatAppliedToIntegerInput_ProducesIntegerOutput()
         {
-            TestHelper.AssertTemplateOutput( "001",
-                "{% assign number = 1 %}{{ number | Format:'D3' }}",
-                ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% assign number = 1 %}{{ number | Format:'D3' }}" );
+
+                Assert.AreEqual( "001", output );
+            } );
         }
 
         /// <summary>
@@ -218,9 +325,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void Format_InvalidFormatStringAppliedToNumericInput_ProducesFormatString()
         {
-            TestHelper.AssertTemplateOutput( "<invalidFormatString>",
-                "{% assign number = 1 %}{{ number | Format:'<invalidFormatString>' }}",
-                ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% assign number = 1 %}{{ number | Format:'<invalidFormatString>' }}" );
+
+                Assert.AreEqual( "<invalidFormatString>", output );
+            } );
         }
 
         #endregion
@@ -231,7 +341,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void NumberToOrdinal_IntegerInput_ProducesValidOrdinal()
         {
-            TestHelper.AssertTemplateOutput( "1st", "{{ 1 | NumberToOrdinal }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 1 | NumberToOrdinal }}" );
+
+                Assert.AreEqual( "1st", output );
+            } );
         }
 
         /// <summary>
@@ -240,7 +355,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void NumberToOrdinalWords_IntegerInput_ProducesValidWords()
         {
-            TestHelper.AssertTemplateOutput( "third", "{{ 3 | NumberToOrdinalWords }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 3 | NumberToOrdinalWords }}" );
+
+                Assert.AreEqual( "third", output );
+            } );
         }
 
         /// <summary>
@@ -249,7 +369,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void NumberToRomanNumerals_IntegerInput_ProducesValidNumerals()
         {
-            TestHelper.AssertTemplateOutput( "VII", "{{ 7 | NumberToRomanNumerals }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 7 | NumberToRomanNumerals }}" );
+
+                Assert.AreEqual( "VII", output );
+            } );
         }
 
         /// <summary>
@@ -258,7 +383,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void NumberToWords_IntegerInput_ProducesValidWords()
         {
-            TestHelper.AssertTemplateOutput( "one", "{{ 1 | NumberToWords }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 1 | NumberToWords }}" );
+
+                Assert.AreEqual( "one", output );
+            } );
         }
 
         /// <summary>
@@ -267,7 +397,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void ToQuantity_EqualToOne_ProducesSingularDescription()
         {
-            TestHelper.AssertTemplateOutput( "1 phone number", "{{ 'phone number' | ToQuantity:1 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'phone number' | ToQuantity:1 }}" );
+
+                Assert.AreEqual( "1 phone number", output );
+            } );
         }
 
         /// <summary>
@@ -276,7 +411,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void ToQuantity_GreaterThanOne_ProducesPluralDescription()
         {
-            TestHelper.AssertTemplateOutput( "3 phone numbers", "{{ 'phone number' | ToQuantity:3 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'phone number' | ToQuantity:3 }}" );
+
+                Assert.AreEqual( "3 phone numbers", output );
+            } );
         }
 
         /// <summary>
@@ -290,7 +430,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "1" )]
         public void AsBoolean_Theory_CanConvertCommonTextRepresentationsOfTrue( string input )
         {
-            TestHelper.AssertTemplateOutput( "true", "{{ '" + input + "' | AsBoolean }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsBoolean }}" );
+
+                Assert.AreEqual( "true", output );
+            } );
         }
 
         /// <summary>
@@ -306,7 +451,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "xyzzy" )]
         public void AsBoolean_Theory_CanConvertCommonTextRepresentationsOfFalse( string input )
         {
-            TestHelper.AssertTemplateOutput( "false", "{{ '" + input + "' | AsBoolean }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsBoolean }}" );
+
+                Assert.AreEqual( "false", output );
+            } );
         }
 
         /// <summary>
@@ -323,7 +473,12 @@ Guess 3 was 0.5 from the target number!<br>
             // Convert to a decimal here, because the DataRow Attribute does not allow a decimal parameter to be explicitly specified.
             var expectedDecimal = Convert.ToDecimal( expectedResult );
 
-            TestHelper.AssertTemplateOutput( expectedDecimal.ToString(), "{{ '" + input + "' | AsDecimal }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsDecimal }}" );
+
+                Assert.AreEqual( expectedDecimal.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -332,7 +487,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void AsDecimal_NonNumericInput_ReturnsEmptyString()
         {
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ 'xyzzy' | AsDecimal }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'xyzzy' | AsDecimal }}" );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -351,7 +511,12 @@ Guess 3 was 0.5 from the target number!<br>
             // assertion is taking place will be using the client culture of the test.
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult.ToString( CultureInfo.InvariantCulture ), "{{ '" + input + "' | AsDecimal }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsDecimal }}" );
+
+                    Assert.AreEqual( expectedResult.ToString( CultureInfo.InvariantCulture ), output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -372,7 +537,12 @@ Guess 3 was 0.5 from the target number!<br>
             // assertion is taking place will be using the client culture of the test.
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult.ToString( CultureInfo.InvariantCulture ), "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDecimal }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDecimal }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult.ToString( CultureInfo.InvariantCulture ), output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -393,7 +563,12 @@ Guess 3 was 0.5 from the target number!<br>
             // assertion is taking place will be using the client culture of the test.
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult.ToString( CultureInfo.InvariantCulture ), "{% setculture culture:'client' %}{{ '" + input + "' | AsDecimal }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'client' %}{{ '" + input + "' | AsDecimal }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult.ToString( CultureInfo.InvariantCulture ), output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -409,7 +584,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "0", 0 )]
         public void AsDouble_NumericText_ReturnsNumber( string input, double expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), "{{ '" + input + "' | AsDouble }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsDouble }}" );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -418,7 +598,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void AsDouble_NonNumericInput_ReturnsEmptyString()
         {
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ 'xyzzy' | AsDouble }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'xyzzy' | AsDouble }}" );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -440,7 +625,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsDouble }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsDouble }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -464,7 +654,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDouble }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDouble }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -485,7 +680,12 @@ Guess 3 was 0.5 from the target number!<br>
             // assertion is taking place will be using the client culture of the test.
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult.ToString( CultureInfo.InvariantCulture ), "{% setculture culture:'client' %}{{ '" + input + "' | AsDouble }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'client' %}{{ '" + input + "' | AsDouble }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult.ToString( CultureInfo.InvariantCulture ), output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -508,7 +708,12 @@ Guess 3 was 0.5 from the target number!<br>
             // assertion is taking place will be using the client culture of the test.
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDouble }}{% endsetculture %} and {{ '" + input + "' | AsDouble }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDouble }}{% endsetculture %} and {{ '" + input + "' | AsDouble }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -525,7 +730,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "$1000", 1000 )]
         public void AsInteger_FormattedNumericInput_ReturnsNumber( string input, int expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), "{{ '" + input + "' | AsInteger }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsInteger }}" );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -534,7 +744,12 @@ Guess 3 was 0.5 from the target number!<br>
         [TestMethod]
         public void AsInteger_NonNumericInput_ReturnsEmptyString()
         {
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ 'xyzzy' | AsInteger }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'xyzzy' | AsInteger }}" );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -561,7 +776,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsInteger }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsInteger }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -583,7 +803,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsInteger }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsInteger }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -599,7 +824,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsInteger }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsInteger }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -619,7 +849,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | DividedBy: '" + input2 + "' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | DividedBy: '" + input2 + "' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -634,7 +869,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "3", "2.1", "0.9" )]
         public void Minus_ValidNumericOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ " + input1 + " | Minus: " + input2 + " }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ " + input1 + " | Minus: " + input2 + " }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -646,7 +886,12 @@ Guess 3 was 0.5 from the target number!<br>
         public void Minus_ValidNumericStringOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
         {
             // Insert the operands as string values.
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Minus: '" + input2 + "' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | Minus: '" + input2 + "' }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -662,7 +907,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Minus: '" + input2 + "' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | Minus: '" + input2 + "' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -682,7 +932,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{% assign operand = '" + input2 + "' | AsDecimal %}{{ '" + input1 + "' |  AsDecimal | Minus: operand }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{% assign operand = '" + input2 + "' | AsDecimal %}{{ '" + input1 + "' |  AsDecimal | Minus: operand }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -702,7 +957,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{% assign operand = '" + input2 + "' | AsDecimal %}{{ '" + input1 + "' |  AsDecimal | Minus: operand }}{% endsetculture %}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'client' %}{% assign operand = '" + input2 + "' | AsDecimal %}{{ '" + input1 + "' |  AsDecimal | Minus: operand }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -717,7 +977,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "3", "2.1", "5.1" )]
         public void Plus_ValidNumericOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ " + input1 + " | Plus: " + input2 + " }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ " + input1 + " | Plus: " + input2 + " }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -729,7 +994,12 @@ Guess 3 was 0.5 from the target number!<br>
         public void Plus_ValidNumericStringOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
         {
             // Insert the operands as string values.
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Plus: '" + input2 + "' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | Plus: '" + input2 + "' }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -741,7 +1011,12 @@ Guess 3 was 0.5 from the target number!<br>
         [DataRow( "3.0", "2.0", "6.0" )] // We're not even certain this is correct, but it's how Fluid 2.25 behaves now.
         public void Times_ValidNumericOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ " + input1 + " | Times: " + input2 + " }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ " + input1 + " | Times: " + input2 + " }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -754,7 +1029,12 @@ Guess 3 was 0.5 from the target number!<br>
         public void Times_ValidNumericStringOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
         {
             // Insert the operands as string values.
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Times: '" + input2 + "' }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | Times: '" + input2 + "' }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -766,7 +1046,12 @@ Guess 3 was 0.5 from the target number!<br>
         public void Times_StringAndNumericOperand_ReturnsRepeatedString( string input1, string input2, string expectedResult )
         {
             // Insert the operands as string values.
-            TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Times: " + input2 + " }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | Times: " + input2 + " }}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         /// <summary>
@@ -784,7 +1069,12 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input1 + "' | Times: '" + input2 + "' }}" );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input1 + "' | Times: '" + input2 + "' }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
                 return null;
             }, clientCulture );
         }
@@ -803,7 +1093,12 @@ Guess 3 was 0.5 from the target number!<br>
 
             TestConfigurationHelper.ExecuteWithCulture( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, template );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, template );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
             }
             , runAsClientCulture );
         }
@@ -823,11 +1118,158 @@ Guess 3 was 0.5 from the target number!<br>
 
             TestConfigurationHelper.ExecuteWithCulture( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, template );
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, template );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
             }
             , runAsClientCulture );
         }
         #endregion
+
+        #region Round
+
+        [TestMethod]
+        public void Round_InputValueIsLessThanMidpoint_ResultIsRoundedDown()
+        {
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 0.4 | Round }}" );
+
+                Assert.AreEqual( "0", output );
+            } );
+        }
+
+        [TestMethod]
+        public void Round_InputValueIsMidpoint_ResultIsRoundedUp()
+        {
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 1.5 | Round }}" );
+
+                Assert.AreEqual( "2", output );
+            } );
+        }
+
+        [TestMethod]
+        public void Round_WithSpecifiedPrecision_ResultIsCorrectPrecision()
+        {
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 183.357 | Round:2 }}" );
+
+                Assert.AreEqual( "183.36", output );
+            } );
+        }
+
+        #endregion Round
+
+        #region FormatAsCurrency
+
+        /// <summary>
+        /// Decimal input should be formatted using the configured currency symbol.
+        /// </summary>
+        [TestMethod]
+        public void FormatAsCurrency_DecimalInputWithNoSymbol_ProducesDefaultCurrencyFormat()
+        {
+            using var app = CreateScopedAppWithCurrencySymbol();
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '1234567.89' | FormatAsCurrency }}" );
+
+                Assert.AreEqual( "$1,234,567.89", output );
+            } );
+        }
+
+        [TestMethod]
+        [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
+        [DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
+        public void FormatAsCurrency_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                using var app = CreateScopedAppWithCurrencySymbol();
+
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | FormatAsCurrency }}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
+
+                return null;
+            }, clientCulture );
+        }
+
+        [TestMethod]
+        [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
+        [DataRow( "1234567.89", "$1,234,567.89", "de-DE" )]
+        public void FormatAsCurrency_WithSetCultureAsInvariant_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                using var app = CreateScopedAppWithCurrencySymbol();
+
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'invariant' %}{{ '" + input + "' | FormatAsCurrency }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
+
+                return null;
+            }, clientCulture );
+        }
+
+        [TestMethod]
+        [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
+        [DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
+        public void FormatAsCurrency_WithSetCultureAsClient_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                using var app = CreateScopedAppWithCurrencySymbol();
+
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+                {
+                    var output = LavaRenderTestHelper.Render( engine, "{% setculture culture:'client' %}{{ '" + input + "' | FormatAsCurrency }}{% endsetculture %}" );
+
+                    Assert.AreEqual( expectedResult, output );
+                } );
+
+                return null;
+            }, clientCulture );
+        }
+
+        #endregion FormatAsCurrency
+
+        #region Support Methods
+
+        /// <summary>
+        /// Creates a scoped app whose mocked database holds the CurrencySymbol
+        /// global attribute that the FormatAsCurrency filter reads.
+        /// </summary>
+        /// <remarks>
+        /// The filter resolves the symbol through GlobalAttributesCache, which
+        /// falls back to the attribute's default value when no attribute value row
+        /// exists - so seeding the attribute alone is enough.
+        /// </remarks>
+        /// <returns>The scope, which the caller disposes.</returns>
+        private static RockAppTestHelper.RockAppScope CreateScopedAppWithCurrencySymbol()
+        {
+            var app = RockAppTestHelper.CreateScopedRockApp();
+
+            var rockContext = RockApp.Current.CreateRockContext();
+
+            MockData.CreateAttribute( rockContext, "CurrencySymbol", "Currency Symbol", defaultValue: "$" );
+
+            return app;
+        }
+
+        #endregion Support Methods
     }
 
 }

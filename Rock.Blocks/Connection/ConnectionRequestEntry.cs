@@ -1325,11 +1325,18 @@ namespace Rock.Blocks.Connection
                 SavePhone( bag.MobilePhone.Number, bag.MobilePhone.CountryCode, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), bag.MobilePhone.IsMessagingEnabled );
             }
 
-            if ( IsFieldShown( AttributeKey.ProfilePhoto ) && bag.PhotoGuid.IsNotNullOrWhiteSpace() && Guid.TryParse( bag.PhotoGuid, out var photoGuid ) )
+            // A matched person's photo is read-only for an untrusted submission,
+            // and the posted file must be one this visitor uploaded (or the
+            // photo already set). Otherwise a tampered Guid could attach any
+            // file as the photo.
+            if ( !isAnonymousMatch && IsFieldShown( AttributeKey.ProfilePhoto ) && bag.PhotoGuid.IsNotNullOrWhiteSpace() && Guid.TryParse( bag.PhotoGuid, out var photoGuid ) )
             {
-                var photoBinaryFile = new BinaryFileService( RockContext ).Get( photoGuid );
+                var binaryFileService = new BinaryFileService( RockContext );
+                var photoBinaryFile = binaryFileService.Get( photoGuid );
+                var isPhotoAllowed = photoBinaryFile != null
+                    && binaryFileService.IsUploadedBinaryFileAllowedForPerson( photoBinaryFile.Id, person.PhotoId, currentPerson );
 
-                if ( photoBinaryFile != null )
+                if ( isPhotoAllowed )
                 {
                     person.PhotoId = photoBinaryFile.Id;
 
@@ -1353,7 +1360,13 @@ namespace Rock.Blocks.Connection
 
             RockContext.SaveChanges();
 
-            SaveAddress( bag.Address, person );
+            // A matched person's home address is read-only for an untrusted
+            // submission, like the phone and photo above.
+            if ( !isAnonymousMatch )
+            {
+                SaveAddress( bag.Address, person );
+            }
+
             SavePersonAttributeValues( bag, person, currentPerson, isExistingPerson );
             SaveSpouse( bag, person, isAnonymousMatch );
         }

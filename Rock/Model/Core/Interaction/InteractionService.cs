@@ -733,14 +733,9 @@ namespace Rock.Model
             // Get the interaction channel and component for a page interaction.
             var dvWebsiteChannelType = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
 
-            // Use the Page Title as the InteractionSummary.
-            var title = page.BrowserTitle ?? page.PageTitle ?? string.Empty;
-
-            if ( title.Contains( "|" ) )
-            {
-                // Remove the site name.
-                title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
-            }
+            // Use the Page Title as the InteractionSummary, without the site name and
+            // stored as plain text, the same as a page view recorded by the page itself.
+            var title = InteractionTransactionInfo.GetInteractionSummaryFromPageTitle( page.BrowserTitle ?? page.PageTitle ?? string.Empty );
 
             // Create the interaction transaction.
             var interactionTransactionInfo = new InteractionTransactionInfo

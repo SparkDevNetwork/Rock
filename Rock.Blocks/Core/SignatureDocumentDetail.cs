@@ -187,7 +187,17 @@ namespace Rock.Blocks.Core
                 SignedByPersonAlias = entity.SignedByPersonAlias.ToListItemBag(),
                 SignedByPersonAliasId = entity.SignedByPersonAliasId,
                 SignedClientIp = entity.SignedClientIp,
-                SignedClientUserAgent = entity.GetFormattedUserAgent().ConvertCrLfToHtmlBr(),
+
+                /*
+                    10/16/2026 - MSE
+
+                    The user agent comes from the signer's request and is shown as HTML by the
+                    view panel. Encode it before converting the line breaks to br tags. The IP
+                    address is escaped by the view panel instead.
+
+                    Reason: Prevent a signer's user agent from rendering as HTML for staff.
+                */
+                SignedClientUserAgent = entity.GetFormattedUserAgent().EncodeHtml().ConvertCrLfToHtmlBr(),
                 SignedDateTime = entity.SignedDateTime,
                 SignedDocumentText = entity.SignedDocumentText,
                 SignedName = entity.SignedName,
@@ -235,6 +245,9 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
+            var originalSignatureDocumentTemplateId = entity.SignatureDocumentTemplateId;
+            var originalBinaryFileId = entity.BinaryFileId;
+
             box.IfValidProperty( nameof( box.Bag.AppliesToPersonAlias ),
                 () => entity.AppliesToPersonAliasId = box.Bag.AppliesToPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
@@ -280,17 +293,15 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.SignatureDataEncrypted ),
-                () => entity.SignatureDataEncrypted = box.Bag.SignatureDataEncrypted );
-
             box.IfValidProperty( nameof( box.Bag.SignatureDocumentTemplate ),
                 () => entity.SignatureDocumentTemplateId = box.Bag.SignatureDocumentTemplate.GetEntityId<SignatureDocumentTemplate>( RockContext ).Value );
 
             box.IfValidProperty( nameof( box.Bag.SignatureDocumentTemplateId ),
                 () => entity.SignatureDocumentTemplateId = box.Bag.SignatureDocumentTemplateId );
 
-            box.IfValidProperty( nameof( box.Bag.SignatureVerificationHash ),
-                () => entity.SignatureVerificationHash = box.Bag.SignatureVerificationHash );
+            // The signature evidence (SignatureDataEncrypted, SignatureVerificationHash,
+            // SignedClientIp, SignedClientUserAgent, SignedDateTime, SignedDocumentText
+            // and SignedName) is not editable and is never updated from the box.
 
             box.IfValidProperty( nameof( box.Bag.SignedByEmail ),
                 () => entity.SignedByEmail = box.Bag.SignedByEmail );
@@ -300,21 +311,6 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.SignedByPersonAliasId ),
                 () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAliasId );
-
-            box.IfValidProperty( nameof( box.Bag.SignedClientIp ),
-                () => entity.SignedClientIp = box.Bag.SignedClientIp );
-
-            box.IfValidProperty( nameof( box.Bag.SignedClientUserAgent ),
-                () => entity.SignedClientUserAgent = box.Bag.SignedClientUserAgent );
-
-            box.IfValidProperty( nameof( box.Bag.SignedDateTime ),
-                () => entity.SignedDateTime = box.Bag.SignedDateTime );
-
-            box.IfValidProperty( nameof( box.Bag.SignedDocumentText ),
-                () => entity.SignedDocumentText = box.Bag.SignedDocumentText );
-
-            box.IfValidProperty( nameof( box.Bag.SignedName ),
-                () => entity.SignedName = box.Bag.SignedName );
 
             box.IfValidProperty( nameof( box.Bag.Status ),
                 () => entity.Status = box.Bag.Status );
@@ -326,6 +322,18 @@ namespace Rock.Blocks.Core
 
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
+
+            // The document can not be moved to a different template.
+            if ( entity.SignatureDocumentTemplateId != originalSignatureDocumentTemplateId )
+            {
+                return false;
+            }
+
+            // Only allow the file to be changed to one the person is allowed to use.
+            if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( entity.BinaryFileId, originalBinaryFileId, RequestContext.CurrentPerson ) )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -363,9 +371,8 @@ namespace Rock.Blocks.Core
             }
             else
             {
-                // Create a new entity.
-                entity = new SignatureDocument();
-                entityService.Add( entity );
+                // Creating Signature Documents in this way is not allowed.
+                entity = null;
             }
 
             if ( entity == null )
@@ -376,7 +383,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${SignatureDocument.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {SignatureDocument.FriendlyTypeName}." );
                 return false;
             }
 

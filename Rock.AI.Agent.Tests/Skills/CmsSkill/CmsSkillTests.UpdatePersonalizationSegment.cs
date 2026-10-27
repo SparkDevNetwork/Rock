@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,6 +24,7 @@ using Rock.AI.Agent.Classes;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -52,6 +54,7 @@ public partial class CmsSkillTests
 
         var segment = SeedPersonalizationSegment( rockContext, 500, "Original Name", "SEGMENT_KEY" );
         segment.FilterDataViewId = dataView.Id;
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.EDIT );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -83,6 +86,45 @@ public partial class CmsSkillTests
             name: "Renamed" );
 
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void UpdatePersonalizationSegment_WithoutEditAuthorization_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var segment = SeedPersonalizationSegment( rockContext, 500, "Original Name", "SEGMENT_KEY" );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.UpdatePersonalizationSegment(
+            personalizationSegmentIdKey: IdHasher.Instance.GetHash( segment.Id ),
+            name: "Renamed Segment" );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "permission" ) ) );
+        Assert.AreEqual( "Original Name", segment.Name );
+    }
+
+    [TestMethod]
+    public void UpdatePersonalizationSegment_WithoutViewAuthorization_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var segment = SeedPersonalizationSegment( rockContext, 500, "Original Name", "SEGMENT_KEY" );
+        MockAuthorizationHelper.AllowAllUsersByDefault( rockContext, Authorization.EDIT );
+        MockAuthorizationHelper.DenyAllUsers<PersonalizationSegment>( rockContext, Authorization.VIEW, segment.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.UpdatePersonalizationSegment(
+            personalizationSegmentIdKey: IdHasher.Instance.GetHash( segment.Id ),
+            name: "Renamed Segment" );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.AreEqual( "Original Name", segment.Name );
     }
 
     #endregion

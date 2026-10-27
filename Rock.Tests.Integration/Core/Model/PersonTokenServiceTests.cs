@@ -164,7 +164,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonOutsideActivePersonTokenScopeShouldNotGetAToken()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var scopedPerson = personService.Get( PersonGuid.PersonWithMediumAccountProtectionProfileGuid.AsGuid() );
             var otherPerson = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
@@ -180,7 +180,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonInsideActivePersonTokenScopeShouldGetAToken()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var scopedPerson = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
 

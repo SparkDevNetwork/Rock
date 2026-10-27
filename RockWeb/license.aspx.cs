@@ -21,6 +21,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Model;
 
 public partial class license : System.Web.UI.Page
@@ -32,7 +33,7 @@ public partial class license : System.Web.UI.Page
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void Page_Load( object sender, EventArgs e )
     {
-        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-circle.svg" ) );
+        lLogoSvg.Text = System.IO.File.ReadAllText( RockApp.Current.MapPath( "~/Assets/Images/rock-logo-circle.svg" ) );
         
         
     }

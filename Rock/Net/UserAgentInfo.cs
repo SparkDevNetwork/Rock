@@ -117,6 +117,7 @@ public sealed class UserAgentInfo
     /// removed.
     /// </summary>
     [Obsolete( "Internal-only deprecation-window holdover. Will be removed when ClientInformation.Browser is removed." )]
+    [RockObsolete( "20.0" )]
     internal ClientInfo OriginalClientInfo { get; }
 
     #endregion

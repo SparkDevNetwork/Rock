@@ -68,7 +68,7 @@ namespace Rock.Blocks.AI
         #region Constants
 
         private static readonly string DockedChatBotInitScript = @"(function () {
-    const panelContent = sessionStorage.getItem(""Rock.AI.ChatBot.DockedChat"");
+    const panelContent = sessionStorage.getItem(""Rock.AI.ChatBot.DockedChatPanel"");
 
     if (!panelContent) {
         return;
@@ -520,6 +520,193 @@ namespace Rock.Blocks.AI
             }
         }
 
+        /// <summary>
+        /// Validates that the chat session belongs to the current person and the
+        /// specified agent. Session identifiers come from the client, so this must
+        /// be checked before a session is loaded.
+        /// </summary>
+        /// <param name="sessionId">The chat session identifier.</param>
+        /// <param name="agentId">The identifier of the agent the block is using.</param>
+        /// <param name="errorMessage">The message to display if the session is not valid.</param>
+        /// <returns><c>true</c> if the session is valid; otherwise <c>false</c>.</returns>
+        private bool TryValidateSession( int sessionId, int agentId, out string errorMessage )
+        {
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+            int? sessionAgentId = null;
+
+            if ( currentPersonId.HasValue )
+            {
+                sessionAgentId = new AIAgentSessionService( RockContext )
+                    .Queryable()
+                    .Where( s => s.Id == sessionId
+                        && s.PersonAlias.PersonId == currentPersonId.Value )
+                    .Select( s => ( int? ) s.AIAgentId )
+                    .FirstOrDefault();
+            }
+
+            // Only say the session is from another agent when it belongs to the
+            // current person, so this can't be used to discover valid session ids.
+            if ( !sessionAgentId.HasValue )
+            {
+                errorMessage = "Invalid session.";
+                return false;
+            }
+
+            // The agent can change when the block has no Default Agent and a new
+            // agent is added or the person's security changes.
+            if ( sessionAgentId.Value != agentId )
+            {
+                errorMessage = "This chat session was started with a different agent. Please start a new chat session.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the stream of responses from the agent that will be sent to the
+        /// client. If the agent fails while generating the response, the
+        /// exception is logged and the last item in the stream will contain
+        /// the error message.
+        /// </summary>
+        /// <param name="agent">The agent that will generate the response, with the user's message already added.</param>
+        /// <param name="isDebugEnabled">If <c>true</c> then debug logs will be included in the response.</param>
+        /// <param name="startTimestamp">The date and time the request started, used for debug log timestamps.</param>
+        /// <param name="stopwatch">The stopwatch that was started when the request started, used for the response duration.</param>
+        /// <returns>A stream of response bags to send to the client.</returns>
+        private async IAsyncEnumerable<SendMessageResponseBag> GetResponseStreamAsync( ChatAgent agent, bool isDebugEnabled, DateTime startTimestamp, System.Diagnostics.Stopwatch stopwatch )
+        {
+            var internalLogs = new List<ChatDebugLog>();
+            await using var responseEnumerator = agent.GetStreamingChatMessageResponsesAsync().GetAsyncEnumerator();
+
+            while ( true )
+            {
+                string errorMessage = null;
+                bool hasResponse;
+
+                // The response has already started by the time the stream is
+                // read, so an exception here would only drop the connection.
+                // Instead, log it and send the error to the client as the last
+                // item in the stream. C# does not allow a yield inside a try
+                // block that has a catch clause, so the error is yielded below.
+                try
+                {
+                    hasResponse = await responseEnumerator.MoveNextAsync();
+                }
+                catch ( Exception ex )
+                {
+                    // Wrap the exception so the Exception Log shows where it
+                    // came from, the provider's exception alone does not.
+                    ExceptionLogService.LogException( new Exception( $"The chat agent failed to generate a response for session {agent.SessionId}.", ex ) );
+                    errorMessage = GetResponseErrorMessage( ex );
+                    hasResponse = false;
+                }
+
+                if ( errorMessage != null )
+                {
+                    yield return new SendMessageResponseBag
+                    {
+                        ErrorMessage = errorMessage
+                    };
+
+                    yield break;
+                }
+
+                if ( !hasResponse )
+                {
+                    break;
+                }
+
+                var response = responseEnumerator.Current;
+
+                internalLogs.Add( new ChatDebugLog( "Internal", Microsoft.Extensions.Logging.LogLevel.Trace, $"Recieved content chunk '{response.Content}'." ) );
+
+                if ( response.Items != null && response.Items.Any() && response.Items[0] is StreamingToolCallContent sfcc )
+                {
+                    if ( sfcc.Description.IsNotNullOrWhiteSpace() )
+                    {
+                        yield return new SendMessageResponseBag
+                        {
+                            Tool = sfcc.Description
+                        };
+                    }
+
+                    continue;
+                }
+
+                if ( string.IsNullOrEmpty( response.Content ) && response.Usage == null && response.Debug == null )
+                {
+                    continue;
+                }
+
+                var messageBag = new ChatMessageBag
+                {
+                    Role = AuthorRole.Assistant,
+                    Message = response.Content,
+                    TokenCount = response.Usage?.OutputTokenCount ?? 0,
+                    ConsumedTokenCount = response.Usage?.TotalTokenCount ?? 0,
+                    Duration = stopwatch.ElapsedMilliseconds
+                };
+
+                var responseBag = new SendMessageResponseBag
+                {
+                    Message = messageBag
+                };
+
+                if ( isDebugEnabled && response.Debug != null )
+                {
+                    responseBag.Logs = response.Debug
+                        ?.Logs
+                        ?.Select( l => new ChatLogBag
+                        {
+                            Category = l.Category,
+                            LogLevel = ( int ) l.LogLevel,
+                            LogLevelName = l.LogLevel.ToString(),
+                            Message = l.Message,
+                            Timestamp = ( long ) ( l.Timestamp - startTimestamp ).TotalMilliseconds
+                        } ).ToList()
+                        ?? new List<ChatLogBag>();
+
+                    responseBag.Logs.AddRange( internalLogs.Select( l => new ChatLogBag
+                    {
+                        Category = l.Category,
+                        LogLevel = ( int ) l.LogLevel,
+                        LogLevelName = l.LogLevel.ToString(),
+                        Message = l.Message,
+                        Timestamp = ( long ) ( l.Timestamp - startTimestamp ).TotalMilliseconds
+                    } ) );
+                }
+
+                yield return responseBag;
+            }
+        }
+
+        /// <summary>
+        /// Gets the error message to send to the client when the agent fails
+        /// while generating a response. The innermost exception usually holds
+        /// the reason the AI provider rejected the request, such as the
+        /// conversation exceeding the model's context length.
+        /// </summary>
+        /// <param name="exception">The exception that was thrown.</param>
+        /// <returns>The error message to display to the individual.</returns>
+        private static string GetResponseErrorMessage( Exception exception )
+        {
+            var innerException = exception;
+
+            while ( innerException.InnerException != null )
+            {
+                innerException = innerException.InnerException;
+            }
+
+            if ( innerException.Message.IsNullOrWhiteSpace() )
+            {
+                return "An error occurred while getting a response from the AI provider.";
+            }
+
+            return $"An error occurred while getting a response from the AI provider: {innerException.Message}";
+        }
+
         #endregion
 
         #region Block Actions
@@ -550,89 +737,32 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
+            var sessionId = IdHasher.Instance.GetId( request.SessionIdKey ) ?? 0;
+
+            if ( !TryValidateSession( sessionId, agentCache.Id, out var sessionErrorMessage ) )
+            {
+                return ActionBadRequest( sessionErrorMessage );
+            }
+
+            // Debug output includes the agent's internal prompts and tool calls,
+            // so only honor the request for debug output from administrators.
+            var isDebugEnabled = request.IsDebugEnabled && BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+
             var startTimestamp = RockDateTime.Now;
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
             {
-                IsDebugEnabled = request.IsDebugEnabled,
+                IsDebugEnabled = isDebugEnabled,
             } );
 
-            await agent.LoadSessionAsync( IdHasher.Instance.GetId( request.SessionIdKey ) ?? 0 );
+            await agent.LoadSessionAsync( sessionId );
             await AddTransientAnchorsAsync( agent );
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
 
-            var internalLogs = new List<ChatDebugLog>();
+            var responseStream = GetResponseStreamAsync( agent, isDebugEnabled, startTimestamp, sw );
 
-            async IAsyncEnumerable<SendMessageResponseBag> ResponseFactory()
-            {
-                var responseStream = agent.GetStreamingChatMessageResponsesAsync();
-
-                await foreach ( var response in responseStream )
-                {
-                    internalLogs.Add( new ChatDebugLog( "Internal", Microsoft.Extensions.Logging.LogLevel.Trace, $"Recieved content chunk '{response.Content}'." ) );
-
-                    if ( response.Items != null && response.Items.Any() && response.Items[0] is StreamingToolCallContent sfcc )
-                    {
-                        if ( sfcc.Description.IsNotNullOrWhiteSpace() )
-                        {
-                            yield return new SendMessageResponseBag
-                            {
-                                Tool = sfcc.Description
-                            };
-                        }
-
-                        continue;
-                    }
-
-                    if ( string.IsNullOrEmpty( response.Content ) && response.Usage == null && response.Debug == null )
-                    {
-                        continue;
-                    }
-
-                    var messageBag = new ChatMessageBag
-                    {
-                        Role = AuthorRole.Assistant,
-                        Message = response.Content,
-                        TokenCount = response.Usage?.OutputTokenCount ?? 0,
-                        ConsumedTokenCount = response.Usage?.TotalTokenCount ?? 0,
-                        Duration = sw.ElapsedMilliseconds
-                    };
-
-                    var responseBag = new SendMessageResponseBag
-                    {
-                        Message = messageBag
-                    };
-
-                    if ( request.IsDebugEnabled && response.Debug != null )
-                    {
-                        responseBag.Logs = response.Debug
-                            ?.Logs
-                            ?.Select( l => new ChatLogBag
-                            {
-                                Category = l.Category,
-                                LogLevel = ( int ) l.LogLevel,
-                                LogLevelName = l.LogLevel.ToString(),
-                                Message = l.Message,
-                                Timestamp = ( long ) ( l.Timestamp - startTimestamp ).TotalMilliseconds
-                            } ).ToList()
-                            ?? new List<ChatLogBag>();
-
-                        responseBag.Logs.AddRange( internalLogs.Select( l => new ChatLogBag
-                        {
-                            Category = l.Category,
-                            LogLevel = ( int ) l.LogLevel,
-                            LogLevelName = l.LogLevel.ToString(),
-                            Message = l.Message,
-                            Timestamp = ( long ) ( l.Timestamp - startTimestamp ).TotalMilliseconds
-                        } ) );
-                    }
-
-                    yield return responseBag;
-                }
-            }
-
-            return new ServerSentEventsBlockActionResult<SendMessageResponseBag>( ResponseFactory() );
+            return new ServerSentEventsBlockActionResult<SendMessageResponseBag>( responseStream );
         }
 
         /// <summary>
@@ -687,17 +817,9 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
-            var foundSessionId = new AIAgentSessionService( RockContext )
-                .Queryable()
-                .Where( s => s.Id == sessionId
-                    && s.AIAgentId == agentCache.Id
-                    && s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
-                .Select( s => s.Id )
-                .FirstOrDefault();
-
-            if ( foundSessionId == 0 )
+            if ( !TryValidateSession( sessionId, agentCache.Id, out var sessionErrorMessage ) )
             {
-                return ActionBadRequest( "Invalid session." );
+                return ActionBadRequest( sessionErrorMessage );
             }
 
             var messages = GetSessionMessages( sessionId );
@@ -820,6 +942,11 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
+            if ( !TryValidateSession( sessionId, agentCache.Id, out var sessionErrorMessage ) )
+            {
+                return ActionBadRequest( sessionErrorMessage );
+            }
+
             var entityTypeCache = EntityTypeCache.Get( "Rock.Model." + entityTypeName, false, RockContext );
 
             if ( entityTypeCache == null )
@@ -829,7 +956,8 @@ namespace Rock.Blocks.AI
 
             var entity = Reflection.GetIEntityForEntityType( entityTypeCache.Id, entityId, RockContext );
 
-            if ( entity == null )
+            // Only allow anchoring entities the person is allowed to view.
+            if ( entity == null || ( entity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
             {
                 return ActionBadRequest( "Entity not found." );
             }
@@ -862,6 +990,11 @@ namespace Rock.Blocks.AI
             if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
+            if ( !TryValidateSession( sessionId, agentCache.Id, out var sessionErrorMessage ) )
+            {
+                return ActionBadRequest( sessionErrorMessage );
             }
 
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions() );
@@ -981,6 +1114,13 @@ namespace Rock.Blocks.AI
             /// The debug logs that were collected during processing.
             /// </summary>
             public List<ChatLogBag> Logs { get; set; }
+
+            /// <summary>
+            /// The error that stopped the response from being generated. When
+            /// this is set it will be the last item in the stream and the
+            /// response should be discarded.
+            /// </summary>
+            public string ErrorMessage { get; set; }
         }
 
         /// <summary>

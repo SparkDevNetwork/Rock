@@ -1,4 +1,36 @@
 ﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+
+<script runat="server">
+
+    /// <summary>
+    /// Removes empty title strip styling while keeping the Context zone available for editing.
+    /// </summary>
+    /// <param name="e">The event data.</param>
+    protected override void OnPreRenderComplete( EventArgs e )
+    {
+        base.OnPreRenderComplete( e );
+
+        var pageCache = Rock.Web.Cache.PageCache.Get( PageId );
+        if ( pageCache == null )
+        {
+            return;
+        }
+
+        var hasPageTitle = pageCache.PageDisplayTitle && !string.IsNullOrWhiteSpace( base.PageTitle );
+        var hasBreadCrumbs = pageCache.PageDisplayBreadCrumb && BreadCrumbs != null && BreadCrumbs.Count > 0;
+        var hasPageDescription = pageCache.PageDisplayDescription && !string.IsNullOrWhiteSpace( pageCache.Description );
+        var hasContextBlocks = Zones.ContainsKey( "Context" ) && Zones["Context"].Value.HasControls();
+
+        secPageTitle.Attributes["class"] = secPageTitle.Attributes["class"].Replace( " page-header-empty", string.Empty );
+
+        if ( !hasPageTitle && !hasBreadCrumbs && !hasPageDescription && !hasContextBlocks )
+        {
+            // Keep the zone in the control tree so administrators can add its first block.
+            secPageTitle.Attributes["class"] += " page-header-empty";
+        }
+    }
+
+</script>
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
         <!-- Page Title -->
         <section id="secPageTitle" class="page-header fullwidth" runat="server">

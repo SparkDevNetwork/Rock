@@ -85,6 +85,13 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            // The save button is only shown to people with block EDIT, so re-check it here.
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupMemberScheduleTemplate.FriendlyTypeName );
+                return;
+            }
+
             RockContext rockContext = RockApp.Current.CreateRockContext();
             var groupMemberScheduleTemplateService = new GroupMemberScheduleTemplateService( rockContext );
 
@@ -100,6 +107,11 @@ namespace RockWeb.Blocks.GroupScheduling
             else
             {
                 groupMemberScheduleTemplate = groupMemberScheduleTemplateService.Get( groupMemberScheduleTemplateId );
+            }
+
+            if ( groupMemberScheduleTemplate == null )
+            {
+                return;
             }
 
             groupMemberScheduleTemplate.Name = tbName.Text;

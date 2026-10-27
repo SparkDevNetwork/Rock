@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web;
@@ -68,13 +69,13 @@ public partial class Http429Error : System.Web.UI.Page
             else
             {
                 Response.StatusCode = 429;
-                lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+                lLogoSvg.Text = System.IO.File.ReadAllText( RockApp.Current.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
             }
         }
         catch 
         {
             Response.StatusCode = 429;
-            lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+            lLogoSvg.Text = System.IO.File.ReadAllText( RockApp.Current.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
         }
         finally
         {

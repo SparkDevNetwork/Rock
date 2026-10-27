@@ -27,6 +27,9 @@
     border-radius: var(--rounded-medium);
     border: 1px solid var(--color-interface-soft);
     transition: background-color .15s ease-in-out;
+
+    /* May need to revisit this if a mobile version of the UI is needed */
+    min-width: var(--displaycard-min-width, 440px);
 }
 
 .displaycard-main {
@@ -131,6 +134,11 @@
     gap: var(--spacing-medium);
     flex: 1 1 0;
     overflow: hidden;
+
+    /* The icon+title+desc container needs a min width;
+       otherwise, it'll shrink until it's hidden
+       before the aside shrinks. */
+    min-width: var(--displaycard-heading-min-width, 150px);
 }
 
 .displaycard-heading-text {
@@ -288,6 +296,8 @@
     .displaycard-aside {
         justify-content: flex-start;
         height: auto;
+        max-width: 100%;
+        min-width: 0;
     }
 
     .displaycard-actions {

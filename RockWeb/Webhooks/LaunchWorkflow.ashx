@@ -26,6 +26,7 @@ using System.Web;
 using Newtonsoft.Json;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -182,11 +183,12 @@ public class LaunchWorkflow : IHttpHandler
             }
         }
 
-        // set workflow name
-        string nameTemplate = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
-        if ( nameTemplate.IsNotNullOrWhiteSpace() )
+        // set workflow name. The template is rendered once here; rendering the
+        // result again would run request data as Lava.
+        string workflowName = hook.GetAttributeValue( "WorkflowNameTemplate" ).ResolveMergeFields( mergeFields );
+        if ( workflowName.IsNotNullOrWhiteSpace() )
         {
-            workflow.Name = nameTemplate.ResolveMergeFields( mergeFields );
+            workflow.Name = workflowName;
         }
     }
 
@@ -316,7 +318,7 @@ public class LaunchWorkflow : IHttpHandler
     /// <param name="message">The message to be logged.</param>
     protected void WriteToLog( string message )
     {
-        string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/LaunchWorkflow.txt" );
+        string logFile = RockApp.Current.MapPath( "~/App_Data/Logs/LaunchWorkflow.txt" );
 
         // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
         var maxRetry = 3;

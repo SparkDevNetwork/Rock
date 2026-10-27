@@ -21,9 +21,12 @@ using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared.Utility;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava
 {
@@ -32,7 +35,8 @@ namespace Rock.Tests.Lava
     /// The Liquid language standard can be verified at https://liquidjs.com/playground.html
     /// </summary>
     [TestClass]
-    public class LiquidOperatorTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class LiquidOperatorTests
     {
         #region Operators: <
 
@@ -50,7 +54,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -65,7 +74,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -80,9 +94,14 @@ namespace Rock.Tests.Lava
 {% if left < right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -96,9 +115,14 @@ namespace Rock.Tests.Lava
 {% if left < '1/1/2020 11:00' %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -112,9 +136,14 @@ namespace Rock.Tests.Lava
 {% if '1/1/2020 10:00' < right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -130,7 +159,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         #endregion
@@ -151,7 +185,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -164,7 +203,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -179,9 +223,14 @@ namespace Rock.Tests.Lava
 {% if left <= right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -196,9 +245,14 @@ namespace Rock.Tests.Lava
 {% if left <= '1/1/2020 9:00' %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True<br>False";
+            var expectedOutput = "\n\nTrue<br>\nFalse\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -213,9 +267,14 @@ namespace Rock.Tests.Lava
 {% if '1/1/2020 11:00' <= right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True<br>False";
+            var expectedOutput = "\n\nTrue<br>\nFalse\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -228,7 +287,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         [TestMethod]
@@ -241,7 +305,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         #endregion
@@ -262,7 +331,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -277,7 +351,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -292,9 +371,14 @@ namespace Rock.Tests.Lava
 {% if left > right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -308,9 +392,14 @@ namespace Rock.Tests.Lava
 {% if left > '1/1/2020 9:00' %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -324,9 +413,14 @@ namespace Rock.Tests.Lava
 {% if '1/1/2020 10:00' > right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -342,7 +436,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         #endregion
@@ -363,7 +462,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -376,7 +480,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -391,9 +500,14 @@ namespace Rock.Tests.Lava
 {% if left >= right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -408,9 +522,14 @@ namespace Rock.Tests.Lava
 {% if left >= '1/1/2020 11:00' %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True<br>False";
+            var expectedOutput = "\n\nTrue<br>\nFalse\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -425,9 +544,14 @@ namespace Rock.Tests.Lava
 {% if '1/1/2020 7:00' >= right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True<br>False";
+            var expectedOutput = "\n\nTrue<br>\nFalse\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -443,7 +567,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         [TestMethod]
@@ -456,7 +585,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         #endregion
@@ -482,7 +616,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -497,7 +636,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -512,9 +656,14 @@ namespace Rock.Tests.Lava
 {% if left == right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -528,9 +677,14 @@ namespace Rock.Tests.Lava
 {% if left == '1/1/2020 10:00' %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -544,9 +698,14 @@ namespace Rock.Tests.Lava
 {% if '1/1/2020 10:00' == right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -568,7 +727,13 @@ namespace Rock.Tests.Lava
 
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, values, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = values };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
 
@@ -585,7 +750,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         #endregion
@@ -606,7 +776,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -621,7 +796,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -636,9 +816,14 @@ namespace Rock.Tests.Lava
 {% if left != right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -652,9 +837,14 @@ namespace Rock.Tests.Lava
 {% if left != '1/1/2020 11:00' %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -668,9 +858,14 @@ namespace Rock.Tests.Lava
 {% if '1/1/2020 11:00' != right %}True{% else %}False{% endif %}
 ";
 
-            var expectedOutput = @"True";
+            var expectedOutput = "\n\nTrue\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -688,9 +883,14 @@ namespace Rock.Tests.Lava
 {% if '' != operandFalse %}4{% endif %}
 ";
 
-            var expectedOutput = @"1234";
+            var expectedOutput = "\n\n\n1\n2\n3\n4\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -706,7 +906,12 @@ namespace Rock.Tests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         #endregion
@@ -723,7 +928,7 @@ namespace Rock.Tests.Lava
             // This test applies to the current implementation of Lava with the Fluid engine.
             // The Fluid framework natively aligns with the Shopify equality rules, and the Lava implementation
             // modified to be compatible with previous versions of Lava.
-            AssertExpressionsForEngine( tests, typeof( FluidEngine ) );
+            AssertExpressionsForEngine( tests );
         }
 
         /// <summary>
@@ -855,40 +1060,49 @@ namespace Rock.Tests.Lava
             return tests;
         }
 
-        private void AssertExpressionsForEngine( List<PredicateTruthTest> tests, Type engineType )
+        /// <summary>
+        /// Renders every expression in the truth table and reports each one whose
+        /// result differs from the table.
+        /// </summary>
+        /// <remarks>
+        /// The expressions are rendered as one batch so that a failure reports
+        /// every mismatch at once rather than stopping at the first.
+        /// </remarks>
+        /// <param name="tests">The truth table to verify.</param>
+        private void AssertExpressionsForEngine( List<PredicateTruthTest> tests )
         {
-            var errorMessages = new List<string>();
-
-            foreach ( var testEntry in tests )
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var input = $"{engineType.Name} | {testEntry.ConditionalExpression} | Expected=";
-
-                input += "{% if " + testEntry.ConditionalExpression + " %}true{% else %}false{% endif %}";
-
-                bool expectedResult;
-                if ( engineType == typeof( FluidEngine ) )
-                {
-                    expectedResult = testEntry.FluidLavaResult;
-                }
-                else
+                if ( !( engine is FluidEngine ) )
                 {
                     throw new Exception( "Engine Type is invalid." );
                 }
 
-                var expectedOutput = $"{engineType.Name} | {testEntry.ConditionalExpression} | Expected={expectedResult.ToString().ToLower()} ";
+                var engineName = engine.GetType().Name;
+                var errorMessages = new List<string>();
 
-                var output = TestHelper.GetTemplateOutput( engineType, input );
-
-                if ( output.RemoveWhiteSpace() != expectedOutput.RemoveWhiteSpace() )
+                foreach ( var testEntry in tests )
                 {
-                    errorMessages.Add( expectedOutput );
-                }
-            }
+                    var input = $"{engineName} | {testEntry.ConditionalExpression} | Expected="
+                        + "{% if " + testEntry.ConditionalExpression + " %}true{% else %}false{% endif %}";
 
-            if ( errorMessages.Any() )
-            {
-                Assert.Fail( "The following tests failed:\n" + errorMessages.AsDelimited( "\n" ) );
-            }
+                    var expectedResult = testEntry.FluidLavaResult;
+
+                    var expectedOutput = $"{engineName} | {testEntry.ConditionalExpression} | Expected={expectedResult.ToString().ToLower()}";
+
+                    var output = LavaRenderTestHelper.Render( engine, input );
+
+                    if ( output != expectedOutput )
+                    {
+                        errorMessages.Add( $"{expectedOutput} [actual: {output}]" );
+                    }
+                }
+
+                if ( errorMessages.Any() )
+                {
+                    Assert.Fail( "The following tests failed:\n" + errorMessages.AsDelimited( "\n" ) );
+                }
+            } );
         }
 
         /// <summary>

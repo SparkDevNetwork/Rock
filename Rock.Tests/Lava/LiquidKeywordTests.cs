@@ -18,9 +18,12 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava
 {
@@ -28,7 +31,8 @@ namespace Rock.Tests.Lava
     /// Tests the processing of standard Liquid keywords where some variation has been identified between the Liquid frameworks supported by Rock.
     /// </summary>
     [TestClass]
-    public class LiquidKeywordTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class LiquidKeywordTests
     {
         #region Case Statement
 
@@ -56,12 +60,14 @@ Number: {{ number }}
 Color: {{ color }}
 ";
 
-            var expectedOutput = @"
-Number: 2
-Color: green
-";
+            var expectedOutput = "\n\n\n\n        \n    \nNumber: 2\nColor: green\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -81,11 +87,16 @@ Color: green
 {% endcase %}
 ";
 
-            var expectedOutput = @"
-First Case matched. Second Case matched.
-";
+            // Both the "1" and the "1 or 2" cases match, and each keeps the
+            // indentation and trailing newline of the source template.
+            var expectedOutput = "\n\n\n        First Case matched.\n    \n        Second Case matched.\n    \n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -106,13 +117,17 @@ First Case matched. Second Case matched.
 {% case person.CommunicationPreference %} {% when 1 %}Email{% else %}Not Email!{% endcase %}
 ";
 
-            var expectedOutput = @"
-Ted, your communication preference is: Email
-";
+            var expectedOutput = "\nTed, your communication preference is:\nEmail\n";
 
             var mergeDictionary = new LavaDataDictionary { { "person", person } };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeDictionary };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -129,13 +144,17 @@ Ted, your communication preference is: Email
 {% case person.CommunicationPreference %} {% when 'Email' %}Email{% else %}Not Email!{% endcase %}
 ";
 
-            var expectedOutput = @"
-Ted, your communication preference is: Email
-";
+            var expectedOutput = "\nTed, your communication preference is:\nEmail\n";
 
             var mergeDictionary = new LavaDataDictionary { { "person", person } };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeDictionary };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -152,13 +171,17 @@ Ted, your communication preference is: Email
 {% case 1 %}{% when person.CommunicationPreference %}Email{% else %}Not Email!{% endcase %}
 ";
 
-            var expectedOutput = @"
-Ted, your communication preference is: Email
-";
+            var expectedOutput = "\nTed, your communication preference is:\nEmail\n";
 
             var mergeDictionary = new LavaDataDictionary { { "person", person } };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeDictionary };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -175,15 +198,20 @@ Ted, your communication preference is: Email
 {% cycle 'red', 'green', 'blue' %}
 {% cycle 'red', 'green', 'blue' %}
 {% cycle 'red', 'green', 'blue' %}
-";
+".NormalizeLineEndings();
 
             var expectedOutput = @"
 red
 green
 blue
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
 
         }
 
@@ -199,13 +227,14 @@ blue
 {% cycle 'colors': 'red', 'green', 'blue' %} - {% cycle 'numbers': 'one', 'two', 'three' %}
 ";
 
-            var expectedOutput = @"
-red - one 
-green - two
-blue - three
-";
+            var expectedOutput = "\nred - one\ngreen - two\nblue - three\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
 
         }
 
@@ -237,9 +266,14 @@ False
 
 ";
 
-            var expectedOutput = @"True true";
+            var expectedOutput = "\n\n\nTrue\n\n\ntrue\n\n\n\n\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -267,9 +301,15 @@ false
 {% endif %}
 ";
 
-            var expectedOutput = @"True true";
+            var expectedOutput = "\n\nTrue\n\n\ntrue\n\n\n\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -297,9 +337,15 @@ false
 {% endif %}
 ";
 
-            var expectedOutput = @"True true";
+            var expectedOutput = "\n\nTrue\n\n\ntrue\n\n\n\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -325,9 +371,14 @@ false
 {% endif %}
 ";
 
-            var expectedOutput = @"True true";
+            var expectedOutput = "\n\nTrue\n\n\ntrue\n\n\n\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -361,9 +412,16 @@ FAILED
 
 ";
 
-            var expectedOutput = @"passed Passed PASSED";
+            // Each if/else branch leaves the newline that followed its tag, so the
+            // three matched words arrive separated by blank lines.
+            var expectedOutput = "\n\n\n\npassed\n\n\nPassed\n\n\nPASSED\n\n\n\n\n\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -397,9 +455,16 @@ FAILED
 
 ";
 
-            var expectedOutput = @"passed Passed PASSED";
+            // Each if/else branch leaves the newline that followed its tag, so the
+            // three matched words arrive separated by blank lines.
+            var expectedOutput = "\n\n\n\npassed\n\n\nPassed\n\n\nPASSED\n\n\n\n\n\n\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -411,13 +476,18 @@ FAILED
             var template = @"
 {% assign emptyString = 'Empty String' %}{{ emptyString }}
 {% assign trueString = 'True String' %}{{ trueString }}
-";
+".NormalizeLineEndings();
             var expectedOutput = @"
 Empty String
 True String
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -439,13 +509,18 @@ True String
    echo 'to the liquid tag' 
     | Upcase 
 %}
-";
+".NormalizeLineEndings();
 
             var expectedOutput = @"
 WELCOME TO THE LIQUID TAG
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -466,10 +541,13 @@ case i
 endcase  %}
 ";
 
-            var expectedOutput = @"
-Match
-";
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            var expectedOutput = "\n\n\nMatch\n";
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -496,13 +574,15 @@ The answer is {{ x }}.
 %}
 ";
 
-            var expectedOutput = "The answer is 42.";
+            var expectedOutput = "\nThe answer is 42.\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -524,11 +604,14 @@ The answer is {{ x }}.
    echo 'to the liquid tag' 
     | Upcase 
 %}";
-            var expectedOutput = @"
-WELCOME TO THE LIQUID TAG
-";
+            var expectedOutput = "\nWELCOME TO THE LIQUID TAG";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -544,13 +627,18 @@ WELCOME TO THE LIQUID TAG
    echo 'to the lava tag' 
     | Upcase 
 %}
-";
+".NormalizeLineEndings();
 
             var expectedOutput = @"
 WELCOME TO THE LAVA TAG
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -565,8 +653,13 @@ WELCOME TO THE LAVA TAG
         echo i
     endfor
 %}";
-            var expectedOutput = @"123";
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            var expectedOutput = "\n123";
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -586,9 +679,14 @@ WELCOME TO THE LAVA TAG
 {%- endfor %}
 ";
 
-            var expectedOutput = @"123";
+            var expectedOutput = "123\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -597,9 +695,8 @@ WELCOME TO THE LAVA TAG
         [TestMethod]
         public void LavaTag_WithInnerIfElseIfTag_IsProcessedCorrectly()
         {
-            var person = new LavaUnitTestHelper.TestPerson { FirstName = "Theodore", NickName = "Ted", LastName = "Decker", Id = 1 };
 
-            var mergeValues = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
+            var mergeValues = new LavaDataDictionary { { "CurrentPerson", LavaTestData.GetTestPersonTedDecker() } };
 
             var template = @"
 {% liquid
@@ -620,11 +717,14 @@ WELCOME TO THE LAVA TAG
     echo result
 %}
 ";
-            var expectedOutput = @"male";
+            var expectedOutput = "\nmale\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, mergeValues, ignoreWhitespace: true );
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
 
         }
@@ -650,11 +750,13 @@ WELCOME TO THE LAVA TAG
 
 %}
 ";
-            var expectedOutput = @"false";
+            var expectedOutput = "\nfalse\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -679,11 +781,13 @@ WELCOME TO THE LAVA TAG
     echo isTest
 %}
 ";
-            var expectedOutput = @"true";
+            var expectedOutput = "\ntrue\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
 
         }
@@ -707,11 +811,13 @@ WELCOME TO THE LAVA TAG
     echo isTest
 %}
 ";
-            var expectedOutput = @"false";
+            var expectedOutput = "\nfalse\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -735,11 +841,13 @@ WELCOME TO THE LAVA TAG
     echo test
 %}
 ";
-            var expectedOutput = @"5";
+            var expectedOutput = "\n5\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -764,11 +872,13 @@ WELCOME TO THE LAVA TAG
     echo test
 %}
 ";
-            var expectedOutput = @"-1";
+            var expectedOutput = "\n-1\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -791,9 +901,11 @@ WELCOME TO THE LAVA TAG
 ";
             var expectedOutput = @"5";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -809,13 +921,15 @@ WELCOME TO THE LAVA TAG
 %}
 ";
 
-            var expectedOutput = @"HELLO";
+            var expectedOutput = "\nHELLO\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterBlock( "testpassthrough", ( blockName ) => new TestPassthroughBlock() );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -832,13 +946,15 @@ WELCOME TO THE LAVA TAG
 %}
 ";
 
-            var expectedOutput = @"1234";
+            var expectedOutput = "\n1234\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterBlock( "testpassthrough", ( blockName ) => new TestPassthroughBlock() );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -866,9 +982,14 @@ WELCOME TO THE LAVA TAG
 ";
             // If the parser mistakenly executed the commented assignment we would see 'applebananacherry'.
             // The correct behavior is that only the assignment AFTER the comment block takes effect.
-            var expectedOutput = @"xyz";
+            var expectedOutput = "\nxyz\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -888,9 +1009,14 @@ WELCOME TO THE LAVA TAG
     endfor
 %}
 ";
-            var expectedOutput = @"applebananacherry";
+            var expectedOutput = "\napplebananacherry\n";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -908,7 +1034,12 @@ WELCOME TO THE LAVA TAG
             var expectedOutput = @"{{- -}}";
 
             // This only works correctly in the Fluid engine.
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: false );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
 
         }
 

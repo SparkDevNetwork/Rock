@@ -21,6 +21,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Configuration;
@@ -175,7 +178,16 @@ namespace RockWeb.Blocks.Communication
             if ( topLinksInfo != null )
             {
                 Literal lUrl = e.Item.FindControl( "lUrl" ) as Literal;
-                lUrl.Text = topLinksInfo.Url;
+                /*
+                    10/13/2026 - MSE
+
+                    The link URL comes from click interaction data, which can be set from outside
+                    the organization (for example through an email provider webhook). Encode it so
+                    it shows as text instead of being rendered as HTML.
+
+                    Reason: Prevent stored cross-site scripting in the Popular Links list.
+                */
+                lUrl.Text = topLinksInfo.Url.EncodeHtml();
 
                 Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
                 lUrlProgressHTML.Text = string.Format(
@@ -211,7 +223,16 @@ namespace RockWeb.Blocks.Communication
             {
                 var lApplicationName = e.Item.FindControl( "lApplicationName" ) as Literal;
                 var lUsagePercent = e.Item.FindControl( "lUsagePercent" ) as Literal;
-                lApplicationName.Text = applicationUsageInfo.Application ?? "Unknown";
+                /*
+                    10/13/2026 - MSE
+
+                    The application name is parsed from the browser user agent, which can be set
+                    from outside the organization (for example through an email provider webhook).
+                    Encode it so it shows as text instead of being rendered as HTML.
+
+                    Reason: Prevent stored cross-site scripting in the Clients In Use list.
+                */
+                lApplicationName.Text = ( applicationUsageInfo.Application ?? "Unknown" ).EncodeHtml();
                 lUsagePercent.Text = Math.Round( applicationUsageInfo.UsagePercent, 2 ).ToString() + "%";
             }
         }
@@ -262,7 +283,7 @@ namespace RockWeb.Blocks.Communication
             {
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
-                    rockContext.Database.CommandTimeout = this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                    rockContext.Database.SetCommandTimeout( this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
                     if ( PopulateCharts( rockContext ) )
                     {
                         pnlCharts.Visible = true;
@@ -311,7 +332,15 @@ namespace RockWeb.Blocks.Communication
                 var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
                 if ( communication != null )
                 {
-                    lTitle.Text = "Email Analytics: " + ( communication.Name ?? communication.Subject );
+                    /*
+                        10/18/2026 - MSE
+
+                        The communication name and subject are stored text set by the communication
+                        author. The title literal is rendered as HTML, so encode them so they show as text.
+
+                        Reason: Prevent stored cross-site scripting in the page title.
+                    */
+                    lTitle.Text = "Email Analytics: " + ( communication.Name ?? communication.Subject ).EncodeHtml();
                     noDataMessageName = communication.Name ?? communication.Subject;
                 }
                 else
@@ -329,7 +358,15 @@ namespace RockWeb.Blocks.Communication
                 var communicationListGroup = new GroupService( rockContext ).Get( communicationListGroupId.Value );
                 if ( communicationListGroup != null )
                 {
-                    lTitle.Text = "Email Analytics: " + communicationListGroup.Name;
+                    /*
+                        10/18/2026 - MSE
+
+                        The communication list name can be edited by anyone with edit access to the
+                        list. The title literal is rendered as HTML, so encode it so it shows as text.
+
+                        Reason: Prevent stored cross-site scripting in the page title.
+                    */
+                    lTitle.Text = "Email Analytics: " + communicationListGroup.Name.EncodeHtml();
                     noDataMessageName = communicationListGroup.Name;
                 }
                 else
@@ -443,7 +480,16 @@ namespace RockWeb.Blocks.Communication
             var lineChartHasData = interactionsSummary.Any();
             openClicksLineChartCanvas.Style[HtmlTextWriterStyle.Display] = lineChartHasData ? string.Empty : "none";
             nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
-            nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+            /*
+                10/18/2026 - MSE
+
+                The no data message includes the communication or communication list name, which
+                is stored text set by its author or editor. Notification box text is rendered as
+                HTML, so encode the name so it shows as text.
+
+                Reason: Prevent stored cross-site scripting in the no data message.
+            */
+            nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName.EncodeHtml() : string.Empty );
 
             hfLineChartDataLabelsJSON.Value = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
 
@@ -560,7 +606,16 @@ namespace RockWeb.Blocks.Communication
             var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
             opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
             nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
-            nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+            /*
+                10/18/2026 - MSE
+
+                The no data message includes the communication or communication list name, which
+                is stored text set by its author or editor. Notification box text is rendered as
+                HTML, so encode the name so it shows as text.
+
+                Reason: Prevent stored cross-site scripting in the no data message.
+            */
+            nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName.EncodeHtml() : string.Empty );
 
             int interactionCount = interactionsList.Count();
 
@@ -584,7 +639,16 @@ namespace RockWeb.Blocks.Communication
             var clientUsageHasData = clientsUsageByClientType.Where( a => a.UsagePercent > 0 ).Any();
             clientsDoughnutChartCanvas.Style[HtmlTextWriterStyle.Display] = clientUsageHasData ? string.Empty : "none";
             nbClientsDoughnutChartMessage.Visible = !clientUsageHasData;
-            nbClientsDoughnutChartMessage.Text = "No client usage activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+            /*
+                10/18/2026 - MSE
+
+                The no data message includes the communication or communication list name, which
+                is stored text set by its author or editor. Notification box text is rendered as
+                HTML, so encode the name so it shows as text.
+
+                Reason: Prevent stored cross-site scripting in the no data message.
+            */
+            nbClientsDoughnutChartMessage.Text = "No client usage activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName.EncodeHtml() : string.Empty );
 
             /* Clients-In-Use (Application) Grid */
             var clientsUsageByApplication = interactionsList

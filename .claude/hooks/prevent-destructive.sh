@@ -25,7 +25,8 @@ if echo "$CMD" | grep -qiE 'git\s+checkout\s+\.\s*$'; then
 fi
 
 # --- Git: force-delete branch ---
-if echo "$CMD" | grep -qiE 'git\s+branch\s+-D\s'; then
+# Case-sensitive on purpose: -D force-deletes, but lowercase -d is the safe delete this message recommends.
+if echo "$CMD" | grep -qE 'git\s+branch\s+-D\s'; then
   echo "BLOCKED: git branch -D force-deletes a branch even if unmerged. Use -d (lowercase) for safe delete." >&2
   exit 2
 fi

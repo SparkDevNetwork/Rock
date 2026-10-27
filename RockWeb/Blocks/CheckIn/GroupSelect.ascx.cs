@@ -215,8 +215,8 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
-                            lNoOptionName.Text = person.Person.NickName;
-                            lNoOptionSchedule.Text = person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time";
+                            lNoOptionName.Text = person.Person.NickName.EncodeHtml();
+                            lNoOptionSchedule.Text = person.CurrentSchedule != null ? person.CurrentSchedule.ToString().EncodeHtml() : "this time";
                         }
                     }
                 }
@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.CheckIn
                         .SelectMany( t => t.SelectedGroups( schedule )
                             .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) )
                         .Count() <= 0,
-                    string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", person.Person.NickName ),
+                    string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", person.Person.NickName.EncodeHtml() ),
                     true ) )
                 {
                     ClearSelection();

@@ -37,12 +37,6 @@ export type AIAgentBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
-    /**
-     * How much reasoning effort the language model should spend when
-     * this agent responds to a chat message.
-     */
-    reasoningEffort: ReasoningEffort;
-
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
@@ -104,6 +98,12 @@ export type AIAgentBag = {
 
     /** The friendly name of the agent that will be used to identify it in the UI. */
     name?: string | null;
+
+    /**
+     * How much reasoning effort the language model should spend when
+     * this agent responds to a chat message.
+     */
+    reasoningEffort: ReasoningEffort;
 
     /** The role that this agent uses when determining which AI model to use. */
     role: ModelServiceRole;

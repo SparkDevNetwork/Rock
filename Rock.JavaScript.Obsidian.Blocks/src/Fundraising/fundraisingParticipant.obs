@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
     import { ref } from "vue";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues } from "@Obsidian/Utility/block";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import EditPanel from "./fundraisingParticipant/editPanel.partial.obs";
@@ -29,6 +29,9 @@
     // The box is held reactively so the view can refresh in place after a save returns the
     // updated payload (no full page reload needed).
     const box = ref(useConfigurationValues<FundraisingParticipantInitializationBox>());
+
+    const securityGrant = getSecurityGrant(box.value.securityGrantToken);
+    provideSecurityGrant(securityGrant);
 
     const isEditMode = ref(false);
 
@@ -49,6 +52,7 @@
      */
     function onEditSave(updatedBox: FundraisingParticipantInitializationBox): void {
         box.value = updatedBox;
+        securityGrant.updateToken(updatedBox.securityGrantToken);
         isEditMode.value = false;
     }
 

@@ -200,7 +200,7 @@ namespace Rock.Blocks.Security
             }
 
             var decodedReturnUrl = HttpUtility.UrlDecode( returnUrl );
-            if ( decodedReturnUrl.IsNullOrWhiteSpace() || decodedReturnUrl.RedirectUrlContainsXss() )
+            if ( !PageCache.Layout.Site.IsSafeRedirectUrl( decodedReturnUrl, RequestContext.RequestUri ) )
             {
                 return null;
             }

@@ -22,6 +22,8 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -189,7 +191,19 @@ namespace Rock.Blocks.Event
             var builder = GetGridBuilder();
 
             var isAddDeleteEnabled = GetIsAddDeleteEnabled();
-            box.IsAddEnabled = isAddDeleteEnabled;
+
+            /*
+                10/20/2026 - MSE
+
+                The Obsidian Registration Detail block does not create registrations;
+                a blank or 0 RegistrationId shows "not found". The Add button linked
+                there with RegistrationId=0, so it is turned off, matching the
+                Registrations tab. Registrations are created through the Registration
+                Entry block.
+
+                Reason: Avoid an Add button that leads to a "not found" page.
+            */
+            box.IsAddEnabled = false;
             box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -439,7 +453,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override List<RegistrationRegistrant> GetListItems( IQueryable<RegistrationRegistrant> queryable, RockContext rockContext )
         {
-            rockContext.Database.CommandTimeout = 180;
+            rockContext.Database.SetCommandTimeout( 180 );
 
             var items = queryable.ToList();
 
@@ -518,7 +532,6 @@ namespace Rock.Blocks.Event
                 .AddTextField( "lastName", r => r.PersonAlias?.Person?.LastName )
                 .AddTextField( "personIdKey", r => r.PersonAlias?.Person?.IdKey )
                 .AddTextField( "registrationIdKey", r => IdHasher.Instance.GetHash( r.RegistrationId ) )
-                .AddField( "registrantId", r => r.Id )
                 .AddTextField( "groupName", r => r.GroupMember?.Group?.Name )
                 .AddField( "groupId", r => r.GroupMember?.GroupId )
                 .AddField( "fees", GetFeeSummaries )
@@ -1452,8 +1465,25 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
             _registrationInstance = new RegistrationInstanceService( RockContext )
                 .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
                 .Include( a => a.RegistrationTemplate )
+                .Include( a => a.RegistrationTemplate.Category )
                 .AsNoTracking()
                 .FirstOrDefault();
+
+            /*
+                10/16/2026 - MSE
+
+                The instance comes from the page parameter, so a person could swap in
+                the IdKey of an instance they are not allowed to see and get its
+                registrants, placements and form fields, or email its registrars. VIEW
+                on the instance falls back to the template and its category, which is
+                eager loaded because the query is AsNoTracking.
+
+                Reason: Registration instance lists skipped VIEW on the instance.
+            */
+            if ( _registrationInstance != null && !_registrationInstance.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                _registrationInstance = null;
+            }
 
             return _registrationInstance;
         }

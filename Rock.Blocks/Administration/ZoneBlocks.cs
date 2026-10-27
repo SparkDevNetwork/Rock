@@ -221,6 +221,29 @@ namespace Rock.Blocks.Administration
         }
 
         /// <summary>
+        /// Determines whether the block is in the current zone on the page, layout or site
+        /// of the page being edited. These are the blocks <see cref="GetBlocksForLocation"/>
+        /// returns for the grids, and the Administrate check is evaluated against that page,
+        /// so actions must not touch blocks outside of it.
+        /// </summary>
+        /// <param name="block">The block to check.</param>
+        /// <param name="editPage">The page being edited.</param>
+        /// <returns><c>true</c> if the block is in the zone being edited; otherwise <c>false</c>.</returns>
+        private bool IsBlockInZone( Block block, PageCache editPage )
+        {
+            var zone = PageParameter( PageParameterKey.ZoneName );
+
+            if ( !string.Equals( block.Zone, zone, System.StringComparison.OrdinalIgnoreCase ) )
+            {
+                return false;
+            }
+
+            return ( block.PageId.HasValue && block.PageId.Value == editPage.Id )
+                || ( block.LayoutId.HasValue && block.LayoutId.Value == editPage.LayoutId )
+                || ( block.SiteId.HasValue && block.SiteId.Value == editPage.SiteId );
+        }
+
+        /// <summary>
         /// Flushes the appropriate cached pages after a block change, based on the block's scope.
         /// </summary>
         /// <param name="block">The block that changed.</param>
@@ -314,6 +337,12 @@ namespace Rock.Blocks.Administration
                 : null;
             var isNew = block == null;
 
+            // Only allow editing a block that is listed in one of this block's grids.
+            if ( !isNew && !IsBlockInZone( block, editPage ) )
+            {
+                return ActionNotFound( "The block could not be found." );
+            }
+
             if ( isNew )
             {
                 block = new Block
@@ -379,7 +408,8 @@ namespace Rock.Blocks.Administration
             var blockService = new BlockService( RockContext );
             var block = blockService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( block == null )
+            // Only allow deleting a block that is listed in one of this block's grids.
+            if ( block == null || !IsBlockInZone( block, editPage ) )
             {
                 return ActionNotFound( "The block could not be found." );
             }

@@ -26,7 +26,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
@@ -109,12 +109,11 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetCalendarEventsTemplate( "calendarid:'Internal' filterbysegments:'true' filterbyrequestfilters:'true'" );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template,
-                    new LavaTestRenderOptions { EnabledCommands = "calendarevents" } );
+                var output = LavaRenderTestHelper.Render( engine, template,
+                    new LavaRenderOptions { EnabledCommands = "calendarevents" } );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.DoesNotContain( "Invalid configuration setting", output,
                     "The personalization parameters were reported as unknown configuration settings." );
@@ -126,9 +125,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetCalendarEventsTemplate( "calendarid:'Internal' filterbysegment:'true'" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. Invalid configuration setting \"filterbysegment\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. Invalid configuration setting \"filterbysegment\".", output );
+            } );
         }
 
         #endregion
@@ -160,9 +162,12 @@ namespace Rock.Tests.Integration.Core.Lava
             // must continue to report them as unknown rather than silently accepting them.
             var template = LavaTemplateEventScheduledInstance.Replace( "{parameters}", $"eventid:'{TaggedEventGuid}' filterbysegments:'true'" );
 
-            TestHelper.AssertTemplateOutput( "Event Occurrences not available. Invalid configuration setting \"filterbysegments\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "eventscheduledinstance" } );
+
+                Assert.Contains( "Event Occurrences not available. Invalid configuration setting \"filterbysegments\".", output );
+            } );
         }
 
         #endregion
@@ -190,12 +195,11 @@ namespace Rock.Tests.Integration.Core.Lava
                 ["CurrentVisitor"] = person.PrimaryAlias
             };
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template,
-                    new LavaTestRenderOptions { EnabledCommands = enabledCommands, MergeFields = mergeFields } );
+                var output = LavaRenderTestHelper.Render( engine, template,
+                    new LavaRenderOptions { EnabledCommands = enabledCommands, MergeFields = mergeFields } );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 var expectedEventOutput = $"<<{TaggedEventName}>>";
 

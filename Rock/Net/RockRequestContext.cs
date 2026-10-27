@@ -682,6 +682,13 @@ namespace Rock.Net
                     entity = Reflection.GetIEntityForEntityType( type, entityKey );
                 }
 
+                // Don't provide a context entity the current person isn't
+                // allowed to view.
+                if ( entity is Rock.Security.ISecured securedEntity && !securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                {
+                    return null;
+                }
+
                 if ( entity != null && entity is IHasAttributes attributedEntity )
                 {
                     Helper.LoadAttributes( attributedEntity );
@@ -1206,10 +1213,14 @@ namespace Rock.Net
         ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
         ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
         ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
-        ///     <para>The input will be returned as supplied for all other cases.</para>
+        ///     <para>The path of a "~/" or "~~/" input is normalized: backslashes become slashes, repeated slashes collapse, and "." and ".." segments are resolved. The query string and fragment are not changed.</para>
+        ///     <para>Leading and trailing whitespace is removed before the input is resolved. A <c>null</c> input returns <c>null</c>, and an empty or whitespace input returns an empty string.</para>
+        ///     <para>A full URL with a scheme (like "https://"), or an input starting with "/" is returned without other changes.</para>
+        ///     <para>Any other input (a relative path, a bare query string or fragment like "?a=1" or "#top", or a "~" or "~~" not followed by a separator) is not allowed.</para>
         /// </remarks>
         /// <param name="input">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <returns>The resolved URL.</returns>
+        /// <exception cref="ArgumentException"><paramref name="input"/> is a relative path, or goes above the application root.</exception>
         public string ResolveRockUrl( string input )
         {
             return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );

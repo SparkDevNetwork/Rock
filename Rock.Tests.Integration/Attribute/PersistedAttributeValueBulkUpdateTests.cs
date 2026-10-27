@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -71,7 +72,7 @@ namespace Rock.Tests.Integration.Attribute
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var ids = string.Join( ",", _createdAttributeIds );
 
@@ -90,7 +91,7 @@ namespace Rock.Tests.Integration.Attribute
         /// <returns>The identifier of the newly created attribute.</returns>
         private int CreateTextAttribute()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attribute = new RockAttribute
                 {
@@ -121,7 +122,7 @@ namespace Rock.Tests.Integration.Attribute
         {
             var createdGuids = new List<System.Guid>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new AttributeValueService( rockContext );
 
@@ -166,7 +167,7 @@ namespace Rock.Tests.Integration.Attribute
 
         private static List<AttributeValue> LoadValues( int attributeId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new AttributeValueService( rockContext )
                     .Queryable()
@@ -234,7 +235,7 @@ namespace Rock.Tests.Integration.Attribute
             SeedSampleValues( newAttributeId, isDirty: true, entityIdBase: 20000 );
 
             // Act - old path (two statements) versus new path (one statement).
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var value in SampleValues )
                 {
@@ -286,7 +287,7 @@ namespace Rock.Tests.Integration.Attribute
             var oldIdsByValue = SeedSampleValues( oldAttributeId, isDirty: false, entityIdBase: 30000 );
             var newIdsByValue = SeedSampleValues( newAttributeId, isDirty: false, entityIdBase: 40000 );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var value in SampleValues )
                 {
@@ -347,7 +348,7 @@ namespace Rock.Tests.Integration.Attribute
             var allIds = dirtyIds.Concat( cleanIds ).ToList();
 
             int updatedCount;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 updatedCount = AttributeHelper.BulkUpdateAttributeValueComputedAndPersistedValues( attributeId, allIds, value, persisted, true, rockContext );
             }
@@ -386,7 +387,7 @@ namespace Rock.Tests.Integration.Attribute
         {
             var attributeId = CreateTextAttribute();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attribute = new AttributeService( rockContext ).Queryable()
                     .Include( a => a.AttributeQualifiers )
@@ -396,7 +397,7 @@ namespace Rock.Tests.Integration.Attribute
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var referenceCount = rockContext.Set<AttributeReferencedEntity>()
                     .Count( re => re.AttributeId == attributeId );

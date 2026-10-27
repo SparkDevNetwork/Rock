@@ -14,11 +14,11 @@
 
             <div class="col-md-6">
                 <div class="grid">
-                    <Grid v-if="isGridVisible" :data="attributesGridData" keyField="key" itemTerm="Attribute" liveUpdates light :onAddItem="!isStandAlone ? onAddAttribute : undefined">
-                        <ReorderColumn v-if="!isStandAlone" @orderChanged="onOrderChanged" />
+                    <Grid v-if="isGridVisible" :data="attributesGridData" keyField="key" itemTerm="Attribute" liveUpdates light :onAddItem="isAttributeEditable ? onAddAttribute : undefined">
+                        <ReorderColumn v-if="isAttributeEditable" @orderChanged="onOrderChanged" />
                         <TextColumn field="name" name="attribute" title="Attributes for Defined Type" />
-                        <EditColumn v-if="!isStandAlone" @click="onEditAttribute" />
-                        <DeleteColumn v-if="!isStandAlone" @click="onDeleteAttribute" />
+                        <EditColumn v-if="isAttributeEditable" @click="onEditAttribute" />
+                        <DeleteColumn v-if="isAttributeEditable" @click="onDeleteAttribute" />
                     </Grid>
                 </div>
                 <Modal v-model="isAttributeModalOpen" title="Defined Type Attributes" saveText="Save" @save="onSaveAttribute">
@@ -60,6 +60,12 @@
         options: {
             type: Object as PropType<DefinedTypeDetailOptionsBag>,
             required: true
+        },
+
+        /** True if the person is allowed to edit the defined type. */
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -80,10 +86,11 @@
 
     const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
     const isStandAlone = computed((): boolean => props.modelValue?.isStandAlone ?? false);
+    const isAttributeEditable = computed((): boolean => !isStandAlone.value && props.isEditable);
 
     const isGridVisible = computed((): boolean => {
         const hasAttributes = props.modelValue?.definedTypeAttributes !== null && props.modelValue?.definedTypeAttributes !== undefined && props.modelValue.definedTypeAttributes.length > 0;
-        return !props.modelValue?.isStandAlone || hasAttributes;
+        return isAttributeEditable.value || hasAttributes;
     });
 
     const attributesGridData: GridDataBag = reactive<GridDataBag>({

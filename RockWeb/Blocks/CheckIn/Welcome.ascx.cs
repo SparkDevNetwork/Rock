@@ -732,8 +732,12 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            // save the attendance ids for later use.
-            hfSelectedAttendanceIds.Value = hfAttendanceIds.Value;
+            // save the attendance ids for later use. The ids come from a hidden field, so
+            // only keep the ones that belong to the selected person.
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                hfSelectedAttendanceIds.Value = GetPersonAttendanceIds( hfAttendanceIds.Value.SplitDelimitedValues().AsIntegerList(), personId, rockContext ).AsDelimited( "," );
+            }
 
             // hide the reprint person select results, then show the selected labels to pick from
             pnlReprintLabels.Visible = false;
@@ -823,7 +827,13 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
         {
             var fileGuids = hfLabelFileGuids.Value.SplitDelimitedValues().AsGuidList();
             var personId = hfSelectedPersonId.ValueAsInt();
-            var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            List<int> selectedAttendanceIds;
+
+            // The ids come from hidden fields, so only keep the attendance records that belong to the selected person.
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                selectedAttendanceIds = GetPersonAttendanceIds( hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList(), personId, rockContext );
+            }
 
             List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request, ( ReprintLabelOptions ) null );
 
@@ -834,6 +844,36 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
             hfSelectedPersonId.Value = string.Empty;
 
             lReprintResultsHtml.Text = messages.JoinStrings( "<br>" );
+        }
+
+        /// <summary>
+        /// Filters the attendance identifiers to only those that belong to the specified person
+        /// and match the check-in attendance records <see cref="FindPossibleMatchingCheckedInPeople"/>
+        /// searches (the currently checked-in test is left out since it depends on the time).
+        /// </summary>
+        /// <param name="attendanceIds">The attendance identifiers.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The attendance identifiers that belong to the person.</returns>
+        private List<int> GetPersonAttendanceIds( List<int> attendanceIds, int personId, RockContext rockContext )
+        {
+            if ( attendanceIds == null || !attendanceIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            var dayStart = RockDateTime.Today.AddDays( -1 );
+
+            return new AttendanceService( rockContext ).Queryable()
+                .Where( a => attendanceIds.Contains( a.Id ) && a.PersonAlias.PersonId == personId )
+                .Where( a =>
+                    a.StartDateTime > dayStart &&
+                    a.Occurrence.LocationId.HasValue &&
+                    a.DidAttend.HasValue &&
+                    a.DidAttend.Value &&
+                    a.Occurrence.ScheduleId.HasValue )
+                .Select( a => a.Id )
+                .ToList();
         }
 
         /// <summary>
@@ -1056,6 +1096,30 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
                 return;
             }
 
+            /*
+                10/15/2026 - MSE
+
+                Count the attempt before the PIN is looked up so that a correct
+                guess made after too many wrong ones is still refused. This uses
+                the same limiter as the next-gen check-in supervisor screens so
+                switching between them does not increase the budget. Attempts
+                that turn out not to be wrong guesses are given back below.
+
+                Reason: Prevent kiosk manager PINs from being guessed by brute force.
+            */
+            var clientIpAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
+
+            if ( !Rock.CheckIn.PinAttemptLimiter.TryReserveAttempt( clientIpAddress ) )
+            {
+                historyLogin.LoginFailureReason = LoginFailureReason.LockedOut;
+                historyLogin.LoginFailureMessage = "Too many failed PIN attempts.";
+                historyLogin.SaveAfterDelay();
+
+                tbPIN.Text = string.Empty;
+                maWarning.Show( "Too many failed PIN attempts. Please wait a few minutes and try again.", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                return;
+            }
+
             var rockContext = RockApp.Current.CreateRockContext();
             var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( tbPIN.Text );
@@ -1087,6 +1151,8 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
                         }
                         else
                         {
+                            Rock.CheckIn.PinAttemptLimiter.Reset( clientIpAddress );
+
                             historyLogin.WasLoginSuccessful = true;
                             historyLogin.SaveAfterDelay();
 
@@ -1112,6 +1178,13 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
             {
                 historyLogin.LoginFailureReason = LoginFailureReason.Other;
                 historyLogin.LoginFailureMessage = $"This username is not associated with {pinAuthProviderName}.";
+            }
+
+            // Only wrong guesses count. A PIN that matched a login that is not
+            // confirmed or is locked out gives its attempt back.
+            if ( historyLogin.LoginFailureReason != LoginFailureReason.UserNotFound && historyLogin.LoginFailureReason != LoginFailureReason.Other )
+            {
+                Rock.CheckIn.PinAttemptLimiter.ReleaseAttempt( clientIpAddress );
             }
 
             historyLogin.SaveAfterDelay();

@@ -54,6 +54,7 @@
                                 :communicationTemplates="communicationTemplates"
                                 :communicationType="communicationType"
                                 :isFetchingCommunicationTemplate="isFetchingCommunicationTemplate"
+                                :isMovingToNextStep="isChooseTemplateNextInProgress"
                                 :nextStepTitle="nextStep"
                                 :title="step"
                                 @nextStep="onChooseTemplateNextClicked"
@@ -367,6 +368,7 @@
     const sendingProgressMessage = ref<string>("");
     const sendingCompletionPercentage = ref<number>(0);
     const isFetchingCommunicationTemplate = ref<boolean>(false);
+    const isChooseTemplateNextInProgress = ref<boolean>(false);
     const communicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
     const saveAsCommunicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
     const saveAsCommunicationTemplateBodyWidth = ref<number | null | undefined>();
@@ -1284,6 +1286,22 @@
     }
 
     async function onChooseTemplateNextClicked(): Promise<void> {
+        /*
+            10/8/2026 - CLAUDE
+
+            The step only advances after the person preference save is awaited.
+            Without this guard, a double-click (or a repeated ArrowRight shortcut)
+            starts a second call that also advances after the first call has
+            already moved to the next step, skipping Email Settings and its validation.
+
+            Reason: Prevent a double-click from skipping a wizard step.
+        */
+        if (isChooseTemplateNextInProgress.value) {
+            return;
+        }
+
+        isChooseTemplateNextInProgress.value = true;
+
         try {
             if (communicationTemplateDetail.value) {
                 if (wasCommunicationTemplateChanged.value) {
@@ -1303,6 +1321,7 @@
         }
         finally {
             wasCommunicationTemplateChanged.value = false;
+            isChooseTemplateNextInProgress.value = false;
         }
     }
 

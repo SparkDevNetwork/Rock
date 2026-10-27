@@ -191,6 +191,27 @@
                 }
 
             },
+            // keeps the parent #modal-popup iframe sized to the dialog page body (called by the Dialog layouts)
+            observeDialogSize: function () {
+                var dialog = document.getElementById('dialog');
+                if (!dialog || dialog.rockDialogSizeObserver) {
+                    return;
+                }
+
+                var syncSize = function () {
+                    $('#modal-popup iframe', window.parent.document).height($(dialog).height());
+                };
+
+                if (typeof ResizeObserver !== 'undefined') {
+                    dialog.rockDialogSizeObserver = new ResizeObserver(syncSize);
+                    dialog.rockDialogSizeObserver.observe(dialog);
+                }
+                else {
+                    dialog.rockDialogSizeObserver = new ResizeSensor(dialog, syncSize);
+                }
+
+                syncSize();
+            },
             // closes the #modal-popup modal (IFrame Modal)
             close: function (msg) {
                 // do a setTimeout so this fires after the postback

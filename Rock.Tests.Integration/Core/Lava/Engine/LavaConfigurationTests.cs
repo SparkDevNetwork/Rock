@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.Utility;
 
@@ -35,33 +36,6 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
     [TestClass]
     public class LavaConfigurationTests : LavaIntegrationTestBase
     {
-        #region Configuration: DefaultEntityCommands
-
-        /// <summary>
-        /// Verify that templates with varying amounts of whitespace are correctly cached and return the expected output.
-        /// </summary>
-        [TestMethod]
-        public void Configuration_SetDefaultEntityCommandExecute_IsEnabledForNewDefaultContext()
-        {
-            var options = new LavaEngineConfigurationOptions
-            {
-                DefaultEnabledCommands = new List<string> { "Execute" }
-            };
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var testEngine = LavaService.NewEngineInstance( engine.GetType(), options );
-
-                var context = testEngine.NewRenderContext();
-
-                var enabledCommands = context.GetEnabledCommands();
-
-                Assert.Contains( "Execute", enabledCommands );
-            } );
-        }
-
-        #endregion
-
         #region Configuration: ACE Editor
 
         /// <summary>
@@ -204,7 +178,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
             options.CacheService = cacheService;
 
-            TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( defaultEngineInstance =>
             {
                 // Remove all existing items from the cache.
                 cacheService.ClearCache();
@@ -261,7 +235,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
             options.CacheService = cacheService;
 
-            TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( defaultEngineInstance =>
             {
                 var engine = LavaService.NewEngineInstance( defaultEngineInstance.GetType(), options );
 
@@ -302,7 +276,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
                 LavaService.SetCurrentEngine( engine );
 
-                TestHelper.AssertTemplateOutput( engine, "Hello!", "{[ TestShortcode1 ]}" );
+                Assert.AreEqual( "Hello!", LavaRenderTestHelper.Render( engine, "{[ TestShortcode1 ]}" ) );
 
                 lavaShortcode.Markup = "Goodbye!";
 
@@ -312,7 +286,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
                 engine.ClearTemplateCache();
 
-                TestHelper.AssertTemplateOutput( engine, "Goodbye!", "{[ TestShortcode1 ]}" );
+                Assert.AreEqual( "Goodbye!", LavaRenderTestHelper.Render( engine, "{[ TestShortcode1 ]}" ) );
             } );
         }
 

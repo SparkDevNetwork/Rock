@@ -24,6 +24,7 @@ using System.Linq;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
 
+using Rock.Configuration;
 using Rock.Observability;
 using Rock.SystemKey;
 using Rock.Utility;
@@ -146,7 +147,7 @@ namespace Rock.Pdf
         /// <returns>BrowserFetcher.</returns>
         private static BrowserFetcher GetBrowserFetcher()
         {
-            var browserDownloadPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" );
+            var browserDownloadPath = RockApp.Current.MapPath( "~/App_Data/ChromeEngine" );
             Directory.CreateDirectory( browserDownloadPath );
 
             var browserFetcherOptions = new BrowserFetcherOptions

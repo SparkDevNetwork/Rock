@@ -324,8 +324,16 @@ namespace Rock.Web
                     {
                         if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
+                            /*
+                                10/19/2026 - MSE
+
+                                The 404 URL is stored in the exception Description, which staff
+                                can read. Hide rckipid tokens and sensitive query values first.
+
+                                Reason: Exception log must not store impersonation tokens or REST keys.
+                            */
                             Rock.Model.ExceptionLogService.LogException(
-                                new Exception( $"404 Error: {routeHttpRequest.UrlProxySafe().AbsoluteUri}" ),
+                                new Exception( $"404 Error: {Rock.Model.ExceptionLogService.RedactUrl( routeHttpRequest.UrlProxySafe().AbsoluteUri )}" ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 
@@ -367,7 +375,7 @@ namespace Rock.Web
 
                     // Verify that Layout exists in the default theme directory and if not try use the default layout of the default theme
                     string layoutPagePath = string.Format( "~/Themes/Rock/Layouts/{0}.aspx", layout );
-                    if ( !File.Exists( requestContext.HttpContext.Server.MapPath( layoutPagePath ) ) )
+                    if ( !File.Exists( RockApp.Current.MapPath( layoutPagePath ) ) )
                     {
                         layout = "FullWidth";
                     }

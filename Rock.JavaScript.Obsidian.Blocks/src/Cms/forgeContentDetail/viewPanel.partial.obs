@@ -5,11 +5,16 @@
 
     <component v-else-if="control"
                :is="control" />
+
+    <div v-else-if="isLoading"
+         v-content="staticContent"></div>
 </template>
 
 <script setup lang="ts">
     import { Component, markRaw, PropType, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useStaticContent } from "@Obsidian/Utility/block";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
 
     const props = defineProps({
         /** The compiled SystemJS module string produced at save time. */
@@ -39,6 +44,15 @@
 
     const control = ref<Component | null>(null);
     const error = ref("");
+    const isLoading = ref(false);
+
+    // The author's <placeholder> HTML, rendered by the server, shown until
+    // the compiled component mounts so the block keeps its space.
+    const staticContent = useStaticContent();
+
+    // Rock keeps its own loading skeleton up until the block's suspense
+    // operations finish, which covers blocks that declare no placeholder.
+    const suspense = useSuspense();
 
     // #endregion Values
 
@@ -120,6 +134,8 @@
             return;
         }
 
+        isLoading.value = true;
+
         try {
             const component = await instantiateModule(props.compiledContent);
 
@@ -134,6 +150,9 @@
             console.error(e);
             error.value = "The content could not be loaded.";
         }
+        finally {
+            isLoading.value = false;
+        }
     }
 
     // #endregion Functions
@@ -141,7 +160,12 @@
     // #region Watchers
 
     watch(() => props.compiledContent, () => {
-        loadComponent();
+        // Register the load with the block's suspense provider. Rock treats
+        // the block as loaded once its suspense operations finish, and only
+        // then removes its loading skeleton and fixed height. Without this the
+        // skeleton is removed as soon as this panel mounts, before the authored
+        // component exists, and the block collapses until the component appears.
+        suspense?.addOperation(loadComponent());
     }, { immediate: true });
 
     // #endregion Watchers

@@ -431,7 +431,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LavaEndpoint.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LavaEndpoint.FriendlyTypeName}." );
                 return false;
             }
 
