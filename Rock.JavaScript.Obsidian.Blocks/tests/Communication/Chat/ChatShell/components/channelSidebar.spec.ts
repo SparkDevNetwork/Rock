@@ -361,6 +361,27 @@ describe("a row's states", () => {
         expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
         expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
     });
+
+    test("flashes nothing when a room leaves, though every row below it climbs a place", async () => {
+        const w = mountSidebar({ rows: [team, youth, starred] });
+
+        await w.setProps({ rows: [youth, starred] });
+        await nextTick();
+
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+
+    test("judges a move among the rooms still listed: one passing another flashes, one only shifted by a leaving or arriving room does not", async () => {
+        const w = mountSidebar({ rows: [team, youth, starred] });
+
+        // Worship Team leaves, Prayer passes Youth, and Announcements arrives at the top.
+        await w.setProps({ rows: [muted, starred, youth] });
+        await nextTick();
+
+        expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, muted.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
+    });
 });
 
 describe("a row's look, by the room's kind", () => {
@@ -656,13 +677,24 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmGroup.channel_id).classes()).toContain("is-flash");
     });
 
-    test("a channel's row glows on channel.unread, the one signal it gets until read, where it does not move", async () => {
+    test("a channel's row does not glow on turning unread where it does not move: its bold and darker mark say it", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 
         await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true }, dmRead] });
         await nextTick();
 
-        expect(rowOf(w, team.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).toContain("is-unread");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
+    });
+
+    test("a channel turning unread as it passes another still glows, for the move", async () => {
+        const w = mountSidebar({ rows: [team, starred] });
+
+        await w.setProps({ rows: [{ ...starred, last_message_id: 11, is_unread: true }, team] });
+        await nextTick();
+
+        expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
     });
 });
 
