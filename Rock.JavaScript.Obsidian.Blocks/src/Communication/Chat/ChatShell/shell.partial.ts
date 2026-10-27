@@ -167,6 +167,12 @@ export type ShellState = {
     /** Where the shell has got to. */
     phase: "starting" | "ready" | "refused" | "failed";
 
+    /**
+     * Whether the page load is still choosing the first conversation, which it does after the
+     * shell is ready, so the page draws a loading state rather than asking the person to choose.
+     */
+    isOpening: boolean;
+
     /** The gate that refused, when one did. */
     gate: string | null;
 
@@ -363,6 +369,7 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
 export function createChatShell(options: ShellOptions): ChatShell {
     const state = reactive<ShellState>({
         phase: "starting",
+        isOpening: true,
         gate: options.session.gate ?? null,
         connection: null,
         errors: [],
@@ -597,7 +604,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     // a reload asked while a rejoin's wait is pending is the one that wait will make
-    const channels = createChannelStore({ reloadSidebar: () => sidebarWait === null ? void loadSidebar() : undefined });
+    // A failed read is reported where it fails, so nothing is left to catch here.
+    const channels = createChannelStore({ reloadSidebar: () => sidebarWait === null ? void loadSidebar().catch(() => undefined) : undefined });
 
     /** A save of the read position, applied to the row and the unread mentions. */
     function applySave(channelId: string, result: MarkReadResult, sentAt: number | undefined): void {
@@ -889,6 +897,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         if (!result.ok) {
             report(result.error);
+            channels.setLoadFailed();
             throw thrown(result);
         }
 
@@ -1203,12 +1212,17 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachThreads = threads.attach(options.pageTargets);
             state.phase = "ready";
 
-            await startPageLoad({
-                linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
-                rememberedChannelId: readRememberedChannel(options.storage, storageKey),
-                loadSidebar,
-                open
-            });
+            try {
+                await startPageLoad({
+                    linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
+                    rememberedChannelId: readRememberedChannel(options.storage, storageKey),
+                    loadSidebar,
+                    open
+                });
+            }
+            finally {
+                state.isOpening = false;
+            }
 
             // After the first channel is on screen, so push never delays it; a stop during the
             // page load leaves it unstarted.

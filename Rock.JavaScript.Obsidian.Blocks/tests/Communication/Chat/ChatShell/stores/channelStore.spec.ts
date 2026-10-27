@@ -69,6 +69,52 @@ function store(): { store: ReturnType<typeof createChannelStore>, reloads: () =>
 }
 
 describe("createChannelStore", () => {
+    test("is loading until its first sidebar arrives, an empty one included, and stays loaded", () => {
+        const s = createChannelStore({ reloadSidebar: () => undefined });
+        expect(s.loadState).toBe("loading");
+
+        s.setSidebar([]);
+        expect(s.loadState).toBe("loaded");
+
+        s.setLoadFailed();
+        s.setSidebar([row(one)]);
+        expect(s.loadState).toBe("loaded");
+    });
+
+    test("a previewed room's row does not make the sidebar loaded", () => {
+        const s = createChannelStore({ reloadSidebar: () => undefined });
+
+        s.setPreview(row(hidden));
+
+        expect(s.rows).toHaveLength(1);
+        expect(s.loadState).toBe("loading");
+    });
+
+    test("a failed first sidebar is failed until a retry, which loads again and reads it again", () => {
+        let reloads = 0;
+        const s = createChannelStore({ reloadSidebar: () => reloads++ });
+
+        s.setLoadFailed();
+        expect(s.loadState).toBe("failed");
+
+        s.retryLoad();
+        expect(s.loadState).toBe("loading");
+        expect(reloads).toBe(1);
+
+        s.setSidebar([row(one)]);
+        expect(s.loadState).toBe("loaded");
+    });
+
+    test("a reload that fails after the first sidebar arrived keeps the rows loaded, and a retry asks nothing", () => {
+        const { store: s, reloads } = store();
+
+        s.setLoadFailed();
+        s.retryLoad();
+
+        expect(s.loadState).toBe("loaded");
+        expect(reloads()).toBe(0);
+    });
+
     test("a signal for a channel in the sidebar bolds it", () => {
         const { store: s, reloads } = store();
 

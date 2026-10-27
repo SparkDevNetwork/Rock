@@ -32,6 +32,7 @@
                                 :isNewMessageShown="shell.isNewMessageShown"
                                 :organizationName="organizationName"
                                 :isPhone="isPhone"
+                                :loadState="shell.channels.loadState"
                                 :isBrowseOpen="mainView === 'directory'"
                                 :isNewMessageOpen="mainView === 'newdm'"
                                 :personName="personName"
@@ -40,7 +41,8 @@
                                 @select="onSelect"
                                 @newMessage="openMainView('newdm')"
                                 @browse="openMainView('directory')"
-                                @settings="isSettingsOpen = true" />
+                                @settings="isSettingsOpen = true"
+                                @retry="shell.channels.retryLoad" />
             </div>
 
             <section class="chat-frame-main"
@@ -128,8 +130,8 @@
                                  @messageAction="onMessageAction($event, null)"
                                  @members="onListPanel('members')"
                                  @introAction="onRoomChoice" />
-                    <div v-else class="chat-shell-empty">
-                        {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a conversation." }}
+                    <div v-else class="chat-shell-empty" data-testid="main-empty" :aria-busy="shell.state.isOpening ? 'true' : undefined">
+                        {{ shell.state.isOpening ? "Opening chat…" : "Choose a conversation." }}
                     </div>
 
                     <!-- A channel the person is previewing has the join bar in the composer's place. -->
@@ -758,7 +760,7 @@
 
     /**
      * Whether the open conversation replaced another, so its feed rises into view. The first one
-     * the page draws is simply there.
+     * the page draws rises only as its first page is drawn, which the feed decides.
      */
     const isFeedEntering = ref(false);
 

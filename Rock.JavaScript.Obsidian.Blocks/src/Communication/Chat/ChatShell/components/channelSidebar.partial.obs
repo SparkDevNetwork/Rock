@@ -23,8 +23,26 @@
                    data-testid="sidebar-search" />
         </label>
 
-        <nav class="chat-side-list" aria-label="Conversations">
-            <div v-if="rows.length === 0" class="chat-side-empty" data-testid="sidebar-empty">
+        <nav class="chat-side-list" aria-label="Conversations" :aria-busy="loadState === 'loading' ? 'true' : undefined">
+            <!--
+                Still loading, not empty: rows of a conversation's size, so nothing jumps when they
+                land. Read from the load alone, as a previewed room may hold a row before the rest.
+            -->
+            <div v-if="loadState === 'loading'">
+                <span class="chat-sr-only">Loading conversations</span>
+                <div v-for="width in skeletonWidths" :key="width" class="chat-side-skel" aria-hidden="true" data-testid="sidebar-skeleton">
+                    <i class="chat-skeleton chat-side-skel-c"></i>
+                    <span class="chat-side-skel-l"><i class="chat-skeleton" :style="{ width: `${width}%` }"></i><i class="chat-skeleton"></i></span>
+                </div>
+            </div>
+
+            <div v-else-if="loadState === 'failed'" class="chat-ls-err" role="status" data-testid="sidebar-error">
+                <Icon name="alert" size="sm" />
+                <span>Couldn't load your conversations.</span>
+                <button type="button" class="chat-ls-btn" @click="emit('retry')">Try again</button>
+            </div>
+
+            <div v-else-if="rows.length === 0" class="chat-side-empty" data-testid="sidebar-empty">
                 <span class="chat-side-empty-ic"><Icon name="message" /></span>
                 <b>No conversations yet</b>
                 <span>Message someone from your groups, or browse channels to join.</span>
@@ -561,6 +579,41 @@
     height: 15px;
 }
 
+/* The members panel's skeleton row in a conversation row's place; the fill and pulse are the sheet's one skeleton. */
+.chat-side-skel {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 8px 7px 10px;
+}
+
+.chat-side-skel i {
+    display: block;
+    border-radius: var(--chat-r-full);
+}
+
+.chat-side-skel-c {
+    flex: none;
+    width: 36px;
+    height: 36px;
+}
+
+.chat-side-skel-l {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.chat-side-skel-l i:first-child {
+    height: 10px;
+}
+
+.chat-side-skel-l i:last-child {
+    width: 32%;
+    height: 8px;
+}
+
 /* A new person with nothing to list yet. */
 .chat-side-empty {
     display: flex;
@@ -650,7 +703,7 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
-    import { isTypedByReader } from "../stores/channelStore.partial";
+    import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
     import { SidebarRow } from "../types.partial";
 
     // #region Types
@@ -708,6 +761,12 @@
             default: false
         },
 
+        /** Where the sidebar's first page stands; until it has arrived, no rows is not yet an empty list. */
+        loadState: {
+            type: String as PropType<SidebarLoadState>,
+            default: "loaded"
+        },
+
         /**
          * Whether Browse channels is open, which marks its row as the one shown in place of the
          * conversation under it, which is out of view until the directory closes.
@@ -732,13 +791,18 @@
         (e: "newMessage"): void,
         (e: "browse"): void,
         /** The foot was pressed: Chat settings. */
-        (e: "settings"): void
+        (e: "settings"): void,
+        /** Try again on a first sidebar that failed. */
+        (e: "retry"): void
     }>();
 
     // #region Values
 
     /** What "Find a conversation" holds. */
     const query = ref("");
+
+    /** The name line's width in each loading row, varied so the rows read as a list. */
+    const skeletonWidths = [58, 44, 66, 50, 40, 62, 48];
 
     /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
     const flashIds = ref(new Set<string>());
@@ -890,8 +954,9 @@
     // until read, or that moved up among the channels. The person's own send, an edit and a
     // walk-back after a delete are not news, nor is a room moving down because another passed it,
     // nor the conversation on screen, and the first list a page loads glows nothing.
-    watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.room_kind !== "channel", lastId: row.last_message_id, isTyped: isTypedByReader(row), isUnread: row.is_unread })), (rows, previous) => {
-        if (!previous || previous.length === 0) {
+    watch([() => props.rows.map(row => ({ id: row.channel_id, isDm: row.room_kind !== "channel", lastId: row.last_message_id, isTyped: isTypedByReader(row), isUnread: row.is_unread })), () => props.loadState], ([rows, loadState], [previous, wasLoadState]) => {
+        // the first sidebar is not news, though a previewed room may have had a row before it
+        if (!previous || wasLoadState !== "loaded" || loadState !== "loaded") {
             return;
         }
 

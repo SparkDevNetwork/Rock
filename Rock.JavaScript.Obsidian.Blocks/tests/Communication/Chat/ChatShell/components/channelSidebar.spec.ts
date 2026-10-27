@@ -508,6 +508,67 @@ describe("the empty sidebar", () => {
     });
 });
 
+// Until the sidebar's first page arrives the list is loading, not empty: it draws skeleton rows,
+// never the empty state, which would tell a person with conversations that they have none. A first
+// page that failed says so with Try again, rather than loading forever.
+describe("the loading sidebar", () => {
+    test("draws skeleton rows, not the empty state, before the sidebar has loaded", () => {
+        const w = mountSidebar({ rows: [], loadState: "loading" });
+
+        expect(w.findAll("[data-testid='sidebar-skeleton']").length).toBeGreaterThan(0);
+        expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
+    });
+
+    test("tells assistive technology the list is loading, and hides the skeleton from it", () => {
+        const w = mountSidebar({ rows: [], loadState: "loading" });
+        const list = w.get(".chat-side-list");
+
+        expect(list.attributes("aria-busy")).toBe("true");
+        expect(list.get(".chat-sr-only").text()).toBe("Loading conversations");
+        expect(w.get("[data-testid='sidebar-skeleton']").attributes("aria-hidden")).toBe("true");
+        expect(w.get("[data-testid='sidebar-skeleton']").findAll(".chat-skeleton").length).toBeGreaterThan(0);
+    });
+
+    test("draws only the skeleton while loading, though a previewed room already has a row", () => {
+        const w = mountSidebar({ rows: [team], loadState: "loading" });
+
+        expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(true);
+        expect(w.findAll("[data-testid='channel-row']")).toHaveLength(0);
+    });
+
+    test("draws the empty state once loaded with no rows, and is no longer busy", async () => {
+        const w = mountSidebar({ rows: [], loadState: "loading" });
+
+        await w.setProps({ loadState: "loaded" });
+
+        expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(true);
+        expect(w.get(".chat-side-list").attributes("aria-busy")).toBeUndefined();
+    });
+
+    test("says a failed first page could not load, with Try again, never the empty state", async () => {
+        const w = mountSidebar({ rows: [], loadState: "failed" });
+        const error = w.get("[data-testid='sidebar-error']");
+
+        expect(error.classes()).toContain("chat-ls-err");
+        expect(error.text()).toContain("Couldn't load your conversations.");
+        expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(false);
+
+        await error.get("button").trigger("click");
+        expect(w.emitted("retry")).toHaveLength(1);
+    });
+
+    test("glows nothing when the first sidebar lands after a previewed room's row", async () => {
+        const w = mountSidebar({ rows: [team], loadState: "loading" });
+
+        await w.setProps({ rows: [youth, team, dmAnna], loadState: "loaded" });
+
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+});
+
 describe("Browse channels", () => {
     test("is a row at the end of the channels, after a room the person has not joined", () => {
         const preview = row({ channel_id: "c0000009-0000-4000-8000-000000000000", name: "Volunteers", is_member: false, is_public: true });

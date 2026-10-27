@@ -282,9 +282,49 @@ describe("the timeline", () => {
 // newer than the feed's first page rises in as it is drawn, unless this session sent it, since its
 // pending row already rose; a copy drawn afresh in another group does not rise a second time.
 // A conversation opened in place of another enters, as the switch's one motion; the first one
-// the block draws is simply there. Decided as the feed mounts and never again, so nothing a
-// redraw changes can replay it.
+// the block draws is simply there when its page is already held. Decided as the feed mounts and
+// never again, so nothing a redraw changes can replay it. A feed that mounts before its first
+// page has landed enters as that page is drawn instead, so the rise plays on its content rather
+// than over an empty box, on a switch and on the page's first load alike.
 describe("the feed's entrance", () => {
+    test("a feed opened in place of another before its page has landed enters as the page is drawn", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isEntering: true });
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("the first feed the block draws enters as its first page is drawn, when it mounted before the page", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state });
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("a feed mounted with its page never enters later, even if its timeline reports loaded again", async () => {
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = draw({ timeline: state });
+
+        state.isLoaded = false;
+        await nextTick();
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+    });
+
     test("a feed told it replaces another conversation enters, and keeps that once drawn", async () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isEntering: true });
 

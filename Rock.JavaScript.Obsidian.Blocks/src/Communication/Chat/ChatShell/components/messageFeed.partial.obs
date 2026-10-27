@@ -183,7 +183,10 @@
     content: "";
 }
 
-/* A conversation opened in place of another rises into view; the first one drawn is simply there. */
+/*
+    A conversation opened in place of another rises into view, and a first page rises in as it is
+    drawn; a page already held when the block first draws it is simply there.
+*/
 .chat-feed.is-entering {
     animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
 }
@@ -742,8 +745,15 @@
     /** The message flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
 
-    /** Whether the feed plays the switch's entrance, read as it mounts so no later change replays it. */
-    const isEnteringDrawn = props.isEntering;
+    /**
+     * Whether the feed plays its entrance. A feed whose page is held enters only on a switch, read
+     * as it mounts so no later change replays it; one that mounts before its first page enters as
+     * that page is drawn, so the rise plays on its content and never over an empty box.
+     */
+    const isEnteringDrawn = ref(props.isEntering && props.timeline.isLoaded);
+
+    /** Whether the feed mounted before its first page, so its entrance waits for that page; played once. */
+    let isEntrancePending = !props.timeline.isLoaded;
 
     // #endregion Values
 
@@ -1057,7 +1067,15 @@
     });
 
     watch(() => props.timeline.isLoaded, isLoaded => {
-        if (isLoaded && skeletonTimer) {
+        if (!isLoaded) {
+            return;
+        }
+
+        if (isEntrancePending) {
+            isEntrancePending = false;
+            isEnteringDrawn.value = true;
+        }
+        if (skeletonTimer) {
             clearTimeout(skeletonTimer);
             skeletonTimer = null;
         }

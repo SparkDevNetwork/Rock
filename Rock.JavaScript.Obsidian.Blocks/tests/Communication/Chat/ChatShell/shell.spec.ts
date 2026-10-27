@@ -104,7 +104,9 @@ function build(options: {
     push?: ShellOptions["push"],
     pushSettings?: Record<string, unknown>,
     personAliasGuid?: string,
-    stored?: Record<string, string>
+    stored?: Record<string, string>,
+    // the channel a link names; channel A unless a test asks for a first visit with null
+    linkedChannelId?: string | null
 } = {}): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<Response>[]>,
@@ -209,7 +211,7 @@ function build(options: {
 
     const shell = createChatShell({
         session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
-        linkedChannelId: channelA,
+        linkedChannelId: options.linkedChannelId === undefined ? channelA : options.linkedChannelId,
         mintChurchToken: async () => {
             counts.mints++;
             const isOk = mintGate.value === "ok";
@@ -574,6 +576,62 @@ async function started(options: Parameters<typeof build>[0] = {}): Promise<Retur
 function personal(h: ReturnType<typeof build>, event: string, payload: unknown): void {
     topicOf(h, personalTopic(tenant, person)).listeners["broadcast"]?.({ event, payload });
 }
+
+// The block draws a loading state, never "Choose a conversation.", until the page load has chosen
+// the first conversation or found none it can open.
+describe("the page load", () => {
+    test("is opening from the start, through a first visit's sidebar read, until the channel it names opens", async () => {
+        const h = build({ linkedChannelId: null });
+        h.heldBootstraps.value = [];
+        expect(h.shell.state.isOpening).toBe(true);
+
+        const starting = h.shell.start();
+        await settle();
+        expect(h.shell.state.phase).toBe("ready");
+        expect(h.heldBootstraps.value).toHaveLength(1);
+        expect(h.shell.state.isOpening).toBe(true);
+
+        h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [{ channel_id: channelB } as SidebarRow] }));
+        await settle();
+        answerHistory(h, channelB, 20);
+        await starting;
+
+        expect(h.shell.state.activeChannelId).toBe(channelB);
+        expect(h.shell.state.isOpening).toBe(false);
+    });
+
+    test("a first sidebar that fails leaves the list failed, not loading, and the page no longer opening", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+
+        await h.shell.start();
+
+        expect(h.shell.channels.loadState).toBe("failed");
+        expect(h.shell.state.isOpening).toBe(false);
+    });
+
+    test("a reload in flight after the first sidebar never takes the list back to loading", async () => {
+        const h = build({ linkedChannelId: null });
+        await h.shell.start();
+        expect(h.shell.channels.loadState).toBe("loaded");
+
+        h.heldBootstraps.value = [];
+        personal(h, "membership.changed", { channel_id: channelB });
+        await settle();
+
+        expect(h.heldBootstraps.value).toHaveLength(1);
+        expect(h.shell.channels.loadState).toBe("loaded");
+    });
+
+    test("stops opening when the sidebar names no conversation to open", async () => {
+        const h = build({ linkedChannelId: null });
+
+        await h.shell.start();
+
+        expect(h.shell.state.activeChannelId).toBeNull();
+        expect(h.shell.state.isOpening).toBe(false);
+    });
+});
 
 describe("the live cut", () => {
     afterEach(() => {
