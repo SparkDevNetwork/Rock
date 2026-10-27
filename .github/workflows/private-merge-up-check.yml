@@ -16,9 +16,9 @@ name: Merge-up Check
 #      change, not this PR's. The dry run then keeps going past the conflict
 #      (taking the side of the branch being merged into), so later steps that
 #      would probably conflict too are listed up front instead of turning up
-#      one ship at a time. Clean: label and comment removed. (`squash` and
-#      the AI trailer removal are skipped; they change commit messages, not
-#      files, so they can't change whether a merge conflicts.)
+#      one ship at a time. Clean: label and comment removed. (The squash and
+#      the AI trailer removal are skipped; they change commits, not files, so
+#      they can't change whether a merge conflicts.)
 #      A file deleted on one side and changed on the other gets its own plain
 #      explanation (who deleted it, and that the change has to be made again
 #      in whatever replaced it), because it can't be resolved automatically or
