@@ -304,6 +304,14 @@ namespace RockWeb.Blocks.Communication
             SystemCommunicationService emailTemplateService = new SystemCommunicationService( new RockContext() );
             SystemCommunication emailTemplate = emailTemplateService.Get( emailTemplateId );
 
+            if ( emailTemplate != null && !emailTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                nbNotAuthorized.Text = EditModeMessage.NotAuthorizedToView( SystemCommunication.FriendlyTypeName );
+                nbNotAuthorized.Visible = true;
+                pnlDetails.Visible = false;
+                return;
+            }
+
             bool showMessagePreview = false;
 
             var pushCommunication = new CommunicationDetails();

@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel :title="config.title ?? 'New Communication Template'"
+    <NotificationBox v-if="config.errorMessage" alertType="warning">{{ config.errorMessage }}</NotificationBox>
+    <Panel v-else
+           :title="config.title ?? 'New Communication Template'"
            :headerSecondaryActions="headerSecondaryActions">
         <RockForm :id="formId"
                   @submit="onFormSubmitted">
