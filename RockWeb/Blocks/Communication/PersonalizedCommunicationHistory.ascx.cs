@@ -1287,17 +1287,27 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
 
+                if ( _person == null )
+                {
+                    return;
+                }
+
                 var rockContext = new RockContext();
 
-                var communicationService = new CommunicationService( rockContext );
-                var qryCommunication = communicationService.Queryable()
-                    .Where( x => x.Id == communicationId );
+                // Use the grid's own query so the detail can only show a row the grid would show.
+                var qryCommunication = GetCommunicationQuery( rockContext, _person.Id, null, null, null, null, null, null, null, null, null )
+                    .Where( x => x.Id == communicationId.Value );
 
                 var qryCommunicationRecipients = GetCommunicationListItemsQuery( rockContext, qryCommunication, _person.Id );
 
                 // Get the Communication List Item, then load the additional detail for the panel.
                 var communicationItem = GetCommunicationListItems( rockContext, qryCommunicationRecipients )
                     .FirstOrDefault();
+
+                if ( communicationItem == null )
+                {
+                    return;
+                }
 
                 communicationItem.Detail = GetCommunicationListItemDetail( rockContext, communicationId.Value, _person.Id );
 
