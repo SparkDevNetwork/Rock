@@ -349,17 +349,49 @@ describe("a row's states", () => {
         expect(w.emitted("select")).toEqual([[youth.channel_id]]);
     });
 
-    test("flashes a row that arrives or moves, and not the rows already in place", async () => {
+    test("flashes a row that arrives, and not the rows a fresh sidebar puts in a new order", async () => {
         const w = mountSidebar({ rows: [team, youth, dmAnna] });
         expect(w.findAll(".is-flash")).toHaveLength(0);
 
-        // Youth moves above Team, as a new message moves a room up, and Prayer arrives.
+        // A reread sidebar puts Youth above Team, by its newer message, and Prayer arrives.
         await w.setProps({ rows: [youth, team, dmAnna, starred] });
         await nextTick();
 
-        expect(rowOf(w, youth.channel_id).classes()).toContain("is-flash");
         expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
+    });
+
+    test("flashes nothing when a room leaves, though every row below it climbs a place", async () => {
+        const w = mountSidebar({ rows: [team, youth, starred] });
+
+        await w.setProps({ rows: [youth, starred] });
+        await nextTick();
+
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+
+    test("flashes nothing when the top room is unstarred, though every room it drops past climbs a place", async () => {
+        const prayer = { ...starred, is_favorite: false };
+        const w = mountSidebar({ rows: [{ ...team, is_favorite: true }, youth, prayer] });
+
+        await w.setProps({ rows: [youth, team, prayer] });
+        await nextTick();
+
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+
+    test("flashes only the room the person stars, which moves up into Starred", async () => {
+        const prayer = { ...starred, is_favorite: false };
+        const w = mountSidebar({ rows: [team, youth, prayer] });
+
+        await w.setProps({ rows: [{ ...prayer, is_favorite: true }, team, youth] });
+        await nextTick();
+
+        expect(rowOf(w, prayer.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
     });
 });
 
@@ -656,13 +688,31 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmGroup.channel_id).classes()).toContain("is-flash");
     });
 
-    test("a channel's row glows on channel.unread, the one signal it gets until read, where it does not move", async () => {
+    test("a channel's row does not glow on turning unread where it does not move: its bold and darker mark say it", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 
         await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true }, dmRead] });
         await nextTick();
 
-        expect(rowOf(w, team.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).toContain("is-unread");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
+    });
+
+    test("nor do channels a reload after a reconnect puts in a new order by their newer messages", async () => {
+        const prayer = { ...starred, is_favorite: false };
+        const w = mountSidebar({ rows: [team, youth, prayer, dmRead] });
+
+        await w.setProps({
+            rows: [
+                { ...prayer, last_message_id: 12, last_message_at: "2026-10-12T10:00:00Z", is_unread: true },
+                { ...youth, last_message_id: 11, last_message_at: "2026-10-12T09:30:00Z", is_unread: true },
+                team,
+                dmRead
+            ]
+        });
+        await nextTick();
+
+        expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 });
 

@@ -886,22 +886,19 @@
 
     // A row glows once for news: a room new to the list; a direct message reached by a message
     // the person did not type (someone else's, or Rock's post in their name), moved or not, as the
-    // design's incoming message glows; a channel that just turned unread, the one signal it gets
-    // until read, or that moved up among the channels. The person's own send, an edit and a
-    // walk-back after a delete are not news, nor is a room moving down because another passed it,
-    // nor the conversation on screen, and the first list a page loads glows nothing.
-    watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.room_kind !== "channel", lastId: row.last_message_id, isTyped: isTypedByReader(row), isUnread: row.is_unread })), (rows, previous) => {
+    // design's incoming message glows; a channel just starred, moving up into Starred. A channel
+    // turning unread does not glow, its bold and darker mark say it. Nor does a channel's new place
+    // in a reread sidebar: channels only reorder when the sidebar is read again, for reasons of its
+    // own (a membership change, a rename, a reconnect), so a place is no sign of news, and a room
+    // leaving or being unstarred shifts the others without any of them moving. The person's own
+    // send, an edit and a walk-back after a delete are not news, nor the conversation on screen,
+    // and the first list a page loads glows nothing.
+    watch(() => props.rows.map(row => ({ id: row.channel_id, isDm: row.room_kind !== "channel", lastId: row.last_message_id, isTyped: isTypedByReader(row), isStarred: row.is_favorite })), (rows, previous) => {
         if (!previous || previous.length === 0) {
             return;
         }
 
         const before = new Map(previous.map(row => [row.id, row]));
-        // A channel's place is read among the channels alone, so a conversation passing it either
-        // way does not move it.
-        const placeAmongChannels = (list: typeof rows): Map<string, number> => new Map(list.filter(row => !row.isDm).map((row, index) => [row.id, index]));
-        const placeBefore = placeAmongChannels(previous);
-        const placeNow = placeAmongChannels(rows);
-
         const flashed = rows.filter(row => {
             // the conversation on screen is where the news is already shown, as in the design
             if (row.id === props.activeChannelId) {
@@ -914,7 +911,7 @@
             if (row.isDm) {
                 return !row.isTyped && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
             }
-            return (row.isUnread && !was.isUnread) || placeNow.get(row.id)! < placeBefore.get(row.id)!;
+            return row.isStarred && !was.isStarred;
         }).map(row => row.id);
 
         if (flashed.length > 0) {
