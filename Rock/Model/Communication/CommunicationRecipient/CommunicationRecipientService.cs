@@ -18,8 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
+using Rock.Configuration;
 using Rock.Utility;
 using Rock.ViewModels.Communication;
 using Rock.Web.Cache;
@@ -96,7 +96,7 @@ namespace Rock.Model
 
             if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
-                photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
+                photoUrl = RockApp.Current.ResolveRockUrl( photoUrl );
             }
 
             bag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;

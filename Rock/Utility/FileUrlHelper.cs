@@ -18,6 +18,7 @@
 using System;
 
 using System.Collections.Generic;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Drawing.Avatar;
 using Rock.Model;
@@ -84,7 +85,7 @@ namespace Rock.Utility
 
             if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
             {
-                urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?{fileIdentifierParameter}" );
+                urlBuilder.Append( $"{RockApp.Current.ResolveRockUrl( "~" )}GetFile.ashx?{fileIdentifierParameter}" );
             }
             else
             {
@@ -262,7 +263,7 @@ namespace Rock.Utility
                 new KeyValuePair<string, string>( "height", options.Height?.ToString() )
             };
 
-            var url = $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetAvatar.ashx?{AvatarUrlSignature.GetSignedQueryString( parameters )}";
+            var url = $"{RockApp.Current.ResolveRockUrl( "~" )}GetAvatar.ashx?{AvatarUrlSignature.GetSignedQueryString( parameters )}";
 
             return options.PublicAppRoot != null ? options.PublicAppRoot + url : url;
         }

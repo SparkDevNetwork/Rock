@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -71,7 +73,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 var personImageFileTypeGuid = SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid();
 
@@ -92,7 +94,7 @@ namespace Rock.Jobs
 
                 using ( var rockContext = new RockContext() )
                 {
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
 
                     var binaryFiles = new BinaryFileService( rockContext )
                         .Queryable()
@@ -185,7 +187,7 @@ namespace Rock.Jobs
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        rockContext.Database.CommandTimeout = commandTimeout;
+                        rockContext.Database.SetCommandTimeout( commandTimeout );
 
                         var binaryFile = new BinaryFileService( rockContext ).Get( mimeType.Key );
 

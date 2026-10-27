@@ -163,7 +163,7 @@ namespace Rock.Model
             }
             else
             {
-                return VirtualPathUtility.ToAbsolute( virtualPath );
+                return RockApp.Current.ResolveRockUrl( virtualPath );
             }
         }
 

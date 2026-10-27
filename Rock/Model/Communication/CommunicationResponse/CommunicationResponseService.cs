@@ -21,8 +21,8 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication;
 using Rock.Utility;
@@ -668,7 +668,7 @@ namespace Rock.Model
 
             if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
-                photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
+                photoUrl = RockApp.Current.ResolveRockUrl( photoUrl );
             }
 
             messageBag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;

@@ -11159,7 +11159,7 @@ namespace Rock.Rest.v2
 
                         Reason: Stored names must not render as HTML.
                     */
-                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    var appPath = RockRequestContext.ResolveRockUrl( "~" );
                     html.AppendFormat(
                         "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                         Person.GetPersonPhotoImageTag( person, 65, 65 ),

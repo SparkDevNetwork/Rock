@@ -25,6 +25,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock;
@@ -571,7 +572,7 @@ namespace RockWeb.Blocks.Crm
 
             var logger = new RockProcessLogger( Logger );
             var rockContext = RockApp.Current.CreateRockContext();
-            rockContext.Database.CommandTimeout = 90;
+            rockContext.Database.SetCommandTimeout( 90 );
 
             try
             {

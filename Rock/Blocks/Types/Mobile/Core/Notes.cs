@@ -314,7 +314,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                     if ( defaultNoteImageFile != null )
                     {
                         var url = defaultNoteImageFile.Path;
-                        url = url.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( url ) : url;
+                        url = url.StartsWith( "~" ) ? RequestContext.ResolveRockUrl( url ) : url;
                         if ( !url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
                         {
                             var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );

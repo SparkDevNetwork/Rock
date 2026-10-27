@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
 using Rock.Configuration;
@@ -357,7 +359,7 @@ namespace Rock.Model
                         {
                             using ( var batchContext = RockApp.Current.CreateRockContext() )
                             {
-                                batchContext.Database.CommandTimeout = 180;
+                                batchContext.Database.SetCommandTimeout( 180 );
                                 var groupMemberService = new GroupMemberService( batchContext );
 
                                 var batchMembers = groupMemberService.Queryable()

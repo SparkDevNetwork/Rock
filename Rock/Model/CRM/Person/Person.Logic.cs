@@ -24,7 +24,8 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
+
+using Microsoft.EntityFrameworkCore;
 
 using Rock.Communication.Chat;
 using Rock.Configuration;
@@ -1969,7 +1970,7 @@ namespace Rock.Model
         private void IndexBulkQueryInSegments( int segmentCount, int bulkChunkSize, bool isBusiness )
         {
             var rockContext = RockApp.Current.CreateRockContext();
-            rockContext.Database.CommandTimeout = 180; // Set a longer timeout for indexing operations
+            rockContext.Database.SetCommandTimeout( 180 ); // Set a longer timeout for indexing operations
             var personService = new PersonService( rockContext );
 
             if ( isBusiness )

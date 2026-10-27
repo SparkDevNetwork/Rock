@@ -118,7 +118,7 @@ namespace Rock.Field.Types
 
                 publicConfigurationValues[FILE_NAME] = binaryFileInfo.FileName;
                 publicConfigurationValues[MIME_TYPE] = binaryFileInfo.MimeType;
-                publicConfigurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                publicConfigurationValues[FILE_PATH] = RockApp.Current.ResolveRockUrl( "~/GetFile.ashx" );
                 publicConfigurationValues[FILE_GUID] = binaryFileGuid.ToString();
             }
 
