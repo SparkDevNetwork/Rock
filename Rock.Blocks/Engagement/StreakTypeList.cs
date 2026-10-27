@@ -267,6 +267,14 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"Not authorized to delete {StreakType.FriendlyTypeName}." );
                 }
 
+                // Deleting a streak type also deletes its enrollments and exclusions, so
+                // require the same rights on the streak type that the detail block does.
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    || !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete {StreakType.FriendlyTypeName}." );
+                }
+
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
