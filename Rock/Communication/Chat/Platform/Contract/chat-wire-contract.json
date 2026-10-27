@@ -399,6 +399,7 @@
       "sync.busy",
       "sync.superseded",
       "auth.expired",
+      "authz.dm_unavailable",
       "authz.join_required",
       "authz.no_announcement_right",
       "authz.no_mention_all_right",
