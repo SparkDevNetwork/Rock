@@ -9,14 +9,34 @@
                @back="emit('back')">
         <template #actions>
             <!-- Whether the reader follows arrives with the first page, so until it has answered there is nothing true to offer. -->
-            <button v-if="!isLoading && root && !error"
-                    type="button"
-                    class="chat-th-follow"
-                    :aria-pressed="isFollowing ? 'true' : 'false'"
-                    data-testid="thread-follow"
-                    @click="emit('follow', !isFollowing)">
-                <Icon :name="isFollowing ? 'bell' : 'bell-off'" size="sm" />{{ isFollowing ? "Following" : "Follow" }}
-            </button>
+            <template v-if="!isLoading && root && !error">
+                <button ref="followElement"
+                        type="button"
+                        class="chat-th-follow"
+                        :aria-pressed="isFollowing ? 'true' : 'false'"
+                        :aria-describedby="followTipId"
+                        data-testid="thread-follow"
+                        @mouseenter="onFollowPointerEnter"
+                        @mouseleave="hideFollowTip"
+                        @pointerdown="onFollowPointerDown"
+                        @focus="onFollowFocus"
+                        @blur="onFollowBlur"
+                        @click="onFollow">
+                    <Icon :name="isFollowing ? 'bell' : 'bell-off'" size="sm" />{{ isFollowing ? "Following" : "Follow" }}
+                </button>
+                <!-- What following means, read with the button and shown as its tooltip; the tip is for the eye only, so it is not read twice. -->
+                <span :id="followTipId" class="chat-sr-only">{{ followText }}</span>
+                <Teleport :to="followTipHost ?? 'body'" :disabled="!followTipHost">
+                    <div v-if="isFollowTipShown"
+                         ref="followTipElement"
+                         class="chat-tip"
+                         role="tooltip"
+                         aria-hidden="true"
+                         :style="followTipStyles">
+                        {{ followText }}
+                    </div>
+                </Teleport>
+            </template>
         </template>
 
         <div ref="bodyElement"
@@ -252,12 +272,14 @@
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { MentionPickerSource } from "./mentionPicker.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { useHotMessage } from "../composables/useHotMessage.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
@@ -531,9 +553,31 @@
     /** The reply already landed on, so it is scrolled to and flashed only once per landing. */
     let landedId: number | null = null;
 
+    const followElement = ref<HTMLButtonElement>();
+
+    /** Ties Follow to the sentence that says what following means, once per drawer. */
+    const followTipId = `chat-th-follow-${newGuid()}`;
+
+    // The chat's own tooltip, drawn in the chat's root so the panel's edges never cut it.
+    const {
+        tipElement: followTipElement,
+        isTipShown: isFollowTipShown,
+        floatingStyles: followTipStyles,
+        hideTip: hideFollowTip,
+        onPointerEnter: onFollowPointerEnter,
+        onPointerDown: onFollowPointerDown,
+        onFocus: onFollowFocus,
+        onBlur: onFollowBlur
+    } = useTooltip(followElement);
+
+    const followTipHost = ref<HTMLElement | null>(null);
+
     // #endregion Values
 
     // #region Computed Values
+
+    /** What following a thread means, which the room's own notify setting does not say. */
+    const followText = computed((): string => props.isFollowing ? "You're notified about every reply." : "Follow to be notified about every reply.");
 
     /** This root's replies the person is still sending, as the conversation draws its own. */
     const pendingReplies = computed((): PendingMessage[] => props.root ? props.pending.filter(row => row.parentId === props.root?.id) : []);
@@ -595,6 +639,11 @@
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    function onFollow(): void {
+        hideFollowTip();
+        emit("follow", !props.isFollowing);
+    }
 
     function onSend(body: string, isAlsoSent?: boolean): void {
         emit("send", body, isAlsoSent === true);
@@ -736,6 +785,11 @@
     // #region Watchers
 
     watch(() => props.root, () => void place());
+
+    // Follow is drawn only once the first page has answered, so its tip finds the chat's root then.
+    watch(followElement, element => {
+        followTipHost.value = overlayHostOf(element);
+    });
 
     // Older replies go in above without moving what the reader is looking at; newer ones are
     // followed when the reader is at the bottom, and the reader's own always are.

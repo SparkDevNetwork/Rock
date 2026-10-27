@@ -1,0 +1,88 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <section class="chat-sg-sec">
+        <!-- The short label over the group; a label element where it names a field inside, so the field reads it as its name. -->
+        <h4 v-if="label" :id="labelId" class="chat-sg-lbl">
+            <label v-if="labelFor" :for="labelFor">{{ label }}</label>
+            <template v-else>{{ label }}</template>
+        </h4>
+        <slot v-if="isBare" :labelId="labelId"></slot>
+        <div v-else
+             class="chat-sg"
+             :role="isList ? 'list' : 'group'"
+             :aria-labelledby="label && !ariaLabel ? labelId : undefined"
+             :aria-label="ariaLabel ?? undefined">
+            <slot :labelId="labelId"></slot>
+        </div>
+    </section>
+</template>
+
+<style scoped>
+.chat-sg-sec {
+    margin-top: 16px;
+}
+
+/* Rock's theme styles every heading, so this one states its whole face. */
+.chat-sg-lbl {
+    margin: 0 0 6px 2px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--chat-muted);
+}
+
+.chat-sg-lbl label {
+    margin: 0;
+    font-weight: inherit;
+    cursor: pointer;
+}
+
+/* The rounded group its rows sit in, ruled apart by the rows themselves. */
+.chat-sg {
+    overflow: hidden;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-lg);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    defineProps({
+        /** The short label over the group, or null for a group with none, such as Leave's. */
+        label: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The field the label names, which makes the label a label element for it. */
+        labelFor: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** A name read in the label's place, where the group means more than its label says. */
+        ariaLabel: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** A list of rows, such as the people in a group, rather than a group of controls. */
+        isList: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Draws the label alone over the slot, for a control that is its own shape, such as a segmented one. */
+        isBare: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    /** Ties the label to the group, or to a bare control through the slot, once per group. */
+    const labelId = `chat-sg-${newGuid()}`;
+</script>

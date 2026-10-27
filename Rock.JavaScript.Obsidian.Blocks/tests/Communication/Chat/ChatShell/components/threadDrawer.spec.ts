@@ -345,6 +345,33 @@ describe("the Follow toggle", () => {
         expect(w.emitted("follow")).toEqual([[false]]);
     });
 
+    test.each([
+        [false, "Follow to be notified about every reply."],
+        [true, "You're notified about every reply."]
+    ])("following %s, is described by what following means, and shows it as its tooltip on hover", async (isFollowing, words) => {
+        jest.useFakeTimers();
+        try {
+            const w = draw({ isFollowing });
+            const toggle = w.get("[data-testid='thread-follow']");
+
+            expect(document.getElementById(toggle.attributes("aria-describedby") ?? "")?.textContent?.trim()).toBe(words);
+            // The sentence is the button's description, never its name.
+            expect(plain(toggle.text())).toBe(isFollowing ? "Following" : "Follow");
+
+            await toggle.trigger("mouseenter");
+            jest.advanceTimersByTime(600);
+            await nextTick();
+
+            expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe(words);
+
+            await toggle.trigger("mouseleave");
+            expect(document.querySelector("[role='tooltip']")).toBeNull();
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("is not offered while the thread's first page is on its way, since whether the reader follows is not known yet", () => {
         const w = draw({ root: null, replies: [], isLoading: true, isFollowing: false });
 

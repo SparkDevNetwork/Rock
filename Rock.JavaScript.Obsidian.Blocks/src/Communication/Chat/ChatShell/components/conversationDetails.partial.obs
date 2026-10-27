@@ -14,15 +14,15 @@
             <span v-if="kind === 'channel'" class="chat-rd-mark" data-testid="details-mark" aria-hidden="true">
                 <Icon :name="facts.is_public ? 'hash' : 'lock'" />
             </span>
-            <Avatar v-else-if="kind === 'person'" :people="[otherFace]" :size="56" />
+            <Avatar v-else-if="kind === 'person'" :people="[otherFace]" :size="44" />
             <span v-else class="chat-rd-pile">
-                <Avatar :people="groupFaces" :size="40" />
+                <Avatar :people="groupFaces" :size="36" />
             </span>
 
             <span class="chat-rd-main">
                 <b class="chat-rd-name" data-testid="details-name">{{ title }}</b>
                 <span class="chat-rd-meta">
-                    <span v-for="item in metaItems" :key="item.text" data-testid="details-meta-item"><Icon v-if="item.icon" :name="item.icon" size="xs" />{{ item.text }}</span>
+                    <span v-for="item in metaItems" :key="item" data-testid="details-meta-item">{{ item }}</span>
                 </span>
             </span>
         </div>
@@ -30,84 +30,37 @@
         <template v-if="kind === 'channel'">
             <p v-if="description" class="chat-rd-desc" data-testid="details-description">{{ description }}</p>
 
-            <div class="chat-rd-facts">
-                <span v-if="leaders.length > 0" class="chat-rd-fact" data-testid="details-leaders">
-                    <Avatar :people="leaders" :size="22" />
-                    <span>Led by {{ joinNames(leaders.map(leader => leader.name), 0) }}</span>
-                </span>
+            <SettingGroup data-testid="details-facts">
                 <!-- A way to the members panel for whoever may see who is here; a plain count for anyone else. -->
-                <button v-if="canSeeRoster"
-                        type="button"
-                        class="chat-rd-fact is-link"
-                        data-testid="details-members"
-                        @click="emit('members')">
-                    <Icon name="users" size="sm" />
-                    <span>{{ memberText }}</span>
-                    <Icon name="right" size="xs" />
-                </button>
-                <span v-else class="chat-rd-fact" data-testid="details-members">
-                    <Icon name="users" size="sm" />
-                    <span>{{ memberText }}</span>
-                </span>
-            </div>
+                <SettingRow icon="users"
+                            title="Members"
+                            :isButton="canSeeRoster"
+                            data-testid="details-members"
+                            @click="canSeeRoster && emit('members')">
+                    <span class="chat-rd-value">{{ facts.member_count.toLocaleString() }}<Icon v-if="canSeeRoster" name="right" size="xs" /></span>
+                </SettingRow>
+                <SettingRow v-if="leaders.length > 0" icon="star" title="Led by" data-testid="details-leaders">
+                    <span class="chat-rd-value is-leaders">
+                        <span class="chat-rd-pile"><Avatar :people="leaders" :size="20" /></span>
+                        <span>{{ leaders.map(leader => leader.name).join(", ") }}</span>
+                    </span>
+                </SettingRow>
+            </SettingGroup>
         </template>
 
-        <ul v-else-if="kind === 'group'" class="chat-rd-people" aria-label="People in this conversation" data-testid="details-people">
-            <li v-for="chip in groupChips" :key="chip.key" data-testid="details-person">
-                <Avatar :people="[chip]" :size="22" />
-                <span>{{ chip.label }}</span>
-            </li>
-        </ul>
+        <SettingGroup v-else-if="kind === 'group'"
+                      label="People"
+                      ariaLabel="People in this conversation"
+                      isList
+                      data-testid="details-people">
+            <SettingRow v-for="chip in groupChips" :key="chip.key" role="listitem" data-testid="details-person">
+                <template #text>
+                    <span class="chat-rd-person"><Avatar :people="[chip]" :size="24" /><span>{{ chip.label }}</span></span>
+                </template>
+            </SettingRow>
+        </SettingGroup>
 
-        <section v-if="!facts.is_member && kind === 'channel'" class="chat-rd-sec">
-            <p class="chat-rd-callout" data-testid="details-callout"><Icon name="info" size="sm" /><span>Join {{ title }} to choose its notifications and keep it in your sidebar.</span></p>
-        </section>
-
-        <!-- The person's own settings for the room, each saved at once. -->
-        <template v-if="facts.is_member">
-            <section class="chat-rd-sec" data-testid="details-notify">
-                <h4 :id="`${renameId}-notify`">Notify me about</h4>
-                <div class="chat-nopts" role="radiogroup" :aria-labelledby="`${renameId}-notify`" @keydown="onNotifyKeydown">
-                    <button v-for="option in notifyOptions"
-                            :key="option.value"
-                            ref="notifyElements"
-                            type="button"
-                            class="chat-nopt"
-                            role="radio"
-                            :aria-checked="option.value === notifyMode ? 'true' : 'false'"
-                            :tabindex="option.value === shownNotifyMode ? 0 : -1"
-                            :data-autofocus="option.value === shownNotifyMode ? '' : undefined"
-                            data-testid="notify-option"
-                            :data-value="option.value"
-                            @click="onNotify(option.value)">
-                        <span class="chat-nopt-ic"><Icon :name="option.icon" size="sm" /></span>
-                        <span class="chat-nopt-txt"><b>{{ option.title }}</b><span class="chat-nopt-desc">{{ option.description }}</span></span>
-                        <span class="chat-nopt-dot" aria-hidden="true"></span>
-                    </button>
-                </div>
-                <p v-if="prefsNotes.notify" class="chat-set-err chat-nopts-err" data-testid="notify-error"><Icon name="alert" size="xs" /><span>{{ prefsNotes.notify.text }}</span></p>
-                <p class="chat-nopts-foot" data-testid="notify-foot">Threads you follow notify you about every reply. Unread mentions always show a badge.</p>
-            </section>
-
-            <section class="chat-rd-sec" data-testid="details-sidebar">
-                <h4>In your sidebar</h4>
-                <SettingSwitch name="star"
-                               title="Star"
-                               description="Keep it at the top of your list."
-                               :isOn="isStarred"
-                               :note="prefsNotes.star ?? null"
-                               @toggle="emit('star', $event)" />
-                <SettingSwitch name="hide"
-                               title="Hide"
-                               description="Take it out of your list until there's a new message."
-                               :isOn="isHidden"
-                               :note="prefsNotes.hide ?? null"
-                               @toggle="emit('hide', $event)" />
-            </section>
-        </template>
-
-        <section v-if="canRename" class="chat-rd-sec">
-            <h4><label :for="renameId">Conversation name</label></h4>
+        <SettingGroup v-if="canRename" class="chat-rn-grp" label="Conversation name" :labelFor="renameId">
             <div class="chat-rn">
                 <input :id="renameId"
                        v-model="draftName"
@@ -129,17 +82,69 @@
                     <template v-else>Save</template>
                 </button>
             </div>
-            <p :id="`${renameId}-help`" class="chat-rd-foot" data-testid="rename-help">Everyone here sees the new name. Leave it blank to show everyone's names.</p>
+        </SettingGroup>
+        <template v-if="canRename">
             <p v-if="renameNote" :id="`${renameId}-note`" class="chat-set-note" :data-kind="renameNote.kind" data-testid="rename-note">
                 <Icon :name="renameNote.kind === 'error' ? 'alert' : 'clock'" size="xs" /><span>{{ renameNote.text }}</span>
             </p>
             <p v-else-if="countText" :id="`${renameId}-note`" class="chat-set-note" data-kind="info" data-testid="rename-count">
                 <Icon name="info" size="xs" /><span>{{ countText }}</span>
             </p>
-        </section>
+            <p :id="`${renameId}-help`" class="chat-rd-cap" data-testid="rename-help">Everyone here sees it. Blank shows everyone's names.</p>
+        </template>
 
+        <SettingGroup v-if="!facts.is_member && kind === 'channel'">
+            <SettingRow icon="info" data-testid="details-callout">
+                <template #text><span>Join {{ title }} to choose its notifications and keep it in your sidebar.</span></template>
+            </SettingRow>
+        </SettingGroup>
+
+        <!-- The person's own settings for the room, each saved at once. -->
         <template v-if="facts.is_member">
-            <section v-if="facts.can_leave" class="chat-rd-sec chat-rd-danger">
+            <SettingGroup label="Notifications" isBare data-testid="details-notify">
+                <template #default="{ labelId }">
+                    <div class="chat-seg"
+                         role="radiogroup"
+                         :aria-labelledby="labelId"
+                         :aria-describedby="notifyDescribedBy"
+                         @keydown="onNotifyKeydown">
+                        <button v-for="option in notifyOptions"
+                                :key="option.value"
+                                ref="notifyElements"
+                                type="button"
+                                class="chat-seg-opt"
+                                role="radio"
+                                :aria-checked="option.value === notifyMode ? 'true' : 'false'"
+                                :tabindex="option.value === shownNotifyMode ? 0 : -1"
+                                :data-autofocus="option.value === shownNotifyMode ? '' : undefined"
+                                data-testid="notify-option"
+                                :data-value="option.value"
+                                @click="onNotify(option.value)">
+                            <Icon :name="option.icon" size="sm" />{{ option.label }}
+                        </button>
+                    </div>
+                    <p :id="`${renameId}-notify-cap`" class="chat-rd-cap" data-testid="notify-caption">{{ notifyCaption }}</p>
+                    <p v-if="prefsNotes.notify" :id="`${renameId}-notify-err`" class="chat-set-err chat-seg-err" data-testid="notify-error"><Icon name="alert" size="xs" /><span>{{ prefsNotes.notify.text }}</span></p>
+                </template>
+            </SettingGroup>
+
+            <SettingGroup label="Sidebar" data-testid="details-sidebar">
+                <SettingSwitch name="star"
+                               icon="star"
+                               title="Star"
+                               :isOn="isStarred"
+                               :note="prefsNotes.star ?? null"
+                               @toggle="emit('star', $event)" />
+                <SettingSwitch name="hide"
+                               icon="eye-off"
+                               title="Hide"
+                               description="Until there's a new message"
+                               :isOn="isHidden"
+                               :note="prefsNotes.hide ?? null"
+                               @toggle="emit('hide', $event)" />
+            </SettingGroup>
+
+            <SettingGroup v-if="facts.can_leave" data-testid="details-leave-group">
                 <div v-if="isConfirmingLeave"
                      class="chat-leave-box"
                      role="group"
@@ -172,19 +177,21 @@
                         </button>
                     </div>
                 </div>
-                <button v-else
-                        ref="leaveElement"
-                        type="button"
-                        class="chat-rd-btn is-danger-line"
-                        data-testid="details-leave"
-                        @click="onLeaveAsk">
-                    <Icon name="door" size="sm" />Leave {{ kind === "channel" ? "channel" : "conversation" }}
-                </button>
-            </section>
+                <SettingRow v-else
+                            ref="leaveRow"
+                            icon="door"
+                            :title="kind === 'channel' ? 'Leave channel' : 'Leave conversation'"
+                            isButton
+                            isDanger
+                            data-testid="details-leave"
+                            @click="onLeaveAsk" />
+            </SettingGroup>
 
-            <section v-else class="chat-rd-sec">
-                <p class="chat-rd-callout" data-testid="details-callout"><Icon name="info" size="sm" /><span>{{ cannotLeaveText }}</span></p>
-            </section>
+            <SettingGroup v-else>
+                <SettingRow icon="info" data-testid="details-callout">
+                    <template #text><span>{{ cannotLeaveText }}</span></template>
+                </SettingRow>
+            </SettingGroup>
         </template>
 
         <!-- The news said while the dialog is open, the rooms' or the settings', keyed so the same words are read twice. -->
@@ -196,7 +203,7 @@
 <style scoped>
 .chat-rd-id {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
 }
 
@@ -204,21 +211,30 @@
     display: grid;
     flex: none;
     place-items: center;
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-details);
+    border-radius: var(--chat-r-lg);
 }
 
 .chat-rd-mark :deep(.chat-ic) {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
 }
 
-/* A group's faces, ringed in the dialog's color; each overlaps the one before by the avatar's own measure. */
+/* Faces in a pile, ringed in the color they sit on; each overlaps the one before by the avatar's own measure. */
+.chat-rd-pile {
+    display: inline-flex;
+    flex: none;
+}
+
 .chat-rd-pile :deep(.chat-av) {
     box-shadow: 0 0 0 2px var(--chat-raised);
+}
+
+.chat-rd-value .chat-rd-pile :deep(.chat-av) {
+    box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
 .chat-rd-main {
@@ -230,8 +246,9 @@
 }
 
 .chat-rd-name {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
+    line-height: 1.25;
     letter-spacing: -.01em;
     overflow-wrap: anywhere;
 }
@@ -244,145 +261,109 @@
     color: var(--chat-muted);
 }
 
-.chat-rd-meta > span {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-}
-
 /* The facts joined by 3px dots, as the channel's intro joins them. */
 .chat-rd-meta > span + span::before {
+    display: inline-block;
     width: 3px;
     height: 3px;
-    margin: 0 8px;
+    margin: 0 7px;
+    vertical-align: middle;
     content: "";
     background: currentColor;
     border-radius: 50%;
     opacity: .55;
 }
 
-.chat-rd-meta :deep(.chat-ic),
-.chat-rd-fact :deep(.chat-ic),
-.chat-rd-callout :deep(.chat-ic) {
-    color: var(--chat-icon);
-}
-
-/* Every paragraph in a dialog keeps 14px under it and none above, the description included. */
 .chat-rd-desc {
-    margin: 0 0 14px;
-    font-size: 14px;
+    margin: 10px 0 0;
+    font-size: 13.5px;
     color: var(--chat-text-2);
     overflow-wrap: anywhere;
 }
 
-.chat-rd-fact.is-link {
-    padding: 0;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: transparent;
-    border: 0;
-    border-radius: var(--chat-r-sm);
-}
-
-.chat-rd-fact.is-link:hover {
-    color: var(--chat-text);
-}
-
-.chat-rd-facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-    margin-top: 12px;
-}
-
-.chat-rd-facts:empty {
-    display: none;
-}
-
-.chat-rd-fact {
+/* A row's value at its end, such as the member count or the leaders' names, quieter than its label. */
+.chat-rd-value {
     display: inline-flex;
-    gap: 7px;
-    align-items: center;
-    font-size: 13px;
-    color: var(--chat-muted);
-}
-
-.chat-rd-fact :deep(.chat-av) {
-    box-shadow: 0 0 0 2px var(--chat-raised);
-}
-
-.chat-rd-people {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 0;
-    margin: 14px 0 0;
-    list-style: none;
-}
-
-.chat-rd-people li {
-    display: inline-flex;
+    flex: none;
     gap: 6px;
     align-items: center;
-    height: 30px;
-    padding: 0 10px 0 4px;
+    max-width: 60%;
     font-size: 13px;
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-}
-
-.chat-rd-sec {
-    padding-top: 18px;
-    margin-top: 20px;
-    border-top: 1px solid var(--chat-line);
-}
-
-/* Rock's theme styles every heading, so this one states its whole face. */
-.chat-rd-sec h4 {
-    margin: 0 0 10px;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
     color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .07em;
 }
 
-.chat-rd-sec h4 label {
-    margin: 0;
-    font-weight: inherit;
-    cursor: pointer;
+.chat-rd-value.is-leaders > span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.chat-rd-foot {
-    margin: 0 0 14px;
+.chat-rd-person {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+}
+
+/* The line under a control: what the chosen mode means, or what a group's name does. */
+.chat-rd-cap {
+    margin: 6px 0 0 2px;
     font-size: 12.5px;
-    line-height: 1.45;
     color: var(--chat-muted);
 }
 
-.chat-rd-callout {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    margin: 0 0 14px;
-    font-size: 12.5px;
-    line-height: 1.45;
-    color: var(--chat-muted);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
+/* Notifications: All, Mentions and Off as one segmented control, the chosen one raised. */
+.chat-seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 3px;
+    background: var(--chat-tab-track);
     border-radius: var(--chat-r-lg);
 }
 
-.chat-rd-callout :deep(.chat-ic) {
-    margin-top: 1px;
+.chat-seg-opt {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 32px;
+    padding: 0 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-md);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
-/* The dialog's small buttons: outlined, in the church's color, in danger, or outlined in danger. */
+.chat-seg-opt:hover:not([aria-checked="true"]) {
+    color: var(--chat-text-2);
+}
+
+.chat-seg-opt[aria-checked="true"] {
+    color: var(--chat-text);
+    background: var(--chat-raised);
+    box-shadow: var(--chat-shadow-thumb);
+}
+
+.chat-seg-opt[aria-checked="true"] :deep(.chat-ic) {
+    color: var(--chat-brand-ink);
+}
+
+.chat-seg-opt:focus-visible {
+    outline-offset: 0;
+}
+
+.chat-seg-err {
+    margin: 6px 0 0 2px;
+}
+
+/* The dialog's small buttons: outlined, in the church's color, or in danger. */
 .chat-rd-btn {
     display: inline-flex;
     flex: none;
@@ -395,7 +376,7 @@
     color: var(--chat-text);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-md);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -427,17 +408,6 @@
     background: var(--chat-danger-hover);
 }
 
-.chat-rd-btn.is-danger-line {
-    color: var(--chat-danger-ink);
-    background: var(--chat-surface);
-    border: 1px solid color-mix(in srgb, var(--chat-danger) 40%, var(--chat-line));
-}
-
-.chat-rd-btn.is-danger-line:hover {
-    background: var(--chat-danger-soft);
-    border-color: color-mix(in srgb, var(--chat-danger) 60%, var(--chat-line));
-}
-
 /* The small button, as Rename's Save. */
 .chat-rd-btn.is-sm {
     gap: 5px;
@@ -452,30 +422,29 @@
     opacity: .5;
 }
 
-.chat-rd-danger {
-    display: flex;
-}
-
+/* The name field fills its row of the group, Save at its end. */
 .chat-rn {
     display: flex;
     gap: 8px;
+    align-items: center;
+    padding: 6px 6px 6px 14px;
 }
 
 .chat-rn-in {
     flex: 1;
     min-width: 0;
-    height: 36px;
-    padding: 0 12px;
+    height: 32px;
+    padding: 0;
     font: inherit;
+    font-size: 13.5px;
     color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-lg);
+    background: transparent;
+    border: 0;
     outline: 0;
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-rn-in:focus {
+/* The group draws the field's focus, since the field has no box of its own. */
+.chat-rn-grp :deep(.chat-sg:focus-within) {
     border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
     box-shadow: 0 0 0 3px var(--chat-brand-ring);
 }
@@ -488,124 +457,12 @@
     color: var(--chat-text-2);
 }
 
-/* Notify me about: three quiet cards, the chosen one in the church's color, its dot filling in. */
-.chat-nopts {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.chat-nopt {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    width: 100%;
-    padding: 10px 12px;
-    font: inherit;
-    color: var(--chat-text);
-    text-align: left;
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-lg);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-nopt:hover {
-    background: var(--chat-hover);
-    border-color: var(--chat-line-strong);
-}
-
-.chat-nopt[aria-checked="true"] {
-    background: var(--chat-brand-wash);
-    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chat-brand) 35%, transparent);
-}
-
-.chat-nopt-ic {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    color: var(--chat-icon);
-    background: var(--chat-sidebar);
-    border-radius: var(--chat-r-radio-ic);
-    transition: color var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-nopt[aria-checked="true"] .chat-nopt-ic {
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-}
-
-.chat-nopt-txt {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-width: 0;
-    line-height: 1.3;
-}
-
-.chat-nopt-txt b {
-    font-size: 13.5px;
-    font-weight: 600;
-}
-
-.chat-nopt-desc {
-    font-size: 12.5px;
-    color: var(--chat-muted);
-}
-
-.chat-nopt-dot {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 18px;
-    height: 18px;
-    border: 1.5px solid var(--chat-line-strong);
-    border-radius: 50%;
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-nopt-dot::after {
-    width: 8px;
-    height: 8px;
-    content: "";
-    background: var(--chat-brand-fill);
-    border-radius: 50%;
-    transform: scale(0);
-    transition: transform var(--chat-t-base) var(--chat-ease-in);
-}
-
-.chat-nopt[aria-checked="true"] .chat-nopt-dot {
-    border-color: var(--chat-brand-fill);
-}
-
-.chat-nopt[aria-checked="true"] .chat-nopt-dot::after {
-    transform: scale(1);
-}
-
-.chat-nopts-err {
-    margin: 8px 0 0;
-}
-
-.chat-nopts-foot {
-    margin: 0 0 14px;
-    font-size: 12.5px;
-    line-height: 1.45;
-    color: var(--chat-muted);
-}
-
-.chat-rn .chat-rd-btn {
-    height: 36px;
-}
-
 /* A note under a field: an answer that is pending, a refusal in danger, or the character count. */
 .chat-set-note {
     display: flex;
     gap: 6px;
     align-items: flex-start;
-    margin: 8px 0 0;
+    margin: 6px 0 0 2px;
     font-size: 12.5px;
     font-weight: 600;
     color: var(--chat-muted);
@@ -626,13 +483,10 @@
     margin-top: 2px;
 }
 
-/* The leave confirm, asked in place of the button and in danger's soft color. */
+/* The leave confirm, asked in the Leave row's place in danger's soft color. */
 .chat-leave-box {
-    flex: 1;
     padding: 14px 16px;
     background: var(--chat-danger-soft);
-    border: 1px solid color-mix(in srgb, var(--chat-danger) 30%, var(--chat-line));
-    border-radius: var(--chat-r-lg);
     animation: chat-save-in var(--chat-t-base) var(--chat-ease-in);
 }
 
@@ -699,13 +553,14 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs, SaveMark } from "../composables/usePrefs.partial";
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
-    import { joinNames } from "../stores/channelStore.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import SaveIndicator, { SaveIndicatorState } from "../ui/saveIndicator.partial.obs";
+    import SettingGroup from "../ui/settingGroup.partial.obs";
+    import SettingRow from "../ui/settingRow.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
     import { HeaderRoomKind } from "./chatHeader.partial.obs";
 
@@ -878,7 +733,8 @@
     /** Whether Leave was asked in this confirm, so an answer to an earlier ask is never shown in it. */
     const hasAskedLeave = ref(false);
 
-    const leaveElement = ref<HTMLButtonElement>();
+    /** The Leave row, whose own element takes focus back when the confirm is cancelled. */
+    const leaveRow = ref<{ $el: HTMLElement } | null>(null);
     const leaveCancelElement = ref<HTMLButtonElement>();
 
     /** The rooms' announcement count as the dialog opened, so only news said since is read here. */
@@ -911,31 +767,21 @@
     const groupFaces = computed((): AvatarPerson[] => props.facts.people.slice(0, 3).map(person => ({ name: fullName(person), photoUrl: person.avatar_url })));
 
     /** The line under the name: what kind of room it is and where, each part joined by a dot. */
-    const metaItems = computed((): Array<{ text: string, icon?: string }> => {
+    const metaItems = computed((): string[] => {
         const facts = props.facts;
 
         if (props.kind === "channel") {
-            const items: Array<{ text: string, icon?: string }> = [];
-            if (facts.group_type_name) {
-                items.push({ text: facts.group_type_name });
-            }
-
             const campus = campusName(facts.campus_id);
-            if (campus) {
-                items.push({ text: campus });
-            }
-
-            items.push(facts.is_public ? { text: "Public", icon: "hash" } : { text: "Private", icon: "lock" });
-            return items;
+            return [facts.is_public ? "Public" : "Private", ...(campus ? [campus] : []), ...(facts.group_type_name ? [facts.group_type_name] : [])];
         }
 
         if (props.kind === "person") {
             // The campus only for a person who shows their details; the platform leaves them out otherwise.
             const campus = campusName(facts.people[0]?.details?.campus_id);
-            return [...(campus ? [{ text: campus }] : []), { text: "Direct message" }];
+            return [...(campus ? [campus] : []), "Direct message"];
         }
 
-        return [{ text: `${facts.member_count.toLocaleString()} people`, icon: "users" }, { text: "Group message" }];
+        return [`${facts.member_count.toLocaleString()} people`, "Group message"];
     });
 
     /** The description as a sentence, or null to leave it out. */
@@ -950,11 +796,6 @@
 
     /** Up to three listed leaders, as the channel's intro names them. */
     const leaders = computed((): AvatarPerson[] => props.facts.leaders.slice(0, 3).map(leader => ({ name: fullName(leader), photoUrl: leader.avatar_url })));
-
-    const memberText = computed((): string => {
-        const count = props.facts.member_count;
-        return `${count.toLocaleString()} ${count === 1 ? "member" : "members"}`;
-    });
 
     /** Everyone in a group, the person first and marked as them. */
     const groupChips = computed((): Array<AvatarPerson & { key: string, label: string }> => [
@@ -1015,6 +856,12 @@
     /** The mode Tab lands on: the room's own, or the first where it has none. */
     const shownNotifyMode = computed((): string => notifyOptions.value.some(option => option.value === props.notifyMode) ? props.notifyMode ?? "all" : "all");
 
+    /** The one line under the control, saying what only the mode Tab lands on means. */
+    const notifyCaption = computed((): string => notifyOptions.value.find(option => option.value === shownNotifyMode.value)?.caption ?? "");
+
+    /** The control is described by its line, and by a refusal's sentence while one shows. */
+    const notifyDescribedBy = computed((): string => props.prefsNotes.notify ? `${renameId}-notify-cap ${renameId}-notify-err` : `${renameId}-notify-cap`);
+
     /** The rooms' newest sentence, once it is one said since the dialog opened. */
     const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
 
@@ -1050,8 +897,8 @@
     });
 
     const cannotLeaveText = computed((): string => props.kind === "channel"
-        ? "This channel can't be left. You can turn its notifications off instead."
-        : "A conversation between two people can't be left. Hide it instead; it comes back when there's a new message.");
+        ? "This channel can't be left. Turn notifications off instead."
+        : "A conversation between two people can't be left. Hide it instead.");
 
     // #endregion Computed Values
 
@@ -1112,7 +959,7 @@
 
         isConfirmingLeave.value = false;
         await nextTick();
-        leaveElement.value?.focus();
+        leaveRow.value?.$el.focus();
     }
 
     function onLeaveGo(): void {
