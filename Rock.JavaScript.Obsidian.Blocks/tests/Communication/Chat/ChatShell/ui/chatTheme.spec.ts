@@ -573,6 +573,23 @@ describe("the components' own styles", () => {
         expect(gone?.declarations.get("opacity")).toBe("0");
     });
 
+    // Drawn over the feed, the history skeleton keeps the feed's own bounds: the whole feed box,
+    // its rows at the foot, anything taller clipped at the top rather than spilling over the
+    // header, and the feed's edge fade.
+    test("the history skeleton stays within the feed, at its foot, under the feed's edge fade", () => {
+        const feed = readSheet(feedPath);
+        const rules = selectorsOf(feed).filter(s => s.rule.media === "" && s.selector === ".chat-feed-skeleton").map(s => s.rule);
+        const declared = (name: string): string | undefined => rules.map(r => r.declarations.get(name)).find(v => v !== undefined);
+        const mask = (selector: string): string => normalize(selectorsOf(feed).find(s => s.rule.media === "" && s.selector === selector && s.rule.declarations.has("mask-image"))?.rule.declarations.get("mask-image") ?? "");
+
+        expect(declared("position")).toBe("absolute");
+        expect(declared("inset")).toBe("0");
+        expect(declared("overflow")).toBe("hidden");
+        expect(declared("justify-content")).toBe("flex-end");
+        expect(mask(".chat-feed-skeleton")).not.toBe("");
+        expect(mask(".chat-feed-skeleton")).toBe(mask(".chat-feed"));
+    });
+
     test("the sticky day pill steps to its place under the unread strip rather than animating top", () => {
         const feed = readSheet(feedPath);
         const moving = feed.rules.filter(r => r.selector.includes("chat-day-pill") && /(^|,|\s)top(\s|$)/.test(r.declarations.get("transition") ?? ""));

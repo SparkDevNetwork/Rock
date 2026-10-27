@@ -640,6 +640,30 @@ describe("the page load", () => {
         expect(h.shell.state.isOpening).toBe(false);
     });
 
+    test("a first visit's sidebar read overtaken by a newer one opens from the newer one's rows", async () => {
+        const h = build({ linkedChannelId: null });
+        h.heldBootstraps.value = [];
+        const starting = h.shell.start();
+        await settle();
+        expect(h.heldBootstraps.value).toHaveLength(1);
+
+        personal(h, "membership.changed", { channel_id: channelB });
+        await settle();
+        expect(h.heldBootstraps.value).toHaveLength(2);
+
+        h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [] }));
+        await settle();
+        expect(h.shell.state.isOpening).toBe(true);
+
+        h.heldBootstraps.value[1].resolve(fakeResponse(200, { channels: [{ channel_id: channelB } as SidebarRow] }));
+        await settle();
+        answerHistory(h, channelB, 20);
+        await starting;
+
+        expect(h.shell.state.activeChannelId).toBe(channelB);
+        expect(h.shell.state.isOpening).toBe(false);
+    });
+
     test("a reload in flight after the first sidebar never takes the list back to loading", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();

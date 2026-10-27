@@ -883,6 +883,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // out is applied at once and kept here, then replayed over its answer, which may predate it.
     // Null while no read is out.
     let sidebarGeneration = 0;
+
+    // The newest read's answer, which a read it overtook answers with, so a caller waiting on the
+    // sidebar, the page load above all, always gets the sidebar that landed.
+    let newestSidebarRead: Promise<SidebarRow[]> | null = null;
     let sidebarJournal: Array<{ event: string, payload: unknown } | { channelId: string, result: MarkReadResult, sentAt: number | undefined }> | null = null;
 
     /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
@@ -911,13 +915,26 @@ export function createChatShell(options: ShellOptions): ChatShell {
         }
     }
 
-    /** Fetches the sidebar and replaces the rows with it, unless a newer read was asked for meanwhile. */
-    async function loadSidebar(): Promise<SidebarRow[]> {
+    /**
+     * Fetches the sidebar and replaces the rows with it. A read a newer one overtook answers with
+     * the newer one's sidebar.
+     */
+    function loadSidebar(): Promise<SidebarRow[]> {
+        const read = readSidebar();
+        newestSidebarRead = read;
+        return read;
+    }
+
+    /** One sidebar read, which lands only if no newer read was asked for meanwhile. */
+    async function readSidebar(): Promise<SidebarRow[]> {
         const generation = ++sidebarGeneration;
         sidebarJournal = [];
         const result = await call("chat_get_bootstrap", { p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
-        if (isStopped || generation !== sidebarGeneration) {
+        if (isStopped) {
             return channels.rows;
+        }
+        if (generation !== sidebarGeneration && newestSidebarRead) {
+            return newestSidebarRead;
         }
         const journal = sidebarJournal;
         sidebarJournal = null;
