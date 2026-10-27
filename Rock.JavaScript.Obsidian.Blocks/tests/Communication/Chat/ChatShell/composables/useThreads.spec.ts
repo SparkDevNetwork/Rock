@@ -35,8 +35,9 @@
 //   Threads = {
 //       state: {
 //           list: { tab: "channel" | "all", channelId: string | null, rows: ThreadListRow[], hasMore: boolean,
-//                   isLoading: boolean, isRefreshing: boolean, error: ChatError | null,
-//                   busyRootId: number | null, rowError: { rootId: number, error: ChatError } | null },
+//                   isLoading: boolean, isRefreshing: boolean, error: ChatError | null },
+//           followError: { rootId: number, isFollowing: boolean, text: string } | null,   the newest
+//                   refused follow change: the change asked and why, for Try again
 //           thread: { channelId: string, rootId: number, root: TimelineMessage | null,
 //                     replies: TimelineMessage[] (oldest first), following: boolean, readCursor: number | null,
 //                     hasMore: boolean, isLoading: boolean, error: ChatError | null,
@@ -47,7 +48,7 @@
 //       refresh(): Promise<void>,
 //       loadMore(): Promise<void>,           the next 30 when the list is scrolled to its end
 //       closeList(): void,
-//       follow(rootId: number, isFollowing: boolean): Promise<boolean>,
+//       follow(rootId: number, isFollowing: boolean): Promise<boolean>,   shown at once; true once the newest lands
 //       openThread(channelId: string, rootId: number): Promise<void>,
 //       loadOlderReplies(): Promise<void>,
 //       seen(messageId: number): void,       a reply of the open thread was on screen
@@ -57,11 +58,11 @@
 //       stop(): void
 //   }
 //
-//   followNotice(isFollowing: boolean): ToastNotice, the toast a follow change shows.
+//   unfollowNotice: ToastNotice, the toast an unfollow shows once it lands.
 //
 // ThreadListRow is chat_list_threads' row; TimelineMessage gains repliers, thread_following and
 // thread_unread, as chat_messages_json now answers them.
-import { createThreads, followNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
+import { createThreads, unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { PageEventTargets } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
@@ -490,13 +491,15 @@ describe("once the threads are stopped", () => {
 
         const following = threads.follow(40, false);
         threads.stop();
-        answer.resolve({ ok: true, data: { following: false, read_cursor: null } });
+        // a refusal would put the bell back; once stopped it reaches nothing
+        answer.resolve(offline);
         await following;
         const callsAtStop = calls.length;
         await threads.refresh();
         await threads.openList(channel);
 
-        expect(threads.state.list.rows[0].following).toBe(true);
+        expect(threads.state.list.rows[0].following).toBe(false);
+        expect(threads.state.followError).toBeNull();
         expect(calls).toHaveLength(callsAtStop);
     });
 });
@@ -923,25 +926,32 @@ describe("following", () => {
 
         expect(await following).toBe(false);
         expect(threads.state.thread?.following).toBe(false);
-        expect(threads.state.list.busyRootId).toBeNull();
+        expect(threads.state.followError).toBeNull();
     });
 
-    test("names the row it is working on while the call is out", async () => {
-        const { threads, answers } = await setup();
+    test("shows the change at once in the row, the drawer and the conversation's root, with nothing busy while the call is out", async () => {
+        const { threads, timelines, answers } = await setup({ messages: [root(40)], read_cursor: null, unread_count: 0, has_more: false });
         answers.chat_list_threads = [listAnswer([listRow(40)])];
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)], { following: true })];
         await threads.openList(channel);
+        await threads.openThread(channel, 40);
         const answer = deferred<CallResult>();
         answers.chat_follow_thread = [answer];
 
-        const following = threads.follow(40, false);
-        expect(threads.state.list.busyRootId).toBe(40);
+        const unfollowing = threads.follow(40, false);
+
+        expect(threads.state.list.rows[0].following).toBe(false);
+        expect(threads.state.thread?.following).toBe(false);
+        expect(timelineRoot(timelines, 40).thread_following).toBe(false);
+        expect("busyRootId" in threads.state.list).toBe(false);
 
         answer.resolve({ ok: true, data: { following: false, read_cursor: null } });
-        await following;
-        expect(threads.state.list.busyRootId).toBeNull();
+        expect(await unfollowing).toBe(true);
+        expect(threads.state.list.rows[0].following).toBe(false);
+        expect(threads.state.followError).toBeNull();
     });
 
-    test("a refused change leaves the row as it was and puts the error on it", async () => {
+    test("a refused change goes back to where it was and carries the reason and the change asked", async () => {
         const { threads, answers } = await setup();
         answers.chat_list_threads = [listAnswer([listRow(40)])];
         answers.chat_follow_thread = [offline];
@@ -950,7 +960,51 @@ describe("following", () => {
         expect(await threads.follow(40, false)).toBe(false);
 
         expect(threads.state.list.rows[0].following).toBe(true);
-        expect(threads.state.list.rowError).toEqual({ rootId: 40, error: expect.objectContaining({ code: "rpc.transport" }) });
+        expect(threads.state.followError).toEqual({ rootId: 40, isFollowing: false, text: "Couldn't change this. You're offline, so try again in a moment." });
+    });
+
+    test("a refusal carries the server's own sentence when it has one", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_list_threads = [listAnswer([listRow(40)])];
+        answers.chat_follow_thread = [{ ok: false, status: 403, error: { code: "authz.not_member", severity: "permission", text: "You're no longer in this channel." }, retryAfterSeconds: null }];
+        await threads.openList(channel);
+
+        await threads.follow(40, false);
+
+        expect(threads.state.followError?.text).toBe("You're no longer in this channel.");
+    });
+
+    test("the newest change refused after an older one landed goes back to the older one", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)], { following: false })];
+        await threads.openThread(channel, 40);
+        const first = deferred<CallResult>();
+        const second = deferred<CallResult>();
+        answers.chat_follow_thread = [first, second];
+
+        const following = threads.follow(40, true);
+        const unfollowing = threads.follow(40, false);
+        first.resolve({ ok: true, data: { following: true, read_cursor: 41 } });
+        await following;
+        second.resolve(offline);
+        await unfollowing;
+
+        expect(threads.state.thread?.following).toBe(true);
+        expect(threads.state.followError).toEqual(expect.objectContaining({ rootId: 40, isFollowing: false }));
+    });
+
+    test("a new change of the thread clears its refusal", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_list_threads = [listAnswer([listRow(40)])];
+        answers.chat_follow_thread = [offline, { ok: true, data: { following: false, read_cursor: null } }];
+        await threads.openList(channel);
+        await threads.follow(40, false);
+
+        const again = threads.follow(40, false);
+
+        expect(threads.state.followError).toBeNull();
+        expect(threads.state.list.rows[0].following).toBe(false);
+        expect(await again).toBe(true);
     });
 
     test("the open thread's toggle follows the answer", async () => {
@@ -1002,10 +1056,10 @@ describe("following", () => {
         expect(threads.state.list.error).toEqual(expect.objectContaining({ code: "rpc.transport" }));
     });
 
-    test("tells the person what changed, in the design's words", () => {
-        expect(followNotice(true)).toEqual(expect.objectContaining({ text: "Following this thread", icon: "bell" }));
-        expect(followNotice(false)).toEqual(expect.objectContaining({ text: "You won't be notified about new replies", icon: "bell-off" }));
-        expect(followNotice(true).code).not.toBe("");
+    // Following shows as the bell itself; only unfollowing says what it means, as a notify mode does.
+    test("says what unfollowing means, in the design's words", () => {
+        expect(unfollowNotice).toEqual(expect.objectContaining({ text: "You won't be notified about new replies", icon: "bell-off" }));
+        expect(unfollowNotice.code).not.toBe("");
     });
 });
 

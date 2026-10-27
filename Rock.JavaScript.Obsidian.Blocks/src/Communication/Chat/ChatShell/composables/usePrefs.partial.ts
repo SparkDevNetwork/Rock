@@ -32,6 +32,7 @@ import { messageForError } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError } from "../types.partial";
 import { ActionNotice } from "./useMessageActions.partial";
+import { createSaveRule, SaveChange, SaveOutcome } from "./saveRule.partial";
 
 /** What chat_set_prefs answered, through the shell's one call path. */
 export type PrefsCallResult = { ok: true, data: unknown } | { ok: false, error: ChatError };
@@ -101,7 +102,7 @@ export type PrefsDependencies = {
     /** Whether the connection is lost, when the door would not be reached. */
     isOffline: () => boolean;
 
-    /** Shows a toast that is not a failure, for a change made from the header. */
+    /** Shows a toast for a change made from the header: what a notify mode means, or why a change failed. */
     notify: (notice: ActionNotice) => void;
 };
 
@@ -118,7 +119,7 @@ export type Prefs = {
     /** Writes a room's notify mode; from the header's menu it is told in a toast. */
     setNotifyMode: (channelId: string, mode: NotifyMode, isFromMenu: boolean) => Promise<void>;
 
-    /** Stars or unstars a room, unhiding it as it is starred; from the header it is told in a toast. */
+    /** Stars or unstars a room, unhiding it as it is starred; the star itself shows it, and only a refusal is toasted from the header. */
     setStarred: (channelId: string, isStarred: boolean, isFromMenu: boolean) => Promise<void>;
 
     /** Hides or shows a room, unstarring it as it is hidden. */
@@ -189,36 +190,6 @@ const failedSentence = "Couldn't save. Try again in a moment.";
 const noDoorSentence = "That setting can't be changed right now.";
 const leavesListSentence = "It leaves your list when you open another conversation.";
 
-/** How a save went: landed, with what the server read back, or refused in a sentence. */
-type SaveOutcome = { isSaved: true, data?: unknown } | { isSaved: false, text: string };
-
-/**
- * One setting's saves: the value last known saved and the save that set it, the newest save
- * asked, how many are still out, and whether the newest was refused.
- */
-type SaveTrack = { saved: unknown, savedCount: number, newest: number, out: number, isRefused: boolean };
-
-/** One change to a setting, as the save rule takes it. */
-type SaveChange<T> = {
-    /** What the control showed before this change. */
-    was: T;
-
-    /** What the person chose. */
-    value: T;
-
-    /** Puts a value on the control. */
-    show: (value: T) => void;
-
-    /** Writes the value. */
-    ask: () => Promise<SaveOutcome>;
-
-    /** The newest save landed, with what the server read back. */
-    landed?: (data: unknown) => void;
-
-    /** The newest save was refused, with the sentence to show. */
-    refused: (text: string) => void;
-};
-
 /**
  * Creates the settings.
  *
@@ -235,11 +206,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
     }) as PrefsState;
 
     let isStopped = false;
-    let saveCount = 0;
     let announcementCount = 0;
-
-    /** Each setting's saves, by a key naming it. */
-    const tracks = new Map<string, SaveTrack>();
+    const rule = createSaveRule(() => isStopped);
 
     function announce(text: string, isAssertive = false): void {
         state.announcement = { text, isAssertive, count: ++announcementCount };
@@ -253,11 +221,6 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         return dependencies.channels.rows.find(row => row.channel_id === channelId);
     }
 
-    /** Whether a save of a setting is still out, so a load leaves what the person chose. */
-    function isOut(key: string): boolean {
-        return (tracks.get(key)?.out ?? 0) > 0;
-    }
-
     /** A refusal in the server's own words; a lost connection says so. */
     function refusalText(error: ChatError): string {
         return error.code === "rpc.transport" ? offlineSentence : messageForError(error);
@@ -268,53 +231,15 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         return { kind: "error", text, retry: () => void retry() };
     }
 
-    /**
-     * The one save rule every setting follows. The change shows at once. Only the newest save of a
-     * setting says how it went: landing says nothing more, and a refusal puts the control back to
-     * the last value known saved. An older save that lands after the newest was refused is then
-     * what is saved, so it shows.
-     */
+    /** Saves a setting by the one save rule; a refusal is said at once, wherever it is shown. */
     async function save<T>(key: string, change: SaveChange<T>): Promise<void> {
-        let track = tracks.get(key);
-        if (!track || track.out === 0) {
-            // With nothing out, what the control shows is what is saved.
-            track = { saved: change.was, savedCount: 0, newest: 0, out: 0, isRefused: false };
-            tracks.set(key, track);
-        }
-
-        const count = ++saveCount;
-        track.newest = count;
-        track.out++;
-        track.isRefused = false;
-        change.show(change.value);
-
-        const outcome = await change.ask();
-        if (isStopped) {
-            return;
-        }
-
-        track.out--;
-        if (outcome.isSaved && count > track.savedCount) {
-            track.saved = change.value;
-            track.savedCount = count;
-        }
-
-        if (count === track.newest) {
-            if (outcome.isSaved) {
-                change.landed?.(outcome.data);
-                return;
+        await rule.save(key, {
+            ...change,
+            refused: text => {
+                change.refused(text);
+                announce(`Not saved. ${text}`, true);
             }
-
-            track.isRefused = true;
-            change.show(track.saved as T);
-            change.refused(outcome.text);
-            announce(`Not saved. ${outcome.text}`, true);
-            return;
-        }
-
-        if (track.isRefused && outcome.isSaved) {
-            change.show(track.saved as T);
-        }
+        });
     }
 
     /** A room's patch through chat_set_prefs, as the save rule asks it. */
@@ -356,7 +281,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
             // A switch whose save is out keeps what the person chose; its own answer settles it.
             for (const key of Object.keys(meFields) as MeKey[]) {
-                if (!isOut(`me:${key}`)) {
+                if (!rule.isOut(`me:${key}`)) {
                     state.me[meFields[key]] = read[meFields[key]];
                 }
             }
@@ -422,12 +347,6 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 value: patch,
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
                 ask: () => askRoom(channelId, patch),
-                landed: () => {
-                    if (isFromMenu) {
-                        dependencies.notify({ code: "starred", text: isStarred ? "Starred" : "Removed from Starred", icon: "star" });
-                        announce(isStarred ? "Starred" : "Removed from Starred");
-                    }
-                },
                 refused: text => {
                     if (isFromMenu) {
                         dependencies.notify({ code: "starred", text, icon: "alert" });

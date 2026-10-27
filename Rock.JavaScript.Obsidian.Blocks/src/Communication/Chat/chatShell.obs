@@ -261,8 +261,7 @@
                                   :isLoading="threadList.isLoading"
                                   :isRefreshing="threadList.isRefreshing"
                                   :error="threadList.error"
-                                  :rowError="threadList.rowError"
-                                  :busyRootId="threadList.busyRootId"
+                                  :followError="shell.threads.state.followError"
                                   :channelId="threadList.channelId ?? activeChannelId ?? ''"
                                   :kind="activeKind ?? 'channel'"
                                   :roomTitles="roomTitles"
@@ -312,6 +311,7 @@
                                   :pending="shell.sender.pending(drawnThread.channelId)"
                                   :sentKeys="shell.sender.sentKeys"
                                   :isFollowing="drawnThread.following"
+                                  :followError="shell.threads.state.followError?.rootId === drawnThread.rootId ? shell.threads.state.followError : null"
                                   :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
                                   :isChannel="threadKind === 'channel'"
                                   :isDirectMessage="threadKind === 'person'"
@@ -684,7 +684,7 @@
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useJump } from "./ChatShell/composables/useJump.partial";
-    import { followNotice, ThreadListState, ThreadListTab } from "./ChatShell/composables/useThreads.partial";
+    import { ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
@@ -1074,15 +1074,17 @@
         void shell.value.threads.loadMore();
     }
 
-    /** A follow change from a row; the toast says what changed once the platform took it, and a refusal stays on the row. */
+    /**
+     * A follow change from a row or the drawer: the bell changes at once and a refusal comes back
+     * beside it. Following says nothing more; an unfollow that lands says what it means.
+     */
     async function onFollowFromList(rootId: number, isFollowing: boolean): Promise<void> {
-        if (!await shell.value.threads.follow(rootId, isFollowing)) {
+        if (!await shell.value.threads.follow(rootId, isFollowing) || isFollowing) {
             return;
         }
 
-        // one follow toast at a time: a quick follow then unfollow shows only where it ended
-        const notice = followNotice(isFollowing);
-        notices.value = [...notices.value.filter(n => n.code !== "thread-followed" && n.code !== "thread-unfollowed"), notice];
+        // one unfollow toast at a time
+        notices.value = [...notices.value.filter(n => n.code !== unfollowNotice.code), unfollowNotice];
     }
 
     /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
@@ -1105,7 +1107,7 @@
         }
     }
 
-    /** The drawer's toggle: the toast says what changed once the platform took it, as the list's does. */
+    /** The drawer's toggle, saved as the list's is. */
     function onFollowThread(isFollowing: boolean): void {
         if (drawnThread.value) {
             void onFollowFromList(drawnThread.value.rootId, isFollowing);

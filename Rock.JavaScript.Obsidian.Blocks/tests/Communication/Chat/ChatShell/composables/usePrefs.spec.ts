@@ -403,7 +403,8 @@ describe("star and hide", () => {
         expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "error", text: readOnlySentence, retry: expect.any(Function) });
     });
 
-    test("from the header, a star is toasted, and a refusal's sentence is toasted", async () => {
+    // The star in the header shows it, so only a refusal is toasted.
+    test("from the header, a star that lands says nothing, and a refusal's sentence is toasted", async () => {
         const s = setup();
 
         void s.prefs.setStarred(team, true, true);
@@ -416,7 +417,8 @@ describe("star and hide", () => {
         s.prefCalls[2].answer.resolve(refused());
         await settle();
 
-        expect(s.toasts.map(t => [t.text, t.icon])).toEqual([["Starred", "star"], ["Removed from Starred", "star"], [readOnlySentence, "alert"]]);
+        expect(s.toasts.map(t => [t.text, t.icon])).toEqual([[readOnlySentence, "alert"]]);
+        expect(s.prefs.state.announcement?.text).toBe(`Not saved. ${readOnlySentence}`);
         expect(rowOf(s, team)?.is_favorite).toBe(false);
     });
 

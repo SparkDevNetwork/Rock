@@ -400,8 +400,9 @@ function fakeMembers(): Record<string, unknown> {
  */
 function fakeThreads(): Record<string, unknown> {
     const state = reactive({
-        list: { tab: "channel", channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isRefreshing: false, error: null, busyRootId: null, rowError: null },
-        thread: null as Record<string, unknown> | null
+        list: { tab: "channel", channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isRefreshing: false, error: null },
+        thread: null as Record<string, unknown> | null,
+        followError: null as Record<string, unknown> | null
     });
 
     return {
@@ -1747,6 +1748,47 @@ describe("mentions", () => {
         mentionsOf().warm.mockClear();
         w.findComponent(ThreadDrawerComponent).vm.$emit("composerFocus");
         expect(mentionsOf().warm).toHaveBeenCalledWith(team);
+    });
+});
+
+// Following shows as the bell itself, so nothing more is said; an unfollow that lands says what it
+// means, as a notify mode's toast does, and a refusal is drawn beside the drawer's bell.
+describe("following a thread", () => {
+    const threadsOf = (): { follow: jest.Mock, state: { followError: unknown } } => mockShell!.threads as unknown as { follow: jest.Mock, state: { followError: unknown } };
+
+    async function openDrawer(): Promise<VueWrapper> {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        return w;
+    }
+
+    test("a follow that lands shows no toast, and an unfollow that lands says what it means", async () => {
+        const w = await openDrawer();
+
+        w.findComponent(ThreadDrawerComponent).vm.$emit("follow", true);
+        await settle();
+        expect(threadsOf().follow).toHaveBeenCalledWith(40, true);
+        expect(w.text()).not.toContain("Following this thread");
+
+        w.findComponent(ThreadDrawerComponent).vm.$emit("follow", false);
+        await settle();
+        expect(w.text()).toContain("You won't be notified about new replies");
+    });
+
+    test("the drawer is handed its own thread's refusal only", async () => {
+        const w = await openDrawer();
+
+        threadsOf().state.followError = { rootId: 99, isFollowing: false, text: "No." };
+        await settle();
+        expect(w.findComponent(ThreadDrawerComponent).props("followError")).toBeNull();
+
+        threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
+        await settle();
+        expect(w.findComponent(ThreadDrawerComponent).props("followError")).toEqual({ rootId: 40, isFollowing: false, text: "No." });
     });
 });
 

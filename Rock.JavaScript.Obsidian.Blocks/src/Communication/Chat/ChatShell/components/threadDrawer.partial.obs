@@ -55,6 +55,14 @@
                 <span>{{ errorSentence }}</span>
             </div>
 
+            <!-- A refused follow change, beside the bell it put back; said at once. -->
+            <SettingNote v-if="followNote"
+                         class="chat-th-err"
+                         role="alert"
+                         :note="followNote"
+                         data-testid="thread-follow-error"
+                         @retry="onFollowRetry" />
+
             <template v-if="!root && isLoading">
                 <span class="chat-sr-only">Loading thread</span>
                 <div class="chat-th-skeleton" aria-hidden="true">
@@ -279,6 +287,7 @@
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { useHotMessage } from "../composables/useHotMessage.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
@@ -319,6 +328,12 @@
         isFollowing: {
             type: Boolean,
             default: false
+        },
+
+        /** This thread's newest refused follow change: the change asked, which Try again asks again, and why. */
+        followError: {
+            type: Object as PropType<{ isFollowing: boolean, text: string } | null>,
+            default: null
         },
 
         /** The conversation's name as the header writes it: a channel's plain, a direct message's people. */
@@ -555,6 +570,12 @@
 
     const followElement = ref<HTMLButtonElement>();
 
+    /** A refused follow change as its note, with Try again asking the same change once more. */
+    const followNote = computed((): Note | null => {
+        const failed = props.followError;
+        return failed ? { kind: "error", text: failed.text, retry: () => emit("follow", failed.isFollowing) } : null;
+    });
+
     /** Ties Follow to the sentence that says what following means, once per drawer. */
     const followTipId = `chat-th-follow-${newGuid()}`;
 
@@ -643,6 +664,12 @@
     function onFollow(): void {
         hideFollowTip();
         emit("follow", !props.isFollowing);
+    }
+
+    /** Try again takes its button away, so the bell it asked again takes focus. */
+    async function onFollowRetry(): Promise<void> {
+        await nextTick();
+        followElement.value?.focus();
     }
 
     function onSend(body: string, isAlsoSent?: boolean): void {

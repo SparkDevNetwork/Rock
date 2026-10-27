@@ -24,8 +24,8 @@
 // The component these tests are written to, threadsPanel.partial.obs, in the shared panel host:
 //
 //   props: tab: "channel" | "all", rows: ThreadListRow[] (chat_list_threads' rows), isLoading: boolean,
-//          isRefreshing: boolean, error: ChatError | null (the list's), rowError: { rootId: number,
-//          error: ChatError } | null, busyRootId: number | null, channelId: string (the open
+//          isRefreshing: boolean, error: ChatError | null (the list's), followError: { rootId: number,
+//          isFollowing: boolean, text: string } | null (the newest refused follow), channelId: string (the open
 //          conversation), kind: "channel" | "person" | "group" (the open conversation's),
 //          roomTitles: Record<string, string> (each conversation's title by channel id, as the
 //          header shows it), roomKinds: Record<string, "channel" | "person" | "group">,
@@ -34,7 +34,7 @@
 //   emits: open(rootId: number, channelId: string), tab(tab: "channel" | "all"), refresh,
 //          follow(rootId: number, isFollowing: boolean), loadMore, close
 //   marks: thread-row (each row, class is-unread and is-off), thread-row-open (the row's button,
-//          labelled), thread-row-follow (aria-pressed, aria-busy while busy), thread-row-mentions,
+//          labelled), thread-row-follow (aria-pressed, changed at once), thread-row-mentions,
 //          thread-row-status ("Following" or "Not following"), thread-row-error, thread-skeleton,
 //          threads-empty, threads-empty-title, threads-empty-body, threads-error, threads-refresh;
 //          the tabs are role="tab" with aria-selected. The panel host's marks are threadDrawer.spec's.
@@ -116,8 +116,7 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             isLoading: false,
             isRefreshing: false,
             error: null,
-            rowError: null,
-            busyRootId: null,
+            followError: null,
             channelId: channel,
             kind: "channel",
             roomTitles,
@@ -355,10 +354,19 @@ describe("following from a row", () => {
         expect(w.emitted("follow")).toEqual([[40, false]]);
     });
 
-    test("the toggle is busy while its change is out", () => {
-        const w = draw({ busyRootId: 40 });
+    test("the toggle is never held busy: the bell changes at once and a second press asks again", async () => {
+        const w = draw();
 
-        expect(w.get("[data-testid='thread-row-follow']").attributes("aria-busy")).toBe("true");
+        const toggle = w.get("[data-testid='thread-row-follow']");
+        expect(toggle.attributes("aria-busy")).toBeUndefined();
+        expect(toggle.attributes("aria-disabled")).toBeUndefined();
+        expect(w.find(".chat-ls-row.is-busy").exists()).toBe(false);
+
+        await toggle.trigger("click");
+        await w.setProps({ rows: [row(40, { following: false })] });
+        await w.get("[data-testid='thread-row-follow']").trigger("click");
+
+        expect(w.emitted("follow")).toEqual([[40, false], [40, true]]);
     });
 
     test("a row unfollowed on the All tab stays, dimmed, saying Not following", () => {
@@ -370,18 +378,22 @@ describe("following from a row", () => {
         expect(followed.classes()).not.toContain("is-off");
     });
 
-    test("a change that failed offline says so on its row", () => {
-        const w = draw({ rows: [row(40), row(30)], rowError: { rootId: 40, error: offline } });
+    test("a refused change shows its sentence and Try again on its row only, said at once", () => {
+        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 40, isFollowing: false, text: "You're no longer in this channel." } });
 
         const [failed, other] = rowsOf(w);
-        expect(plain(failed.get("[data-testid='thread-row-error']").text())).toBe("Couldn't change this. You're offline, so try again in a moment.");
+        const error = failed.get("[data-testid='thread-row-error']");
+        expect(plain(error.text())).toBe("You're no longer in this channel. Try again");
+        expect(error.attributes("role")).toBe("alert");
         expect(other.find("[data-testid='thread-row-error']").exists()).toBe(false);
     });
 
-    test("a refused change shows the server's sentence on its row", () => {
-        const w = draw({ rowError: { rootId: 40, error: { code: "authz.not_member", severity: "permission", text: "You're no longer in this channel." } } });
+    test("Try again asks the refused change again", async () => {
+        const w = draw({ rows: [row(40)], followError: { rootId: 40, isFollowing: false, text: "Couldn't change this. You're offline, so try again in a moment." } });
 
-        expect(plain(w.get("[data-testid='thread-row-error']").text())).toBe("You're no longer in this channel.");
+        await w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").trigger("click");
+
+        expect(w.emitted("follow")).toEqual([[40, false]]);
     });
 });
 

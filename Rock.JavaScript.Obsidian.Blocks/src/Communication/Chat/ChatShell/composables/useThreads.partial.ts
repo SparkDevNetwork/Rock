@@ -27,6 +27,10 @@
 // the window losing focus, the page going to the background or closing. What is saved is the
 // newest reply that was on screen, and nothing is sent when nothing newer than the stored
 // position was seen. A root's counts and faces follow thread.updated wherever the root is held.
+//
+// Following saves by the one save rule the person's settings use: the bell changes at once
+// everywhere the thread is drawn, the newest change wins, and a refusal puts it back with the
+// reason and Try again.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
@@ -45,6 +49,8 @@ import {
 import { applyMessageChange, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
+import { createSaveRule, SaveOutcome } from "./saveRule.partial";
+import { messageForError } from "../errors.partial";
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
@@ -67,12 +73,10 @@ export type ThreadListState = {
     /** Why the last fetch failed, shown in place while the rows it could not replace stay. */
     error: ChatError | null;
 
-    /** The row whose follow change is on its way. */
-    busyRootId: number | null;
-
-    /** The row whose follow change was refused, and why. */
-    rowError: { rootId: number, error: ChatError } | null;
 };
+
+/** The newest refused follow change: the thread, the change asked, which Try again asks again, and why. */
+export type FollowError = { rootId: number, isFollowing: boolean, text: string };
 
 /** The open thread as the drawer draws it. */
 export type OpenThreadState = {
@@ -102,6 +106,9 @@ export type OpenThreadState = {
 export type ThreadsState = {
     list: ThreadListState;
     thread: OpenThreadState | null;
+
+    /** Shown beside the thread's bell in the list and the drawer, until the thread is changed again. */
+    followError: FollowError | null;
 };
 
 /** What the threads reach outside themselves. */
@@ -187,17 +194,13 @@ export type FollowNotice = {
 };
 
 /**
- * The toast a follow change shows once the platform took it.
- *
- * @param isFollowing Whether the person now follows the thread.
- *
- * @returns The toast.
+ * The toast an unfollow shows once it lands, saying what it means as a notify mode's does.
+ * Following says nothing: the bell shows it.
  */
-export function followNotice(isFollowing: boolean): FollowNotice {
-    return isFollowing
-        ? { code: "thread-followed", text: "Following this thread", icon: "bell" }
-        : { code: "thread-unfollowed", text: "You won't be notified about new replies", icon: "bell-off" };
-}
+export const unfollowNotice: FollowNotice = { code: "thread-unfollowed", text: "You won't be notified about new replies", icon: "bell-off" };
+
+/** A follow change that never reached the platform, in the list's words. */
+const offlineFollowSentence = "Couldn't change this. You're offline, so try again in a moment.";
 
 /** An answer's body as an object whose keys may each be missing. */
 function body<T>(result: Extract<CallResult, { ok: true }>): Partial<T> {
@@ -218,8 +221,9 @@ function hasId(payload: unknown): payload is { id: number } {
  */
 export function createThreads(dependencies: ThreadsDependencies): Threads {
     const state = reactive<ThreadsState>({
-        list: { tab: "channel", channelId: null, rows: [], hasMore: false, isLoading: false, isRefreshing: false, error: null, busyRootId: null, rowError: null },
-        thread: null
+        list: { tab: "channel", channelId: null, rows: [], hasMore: false, isLoading: false, isRefreshing: false, error: null },
+        thread: null,
+        followError: null
     }) as ThreadsState;
     const me = dependencies.personAliasGuid.toLowerCase();
 
@@ -233,10 +237,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // Bumped by every thread opened or closed, so a page of a thread left is dropped.
     let threadOpen = 0;
 
-    // The newest follow change asked of each root. The drawer's toggle can be pressed again before
-    // the first answer, and the answers can arrive in either order, so only the newest is taken.
-    let followChange = 0;
-    const newestFollowChange = new Map<number, number>();
+    // Each root's follow saves. The bell can be pressed again before the first answer, and the
+    // answers can arrive in either order, so only the newest says how it went.
+    const followRule = createSaveRule(() => isStopped);
 
     // The open thread's read position: the newest reply on screen, and what is stored or on its
     // way to being stored, the same pair the channel's position keeps.
@@ -254,6 +257,55 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     function timelineRoot(channelId: string, rootId: number): TimelineMessage | undefined {
         return dependencies.timelines.state(channelId).messages.find(m => m.id === rootId);
     }
+
+    /**
+     * The root a follow change moves in a timeline: on the All tab a row's conversation is not the
+     * one the list was opened from, so it is looked up where the row says it lives.
+     */
+    function followedRoot(rootId: number): TimelineMessage | undefined {
+        const thread = state.thread;
+        const rowChannelId = state.list.rows.find(r => r.root.id === rootId)?.channel_id;
+        const root = timelineRoot(thread?.rootId === rootId ? thread.channelId : rowChannelId ?? state.list.channelId ?? "", rootId);
+        return root && root.thread_following !== null && root.thread_following !== undefined ? root : undefined;
+    }
+
+    /**
+     * Draws a thread followed or not everywhere it is held. An unfollowed row stays, marked, until
+     * the list is next fetched, so the person can take it back from where it was.
+     */
+    function showFollowing(rootId: number, following: boolean): void {
+        for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
+            row.following = following;
+            row.root.thread_following = following;
+        }
+
+        if (state.thread?.rootId === rootId) {
+            state.thread.following = following;
+        }
+
+        const root = followedRoot(rootId);
+        if (root) {
+            root.thread_following = following;
+        }
+    }
+
+    /** Drops a thread's unread marks, which no longer apply once it is unfollowed. */
+    function clearUnread(rootId: number): void {
+        for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
+            row.has_unread = false;
+        }
+
+        const root = followedRoot(rootId);
+        if (root) {
+            root.thread_unread = false;
+        }
+    }
+
+    /** A refused follow change in the server's own words; one that never reached it says the person is offline. */
+    function followSentence(error: ChatError): string {
+        return error.text || error.severity === "session" ? messageForError(error) : offlineFollowSentence;
+    }
+
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
     async function fetchList(mode: "fresh" | "refresh" | "more"): Promise<void> {
@@ -513,8 +565,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const isSameList = list.tab === tab && (tab === "all" || list.channelId === channelId);
             list.channelId = channelId;
             list.tab = tab;
-            list.busyRootId = null;
-            list.rowError = null;
+            state.followError = null;
             if (!isSameList) {
                 list.rows = [];
                 list.hasMore = false;
@@ -531,7 +582,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             list.rows = [];
             list.hasMore = false;
             list.error = null;
-            list.rowError = null;
+            state.followError = null;
             await fetchList("fresh");
         },
 
@@ -548,71 +599,45 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             listFetch++;
             state.list.isLoading = false;
             state.list.isRefreshing = false;
-            state.list.busyRootId = null;
-            state.list.rowError = null;
         },
 
         follow: async (rootId: number, isFollowing: boolean): Promise<boolean> => {
             if (isStopped) {
                 return false;
             }
-            const list = state.list;
-            list.busyRootId = rootId;
-            list.rowError = null;
-            const thisChange = ++followChange;
-            newestFollowChange.set(rootId, thisChange);
-
-            const result = await dependencies.call("chat_follow_thread", { p_root_id: rootId, p_follow: isFollowing });
-            if (isStopped) {
-                return false;
-            }
-            // a newer change of the same thread was asked meanwhile: its answer is the one that stands
-            if (newestFollowChange.get(rootId) !== thisChange) {
-                return false;
-            }
-            newestFollowChange.delete(rootId);
-            if (list.busyRootId === rootId) {
-                list.busyRootId = null;
-            }
-            if (!result.ok) {
-                list.rowError = { rootId, error: result.error };
-                return false;
-            }
-
-            const answer = body<FollowThreadAnswer>(result);
-            const following = answer.following ?? isFollowing;
-
-            // An unfollowed row stays, marked, until the list is next fetched, so the person can
-            // take it back from where it was.
-            for (const row of list.rows.filter(r => r.root.id === rootId)) {
-                row.following = following;
-                row.root.thread_following = following;
-                if (!following) {
-                    row.has_unread = false;
-                }
+            if (state.followError?.rootId === rootId) {
+                state.followError = null;
             }
 
             const thread = state.thread;
-            if (thread?.rootId === rootId) {
-                thread.following = following;
-                if (typeof answer.read_cursor === "number") {
-                    thread.readCursor = answer.read_cursor;
-                    lastSaved = Math.max(lastSaved ?? 0, answer.read_cursor);
-                }
-            }
+            const was = thread?.rootId === rootId ? thread.following : state.list.rows.find(r => r.root.id === rootId)?.following ?? !isFollowing;
+            return followRule.save(`${rootId}`, {
+                was,
+                value: isFollowing,
+                show: following => showFollowing(rootId, following),
+                ask: async (): Promise<SaveOutcome> => {
+                    const result = await dependencies.call("chat_follow_thread", { p_root_id: rootId, p_follow: isFollowing });
+                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, text: followSentence(result.error) };
+                },
+                landed: data => {
+                    const answer = body<FollowThreadAnswer>(data as Extract<CallResult, { ok: true }>);
+                    const following = answer.following ?? isFollowing;
+                    showFollowing(rootId, following);
+                    // Unread is dropped only once an unfollow has landed, so a refused one loses nothing.
+                    if (!following) {
+                        clearUnread(rootId);
+                    }
 
-            // On the All tab a row's conversation is not the one the list was opened from, so the
-            // root is looked up where the row says it lives.
-            const rowChannelId = list.rows.find(r => r.root.id === rootId)?.channel_id;
-            const root = timelineRoot(thread?.rootId === rootId ? thread.channelId : rowChannelId ?? list.channelId ?? "", rootId);
-            if (root && root.thread_following !== null && root.thread_following !== undefined) {
-                root.thread_following = following;
-                if (!following) {
-                    root.thread_unread = false;
+                    const open = state.thread;
+                    if (open?.rootId === rootId && typeof answer.read_cursor === "number") {
+                        open.readCursor = answer.read_cursor;
+                        lastSaved = Math.max(lastSaved ?? 0, answer.read_cursor);
+                    }
+                },
+                refused: text => {
+                    state.followError = { rootId, isFollowing, text };
                 }
-            }
-
-            return true;
+            });
         },
 
         openThread: async (channelId: string, rootId: number): Promise<void> => {
