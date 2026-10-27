@@ -16,9 +16,7 @@
 //
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Drawing.Text;
 using System.Linq;
-using System.ServiceModel.Channels;
 
 using Rock.Attribute;
 using Rock.Configuration;
