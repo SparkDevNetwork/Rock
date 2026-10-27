@@ -20,6 +20,8 @@
 // jumping from a list below the timeline. Every state draws its words and a marker the styles and
 // the screenshots key on. A mention the server admitted is a chip; anything the server has not
 // admitted, a pending body above all, is plain text and never the raw token.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
@@ -1187,5 +1189,14 @@ describe("the Leader pill", () => {
         const w = draw({ message: message({ sender_is_leader: true }), isChannel: true, position: "middle" });
 
         expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+});
+
+describe("the author's face against the quote connector", () => {
+    test("the face is positioned, so it paints over the connector line instead of under it", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(style).toMatch(/\.chat-cm-av\s*\{[^}]*position:\s*relative/);
     });
 });
