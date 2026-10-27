@@ -1,14 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isCommunity" class="chat-quote-row is-community" :class="{ 'is-gone': isGone }" data-testid="message-quote">
-        <!-- A channel: one reply line above the head, joined to the face below by a spine. -->
-        <span class="chat-quote-spine" data-testid="quote-spine" aria-hidden="true"></span>
+        <!-- A channel: one reply line above the head, in the text column, clear of the face. -->
         <span v-if="isGone" class="chat-quote-line is-gone">
             <span class="chat-sr-only">{{ label }}. </span>
+            <Icon name="reply" size="xs" class="chat-quote-arrow" data-testid="quote-arrow" />
             <Icon :name="goneIcon" size="xs" />
             <span class="chat-quote-text" data-testid="quote-body">{{ goneText }}</span>
         </span>
         <button v-else type="button" class="chat-quote-line" :aria-label="`${label}: ${preview}. Jump to the original`" @click="onJump">
+            <Icon name="reply" size="xs" class="chat-quote-arrow" data-testid="quote-arrow" />
             <Avatar :people="[{ name: quotedName, photoUrl: quoted?.sender_avatar_url ?? null }]" :size="16" />
             <b data-testid="quote-name">{{ isQuoteOfReader ? "You" : quotedName }}</b>
             <span class="chat-quote-text" data-testid="quote-body">{{ preview }}</span>
@@ -173,7 +174,7 @@ button.chat-quote:active .chat-quote-body {
     content: none;
 }
 
-/* The reply line spans the row's grid, its spine in the gutter and the line in the text column. */
+/* The reply line spans the row's grid and keeps out of the gutter, so the face below is never touched. */
 .chat-quote-row {
     display: grid;
     grid-column: 1 / -1;
@@ -183,21 +184,8 @@ button.chat-quote:active .chat-quote-body {
     margin-bottom: 1px;
 }
 
-.chat-quote-spine {
-    position: relative;
-}
-
-/* From the middle of the face below, up and across into the gap, its corner rounded. */
-.chat-quote-spine::before {
-    position: absolute;
-    top: 11px;
-    right: calc(4px - var(--chat-cm-gap));
-    bottom: -5px;
-    left: calc(50% - 1px);
-    content: "";
-    border-top: 2px solid var(--chat-line-strong);
-    border-left: 2px solid var(--chat-line-strong);
-    border-top-left-radius: 7px;
+.chat-quote-row > * {
+    grid-column: 2;
 }
 
 .chat-quote-line {
@@ -241,6 +229,7 @@ button.chat-quote:active .chat-quote-body {
     cursor: default;
 }
 
+.chat-quote-line :deep(.chat-quote-arrow),
 .chat-quote-line.is-gone :deep(.chat-ic) {
     color: var(--chat-icon);
 }
