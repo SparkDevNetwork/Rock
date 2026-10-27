@@ -2561,7 +2561,7 @@ describe("delete confirm", () => {
 
         // The pointer rests on the message until its bar shows, then picks Delete from More.
         await w.get("[data-testid='frame-main'] [data-hot-id='7']").trigger("pointerover");
-        await new Promise(resolve => setTimeout(resolve, 80));
+        await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
         (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
         await settle();

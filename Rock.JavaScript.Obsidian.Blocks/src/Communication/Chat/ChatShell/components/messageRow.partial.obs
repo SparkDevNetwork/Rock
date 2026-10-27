@@ -112,8 +112,8 @@
                     </template>
                 </MessageReactions>
             </div>
-            <!-- Docked on the row's top right, so it is placed against the row itself. -->
-            <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
+            <!-- The column's bar docks here, on the row's top right, placed against the row itself. -->
+            <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
         </template>
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
@@ -161,7 +161,7 @@
                         <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
                         <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" isConversation :isPersonOpenable="!!message" @person="onPerson" />
                     </div>
-                    <ActionBar v-if="isBarOffered" v-bind="barProps" v-on="barHandlers" />
+                    <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
                 </div>
             </div>
             <!-- The reactions row, tucked into the bubble's foot, the thread pill first at its aligned edge. -->
@@ -401,6 +401,11 @@
     display: flex;
     min-width: 0;
     max-width: 100%;
+}
+
+/* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the bubble or the row. */
+.chat-tools-dock {
+    display: contents;
 }
 
 /* The zero minimum lets the bubble shrink to the line beside the face rather than push past it. */
@@ -1009,7 +1014,6 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import ActionBar from "./actionBar.partial.obs";
     import ActionSheet from "./actionSheet.partial.obs";
     import BlockCard from "./blockCard.partial.obs";
     import MessageBody from "./messageBody.partial.obs";
@@ -1020,6 +1024,7 @@
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
+    import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { messageForError } from "../errors.partial";
@@ -1141,18 +1146,6 @@
             default: false
         },
 
-        /** The pointer is over this message, the column's one hot message, so its bar may show. */
-        isHot: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The pointer came straight from another message's bar, so this one shows without the rest. */
-        isHotSwapInstant: {
-            type: Boolean,
-            default: false
-        },
-
         /** A room the person has not joined, where its messages draw no bar. */
         isPreviewing: {
             type: Boolean,
@@ -1189,8 +1182,7 @@
         (e: "discard", localId: string): void,
         (e: "openThread", rootId: number): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void,
-        (e: "barChange", messageId: number, isShown: boolean, isHeld: boolean): void
+        (e: "messageAction", request: MessageActionRequest): void
     }>();
 
     // #region Values
@@ -1212,6 +1204,11 @@
     const drawnAt = new Date();
 
     const rowElement = ref<HTMLElement>();
+
+    /** Where the column's one bar is drawn while it is on this message. */
+    const barDock = ref<HTMLElement>();
+
+    const columnBar = useColumnActionBar();
 
     const isCrossfading = ref(false);
 
@@ -1493,15 +1490,13 @@
     /** The editor takes the text's place while the message is live; a delete that lands meanwhile shows its tombstone. */
     const isEditorShown = computed((): boolean => props.isEditing && !!props.message && !props.pending && isActionable.value);
 
-    /** The bar's props, the same in both looks, which place it in different spots. */
-    const barProps = computed(() => ({
+    /** The column bar's props on this message, the same in both looks, which place it in different spots. */
+    const barProps = computed((): Record<string, unknown> => ({
         message: props.message,
         isOwn: props.isOwn,
         isInThread: props.isInThread,
         isPreviewing: props.isPreviewing,
         isEditing: props.isEditing,
-        isPointerInside: props.isHot,
-        isSwapInstant: props.isHotSwapInstant,
         isCommunity: layout.value === "community",
         senderName: displayName.value,
         favorites: props.reactionHost?.favorites ?? [],
@@ -1602,14 +1597,6 @@
         return rowElement.value?.querySelector<HTMLElement>(".chat-bubble") ?? rowElement.value ?? null;
     }
 
-    const barHandlers = {
-        ...actionHandlers,
-        visibilityChange: (isShown: boolean, isHeld: boolean): void => {
-            if (props.message) {
-                emit("barChange", props.message.id, isShown, isHeld);
-            }
-        }
-    };
 
     /**
      * A tap on the message opens the sheet on a phone. A tap on something of its own, a link, a
@@ -1651,6 +1638,18 @@
             isEditedNow.value = !!now[0] && now[0] !== before[0];
         }
     });
+
+    // The row lends the column's bar its dock while its message offers one, and takes it back as
+    // the message stops offering it or the row goes.
+    watch([isBarOffered, barDock, () => props.message?.id], ([isOffered, element, messageId], _before, onCleanup) => {
+        if (!columnBar || !isOffered || !element || messageId === undefined) {
+            return;
+        }
+
+        const dock: ActionBarDock = { element, props: barProps, handlers: actionHandlers };
+        columnBar.offer(messageId, dock);
+        onCleanup(() => columnBar.withdraw(messageId, dock));
+    }, { immediate: true, flush: "post" });
 
     // Not immediate, so a thread already there when the row draws is not taken for a new one.
     watch(hasThread, (now, before) => {
