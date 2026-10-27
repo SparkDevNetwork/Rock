@@ -941,7 +941,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         options.mark("chat:sidebar");
 
         if (!result.ok) {
-            report(result.error);
+            // Before the first sidebar has landed, the list's own line with Try again tells the
+            // failure, so the toast is kept for a session that ended, which the line cannot mend,
+            // and for a later read's failure, which nothing else shows.
+            if (channels.loadState === "loaded" || result.error.severity === "session") {
+                report(result.error);
+            }
             channels.setLoadFailed();
             throw thrown(result);
         }

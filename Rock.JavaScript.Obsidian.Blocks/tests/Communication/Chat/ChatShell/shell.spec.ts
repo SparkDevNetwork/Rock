@@ -664,6 +664,28 @@ describe("the page load", () => {
         expect(h.shell.state.isOpening).toBe(false);
     });
 
+    test("a first sidebar that fails is told once, by the list's own line, not also by the error toast", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+
+        await h.shell.start();
+
+        expect(h.shell.channels.loadState).toBe("failed");
+        expect(h.shell.state.errors).toEqual([]);
+    });
+
+    test("a reload that fails once the list is drawn is still told by the error toast, as nothing else shows it", async () => {
+        const h = build({ linkedChannelId: null });
+        await h.shell.start();
+
+        h.bootstrap.value = new Error("offline");
+        personal(h, "membership.changed", { channel_id: channelB });
+        await settle();
+
+        expect(h.shell.channels.loadState).toBe("loaded");
+        expect(h.shell.state.errors).toHaveLength(1);
+    });
+
     test("a reload in flight after the first sidebar never takes the list back to loading", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();
