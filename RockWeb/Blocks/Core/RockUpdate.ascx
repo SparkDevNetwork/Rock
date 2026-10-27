@@ -74,6 +74,9 @@
                         The changes that are made during the update process can't be undone.
                         Also, be patient when updating. It takes anywhere from a few seconds
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
+
+                    <Rock:NotificationBox runat="server" Title="Note:" NotificationBoxType="Warning" ID="nbDirectUpdateMessage">
+                        We recommend updating directly to the latest secure version listed below, rather than installing each intermediate release.</Rock:NotificationBox>
                 </asp:Panel>
 
                 <!-- Early Access Messages -->
