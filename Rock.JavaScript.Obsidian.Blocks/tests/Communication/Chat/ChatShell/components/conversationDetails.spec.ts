@@ -15,9 +15,9 @@
 // </copyright>
 //
 // The details dialog, mounted, opened from the header's title: who the conversation is, Leave, and
-// for a group its name. A channel shows its mark, name, meta, description, leaders and member
-// count; a direct message the other person; a group its faces, its count and everyone in it as a
-// chip. Leave asks inside the dialog, in words chosen by the room's kind, and a refusal replaces
+// for a group its name, drawn as a grouped list of short rows. A channel shows its mark, name,
+// meta and description, then its members and leaders as rows; a direct message the other person;
+// a group its faces, its count and everyone in it as a row. Leave asks inside the dialog, in words chosen by the room's kind, and a refusal replaces
 // the question with the door's own sentence. A room that cannot be left says why instead, and one
 // the person is not in says how to join. Every sentence names a channel without a "#".
 //
@@ -280,9 +280,9 @@ describe("a channel's identity", () => {
         expect(w.get("[data-testid='details-name']").text()).toBe("young-adults");
     });
 
-    test("reads the group type, the campus by name and Public, or Private for a private room", async () => {
+    test("reads Public, or Private for a private room, the campus by name and the group type", async () => {
         const w = mountDetails();
-        expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Small Group", "Downtown Campus", "Public"]);
+        expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Public", "Downtown Campus", "Small Group"]);
 
         await w.setProps({ facts: channelFacts({ is_public: false, group_type_name: null, campus_id: null }) });
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Private"]);
@@ -299,36 +299,44 @@ describe("a channel's identity", () => {
         expect(w.find("[data-testid='details-description']").exists()).toBe(false);
     });
 
-    test("names its leaders with their faces, joined A and B, or A, B and C", async () => {
+    test("names its leaders in a Led by row with their faces, joined by commas", async () => {
         const w = mountDetails();
         const leaders = w.get("[data-testid='details-leaders']");
-        expect(spoken(leaders)).toBe("Led by Tom Hale and Grace Kim");
+        expect(spoken(leaders)).toBe("Led by Tom Hale, Grace Kim");
         expect(leaders.findComponent(Avatar).props("people")).toHaveLength(2);
 
         await w.setProps({ facts: channelFacts({ leaders: [tom, grace, ana] }) });
-        expect(spoken(w.get("[data-testid='details-leaders']"))).toBe("Led by Tom Hale, Grace Kim and Ana Ruiz");
+        expect(spoken(w.get("[data-testid='details-leaders']"))).toBe("Led by Tom Hale, Grace Kim, Ana Ruiz");
 
         await w.setProps({ facts: channelFacts({ leaders: [] }) });
         expect(w.find("[data-testid='details-leaders']").exists()).toBe(false);
     });
 
-    test("counts its members as plain text where the reader may not see who is here, the singular for one", async () => {
+    test("counts its members in a Members row of plain text where the reader may not see who is here", async () => {
         const w = mountDetails({ facts: channelFacts({ member_count: 1204 }) });
         const members = w.get("[data-testid='details-members']");
-        expect(plain(members.text())).toBe(`${(1204).toLocaleString()} members`);
+        expect(plain(members.text())).toBe(`Members ${(1204).toLocaleString()}`);
         expect(["BUTTON", "A"]).not.toContain(members.element.tagName);
         expect(members.find("button, a").exists()).toBe(false);
 
         await w.setProps({ facts: channelFacts({ member_count: 1 }) });
-        expect(plain(w.get("[data-testid='details-members']").text())).toBe("1 member");
+        expect(plain(w.get("[data-testid='details-members']").text())).toBe("Members 1");
     });
 
-    test("makes the count a link to the members panel where the reader may see who is here", async () => {
+    test("holds the Members and Led by rows in one group", () => {
+        const w = mountDetails();
+
+        const group = w.get("[data-testid='details-facts']");
+        expect(group.find("[data-testid='details-members']").exists()).toBe(true);
+        expect(group.find("[data-testid='details-leaders']").exists()).toBe(true);
+    });
+
+    test("makes the Members row a way to the members panel where the reader may see who is here", async () => {
         const w = mountDetails({ facts: channelFacts({ member_count: 42 }), canSeeRoster: true });
 
         const members = w.get("[data-testid='details-members']");
         expect(members.element.tagName).toBe("BUTTON");
-        expect(plain(members.text())).toBe("42 members");
+        expect(plain(members.text())).toBe("Members 42");
         expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "right" && members.element.contains(icon.element))).toBe(true);
 
         await members.trigger("click");
@@ -358,7 +366,7 @@ describe("a group's identity", () => {
 
         const mark = w.get("[data-testid='details-identity'] [data-testid='group-face']");
         expect(mark.attributes("data-shape")).toBe("trio");
-        expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("56px");
+        expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("44px");
         expect(mark.findAll(".chat-av").map(face => face.text())).toEqual(["C", "H", "L"]);
         expect(w.get("[data-testid='details-name']").text()).toBe("Caleb, Hannah and Luis");
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["4 people", "Group message"]);
@@ -373,19 +381,21 @@ describe("a group's identity", () => {
         expect(mark.get("[data-testid='group-face-more']").text()).toBe("+6");
     });
 
-    test("lists everyone in it as a chip, the person included", () => {
+    test("lists everyone in it as a row, the person included", () => {
         const w = mountGroup();
 
         const chips = w.findAll("[data-testid='details-person']").map(chip => spoken(chip));
         expect(chips).toEqual(["Jordan Ellis (you)", "Caleb Brooks", "Hannah Diaz", "Luis Romero"]);
-        expect(w.get("[data-testid='details-people']").attributes("aria-label")).toBe("People in this conversation");
+        expect(w.get("[data-testid='details-people'] [role='list']").attributes("aria-label")).toBe("People in this conversation");
+        expect(w.findAll("[data-testid='details-person']").map(row => row.attributes("role"))).toEqual(["listitem", "listitem", "listitem", "listitem"]);
     });
 });
 
 describe("Leave", () => {
-    test("is worded by the room's kind", () => {
+    test("is a row of its own group, worded by the room's kind", () => {
         const channel = mountDetails();
         expect(channel.get("[data-testid='details-leave']").text()).toBe("Leave channel");
+        expect(channel.get("[data-testid='details-leave']").element.closest("[data-testid='details-leave-group']")).not.toBeNull();
         channel.unmount();
 
         const group = mountGroup();
@@ -529,14 +539,14 @@ describe("a room that cannot be left", () => {
         const w = mountDetails({ facts: channelFacts({ can_leave: false }) });
 
         expect(w.find("[data-testid='details-leave']").exists()).toBe(false);
-        expect(w.get("[data-testid='details-callout']").text()).toBe("This channel can't be left. You can turn its notifications off instead.");
+        expect(w.get("[data-testid='details-callout']").text()).toBe("This channel can't be left. Turn notifications off instead.");
     });
 
     test("a conversation of two says so and points to Hide", () => {
         const w = mountDetails({ kind: "person", title: "Anna Reyes", facts: personFacts() });
 
         expect(w.find("[data-testid='details-leave']").exists()).toBe(false);
-        expect(w.get("[data-testid='details-callout']").text()).toBe("A conversation between two people can't be left. Hide it instead; it comes back when there's a new message.");
+        expect(w.get("[data-testid='details-callout']").text()).toBe("A conversation between two people can't be left. Hide it instead.");
     });
 });
 
@@ -588,7 +598,7 @@ describe("the conversation name", () => {
         expect(input.value).toBe("Hike planning");
         expect(input.placeholder).toBe("Caleb, Hannah, Luis");
         expect(input.labels?.[0]?.textContent?.trim()).toBe("Conversation name");
-        expect(w.get("[data-testid='rename-help']").text()).toBe("Everyone here sees the new name. Leave it blank to show everyone's names.");
+        expect(w.get("[data-testid='rename-help']").text()).toBe("Everyone here sees it. Blank shows everyone's names.");
     });
 
     test("holds Save until the name changes", async () => {
@@ -755,41 +765,64 @@ describe("the conversation name", () => {
     });
 });
 
-// The person's settings for the room, for a member: "Notify me about" as three radio cards, the
-// room's mode chosen, with what each means in words chosen by the room's kind and the foot about
-// threads and badges; "In your sidebar" as the Star and Hide switches, the words beside a switch
+// The person's settings for the room, for a member: Notifications as one segmented All, Mentions,
+// Off control, a radio group with the room's mode chosen and one line under it saying what only
+// the chosen mode means; Sidebar as the Star and Hide switches, the words beside a switch
 // toggling it too. Each change is told to the block at once, which saves it; the head's indicator
 // and the notes under a switch or the choices show what the save came to, a refusal in the
 // server's own words.
-describe("Notify me about", () => {
+describe("Notifications", () => {
     function radios(w: VueWrapper): HTMLElement[] {
         return w.findAll("[data-testid='notify-option']").map(option => option.element as HTMLElement);
     }
 
-    test("is a radio group of three cards under its heading, the room's mode chosen", () => {
+    test("is a segmented radio group of three under its label, the room's mode chosen", () => {
         const w = mountDetails({ notifyMode: "mentions" });
 
         const group = w.get("[data-testid='details-notify'] [role='radiogroup']");
-        expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Notify me about");
+        expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Notifications");
         expect(radios(w).map(r => r.getAttribute("role"))).toEqual(["radio", "radio", "radio"]);
-        expect(radios(w).map(r => plain(r.querySelector("b")?.textContent ?? ""))).toEqual(["All messages", "Mentions only", "Off"]);
+        expect(radios(w).map(r => plain(r.textContent ?? ""))).toEqual(["All", "Mentions", "Off"]);
+        expect(radios(w).map(r => w.findAllComponents(Icon).find(icon => r.contains(icon.element))?.props("name"))).toEqual(["bell", "at-bell", "bell-off"]);
         expect(radios(w).map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
         // one stop for Tab, on the choice made
         expect(radios(w).map(r => r.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
     });
 
-    test("says what each mode means, channel or conversation by the room's kind, and the foot", () => {
-        const channel = mountDetails({ notifyMode: "all" });
-        expect(channel.findAll("[data-testid='notify-option'] .chat-nopt-desc").map(d => d.text())).toEqual([
-            "Every new message in this channel.",
-            "When someone mentions you by name or uses @all.",
-            "Nothing, unless someone mentions you by name."
-        ]);
-        expect(channel.get("[data-testid='notify-foot']").text()).toBe("Threads you follow notify you about every reply. Unread mentions always show a badge.");
-        channel.unmount();
+    test.each([
+        ["all", "Every new message."],
+        ["mentions", "Your name or @all."],
+        ["silent", "Only mentions of your name."]
+    ])("says in one line what only the chosen mode, %s, means, and the group is described by it", (mode, words) => {
+        const w = mountDetails({ notifyMode: mode });
 
-        const group = mountGroup({ notifyMode: "all" });
-        expect(group.findAll("[data-testid='notify-option'] .chat-nopt-desc")[0].text()).toBe("Every new message in this conversation.");
+        const caption = w.get("[data-testid='notify-caption']");
+        expect(caption.text()).toBe(words);
+        expect(w.findAll("[data-testid='notify-caption']")).toHaveLength(1);
+        const group = w.get("[data-testid='details-notify'] [role='radiogroup']");
+        expect(group.attributes("aria-describedby")).toBe(caption.attributes("id"));
+    });
+
+    test("with no mode of its own, says what All means, the mode Tab lands on", () => {
+        const w = mountDetails({ notifyMode: null });
+
+        expect(w.get("[data-testid='notify-caption']").text()).toBe("Every new message.");
+    });
+
+    test("moves its line to the newly chosen mode", async () => {
+        const w = mountDetails({ notifyMode: "all" });
+
+        await w.setProps({ notifyMode: "silent" });
+
+        expect(w.get("[data-testid='notify-caption']").text()).toBe("Only mentions of your name.");
+    });
+
+    test("no longer carries the foot about threads and badges", () => {
+        const w = mountDetails({ notifyMode: "all" });
+
+        expect(w.find("[data-testid='notify-foot']").exists()).toBe(false);
+        expect(w.text()).not.toContain("Threads you follow");
+        expect(w.text()).not.toContain("always show a badge");
     });
 
     test("tells the block the mode chosen", async () => {
@@ -823,10 +856,27 @@ describe("Notify me about", () => {
         expect(w.emitted("notify")?.slice(-2)).toEqual([["all"], ["silent"]]);
     });
 
+    test("moves with Left and Right too, as a row of segments is read", async () => {
+        const w = mountDetails({ notifyMode: "all" });
+        await settle();
+
+        radios(w)[0].focus();
+        keydown(radios(w)[0], "ArrowRight");
+        await settle();
+        expect(document.activeElement).toBe(radios(w)[1]);
+
+        await w.setProps({ notifyMode: "mentions" });
+        keydown(radios(w)[1], "ArrowLeft");
+        await settle();
+        expect(document.activeElement).toBe(radios(w)[0]);
+        expect(w.emitted("notify")).toEqual([["mentions"], ["all"]]);
+    });
+
     test("shows a refusal's sentence under the choices", () => {
         const w = mountDetails({ notifyMode: "all", prefsNotes: { notify: { kind: "error", text: "Chat is read only tonight." } } });
 
         expect(w.get("[data-testid='notify-error']").text()).toBe("Chat is read only tonight.");
+        expect(w.get("[data-testid='details-notify'] [role='radiogroup']").attributes("aria-describedby")).toContain(w.get("[data-testid='notify-error']").attributes("id"));
     });
 
     test("is offered in a direct message too, and not in a room the person is not in", () => {
@@ -841,27 +891,36 @@ describe("Notify me about", () => {
     });
 });
 
-describe("In your sidebar", () => {
+describe("Sidebar", () => {
     function switchOf(w: VueWrapper, key: string): ReturnType<VueWrapper["get"]> {
         return w.get(`[data-testid='switch-${key}'] [role='switch']`);
     }
 
-    test("is the Star and Hide switches with what each does", () => {
+    test("is a group of the Star and Hide switches, Hide saying until when", () => {
         const w = mountDetails({ isStarred: true, isHidden: false });
 
-        expect(w.get("[data-testid='details-sidebar'] h4").text()).toBe("In your sidebar");
+        const group = w.get("[data-testid='details-sidebar'] [role='group']");
+        expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Sidebar");
         expect(switchOf(w, "star").attributes("aria-checked")).toBe("true");
         expect(switchOf(w, "hide").attributes("aria-checked")).toBe("false");
-        expect(w.get("[data-testid='switch-star']").text()).toContain("Keep it at the top of your list.");
-        expect(w.get("[data-testid='switch-hide']").text()).toContain("Take it out of your list until there's a new message.");
+        expect(plain(w.get("[data-testid='switch-star']").text())).toBe("Star");
+        expect(plain(w.get("[data-testid='switch-hide']").text())).toBe("Hide Until there's a new message");
         expect(document.getElementById(switchOf(w, "star").attributes("aria-labelledby") ?? "")?.textContent).toBe("Star");
+    });
+
+    test("keeps its help, with the notify line, Hide's and a group's name, to a few short lines", () => {
+        const w = mountGroup({ notifyMode: "all" });
+        const words = (text: string): number => plain(text).split(" ").filter(word => word !== "").length;
+
+        const help = w.findAll(".chat-sg-sub, [data-testid='notify-caption'], [data-testid='rename-help']").map(line => line.text());
+        expect(help.reduce((sum, line) => sum + words(line), 0)).toBeLessThanOrEqual(20);
     });
 
     test("tells the block each switch pressed, the words beside a switch toggling it too", async () => {
         const w = mountDetails({ isStarred: false, isHidden: false });
 
         await switchOf(w, "star").trigger("click");
-        await w.get("[data-testid='switch-hide'] .chat-set-txt").trigger("click");
+        await w.get("[data-testid='switch-hide'] .chat-sg-txt").trigger("click");
 
         expect(w.emitted("star")).toEqual([[true]]);
         expect(w.emitted("hide")).toEqual([[true]]);

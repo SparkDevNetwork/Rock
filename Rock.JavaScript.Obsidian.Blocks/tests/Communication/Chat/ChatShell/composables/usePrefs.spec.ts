@@ -393,7 +393,7 @@ describe("the person's own switches", () => {
         await settle();
 
         expect(s.prefs.state.meSave?.state).toBe("saved");
-        expect(s.prefs.state.announcement?.text).toBe("Reactions to my messages off. Saved.");
+        expect(s.prefs.state.announcement?.text).toBe("Reactions to my messages, off. Saved.");
     });
 
     test("one switch's answer leaves another's Saving standing, and the head says Saving until both are in", async () => {
@@ -442,7 +442,7 @@ describe("the person's own switches", () => {
         await settle();
 
         expect(s.prefs.state.meSave?.state).toBe("saved");
-        expect(s.prefs.state.announcement?.text).toBe("Open direct messages on. Saved.");
+        expect(s.prefs.state.announcement?.text).toBe("Anyone can message me, on. Saved.");
     });
 
     test("says Saved, syncing only when the door answers pending, with a note under the switch", async () => {

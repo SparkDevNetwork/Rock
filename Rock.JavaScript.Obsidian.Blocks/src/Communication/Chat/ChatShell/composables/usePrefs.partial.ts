@@ -152,8 +152,11 @@ const notifyWords: Record<NotifyMode, { title: string, toast: string, icon: stri
     silent: { title: "Off", toast: "Muted. A mention by name still reaches you.", icon: "bell-off" }
 };
 
-/** One notify mode as the details' cards and the header's menu draw it. */
-export type NotifyOption = { value: NotifyMode, title: string, description: string, icon: string };
+/**
+ * One notify mode as the header's menu draws it, by its title and description, and the details'
+ * segmented control, by its short label and the one line said under it while it is chosen.
+ */
+export type NotifyOption = { value: NotifyMode, title: string, description: string, label: string, caption: string, icon: string };
 
 /**
  * The three notify modes in the one wording the details and the header's menu share, so the two
@@ -167,16 +170,16 @@ export type NotifyOption = { value: NotifyMode, title: string, description: stri
 export function notifyOptionsFor(kind: string | null): NotifyOption[] {
     const room = kind === "channel" ? "channel" : "conversation";
     return [
-        { value: "all", title: notifyWords.all.title, description: `Every new message in this ${room}.`, icon: notifyWords.all.icon },
-        { value: "mentions", title: notifyWords.mentions.title, description: "When someone mentions you by name or uses @all.", icon: notifyWords.mentions.icon },
-        { value: "silent", title: notifyWords.silent.title, description: "Nothing, unless someone mentions you by name.", icon: notifyWords.silent.icon }
+        { value: "all", title: notifyWords.all.title, description: `Every new message in this ${room}.`, label: "All", caption: "Every new message.", icon: notifyWords.all.icon },
+        { value: "mentions", title: notifyWords.mentions.title, description: "When someone mentions you by name or uses @all.", label: "Mentions", caption: "Your name or @all.", icon: notifyWords.mentions.icon },
+        { value: "silent", title: notifyWords.silent.title, description: "Nothing, unless someone mentions you by name.", label: "Off", caption: "Only mentions of your name.", icon: notifyWords.silent.icon }
     ];
 }
 
-/** Each switch's title, which its saved sentence names. */
-const meTitles: Record<MeKey, string> = {
-    profile_details: "Show my details",
-    open_dm: "Open direct messages",
+/** Each switch's label as Chat settings shows it, which its saved sentence names. */
+export const meTitles: Record<MeKey, string> = {
+    profile_details: "Show my campus and badges",
+    open_dm: "Anyone can message me",
     reaction_push: "Reactions to my messages"
 };
 
@@ -297,7 +300,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         }
         else {
             state.meSave = isOtherOut ? state.meSave : { state: "saved", count };
-            announce(`${meTitles[key]} ${now}. Saved.`);
+            // The label is a phrase of its own, so the state is read after a pause.
+            announce(`${meTitles[key]}, ${now}. Saved.`);
         }
     }
 

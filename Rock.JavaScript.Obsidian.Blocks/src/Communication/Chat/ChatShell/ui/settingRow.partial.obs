@@ -1,0 +1,225 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <component :is="isButton ? 'button' : 'div'"
+               :type="isButton ? 'button' : undefined"
+               class="chat-sg-row"
+               :class="{ 'is-button': isButton, 'is-danger': isDanger }">
+        <!-- One row of a settings group: its icon, its short label with at most a line under it,
+             a note about its save, and its control or value at the end. Kept inside the root,
+             since a comment beside it makes a fragment that drops the caller's attributes. -->
+        <Icon v-if="icon" :name="icon" class="chat-sg-ic" />
+        <span class="chat-sg-txt">
+            <!-- On one line, so the space between the label and its line is kept for a reader. -->
+            <b v-if="title" :id="`${baseId}-l`" class="chat-sg-title">{{ title }}</b> <slot name="text"></slot> <span v-if="sub" :id="`${baseId}-d`" class="chat-sg-sub">{{ sub }}</span>
+            <span v-if="note"
+                  :id="`${baseId}-n`"
+                  class="chat-sg-note"
+                  :data-kind="note.kind"
+                  data-testid="switch-note">
+                <Icon :name="noteIcon" size="xs" /><span>{{ note.text }}</span>
+            </span>
+        </span>
+        <slot :ids="ids"></slot>
+    </component>
+</template>
+
+<style scoped>
+.chat-sg-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px 8px 14px;
+    margin: 0;
+    font: inherit;
+    color: var(--chat-text);
+    text-align: left;
+    background: transparent;
+    border: 0;
+}
+
+/* Rows in one group are ruled apart. */
+.chat-sg-row + .chat-sg-row {
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-sg-row.is-button {
+    cursor: pointer;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-sg-row.is-button:hover {
+    background: var(--chat-hover);
+}
+
+.chat-sg-row.is-button:active {
+    background: var(--chat-press);
+}
+
+/* The group clips what overflows its corners, so the ring is drawn inside the row. */
+.chat-sg-row.is-button:focus-visible {
+    outline-offset: -2px;
+}
+
+.chat-sg-ic {
+    flex: none;
+    align-self: flex-start;
+    margin-top: 2px;
+    color: var(--chat-icon);
+}
+
+.chat-sg-row.is-danger,
+.chat-sg-row.is-danger .chat-sg-ic {
+    color: var(--chat-danger-ink);
+}
+
+.chat-sg-row.is-danger:hover {
+    background: var(--chat-danger-soft);
+}
+
+.chat-sg-txt {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    font-size: 13.5px;
+    line-height: 1.4;
+}
+
+.chat-sg-title {
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.chat-sg-row.is-danger .chat-sg-title {
+    font-weight: 600;
+}
+
+.chat-sg-sub {
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+/* A note under the row's words: a word about the save, a pending save's, or a refusal in danger. */
+.chat-sg-note {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    animation: chat-sg-note-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-sg-note[data-kind="error"] {
+    color: var(--chat-danger-ink);
+}
+
+.chat-sg-note[data-kind="pending"] {
+    font-weight: 500;
+}
+
+.chat-sg-note :deep(.chat-ic) {
+    flex: none;
+    margin-top: 2px;
+}
+
+@keyframes chat-sg-note-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+}
+
+/* Reduced motion: a note only fades in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-sg-note {
+        animation-name: chat-sg-note-fade;
+    }
+}
+
+@keyframes chat-sg-note-fade {
+    from {
+        opacity: 0;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Icon from "./icon.partial.obs";
+
+    /** A line under a row's words: a word about the save, a pending save's, or a refusal's sentence. */
+    export type RowNote = { kind: "info" | "pending" | "error", text: string };
+
+    /** The ids of the row's words, for its control to be named and described by; null for a line it does not have. */
+    export type RowIds = { title: string | null, sub: string | null, note: string | null };
+
+    const props = defineProps({
+        icon: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The short label, or null where the text slot holds the row's words. */
+        title: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** At most one short line under the label. */
+        sub: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        note: {
+            type: Object as PropType<RowNote | null>,
+            default: null
+        },
+
+        /** The whole row is one button, such as Members or Leave. */
+        isButton: {
+            type: Boolean,
+            default: false
+        },
+
+        isDanger: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    /** Ties the row's control to its words, once per row. */
+    const baseId = `chat-sg-${newGuid()}`;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const ids = computed((): RowIds => ({
+        title: props.title ? `${baseId}-l` : null,
+        sub: props.sub ? `${baseId}-d` : null,
+        note: props.note ? `${baseId}-n` : null
+    }));
+
+    const noteIcon = computed((): string => {
+        switch (props.note?.kind) {
+            case "error":
+                return "alert";
+
+            case "pending":
+                return "clock";
+
+            default:
+                return "info";
+        }
+    });
+
+    // #endregion Computed Values
+</script>

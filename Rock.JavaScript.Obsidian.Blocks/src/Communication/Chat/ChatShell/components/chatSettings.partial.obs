@@ -11,62 +11,65 @@
         </template>
 
         <div class="chat-ms-id">
-            <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="48" />
+            <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="44" />
             <span class="chat-ms-main">
                 <b class="chat-ms-name" data-testid="settings-name">{{ personName }}</b>
-                <span class="chat-ms-meta" data-testid="settings-meta">{{ metaText }}</span>
+                <span class="chat-ms-meta" data-testid="settings-meta">
+                    <span v-for="item in metaItems" :key="item">{{ item }}</span>
+                </span>
             </span>
         </div>
 
-        <section class="chat-ms-sec" data-testid="settings-privacy">
-            <h4>Privacy</h4>
+        <SettingGroup label="Privacy" data-testid="settings-privacy">
             <SettingSwitch name="profile_details"
-                           title="Show my details"
-                           description="People who open your profile card see your campus and badges. Your name and photo always show."
+                           icon="id-card"
+                           :title="meTitles.profile_details"
                            :isOn="me.show_profile_details"
                            :isBusy="isSaving('profile_details')"
                            :note="notes.profile_details ?? null"
                            @toggle="onToggle('profile_details', $event)" />
             <SettingSwitch name="open_dm"
-                           title="Open direct messages"
-                           :description="`Anyone at ${organizationName} can start a conversation with you. When off, only people in a private channel with you can.`"
+                           icon="message"
+                           :title="meTitles.open_dm"
+                           description="Off: only people in a private channel with you"
                            :isOn="me.is_open_dm_allowed"
                            :isBusy="isSaving('open_dm')"
                            :note="notes.open_dm ?? null"
                            @toggle="onToggle('open_dm', $event)" />
-        </section>
+        </SettingGroup>
 
-        <section class="chat-ms-sec" data-testid="settings-notifications">
-            <h4>Notifications</h4>
-            <div class="chat-push-row" :data-state="push" data-testid="push-row">
-                <span class="chat-push-ic"><Icon :name="pushRow.icon" size="sm" /></span>
-                <span class="chat-push-txt">
-                    <b>{{ pushRow.title }}</b>
-                    <span data-testid="push-desc">{{ pushRow.description }}</span>
-                </span>
+        <SettingGroup label="Notifications" data-testid="settings-notifications">
+            <SettingRow icon="monitor"
+                        title="This browser"
+                        :sub="pushRow.sub"
+                        :data-state="push"
+                        data-testid="push-row">
+                <span v-if="pushRow.status" class="chat-push-status" :data-state="push" data-testid="push-status">{{ pushRow.status }}</span>
                 <button v-if="push === 'offered' || push === 'asking'"
                         type="button"
                         class="chat-ms-btn is-brand"
+                        aria-label="Turn on notifications for this browser"
                         :disabled="push === 'asking'"
                         data-autofocus
                         @click="emit('pushOn')">
-                    <span v-if="push === 'asking'" class="chat-spinner"></span><Icon v-else name="bell" size="xs" />Turn on
+                    <span v-if="push === 'asking'" class="chat-spinner"></span>Turn on
                 </button>
                 <button v-else-if="push === 'on'"
                         type="button"
                         class="chat-ms-btn is-line"
+                        aria-label="Turn off notifications for this browser"
                         @click="emit('pushOff')">Turn off</button>
-            </div>
+            </SettingRow>
             <SettingSwitch name="reaction_push"
-                           title="Reactions to my messages"
-                           description="A notification when someone reacts to a message you sent, grouped per message."
-                           :extra="push === 'on' ? null : 'This browser won\'t show them, but it applies to your other devices with notifications on.'"
+                           icon="smile"
+                           :title="meTitles.reaction_push"
+                           :description="push === 'on' ? null : 'Sent to your other devices'"
                            :isOn="me.reaction_push"
                            :isBusy="isSaving('reaction_push')"
                            :note="notes.reaction_push ?? null"
                            @toggle="onToggle('reaction_push', $event)" />
-            <p class="chat-ms-foot" data-testid="settings-foot">Each conversation has its own setting. Choose it from the conversation's name at the top.</p>
-        </section>
+        </SettingGroup>
+        <p class="chat-ms-foot" data-testid="settings-foot">Each conversation sets its own, from its name at the top.</p>
 
         <!-- The settings' news said while the dialog is open, keyed by count so the same words are read twice. -->
         <span class="chat-sr-only" aria-live="polite" data-testid="settings-announcement"><span v-if="shownAnnouncement" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
@@ -76,7 +79,7 @@
 <style scoped>
 .chat-ms-id {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
 }
 
@@ -89,93 +92,65 @@
 }
 
 .chat-ms-name {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
+    line-height: 1.25;
     letter-spacing: -.01em;
     overflow-wrap: anywhere;
 }
 
 .chat-ms-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     font-size: 12.5px;
     color: var(--chat-muted);
 }
 
-.chat-ms-sec {
-    padding-top: 18px;
-    margin-top: 20px;
-    border-top: 1px solid var(--chat-line);
-}
-
-/* Rock's theme styles every heading, so this one states its whole face. */
-.chat-ms-sec h4 {
-    margin: 0 0 10px;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .07em;
+/* The facts joined by 3px dots, as the details dialog joins them. */
+.chat-ms-meta > span + span::before {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    margin: 0 7px;
+    vertical-align: middle;
+    content: "";
+    background: currentColor;
+    border-radius: 50%;
+    opacity: .55;
 }
 
 .chat-ms-foot {
-    margin: 0 0 14px;
-    font-size: 12.5px;
-    line-height: 1.45;
+    margin: 14px 0 0 2px;
+    font-size: 12px;
     color: var(--chat-muted);
 }
 
-/* This browser's push: its icon tinted by its state, what it means, and what can be done. */
-.chat-push-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    padding: 4px 0 12px;
-}
-
-/* The reaction switch after it is ruled apart, as switch rows are from one another. */
-.chat-push-row + .chat-set-row {
-    border-top: 1px solid var(--chat-line);
-}
-
-.chat-push-ic {
-    display: grid;
+/* This browser's state in words beside a dot: success when on, warning when blocked. */
+.chat-push-status {
+    display: inline-flex;
     flex: none;
-    place-items: center;
-    align-self: flex-start;
-    width: 32px;
-    height: 32px;
-    color: var(--chat-icon);
-    background: var(--chat-sidebar);
-    border-radius: var(--chat-r-radio-ic);
-}
-
-.chat-push-row[data-state="on"] .chat-push-ic {
-    color: var(--chat-success);
-    background: color-mix(in srgb, var(--chat-success) 14%, var(--chat-surface));
-}
-
-.chat-push-row[data-state="blocked"] .chat-push-ic {
-    color: var(--chat-warning-ink);
-    background: var(--chat-warning-soft);
-}
-
-.chat-push-txt {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    line-height: 1.35;
-}
-
-.chat-push-txt b {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.chat-push-txt span {
+    gap: 5px;
+    align-items: center;
     font-size: 12.5px;
     color: var(--chat-muted);
+    white-space: nowrap;
+}
+
+.chat-push-status::before {
+    width: 7px;
+    height: 7px;
+    content: "";
+    background: var(--chat-line-strong);
+    border-radius: 50%;
+}
+
+.chat-push-status[data-state="on"]::before {
+    background: var(--chat-success);
+}
+
+.chat-push-status[data-state="blocked"]::before {
+    background: var(--chat-warning);
 }
 
 /* The small buttons: in the church's color, or outlined. */
@@ -185,13 +160,13 @@
     gap: 5px;
     align-items: center;
     height: 28px;
-    padding: 0 11px;
+    padding: 0 10px;
     font-size: 12.5px;
     font-weight: 600;
     color: var(--chat-text);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-md);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -205,8 +180,8 @@
 }
 
 .chat-ms-btn.is-line {
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
 }
 
 .chat-ms-btn.is-line:hover {
@@ -215,7 +190,7 @@
 
 .chat-ms-btn:disabled {
     cursor: default;
-    opacity: .5;
+    opacity: .55;
 }
 
 .chat-ms-btn .chat-spinner {
@@ -226,13 +201,14 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { MeKey, MeSettings, PrefsState, SaveMark, SettingNote } from "../composables/usePrefs.partial";
+    import { MeKey, MeSettings, meTitles, PrefsState, SaveMark, SettingNote } from "../composables/usePrefs.partial";
     import { PushState } from "../composables/usePush.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
-    import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import SaveIndicator from "../ui/saveIndicator.partial.obs";
+    import SettingGroup from "../ui/settingGroup.partial.obs";
+    import SettingRow from "../ui/settingRow.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
 
     const props = defineProps({
@@ -328,28 +304,31 @@
     // #region Computed Values
 
     /** The campus, then where the person's name and photo come from. */
-    const metaText = computed((): string => {
-        const source = `Your name and photo come from your ${props.organizationName} profile.`;
-        return props.campusName ? `${props.campusName} · ${source}` : source;
-    });
+    const metaItems = computed((): string[] => [
+        ...(props.campusName ? [props.campusName] : []),
+        `From your ${props.organizationName} profile`
+    ]);
 
-    /** What the browser row says in each of push's states. */
-    const pushRow = computed((): { icon: string, title: string, description: string } => {
+    /**
+     * What the browser row says in each of push's states: the state in words beside its dot, and a
+     * line under the label only where the person has something to do.
+     */
+    const pushRow = computed((): { status: string | null, sub: string | null } => {
         switch (props.push) {
             case "offered":
-                return { icon: "bell-off", title: "Off for this browser", description: "Turn them on to hear about new messages when chat isn't open." };
+                return { status: "Off", sub: null };
 
             case "asking":
-                return { icon: "bell", title: "Waiting for your browser", description: "Choose Allow in the box your browser shows." };
+                return { status: null, sub: "Choose Allow in your browser" };
 
             case "on":
-                return { icon: "bell", title: "On for this browser", description: "You'll get notifications here, following each conversation's setting." };
+                return { status: "On", sub: null };
 
             case "blocked":
-                return { icon: "alert", title: "Blocked by your browser", description: "Allow notifications for this site in your browser's settings, then reload the page." };
+                return { status: "Blocked", sub: "Allow it in browser settings, then reload" };
 
             default:
-                return { icon: "bell-off", title: "Not available here", description: `Browser notifications aren't set up for ${props.organizationName} yet.` };
+                return { status: "Not available", sub: null };
         }
     });
 

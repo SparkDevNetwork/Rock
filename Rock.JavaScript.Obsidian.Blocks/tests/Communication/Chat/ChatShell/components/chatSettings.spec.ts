@@ -15,9 +15,9 @@
 // </copyright>
 //
 // Chat settings, mounted: the person's own settings dialog, opened from the sidebar's foot or their
-// own profile card. Who they are, where their name and photo come from, the two privacy switches,
-// this browser's notifications in each of push's states, and the reaction switch with a word for
-// a browser that will not show them. Each switch is told to the block at once, which saves it;
+// own profile card. A grouped list: who they are and where their name and photo come from, then
+// Privacy's two switches, then Notifications' browser row in each of push's states and the
+// reaction switch, each row a short label with at most a short line under it. Each switch is told to the block at once, which saves it;
 // the head's indicator and the note under a switch show what the save came to, a pending save in
 // its own words and a refusal in the server's.
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -108,25 +108,57 @@ describe("the dialog", () => {
         const w = mountSettings();
 
         expect(w.get("[data-testid='settings-name']").text()).toBe("Jordan Lee");
-        expect(plain(w.get("[data-testid='settings-meta']").text())).toBe("Downtown Campus · Your name and photo come from your Cedar Hill profile.");
+        expect(w.findAll("[data-testid='settings-meta'] > span").map(item => item.text())).toEqual(["Downtown Campus", "From your Cedar Hill profile"]);
     });
 
     test("leaves the campus out for a person with none", () => {
         const w = mountSettings({ campusName: null });
 
-        expect(plain(w.get("[data-testid='settings-meta']").text())).toBe("Your name and photo come from your Cedar Hill profile.");
+        expect(w.findAll("[data-testid='settings-meta'] > span").map(item => item.text())).toEqual(["From your Cedar Hill profile"]);
+    });
+
+    test("keeps its help to a few short lines", () => {
+        const w = mountSettings({ push: "blocked" });
+        const words = (text: string): number => plain(text).split(" ").filter(word => word !== "").length;
+
+        const help = w.findAll(".chat-sg-sub, [data-testid='settings-foot']").map(line => line.text());
+        expect(help.length).toBeGreaterThan(0);
+        expect(help.reduce((sum, line) => sum + words(line), 0)).toBeLessThanOrEqual(32);
     });
 });
 
 describe("Privacy", () => {
-    test("is the two switches, each as the person's own setting stands", () => {
+    test("is a group of the two switches under its label, each as the person's own setting stands", () => {
         const w = mountSettings();
 
-        expect(w.get("[data-testid='settings-privacy'] h4").text()).toBe("Privacy");
+        const group = w.get("[data-testid='settings-privacy'] [role='group']");
+        expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Privacy");
         expect(switchOf(w, "profile_details").attributes("aria-checked")).toBe("true");
         expect(switchOf(w, "open_dm").attributes("aria-checked")).toBe("false");
-        expect(plain(w.get("[data-testid='switch-profile_details']").text())).toBe("Show my details People who open your profile card see your campus and badges. Your name and photo always show.");
-        expect(plain(w.get("[data-testid='switch-open_dm']").text())).toBe("Open direct messages Anyone at Cedar Hill can start a conversation with you. When off, only people in a private channel with you can.");
+        expect(plain(w.get("[data-testid='switch-profile_details']").text())).toBe("Show my campus and badges");
+        expect(plain(w.get("[data-testid='switch-open_dm']").text())).toBe("Anyone can message me Off: only people in a private channel with you");
+        expect(hasIcon(w, w.get("[data-testid='switch-profile_details']"), "id-card")).toBe(true);
+        expect(hasIcon(w, w.get("[data-testid='switch-open_dm']"), "message")).toBe(true);
+    });
+
+    test("names each switch by its label and describes it by the line under it", () => {
+        const w = mountSettings();
+
+        const openDm = switchOf(w, "open_dm");
+        expect(document.getElementById(openDm.attributes("aria-labelledby") ?? "")?.textContent).toBe("Anyone can message me");
+        expect(document.getElementById(openDm.attributes("aria-describedby") ?? "")?.textContent?.trim()).toBe("Off: only people in a private channel with you");
+        expect(switchOf(w, "profile_details").attributes("aria-describedby")).toBeUndefined();
+    });
+
+    test("a press on a row's words toggles its switch, as a label does", async () => {
+        const w = mountSettings();
+        // after the dialog has put focus where it opens
+        await settle();
+
+        await w.get("[data-testid='switch-open_dm'] .chat-sg-txt").trigger("click");
+
+        expect(w.emitted("toggle")).toEqual([["open_dm", true]]);
+        expect(document.activeElement).toBe(switchOf(w, "open_dm").element);
     });
 
     test("tells the block the setting and its new value", async () => {
@@ -202,30 +234,53 @@ describe("the save indicator", () => {
     test("reads the settings' news in its live region", async () => {
         const w = mountSettings();
 
-        await w.setProps({ announcement: { text: "Open direct messages on. Saved.", isAssertive: false, count: 3 } });
+        await w.setProps({ announcement: { text: "Anyone can message me, on. Saved.", isAssertive: false, count: 3 } });
 
-        expect(w.get("[data-testid='settings-announcement']").text()).toBe("Open direct messages on. Saved.");
+        expect(w.get("[data-testid='settings-announcement']").text()).toBe("Anyone can message me, on. Saved.");
     });
 });
 
 describe("this browser's notifications", () => {
-    const rows: Array<[string, string, string, string | null]> = [
-        ["offered", "Off for this browser", "Turn them on to hear about new messages when chat isn't open.", "Turn on"],
-        ["asking", "Waiting for your browser", "Choose Allow in the box your browser shows.", "Turn on"],
-        ["on", "On for this browser", "You'll get notifications here, following each conversation's setting.", "Turn off"],
-        ["blocked", "Blocked by your browser", "Allow notifications for this site in your browser's settings, then reload the page.", null],
-        ["unavailable", "Not available here", "Browser notifications aren't set up for Cedar Hill yet.", null]
+    // The state in words beside its dot, and a line under the label only where there is something to do.
+    const rows: Array<[string, string | null, string | null, string | null]> = [
+        ["offered", "Off", null, "Turn on"],
+        ["asking", null, "Choose Allow in your browser", "Turn on"],
+        ["on", "On", null, "Turn off"],
+        ["blocked", "Blocked", "Allow it in browser settings, then reload", null],
+        ["unavailable", "Not available", null, null]
     ];
 
-    test.each(rows)("in its %s state says so and offers what it can", (state, title, description, action) => {
+    test.each(rows)("in its %s state says so and offers what it can", (state, status, description, action) => {
         const w = mountSettings({ push: state });
 
         const row = w.get("[data-testid='push-row']");
         expect(row.attributes("data-state")).toBe(state);
-        expect(row.get("b").text()).toBe(title);
-        expect(row.get("[data-testid='push-desc']").text()).toBe(description);
+        expect(row.get("b").text()).toBe("This browser");
+        expect(hasIcon(w, row, "monitor")).toBe(true);
+        const statusElement = row.find("[data-testid='push-status']");
+        expect(statusElement.exists() ? statusElement.text() : null).toBe(status);
+        const desc = row.find(".chat-sg-sub");
+        expect(desc.exists() ? desc.text() : null).toBe(description);
         const button = row.find("button");
         expect(button.exists() ? plain(button.text()) : null).toBe(action);
+    });
+
+    test("names the browser's Turn on and Turn off for this browser, for a screen reader", () => {
+        const offered = mountSettings({ push: "offered" });
+        expect(offered.get("[data-testid='push-row'] button").attributes("aria-label")).toBe("Turn on notifications for this browser");
+        offered.unmount();
+
+        const on = mountSettings({ push: "on" });
+        expect(on.get("[data-testid='push-row'] button").attributes("aria-label")).toBe("Turn off notifications for this browser");
+    });
+
+    test("is in the Notifications group with the reaction switch", () => {
+        const w = mountSettings();
+
+        const group = w.get("[data-testid='settings-notifications'] [role='group']");
+        expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Notifications");
+        expect(group.find("[data-testid='push-row']").exists()).toBe(true);
+        expect(group.find("[data-testid='switch-reaction_push']").exists()).toBe(true);
     });
 
     test("Turn on asks the block, and is held while the browser is asking", async () => {
@@ -250,12 +305,11 @@ describe("this browser's notifications", () => {
         const w = mountSettings({ push: "offered" });
 
         expect(switchOf(w, "reaction_push").attributes("aria-checked")).toBe("true");
-        expect(plain(w.get("[data-testid='switch-reaction_push']").text())).toBe(
-            "Reactions to my messages A notification when someone reacts to a message you sent, grouped per message. This browser won't show them, but it applies to your other devices with notifications on."
-        );
+        expect(plain(w.get("[data-testid='switch-reaction_push']").text())).toBe("Reactions to my messages Sent to your other devices");
+        expect(hasIcon(w, w.get("[data-testid='switch-reaction_push']"), "smile")).toBe(true);
 
         await w.setProps({ push: "on" });
-        expect(w.get("[data-testid='switch-reaction_push']").text()).not.toContain("This browser won't show them");
+        expect(plain(w.get("[data-testid='switch-reaction_push']").text())).toBe("Reactions to my messages");
 
         await switchOf(w, "reaction_push").trigger("click");
         expect(w.emitted("toggle")).toEqual([["reaction_push", false]]);
@@ -264,6 +318,6 @@ describe("this browser's notifications", () => {
     test("ends by saying where each conversation's own setting is", () => {
         const w = mountSettings();
 
-        expect(w.get("[data-testid='settings-foot']").text()).toBe("Each conversation has its own setting. Choose it from the conversation's name at the top.");
+        expect(w.get("[data-testid='settings-foot']").text()).toBe("Each conversation sets its own, from its name at the top.");
     });
 });
