@@ -256,9 +256,11 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
         // The row that had focus has slid out of view and out of reach, so focus goes to what
         // slid in: the conversation's title, never its composer, which would raise the keyboard.
+        // The pane is still off to the right as it starts to slide, so the focus must not scroll
+        // the frame to it, which a browser that cannot clip the frame would do.
         if (isPhone.value) {
             await nextTick();
-            rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus();
+            rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus({ preventScroll: true });
         }
     }
 
@@ -310,16 +312,18 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             : kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.members.open(channelId));
 
         // Focus goes to the panel's first control, or its X or back chevron when it has none yet,
-        // without that button's tooltip, as a list whose first control is a tab shows none.
+        // without that button's tooltip, as a list whose first control is a tab shows none. The
+        // column is still 0px wide here, so a focus that scrolled would scroll the column to the
+        // control and drag the content in from its edge instead of letting it slide.
         await nextTick();
         const panel = panelElement.value;
         const first = panel?.querySelector<HTMLElement>("[data-autofocus]");
         const exit = panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']");
         if (first) {
-            first.focus();
+            first.focus({ preventScroll: true });
         }
         else if (exit) {
-            focusQuietly(exit);
+            focusQuietly(exit, { preventScroll: true });
         }
     }
 
@@ -411,9 +415,11 @@ export function useFrame(dependencies: FrameDependencies): Frame {
             shell.value.directMessages.begin(people);
         }
 
+        // The view is still rising in, and on a phone its pane still sliding from the right, so
+        // the focus leaves what holds it unscrolled; the first field is at the view's top.
         await nextTick();
         if (!isPhone.value || kind === "newdm") {
-            rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus();
+            rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus({ preventScroll: true });
         }
     }
 
