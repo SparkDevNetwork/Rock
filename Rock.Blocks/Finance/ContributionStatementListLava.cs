@@ -127,12 +127,34 @@ namespace Rock.Blocks.Finance
         #region Private Methods
 
         /// <summary>
+        /// The message shown when the context person is someone the current person may not view.
+        /// </summary>
+        private static readonly string NotAuthorizedMessage = "You are not authorized to view this person's contribution statements.";
+
+        /// <summary>
+        /// Determines whether the block uses person context and there is a context person
+        /// the current person is not allowed to view.
+        /// </summary>
+        /// <returns><c>true</c> if the context person is not allowed; otherwise, <c>false</c>.</returns>
+        private bool IsContextPersonUnauthorized()
+        {
+            return GetAttributeValue( AttributeKey.UsePersonContext ).AsBoolean()
+                && RequestContext.GetContextEntity<Person>() != null
+                && GetAuthorizedContextPerson() == null;
+        }
+
+        /// <summary>
         /// Resolves the configured Lava template against the years for which the target person's
         /// giving unit has contributions.
         /// </summary>
         /// <returns>The rendered HTML, or an empty string when the person has no qualifying transactions.</returns>
         private string GetStatementsHtml()
         {
+            if ( IsContextPersonUnauthorized() )
+            {
+                return $"<div class='alert alert-warning'>{NotAuthorizedMessage}</div>";
+            }
+
             var statementYears = GetStatementYears();
 
             // Render nothing when the person has no qualifying transactions.
