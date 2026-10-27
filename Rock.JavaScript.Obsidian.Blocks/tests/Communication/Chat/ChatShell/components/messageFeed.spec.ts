@@ -367,10 +367,10 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         return { promise, resolve };
     }
 
-    type Race = { wrapper: VueWrapper, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: () => void, other: (id: number) => void };
+    type Race = { wrapper: VueWrapper, answer: Deferred<SendResult>, send: () => Promise<boolean>, liveCopy: (fields?: Record<string, unknown>) => void, other: (id: number) => void };
 
     /** The feed fed by a real sender and real timelines, whose send answers when the test says so. */
-    async function race(isChannel = false): Promise<Race> {
+    async function race(isChannel = false, isPersonLeader = false): Promise<Race> {
         const answer = deferred<SendResult>();
         let sender: ReturnType<typeof createSender> | null = null;
         const timelines = createTimelines({
@@ -390,7 +390,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
             message_type: "text", body: id === 2 ? "On my way" : `m${id}`, created_at: at(15, 0), client_key: key
         });
         const Host = defineComponent({
-            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, sentKeys: sender?.sentKeys })
+            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, isPersonLeader, sentKeys: sender?.sentKeys })
         });
         const wrapper = mount(Host);
 
@@ -398,7 +398,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
             wrapper,
             answer,
             send: () => (sender as ReturnType<typeof createSender>).send("c1", "On my way"),
-            liveCopy: () => timelines.applyEvent("c1", "message.created", created(2, me, "local-1")),
+            liveCopy: (fields = {}) => timelines.applyEvent("c1", "message.created", { ...created(2, me, "local-1"), ...fields }),
             other: (id: number) => timelines.applyEvent("c1", "message.created", created(id, anna, null))
         };
     }
@@ -533,6 +533,25 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         expect(isSent(r.wrapper)).toBe(false);
         expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
         expect(drawn.classList.contains("is-arriving")).toBe(true);
+    });
+
+    // A leader's own send carries the Leader pill from its first frame to its last, one element
+    // throughout, though only the live copy says who leads and, in a room that hides its roster,
+    // says no for everyone.
+    test("a leader's own send in a channel keeps one Leader pill from sending to the live copy", async () => {
+        const r = await race(true, true);
+        const sending = r.send();
+        await flush();
+        const pill = r.wrapper.get("[data-testid='pending-row'] [data-testid='leader-pill']").element;
+
+        r.answer.resolve(confirmedAnswer);
+        await sending;
+        await flush();
+        expect(r.wrapper.get("[data-message-id='2'] [data-testid='leader-pill']").element).toBe(pill);
+
+        r.liveCopy({ sender_is_leader: false, sender_listed: true });
+        await flush();
+        expect(r.wrapper.get("[data-message-id='2'] [data-testid='leader-pill']").element).toBe(pill);
     });
 });
 

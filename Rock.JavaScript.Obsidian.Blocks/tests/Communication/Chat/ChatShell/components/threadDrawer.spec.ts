@@ -283,6 +283,16 @@ describe("the person's own reply", () => {
             jest.useRealTimers();
         }
     });
+
+    test("a leader's own reply in a channel keeps one Leader pill from sending to stored, whatever its copy says", async () => {
+        const w = draw({ replies: replies(1), pending: [sending], isPersonLeader: true });
+        await nextTick();
+        const pill = w.get("[data-testid='pending-row'] [data-testid='leader-pill']").element;
+
+        await w.setProps({ replies: [...replies(1), { ...mine(50, "k1"), sender_is_leader: false }] });
+
+        expect(w.get("[data-reply-id='50'] [data-testid='leader-pill']").element).toBe(pill);
+    });
 });
 
 describe("the divider", () => {

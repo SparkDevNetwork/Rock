@@ -71,6 +71,7 @@ type RowProps = {
     message?: TimelineMessage | null;
     pending?: PendingMessage | null;
     isOwn?: boolean;
+    isPersonLeader?: boolean;
     personAliasGuid?: string;
     isChannel?: boolean;
     position?: "single" | "first" | "middle" | "last";
@@ -1151,6 +1152,33 @@ describe("the Leader pill", () => {
 
     test("a system line never draws it", () => {
         const w = draw({ message: message({ sender_is_leader: true, message_type: "system", body: "Tom Hale joined." }), isChannel: true });
+
+        expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
+    test("a pending send by a leader of the channel carries the pill from its first frame", () => {
+        const w = draw({ pending: pendingRow(), isOwn: true, isChannel: true, position: "first", isPersonLeader: true });
+
+        expect(w.get("[data-testid='message-head'] [data-testid='leader-pill']").text()).toBe("Leader");
+    });
+
+    test("the reader's own message reads the reader's own fact, whatever its copy says", () => {
+        // A room that hides its roster sends its live copy saying no for everyone, its leader too.
+        const kept = draw({ message: ownConfirmed({ sender_is_leader: false }), isOwn: true, isChannel: true, position: "first", isPersonLeader: true });
+        expect(kept.find("[data-testid='leader-pill']").exists()).toBe(true);
+
+        const dropped = draw({ message: ownConfirmed({ sender_is_leader: true }), isOwn: true, isChannel: true, position: "first", isPersonLeader: false });
+        expect(dropped.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
+    test("another person's message reads its own fact, never the reader's", () => {
+        const w = draw({ message: message({ sender_is_leader: false }), isChannel: true, position: "first", isPersonLeader: true });
+
+        expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
+
+    test("the reader's own message in a direct message draws none, however they lead elsewhere", () => {
+        const w = draw({ message: ownConfirmed(), isOwn: true, isChannel: false, position: "first", isPersonLeader: true });
 
         expect(w.find("[data-testid='leader-pill']").exists()).toBe(false);
     });

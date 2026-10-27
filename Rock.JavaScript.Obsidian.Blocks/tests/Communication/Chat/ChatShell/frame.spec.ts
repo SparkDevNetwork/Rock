@@ -867,6 +867,30 @@ describe("the reader's own send in a channel", () => {
         expect(row.get("[data-testid='sender-name']").text()).toBe("Jordan Ellis");
         expect(row.find("img").attributes("src")).toBe("/GetImage.ashx?id=7");
     });
+
+    test("carries the Leader pill where the reader leads the room, and the thread drawer is told the same", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.splice(0, 1, { ...team, is_leader: true });
+        (mockShell!.sender as { pending: () => unknown[] }).pending = () => [{ localId: "l1", channelId: team.channel_id, body: "On my way", status: "sending", errorCode: null }];
+
+        await openRow(w, team.channel_id);
+        expect(w.find("[data-testid='frame-main'] [data-testid='pending-row'] [data-testid='leader-pill']").exists()).toBe(true);
+
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        expect(w.findComponent(ThreadDrawerComponent).props("isPersonLeader")).toBe(true);
+    });
+
+    test("draws no Leader pill where the reader does not lead the room", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.sender as { pending: () => unknown[] }).pending = () => [{ localId: "l1", channelId: team.channel_id, body: "On my way", status: "sending", errorCode: null }];
+
+        await openRow(w, team.channel_id);
+
+        expect(w.get("[data-testid='frame-main'] [data-testid='pending-row']").find("[data-testid='leader-pill']").exists()).toBe(false);
+    });
 });
 
 describe("a phone pane out of view", () => {
