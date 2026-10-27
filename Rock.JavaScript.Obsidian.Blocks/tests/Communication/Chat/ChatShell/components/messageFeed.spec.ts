@@ -23,6 +23,8 @@
 // jsdom lays nothing out, so the tests stand in for the browser twice: an IntersectionObserver
 // that the test reports through, and the feed's scroll sizes set by hand.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { defineComponent, h, nextTick, reactive } from "vue";
 import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/components/channelIntro.partial.obs";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
@@ -603,6 +605,58 @@ describe("day sections", () => {
         expect(sections).toHaveLength(2);
         expect(sections.map(section => section.get("[data-testid='day-pill']").text())).toEqual(["Yesterday", "Today"]);
     });
+
+    /** Puts an element at a height on screen, as a browser lays it out. */
+    function placeAt(element: Element, top: number): void {
+        element.getBoundingClientRect = () => ({ top, bottom: top + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+    }
+
+    // A label stuck inside the feed sits on whatever text scrolls under it, since the feed's fade
+    // cannot hide that text without hiding the label too. The day of what is at the feed's top is
+    // drawn over the feed instead, above the band the fade hides.
+    test("the day the reader has scrolled into is labelled above the feed, not by a pill stuck inside it", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+        const float = wrapper.get("[data-testid='day-float']");
+        const pills = wrapper.findAll("[data-testid='day-pill']").map(pill => pill.element);
+        const scroller = wrapper.get("[data-testid='message-feed']").element;
+
+        expect(scroller.contains(float.element)).toBe(false);
+        expect(float.attributes("aria-hidden")).toBe("true");
+
+        // At the top, every day's own pill is in view below the label's place, so none is labelled.
+        placeAt(float.element, 108);
+        placeAt(pills[0], 160);
+        placeAt(pills[1], 400);
+        placeScroll(wrapper, 0);
+        await nextTick();
+        expect(float.classes()).not.toContain("is-on");
+
+        // Yesterday's pill has gone up under the label's place.
+        placeAt(pills[0], 108);
+        placeScroll(wrapper, 52);
+        await nextTick();
+        expect(float.classes()).toContain("is-on");
+        expect(float.text()).toBe("Yesterday");
+
+        placeAt(pills[0], -200);
+        placeAt(pills[1], 100);
+        placeScroll(wrapper, 360);
+        await nextTick();
+        expect(float.text()).toBe("Today");
+    });
+
+    test("no day pill sticks inside the feed, and the feed's fade hides all of the band the label sits over", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const pill = /\.chat-day-pill\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const float = /\.chat-day-float\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const mask = /\.chat-feed-skeleton\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(pill).not.toMatch(/position:\s*sticky/);
+        expect(float).toMatch(/top:\s*var\(--chat-day-top\)/);
+        // Clear through the label's bottom edge, so no text shows beside or under it.
+        expect(mask).toMatch(/mask-image:\s*linear-gradient\(to bottom,\s*transparent 0,\s*transparent var\(--chat-day-bottom\)/);
+    });
 });
 
 describe("the New divider and the unread strip", () => {
@@ -619,6 +673,25 @@ describe("the New divider and the unread strip", () => {
         expect(divider.text()).toBe("New");
         expect(isBefore(wrapper.get("[data-message-id='1']").element, divider.element)).toBe(true);
         expect(isBefore(divider.element, wrapper.get("[data-message-id='2']").element)).toBe(true);
+    });
+
+    // The strip lies over the feed's top, so while it may show the feed starts its content below
+    // it: scrolled to the very top, the first day and message are under neither the strip nor the
+    // band the label keeps. The room stays while the strip comes and goes, so nothing moves then.
+    test("the feed keeps room for the strip at its top while there is something unread, whether or not the strip shows", async () => {
+        const wrapper = unread();
+        const frame = wrapper.get(".chat-feed-frame");
+        expect(frame.classes()).toContain("has-strip-room");
+
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='unread-divider']").element, false);
+        await nextTick();
+        expect(frame.classes()).toContain("has-strip-room");
+
+        await wrapper.get("[data-testid='mark-read']").trigger("click");
+        expect(frame.classes()).not.toContain("has-strip-room");
+
+        const read = draw({ timeline: timeline([message(1, anna, at(11, 0))], { readCursor: 1, unreadCount: 0, firstUnreadId: null }) });
+        expect(read.get(".chat-feed-frame").classes()).not.toContain("has-strip-room");
     });
 
     test("the divider stands above a post Rock made in the reader's name when the platform says it is the first unread", () => {

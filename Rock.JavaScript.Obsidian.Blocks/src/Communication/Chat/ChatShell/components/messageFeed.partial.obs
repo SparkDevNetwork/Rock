@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-jump': isJumpShown }">
+    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown }">
         <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
         <div class="chat-unread-strip"
              :class="{ 'is-on': isStripShown }"
@@ -14,6 +14,18 @@
             </button>
             <button type="button" class="chat-ghost-button" data-testid="mark-read" @click="onMarkRead">Mark as read</button>
         </div>
+
+        <!--
+            The day of the messages at the feed's top, over the band where the feed fades out rather
+            than stuck inside the feed, where it would sit on the text scrolling under it. Each day's
+            own pill says it for assistive technology. Always drawn, so its place can be read.
+        -->
+        <div ref="dayFloat"
+             class="chat-day-float"
+             :class="{ 'is-on': topDay !== null }"
+             :style="{ '--chat-feed-gutter': `${gutterPx}px` }"
+             data-testid="day-float"
+             aria-hidden="true"><span>{{ topDay }}</span></div>
 
         <div ref="feed"
              class="chat-feed"
@@ -157,14 +169,32 @@
     flex: 1;
     flex-direction: column;
     min-height: 0;
-    --chat-feed-top-mask: 40px;
+    --chat-strip-height: 38px;
+
+    /*
+        The day label stands 8px under the feed's top, or under the strip while it shows. The feed is
+        clear through the label's bottom edge and fades in over the next 12px, so no text is ever
+        seen beside or under the label. The height is the pill's, 12px text at the sheet's line
+        height with its padding and border, rounded up.
+    */
+    --chat-day-inset: 8px;
+    --chat-day-height: 26px;
+    --chat-day-fade: 12px;
+    --chat-day-top: var(--chat-day-inset);
+    --chat-day-bottom: calc(var(--chat-day-top) + var(--chat-day-height));
+    --chat-feed-top-mask: calc(var(--chat-day-bottom) + var(--chat-day-fade));
+
+    /* Where the content starts, scrolled to the very top: below that band, and the strip while it may show. */
+    --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-day-height) + var(--chat-day-fade));
     --chat-feed-bottom-mask: 14px;
-    --chat-day-top: 8px;
 }
 
 .chat-feed-frame.has-strip {
-    --chat-feed-top-mask: 80px;
-    --chat-day-top: 46px;
+    --chat-day-top: calc(var(--chat-day-inset) + var(--chat-strip-height));
+}
+
+.chat-feed-frame.has-strip-room {
+    --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-strip-height) + var(--chat-day-height) + var(--chat-day-fade));
 }
 
 .chat-feed-frame.has-jump {
@@ -175,18 +205,18 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding: 8px 0 18px;
+    padding: var(--chat-feed-top-room) 0 18px;
     overflow-y: auto;
 }
 
 /*
-    The edges fade, so text runs under the day pill and Jump to latest rather than into them; the
-    history skeleton drawn over the feed fades at the same edges.
+    The edges fade, so text goes out of sight under the day label and runs under Jump to latest
+    rather than into them; the history skeleton drawn over the feed fades at the same edges.
 */
 .chat-feed,
 .chat-feed-skeleton {
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0, var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
 
 .chat-feed-fill {
@@ -206,15 +236,12 @@
     margin-top: 12px;
 }
 
-/* Each day is its own section, so only that day's pill sticks while its messages are on screen. */
+/* Each day is its own section, its pill where the day starts. */
 .chat-day {
     position: relative;
 }
 
-/*
-    Community draws the pill on a ruled line. The rule is the section's background rather than a
-    piece of the pill, so it stays where the day starts while the pill sticks to the top.
-*/
+/* Community draws the pill on a ruled line, the section's background. */
 .is-community .chat-day {
     background: linear-gradient(var(--chat-line), var(--chat-line)) no-repeat 20px 26px / calc(100% - 40px) 1px;
 }
@@ -225,16 +252,33 @@
 }
 
 .chat-day-pill {
-    position: sticky;
-    top: var(--chat-day-top);
-    z-index: 2;
     display: flex;
     justify-content: center;
     margin: 14px 0 6px;
-    pointer-events: none;
 }
 
-.chat-day-pill span {
+/*
+    The day on top, over the feed and centred on its column, the scrollbar left out; it changes as
+    the next day's pill reaches its place, where that pill has gone out of sight under it.
+*/
+.chat-day-float {
+    position: absolute;
+    top: var(--chat-day-top);
+    right: var(--chat-feed-gutter);
+    left: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.chat-day-float.is-on {
+    visibility: visible;
+}
+
+.chat-day-pill span,
+.chat-day-float span {
     padding: 3px 12px;
     font-size: 12px;
     font-weight: 600;
@@ -343,7 +387,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    height: 38px;
+    height: var(--chat-strip-height);
     padding: 0 8px 0 14px;
     font-size: 13px;
     font-weight: 500;
@@ -726,6 +770,13 @@
     // #region Values
 
     const feed = ref<HTMLElement | null>(null);
+    const dayFloat = ref<HTMLElement | null>(null);
+
+    /** The day of the messages at the feed's top, once its own pill has gone up under the label's place. */
+    const topDay = ref<string | null>(null);
+
+    /** The width of the feed's scrollbar, so the label centres over the column the pills centre in. */
+    const gutterPx = ref(0);
 
     /** The one message whose action bar may show, the one the pointer is over. */
     const hot = useHotMessage();
@@ -839,6 +890,9 @@
     /** Shown only while the divider is off screen, and gone once the person marks the channel read. */
     const isStripShown = computed((): boolean => dividerBeforeId.value !== null && isDividerOffScreen.value && !isMarkedRead.value);
 
+    /** Whether the strip may show, so the feed keeps room for it at its top whether or not it does. */
+    const isStripRoomKept = computed((): boolean => dividerBeforeId.value !== null && !isMarkedRead.value);
+
     /** One control points down at a time: while the strip points down at the divider, Jump hides. */
     const isJumpShown = computed((): boolean => isScrolledUp.value && !(isStripShown.value && !isDividerAbove.value));
 
@@ -862,6 +916,7 @@
 
     function onScroll(): void {
         hot.onScroll();
+        placeTopDay();
         isScrolledUp.value = !isNearBottom();
         if (!isScrolledUp.value) {
             newCount.value = 0;
@@ -885,7 +940,8 @@
             return;
         }
 
-        // Just under the strip, so the divider is the first thing read.
+        // Just below the band the day label keeps once the strip has gone, which the divider coming
+        // into view puts away, so the divider is the first thing read.
         const top = feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52;
         feed.value.scrollTo?.({ top: Math.max(0, top), behavior: scrollBehavior() });
     }
@@ -934,6 +990,31 @@
 
         row.scrollIntoView?.({ block: "center", behavior: scrollBehavior() });
         row.focus({ preventScroll: true });
+    }
+
+    /**
+     * Labels the day at the feed's top: the last day whose own pill has reached the label's place,
+     * where the feed's fade has taken that pill out of sight, or none while every pill is in view.
+     */
+    function placeTopDay(): void {
+        const scroller = feed.value;
+        if (!scroller || !dayFloat.value) {
+            return;
+        }
+
+        const place = dayFloat.value.getBoundingClientRect().top;
+        const pills = scroller.querySelectorAll<HTMLElement>("[data-testid='day-pill']");
+        let day: string | null = null;
+        for (let index = 0; index < pills.length; index++) {
+            // Half a pixel either way is the browser's rounding, not a pill below the place.
+            if (pills[index].getBoundingClientRect().top > place + 0.5) {
+                break;
+            }
+            day = sections.value[index]?.label ?? null;
+        }
+
+        topDay.value = day;
+        gutterPx.value = scroller.offsetWidth - scroller.clientWidth;
     }
 
     /** Whether the person is at, or near, the bottom of the feed. */
@@ -1085,6 +1166,10 @@
             scrollToBottom();
         }
     });
+
+    // A page drawn above or below, a day's label changing, or the strip moving the label's place
+    // changes which day is on top without a scroll.
+    watch([sections, isStripShown], placeTopDay, { flush: "post" });
 
     watch(() => props.landOnId, id => {
         if (id !== null) {
