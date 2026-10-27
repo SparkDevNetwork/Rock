@@ -720,8 +720,12 @@
     min-width: 0;
 }
 
-/* The face sits 2px down, so its middle meets the name's line rather than the row's top. */
+/*
+    The face sits 2px down, so its middle meets the name's line rather than the row's top.
+    Positioned so it paints after the quote's connector line, which ends 2px into the face.
+*/
 .chat-cm-av {
+    position: relative;
     padding-top: 2px;
     line-height: 0;
 }
