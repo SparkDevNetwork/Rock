@@ -401,7 +401,8 @@ function fakeThreads(): Record<string, unknown> {
         state,
         openList: jest.fn(async (channelId: string, tab?: string) => {
             state.list.channelId = channelId;
-            state.list.tab = tab ?? "channel";
+            // the tab last chosen stays unless one is named, as the real list keeps it
+            state.list.tab = tab ?? state.list.tab;
         }),
         switchTab: jest.fn(async (tab: string) => {
             state.list.tab = tab;
@@ -1063,6 +1064,24 @@ describe("the panel column", () => {
         expect(w.get("[data-testid='header-threads']").attributes("aria-expanded")).toBe("false");
     });
 
+    test("opens again on the tab last chosen, with focus on it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "false")!.trigger("click");
+        await settle();
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        const selected = w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "true")!;
+        expect(selected.text()).toBe("All");
+        expect(document.activeElement).toBe(selected.element);
+    });
+
     test("gives focus back to the header button that opened it when its X closes it", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
@@ -1257,6 +1276,34 @@ describe("the thread drawer", () => {
         expect(panelOpen(w)).toBe("true");
         expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
         expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='40']").element);
+    });
+
+    test("goes back from a thread opened on the All tab to the list still on All", async () => {
+        const w = await mountBlock(1200);
+        await openWithRoot(w);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.text() === "All")!.trigger("click");
+        await settle();
+
+        const root = timelineOf(team.channel_id).messages[0];
+        (threadsOf().state as unknown as { list: { rows: unknown[] } }).list.rows = [{
+            channel_id: team.channel_id, root, reply_count: 2, last_reply_at: root.created_at, last_reply_id: 42,
+            participant_count: 2, following: true, has_unread: false, mention_count: 0
+        }];
+        await settle();
+        await w.get("[data-testid='thread-row-open'][data-root-id='40']").trigger("click");
+        await settle();
+        const listCalls = threadsOf().openList.mock.calls.length + threadsOf().switchTab.mock.calls.length;
+
+        await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        const selected = w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "true")!;
+        expect(selected.text()).toBe("All");
+        // the list is the one left, not fetched again on another tab
+        expect(threadsOf().openList.mock.calls.length + threadsOf().switchTab.mock.calls.length).toBe(listCalls);
     });
 
     /** Opens the threads list on its All tab over the team, holding one thread of the direct message with Anna. */
