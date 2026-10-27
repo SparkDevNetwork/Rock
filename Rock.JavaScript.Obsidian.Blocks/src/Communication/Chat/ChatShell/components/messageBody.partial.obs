@@ -56,11 +56,13 @@
 
 /* The mention chip's look is in the sheet, shared with the editor. */
 
-/* A chip that opens a person keeps the chip's look; only the button's own face is taken away. */
+/*
+    A chip that opens a person keeps the chip's look; only the button's own face is taken away. Its
+    line is the sheet's, which a button would otherwise have from the browser.
+*/
 button.chat-mn {
     font-family: inherit;
     font-size: inherit;
-    line-height: inherit;
     text-align: inherit;
     cursor: pointer;
     border: 0;

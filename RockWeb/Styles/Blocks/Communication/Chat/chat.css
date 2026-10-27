@@ -89,7 +89,7 @@
     --chat-row-name: #464B58;
     --chat-bubble-hover: rgba(13, 17, 23, .07);
     --chat-on-info: #ffffff;
-    --chat-row-mention: #FBF2E6;
+    --chat-row-mention: #FCF6EE;
     --chat-strip-bg: #FAEBED;
     --chat-strip-line: #E1B2BD;
     --chat-new-rule: rgba(215, 0, 21, .55);
@@ -630,12 +630,14 @@
 
 /*
     A mention chip, shared by a message's body and the editor. An inline block on the text's
-    baseline, so its 1px top and bottom padding count toward the line: a line holding a chip is
-    that much taller, as a pill needs room above and below its text.
+    baseline, its pill as tall as its own 20px line: drawn on the paragraph's leading instead, the
+    pill reached past the descenders and sat low on the line. 20px still holds the 18px face with
+    a pixel each side, and a message line holding a chip is no taller than one without.
 */
 .chat-mn {
     display: inline-block;
-    padding: 1px 6px 1px 2px;
+    padding: 0 6px 0 2px;
+    line-height: 20px;
     font-weight: 600;
     color: var(--chat-brand-ink);
     white-space: nowrap;
@@ -670,8 +672,9 @@
 
 /*
     A one-letter face in the sheet's avatar colors, its letter drawn by the style so the chip's
-    text stays the mention as written. Its bottom sits 4px below the name's baseline: an inline
-    block that clips takes its bottom edge as its baseline, where a grid would take its letter's.
+    text stays the mention as written. Its bottom sits 4px below the name's baseline, so its middle
+    is 5px above it, on the capitals: an inline block that clips takes its bottom edge as its
+    baseline, where a grid would take its letter's.
 */
 .chat-mn-av {
     display: inline-block;
@@ -693,7 +696,10 @@
     display: block;
 }
 
-/* The room's mark, 16px with a 10px glyph centred by its top padding, sunk like the faces. */
+/*
+    The room's mark, 16px with a 10px glyph centred by its top padding. Sunk 3px, so its middle
+    meets the 18px face's, 5px above the baseline; the face's 4px sank it a pixel low in its pill.
+*/
 .chat-mn-glyph {
     display: inline-block;
     width: 16px;
@@ -704,7 +710,7 @@
     line-height: 0;
     color: var(--chat-on-info);
     text-align: center;
-    vertical-align: -4px;
+    vertical-align: -3px;
     background: var(--chat-info);
     border-radius: 50%;
 }

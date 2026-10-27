@@ -173,6 +173,7 @@
 /* A chip is quiet and inline here, as in the threads list, so it never makes its line taller. */
 .chat-ls-text :deep(.chat-mn) {
     display: inline;
+    line-height: inherit;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
 }

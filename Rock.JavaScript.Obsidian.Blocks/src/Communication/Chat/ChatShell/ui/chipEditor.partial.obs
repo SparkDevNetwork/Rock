@@ -55,10 +55,12 @@
 
 /*
     A chip is one unit: selected, deleted and copied whole, and never a caret target inside. Inline
-    here, its padding drawn but not counted, so a chip landing never makes the box a line taller.
+    here, on the box's own line and its padding drawn but not counted, so a chip landing never
+    makes the box a line taller.
 */
 .chat-ed :deep(.chat-mn) {
     display: inline;
+    line-height: inherit;
     vertical-align: top;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
