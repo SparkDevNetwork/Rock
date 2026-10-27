@@ -130,8 +130,12 @@ export type DirectMessageDependencies = {
     /** The newest few messages of a conversation, oldest first, read through its history; none here reads nothing. */
     recentMessages?: (channelId: string) => Promise<TimelineMessage[]>;
 
-    /** Opens a channel on screen. False when the platform refused it or it could not load. */
-    openChannel: (channelId: string) => boolean | Promise<boolean>;
+    /**
+     * Opens a channel on screen. False when the platform refused it or it could not load. A
+     * conversation a first message is starting names its people, as the platform lists it only
+     * once that message is written.
+     */
+    openChannel: (channelId: string, startedWith?: PersonRow[]) => boolean | Promise<boolean>;
 
     /**
      * The ordinary send. Resolves true when the platform confirmed it. A first message passes its
@@ -424,7 +428,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
      * @returns True when the conversation replaced the draft.
      */
     async function showConversation(message: FirstMessage): Promise<boolean> {
-        const isOpened = await dependencies.openChannel(message.channelId as string);
+        const isOpened = await dependencies.openChannel(message.channelId as string, message.people);
         if (isStopped) {
             return false;
         }

@@ -493,13 +493,11 @@ describe("dm.preview", () => {
         expect(reloads()).toBe(1);
     });
 
-    // Rock makes a direct message in two steps, the group and then its first message, and the
-    // membership signal of the first reloads the sidebar between them. The real order on every
-    // member's page, the starter's included: a reread holding the new conversation with nothing in
-    // it, then the first message's dm.preview.
-    describe("begun by its first message", () => {
+    // The platform lists a direct message only once a message is written in it, so the conversation
+    // the person is starting is open on its stand-in row until its first message's dm.preview.
+    describe("a direct message not yet written in", () => {
         const fresh = "d0000003-0000-4000-8000-000000000000";
-        const empty: Partial<SidebarRow> = { last_message_id: null, last_message_at: null, last_message_type: null, last_message_preview: null, last_sender_nick_name: null, last_sender_last_name: null, read_cursor: null, preview_line: "No messages yet" };
+        const empty: Partial<SidebarRow> = { last_message_id: null, last_message_at: null, last_message_type: null, last_message_preview: null, last_sender_nick_name: null, last_sender_last_name: null, read_cursor: null, preview_line: "" };
 
         /** The page's sidebar in the platform's order: two direct messages with messages and a channel. */
         function loaded(): ReturnType<typeof createChannelStore> {
@@ -510,57 +508,50 @@ describe("dm.preview", () => {
             ]).store;
         }
 
-        test("is never listed below the others: held while it has nothing in it, then listed first with its message", () => {
-            const s = loaded();
-            const orders: string[][] = [];
-
-            // the reload membership.changed asked for, in the platform's order: no message last
-            s.setSidebar([...s.rows, dm(fresh, empty)]);
-            orders.push(s.listed.map(r => r.channel_id));
-            s.applyPersonalEvent("dm.preview", preview(fresh, 20, { is_own: true, preview_line: "You: message 20" }));
-            orders.push(s.listed.map(r => r.channel_id));
-
-            expect(orders).toEqual([[dmOne, one, dmTwo], [fresh, dmOne, one, dmTwo]]);
-        });
-
-        test("is held while it waits, so the conversation opened on it has its row to draw from", () => {
+        test("is held for the conversation on screen but not listed, through a reread that leaves it out", () => {
             const s = loaded();
 
-            s.setSidebar([...s.rows, dm(fresh, empty)]);
+            s.setPreview(dm(fresh, empty));
             s.setActive(fresh);
+            s.setSidebar(s.listed.slice());
 
             expect(s.rows.find(r => r.channel_id === fresh)?.title).toBe("Ben Okafor");
-            expect(s.listed.some(r => r.channel_id === fresh)).toBe(false);
+            expect(s.listed.map(r => r.channel_id)).toEqual([dmOne, one, dmTwo]);
         });
 
-        test("waits through rereads that still find it empty and a signal that it has nothing, and a reread with its message lists it", () => {
+        test("its first message lists it first, never below the others, and ends the stand-in", () => {
             const s = loaded();
+            s.setPreview(dm(fresh, empty));
+            s.setActive(fresh);
 
-            s.setSidebar([...s.rows, dm(fresh, empty)]);
-            s.setSidebar([...s.rows]);
+            s.applyPersonalEvent("dm.preview", preview(fresh, 20, { is_own: true, preview_line: "You: message 20" }));
+
+            expect(s.listed.map(r => r.channel_id)).toEqual([fresh, dmOne, one, dmTwo]);
+            expect(s.previewChannelId).toBeNull();
+
+            // the next sidebar holds it as the platform lists it now
+            s.setSidebar(s.rows.map(r => ({ ...r })));
+            expect(s.listed.map(r => r.channel_id)).toEqual([fresh, dmOne, one, dmTwo]);
+        });
+
+        test("a signal that it still has nothing keeps it unlisted", () => {
+            const s = loaded();
+            s.setPreview(dm(fresh, empty));
+
             s.applyPersonalEvent("dm.preview", preview(fresh, null));
+
             expect(s.listed.some(r => r.channel_id === fresh)).toBe(false);
-
-            s.setSidebar([dm(fresh, { last_message_id: 20, last_message_at: "2026-10-19T11:00:00Z" }), ...s.rows.filter(r => r.channel_id !== fresh)]);
-            expect(s.listed[0].channel_id).toBe(fresh);
+            expect(s.previewChannelId).toBe(fresh);
         });
 
-        test("the page's first sidebar lists an empty conversation as the platform answers it, and a listed one emptied by deletes stays", () => {
-            const s = dmStore([dm(dmOne), dm(fresh, empty)]).store;
-            expect(s.listed.map(r => r.channel_id)).toEqual([dmOne, fresh]);
-
-            s.applyPersonalEvent("dm.preview", preview(dmOne, null));
-            s.setSidebar([dm(dmOne, empty), dm(fresh, empty)]);
-
-            expect(s.listed.map(r => r.channel_id)).toEqual([dmOne, fresh]);
-        });
-
-        test("a channel is listed when it arrives empty: only a direct message is begun by its first message", () => {
+        test("a channel's stand-in is still listed, and a direct message emptied by deletes stays listed", () => {
             const s = loaded();
 
-            s.setSidebar([...s.rows, row(two, empty)]);
+            s.setPreview(row(two, { ...empty, is_member: false }));
+            s.applyPersonalEvent("dm.preview", preview(dmTwo, null));
 
-            expect(s.listed.map(r => r.channel_id)).toContain(two);
+            // the emptied one sorts with no message, beside the stand-in by the rooms' ids
+            expect(s.listed.map(r => r.channel_id)).toEqual([dmOne, one, two, dmTwo]);
         });
     });
 });

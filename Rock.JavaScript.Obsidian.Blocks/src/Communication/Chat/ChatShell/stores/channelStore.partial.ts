@@ -28,19 +28,18 @@
 // A direct message's row is kept whole instead: its preview, time and order follow every change
 // to the room's last message, on the sender's own devices too. A channel's row only bolds.
 //
-// A direct message is begun by its first message, but Rock makes it in two steps, the group and
-// then the post, and the group's membership signal reloads the sidebar between them. So one that a
-// later sidebar brings with nothing in it is held, for the conversation opened on it to draw from,
-// and listed with its first message, in that message's place, rather than drawn last and moved.
-// The first sidebar a page loads is listed as the platform answers it, and a listed conversation
-// emptied by deletes stays listed, saying it has no messages.
+// A direct message is begun by its first message, so the platform's sidebar lists one only once
+// a message is written in it. The conversation the person is starting is open before that, so its
+// stand-in row is held for the header and the composer to draw from but not listed; its first
+// message ends the stand-in, and the row is listed in that message's place, at the top.
 //
 // The person's own star, hide and notify mode show on the row the moment they are chosen. A room
 // hidden from the conversation on screen stays while it is open, since the person is still in it,
 // and leaves once another opens, as the platform's sidebar leaves it out from then on.
 import { computed, reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
-import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
+import { personName } from "../ui/face.partial";
+import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, ChatPerson, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
 
 /** What the store reaches outside itself. */
 export type ChannelStoreDependencies = {
@@ -56,7 +55,7 @@ export type ChannelStore = {
     /** The rows in the platform's order, every room the store holds. */
     rows: SidebarRow[];
 
-    /** The rows the sidebar lists, in the same order: all but a direct message waiting for its first message. */
+    /** The rows the sidebar lists, in the same order: all but the stand-in of a direct message not yet written in. */
     listed: SidebarRow[];
 
     /**
@@ -72,7 +71,11 @@ export type ChannelStore = {
     /** The church's chat badges, in the order the bootstrap lists them. */
     badges: ChatBadge[];
 
-    /** The room the person is previewing without a sidebar row of its own, whose stand-in row the rows hold; or null. */
+    /**
+     * The room on screen without a sidebar row of its own, whose stand-in row the rows hold; or
+     * null. A channel the person is not in is drawn last in the list; a direct message the
+     * platform does not list yet, since nothing is written in it, is not drawn at all.
+     */
     previewChannelId: string | null;
 
     /**
@@ -152,12 +155,9 @@ export function isTypedByReader(row: Pick<SidebarRow, "last_message_is_own" | "l
  * @returns The store.
  */
 export function createChannelStore(dependencies: ChannelStoreDependencies): ChannelStore {
-    // Direct messages a sidebar brought with nothing in them since the page's first sidebar.
-    const awaitingFirst = reactive(new Set<string>());
-
     const store = reactive({
         rows: [] as SidebarRow[],
-        listed: computed((): SidebarRow[] => store.rows.filter(row => !awaitingFirst.has(row.channel_id))),
+        listed: computed((): SidebarRow[] => store.rows.filter(row => row.channel_id !== store.previewChannelId || row.room_kind === "channel")),
         loadState: "loading" as SidebarLoadState,
         activeChannelId: null as string | null,
         previewChannelId: null as string | null,
@@ -302,8 +302,10 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
         const sender = signal.sender as Partial<Record<"nick_name" | "last_name" | "avatar_url", unknown>> | null | undefined;
         const isOwn = signal.is_own === true;
-        if (messageId !== null) {
-            awaitingFirst.delete(row.channel_id);
+        // Its first message lists a direct message's stand-in as the room's own row, as the next
+        // sidebar will.
+        if (messageId !== null && row.channel_id === store.previewChannelId) {
+            store.previewChannelId = null;
         }
         row.last_message_id = messageId;
         movedAt.set(row.channel_id, ++moves);
@@ -404,13 +406,6 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             if (!preview || !kept.includes(preview)) {
                 store.previewChannelId = null;
             }
-
-            const wasListed = new Set(store.listed.map(row => row.channel_id));
-            const isFirst = store.loadState !== "loaded";
-            awaitingFirst.clear();
-            rows.filter(row => !isFirst && row.room_kind !== "channel" && row.last_message_id === null && !wasListed.has(row.channel_id))
-                .forEach(row => awaitingFirst.add(row.channel_id));
-
             store.rows = [...rows, ...kept];
             store.loadState = "loaded";
             store.sidebarReads++;
@@ -483,6 +478,19 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
         applyMarkRead
     });
+}
+
+/**
+ * The title of a conversation being started, before the platform has titled it: the other
+ * person's full name, or a group's first names. New message draws it and the open conversation's
+ * stand-in row carries it, so the name never changes as the conversation starts.
+ *
+ * @param people The others in the conversation.
+ *
+ * @returns The title.
+ */
+export function startedTitle(people: ChatPerson[]): string {
+    return people.length === 1 ? personName(people[0]) : joinNames(people.map(person => person.nick_name ?? ""), 0);
 }
 
 /**

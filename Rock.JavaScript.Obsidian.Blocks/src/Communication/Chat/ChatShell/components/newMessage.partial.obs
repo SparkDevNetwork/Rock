@@ -585,7 +585,7 @@
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
-    import { joinNames } from "../stores/channelStore.partial";
+    import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -782,9 +782,7 @@
     });
 
     /** The title the sidebar will give the new conversation, so the name never changes as it starts. */
-    const startTitle = computed((): string => props.chosen.length === 1
-        ? nameOf(props.chosen[0])
-        : joinNames(props.chosen.map(person => person.nick_name), 0));
+    const startTitle = computed((): string => startedTitle(props.chosen));
 
     const startFaces = computed((): AvatarPerson[] => props.chosen.slice(0, 3).map(faceOf));
 

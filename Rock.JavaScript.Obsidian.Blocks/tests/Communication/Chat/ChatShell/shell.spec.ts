@@ -2621,15 +2621,17 @@ describe("the live sidebar", () => {
     });
 
     // Rock's door makes the group and awaits the immediate sync, whose membership signal reloads
-    // the sidebar before the door answers; the first message is posted after, and its dm.preview
-    // reaches every member's topic, the sender's own included.
+    // the sidebar before the door answers; the platform lists a direct message only once a message
+    // is written in it, so that reload leaves it out. The first message is posted after, and its
+    // dm.preview reaches every member's topic, the sender's own included.
     describe("a direct message the person starts", () => {
         const created = "d0000010-0000-4000-8000-000000000000";
         const ben = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null };
 
-        test("appears once, at the top of the list, as its first message posts", async () => {
+        test("is open on a stand-in titled as the draft was, and listed once, at the top, as its first message posts", async () => {
             let door!: (result: DoorResult) => void;
             const h = await startedLive({ startDirectMessage: () => new Promise<DoorResult>(resolve => door = resolve) });
+            h.channelFacts[created] = memberFacts(created, { name: null, channel_type: "dm", group_type_name: null, member_count: 2, people: [{ ...ben, details: null }] });
             const listed = (): string[] => h.shell.channels.listed.map(r => r.channel_id);
             const orders: string[][] = [];
 
@@ -2638,25 +2640,19 @@ describe("the live sidebar", () => {
             const sending = h.shell.directMessages.sendFirst("hello");
             await settle();
 
-            // the immediate sync: the platform's sidebar now holds the conversation, with nothing in it
-            h.bootstrap.value = {
-                ...snapshot(),
-                channels: [...snapshot().channels, sidebarRow(created, {
-                    name: null, channel_type: "dm", room_kind: "person", title: "Bo Picked", dm_people: [ben], dm_other_count: 1,
-                    last_message_id: null, last_message_at: null, last_message_type: null, last_message_preview: null,
-                    last_sender_nick_name: null, last_sender_last_name: null, read_cursor: null, preview_line: "No messages yet"
-                })]
-            };
             personal(h, "membership.changed", { channel_id: created, id: "5e0000d1-0000-4000-8000-000000000000" });
             await settle();
             orders.push(listed());
 
             door({ code: "ok", channelGuid: created, isPending: false, message: null, personAliasGuid: null });
             await settle();
+            // the header draws from the stand-in while the conversation's first page is on its way
+            expect(h.shell.channels.rows.find(r => r.channel_id === created)).toEqual(expect.objectContaining({ title: "Bo Picked", room_kind: "person" }));
             answerHistory(h, created, 0);
             await sending;
             await settle();
             orders.push(listed());
+            expect(h.shell.channels.rows.find(r => r.channel_id === created)).toEqual(expect.objectContaining({ title: "Bo Picked", room_kind: "person", max_length: 4000 }));
 
             personal(h, "dm.preview", {
                 channel_id: created, message_id: 901, preview: "hello", sent_at: "2026-10-19T10:00:00Z", sender: { nick_name: "Ada", last_name: "Member" },
@@ -2667,7 +2663,7 @@ describe("the live sidebar", () => {
 
             expect(h.sent.map(s => s.channelId)).toEqual([created]);
             expect(h.shell.state.activeChannelId).toBe(created);
-            // not listed while it has nothing in it, then listed first, never drawn low and moved
+            // not listed while nothing is written in it, then listed first, never drawn low and moved
             expect(orders.map(order => order.indexOf(created))).toEqual([-1, -1, 0]);
             expect(orders.map(order => order.length)).toEqual([4, 4, 5]);
         });

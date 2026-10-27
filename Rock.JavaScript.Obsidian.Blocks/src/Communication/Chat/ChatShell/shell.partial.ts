@@ -867,7 +867,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
             : { code: "door.unavailable", channelGuid: null, isPending: false, message: "A conversation cannot be started here.", personAliasGuid: null },
         // Only an open that put the conversation on screen lets a draft go; a refused one keeps
         // the person on the draft with their text.
-        openChannel: async channelId => (await open(channelId)) === "opened",
+        openChannel: async (channelId, startedWith) => {
+            if (startedWith) {
+                rooms.conversationStarted(channelId, startedWith);
+            }
+            return (await open(channelId)) === "opened";
+        },
         send: async (channelId, body, attempt) => {
             const isSent = await sender.send(channelId, body, attempt);
             notePushSend();

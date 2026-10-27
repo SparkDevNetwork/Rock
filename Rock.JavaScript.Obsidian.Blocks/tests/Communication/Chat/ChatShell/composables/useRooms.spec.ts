@@ -699,6 +699,76 @@ describe("a previewed room", () => {
     });
 });
 
+// The platform lists a direct message only once a message is written in it, so the conversation a
+// first message is starting opens with no row of its own.
+describe("a direct message not yet written in", () => {
+    const started = "d0000005-0000-4000-8000-000000000000";
+    const bo = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null };
+    const cy = { person_alias_guid: "a0000003-0000-4000-8000-000000000000", nick_name: "Cy", last_name: "Second", avatar_url: null };
+    const dmFacts = (people: typeof bo[]): ChannelFacts => facts(started, "", {
+        name: null, channel_type: "dm", is_member: true, is_public: false, can_post: true, can_post_code: null, can_post_reason: null, max_length: 5000,
+        leaders: [], people: people.map(person => ({ ...person, details: null }))
+    });
+
+    test("opens on a stand-in titled as New message titled it, held for the header but not listed", () => {
+        const s = setup();
+        s.channels.setSidebar([sidebarRow(team)]);
+
+        s.rooms.conversationStarted(started, [bo]);
+
+        expect(s.channels.rows.find(r => r.channel_id === started)).toEqual(expect.objectContaining({ title: "Bo Picked", room_kind: "person", is_member: true, channel_type: "dm", dm_other_count: 1 }));
+        expect(s.channels.listed.map(r => r.channel_id)).toEqual([team]);
+
+        const group = setup();
+        group.rooms.conversationStarted(started, [bo, cy]);
+        expect(group.channels.rows).toEqual([expect.objectContaining({ title: "Bo and Cy", room_kind: "group", dm_other_count: 2 })]);
+        expect(group.channels.listed).toEqual([]);
+    });
+
+    test("takes what its facts say once they land, and one opened with no row by a link stands in from its facts alone", async () => {
+        const s = setup();
+        s.active.value = started;
+        s.rooms.conversationStarted(started, [bo]);
+
+        void s.rooms.channelOpened(started);
+        s.channelCalls[0].answer.resolve({ ok: true, facts: dmFacts([bo]) });
+        await settle();
+        expect(s.channels.rows).toEqual([expect.objectContaining({ title: "Bo Picked", room_kind: "person", max_length: 5000, can_post: true })]);
+        expect(s.channels.listed).toEqual([]);
+
+        const linked = setup();
+        linked.active.value = started;
+        void linked.rooms.channelOpened(started);
+        linked.channelCalls[0].answer.resolve({ ok: true, facts: dmFacts([bo, cy]) });
+        await settle();
+        expect(linked.channels.rows).toEqual([expect.objectContaining({ title: "Bo and Cy", room_kind: "group" })]);
+        expect(linked.channels.listed).toEqual([]);
+    });
+
+    test("a conversation the sidebar holds is never stood in for", () => {
+        const s = setup();
+        s.channels.setSidebar([sidebarRow(started, { channel_type: "dm", room_kind: "person", title: "Bo Picked" })]);
+
+        s.rooms.conversationStarted(started, [bo]);
+
+        expect(s.channels.rows).toHaveLength(1);
+        expect(s.channels.previewChannelId).toBeNull();
+    });
+
+    test("a leave lands on a listed room, never on the stand-in after it", async () => {
+        const s = setup();
+        s.channels.setSidebar([sidebarRow(team, { name: "Tech Team" }), sidebarRow(volunteers, { name: "Volunteers" })]);
+        s.rooms.conversationStarted(started, [bo]);
+        s.active.value = volunteers;
+
+        void s.rooms.leave(volunteers);
+        s.leaveCalls[0].answer.resolve(door("ok"));
+        await settle();
+
+        expect(s.opened).toEqual([team]);
+    });
+});
+
 describe("Join", () => {
     /** A preview of Volunteers open from the directory, with its facts in. */
     async function previewing(): Promise<Setup> {
