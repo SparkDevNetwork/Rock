@@ -214,7 +214,7 @@ namespace Rock.Reporting.DataSelect.Group
                 var formattedList = new List<string>();
                 foreach ( var m in members )
                 {
-                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId );
+                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId ).EncodeHtml();
                     string html;
                     if ( ShowAs == ShowAsLinkType.PersonLink )
                     {
