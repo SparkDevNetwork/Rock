@@ -349,16 +349,17 @@ describe("a row's states", () => {
         expect(w.emitted("select")).toEqual([[youth.channel_id]]);
     });
 
-    test("flashes a row that arrives or moves, and not the rows already in place", async () => {
+    test("flashes a row that arrives, and not the rows a fresh sidebar puts in a new order", async () => {
         const w = mountSidebar({ rows: [team, youth, dmAnna] });
         expect(w.findAll(".is-flash")).toHaveLength(0);
 
-        // Youth moves above Team, as a new message moves a room up, and Prayer arrives.
+        // A reread sidebar puts Youth above Team, by its newer message, and Prayer arrives.
         await w.setProps({ rows: [youth, team, dmAnna, starred] });
         await nextTick();
 
-        expect(rowOf(w, youth.channel_id).classes()).toContain("is-flash");
         expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
     });
 
@@ -371,15 +372,25 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("judges a move among the rooms still listed: one passing another flashes, one only shifted by a leaving or arriving room does not", async () => {
-        const w = mountSidebar({ rows: [team, youth, starred] });
+    test("flashes nothing when the top room is unstarred, though every room it drops past climbs a place", async () => {
+        const prayer = { ...starred, is_favorite: false };
+        const w = mountSidebar({ rows: [{ ...team, is_favorite: true }, youth, prayer] });
 
-        // Worship Team leaves, Prayer passes Youth, and Announcements arrives at the top.
-        await w.setProps({ rows: [muted, starred, youth] });
+        await w.setProps({ rows: [youth, team, prayer] });
         await nextTick();
 
-        expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
-        expect(rowOf(w, muted.channel_id).classes()).toContain("is-flash");
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+
+    test("flashes only the room the person stars, which moves up into Starred", async () => {
+        const prayer = { ...starred, is_favorite: false };
+        const w = mountSidebar({ rows: [team, youth, prayer] });
+
+        await w.setProps({ rows: [{ ...prayer, is_favorite: true }, team, youth] });
+        await nextTick();
+
+        expect(rowOf(w, prayer.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
     });
 });
@@ -687,14 +698,21 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a channel turning unread as it passes another still glows, for the move", async () => {
-        const w = mountSidebar({ rows: [team, starred] });
+    test("nor do channels a reload after a reconnect puts in a new order by their newer messages", async () => {
+        const prayer = { ...starred, is_favorite: false };
+        const w = mountSidebar({ rows: [team, youth, prayer, dmRead] });
 
-        await w.setProps({ rows: [{ ...starred, last_message_id: 11, is_unread: true }, team] });
+        await w.setProps({
+            rows: [
+                { ...prayer, last_message_id: 12, last_message_at: "2026-10-12T10:00:00Z", is_unread: true },
+                { ...youth, last_message_id: 11, last_message_at: "2026-10-12T09:30:00Z", is_unread: true },
+                team,
+                dmRead
+            ]
+        });
         await nextTick();
 
-        expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
-        expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
+        expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 });
 
