@@ -42,7 +42,7 @@
 //                     hasMore: boolean, isLoading: boolean, error: ChatError | null,
 //                     olderError: ChatError | null } | null
 //       },
-//       openList(channelId: string, tab?: "channel" | "all"): Promise<void>,
+//       openList(channelId: string, tab?: "channel" | "all"): Promise<void>,   on the tab last chosen unless one is named
 //       switchTab(tab: "channel" | "all"): Promise<void>,
 //       refresh(): Promise<void>,
 //       loadMore(): Promise<void>,           the next 30 when the list is scrolled to its end
@@ -296,6 +296,55 @@ describe("the threads list is fetched", () => {
         expect(listCalls).toHaveLength(2);
         expect(listCalls[1].args).toEqual(expect.objectContaining({ p_channel_id: null }));
         expect(threads.state.list.tab).toBe("all");
+    });
+
+    test("when the panel opens again, on the tab last chosen", async () => {
+        const { threads, callsTo } = await setup();
+        await threads.openList(channel);
+        await threads.switchTab("all");
+        threads.closeList();
+
+        await threads.openList(channel);
+
+        expect(threads.state.list.tab).toBe("all");
+        const listCalls = callsTo("chat_list_threads");
+        expect(listCalls).toHaveLength(3);
+        expect(listCalls[2].args).toEqual(expect.objectContaining({ p_channel_id: null }));
+    });
+
+    // All lists every followed thread whichever conversation is open, so it is the same list.
+    test("on All, when the conversation changes, in place: the rows stay while the list refreshes", async () => {
+        const { threads, callsTo, answers } = await setup();
+        const refreshed = deferred<CallResult>();
+        answers.chat_list_threads = [listAnswer([listRow(40)]), listAnswer([listRow(70, { channel_id: otherChannel }), listRow(40)]), refreshed];
+        await threads.openList(channel);
+        await threads.switchTab("all");
+
+        const opening = threads.openList(otherChannel);
+
+        expect(threads.state.list.tab).toBe("all");
+        expect(threads.state.list.rows.map(r => r.root.id)).toEqual([70, 40]);
+        expect(threads.state.list.isLoading).toBe(false);
+        expect(threads.state.list.isRefreshing).toBe(true);
+        refreshed.resolve(listAnswer([listRow(70, { channel_id: otherChannel }), listRow(40)]));
+        await opening;
+        const listCalls = callsTo("chat_list_threads");
+        expect(listCalls).toHaveLength(3);
+        expect(listCalls[2].args).toEqual(expect.objectContaining({ p_channel_id: null }));
+        expect(threads.state.list.channelId).toBe(otherChannel);
+    });
+
+    test("on This channel, when the conversation changes, afresh for the new conversation", async () => {
+        const { threads, callsTo, answers } = await setup();
+        answers.chat_list_threads = [listAnswer([listRow(40)]), deferred<CallResult>()];
+        await threads.openList(channel);
+
+        void threads.openList(otherChannel);
+
+        expect(threads.state.list.tab).toBe("channel");
+        expect(threads.state.list.rows).toEqual([]);
+        expect(threads.state.list.isLoading).toBe(true);
+        expect(callsTo("chat_list_threads")[1].args).toEqual(expect.objectContaining({ p_channel_id: otherChannel }));
     });
 
     test("when the person presses refresh", async () => {

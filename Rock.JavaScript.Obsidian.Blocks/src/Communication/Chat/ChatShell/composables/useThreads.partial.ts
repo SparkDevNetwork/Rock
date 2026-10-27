@@ -129,7 +129,7 @@ export type ThreadsDependencies = {
 export type Threads = {
     state: ThreadsState;
 
-    /** Opens the list for a conversation, on a tab, the conversation's own by default. */
+    /** Opens the list for a conversation, on the tab last chosen unless one is named. */
     openList: (channelId: string, tab?: ThreadListTab) => Promise<void>;
 
     /** Shows the other tab, fetched afresh. */
@@ -503,12 +503,14 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     return {
         state,
 
-        openList: async (channelId: string, tab: ThreadListTab = "channel"): Promise<void> => {
+        openList: async (channelId: string, tab: ThreadListTab = state.list.tab): Promise<void> => {
             if (isStopped) {
                 return;
             }
             const list = state.list;
-            const isSameList = list.channelId === channelId && list.tab === tab;
+            // The tab is the person's choice for the page, kept across closing the panel and changing
+            // conversation. All lists the same threads from any conversation, so it refreshes in place.
+            const isSameList = list.tab === tab && (tab === "all" || list.channelId === channelId);
             list.channelId = channelId;
             list.tab = tab;
             list.busyRootId = null;

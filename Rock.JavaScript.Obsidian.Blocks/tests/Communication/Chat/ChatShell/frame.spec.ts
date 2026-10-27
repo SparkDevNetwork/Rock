@@ -401,7 +401,8 @@ function fakeThreads(): Record<string, unknown> {
         state,
         openList: jest.fn(async (channelId: string, tab?: string) => {
             state.list.channelId = channelId;
-            state.list.tab = tab ?? "channel";
+            // the tab last chosen stays unless one is named, as the real list keeps it
+            state.list.tab = tab ?? state.list.tab;
         }),
         switchTab: jest.fn(async (tab: string) => {
             state.list.tab = tab;
@@ -1061,6 +1062,24 @@ describe("the panel column", () => {
         expect(panelOpen(w)).toBe("false");
         expect(isPaneHidden(w, "frame-panel")).toBe(true);
         expect(w.get("[data-testid='header-threads']").attributes("aria-expanded")).toBe("false");
+    });
+
+    test("opens again on the tab last chosen, with focus on it", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "false")!.trigger("click");
+        await settle();
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+
+        const selected = w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "true")!;
+        expect(selected.text()).toBe("All");
+        expect(document.activeElement).toBe(selected.element);
     });
 
     test("gives focus back to the header button that opened it when its X closes it", async () => {
