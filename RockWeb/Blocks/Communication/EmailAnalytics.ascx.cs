@@ -326,6 +326,14 @@ namespace RockWeb.Blocks.Communication
             {
                 // specific communication specified
                 var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+                if ( communication != null && !communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                {
+                    nbWarningMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    nbWarningMessage.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( Rock.Model.Communication.FriendlyTypeName );
+                    nbWarningMessage.Visible = true;
+                    return false;
+                }
+
                 if ( communication != null )
                 {
                     /*
@@ -408,7 +416,11 @@ namespace RockWeb.Blocks.Communication
             }
             else if ( communicationListGroupId.HasValue )
             {
-                communicationIdList = new CommunicationService( rockContext ).Queryable().Where( a => a.ListGroupId == communicationListGroupId ).Select( a => a.Id ).ToList();
+                communicationIdList = new CommunicationService( rockContext ).Queryable()
+                    .Where( a => a.ListGroupId == communicationListGroupId )
+                    .WherePersonAuthorizedToView( rockContext, CurrentPerson )
+                    .Select( a => a.Id )
+                    .ToList();
             }
 
             if ( communicationIdList != null )
