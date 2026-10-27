@@ -29,8 +29,8 @@
 // is asked and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { ChannelStore } from "../stores/channelStore.partial";
-import { ChannelFacts, ChatError, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
+import { ChannelStore, startedTitle } from "../stores/channelStore.partial";
+import { ChannelFacts, ChatError, ChatPerson, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
 import type { MemberRights } from "./useMembers.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 import { PlatformLimits } from "./useSession.partial";
@@ -228,7 +228,7 @@ export type RoomsDependencies = {
     openChannel: (channelId: string) => void;
 
     /** The sidebar, which a previewed room's stand-in row joins. */
-    channels: Pick<ChannelStore, "rows" | "previewChannelId" | "setPreview">;
+    channels: Pick<ChannelStore, "rows" | "listed" | "previewChannelId" | "setPreview">;
 
     /** Fetches the sidebar again, for a title only the platform writes. */
     reloadSidebar: () => void;
@@ -317,6 +317,13 @@ export type Rooms = {
     /** A conversation was opened: its facts are read beside its history. */
     channelOpened: (channelId: string) => Promise<void>;
 
+    /**
+     * A conversation the person is starting with these people is about to open, before the
+     * platform lists it: a stand-in row titled as New message titled it holds its place until
+     * its facts, and then its first message, arrive.
+     */
+    conversationStarted: (channelId: string, people: ChatPerson[]) => void;
+
     /** The conversation on screen changed: a preview of any other room ends. */
     conversationShown: (channelId: string | null) => void;
 
@@ -376,6 +383,31 @@ function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url
         room_kind: "channel",
         title: source.name ?? "",
         preview_line: ""
+    };
+}
+
+/**
+ * A stand-in row for a direct message the person is starting, which the platform's sidebar lists
+ * only once a message is written in it: held for the header and the composer, never drawn in the
+ * list, titled as New message titled it.
+ *
+ * @param channelId The conversation.
+ * @param people The others in it.
+ * @param facts What chat_get_channel answered about it, once it has.
+ *
+ * @returns The row.
+ */
+function startedRow(channelId: string, people: ChatPerson[], facts?: ChannelFacts): SidebarRow {
+    return {
+        ...previewRow({ channel_id: channelId, name: null, icon_url: null, is_member: true, channel_type: "dm", is_public: false }),
+        // the people in a direct message are each other's to name
+        can_mention: true,
+        // until its facts are read, nothing is known that would refuse a send
+        ...(facts ? { can_post: facts.can_post, can_post_code: facts.can_post_code, can_post_reason: facts.can_post_reason, max_length: facts.max_length } : {}),
+        dm_people: people.map(person => ({ person_alias_guid: person.person_alias_guid, nick_name: person.nick_name, last_name: person.last_name, avatar_url: person.avatar_url })),
+        dm_other_count: people.length,
+        room_kind: people.length === 1 ? "person" : "group",
+        title: startedTitle(people)
     };
 }
 
@@ -578,11 +610,13 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
         state.facts[channelId] = result.facts;
 
-        // Only the room still on screen is previewed; one left meanwhile is not the person's to see in the sidebar.
+        // Only the room still on screen is previewed; one left meanwhile is not the person's to see
+        // in the sidebar. A direct message with no row is one nobody has written in yet.
         const held = channels.rows.find(row => row.channel_id === channelId);
         const isPreview = channels.previewChannelId === channelId;
-        if (dependencies.activeChannelId() === channelId && (isPreview || (!held && !result.facts.is_member))) {
-            channels.setPreview(previewRow(result.facts));
+        const isDirect = result.facts.channel_type === "dm";
+        if (dependencies.activeChannelId() === channelId && (isPreview || (!held && (!result.facts.is_member || isDirect)))) {
+            channels.setPreview(isDirect ? startedRow(channelId, result.facts.people, result.facts) : previewRow(result.facts));
         }
     }
 
@@ -655,7 +689,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
      * it has no neighbour or no row.
      */
     function neighbourOf(channelId: string): string | null {
-        const rows = channels.rows.filter(r => r.is_member || r.channel_id === channelId);
+        const rows = channels.listed.filter(r => r.is_member || r.channel_id === channelId);
         const index = rows.findIndex(r => r.channel_id === channelId);
         const next = index < 0 ? undefined : rows[index + 1] ?? rows[index - 1];
         return next?.channel_id ?? null;
@@ -1024,6 +1058,12 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         },
 
         channelOpened: (channelId: string): Promise<void> => readFacts(channelId),
+
+        conversationStarted: (channelId: string, people: ChatPerson[]): void => {
+            if (!isStopped && !channels.rows.some(row => row.channel_id === channelId)) {
+                channels.setPreview(startedRow(channelId, people));
+            }
+        },
 
         conversationShown: (channelId: string | null): void => {
             if (channels.previewChannelId !== null && channels.previewChannelId !== channelId) {

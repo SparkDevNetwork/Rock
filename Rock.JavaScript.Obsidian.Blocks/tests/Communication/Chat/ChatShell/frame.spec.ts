@@ -182,7 +182,15 @@ function fakeShell(): Record<string, unknown> {
 
     mockShell = {
         state,
-        channels: reactive({ rows: [team, dmAnna], loadState: "loaded", retryLoad: jest.fn() }),
+        // every row listed, as the store lists them with no direct message waiting for its first message
+        channels: reactive({
+            rows: [team, dmAnna],
+            get listed(): SidebarRow[] {
+                return this.rows;
+            },
+            loadState: "loaded",
+            retryLoad: jest.fn()
+        }),
         timelines: {
             state: timelineOf
         },
