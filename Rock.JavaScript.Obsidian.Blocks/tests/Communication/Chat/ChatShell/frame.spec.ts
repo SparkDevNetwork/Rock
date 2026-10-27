@@ -1025,6 +1025,16 @@ describe("the header's title", () => {
 
         expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team");
     });
+
+    test("is marked with the channel's own image, the same one its sidebar row shows", async () => {
+        const picture = "https://church.example/GetImage.ashx?guid=team";
+        const w = await mountBlock(1200);
+        (mockShell!.channels as { rows: SidebarRow[] }).rows = [{ ...team, icon_url: picture }, dmAnna];
+        await settle();
+        await openRow(w, team.channel_id);
+
+        expect(w.get(".chat-header-ic [data-testid='channel-mark-image']").attributes("src")).toBe(picture);
+    });
 });
 
 describe("the look, by the open conversation's kind", () => {

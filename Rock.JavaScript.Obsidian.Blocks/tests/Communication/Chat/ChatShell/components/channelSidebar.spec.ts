@@ -447,6 +447,17 @@ describe("a row's look, by the room's kind", () => {
     });
 });
 
+describe("a channel's mark", () => {
+    test("shows the channel's own image in place of the hash or lock, and the lock again without one", () => {
+        const pictured = row({ channel_id: "c0000010-0000-4000-8000-000000000000", name: "Greeters", is_public: true, icon_url: "https://church.example/GetImage.ashx?guid=team" });
+        const w = mountSidebar({ rows: [pictured, team] });
+
+        expect(rowOf(w, pictured.channel_id).get(".chat-cs-slot [data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
+        expect(rowOf(w, team.channel_id).find("[data-testid='channel-mark-image']").exists()).toBe(false);
+        expect(rowOf(w, team.channel_id).find(".chat-cs-slot svg").exists()).toBe(true);
+    });
+});
+
 describe("a channel's @ badge with @all", () => {
     test("counts the mentions by name and the @all mentions together", () => {
         const w = mountSidebar({ rows: [{ ...youth, mention_count: 2, all_mention_count: 1 }] });

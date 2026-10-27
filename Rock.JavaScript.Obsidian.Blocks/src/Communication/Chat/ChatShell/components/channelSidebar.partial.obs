@@ -91,9 +91,7 @@
                             @animationend.self="onFlashEnd(row.channel_id)">
                         <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
                         <template v-if="lookOf(row) === 'community'">
-                            <span class="chat-cs-slot" aria-hidden="true">
-                                <Icon :name="row.is_public ? 'hash' : 'lock'" size="sm" />
-                            </span>
+                            <ChannelMark class="chat-cs-slot" :isPublic="row.is_public" :imageUrl="row.icon_url" iconSize="sm" />
                             <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
                             <Icon v-if="isMuted(row)" name="bell-off" class="chat-row-mute" data-testid="row-muted-icon" />
                         </template>
@@ -553,9 +551,10 @@
     width: 20px;
     height: 20px;
     color: var(--chat-icon);
+    border-radius: var(--chat-r-sm);
 }
 
-.chat-cs-slot .chat-ic {
+.chat-cs-slot :deep(.chat-ic) {
     width: 16px;
     height: 16px;
 }
@@ -593,7 +592,7 @@
 }
 
 /* Its search mark is the small icon in the channel's 20px slot, not a channel's 16px one. */
-.chat-row.is-browse .chat-cs-slot .chat-ic {
+.chat-row.is-browse .chat-cs-slot :deep(.chat-ic) {
     width: 15px;
     height: 15px;
 }
@@ -721,6 +720,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import { personFace, rowPeople } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";

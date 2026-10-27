@@ -13,9 +13,7 @@
                    class="chat-header-id"
                    v-bind="detailsAttributes"
                    @click="kind && emit('details')">
-            <span v-if="kind === 'channel'" class="chat-header-ic">
-                <Icon :name="isPublic ? 'hash' : 'lock'" />
-            </span>
+            <ChannelMark v-if="kind === 'channel'" class="chat-header-ic" :isPublic="isPublic" :imageUrl="iconUrl" />
             <Avatar v-else-if="kind === 'person' && faces.length > 0" :people="faces" :size="36" />
             <GroupFace v-else-if="kind === 'group'" :people="faces" :count="groupOtherCount" :size="36" />
 
@@ -511,6 +509,7 @@ button.chat-header-id:hover .chat-header-chev {
     import { notifyOptionsFor } from "../composables/usePrefs.partial";
     import { ChannelFacts, ChatError, ChatPerson } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import { personFace } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
@@ -575,6 +574,12 @@ button.chat-header-id:hover .chat-header-chev {
         isPublic: {
             type: Boolean,
             default: false
+        },
+
+        /** A channel's own image, drawn as its mark in place of the hash or lock; null for none. */
+        iconUrl: {
+            type: String as PropType<string | null>,
+            default: null
         },
 
         /** The other people of a direct message or group, with their photos, as the sidebar sent them. */

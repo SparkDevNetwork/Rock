@@ -89,6 +89,13 @@ describe("the mark and the title", () => {
         expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "lock" && mark.element.contains(icon.element))).toBe(true);
     });
 
+    test("shows the channel's own image as its mark when it has one", () => {
+        const w = mountIntro({ facts: facts({ icon_url: "https://church.example/GetImage.ashx?guid=team" }) });
+
+        expect(w.get("[data-testid='intro-mark'] [data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
+        expect(w.get("[data-testid='intro-mark']").attributes("aria-hidden")).toBe("true");
+    });
+
     test("the title is the room's name alone, never a sentence about the start of the room", () => {
         const w = mountIntro({ facts: facts({ description: null }) });
 
