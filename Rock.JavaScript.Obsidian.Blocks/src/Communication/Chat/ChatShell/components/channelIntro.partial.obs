@@ -1,9 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <section class="chat-intro" :class="{ 'is-phone': isPhone }" data-testid="channel-intro" :aria-labelledby="titleId">
-        <span class="chat-intro-mark" data-testid="intro-mark" aria-hidden="true">
-            <Icon :name="facts.is_public ? 'hash' : 'lock'" />
-        </span>
+        <ChannelMark class="chat-intro-mark" data-testid="intro-mark" :isPublic="facts.is_public" :imageUrl="facts.icon_url" />
 
         <h2 :id="titleId" data-testid="intro-title">{{ name }}</h2>
 
@@ -121,7 +119,7 @@
     import { computed, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
-    import Icon from "../ui/icon.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
     import { ChannelFacts } from "../types.partial";
 
     const props = defineProps({

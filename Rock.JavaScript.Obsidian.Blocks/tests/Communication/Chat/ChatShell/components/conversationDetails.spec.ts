@@ -280,6 +280,15 @@ describe("a channel's identity", () => {
         expect(w.get("[data-testid='details-name']").text()).toBe("young-adults");
     });
 
+    test("shows the channel's own image as its mark, the hash or lock when it has none", async () => {
+        const w = mountDetails({ facts: channelFacts({ icon_url: "https://church.example/GetImage.ashx?guid=team" }) });
+        expect(w.get("[data-testid='details-mark'] [data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
+
+        await w.setProps({ facts: channelFacts({ icon_url: null }) });
+        expect(w.find("[data-testid='channel-mark-image']").exists()).toBe(false);
+        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "hash" && w.get("[data-testid='details-mark']").element.contains(icon.element))).toBe(true);
+    });
+
     test("reads Public, or Private for a private room, the campus by name and the group type", async () => {
         const w = mountDetails();
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Public", "Downtown Campus", "Small Group"]);

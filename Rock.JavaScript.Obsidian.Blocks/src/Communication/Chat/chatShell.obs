@@ -68,6 +68,7 @@
                                 :campuses="campuses"
                                 :kind="activeKind"
                                 :isPublic="activeRow?.is_public ?? false"
+                                :iconUrl="activeRow?.icon_url ?? activeFacts?.icon_url ?? null"
                                 :people="activePeople"
                                 :otherCount="activeRow?.dm_other_count ?? null"
                                 :connection="shell.state.connection"

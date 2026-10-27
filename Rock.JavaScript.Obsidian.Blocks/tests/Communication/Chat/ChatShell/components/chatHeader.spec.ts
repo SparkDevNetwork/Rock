@@ -95,6 +95,24 @@ describe("the title and subtitle", () => {
     });
 });
 
+describe("a channel's own image", () => {
+    test("marks a channel with its own image in the icon box, the hash when it has none", async () => {
+        const w = mountHeader({ title: "Greeters", kind: "channel", isPublic: true, iconUrl: "https://church.example/GetImage.ashx?guid=team" });
+        expect(w.get(".chat-header-ic [data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
+        expect(hasIcon(w, w.get(".chat-header-ic"), "hash")).toBe(false);
+
+        await w.setProps({ iconUrl: null });
+        expect(w.find("[data-testid='channel-mark-image']").exists()).toBe(false);
+        expect(hasIcon(w, w.get(".chat-header-ic"), "hash")).toBe(true);
+    });
+
+    test("never draws a direct message's mark from an image", () => {
+        const w = mountHeader({ title: "Anna Kim", kind: "person", iconUrl: "https://church.example/GetImage.ashx?guid=team", people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }] });
+
+        expect(w.find("[data-testid='channel-mark-image']").exists()).toBe(false);
+    });
+});
+
 describe("the subtitle, from the room's facts", () => {
     const downtown = { guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "Downtown" };
 

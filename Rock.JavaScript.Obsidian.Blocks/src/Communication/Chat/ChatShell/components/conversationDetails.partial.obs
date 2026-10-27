@@ -11,9 +11,7 @@
         </template>
 
         <div class="chat-rd-id" data-testid="details-identity">
-            <span v-if="kind === 'channel'" class="chat-rd-mark" data-testid="details-mark" aria-hidden="true">
-                <Icon :name="facts.is_public ? 'hash' : 'lock'" />
-            </span>
+            <ChannelMark v-if="kind === 'channel'" class="chat-rd-mark" data-testid="details-mark" :isPublic="facts.is_public" :imageUrl="facts.icon_url" />
             <Avatar v-else-if="kind === 'person'" :people="[otherFace]" :size="44" />
             <GroupFace v-else class="chat-rd-group" :people="groupFaces" :count="facts.member_count - 1" :size="44" />
 
@@ -550,6 +548,7 @@
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
