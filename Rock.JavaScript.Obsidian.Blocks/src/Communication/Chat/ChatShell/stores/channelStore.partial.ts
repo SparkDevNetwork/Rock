@@ -46,6 +46,13 @@ export type ChannelStore = {
     /** The rows in the platform's order. */
     rows: SidebarRow[];
 
+    /**
+     * Where the first sidebar stands: on its way, arrived, or failed. Until it has arrived, no rows
+     * says nothing about whether the person has conversations, and a previewed room's row may be
+     * all the rows hold. Once arrived it stays so through every reload after it.
+     */
+    loadState: SidebarLoadState;
+
     /** The channel on screen, or null. */
     activeChannelId: string | null;
 
@@ -66,6 +73,12 @@ export type ChannelStore = {
      * null. A room the sidebar already holds is never previewed.
      */
     setPreview: (row: SidebarRow | null) => void;
+
+    /** A sidebar read failed; only the first sidebar's failure is the list's to show, a later one keeps the rows. */
+    setLoadFailed: () => void;
+
+    /** Reads the first sidebar again after it failed, loading once more meanwhile. */
+    retryLoad: () => void;
 
     /** Replaces the church's badges with the ones a fresh bootstrap listed. */
     setBadges: (badges: ChatBadge[]) => void;
@@ -91,6 +104,9 @@ export type ChannelStore = {
     /** The person's own star, hide or notify mode on a room, shown at once and sorted as the platform sorts. */
     applyPrefs: (channelId: string, changes: RowPrefs) => void;
 };
+
+/** Where the first sidebar stands. */
+export type SidebarLoadState = "loading" | "loaded" | "failed";
 
 /** What the person's own settings change on a row. */
 export type RowPrefs = Partial<Pick<SidebarRow, "is_favorite" | "hidden" | "notify_mode">>;
@@ -119,6 +135,7 @@ export function isTypedByReader(row: Pick<SidebarRow, "last_message_is_own" | "l
 export function createChannelStore(dependencies: ChannelStoreDependencies): ChannelStore {
     const store = reactive({
         rows: [] as SidebarRow[],
+        loadState: "loading" as SidebarLoadState,
         activeChannelId: null as string | null,
         previewChannelId: null as string | null,
         badges: [] as ChatBadge[]
@@ -361,10 +378,24 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
                 store.previewChannelId = null;
             }
             store.rows = [...rows, ...kept];
+            store.loadState = "loaded";
             answerPointers = new Map(rows.map(row => [row.channel_id, row.last_message_id]));
             const at = ++moves;
             movedAt.clear();
             rows.forEach(row => movedAt.set(row.channel_id, at));
+        },
+
+        setLoadFailed: (): void => {
+            if (store.loadState !== "loaded") {
+                store.loadState = "failed";
+            }
+        },
+
+        retryLoad: (): void => {
+            if (store.loadState === "failed") {
+                store.loadState = "loading";
+                dependencies.reloadSidebar();
+            }
         },
 
         setBadges: (badges: ChatBadge[]): void => {

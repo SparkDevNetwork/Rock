@@ -164,6 +164,7 @@ resetConfig();
 function fakeShell(): Record<string, unknown> {
     const state = reactive({
         phase: "ready",
+        isOpening: false,
         gate: "ok",
         connection: null,
         errors: [],
@@ -181,7 +182,7 @@ function fakeShell(): Record<string, unknown> {
 
     mockShell = {
         state,
-        channels: reactive({ rows: [team, dmAnna] }),
+        channels: reactive({ rows: [team, dmAnna], loadState: "loaded", retryLoad: jest.fn() }),
         timelines: {
             state: timelineOf
         },
@@ -837,6 +838,52 @@ describe("with nothing open", () => {
         expect(w.find("[data-testid='chat-header']").exists()).toBe(false);
         expect(w.find("[data-testid='composer-input']").exists()).toBe(false);
         expect(w.get("[data-testid='frame-main']").text()).toContain("Choose a conversation.");
+    });
+
+    test("while the page load is still choosing, says chat is opening rather than asking for a conversation", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.state as { isOpening: boolean }).isOpening = true;
+        await settle();
+
+        expect(w.get("[data-testid='frame-main']").text()).toContain("Opening chat");
+        expect(w.get("[data-testid='frame-main']").text()).not.toContain("Choose a conversation.");
+    });
+
+    test("draws the sidebar's loading rows until its first page has arrived", async () => {
+        const w = await mountBlock(1200);
+        const channels = mockShell!.channels as { rows: SidebarRow[], loadState: string };
+        channels.rows = [];
+        channels.loadState = "loading";
+        await settle();
+
+        expect(w.findAll("[data-testid='sidebar-skeleton']").length).toBeGreaterThan(0);
+        expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(false);
+
+        channels.loadState = "loaded";
+        await settle();
+
+        expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(true);
+    });
+
+    test("the sidebar's Try again after a failed first page reads the sidebar again", async () => {
+        const w = await mountBlock(1200);
+        const channels = mockShell!.channels as { rows: SidebarRow[], loadState: string, retryLoad: jest.Mock };
+        channels.rows = [];
+        channels.loadState = "failed";
+        await settle();
+
+        await w.get("[data-testid='sidebar-error'] button").trigger("click");
+
+        expect(channels.retryLoad).toHaveBeenCalledTimes(1);
+    });
+
+    test("the main column's opening state is busy for assistive technology", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.state as { isOpening: boolean }).isOpening = true;
+        await settle();
+
+        expect(w.get("[data-testid='main-empty']").attributes("aria-busy")).toBe("true");
     });
 
     test("still shows the service banner, which is about chat as a whole", async () => {

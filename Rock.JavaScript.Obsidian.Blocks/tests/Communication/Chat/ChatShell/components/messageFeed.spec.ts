@@ -282,9 +282,49 @@ describe("the timeline", () => {
 // newer than the feed's first page rises in as it is drawn, unless this session sent it, since its
 // pending row already rose; a copy drawn afresh in another group does not rise a second time.
 // A conversation opened in place of another enters, as the switch's one motion; the first one
-// the block draws is simply there. Decided as the feed mounts and never again, so nothing a
-// redraw changes can replay it.
+// the block draws is simply there when its page is already held. Decided as the feed mounts and
+// never again, so nothing a redraw changes can replay it. A feed that mounts before its first
+// page has landed enters as that page is drawn instead, so the rise plays on its content rather
+// than over an empty box, on a switch and on the page's first load alike.
 describe("the feed's entrance", () => {
+    test("a feed opened in place of another before its page has landed enters as the page is drawn", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isEntering: true });
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("the first feed the block draws enters as its first page is drawn, when it mounted before the page", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state });
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("a feed mounted with its page never enters later, even if its timeline reports loaded again", async () => {
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = draw({ timeline: state });
+
+        state.isLoaded = false;
+        await nextTick();
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+    });
+
     test("a feed told it replaces another conversation enters, and keeps that once drawn", async () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isEntering: true });
 
@@ -923,6 +963,15 @@ describe("the history skeleton", () => {
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
     });
 
+    test("sits at the bottom by the composer, as the messages it stands for will, after the feed's free room", async () => {
+        const wrapper = draw({ timeline: timeline([], { isLoaded: false }) });
+
+        jest.advanceTimersByTime(1000);
+        await nextTick();
+
+        expect(isBefore(wrapper.get("[data-testid='feed-fill']").element, wrapper.get("[data-testid='history-skeleton']").element)).toBe(true);
+    });
+
     test("draws a channel's flat rows with 36px faces and a direct message's bubbles", async () => {
         const channel = draw({ timeline: timeline([], { isLoaded: false }), isChannel: true });
         const direct = draw({ timeline: timeline([], { isLoaded: false }), isDirectMessage: true });
@@ -986,6 +1035,14 @@ describe("the channel intro", () => {
         expect(intro.props("isEmpty")).toBe(false);
         expect(isBefore(intro.element, wrapper.get("[data-testid='day-section']").element)).toBe(true);
         expect(wrapper.get("[data-testid='message-feed']").element.contains(intro.element)).toBe(true);
+    });
+
+    test("stays at the top of a short channel, the free room between it and the messages kept by the composer", () => {
+        const wrapper = drawWithFacts(timeline([message(1, anna, at(14, 50))]));
+        const fill = wrapper.get("[data-testid='feed-fill']").element;
+
+        expect(isBefore(wrapper.getComponent(ChannelIntro).element, fill)).toBe(true);
+        expect(isBefore(fill, wrapper.get("[data-testid='day-section']").element)).toBe(true);
     });
 
     test("tells the intro the person's join was refused, for its foot", () => {
