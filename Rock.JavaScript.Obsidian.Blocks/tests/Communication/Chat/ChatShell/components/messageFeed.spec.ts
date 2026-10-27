@@ -944,6 +944,15 @@ describe("the history skeleton", () => {
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
     });
 
+    test("sits at the bottom by the composer, as the messages it stands for will, after the feed's free room", async () => {
+        const wrapper = draw({ timeline: timeline([], { isLoaded: false }) });
+
+        jest.advanceTimersByTime(1000);
+        await nextTick();
+
+        expect(isBefore(wrapper.get("[data-testid='feed-fill']").element, wrapper.get("[data-testid='history-skeleton']").element)).toBe(true);
+    });
+
     test("draws a channel's flat rows with 36px faces and a direct message's bubbles", async () => {
         const channel = draw({ timeline: timeline([], { isLoaded: false }), isChannel: true });
         const direct = draw({ timeline: timeline([], { isLoaded: false }), isDirectMessage: true });
@@ -1007,6 +1016,14 @@ describe("the channel intro", () => {
         expect(intro.props("isEmpty")).toBe(false);
         expect(isBefore(intro.element, wrapper.get("[data-testid='day-section']").element)).toBe(true);
         expect(wrapper.get("[data-testid='message-feed']").element.contains(intro.element)).toBe(true);
+    });
+
+    test("stays at the top of a short channel, the free room between it and the messages kept by the composer", () => {
+        const wrapper = drawWithFacts(timeline([message(1, anna, at(14, 50))]));
+        const fill = wrapper.get("[data-testid='feed-fill']").element;
+
+        expect(isBefore(wrapper.getComponent(ChannelIntro).element, fill)).toBe(true);
+        expect(isBefore(fill, wrapper.get("[data-testid='day-section']").element)).toBe(true);
     });
 
     test("tells the intro the person's join was refused, for its foot", () => {

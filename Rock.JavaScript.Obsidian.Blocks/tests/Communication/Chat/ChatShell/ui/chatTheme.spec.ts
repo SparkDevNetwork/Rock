@@ -553,12 +553,13 @@ describe("the components' own styles", () => {
         expect(transitions).toContain(normalize("opacity var(--chat-t-base) var(--chat-ease-state)"));
     });
 
+    // The spacer is an element after the channel's intro, so the intro keeps the top; the feed's
+    // spec holds where it stands among the feed's parts.
     test("a short conversation sits at the bottom of the feed, by the composer", () => {
         const feed = readSheet(feedPath);
-        const spacer = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed::before");
+        const spacer = feed.rules.find(r => r.media === "" && r.selector === ".chat-feed-fill");
 
         expect(normalize(spacer?.declarations.get("flex") ?? "")).toMatch(/^1/);
-        expect(spacer?.declarations.has("content")).toBe(true);
     });
 
     test("the sticky day pill steps to its place under the unread strip rather than animating top", () => {
