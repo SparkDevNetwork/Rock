@@ -354,10 +354,14 @@ function waits(): Waiting & { list: Array<Deferred<void>>, asked: number[] } {
     };
 }
 
+/**
+ * Lets the module run until it has nothing left to do but wait on a test's own deferred. Every
+ * outside call and every backoff here answers through a promise, and a timer's callback runs
+ * only once the microtask queue is empty, new microtasks included, so one timer turn is that
+ * point, however long the chain and however loaded the machine.
+ */
 async function settle(): Promise<void> {
-    for (let i = 0; i < 20; i++) {
-        await new Promise(r => setTimeout(r, 0));
-    }
+    await new Promise(r => setTimeout(r, 0));
 }
 
 /** A door that made the conversation in Rock before the platform took it. */
