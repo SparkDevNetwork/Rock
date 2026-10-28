@@ -446,10 +446,13 @@
         }
     }
 
-    /** Gives focus back to the opener, when it is still on the page. */
+    /**
+     * Gives focus back to the opener, when it is still on the page, quietly: the person is
+     * leaving the dialog, not reaching for the opener, so its tooltip or card does not rise.
+     */
     function returnFocus(): void {
         if (opener && opener.isConnected) {
-            opener.focus({ preventScroll: true });
+            focusQuietly(opener, { preventScroll: true });
         }
         opener = null;
     }

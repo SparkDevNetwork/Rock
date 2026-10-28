@@ -72,6 +72,28 @@ const hoverGrace: TooltipDelay = { token: "--chat-d-hover-grace", fallbackMs: 22
 /** What the keyboard can reach, in the page's order. */
 const tabbableSelector = "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true'], [tabindex='0']";
 
+/**
+ * Whether an element is drawn, which one under display:none, or hidden itself, is not, though it
+ * still matches the keyboard's selector.
+ *
+ * @param element The element.
+ *
+ * @returns Whether it is drawn.
+ */
+function isDrawn(element: HTMLElement): boolean {
+    if (getComputedStyle(element).visibility === "hidden") {
+        return false;
+    }
+
+    for (let at: HTMLElement | null = element; at; at = at.parentElement) {
+        if (at.hidden || getComputedStyle(at).display === "none") {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /** Set only while focusQuietly moves focus, which a browser reports at once. */
 let isQuietFocus = false;
 
@@ -179,7 +201,7 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
         }
 
         const next = Array.from(document.querySelectorAll<HTMLElement>(tabbableSelector))
-            .find(element => !isInTip(element) && !!(from.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING) && !from.contains(element));
+            .find(element => !isInTip(element) && !!(from.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING) && !from.contains(element) && isDrawn(element));
         next?.focus();
     }
 
