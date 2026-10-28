@@ -1295,6 +1295,55 @@ describe("retryAll", () => {
         expect(sent).toEqual(["refused"]);
     });
 
+    test("a new message written while they go waits behind them, so it lands after them", async () => {
+        const answers = [deferred<SendResult>(), deferred<SendResult>(), deferred<SendResult>()];
+        const { sender, timelines, sent } = await threeFailed(answers);
+        sender.discard("local-3");
+
+        const retrying = sender.retryAll(["local-1", "local-2"]);
+        await turn();
+        const sending = sender.send(channel, "new");
+        await turn();
+
+        expect(sent.slice(3)).toEqual(["one"]);
+        expect(sender.pending(channel).map(r => [r.body, r.status])).toEqual([["one", "sending"], ["two", "sending"], ["new", "sending"]]);
+
+        answers[0].resolve({ ok: true, id: 51, createdAt: "2026-10-27T10:00:00Z" });
+        await turn();
+        expect(sent.slice(3)).toEqual(["one", "two"]);
+        answers[1].resolve({ ok: true, id: 52, createdAt: "2026-10-27T10:00:01Z" });
+        await retrying;
+        await turn();
+        answers[2].resolve({ ok: true, id: 53, createdAt: "2026-10-27T10:00:02Z" });
+
+        expect(await sending).toBe(true);
+        expect(sent.slice(3)).toEqual(["one", "two", "new"]);
+        expect(timelines.state(channel).messages.map(m => m.body)).toEqual(["one", "two", "new"]);
+    });
+
+    test("a new message still goes once the ones it waited behind stop at a failure", async () => {
+        const { sender, sent } = await threeFailed([offline, { ok: true, id: 54, createdAt: "2026-10-27T10:00:03Z" }]);
+
+        const retrying = sender.retryAll(["local-1", "local-2", "local-3"]);
+        const sending = sender.send(channel, "new");
+
+        expect(await retrying).toBe(false);
+        expect(await sending).toBe(true);
+        expect(sent.slice(3)).toEqual(["one", "new"]);
+    });
+
+    test("a new message to another room does not wait", async () => {
+        const first = deferred<SendResult>();
+        const { sender, sent } = await threeFailed([first, { ok: true, id: 60, createdAt: "2026-10-27T10:00:00Z" }]);
+
+        void sender.retryAll(["local-1"]);
+        const elsewhere = sender.send("c0000002-0000-4000-8000-000000000000", "elsewhere");
+
+        expect(await elsewhere).toBe(true);
+        expect(sent.slice(3)).toEqual(["one", "elsewhere"]);
+        first.resolve({ ok: true, id: 61, createdAt: "2026-10-27T10:00:01Z" });
+    });
+
     test("a message whose copy lands while it waits its turn is not sent again", async () => {
         const first = deferred<SendResult>();
         const { sender, sent } = await threeFailed([first, { ok: true, id: 53, createdAt: "2026-10-27T10:00:02Z" }]);

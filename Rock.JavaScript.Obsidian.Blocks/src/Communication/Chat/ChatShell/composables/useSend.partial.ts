@@ -364,8 +364,9 @@ export type Sender = {
      * Sends failed rows again, one at a time and oldest first, each once the one before it is
      * posted, so they land in the order they were written. Every one shows as sending at once; a
      * failure stops there, and the rows after it stay failed as they were, since sending them
-     * would land them ahead of it. A row refused for good, or not failed, is left out. Resolves
-     * true when every one went, false when one failed or none could go.
+     * would land them ahead of it. A message written in the same room meanwhile waits until they
+     * are done. A row refused for good, or not failed, is left out. Resolves true when every one
+     * went, false when one failed or none could go.
      */
     retryAll: (localIds: string[]) => Promise<boolean>;
 
@@ -407,6 +408,10 @@ export function createSender(dependencies: SenderDependencies): Sender {
 
     // The try in flight under each key, ended the moment a copy of its message lands.
     const inFlight = new Map<string, () => void>();
+
+    // Each room's failed messages going again, in order, while they go: a message written then
+    // waits behind them, so it lands after them as it was written after them.
+    const retrying = new Map<string, Promise<unknown>>();
     const waitBeforeResend = dependencies.waitBeforeResend
         ?? ((attempt: number): Promise<void> => new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt)));
 
@@ -617,8 +622,13 @@ export function createSender(dependencies: SenderDependencies): Sender {
             });
 
             // The row read back from the list is the reactive one, so the status the person
-            // sees follows every change made to it.
-            return deliver(rows[rows.length - 1], attempt?.isLast);
+            // sees follows every change made to it. It shows as sending while it waits its turn.
+            const row = rows[rows.length - 1];
+            const ahead = retrying.get(channelId);
+            if (ahead) {
+                await ahead;
+            }
+            return deliver(row, attempt?.isLast);
         },
 
         retryAll: async (localIds: string[]): Promise<boolean> => {
@@ -631,21 +641,36 @@ export function createSender(dependencies: SenderDependencies): Sender {
 
             // Each waiting row keeps its last reason until its own try clears it.
             queue.forEach(row => row.status = "sending");
-            for (let index = 0; index < queue.length; index++) {
-                const row = queue[index];
+            const drain = (async (): Promise<boolean> => {
+                for (let index = 0; index < queue.length; index++) {
+                    const row = queue[index];
 
-                // a copy of its first try landed while it waited, so it is posted already
-                if (!rows.includes(row)) {
-                    continue;
+                    // a copy of its first try landed while it waited, so it is posted already
+                    if (!rows.includes(row)) {
+                        continue;
+                    }
+
+                    if (!await deliver(row)) {
+                        queue.slice(index + 1).filter(r => rows.includes(r)).forEach(r => r.status = "failed");
+                        return false;
+                    }
                 }
 
-                if (!await deliver(row)) {
-                    queue.slice(index + 1).filter(r => rows.includes(r)).forEach(r => r.status = "failed");
-                    return false;
-                }
+                return true;
+            })();
+
+            const channelIds = new Set(queue.map(row => row.channelId));
+            channelIds.forEach(channelId => retrying.set(channelId, drain));
+            try {
+                return await drain;
             }
-
-            return true;
+            finally {
+                channelIds.forEach(channelId => {
+                    if (retrying.get(channelId) === drain) {
+                        retrying.delete(channelId);
+                    }
+                });
+            }
         },
 
         lastFailure: (): SendFailureNews | null => failures.last,
