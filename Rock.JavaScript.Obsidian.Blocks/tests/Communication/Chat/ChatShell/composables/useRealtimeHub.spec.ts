@@ -378,6 +378,22 @@ describe("a Realtime error the client cannot classify", () => {
         expect(unknown).toHaveLength(1);
     });
 
+    // A lost connection is healed by the rejoin, which reads the sidebar again; checking access the
+    // moment the socket drops read the sidebar early, while nothing could be heard live.
+    test("a lost connection on every topic does not", async () => {
+        const f = fakeClient();
+        const { hub, unknown } = hubWithUnknown(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[0].status?.("SUBSCRIBED");
+        f.channels[1].status?.("SUBSCRIBED");
+
+        f.channels[0].status?.("CHANNEL_ERROR", new Error("socket closed: 1006 (network lost)"));
+        f.channels[1].status?.("CHANNEL_ERROR", new Error("socket closed: 1006 (network lost)"));
+
+        expect(unknown).toHaveLength(0);
+    });
+
     test("words it knows do not", async () => {
         const f = fakeClient();
         const { hub, unknown } = hubWithUnknown(f.client);

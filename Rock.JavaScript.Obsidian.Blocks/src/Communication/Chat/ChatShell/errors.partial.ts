@@ -413,6 +413,13 @@ const realtimeMessages: Array<{ words: string, code: string, severity: ChatError
 ];
 
 /**
+ * How the client library words a socket that closed or failed, as supabase-js 2.x reports it on
+ * every joined topic at once. These are not Realtime's words about the person's access but a lost
+ * connection, which the next join heals.
+ */
+const lostConnectionWords = ["socket closed: ", "channel error: transport failure", "channel error: connection lost"];
+
+/**
  * Classifies the words Realtime closes or refuses a channel with.
  *
  * @param message The message Realtime sent.
@@ -428,6 +435,16 @@ export function classifyRealtimeMessage(message: string, wasJoined: boolean): Ch
     }
 
     const known = realtimeMessages.find(m => message.includes(m.words));
+    if (known) {
+        return { code: known.code, severity: known.severity };
+    }
 
-    return known ? { code: known.code, severity: known.severity } : { code: "rt.unknown", severity: "unknown" };
+    // Checked after Realtime's own words, which a socket's close reason can carry. Taken for
+    // unknown words, a lost connection would mint a token and read the sidebar while nothing can
+    // be heard live, ahead of the rejoin's own read.
+    if (lostConnectionWords.some(words => message.startsWith(words))) {
+        return classifyRealtimeStatus("CHANNEL_ERROR");
+    }
+
+    return { code: "rt.unknown", severity: "unknown" };
 }

@@ -1076,12 +1076,15 @@ describe("an outage", () => {
         h.bootstrap.value = new TypeError("Failed to fetch");
         const open = topicOf(h, channelTopic(tenant, channelA));
 
-        // the socket drops in words the client does not know, which also reloads the sidebar
+        // the open topic drops, and a sidebar read asked meanwhile cannot reach the platform
         open.status?.("CHANNEL_ERROR", new Error("channel error: connection lost"));
+        await settle();
+        const before = h.counts.bootstraps;
+        personal(h, "resync", {});
         await settle();
 
         expect(h.shell.state.connection).not.toBeNull();
-        expect(h.counts.bootstraps).toBeGreaterThan(1);
+        expect(h.counts.bootstraps).toBe(before + 1);
         expect(h.shell.state.errors).toEqual([]);
 
         h.bootstrap.value = [];
@@ -2225,6 +2228,29 @@ describe("the live sidebar", () => {
             jest.advanceTimersByTime(10_000);
             await settle();
             expect(h.counts.bootstraps).toBe(before + 1);
+        });
+
+        test("is the only sidebar read of a socket lost under every topic, which fetches no token either", async () => {
+            const h = await startedLive();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            const before = { ...h.counts };
+
+            // as supabase-js reports a dropped socket on each joined topic
+            const lost = new Error("socket closed: 1006 (network lost)");
+            topicOf(h, personalTopic(tenant, person)).status?.("CHANNEL_ERROR", lost);
+            topicOf(h, channelTopic(tenant, channelA)).status?.("CHANNEL_ERROR", lost);
+            await settle();
+            jest.advanceTimersByTime(10_000);
+            await settle();
+            expect(h.counts.mints).toBe(before.mints);
+            expect(h.counts.bootstraps).toBe(before.bootstraps);
+
+            personalStatus(h, "SUBSCRIBED");
+            await settle();
+            jest.advanceTimersByTime(10_000);
+            await settle();
+            expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
         });
 
         test("tells the members a change to any room may have been missed, with the sidebar's reload", async () => {

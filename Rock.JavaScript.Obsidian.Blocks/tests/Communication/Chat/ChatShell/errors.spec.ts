@@ -142,6 +142,21 @@ describe("classifyRealtimeMessage", () => {
         expect(classifyRealtimeMessage(message, true)).toEqual({ code, severity: "degraded" });
     });
 
+    // Worded as supabase-js 2.x wraps a socket that closed or failed under every joined topic.
+    test.each([
+        "socket closed: 1006 (network lost)",
+        "socket closed: 1000",
+        "channel error: transport failure",
+        "channel error: connection lost"
+    ])("the client library's words for a lost connection are a dropped channel, not words to check access over (%p)", message => {
+        expect(classifyRealtimeMessage(message, true)).toEqual({ code: "rt.channel_error", severity: "degraded" });
+    });
+
+    test("Realtime's own words carried in a socket's close reason still win", () => {
+        expect(classifyRealtimeMessage("socket closed: 1008 (ConnectionRateLimitReached: Too many connected users)", true))
+            .toEqual({ code: "rt.too_many_connections", severity: "quota" });
+    });
+
     test("words it does not know are unknown, never passed through", () => {
         expect(classifyRealtimeMessage("Something Realtime has never said", true)).toEqual({ code: "rt.unknown", severity: "unknown" });
     });
