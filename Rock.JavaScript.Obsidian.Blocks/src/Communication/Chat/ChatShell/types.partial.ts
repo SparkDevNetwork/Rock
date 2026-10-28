@@ -576,8 +576,8 @@ export type MentionListPage = {
 };
 
 /**
- * One of the newest mentions of the reader by name still unread where it lives, as the
- * bootstrap's me.unread_mentions lists them, newest first.
+ * One of the newest mentions of the reader, by name or with @all, still unread where it lives, as
+ * the bootstrap's me.unread_mentions lists them, newest first.
  */
 export type UnreadMention = {
     channel_id: string;

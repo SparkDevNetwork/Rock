@@ -690,7 +690,7 @@ button.chat-header-id:hover .chat-header-chev {
             default: false
         },
 
-        /** Whether a mention by name is newer than the person's last look at the inbox. */
+        /** Whether a mention, by name or with @all, is newer than the person's last look at the inbox. */
         hasMentionDot: {
             type: Boolean,
             default: false

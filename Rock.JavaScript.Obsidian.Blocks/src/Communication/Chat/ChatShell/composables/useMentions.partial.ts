@@ -721,15 +721,16 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
                 return;
             }
 
-            // @all writes no mention the inbox lists, so it raises only the sidebar's count. One
-            // already held, as a mention replayed over a reload's answer is, is held once.
+            // By name or with @all, as the inbox lists both. One already held, as a mention replayed
+            // over a reload's answer is, is held once.
             const mention = readMentionEvent(payload);
-            if (!mention || mention.all || unread.some(entry => entry.message_id === mention.message_id)) {
+            if (!mention || unread.some(entry => entry.message_id === mention.message_id)) {
                 return;
             }
 
             // An edit naming the person in a message of the conversation they have already read
-            // sends a mention too; only a reply kept to its thread is read elsewhere.
+            // sends a mention too; only a reply kept to its thread is read elsewhere, and of those
+            // the platform tells only the thread's followers of an @all, as a reload counts them.
             const readCursor = mention.in_channel ? dependencies.readCursor(mention.channel_id) : null;
             if (readCursor !== null && mention.message_id <= readCursor) {
                 return;
