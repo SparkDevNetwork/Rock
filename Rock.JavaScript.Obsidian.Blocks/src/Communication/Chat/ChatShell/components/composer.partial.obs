@@ -446,7 +446,7 @@
     import Attachments from "./attachments.partial.obs";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
-    import { AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
+    import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
@@ -687,7 +687,8 @@
         }
 
         const text = quote.pieces?.length ? quote.pieces.map(piece => piece.text).join("") : quote.body ?? "";
-        return text.replace(/\s+/g, " ").trim();
+        // a message of files alone reads as its files
+        return text.replace(/\s+/g, " ").trim() || attachmentsPreview(quote.attachments);
     });
 
     /** Whether the locked bar stands in the box's place, so nothing can be sent from here. */
