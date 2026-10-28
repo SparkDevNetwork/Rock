@@ -67,13 +67,14 @@
 
 <style scoped>
 /*
-    Docked at the bubble's outer top corner: another person's bar starts 44px in from the bubble's
-    right edge, the reader's own ends 44px in from its left, each moved to the bubble's own edge
-    when the column has no room, and dropped lower when the bubble is near the column's top.
+    Beside the bubble it acts on, its top on the bubble's top, on the side away from the face: right
+    of another person's bubble, left of the reader's own, 6px off it. It stays within the bubble's
+    own height, so it never covers the message above or below. Where the column has no room beside
+    the bubble, it lies over the bubble's own top corner instead.
 */
 .chat-tools {
     position: absolute;
-    top: -24px;
+    top: 0;
     z-index: 6;
     display: flex;
     gap: 2px;
@@ -88,26 +89,26 @@
 
 .chat-tools:not(.is-own) {
     right: auto;
-    left: max(0px, calc(100% - 44px));
+    left: 100%;
+    margin-left: 6px;
 }
 
 .chat-tools.is-own {
-    right: max(0px, calc(100% - 44px));
+    right: 100%;
     left: auto;
+    margin-right: 6px;
 }
 
 .chat-tools.is-flush:not(.is-own) {
     right: 0;
     left: auto;
+    margin-left: 0;
 }
 
 .chat-tools.is-flush.is-own {
     right: auto;
     left: 0;
-}
-
-.chat-tools.is-low {
-    top: -6px;
+    margin-right: 0;
 }
 
 /* Community docks it on the row's top right, inside the row near the top or under the New divider. */
@@ -116,6 +117,7 @@
     top: -18px;
     right: 14px;
     left: auto;
+    margin: 0;
 }
 
 .chat-tools.is-community.is-low {
@@ -130,12 +132,19 @@
     right: 8px;
 }
 
-/* Pads the bar's hit area, so the pointer moving onto it from the message never falls into a gap. */
+/*
+    Pads the bar's hit area, so the pointer moving onto it from the message never falls into a gap:
+    across the 6px to the bubble beside it, or down into a channel's row under it.
+*/
 .chat-tools::before {
     position: absolute;
-    inset: -6px -6px -14px;
+    inset: 0 -6px;
     content: "";
     border-radius: inherit;
+}
+
+.chat-tools.is-community::before {
+    inset: -6px -6px -14px;
 }
 
 .chat-tools :deep(.chat-tool) {
@@ -405,8 +414,11 @@ img.chat-tool-glyph {
     /** A column this narrow or less keeps one quick reaction and takes the bar closer to its edge. */
     const narrowColumnPx = 560;
 
-    /** A bubble or row this close to its column's top keeps its bar lower, inside the column. */
+    /** A channel's row this close to its column's top keeps its bar lower, inside the column. */
     const nearTopPx = 30;
+
+    /** How far a bubble's bar stands off the bubble, as its styles draw it. */
+    const besideGapPx = 6;
 
     const instance = getCurrentInstance();
 
@@ -648,10 +660,10 @@ img.chat-tool-glyph {
     }
 
     /**
-     * Places the bar for the room around its message. A bubble's bar moves to the bubble's own edge
-     * when the column has no room past it, and both looks drop it lower near the column's top, where
-     * the feed's edge would cut it; a channel's row also keeps it inside the row under the New
-     * divider, off the divider's label.
+     * Places the bar for the room around its message. A bubble's bar lies over the bubble's own top
+     * corner when the column has no room beside it; a channel's row drops it lower near the column's
+     * top, where the feed's edge would cut it, and keeps it inside the row under the New divider,
+     * off the divider's label.
      */
     async function place(): Promise<void> {
         // The row's dock draws no box of its own, so the bar is placed against what holds the dock.
@@ -680,9 +692,10 @@ img.chat-tool-glyph {
             return;
         }
 
-        const room = props.isOwn ? anchor.left + 44 - box.left : box.right - (anchor.right - 44);
-        isFlush.value = room < bar.offsetWidth + 8;
-        isLow.value = anchor.top - box.top < nearTopPx;
+        // A bubble's bar is level with the bubble, so only the room beside it decides.
+        const room = props.isOwn ? anchor.left - box.left : box.right - anchor.right;
+        isFlush.value = room < bar.offsetWidth + besideGapPx;
+        isLow.value = false;
     }
 
     // #endregion Functions

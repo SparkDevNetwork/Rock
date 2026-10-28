@@ -551,6 +551,86 @@ describe("the bar in a narrow column", () => {
     });
 });
 
+/** The bar's style rules outside any at-rule, by selector, each as its declarations. */
+function barRules(): Map<string, Record<string, string>> {
+    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs"), "utf8").replace(/\r\n/g, "\n");
+    const style = source.slice(source.indexOf(">", source.indexOf("<style")) + 1, source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+    const rules = new Map<string, Record<string, string>>();
+    for (const rule of style.matchAll(/(?:^|\n)([^\s@{}][^{}]*)\{([^{}]*)\}/g)) {
+        const body = Object.fromEntries(rule[2].split(";").map(d => d.trim()).filter(d => d).map(d => [d.slice(0, d.indexOf(":")).trim(), d.slice(d.indexOf(":") + 1).trim()]));
+        for (const selector of rule[1].split(",")) {
+            rules.set(selector.trim(), { ...rules.get(selector.trim()), ...body });
+        }
+    }
+    return rules;
+}
+
+// A direct message's bar sits beside the bubble it acts on, its top on the bubble's top, on the
+// side away from the face: right of another person's bubble, left of the reader's own. It never
+// rises over the message above. Where the column has no room beside the bubble, it lies over the
+// bubble's own top corner instead, still within the bubble's own height.
+describe("the bar beside a bubble", () => {
+    /** Mounts the bar in a bubble's dock, the bubble and the column at the boxes given. */
+    async function shownBeside(bubble: { left: number, right: number, top: number }, isOwn = false): Promise<VueWrapper> {
+        const box = (left: number, right: number, top: number, bottom: number): DOMRect => ({ x: left, y: top, top, left, right, bottom, width: right - left, height: bottom - top, toJSON: () => ({}) }) as DOMRect;
+        const scroller = document.createElement("div");
+        scroller.setAttribute("data-chat-scroller", "");
+        scroller.getBoundingClientRect = () => box(0, 900, 0, 600);
+        const host = document.createElement("div");
+        scroller.append(host);
+        document.body.append(scroller);
+
+        wrapper = mount(ActionBar, { props: { message: isOwn ? own() : message(), isOwn, isShown: true, favorites }, attachTo: host });
+        await settle();
+
+        // The row's dock draws no box, so the bar is placed against the box holding its dock, the
+        // bubble's; the bar is placed again as it moves to the next message.
+        const anchor = (bar(wrapper).element as HTMLElement).parentElement?.parentElement as HTMLElement;
+        anchor.getBoundingClientRect = () => box(bubble.left, bubble.right, bubble.top, bubble.top + 34);
+        await wrapper.setProps({ message: isOwn ? own({ id: 43 }) : message({ id: 43 }) });
+        await settle();
+        await settle();
+        return wrapper;
+    }
+
+    test("is drawn at the bubble's top, never above it, and beside it rather than over its corner", () => {
+        const rules = barRules();
+
+        expect(rules.get(".chat-tools")?.top).toBe("0");
+        expect(rules.get(".chat-tools:not(.is-own)")).toMatchObject({ left: "100%", right: "auto" });
+        expect(rules.get(".chat-tools.is-own")).toMatchObject({ right: "100%", left: "auto" });
+        expect(rules.get(".chat-tools.is-low")).toBeUndefined();
+    });
+
+    test("stays beside another person's bubble while the column has room past its right edge", async () => {
+        const w = await shownBeside({ left: 60, right: 400, top: 200 });
+
+        expect(bar(w).classes()).not.toContain("is-flush");
+    });
+
+    test("lies over the bubble's own top corner when the bubble reaches the column's edge", async () => {
+        const w = await shownBeside({ left: 60, right: 900, top: 200 });
+
+        expect(bar(w).classes()).toContain("is-flush");
+    });
+
+    test("does the same on the reader's own side, by the room left of the bubble", async () => {
+        const beside = await shownBeside({ left: 500, right: 900, top: 200 }, true);
+        expect(bar(beside).classes()).not.toContain("is-flush");
+        beside.unmount();
+        document.body.innerHTML = "";
+
+        const over = await shownBeside({ left: 0, right: 900, top: 200 }, true);
+        expect(bar(over).classes()).toContain("is-flush");
+    });
+
+    test("is not dropped near the column's top, since it never rises above the bubble", async () => {
+        const w = await shownBeside({ left: 60, right: 400, top: 4 });
+
+        expect(bar(w).classes()).not.toContain("is-low");
+    });
+});
+
 // Asked for less motion, an entrance becomes a short fade rather than nothing: the bar fades in
 // and out where it stands, without its 3px rise and sink.
 describe("the bar under reduced motion", () => {

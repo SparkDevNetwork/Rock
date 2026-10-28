@@ -140,7 +140,7 @@
                         <Avatar v-else :people="[face]" :size="34" />
                     </template>
                 </span>
-                <!-- The bubble's box, which its bar is docked to the outer top corner of. -->
+                <!-- The bubble's box, which its bar is placed beside, level with its top. -->
                 <div class="chat-bub-anchor">
                     <MessageEditor v-if="isEditorShown && message"
                                    :message="message"
