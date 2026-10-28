@@ -330,6 +330,25 @@ describe("the header on a phone", () => {
         expect(w.emitted("turnOnPush")).toHaveLength(1);
     });
 
+    test("opening More, which holds Members, says the person is reaching for it, so the panel's rights are read first", async () => {
+        const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true });
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+
+        expect(w.emitted("membersIntent")).toHaveLength(1);
+        expect(w.emitted("members")).toBeUndefined();
+    });
+
+    test("opening a More that holds no Members says nothing of it", async () => {
+        const w = mountHeader({ isPhone: true, isPushOffered: true });
+
+        await w.get("[data-testid='header-more'] button").trigger("click");
+        await settle();
+
+        expect(w.emitted("membersIntent")).toBeUndefined();
+    });
+
     test("keeps the notify bell and moves Star into the overflow menu", async () => {
         const w = mountHeader({ isPhone: true, kind: "channel", isPrefsOffered: true, notifyMode: "all", isStarred: false });
 

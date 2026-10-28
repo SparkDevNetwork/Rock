@@ -98,7 +98,7 @@
                         @click="emit('star')" />
 
             <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more">
-                <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" />
+                <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" @openChange="onMoreOpenChange" />
                 <!-- Over the menu's button, which draws no mark of its own. -->
                 <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-more-dot" aria-hidden="true"></span>
             </span>
@@ -888,6 +888,13 @@ button.chat-header-id:hover .chat-header-chev {
     // #endregion Functions
 
     // #region Event Handlers
+
+    /** More opening on a phone is the person reaching for Members when it holds it, as the pile's hover is. */
+    function onMoreOpenChange(isOpen: boolean): void {
+        if (isOpen && membersKind.value) {
+            emit("membersIntent");
+        }
+    }
 
     function onMoreSelect(key: string): void {
         if (key === "push") {
