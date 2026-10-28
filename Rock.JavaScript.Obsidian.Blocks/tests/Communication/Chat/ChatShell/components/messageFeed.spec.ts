@@ -28,6 +28,7 @@ import { join } from "path";
 import { defineComponent, h, nextTick, reactive } from "vue";
 import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/components/channelIntro.partial.obs";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
@@ -1260,5 +1261,200 @@ describe("the channel intro", () => {
         await nextTick();
 
         expect(wrapper.findComponent(ChannelIntro).exists()).toBe(true);
+    });
+});
+
+// The feed keeps one action bar, which moves to the message the pointer is on. It first shows
+// once the pointer rests on a message, then follows the pointer from message to message at once,
+// and hides a moment after the pointer leaves the messages. A menu or the picker open from it
+// holds it where it is; a keyboard reaching a message shows it there at once.
+describe("the action bar", () => {
+    let mounted: VueWrapper | null = null;
+
+    beforeAll(() => {
+        // jsdom has no ResizeObserver, and floating placement keeps the bar's menu beside it with one.
+        if (typeof window.ResizeObserver === "undefined") {
+            window.ResizeObserver = class {
+                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
+                unobserve(): void { /* As above. */ }
+                disconnect(): void { /* As above. */ }
+            } as unknown as typeof ResizeObserver;
+        }
+    });
+
+    afterEach(() => {
+        mounted?.unmount();
+        mounted = null;
+        document.body.innerHTML = "";
+        jest.restoreAllMocks();
+    });
+
+    /** Four messages from Anna, in a channel or a direct message, the feed in the page so focus can land. */
+    function drawFour(isChannel: boolean): VueWrapper {
+        const messages = [1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id)));
+        mounted = mount(MessageFeed, { props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel, isDirectMessage: !isChannel }, attachTo: document.body });
+        return mounted;
+    }
+
+    async function settle(): Promise<void> {
+        await nextTick();
+        await nextTick();
+    }
+
+    function bars(w: VueWrapper): Element[] {
+        return w.findAll("[data-testid='action-bar']").map(found => found.element);
+    }
+
+    /** The message the one bar is drawn on, or null with none drawn. */
+    function barOn(w: VueWrapper): number | null {
+        const drawn = bars(w);
+        expect(drawn.length).toBeLessThanOrEqual(1);
+        const row = drawn[0]?.closest<HTMLElement>("[data-hot-id]");
+        return row ? Number(row.dataset.hotId) : null;
+    }
+
+    async function pointTo(w: VueWrapper, id: number): Promise<void> {
+        await w.get(`[data-hot-id='${id}']`).trigger("pointerover");
+        await settle();
+    }
+
+    async function wait(ms: number): Promise<void> {
+        jest.advanceTimersByTime(ms);
+        await settle();
+    }
+
+    test.each([["a channel", true], ["a direct message", false]])("in %s, shows once the pointer has rested 150ms on a message, not before", async (_kind, isChannel) => {
+        const w = drawFour(isChannel);
+
+        await pointTo(w, 2);
+        await wait(149);
+        expect(barOn(w)).toBeNull();
+
+        await wait(1);
+        expect(barOn(w)).toBe(2);
+    });
+
+    test("a pointer sweeping over the messages never stops long enough to show it", async () => {
+        const w = drawFour(true);
+
+        for (const id of [1, 2, 3, 4, 3, 2, 1]) {
+            await pointTo(w, id);
+            await wait(100);
+            expect(barOn(w)).toBeNull();
+        }
+    });
+
+    test("once shown, moves to the next message the pointer reaches at once, and there is only ever one", async () => {
+        const w = drawFour(true);
+        await pointTo(w, 1);
+        await wait(150);
+
+        for (const id of [2, 3, 4, 3, 1]) {
+            await pointTo(w, id);
+            expect(barOn(w)).toBe(id);
+            expect(bars(w)).toHaveLength(1);
+        }
+
+        await wait(1000);
+        expect(bars(w)).toHaveLength(1);
+    });
+
+    test("is one bar for the whole feed, never one a message", async () => {
+        const w = drawFour(false);
+        await pointTo(w, 1);
+        await wait(150);
+        await pointTo(w, 3);
+
+        expect(w.findAllComponents(ActionBar)).toHaveLength(1);
+        expect(w.findAll("[data-testid='action-bar']")).toHaveLength(1);
+    });
+
+    test("hides 220ms after the pointer leaves the feed, and a pointer back inside that keeps it", async () => {
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(150);
+        await pointTo(w, 3);
+        await wait(1000);
+        expect(barOn(w)).toBe(3);
+
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(219);
+        expect(barOn(w)).toBe(3);
+
+        await wait(1);
+        expect(barOn(w)).toBeNull();
+    });
+
+    test("once hidden, waits for the rest again", async () => {
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(220);
+
+        await pointTo(w, 4);
+        await wait(149);
+        expect(barOn(w)).toBeNull();
+
+        await wait(1);
+        expect(barOn(w)).toBe(4);
+    });
+
+    test("stays on its message while its menu is open, wherever the pointer goes, and leaves once it closes", async () => {
+        // A mouse's focus never matches :focus-visible in a browser, so it holds no bar; jsdom
+        // cannot tell, and is told.
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+        expect(document.querySelector("[role='menu']")).not.toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBe(2);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(1000);
+        expect(barOn(w)).toBe(2);
+
+        // A press outside closes the menu; the pointer is away from the messages, so the bar's grace starts.
+        document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await settle();
+        expect(document.querySelector("[role='menu']")).toBeNull();
+
+        await wait(220);
+        expect(barOn(w)).toBeNull();
+    });
+
+    test("shows at once on the message a keyboard reaches", async () => {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? true : matches.call(this, selector);
+        });
+        const w = drawFour(true);
+
+        const row = w.get("[data-hot-id='3']").element as HTMLElement;
+        row.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+        await settle();
+
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("a scroll hides it at once", async () => {
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        placeScroll(w, 100);
+        await settle();
+
+        expect(barOn(w)).toBeNull();
     });
 });

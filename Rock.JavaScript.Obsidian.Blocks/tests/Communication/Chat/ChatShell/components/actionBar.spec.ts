@@ -15,9 +15,9 @@
 // </copyright>
 //
 // A message's action bar, mounted: three quick reactions and Add reaction, then Reply in thread,
-// Quote and More, docked on the message the pointer rests on. It waits a moment before it shows, so a pointer passing over the feed does not
-// flicker bars along its path, and lingers a moment after the pointer leaves, so moving onto the
-// bar does not lose it. It is one stop for the keyboard, on the first quick reaction, the arrows
+// Quote and More. A column keeps one and says when it shows and on which message (the feed's
+// tests hold the timing); a menu, the picker or a keyboard's focus inside holds it, and it tells
+// the column so. It is one stop for the keyboard, on the first quick reaction, the arrows
 // moving between its tools. The quick reactions are the church's first three favorites, pressed
 // when the reader reacted with one; in a narrow column only the first stays. More
 // opens the message's menu: Edit (the person's own message, never a block post), Copy, the actions
@@ -32,12 +32,14 @@
 //       isInThread: boolean,               inside the thread drawer, where Reply in thread has no place
 //       isPreviewing: boolean,             a room the person has not joined
 //       isEditing: boolean,                the message is open in the editor
-//       isPointerInside: boolean           the pointer is over the message or its bar
+//       isShown: boolean                   the column shows its bar on this message
+//       isInstant: boolean                 the column showed or hid it without a fade
 //       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first three are quick
 //       pickerAnchor: HTMLElement | null   what the open picker is placed beside; the bar holding it stays
 //   }
 //   emits: replyInThread(messageId), quote(message), edit(message), copy(message),
-//          delete(message), serverAction(action), react(message, code), openPicker(message, anchor)
+//          delete(message), serverAction(action), react(message, code), openPicker(message, anchor),
+//          holdChange(isHeld)
 //
 // The bar is the element marked data-testid="action-bar", with role="toolbar"; it is in the page
 // only while it shows. A quick reaction is read "React with thumbs up" or "Remove your thumbs up";
@@ -109,7 +111,7 @@ type BarProps = {
     isInThread?: boolean;
     isPreviewing?: boolean;
     isEditing?: boolean;
-    isPointerInside?: boolean;
+    isShown?: boolean;
     favorites?: unknown[];
     pickerAnchor?: HTMLElement | null;
 };
@@ -121,10 +123,9 @@ async function settle(): Promise<void> {
     await nextTick();
 }
 
-/** Mounts the bar with the pointer on its message and lets the rest pass, so it shows if it may. */
+/** Mounts the bar as its column shows it, so it is drawn if it may be. */
 async function shown(props: BarProps): Promise<VueWrapper> {
-    wrapper = mount(ActionBar, { props: { message: null, pending: null, isPointerInside: true, favorites, ...props }, attachTo: document.body });
-    jest.advanceTimersByTime(60);
+    wrapper = mount(ActionBar, { props: { message: null, pending: null, isShown: true, favorites, ...props }, attachTo: document.body });
     await settle();
     return wrapper;
 }
@@ -378,60 +379,44 @@ describe("the bar's keyboard", () => {
     });
 });
 
-describe("hover intent", () => {
-    test("the bar shows once the pointer has rested 60ms on the message, not before", async () => {
-        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isPointerInside: false }, attachTo: document.body });
-        await wrapper.setProps({ isPointerInside: true });
-
-        jest.advanceTimersByTime(59);
+// The column decides when its bar shows; the bar draws at once as told, and says when it is held.
+describe("showing and holding", () => {
+    test("is drawn the moment its column shows it, and gone the moment it hides it, with no wait of its own", async () => {
+        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isShown: false }, attachTo: document.body });
         await settle();
         expect(bar(wrapper).exists()).toBe(false);
 
-        jest.advanceTimersByTime(1);
+        await wrapper.setProps({ isShown: true });
         await settle();
         expect(bar(wrapper).exists()).toBe(true);
+
+        await wrapper.setProps({ isShown: false });
+        await settle();
+        expect(bar(wrapper).exists()).toBe(false);
     });
 
-    test("the bar stays 220ms after the pointer leaves, then hides", async () => {
+    test("tells its column while its menu holds it, and when it lets go", async () => {
+        // A mouse's focus never matches :focus-visible in a browser, so it holds no bar; jsdom
+        // cannot tell, and is told.
+        const matches = Element.prototype.matches;
+        const mouseFocus = jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
         const w = await shown({ message: message() });
-        expect(bar(w).exists()).toBe(true);
 
-        await w.setProps({ isPointerInside: false });
-        jest.advanceTimersByTime(219);
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+        expect(w.emitted("holdChange")).toEqual([[true]]);
+
+        await w.setProps({ isShown: false });
         await settle();
         expect(bar(w).exists()).toBe(true);
 
-        jest.advanceTimersByTime(1);
+        document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
         await settle();
+        expect(w.emitted("holdChange")).toEqual([[true], [false]]);
         expect(bar(w).exists()).toBe(false);
-    });
-
-    test("a pointer back inside the grace keeps the bar", async () => {
-        const w = await shown({ message: message() });
-
-        await w.setProps({ isPointerInside: false });
-        jest.advanceTimersByTime(150);
-        await w.setProps({ isPointerInside: true });
-        jest.advanceTimersByTime(500);
-        await settle();
-
-        expect(bar(w).exists()).toBe(true);
-    });
-
-    test("a pointer passing over in less than 60ms never shows the bar", async () => {
-        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isPointerInside: false }, attachTo: document.body });
-
-        await wrapper.setProps({ isPointerInside: true });
-        jest.advanceTimersByTime(40);
-        await wrapper.setProps({ isPointerInside: false });
-        jest.advanceTimersByTime(500);
-        await settle();
-        expect(bar(wrapper).exists()).toBe(false);
-
-        await wrapper.setProps({ isPointerInside: true });
-        jest.advanceTimersByTime(60);
-        await settle();
-        expect(bar(wrapper).exists()).toBe(true);
+        mouseFocus.mockRestore();
     });
 });
 
@@ -519,7 +504,7 @@ describe("the bar's quick reactions", () => {
         const w = await shown({ message: message() });
         const add = w.get("[data-testid='action-bar'] button[aria-label='More reactions']").element as HTMLElement;
 
-        await w.setProps({ pickerAnchor: add, isPointerInside: false });
+        await w.setProps({ pickerAnchor: add, isShown: false });
         jest.advanceTimersByTime(500);
         await settle();
         expect(bar(w).exists()).toBe(true);
@@ -532,7 +517,7 @@ describe("the bar's quick reactions", () => {
     test("a picker placed beside something else does not hold the bar", async () => {
         const w = await shown({ message: message() });
 
-        await w.setProps({ pickerAnchor: document.createElement("button"), isPointerInside: false });
+        await w.setProps({ pickerAnchor: document.createElement("button"), isShown: false });
         jest.advanceTimersByTime(500);
         await settle();
 
@@ -557,8 +542,7 @@ describe("the bar in a narrow column", () => {
         scroller.append(host);
         document.body.append(scroller);
 
-        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isPointerInside: true, favorites }, attachTo: host });
-        jest.advanceTimersByTime(60);
+        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isShown: true, favorites }, attachTo: host });
         await settle();
         await settle();
         return wrapper;

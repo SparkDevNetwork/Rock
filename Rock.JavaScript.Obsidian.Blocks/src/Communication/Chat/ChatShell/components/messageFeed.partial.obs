@@ -36,11 +36,11 @@
              :data-loaded="timeline.isLoaded ? 'true' : 'false'"
              @scroll="onScroll"
              @animationend="onAnimationEnd"
-             @pointerover="hot.onPointerOver"
-             @pointerleave="hot.onPointerLeave"
-             @pointermove="hot.onPointerMove"
-             @focusin="hot.onFocusIn"
-             @focusout="hot.onFocusOut">
+             @pointerover="actionBar.onPointerOver"
+             @pointerleave="actionBar.onPointerLeave"
+             @pointermove="actionBar.onPointerMove"
+             @focusin="actionBar.onFocusIn"
+             @focusout="actionBar.onFocusOut">
             <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
                 Show older messages
             </button>
@@ -105,8 +105,6 @@
                                     :isArriving="isRowArriving(row.key, row.message)"
                                     :isFlashing="!!row.message && row.message.id === flashingId"
                                     :senderNames="senderNames"
-                                    :isHot="!!row.message && row.message.id === hot.hotId.value"
-                                    :isHotSwapInstant="hot.isSwapInstant.value"
                                     :isPreviewing="isPreviewing"
                                     :isEditing="!!row.message && row.message.id === editingId"
                                     :editError="editError"
@@ -117,12 +115,20 @@
                                     @discard="emit('discard', $event)"
                                     @openThread="emit('openThread', $event)"
                                     @jump="emit('jump', $event)"
-                                    @messageAction="emit('messageAction', $event)"
-                                    @barChange="hot.onBarChange" />
+                                    @messageAction="emit('messageAction', $event)" />
                     </div>
                 </template>
             </section>
         </div>
+
+        <!-- The feed's one action bar, drawn in the dock of the message it is on. -->
+        <Teleport v-if="actionBar.dock.value" :to="actionBar.dock.value.element">
+            <ActionBar v-bind="actionBar.dock.value.props.value"
+                       :isShown="actionBar.isShown.value"
+                       :isInstant="actionBar.isInstant.value"
+                       v-on="actionBar.dock.value.handlers"
+                       @holdChange="actionBar.onHoldChange" />
+        </Teleport>
 
         <!--
             Rows of the look the conversation will draw, standing at the feed's foot so nothing
@@ -628,11 +634,12 @@
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import ActionBar from "./actionBar.partial.obs";
     import ChannelIntro from "./channelIntro.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
-    import { useHotMessage } from "../composables/useHotMessage.partial";
+    import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { useSentHold } from "../composables/useSend.partial";
@@ -794,8 +801,8 @@
     /** The width of the feed's scrollbar, so the label centres over the column the pills centre in. */
     const gutterPx = ref(0);
 
-    /** The one message whose action bar may show, the one the pointer is over. */
-    const hot = useHotMessage();
+    /** The feed's one action bar, on the message the pointer rests on or a keyboard reaches. */
+    const actionBar = useActionBar(() => feed.value);
     let observer: IntersectionObserver | null = null;
     let dividerObserver: IntersectionObserver | null = null;
     let dividerElement: Element | null = null;
@@ -931,7 +938,7 @@
     // #region Event Handlers
 
     function onScroll(): void {
-        hot.onScroll();
+        actionBar.onScroll();
         placeTopDay();
         isScrolledUp.value = !isNearBottom();
         if (!isScrolledUp.value) {
@@ -1262,6 +1269,7 @@
     });
 
     onBeforeUnmount(() => {
+        actionBar.stop();
         observer?.disconnect();
         observer = null;
         dividerObserver?.disconnect();

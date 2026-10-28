@@ -44,11 +44,11 @@
              class="chat-th-body"
              :class="{ 'is-community': isChannel, 'is-phone': isPhone }"
              @animationend="onAnimationEnd"
-             @pointerover="hot.onPointerOver"
-             @pointerleave="hot.onPointerLeave"
-             @pointermove="hot.onPointerMove"
-             @focusin="hot.onFocusIn"
-             @focusout="hot.onFocusOut">
+             @pointerover="actionBar.onPointerOver"
+             @pointerleave="actionBar.onPointerLeave"
+             @pointermove="actionBar.onPointerMove"
+             @focusin="actionBar.onFocusIn"
+             @focusout="actionBar.onFocusOut">
             <div v-if="hasMore" ref="topElement" class="chat-th-topmark" aria-hidden="true"></div>
 
             <div v-if="error || olderError" class="chat-th-err" role="status" data-testid="thread-error">
@@ -113,8 +113,6 @@
                                 :senderNames="senderNames"
                                 :isInThread="true"
                                 :isFlashing="item.isReply && !!row.message && row.message.id === flashingId"
-                                :isHot="!!row.message && row.message.id === hot.hotId.value"
-                                :isHotSwapInstant="hot.isSwapInstant.value"
                                 :isPreviewing="isPreviewing"
                                 :isEditing="!!row.message && row.message.id === editingId"
                                 :editError="editError"
@@ -124,10 +122,18 @@
                                 @retry="emit('retry', $event)"
                                 @discard="emit('discard', $event)"
                                 @jump="emit('jump', $event)"
-                                @messageAction="emit('messageAction', $event)"
-                                @barChange="hot.onBarChange" />
+                                @messageAction="emit('messageAction', $event)" />
                 </div>
             </template>
+
+            <!-- The thread's one action bar, drawn in the dock of the message it is on. -->
+            <Teleport v-if="actionBar.dock.value" :to="actionBar.dock.value.element">
+                <ActionBar v-bind="actionBar.dock.value.props.value"
+                           :isShown="actionBar.isShown.value"
+                           :isInstant="actionBar.isInstant.value"
+                           v-on="actionBar.dock.value.handlers"
+                           @holdChange="actionBar.onHoldChange" />
+            </Teleport>
         </div>
 
         <template #foot>
@@ -292,6 +298,7 @@
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import ActionBar from "./actionBar.partial.obs";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { MentionPickerSource } from "./mentionPicker.partial.obs";
@@ -300,7 +307,7 @@
     import PanelHost from "../ui/panelHost.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
-    import { useHotMessage } from "../composables/useHotMessage.partial";
+    import { useActionBar } from "../composables/useActionBar.partial";
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
@@ -562,8 +569,8 @@
     /** The design's wait before the composer takes focus, so the panel has started to open. */
     const focusDelayMs = 60;
 
-    /** The one reply whose action bar may show, the one the pointer is over. */
-    const hot = useHotMessage();
+    /** The thread's one action bar, on the message the pointer rests on or a keyboard reaches. */
+    const actionBar = useActionBar(() => bodyElement.value);
 
     /** The panel host's scroller as it was when the drawer opened, which its scroll is heard on. */
     let scrollElement: HTMLElement | null = null;
@@ -896,7 +903,7 @@
 
         // A scroll does not bubble, and the scroller is the panel host's, outside this body.
         scrollElement = scroller();
-        scrollElement?.addEventListener("scroll", hot.onScroll, { passive: true });
+        scrollElement?.addEventListener("scroll", actionBar.onScroll, { passive: true });
 
         // A phone never focuses the composer on its own, since the keyboard would rise over the
         // thread; its back chevron takes focus instead, because the pane that opened the drawer
@@ -909,7 +916,8 @@
     });
 
     onBeforeUnmount(() => {
-        scrollElement?.removeEventListener("scroll", hot.onScroll);
+        scrollElement?.removeEventListener("scroll", actionBar.onScroll);
+        actionBar.stop();
         rowObserver?.disconnect();
         topObserver?.disconnect();
         if (focusTimer) {

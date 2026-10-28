@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Transition name="chat-tools">
+    <Transition name="chat-tools" :css="!isInstant">
         <div v-if="isDrawn"
              ref="barElement"
              class="chat-tools"
@@ -83,7 +83,7 @@
     padding: 3px;
     white-space: nowrap;
     background: var(--chat-raised);
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-tools);
     box-shadow: var(--chat-shadow-bar);
 }
 
@@ -144,6 +144,7 @@
     width: 28px;
     height: 28px;
     color: var(--chat-icon);
+    border-radius: var(--chat-r-tool);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -178,7 +179,7 @@
     height: 18px;
 }
 
-/* A quick reaction is a wider pill around its glyph, and only the glyph moves: it grows on hover and gives on a press. */
+/* A quick reaction is a wider tool around its glyph, and only the glyph moves: it grows on hover and gives on a press. */
 .chat-tools .chat-tool.is-glyph {
     display: grid;
     place-items: center;
@@ -188,7 +189,7 @@
     line-height: 1;
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-tool);
 }
 
 .chat-tool-glyph {
@@ -226,7 +227,7 @@ img.chat-tool-glyph {
 }
 
 /*
-    The ring hugs the round tool on the bar's own fill. The oldest Safari Rock supports has no
+    The ring hugs the tool on the bar's own fill. The oldest Safari Rock supports has no
     :focus-visible, so every focus rings there, and a browser that can tell a click's focus apart
     takes the ring back from it.
 */
@@ -258,8 +259,9 @@ img.chat-tool-glyph {
 
 /*
     Shows by fading in and rising 3px home; hides by fading out faster, out of the pointer's way.
-    Animations rather than transitions, so each starts the moment the rest or the grace runs out:
-    a transition waits two frames for its starting class to be swapped, and the bar came late.
+    Moving from message to message plays neither, since the same bar is only moved. Animations
+    rather than transitions, so each starts the moment the rest or the grace runs out: a transition
+    waits two frames for its starting class to be swapped, and the bar came late.
 */
 .chat-tools-enter-active {
     animation: chat-tools-fade-in var(--chat-d-tools-show) linear, chat-tools-rise-in var(--chat-d-tools-move) var(--chat-ease-in);
@@ -278,12 +280,10 @@ img.chat-tool-glyph {
         transform: none;
     }
 
-    .chat-tools-enter-active {
-        animation: chat-tools-fade-in var(--chat-d-tools-show) linear;
-    }
-
+    /* No fade either: the bar is there or not. */
+    .chat-tools-enter-active,
     .chat-tools-leave-active {
-        animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards;
+        animation: none;
     }
 }
 
@@ -316,7 +316,6 @@ img.chat-tool-glyph {
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-    import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
@@ -365,14 +364,14 @@ img.chat-tool-glyph {
             default: false
         },
 
-        /** The pointer is over the message or its bar, as the feed's one hot message. */
-        isPointerInside: {
+        /** The column shows its one bar on this message: the pointer rested here, or a keyboard reached it. */
+        isShown: {
             type: Boolean,
             default: false
         },
 
-        /** The pointer moved here straight from another bar, so this one shows, and that one hides, at once. */
-        isSwapInstant: {
+        /** The column showed or hid the bar without a fade, as a scroll does. */
+        isInstant: {
             type: Boolean,
             default: false
         },
@@ -414,14 +413,10 @@ img.chat-tool-glyph {
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
         (e: "openPicker", message: TimelineMessage, anchor: HTMLElement): void;
-        (e: "visibilityChange", isShown: boolean, isHeld: boolean): void;
+        (e: "holdChange", isHeld: boolean): void;
     }>();
 
     // #region Values
-
-    /** The design's hover rest and grace, used when the sheet is not on the page. */
-    const fallbackRestMs = 60;
-    const fallbackGraceMs = 220;
 
     /** A column this narrow or less keeps one quick reaction and takes the bar closer to its edge. */
     const narrowColumnPx = 560;
@@ -432,9 +427,6 @@ img.chat-tool-glyph {
     const instance = getCurrentInstance();
 
     const barElement = ref<HTMLElement>();
-
-    /** The hover intent's verdict: shown once the pointer rested, hidden once its grace ran out. */
-    const isHovered = ref(false);
 
     const isMenuOpen = ref(false);
     const isFocusInside = ref(false);
@@ -447,9 +439,6 @@ img.chat-tool-glyph {
     const isFlush = ref(false);
     const isLow = ref(false);
     const isNarrow = ref(false);
-
-    let restTimer: ReturnType<typeof setTimeout> | null = null;
-    let graceTimer: ReturnType<typeof setTimeout> | null = null;
 
     /** The quick reaction the one tip names, moved to whichever the pointer rests on or a key reaches. */
     const tipAnchor = ref<HTMLElement>();
@@ -482,7 +471,7 @@ img.chat-tool-glyph {
     /** A menu, a picker or a keyboard's focus inside keeps the bar, wherever the pointer went. */
     const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value || isPickerOpen.value);
 
-    const isDrawn = computed((): boolean => canAct.value && (isHovered.value || isHeld.value));
+    const isDrawn = computed((): boolean => canAct.value && (props.isShown || isHeld.value));
 
     /** The first three favorites, or the first alone where the column is narrow. */
     const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, isNarrow.value ? 1 : 3));
@@ -695,30 +684,10 @@ img.chat-tool-glyph {
         return Array.from(barElement.value?.querySelectorAll<HTMLElement>(":scope > .chat-tools-react > button, :scope > button") ?? []);
     }
 
-    /**
-     * The element the bar is placed in, for the sheet's timings: the bar itself is not drawn while
-     * hidden, so its place in the page is where the timings are read.
-     */
+    /** The element the bar is drawn in, read while it is hidden too, from where its placeholder is. */
     function hostElement(): Element | null {
         const placeholder = instance?.proxy?.$el as Node | null | undefined;
         return placeholder?.parentElement ?? null;
-    }
-
-    function hoverMs(token: string, fallbackMs: number): number {
-        const host = hostElement();
-        return host ? tokenDuration(host, token, fallbackMs) : fallbackMs;
-    }
-
-    function clearTimers(): void {
-        if (restTimer) {
-            clearTimeout(restTimer);
-            restTimer = null;
-        }
-
-        if (graceTimer) {
-            clearTimeout(graceTimer);
-            graceTimer = null;
-        }
     }
 
     /**
@@ -728,8 +697,9 @@ img.chat-tool-glyph {
      * divider, off the divider's label.
      */
     async function place(): Promise<void> {
+        // The row's dock draws no box of its own, so the bar is placed against what holds the dock.
         const bar = barElement.value;
-        const host = bar?.parentElement;
+        const host = bar?.parentElement?.parentElement;
         const scroller = host?.closest<HTMLElement>("[data-chat-scroller]");
         if (!bar || !host || !scroller) {
             return;
@@ -762,34 +732,12 @@ img.chat-tool-glyph {
 
     // #region Watchers
 
-    // The hover intent. A pointer must rest a moment before the bar shows, so one passing over the
-    // feed does not flicker bars along its path, and may leave for a moment without losing it, so
-    // moving onto the bar never drops it. A move straight from another bar skips both.
-    watch(() => props.isPointerInside, isInside => {
-        clearTimers();
-
-        if (isInside === isHovered.value) {
-            return;
-        }
-
-        if (props.isSwapInstant) {
-            isHovered.value = isInside;
-            return;
-        }
-
-        if (isInside) {
-            restTimer = setTimeout(() => {
-                restTimer = null;
-                isHovered.value = true;
-            }, hoverMs("--chat-d-hover-rest", fallbackRestMs));
-        }
-        else {
-            graceTimer = setTimeout(() => {
-                graceTimer = null;
-                isHovered.value = false;
-            }, hoverMs("--chat-d-hover-grace", fallbackGraceMs));
-        }
-    }, { immediate: true });
+    // The column moves the one bar from message to message: the arrows start again from the
+    // first tool, and the tip of the last message's quick reaction goes.
+    watch(() => props.message?.id, () => {
+        activeTool.value = null;
+        hideTip();
+    });
 
     // A message that can no longer be acted on, deleted or opened in the editor, lets go of its hold.
     watch(canAct, isAble => {
@@ -799,17 +747,18 @@ img.chat-tool-glyph {
         }
     });
 
-    // Placed each time it shows, since the message may have moved since the last.
-    watch(isDrawn, async isShown => {
+    // Placed each time it shows or moves to another message, since the message may have moved since
+    // the last; and as it is first drawn, since the column draws it shown in the dock it first shows in.
+    watch([isDrawn, () => props.message?.id], async ([isShown]) => {
         if (isShown) {
             await nextTick();
             await place();
         }
-    });
+    }, { immediate: true });
 
-    // The feed keeps one bar at a time, so it hears when this one shows and when it holds.
-    watch([isDrawn, isHeld], ([isShown, isHolding]) => {
-        emit("visibilityChange", isShown, isHolding);
+    // The column keeps the bar where it is while something holds it.
+    watch(isHeld, isHolding => {
+        emit("holdChange", isHolding);
     });
 
     // #endregion Watchers
@@ -820,11 +769,10 @@ img.chat-tool-glyph {
         tipHost.value = overlayHostOf(hostElement());
     });
 
-    // A bar taken away while up, its message deleted or its row redrawn, tells the feed it went.
+    // A bar taken away while held, its column gone, lets the column go.
     onBeforeUnmount(() => {
-        clearTimers();
-        if (isDrawn.value || isHeld.value) {
-            emit("visibilityChange", false, false);
+        if (isHeld.value) {
+            emit("holdChange", false);
         }
     });
 

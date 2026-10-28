@@ -631,7 +631,7 @@ describe("the root's menu", () => {
     /** Rests the pointer on the root until its bar shows. */
     async function hoverRoot(w: VueWrapper): Promise<void> {
         await w.get("[data-hot-id='40']").trigger("pointerover");
-        await new Promise(resolve => setTimeout(resolve, 80));
+        await new Promise(resolve => setTimeout(resolve, 170));
         await nextTick();
     }
 
@@ -722,5 +722,35 @@ describe("the thread's entrance", () => {
 
         await w.setProps({ replies: [...replies(1).map(r => ({ ...r, person_alias_guid: anna, sender_nick_name: "Anna", sender_last_name: "Reyes" })), message(60, { parent_id: 40, person_alias_guid: ben, sender_nick_name: "Ben", sender_last_name: "Okafor" })] });
         expect(entered(w).isEntering).toBe(false);
+    });
+});
+
+// The thread keeps one action bar, as the conversation's feed does: it shows once the pointer
+// rests on a message and then moves from message to message at once.
+describe("the thread's action bar", () => {
+    test("is one bar, which moves to the next message the pointer reaches once it shows", async () => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const w = draw();
+            await nextTick();
+
+            await w.get("[data-hot-id='41']").trigger("pointerover");
+            jest.advanceTimersByTime(149);
+            await nextTick();
+            expect(w.findAll("[data-testid='action-bar']")).toHaveLength(0);
+
+            jest.advanceTimersByTime(1);
+            await nextTick();
+            await nextTick();
+            expect(w.get("[data-hot-id='41']").find("[data-testid='action-bar']").exists()).toBe(true);
+
+            await w.get("[data-hot-id='42']").trigger("pointerover");
+            await nextTick();
+            expect(w.findAll("[data-testid='action-bar']")).toHaveLength(1);
+            expect(w.get("[data-hot-id='42']").find("[data-testid='action-bar']").exists()).toBe(true);
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 });

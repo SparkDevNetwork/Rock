@@ -138,6 +138,8 @@
     --chat-r-quote-bottom: 6px;
     --chat-r-quote-ghost: 16px;
     --chat-r-bar: 18px;
+    --chat-r-tools: 10px;
+    --chat-r-tool: 7px;
     --chat-r-room-ic: 11px;
     --chat-r-hdr-ic: 12px;
     --chat-r-org: 10px;
@@ -187,7 +189,7 @@
     --chat-d-tools-show: 90ms;
     --chat-d-tools-move: 140ms;
     --chat-d-tools-hide: 80ms;
-    --chat-d-hover-rest: 60ms;
+    --chat-d-hover-rest: 150ms;
     --chat-d-hover-grace: 220ms;
     --chat-d-glyph: 140ms;
     --chat-d-glyph-press: 60ms;
