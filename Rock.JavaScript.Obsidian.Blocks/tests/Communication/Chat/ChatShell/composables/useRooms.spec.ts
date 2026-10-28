@@ -1743,6 +1743,102 @@ describe("the profile card's details from Rock", () => {
         expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: shown("anna@example.org") });
     });
 
+    test("an answer that shows nothing is not kept, so a person who turns details on is asked again at the next open", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.detailsCalls[0].answer.resolve({ isShown: false });
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { details: null }) });
+        await settle();
+        s.rooms.closeCard();
+
+        s.rooms.openCard(anna, team);
+
+        expect(s.detailsCalls).toHaveLength(2);
+        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
+    });
+
+    test("only the newest ask after quick changes of the switch is drawn and kept, however the answers arrive", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.detailsCalls[0].answer.resolve(shown("anna@example.org"));
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true }) });
+        await settle();
+
+        s.rooms.refreshCardDetails(Promise.resolve());
+        await settle();
+        s.rooms.refreshCardDetails(Promise.resolve());
+        await settle();
+        expect(s.detailsCalls).toHaveLength(3);
+
+        s.detailsCalls[2].answer.resolve({ isShown: false });
+        await settle();
+        s.detailsCalls[1].answer.resolve(shown("old@example.org"));
+        await settle();
+
+        expect(s.rooms.state.card?.rock).toEqual({ kind: "answered", details: { isShown: false } });
+
+        s.rooms.closeCard();
+        s.rooms.openCard(anna, team);
+        expect(s.detailsCalls).toHaveLength(4);
+    });
+
+    test("an answer to an open asked before the switch changed is neither drawn nor kept", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true }) });
+        jest.advanceTimersByTime(profileDetailsWait);
+        await settle();
+
+        s.rooms.refreshCardDetails(Promise.resolve());
+        await settle();
+        s.detailsCalls[0].answer.resolve(shown("old@example.org"));
+        await settle();
+
+        expect(s.rooms.state.card?.rock).toEqual({ kind: "loading" });
+
+        s.detailsCalls[1].answer.resolve({ isShown: false });
+        await settle();
+        s.rooms.closeCard();
+        s.rooms.openCard(anna, team);
+        expect(s.detailsCalls).toHaveLength(3);
+    });
+
+    test("after the person's own switch is saved, their card reads them again from the platform, so their badges show", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.detailsCalls[0].answer.resolve({ isShown: false });
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
+        await settle();
+
+        const saved = deferred<void>();
+        s.rooms.refreshCardDetails(saved.promise);
+        await settle();
+        expect(s.personCalls).toHaveLength(1);
+
+        saved.resolve();
+        await settle();
+        expect(s.personCalls.map(c => [c.personAliasGuid, c.channelId])).toEqual([[anna, team], [anna, team]]);
+
+        s.personCalls[1].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: { badge_keys: ["serving"] } }) });
+        await settle();
+        expect(s.rooms.state.card?.person?.details).toEqual({ badge_keys: ["serving"] });
+    });
+
+    test("a failed read after the save keeps the person the card already shows", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.detailsCalls[0].answer.resolve({ isShown: false });
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
+        await settle();
+
+        s.rooms.refreshCardDetails(Promise.resolve());
+        await settle();
+        s.personCalls[1].answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
+        await settle();
+
+        expect(s.rooms.state.card?.person?.nick_name).toBe("Anna");
+    });
+
     test("without Rock's door the card draws at once with nothing from Rock", async () => {
         const s = setup({ hasDetailsDoor: false });
         s.rooms.openCard(anna, team);
