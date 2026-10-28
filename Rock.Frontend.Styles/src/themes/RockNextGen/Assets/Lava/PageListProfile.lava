@@ -9,5 +9,4 @@
     </ul>
 </div>
 
-{{ '~~/Styles/newprofilenew.css' | AddCssLink }}
 <script src="{{ '~~/Assets/Scripts/profile.js' | ResolveRockUrl }}" type="text/javascript"></script>
