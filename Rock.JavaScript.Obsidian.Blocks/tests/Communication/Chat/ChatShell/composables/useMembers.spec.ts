@@ -626,19 +626,74 @@ describe("the reader's rights in the room", () => {
         expect(failing.state.canManageMembers).toBe(false);
     });
 
-    test("rights read once are kept for the room, so a reopen draws them on its first frame and asks nothing", async () => {
-        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [{ canManageMembers: true, lastLeaderPersonAliasGuid: guid(1) }] });
+    test("rights read once are drawn on a reopen's first frame, asked again, and a different answer replaces them in place", async () => {
+        const again = deferred<Rights>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [{ canManageMembers: true, lastLeaderPersonAliasGuid: guid(1) }, again] });
         await members.open(channel);
         await settle();
         members.close();
 
-        void members.open(channel);
+        const opened = members.open(channel);
         expect(members.state.canManageMembers).toBe(true);
         expect(members.state.lastLeaderPersonAliasGuid).toBe(guid(1));
         expect(members.state.isReadingRights).toBe(false);
+        expect(doorCalls).toHaveLength(2);
+
+        again.resolve({ canManageMembers: true, lastLeaderPersonAliasGuid: guid(2) });
+        await opened;
         await settle();
 
-        expect(doorCalls).toEqual([{ door: "getRights", args: [channel] }]);
+        expect(members.state.isReadingRights).toBe(false);
+        expect(members.state.lastLeaderPersonAliasGuid).toBe(guid(2));
+    });
+
+    test("a reopen reached for ahead waits for that read rather than asking twice", async () => {
+        const again = deferred<Rights>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [{ canManageMembers: true }, again] });
+        await members.open(channel);
+        await settle();
+        members.close();
+
+        members.readAhead(channel);
+        const opened = members.open(channel);
+        again.resolve({ canManageMembers: false });
+        await opened;
+        await settle();
+
+        expect(doorCalls).toHaveLength(2);
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
+    test("after the person's topic is joined again nothing held stands, since a change may have been missed", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [{ canManageMembers: true }, { canManageMembers: false }] });
+        await members.open(channel);
+        await settle();
+        members.close();
+
+        members.rejoined();
+        const opened = members.open(channel);
+        expect(members.state.isReadingRights).toBe(true);
+        expect(members.state.canManageMembers).toBe(false);
+        await opened;
+        await settle();
+
+        expect(doorCalls).toHaveLength(2);
+    });
+
+    test("the panel open when the person's topic is joined again reads the room again in place", async () => {
+        const { members, calls, doorCalls } = doorHarness({ calls: [page([tom]), page([tom, ben])], rights: [{ canManageMembers: false }, { canManageMembers: true }] });
+        await members.open(channel);
+        await settle();
+
+        members.rejoined();
+        expect(members.state.isLoading).toBe(false);
+        expect(members.state.isReadingRights).toBe(false);
+        await settle();
+
+        expect(calls).toHaveLength(2);
+        expect(doorCalls).toHaveLength(2);
+        expect(names(members.state.rows)).toEqual(["Tom", "Ben"]);
+        expect(members.state.canManageMembers).toBe(true);
     });
 
     test("reading ahead, as the person reaches for the panel, has the rights there when it opens", async () => {

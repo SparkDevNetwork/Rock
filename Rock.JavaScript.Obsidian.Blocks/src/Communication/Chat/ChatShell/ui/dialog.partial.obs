@@ -9,15 +9,15 @@
              @click.self="onScrimClick">
             <div ref="dialogElement"
                  class="chat-dialog"
-                 :class="{ 'is-wide': isWide || isSettings, 'is-settings': isSettings }"
+                 :class="{ 'is-wide': isWide || isPanel, 'is-panel': isPanel }"
                  role="dialog"
                  aria-modal="true"
-                 :tabindex="isSettings ? -1 : undefined"
+                 :tabindex="isPanel ? -1 : undefined"
                  :aria-labelledby="titleId"
                  data-testid="dialog"
                  @keydown="onKeydown">
-                <!-- A settings dialog: a fixed head with its tools, and a body that scrolls under it. -->
-                <template v-if="isSettings">
+                <!-- A panel: a fixed head with its tools, and a body that scrolls under it. -->
+                <template v-if="isPanel">
                     <div class="chat-dialog-head">
                         <h3 :id="titleId" class="chat-dialog-title">{{ title }}</h3>
                         <slot name="tools" />
@@ -113,8 +113,8 @@
     }
 }
 
-/* A settings dialog keeps its head in view and scrolls only its body, within the frame's height. */
-.chat-dialog.is-settings {
+/* A panel keeps its head in view and scrolls only its body, within the frame's height. */
+.chat-dialog.is-panel {
     display: flex;
     flex-direction: column;
     max-height: calc(100% - 8px);
@@ -338,8 +338,11 @@
             default: false
         },
 
-        /** Whether this is a settings dialog: a head holding the title and the tools slot, no actions row. */
-        isSettings: {
+        /**
+         * Whether this is a panel rather than a question: a head holding the title and the tools
+         * slot, a body that scrolls under it, and no actions row, as settings and lists are.
+         */
+        isPanel: {
             type: Boolean,
             default: false
         },
@@ -427,8 +430,8 @@
 
     /**
      * A destructive confirm starts on Cancel, so Enter never deletes by accident; any other on the
-     * control it marks, else its first. A settings dialog's first control is the close button in
-     * its head, focused quietly so its tooltip does not show unasked.
+     * control it marks, else its first. A panel's first control is the close button in its head,
+     * focused quietly so its tooltip does not show unasked.
      */
     function focusFirst(): void {
         const marked = dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]");
@@ -438,7 +441,7 @@
         else if (marked) {
             marked.focus({ preventScroll: true });
         }
-        else if (props.isSettings && focusables()[0]) {
+        else if (props.isPanel && focusables()[0]) {
             focusQuietly(focusables()[0]);
         }
         else {
@@ -446,10 +449,13 @@
         }
     }
 
-    /** Gives focus back to the opener, when it is still on the page. */
+    /**
+     * Gives focus back to the opener, when it is still on the page, quietly: the person is
+     * leaving the dialog, not reaching for the opener, so its tooltip or card does not rise.
+     */
     function returnFocus(): void {
         if (opener && opener.isConnected) {
-            opener.focus({ preventScroll: true });
+            focusQuietly(opener, { preventScroll: true });
         }
         opener = null;
     }

@@ -21,6 +21,8 @@
                     :aria-pressed="reaction.mine ? 'true' : 'false'"
                     :aria-label="chipLabel(reaction)"
                     :aria-describedby="`${uid}-who-${index}`"
+                    :aria-expanded="isCardOn(reaction.code) ? 'true' : 'false'"
+                    :aria-controls="isCardOn(reaction.code) ? `${uid}-card` : undefined"
                     :aria-disabled="isPreviewing ? 'true' : undefined"
                     @pointerenter="onChipEnter($event, reaction)"
                     @pointerleave="onPointerLeave"
@@ -67,6 +69,7 @@
             -->
             <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
                 <div v-if="isTipShown && tipReaction"
+                     :id="`${uid}-card`"
                      ref="tipElement"
                      class="chat-rx-card-place"
                      :style="floatingStyles"
@@ -415,6 +418,10 @@
             timer: window.setTimeout(() => {
                 longPress = null;
                 isClickSwallowed = true;
+
+                // The list gives focus back to the chip it opened from, so the chip holds it first,
+                // quietly, as See all does: not the composer, which would raise a phone's keyboard.
+                focusQuietly(chip);
                 openList(code, chip);
             }, holdMs)
         };
@@ -488,6 +495,11 @@
         tipAnchor.value = chip;
         tipCode.value = reaction.code;
         preloadPhotos([props.reader.photoUrl, ...(reaction.reactors ?? []).map(reactor => reactor.avatar_url)]);
+    }
+
+    /** Whether the card shows on this chip, which then says so. */
+    function isCardOn(code: string): boolean {
+        return isTipShown.value && tipCode.value === code && !!tipReaction.value;
     }
 
     function openList(code: string, chip: HTMLElement): void {

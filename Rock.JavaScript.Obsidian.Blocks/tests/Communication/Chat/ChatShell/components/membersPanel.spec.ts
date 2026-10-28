@@ -396,6 +396,25 @@ describe("Add people", () => {
         expect(foot(searching).find("[data-testid='members-add']").exists()).toBe(true);
     });
 
+    test("holds its place, drawing nothing in it, while Rock has not said whether the reader may add; the list is drawn meanwhile", async () => {
+        const w = draw({ isAddPending: true });
+
+        expect(w.find("[data-testid='member-skeleton']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='member-row']").length).toBeGreaterThan(0);
+        expect(foot(w).classes()).toContain("is-reserved");
+        expect(foot(w).find("[data-testid='members-add']").exists()).toBe(false);
+
+        await w.setProps({ isAddPending: false, canManageMembers: true });
+        expect(foot(w).classes()).not.toContain("is-reserved");
+        expect(foot(w).find("[data-testid='members-add']").exists()).toBe(true);
+    });
+
+    test("holds no place where the list is refused or failed, though Rock has not answered", () => {
+        expect(draw({ isAddPending: true, refusal: "not_member" }).find("[data-testid='members-foot']").exists()).toBe(false);
+        wrapper?.unmount();
+        expect(draw({ isAddPending: true, error: { code: "net.offline", severity: "failed", text: "Offline" } }).find("[data-testid='members-foot']").exists()).toBe(false);
+    });
+
     test("is not offered to someone who may not add, nor where the list is refused or failed", () => {
         expect(draw().find("[data-testid='members-foot']").exists()).toBe(false);
         wrapper?.unmount();

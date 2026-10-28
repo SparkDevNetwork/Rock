@@ -410,6 +410,40 @@ describe("a chip's card from the keyboard", () => {
 
         expect(document.activeElement).toBe(chips(w)[1].element);
     });
+
+    test("Tab past See all skips what is not drawn", async () => {
+        jest.useFakeTimers();
+        const host = document.createElement("div");
+        document.body.append(host);
+        const hidden = document.createElement("div");
+        hidden.style.display = "none";
+        hidden.innerHTML = "<button type='button'>Hidden</button>";
+        const after = document.createElement("button");
+        after.type = "button";
+        document.body.append(hidden, after);
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, isPhone: true, message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]) }, attachTo: host });
+        await focusCard(wrapper);
+        await chips(wrapper)[0].trigger("keydown", { key: "Tab" });
+
+        document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+        await settle();
+
+        expect(document.activeElement).toBe(after);
+    });
+
+    test("the chip that holds the card says so, and names it", async () => {
+        jest.useFakeTimers();
+        const w = mountRow({ message: message([pray(12, false, [person(anna, "Anna", "Reyes")]), heart(1)]) });
+        expect(chips(w)[0].attributes("aria-expanded")).toBe("false");
+        expect(chips(w)[0].attributes("aria-controls")).toBeUndefined();
+
+        await focusCard(w);
+
+        const controls = chips(w)[0].attributes("aria-controls");
+        expect(chips(w)[0].attributes("aria-expanded")).toBe("true");
+        expect(controls && document.getElementById(controls)?.querySelector("[data-testid='reaction-card']")).toBeTruthy();
+        expect(chips(w)[1].attributes("aria-expanded")).toBe("false");
+    });
 });
 
 describe("the full list", () => {
@@ -482,6 +516,43 @@ describe("the full list", () => {
         chip.element.dispatchEvent(menu);
 
         expect(menu.defaultPrevented).toBe(true);
+    });
+
+    // Closing the list gives focus back to the chip without the card rising over it again.
+    test("closed after See all, gives focus back to the chip and no card follows", async () => {
+        jest.useFakeTimers();
+        const w = mountRow({ message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]), listReactors: async () => ({ reactors: [], has_more: false }) });
+        await rest(chips(w)[0]);
+        (card()!.querySelector("[data-testid='reaction-card-more']") as HTMLElement).click();
+        await settle();
+        await chips(w)[0].trigger("pointerleave");
+
+        (document.querySelector("[data-testid='reactors-close']") as HTMLElement).click();
+        await settle();
+        jest.advanceTimersByTime(1000);
+        await settle();
+
+        expect(document.activeElement).toBe(chips(w)[0].element);
+        expect(card()).toBeNull();
+    });
+
+    test("closed after a long press, gives focus back to the chip and no card follows", async () => {
+        jest.useFakeTimers();
+        const w = mountRow({ message: message([pray(2, true, [person(anna, "Anna", "Reyes")])]), listReactors: async () => ({ reactors: [], has_more: false }) });
+        const chip = chips(w)[0];
+        await chip.trigger("pointerdown", { pointerType: "touch", clientX: 10, clientY: 10 });
+        jest.advanceTimersByTime(450);
+        await settle();
+        await chip.trigger("pointerup", { pointerType: "touch" });
+        await chip.trigger("click");
+
+        (document.querySelector("[data-testid='reactors-close']") as HTMLElement).click();
+        await settle();
+        jest.advanceTimersByTime(1000);
+        await settle();
+
+        expect(document.activeElement).toBe(chip.element);
+        expect(card()).toBeNull();
     });
 });
 

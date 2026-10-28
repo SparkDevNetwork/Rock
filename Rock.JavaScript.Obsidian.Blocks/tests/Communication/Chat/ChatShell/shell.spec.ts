@@ -2227,6 +2227,21 @@ describe("the live sidebar", () => {
             expect(h.counts.bootstraps).toBe(before + 1);
         });
 
+        test("tells the members a change to any room may have been missed, with the sidebar's reload", async () => {
+            const h = await startedLive();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            const rejoined = jest.spyOn(h.shell.members, "rejoined");
+
+            personalStatus(h, "CHANNEL_ERROR");
+            personalStatus(h, "SUBSCRIBED");
+            await settle();
+            jest.advanceTimersByTime(2_600);
+            await settle();
+
+            expect(rejoined).toHaveBeenCalledTimes(1);
+        });
+
         test("shares its reload with another rejoin and with a reload asked during the wait", async () => {
             const h = await startedLive();
             jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });

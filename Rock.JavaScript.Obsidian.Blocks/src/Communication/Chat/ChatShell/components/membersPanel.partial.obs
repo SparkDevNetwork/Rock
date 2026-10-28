@@ -159,12 +159,15 @@
 
         <!--
             Pinned under the list, so it is reachable however far the list scrolls, and drawn from
-            the first frame, the roster loading or not. A full group keeps it focusable but
-            disabled, its reason said under it and read with it.
+            the first frame, the roster loading or not. Until Rock says whether the reader may add,
+            its place is held empty, so the button arriving moves nothing. A full group keeps it
+            focusable but disabled, its reason said under it and read with it.
         -->
-        <template v-if="isAddShown" #foot>
-            <div class="chat-mb-foot" data-testid="members-foot">
-                <button type="button"
+        <template v-if="isAddShown || isAddHeld" #foot>
+            <div class="chat-mb-foot" :class="{ 'is-reserved': isAddHeld }" data-testid="members-foot">
+                <div v-if="isAddHeld" class="chat-mb-add is-place" aria-hidden="true"></div>
+                <button v-else
+                        type="button"
                         class="chat-mb-add"
                         data-testid="members-add"
                         :aria-disabled="isGroupFull ? 'true' : undefined"
@@ -440,6 +443,15 @@
     border: 1px solid var(--chat-line-strong);
     border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* The button's place while Rock has not answered: its box, drawn as nothing, under no line yet. */
+.chat-mb-foot.is-reserved {
+    border-top-color: transparent;
+}
+
+.chat-mb-add.is-place {
+    visibility: hidden;
 }
 
 .chat-mb-add .chat-ic {
@@ -769,6 +781,12 @@
             default: false
         },
 
+        /** Whether Rock has yet to say if the reader may add here, nothing being held for the room. */
+        isAddPending: {
+            type: Boolean,
+            default: false
+        },
+
         /** Whether the reader is a Chat Administrator, the only one who may remove a channel's leader. */
         isChatAdministrator: {
             type: Boolean,
@@ -877,6 +895,9 @@
 
     /** Offered where Rock lets the reader add, unless the list itself is refused or failed. */
     const isAddShown = computed((): boolean => props.canManageMembers && !props.refusal && !props.error);
+
+    /** Add people's place, held while Rock has not answered, unless the list itself is refused or failed. */
+    const isAddHeld = computed((): boolean => !isAddShown.value && props.isAddPending && !props.refusal && !props.error);
 
     // #endregion Computed Values
 

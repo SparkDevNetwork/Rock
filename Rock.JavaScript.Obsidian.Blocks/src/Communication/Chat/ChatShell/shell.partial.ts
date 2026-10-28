@@ -1052,6 +1052,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * Reads the sidebar again after the personal topic was joined again, after a random wait so a
      * Realtime restart that rejoins every client at once does not read every sidebar in the same
      * second. Live signals still apply meanwhile, and any reload asked during the wait is this one.
+     * What the members hold of a room's rights may have missed a change too, and goes with it.
      */
     function reloadAfterRejoin(): void {
         if (sidebarWait !== null || isStopped) {
@@ -1059,6 +1060,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         }
         sidebarWait = setTimeout(() => {
             sidebarWait = null;
+            members.rejoined();
             void loadSidebar().catch(() => undefined);
         }, Math.random() * channelChangedWaitMs);
     }

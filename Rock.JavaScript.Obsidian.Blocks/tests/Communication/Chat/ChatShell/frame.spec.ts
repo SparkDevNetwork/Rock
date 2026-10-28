@@ -3929,7 +3929,7 @@ describe("the members panel", () => {
         return members;
     }
 
-    test("reaching for the header's members button reads the room's rights ahead, and the panel loads until they are in", async () => {
+    test("reaching for the header's members button reads the room's rights ahead, and only Add people's place waits for them", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
         const members = mockShell!.members as Record<string, jest.Mock> & { state: Record<string, unknown> };
@@ -3939,14 +3939,17 @@ describe("the members panel", () => {
 
         await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
         await settle();
+        members.state.rows = [annaMember];
         members.state.isReadingRights = true;
         await settle();
-        expect(w.find("[data-testid='member-skeleton']").exists()).toBe(true);
+        expect(w.find("[data-testid='member-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='members-foot']").classes()).toContain("is-reserved");
+        expect(w.find("[data-testid='members-add']").exists()).toBe(false);
 
         members.state.isReadingRights = false;
         members.state.canManageMembers = true;
         await settle();
-        expect(w.find("[data-testid='member-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='members-foot']").classes()).not.toContain("is-reserved");
         expect(w.find("[data-testid='members-add']").exists()).toBe(true);
     });
 

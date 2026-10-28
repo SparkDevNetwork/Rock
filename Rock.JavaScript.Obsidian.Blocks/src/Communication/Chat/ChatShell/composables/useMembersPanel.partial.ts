@@ -68,9 +68,9 @@ export function useMembersPanel(dependencies: MembersPanelDependencies) {
             ...room.value,
             members: shownMembers(members),
             hasMore: isQuery ? members.search.hasMore : members.hasMore,
-            // Loading until Rock says what the reader may change too, so Add people is never
-            // drawn after the list it belongs with.
-            isLoading: members.isLoading || members.isReadingRights,
+            // The list never waits on Rock: only Add people's place is held until it answers.
+            isLoading: members.isLoading,
+            isAddPending: members.isReadingRights,
             isLoadingMore: members.isLoadingMore,
             error: members.error,
             moreError: members.moreError,

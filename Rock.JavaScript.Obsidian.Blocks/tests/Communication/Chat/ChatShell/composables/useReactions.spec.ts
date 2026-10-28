@@ -634,6 +634,23 @@ describe("who reacted", () => {
         expect(heldReactors(timelines, "pray")).toEqual(held);
     });
 
+    test("an answer read before an event for the message keeps the event's counts and faces, and lays only the pressed mark", async () => {
+        const answer = deferred<CallResult>();
+        const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 1), reactors: [person(anna, "Anna", "Reyes")] } as never])], [answer]);
+        const prayThree = [person(david, "David", "Okafor"), person(anna, "Anna", "Reyes")];
+        const heartThree = [person(david, "David", "Okafor"), person(me, "Jordan", "Ellis")];
+
+        const pressing = reactions.toggle(channel, 42, glyph("heart"));
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", david), reactors: prayThree });
+        reactions.applyEvent(channel, "reaction.added", { ...added("heart", david), reactors: heartThree });
+        answer.resolve(ok({ message_id: 42, reactions: [{ ...rx("pray", 1), reactors: [person(anna, "Anna", "Reyes")] }, { ...rx("heart", 1, true), reactors: [person(me, "Jordan", "Ellis")] }] }));
+        await pressing;
+
+        expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 2, mine: false }, { code: "heart", count: 2, mine: true }]);
+        expect(heldReactors(timelines, "pray")).toEqual(prayThree);
+        expect(heldReactors(timelines, "heart")).toEqual(heartThree);
+    });
+
     test("an answer's chip brings its three", async () => {
         const three = [person(me, "Jordan", "Ellis"), person(anna, "Anna", "Reyes")];
         const { reactions, timelines } = await setup([message(42, [rx("pray", 1)])], [ok({ message_id: 42, reactions: [{ ...rx("pray", 2, true), reactors: three }] })]);
@@ -705,6 +722,13 @@ describe("the card's people", () => {
 
         expect(card.people.map(p => p.label)).toEqual(["You", "Anna Reyes"]);
         expect(card.rest).toBe(1);
+    });
+
+    test("names a person once while two of their aliases are both carried, as during a merge", () => {
+        const underOther = { ...person(anna, "Anna", "Reyes"), reactor_person_alias_guid: "a0000009-0000-4000-8000-000000000000" };
+        const card = whoReacted(chip(4, false, [person(anna, "Anna", "Reyes"), underOther, person(david, "David", "Okafor")]), reader);
+
+        expect(card.people.map(p => p.key)).toEqual([anna, david]);
     });
 
     test("leaves a nameless person to the count", () => {
