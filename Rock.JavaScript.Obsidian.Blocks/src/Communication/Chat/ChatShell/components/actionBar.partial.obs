@@ -279,10 +279,13 @@ img.chat-tool-glyph {
         transform: none;
     }
 
-    /* No fade either: the bar is there or not. */
-    .chat-tools-enter-active,
+    /* Fades in and out where it stands, as every entrance does, without the rise and sink. */
+    .chat-tools-enter-active {
+        animation: chat-tools-fade-in var(--chat-d-tools-show) linear;
+    }
+
     .chat-tools-leave-active {
-        animation: none;
+        animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards;
     }
 }
 

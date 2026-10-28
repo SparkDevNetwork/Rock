@@ -46,6 +46,8 @@
 // and the tools is data-testid="action-bar-separator". The column is the nearest element marked
 // data-chat-scroller, narrow at 560px wide or less.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { nextTick } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -546,5 +548,37 @@ describe("the bar in a narrow column", () => {
 
         expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
         expect(w.find("[data-testid='action-bar-separator']").exists()).toBe(true);
+    });
+});
+
+// Asked for less motion, an entrance becomes a short fade rather than nothing: the bar fades in
+// and out where it stands, without its 3px rise and sink.
+describe("the bar under reduced motion", () => {
+    /** Each rule the bar's styles give under reduced motion, by selector. */
+    function reducedMotionRules(): Map<string, string> {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        const start = style.indexOf("@media (prefers-reduced-motion: reduce)");
+        let depth = 0;
+        let end = style.indexOf("{", start);
+        do {
+            depth += style[end] === "{" ? 1 : style[end] === "}" ? -1 : 0;
+            end++;
+        } while (depth > 0 && end < style.length);
+        const inner = style.slice(style.indexOf("{", start) + 1, end - 1);
+        const rules = new Map<string, string>();
+        for (const rule of inner.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+            for (const selector of rule[1].split(",")) {
+                rules.set(selector.trim(), rule[2].trim());
+            }
+        }
+        return rules;
+    }
+
+    test("fades in and out, with no rise or sink", () => {
+        const rules = reducedMotionRules();
+
+        expect(rules.get(".chat-tools-enter-active")).toMatch(/animation:\s*chat-tools-fade-in var\(--chat-d-tools-show\) linear;?$/);
+        expect(rules.get(".chat-tools-leave-active")).toMatch(/animation:\s*chat-tools-fade-out var\(--chat-d-tools-hide\) linear forwards;?$/);
     });
 });
