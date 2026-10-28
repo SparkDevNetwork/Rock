@@ -154,7 +154,7 @@ namespace Rock.Reporting.DataSelect.Group
                     var formattedList = new List<string>();
                     foreach ( var groupMember in groupMemberList )
                     {
-                        var formattedPersonFullName = Rock.Model.Person.FormatFullName( groupMember.NickName, groupMember.LastName, groupMember.SuffixValueId );
+                        var formattedPersonFullName = Rock.Model.Person.FormatFullName( groupMember.NickName, groupMember.LastName, groupMember.SuffixValueId ).EncodeHtml();
                         string formattedValue;
                         if ( showAsLinkType == ShowAsLinkType.PersonLink )
                         {
@@ -223,7 +223,7 @@ namespace Rock.Reporting.DataSelect.Group
                 var formattedList = new List<string>();
                 foreach ( var m in members )
                 {
-                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId );
+                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId ).EncodeHtml();
                     string html;
                     if ( ShowAs == ShowAsLinkType.PersonLink )
                     {

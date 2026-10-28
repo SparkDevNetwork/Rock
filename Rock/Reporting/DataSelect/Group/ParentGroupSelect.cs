@@ -135,15 +135,34 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+
+            /*
+                10/27/26 - JMH
+
+                When the value is a link, the markup (and the encoded name inside it) is built in
+                GetExpression, so the grid must not encode it again. Otherwise the value is the raw
+                name, so the grid encodes it.
+
+                Reason: Display parent group names as text in reports.
+            */
             var result = new BoundField();
-            result.HtmlEncode = false;
+            result.HtmlEncode = !showAsLink;
             return result;
         }
 
         /// <inheritdoc/>
         public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new HtmlObsidianGridField();
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+
+            // Only the link markup built in GetExpression is safe to render as HTML; a plain name must render as text.
+            if ( showAsLink )
+            {
+                return new HtmlObsidianGridField();
+            }
+
+            return new TextObsidianGridField();
         }
 
         /// <summary>
@@ -209,8 +228,17 @@ namespace Rock.Reporting.DataSelect.Group
 
             if ( showAsLink )
             {
+                /*
+                    10/27/26 - JMH
+
+                    The link markup is built in SQL, so the name is HTML encoded there (with REPLACE)
+                    before it is placed inside the anchor, so the grid does not encode it again.
+                    Only &, < and > are encoded because the name is element content and the href is built from the Id only.
+
+                    Reason: Display parent group names as text in reports.
+                */
                 // return string in format: <a href='/group/{groupId}'>Name</a>
-                groupParentLinkQry = groupParentQry.Select( p => "<a href='" + baseGroupUrl + p.ParentGroupId.ToString() + "'>" + p.ParentGroup.Name + "</a>" );
+                groupParentLinkQry = groupParentQry.Select( p => "<a href='" + baseGroupUrl + p.ParentGroupId.ToString() + "'>" + p.ParentGroup.Name.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ) + "</a>" );
             }
             else
             {

@@ -136,6 +136,18 @@ namespace Rock.Blocks.Communication
                     .Include( c => c.Attachments.Select( a => a.BinaryFile ) )
                     .FirstOrDefault();
 
+                if ( communicationTemplate != null && !communicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return new CommunicationTemplateDetailInitializationBox
+                    {
+                        ErrorMessage = "You are not authorized to view this communication template.",
+                        NavigationUrls =
+                        {
+                            [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                        }
+                    };
+                }
+
                 if ( communicationTemplate != null )
                 {
                     box.Title = "Edit Communication Template";

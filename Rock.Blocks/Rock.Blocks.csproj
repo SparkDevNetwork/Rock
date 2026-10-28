@@ -18,6 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="SparkDevNetwork.Rock.SampleData.Loader" Version="0.1.0-alpha.13" />
   </ItemGroup>
 
   <ItemGroup>

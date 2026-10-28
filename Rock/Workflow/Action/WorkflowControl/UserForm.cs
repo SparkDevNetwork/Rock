@@ -1155,7 +1155,7 @@ namespace Rock.Workflow.Action
 
             FormCompletionActionSettings completionActionSettings;
 
-            if ( workflowType.FormBuilderTemplate != null )
+            if ( workflowType.FormBuilderTemplate?.CompletionActionSettings != null )
             {
                 completionActionSettings = workflowType.FormBuilderTemplate.CompletionActionSettings;
             }

@@ -125,22 +125,36 @@ namespace Rock.Rest
                 using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
+                    var entitySet = rockContext.Set<TEntity>();
+
+                    /*
+                        10/27/2026 - MSE
+
+                        Attach the record with the DbSet here, not service.Add. SetValues needs the
+                        clone to be tracked, but some services run their own rules in Add (for example
+                        StepService checks the StepTypeId), and those rules must see the final values
+                        and only run for an authorized caller. So Create attaches with the DbSet and
+                        calls service.Add once below, after the authorization check, so the service
+                        rules run on the populated record.
+
+                        Reason: Creating a Step through the REST API failed for a valid step type.
+                    */
 
                     // If the entity is not a dynamic proxy entity, then make it
                     // one so that lazy loading will work during the security
                     // check.
                     if ( !entity.IsDynamicProxyEntity() )
                     {
-                        var clone = rockContext.Set<TEntity>().Create();
+                        var clone = entitySet.Create();
 
-                        service.Add( clone );
+                        entitySet.Add( clone );
                         service.SetValues( entity, clone );
 
                         entity = clone;
                     }
                     else
                     {
-                        service.Add( entity );
+                        entitySet.Add( entity );
                     }
 
                     /*
@@ -185,6 +199,13 @@ namespace Rock.Rest
                     {
                         return isSystemResult;
                     }
+
+                    // Run the service's own add rules (such as the StepService
+                    // AllowMultiple and prerequisite checks) now that the values
+                    // are set and the caller is authorized. The entity is already
+                    // tracked as Added, so the DbSet add inside service.Add does
+                    // not add it a second time.
+                    service.Add( entity );
 
                     /*
                         10/19/2026 - MSE
@@ -1012,7 +1033,17 @@ namespace Rock.Rest
                 var newService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), newContext );
                 var asNew = newContext.Set<TEntity>().Create();
 
-                newService.Add( asNew );
+                /*
+                    10/27/2026 - MSE
+
+                    Attach the copy with the DbSet instead of newService.Add. SetValues needs the
+                    copy to be tracked, but some services run their own rules in Add (for example
+                    StepService checks the StepTypeId), and the copy is still empty at this point,
+                    so those rules fail for valid values. This copy is never saved.
+
+                    Reason: Changing the step type of a Step through the REST API failed.
+                */
+                newContext.Set<TEntity>().Add( asNew );
                 newService.SetValues( entity, asNew );
 
                 // Clear these before any navigation property is read.

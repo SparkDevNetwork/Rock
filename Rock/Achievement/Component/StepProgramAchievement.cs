@@ -21,11 +21,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Dynamic;
-
-using Lucene.Net.Support;
-
-using OpenXmlPowerTools;
 
 using Rock.Attribute;
 using Rock.Configuration;
