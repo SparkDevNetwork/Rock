@@ -274,6 +274,65 @@ test('the icon itself may size its own drawing', () => {
   assert.deepEqual(scan(`${shell}/ui/icon.partial.obs`, icon), []);
 });
 
+test('it refuses an icon reached as an svg, through :deep(), by its class attribute, or sized by its logical size', () => {
+  // The icon is the svg every icon draws, so a rule on an svg sizes one as surely as a rule on
+  // its class does; and inline-size and block-size are its width and height by other names.
+  const component = [
+    '<style scoped>',
+    '.chat-row svg { width: 16px; }',
+    '.chat-row :deep(svg) { height: 16px; }',
+    '.chat-row [class~="chat-ic"] { width: 16px; }',
+    '.chat-row :deep(.chat-ic) { inline-size: 16px; }',
+    '.chat-row .chat-ic { block-size: 16px; }',
+    '.chat-row > svg.is-big { max-inline-size: 20px; }',
+    '.chat-row :is(.chat-ic, .other) { width: 16px; }',
+    '</style>',
+  ].join('\n');
+
+  const hits = scan(`${shell}/components/example.partial.obs`, component);
+
+  assert.deepEqual(linesOf(hits), [2, 3, 4, 5, 6, 7, 8], hits.join(' | '));
+});
+
+test('it refuses an icon given its size by an inline style, bound or not', () => {
+  const component = [
+    '<template>',
+    '    <div class="chat-row">',
+    '        <Icon name="bell" :style="{ width: size + \'px\' }" />',
+    '        <Icon name="bell" style="height: 12px" />',
+    '        <svg class="chat-ic" :style="{ \'stroke-width\': 2 }"></svg>',
+    '        <Icon name="bell" :style="{ \'--chat-ic-size\': size + \'px\' }" />',
+    '        <div :style="{ width: size + \'px\' }"></div>',
+    '    </div>',
+    '</template>',
+  ].join('\n');
+
+  const hits = scan(`${shell}/components/example.partial.obs`, component);
+
+  assert.deepEqual(linesOf(hits), [3, 4, 5], hits.join(' | '));
+});
+
+test('a rule on what holds an icon, or beside one, is not a rule on the icon', () => {
+  // Only the last compound of a selector is the element its rule sizes, so an icon named earlier
+  // in it, or inside :has() or :not(), names what the rule's element holds, follows or is not.
+  const component = [
+    '<style scoped>',
+    '.chat-tool:has(.chat-ic) { width: 28px; }',
+    '.chat-ic + span { width: 28px; }',
+    '.chat-ic ~ .chat-label { min-width: 0; }',
+    '.chat-row .chat-ic.is-big > .chat-x { height: 4px; }',
+    'svg + .chat-tool { width: 28px; }',
+    '.chat-tool:not(.chat-ic) { width: 28px; }',
+    '.chat-svg-box { width: 28px; }',
+    '.chat-row :deep(.chat-ic) + .chat-label { width: 28px; }',
+    '</style>',
+  ].join('\n');
+
+  const hits = scan(`${shell}/components/example.partial.obs`, component);
+
+  assert.deepEqual(hits, []);
+});
+
 test('run on the red fixtures, it names each hole a whole-string check would miss', () => {
   const result = run('--root', 'check-styles-fixtures/red');
 

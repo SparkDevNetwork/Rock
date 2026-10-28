@@ -15,10 +15,12 @@
 // without the region it is read whole. A stylesheet anywhere else in the gate's reach is read
 // whole, as a style block.
 //
-// It also refuses a rule outside the icon that sets an icon's width, height or stroke width,
-// the token sheet included. Such a rule and the icon's own size rule weigh the same, so which one
-// draws is decided by the order the built styles load in, which no test sees; a caller sizes an
-// icon through --chat-ic-size and --chat-ic-stroke, which the icon reads.
+// It also refuses a rule outside the icon that sets an icon's width, height (by their logical
+// names too) or stroke width, the token sheet included, and an inline style on an icon that does.
+// Such a rule and the icon's own size rule weigh the same, so which one draws is decided by the
+// order the built styles load in, which no test sees; a caller sizes an icon through
+// --chat-ic-size and --chat-ic-stroke, which the icon reads. A rule is on an icon when the last
+// compound of its selector names one, by its class or as the svg every icon draws.
 //
 //   node check-styles.mjs                checks the chat block, everything under its folder and the token sheet
 //   node check-styles.mjs --root <dir>   checks every component under a folder, which is how the
@@ -43,9 +45,82 @@ const exempt = new Map([
 /** The one file whose rules size an icon's drawing. */
 const iconOwner = 'icon.partial.obs';
 
-/** A selector that reaches an icon's drawing, and the properties only the icon sets on it. */
-const ICON = /\.chat-ic(?![\w-])/;
-const ICON_SIZE = /^(width|height|min-width|min-height|max-width|max-height|stroke-width)$/;
+/**
+ * What names an icon in one compound selector: its class, its class as an attribute, or the svg
+ * every icon draws. And the properties only the icon sets on it, logical sizes included.
+ */
+const ICON_CLASS = /\.chat-ic(?![\w-])/;
+const ICON_ATTRIBUTE = /\[\s*class\s*~=\s*(["']?)chat-ic\1\s*\]/;
+const ICON_TYPE = /^(?:[\w*-]*\|)?svg(?![\w-])/i;
+const ICON_SIZE = /^((min-|max-)?(width|height|inline-size|block-size)|stroke-width)$/;
+
+/** Functional pseudo-classes whose arguments are the element itself, as opposed to :has() and :not(). */
+const SAME_ELEMENT = /^(?::deep|::v-deep|:slotted|:global|:is|:where|:matches|:-webkit-any)$/i;
+
+/**
+ * Splits a selector at the separators found outside brackets, parentheses and quotes, so a comma
+ * or a space inside :is(...) or [title="a b"] is left alone. Returns each part with where it starts.
+ */
+function splitOutside(text, isSeparator) {
+  const parts = [];
+  let depth = 0;
+  let quote = null;
+  let from = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quote) {
+      if (c === quote) quote = null;
+    } else if (c === '"' || c === '\'') {
+      quote = c;
+    } else if (c === '(' || c === '[') {
+      depth++;
+    } else if (c === ')' || c === ']') {
+      depth--;
+    } else if (depth === 0 && isSeparator(c)) {
+      parts.push(text.slice(from, i));
+      from = i + 1;
+    }
+  }
+  parts.push(text.slice(from));
+  return parts;
+}
+
+/**
+ * Whether a selector's rule lands on an icon. Only its last compound names the element the rule
+ * styles: an icon named before a combinator is something that element sits in or follows, and one
+ * inside :has() or :not() is something it holds or is not. Inside :deep(), :is() and their kind the
+ * argument is the element itself, so its own last compounds are read the same way.
+ */
+function isIconSelector(selector) {
+  return splitOutside(selector, (c) => c === ',').some((one) => {
+    const compounds = splitOutside(one.trim(), (c) => /[\s>+~]/.test(c)).filter((part) => part !== '');
+    const last = compounds[compounds.length - 1] ?? '';
+
+    let own = '';
+    for (let i = 0; i < last.length; i++) {
+      const pseudo = /^::?[\w-]+\(/.exec(last.slice(i));
+      if (!pseudo) {
+        own += last[i];
+        continue;
+      }
+      // The argument runs to the parenthesis that closes this one.
+      let depth = 0;
+      let end = i + pseudo[0].length - 1;
+      for (; end < last.length; end++) {
+        if (last[end] === '(') depth++;
+        else if (last[end] === ')' && --depth === 0) break;
+      }
+      const name = pseudo[0].slice(0, -1);
+      if (SAME_ELEMENT.test(name) && isIconSelector(last.slice(i + pseudo[0].length, end))) return true;
+      i = end;
+    }
+
+    return ICON_CLASS.test(own) || ICON_ATTRIBUTE.test(own) || ICON_TYPE.test(own);
+  });
+}
+
+/** A style binding or attribute that sizes what it is on, in CSS's names or a style object's. */
+const SIZE_IN_STYLE = /(^|[\s{,;'"])((min-|max-)?(width|height|inline-size|block-size)|stroke-width)['"]?\s*:/;
 
 /**
  * The text with an exempt region's characters blanked and its line breaks kept, so the rest is
@@ -157,7 +232,7 @@ function scanCss(file, text, start, end, hits, { isLiteralAllowed = false, isIco
     if (found) {
       hits.push(`${file}:${lineAt(text, start + valueOffset)}: ${found}`);
     }
-    if (!isIconOwner && ICON.test(selector) && ICON_SIZE.test(property)) {
+    if (!isIconOwner && ICON_SIZE.test(property) && isIconSelector(selector)) {
       hits.push(`${file}:${lineAt(text, start + valueOffset)}: an icon's ${property} set against the icon's own rules; set --chat-ic-size or --chat-ic-stroke on what holds it`);
     }
   };
@@ -249,6 +324,18 @@ function scanTemplate(file, text, start, end, hits) {
       if (found) hits.push(`${file}:${lineAt(text, valueStart)}: ${found} in an inline style`);
     } else {
       scanScript(file, text, valueStart, valueStart + value.length, hits);
+    }
+  }
+
+  // An inline style on an icon weighs more than the icon's own rules, so it sizes the icon past
+  // them; a caller passes --chat-ic-size and --chat-ic-stroke there instead.
+  for (const tag of template.matchAll(/<(Icon|svg)(?![\w-])([^>]*)>/g)) {
+    for (const match of tag[2].matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
+      const words = match[4].replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      if (SIZE_IN_STYLE.test(words)) {
+        const valueStart = start + tag.index + tag[1].length + 1 + match.index + match[0].length - match[4].length - 1;
+        hits.push(`${file}:${lineAt(text, valueStart)}: an icon's size set in its inline style; set --chat-ic-size or --chat-ic-stroke on what holds it`);
+      }
     }
   }
 }
