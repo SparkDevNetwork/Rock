@@ -89,6 +89,22 @@ describe("the card", () => {
         expect(w.find("[data-testid='reaction-card-more']").exists()).toBe(false);
     });
 
+    test("with no one named, the header's count says how many and See all stands alone, never a second count", async () => {
+        const nameless = (alias: string): Record<string, unknown> => ({ ...person(alias, "", ""), nick_name: null, last_name: null });
+        const w = draw(pray(48, false, [nameless(anna), nameless(david), nameless("a0000004-0000-4000-8000-000000000000")]));
+
+        expect(w.get("[data-testid='reaction-card-count']").text()).toBe("48 people");
+        expect(w.findAll("[data-testid='reaction-card-person']")).toHaveLength(0);
+        expect(w.text().match(/48 people/g)).toHaveLength(1);
+        expect(w.find(".chat-rx-card-disc").exists()).toBe(false);
+
+        const more = w.get("[data-testid='reaction-card-more']");
+        expect(more.text()).toBe("See all");
+        expect(more.attributes("aria-label")).toBe("See all 48 reactions");
+        await more.trigger("click");
+        expect(w.emitted("seeAll")).toHaveLength(1);
+    });
+
     test("one nameless person is the count alone", () => {
         const w = draw(pray(1, false, [{ ...person(david, "", ""), nick_name: null, last_name: null }]));
 

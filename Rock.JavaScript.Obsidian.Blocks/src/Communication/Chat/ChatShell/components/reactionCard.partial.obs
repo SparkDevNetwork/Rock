@@ -19,15 +19,20 @@
             <Avatar :people="[person.face]" :size="24" />
             <span class="chat-rx-card-name">{{ person.label }}</span>
         </div>
-        <!-- The rest as a fourth row on the same grid, so it lines up with the people above it. -->
+        <!--
+            The rest as a fourth row on the same grid, so it lines up with the people above it. With
+            no one named above, the rest are everyone the header already counts, so the row is See all alone.
+        -->
         <button v-if="card.isMoreShown"
                 type="button"
                 class="chat-rx-card-row is-more"
                 data-testid="reaction-card-more"
                 :aria-label="`See all ${reaction.count} reactions`"
                 @click="emit('seeAll')">
-            <span class="chat-rx-card-disc" aria-hidden="true">+{{ card.rest }}</span>
-            <span class="chat-rx-card-name is-muted">{{ restText }}</span>
+            <template v-if="card.people.length > 0">
+                <span class="chat-rx-card-disc" aria-hidden="true">+{{ card.rest }}</span>
+                <span class="chat-rx-card-name is-muted">{{ card.rest }} {{ card.rest === 1 ? "other" : "others" }}</span>
+            </template>
             <span class="chat-rx-card-see">See all<Icon name="right" size="xs" /></span>
         </button>
     </div>
@@ -194,11 +199,6 @@
     const card = computed((): WhoReacted => whoReacted(props.reaction, props.reader));
 
     const countText = computed((): string => `${props.reaction.count} ${props.reaction.count === 1 ? "person" : "people"}`);
-
-    // Under named people the rest are others; with no one named above, they are everyone.
-    const restText = computed((): string => card.value.people.length === 0
-        ? countText.value
-        : `${card.value.rest} ${card.value.rest === 1 ? "other" : "others"}`);
 
     // #endregion Computed Values
 </script>
