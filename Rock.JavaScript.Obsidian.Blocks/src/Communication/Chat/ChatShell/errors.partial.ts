@@ -125,12 +125,11 @@ export function messageForError(error: ChatError): string {
         : "Something went wrong in chat. Try again in a moment.";
 }
 
-/** What the person is told where a call reached nothing and the place has no words of its own. */
+/** What a change says when it could not be made because the person is offline, wherever it was asked. */
 export const offlineSentence = "You're offline. Try again when you're back.";
 
 /**
- * Whether a call reached nothing: not the platform, nor Rock's door in front of it. Every place
- * that calls the person offline does so for exactly these failures.
+ * Whether a call reached nothing: not the platform, nor Rock's door in front of it.
  *
  * @param error The classified failure.
  *
@@ -141,16 +140,33 @@ export function isUnreached(error: ChatError): boolean {
 }
 
 /**
- * What the person is told for a failure where a call that reached nothing says so in the words of
- * the place it failed, and any other failure in the server's.
+ * Whether a failed call is the person being offline, the one rule every place that says so asks:
+ * the call reached nothing, and the live connection is lost where the place knows it. Reaching
+ * nothing while the connection holds is a failure to try again, since the banner says nothing is
+ * wrong, and a call that was answered was reached whatever the connection says.
+ *
+ * @param error The classified failure, or null for a call that was not answered or not asked.
+ * @param isConnectionLost Whether the shell's live connection is lost; left out where the place
+ * does not know it, and the failure alone then decides.
+ *
+ * @returns True when the person is offline.
+ */
+export function isOfflineFailure(error: ChatError | null, isConnectionLost?: boolean): boolean {
+    return (error === null || isUnreached(error)) && (isConnectionLost ?? true);
+}
+
+/**
+ * What the person is told for a failure where a call that reached nothing while offline says so
+ * in the words of the place it failed, and any other failure in the server's.
  *
  * @param error The classified failure.
- * @param offline The place's sentence for a call that reached nothing; the plain one by default.
+ * @param offline The place's sentence for being offline; the plain one by default.
+ * @param isConnectionLost Whether the shell's live connection is lost, where the place knows it.
  *
  * @returns The sentence.
  */
-export function messageOrOffline(error: ChatError, offline: string = offlineSentence): string {
-    return isUnreached(error) ? offline : messageForError(error);
+export function messageOrOffline(error: ChatError, offline: string = offlineSentence, isConnectionLost?: boolean): string {
+    return isOfflineFailure(error, isConnectionLost) ? offline : messageForError(error);
 }
 
 /**

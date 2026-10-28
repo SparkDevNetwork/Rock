@@ -389,7 +389,7 @@ describe("following from a row", () => {
     });
 
     test("Try again asks the refused change again", async () => {
-        const w = draw({ rows: [row(40)], followError: { rootId: 40, isFollowing: false, text: "Couldn't change this. You're offline, so try again in a moment." } });
+        const w = draw({ rows: [row(40)], followError: { rootId: 40, isFollowing: false, text: "You're offline. Try again when you're back." } });
 
         await w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").trigger("click");
 

@@ -469,7 +469,7 @@ describe("Join on a row", () => {
     });
 
     test("says why under the name when the door could not be reached, and offers Join again", () => {
-        const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." } };
+        const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "failed", text: "You're offline. Try again when you're back." } };
         const w = mountDirectory({ joins });
 
         const row = rowOf(w, volunteers.channel_id);
@@ -478,7 +478,7 @@ describe("Join on a row", () => {
         expect(join.attributes("aria-disabled")).toBeUndefined();
         expect(row.find("[data-testid='directory-row-refused']").exists()).toBe(false);
         const line = row.get("[data-testid='directory-row-failed']");
-        expect(line.text()).toBe("Couldn't join. You're offline, so try again in a moment.");
+        expect(line.text()).toBe("You're offline. Try again when you're back.");
         expect(line.classes()).toContain("chat-fd-err");
         expect(row.get("[data-testid='directory-row-open']").element.contains(line.element)).toBe(true);
     });

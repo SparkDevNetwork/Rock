@@ -33,6 +33,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
+import { isOfflineFailure, offlineSentence } from "../errors.partial";
 import { ChannelStore, startedTitle } from "../stores/channelStore.partial";
 import { ChannelFacts, ChatError, ChatPerson, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
 import type { MemberRights } from "./useMembers.partial";
@@ -45,9 +46,6 @@ export const directorySearchPause = 200;
 
 /** The sentence a refusal shows when the door gave none of its own, as the door words its refusal. */
 const refusedSentence = "You can't join this channel.";
-
-/** What a Join that could not reach the door says, as the chat says any change made while offline. */
-const offlineSentence = "Couldn't join. You're offline, so try again in a moment.";
 
 /** What a Join says when Rock answered without its door's result while the connection held. */
 const failedSentence = "Couldn't join. Try again in a moment.";
@@ -723,8 +721,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
      * Join did not reach the door's answer: it says so where it was pressed and aloud, and may be
      * pressed again, since nothing the door decided stands in the way.
      */
-    function failJoin(channelId: string): void {
-        const text = dependencies.isOffline() ? offlineSentence : failedSentence;
+    function failJoin(channelId: string, kind: "offline" | "failed"): void {
+        const text = kind === "offline" ? offlineSentence : failedSentence;
         state.joins[channelId] = { kind: "failed", text };
         announce(text);
     }
@@ -803,12 +801,14 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     /**
      * Asks one of Rock's membership doors. Where the door is not reached, its result missing
-     * included, the room is marked unreachable: offline only when the connection is lost, as
-     * Join says it, and otherwise failed. Null when there is no answer to act on: unreached, or
-     * stopped.
+     * included, the room is marked unreachable: offline by the chat's one rule, and otherwise
+     * failed. Null when there is no answer to act on: unreached, or stopped.
      */
     async function askDoor(ask: () => Promise<JoinResult>, unreached: (kind: "offline" | "failed") => void): Promise<JoinResult | null> {
-        if (dependencies.isOffline()) {
+        const unreachedKind = (): "offline" | "failed" => isOfflineFailure(null, dependencies.isOffline()) ? "offline" : "failed";
+
+        // A door asked while the connection is lost would not be reached.
+        if (unreachedKind() === "offline") {
             unreached("offline");
             return null;
         }
@@ -822,7 +822,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // Rock answered without its door's result, as when the request was lost on the way:
             // the door decided nothing, so it is unreached like a call that threw.
             if (answer.code === "door.unavailable") {
-                unreached(dependencies.isOffline() ? "offline" : "failed");
+                unreached(unreachedKind());
                 return null;
             }
 
@@ -830,7 +830,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         }
         catch {
             if (!isStopped) {
-                unreached(dependencies.isOffline() ? "offline" : "failed");
+                unreached(unreachedKind());
             }
             return null;
         }
@@ -955,31 +955,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 state.joins[channelId] = { kind: "refused", text: refusedSentence };
                 return;
             }
-            if (dependencies.isOffline()) {
-                failJoin(channelId);
-                return;
-            }
-
+            // Not reached, the person may press Join again; only a code the door answered itself is a refusal.
+            const door = dependencies.joinChannel;
             state.joins[channelId] = { kind: "joining" };
-            let answer: JoinResult;
-            try {
-                answer = await dependencies.joinChannel(channelId);
-            }
-            catch {
-                if (!isStopped) {
-                    failJoin(channelId);
-                }
-                return;
-            }
-
-            if (isStopped) {
-                return;
-            }
-
-            // Rock answered without its door's result: the door decided nothing, so the person may
-            // press Join again; only a code the door answered itself is a refusal.
-            if (answer.code === "door.unavailable") {
-                failJoin(channelId);
+            const answer = await askDoor(() => door(channelId), kind => failJoin(channelId, kind));
+            if (!answer) {
                 return;
             }
 

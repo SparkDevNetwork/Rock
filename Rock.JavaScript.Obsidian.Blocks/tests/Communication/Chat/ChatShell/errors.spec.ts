@@ -22,6 +22,7 @@ import {
     classifyPlatformError,
     classifyRealtimeMessage,
     classifyRealtimeStatus,
+    isOfflineFailure,
     isUnreached,
     messageForError,
     messageOrOffline,
@@ -236,5 +237,41 @@ describe("isUnreached", () => {
         expect(isUnreached({ code: "door.unreachable", severity: "failed" })).toBe(true);
         expect(isUnreached({ code: "door.unavailable", severity: "permission" })).toBe(false);
         expect(isUnreached({ code: "rpc.unknown", severity: "unknown" })).toBe(false);
+    });
+});
+
+// One rule for when a failed change tells the person they are offline: the call reached nothing,
+// and the live connection is lost where the place knows it. Reaching nothing while the connection
+// holds is a failure to try again, as the banner says nothing is wrong; a place that does not know
+// the connection goes by the failure alone.
+describe("isOfflineFailure", () => {
+    const transport = { code: "rpc.transport", severity: "failed" as const };
+
+    test("a call that reached nothing while the connection is lost is offline", () => {
+        expect(isOfflineFailure(transport, true)).toBe(true);
+        expect(isOfflineFailure({ code: "door.unreachable", severity: "failed" }, true)).toBe(true);
+    });
+
+    test("a call not answered at all, or not asked, while the connection is lost is offline", () => {
+        expect(isOfflineFailure(null, true)).toBe(true);
+    });
+
+    test("a call that reached nothing while the connection holds is not", () => {
+        expect(isOfflineFailure(transport, false)).toBe(false);
+        expect(isOfflineFailure(null, false)).toBe(false);
+    });
+
+    test("a call that was answered is never offline, connection or not", () => {
+        expect(isOfflineFailure({ code: "rpc.read_only", severity: "failed", text: "Chat is read only." }, true)).toBe(false);
+    });
+
+    test("where the connection is not known, reaching nothing is offline", () => {
+        expect(isOfflineFailure(transport)).toBe(true);
+        expect(isOfflineFailure({ code: "rpc.unknown", severity: "unknown" })).toBe(false);
+    });
+
+    test("a place that knows the connection says its failures by it", () => {
+        expect(messageOrOffline(transport, offlineSentence, true)).toBe(offlineSentence);
+        expect(messageOrOffline(transport, offlineSentence, false)).toBe("Something went wrong in chat. Try again in a moment.");
     });
 });

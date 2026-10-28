@@ -946,7 +946,7 @@ describe("removing someone", () => {
         await members.remove();
 
         expect(doorCalls.filter(c => c.door === "removeMember")).toEqual([]);
-        expect(members.state.removals[guid(2)]).toEqual({ kind: "refused", text: "Couldn't remove Anna. You're offline; try again when you're back.", isStale: false });
+        expect(members.state.removals[guid(2)]).toEqual({ kind: "refused", text: "You're offline. Try again when you're back.", isStale: false });
     });
 
     test("a door Rock answered without, or one that threw, is offline once the connection is lost and otherwise a failure", async () => {
@@ -961,7 +961,7 @@ describe("removing someone", () => {
         const removing = members.remove();
         offline.value = true;
         await removing;
-        expect(members.state.removals[guid(3)]).toEqual({ kind: "refused", text: "Couldn't remove Ben. You're offline; try again when you're back.", isStale: false });
+        expect(members.state.removals[guid(3)]).toEqual({ kind: "refused", text: "You're offline. Try again when you're back.", isStale: false });
     });
 
     test("an answer that comes after the panel stopped reaches nothing", async () => {
@@ -1210,7 +1210,7 @@ describe("adding people", () => {
 
         offline.value = true;
         await members.add([aaron]);
-        expect(members.state.adding.refusal?.text).toBe("Couldn't add people. You're offline; try again when you're back.");
+        expect(members.state.adding.refusal?.text).toBe("You're offline. Try again when you're back.");
     });
 
     test("nothing resolves after stop", async () => {

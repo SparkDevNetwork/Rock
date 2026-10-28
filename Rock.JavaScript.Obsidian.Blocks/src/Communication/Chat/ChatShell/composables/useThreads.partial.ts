@@ -50,7 +50,7 @@ import { applyMessageChange, Timelines, withSendKey } from "./useHistory.partial
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
-import { messageOrOffline } from "../errors.partial";
+import { messageOrOffline, offlineSentence } from "../errors.partial";
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
@@ -130,6 +130,9 @@ export type ThreadsDependencies = {
      * can let that send's row go: a reply shown only in its thread never reaches a timeline.
      */
     onLanded?: (message: TimelineMessage) => void;
+
+    /** Whether the live connection is lost, which decides whether a follow change that reached nothing says the person is offline. */
+    isOffline?: () => boolean;
 };
 
 /** The threads a shell holds. */
@@ -198,9 +201,6 @@ export type FollowNotice = {
  * Following says nothing: the bell shows it.
  */
 export const unfollowNotice: FollowNotice = { code: "thread-unfollowed", text: "You won't be notified about new replies", icon: "bell-off" };
-
-/** A follow change that never reached the platform, in the list's words. */
-const offlineFollowSentence = "Couldn't change this. You're offline, so try again in a moment.";
 
 /** An answer's body as an object whose keys may each be missing. */
 function body<T>(result: Extract<CallResult, { ok: true }>): Partial<T> {
@@ -611,7 +611,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 show: following => showFollowing(rootId, following),
                 ask: async (): Promise<SaveOutcome> => {
                     const result = await dependencies.call("chat_follow_thread", { p_root_id: rootId, p_follow: isFollowing });
-                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, text: messageOrOffline(result.error, offlineFollowSentence) };
+                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, text: messageOrOffline(result.error, offlineSentence, dependencies.isOffline?.()) };
                 },
                 landed: data => {
                     const answer = body<FollowThreadAnswer>(data as Extract<CallResult, { ok: true }>);

@@ -33,7 +33,7 @@ import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { isUnreached, messageForError, offlineSentence } from "../errors.partial";
+import { isOfflineFailure, messageForError, offlineSentence } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 import { ChatSettings, readOnlySentence } from "./useSession.partial";
 
@@ -89,20 +89,21 @@ export function isFinalRefusal(error: ChatError, isFirstMessage: boolean): boole
 
 /**
  * Why a try failed, in words the person can read, or null where nothing was said. A refusal for
- * good always has its sentence; a failure to reach anything is the person being offline; any other
- * failure says only what the server wrote for it, or that the session ended.
+ * good always has its sentence; the person being offline says so; any other failure says only
+ * what the server wrote for it, or that the session ended.
  *
  * @param error The failure that ended the try.
  * @param isFinal Whether the same text can only be refused again.
+ * @param isConnectionLost Whether the live connection is lost, where the sender is told.
  *
  * @returns The sentence, or null.
  */
-function failureReason(error: ChatError, isFinal: boolean): string | null {
+function failureReason(error: ChatError, isFinal: boolean, isConnectionLost: boolean | undefined): string | null {
     if (isFinal) {
         return messageForError(error);
     }
 
-    if (isUnreached(error)) {
+    if (isOfflineFailure(error, isConnectionLost)) {
         return offlineSentence;
     }
 
@@ -334,6 +335,9 @@ export type SenderDependencies = {
     /** The person sending, as the platform knows them. */
     personAliasGuid: string;
 
+    /** Whether the live connection is lost, which decides whether a send that reached nothing says the person is offline. */
+    isOffline?: () => boolean;
+
     /** A fresh identifier for a pending row, a UUID, since it is also the send's key; null when none can be made. */
     newLocalId: () => string | null;
 };
@@ -520,7 +524,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             if (isFinal) {
                 row.refusal = result.error;
             }
-            const reason = failureReason(result.error, isFinal);
+            const reason = failureReason(result.error, isFinal, dependencies.isOffline?.());
             if (reason) {
                 row.reason = reason;
             }

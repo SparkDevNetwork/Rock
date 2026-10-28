@@ -894,8 +894,8 @@ describe("Join", () => {
         await s.rooms.join(volunteers);
 
         expect(s.joinCalls).toEqual([]);
-        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Couldn't join. You're offline, so try again in a moment.", isAssertive: false }));
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "You're offline. Try again when you're back." });
+        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "You're offline. Try again when you're back.", isAssertive: false }));
 
         s.offline.value = false;
         void s.rooms.join(volunteers);
@@ -909,7 +909,7 @@ describe("Join", () => {
         s.joinCalls[0].answer.reject(new Error("network"));
         await settle();
 
-        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. You're offline, so try again in a moment." });
+        expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "You're offline. Try again when you're back." });
     });
 
     test("Rock failing to answer while online is a failure to press Join again after, not a refusal", async () => {

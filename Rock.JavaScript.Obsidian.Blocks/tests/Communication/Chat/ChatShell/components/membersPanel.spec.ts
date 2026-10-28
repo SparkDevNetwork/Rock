@@ -517,7 +517,7 @@ describe("removing a row", () => {
     });
 
     test("a refusal shows under the row in the door's words, and its X dismisses it", async () => {
-        const text = "Couldn't remove Anna. You're offline; try again when you're back.";
+        const text = "You're offline. Try again when you're back.";
         const w = draw({ canManageMembers: true, removals: { [anna.person_alias_guid]: { kind: "refused", text, isStale: false } } });
 
         const refusal = w.findAll("[data-testid='member-row']")[2].get("[data-testid='member-refusal']");

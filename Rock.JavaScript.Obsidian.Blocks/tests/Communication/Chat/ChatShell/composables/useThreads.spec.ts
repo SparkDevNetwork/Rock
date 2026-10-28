@@ -184,7 +184,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * result or a deferred the test resolves by hand; a function with nothing queued answers an
  * empty success.
  */
-async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void): Promise<{
+async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean): Promise<{
     threads: ReturnType<typeof createThreads>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -211,7 +211,8 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
         },
         timelines,
         personAliasGuid: me,
-        onLanded
+        onLanded,
+        ...(isOffline ? { isOffline } : {})
     });
 
     return { threads, timelines, calls, answers, callsTo: (name: string) => calls.filter(c => c.name === name) };
@@ -952,7 +953,7 @@ describe("following", () => {
     });
 
     test("a refused change goes back to where it was and carries the reason and the change asked", async () => {
-        const { threads, answers } = await setup();
+        const { threads, answers } = await setup(undefined, undefined, () => true);
         answers.chat_list_threads = [listAnswer([listRow(40)])];
         answers.chat_follow_thread = [offline];
         await threads.openList(channel);
@@ -960,7 +961,18 @@ describe("following", () => {
         expect(await threads.follow(40, false)).toBe(false);
 
         expect(threads.state.list.rows[0].following).toBe(true);
-        expect(threads.state.followError).toEqual({ rootId: 40, isFollowing: false, text: "Couldn't change this. You're offline, so try again in a moment." });
+        expect(threads.state.followError).toEqual({ rootId: 40, isFollowing: false, text: "You're offline. Try again when you're back." });
+    });
+
+    test("a change that reached nothing while the connection holds is not called offline", async () => {
+        const { threads, answers } = await setup(undefined, undefined, () => false);
+        answers.chat_list_threads = [listAnswer([listRow(40)])];
+        answers.chat_follow_thread = [offline];
+        await threads.openList(channel);
+
+        await threads.follow(40, false);
+
+        expect(threads.state.followError?.text).toBe("Something went wrong in chat. Try again in a moment.");
     });
 
     test("a refusal carries the server's own sentence when it has one", async () => {

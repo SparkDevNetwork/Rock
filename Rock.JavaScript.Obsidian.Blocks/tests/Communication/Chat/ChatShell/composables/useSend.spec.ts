@@ -31,7 +31,7 @@ function deferred<T>(): Deferred<T> {
     return { promise, resolve };
 }
 
-async function setup(answers: Array<SendResult | Deferred<SendResult>>): Promise<{
+async function setup(answers: Array<SendResult | Deferred<SendResult>>, isOffline?: () => boolean): Promise<{
     sender: ReturnType<typeof createSender>,
     timelines: ReturnType<typeof createTimelines>,
     sent: string[]
@@ -49,7 +49,8 @@ async function setup(answers: Array<SendResult | Deferred<SendResult>>): Promise
         },
         timelines,
         personAliasGuid: me,
-        newLocalId: () => `local-${++next}`
+        newLocalId: () => `local-${++next}`,
+        ...(isOffline ? { isOffline } : {})
     });
 
     return { sender, timelines, sent };
@@ -1145,6 +1146,22 @@ describe("a failed send's reason", () => {
         await sender.send(channel, "hello");
 
         expect(sender.pending(channel)[0].reason).toBe(reason);
+    });
+
+    test("nothing reached while the connection is lost is the person offline", async () => {
+        const { sender } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }], () => true);
+
+        await sender.send(channel, "hello");
+
+        expect(sender.pending(channel)[0].reason).toBe("You're offline. Try again when you're back.");
+    });
+
+    test("nothing reached while the connection holds is not called offline", async () => {
+        const { sender } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }], () => false);
+
+        await sender.send(channel, "hello");
+
+        expect(sender.pending(channel)[0].reason).toBeUndefined();
     });
 
     test("a failure that said nothing keeps no reason", async () => {

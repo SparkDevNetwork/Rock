@@ -30,7 +30,7 @@
 // reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { messageOrOffline, offlineSentence } from "../errors.partial";
+import { isOfflineFailure, messageOrOffline, offlineSentence } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError, SidebarRow } from "../types.partial";
 import { Note } from "../ui/settingNote.partial.obs";
@@ -233,7 +233,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
     /** A refusal in the server's own words; a lost connection says so. */
     function refusalText(error: ChatError): string {
-        return messageOrOffline(error);
+        return messageOrOffline(error, offlineSentence, dependencies.isOffline());
     }
 
     /** A refusal's note under its control, with Try again asking the same change once more. */
@@ -443,7 +443,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
                 // Rock answering without its door decided nothing; the person may ask again.
                 if (answer.code === "door.unavailable") {
-                    return { isSaved: false, text: dependencies.isOffline() ? offlineSentence : saveFailedSentence };
+                    return { isSaved: false, text: isOfflineFailure(null, dependencies.isOffline()) ? offlineSentence : saveFailedSentence };
                 }
 
                 return { isSaved: false, text: answer.message?.trim() || noDoorSentence };

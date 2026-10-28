@@ -659,7 +659,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     // a reply shown only in its thread lands nowhere else, so the open thread settles its send
-    const threads = createThreads({ call, timelines, personAliasGuid, limits: () => session.settings().limits, onLanded: message => sender.landed(message) });
+    const threads = createThreads({
+        call,
+        timelines,
+        personAliasGuid,
+        limits: () => session.settings().limits,
+        onLanded: message => sender.landed(message),
+        isOffline: () => state.connection !== null
+    });
 
     const messageActions = createMessageActions({
         call,
@@ -822,7 +829,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         waitBeforeResend: attempt => new Promise(resolve => setTimeout(resolve,
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
         personAliasGuid,
-        newLocalId
+        newLocalId,
+        isOffline: () => state.connection !== null
     });
 
     /**

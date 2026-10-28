@@ -424,12 +424,23 @@ describe("star and hide", () => {
 
     test("a lost connection's refusal says the person is offline", async () => {
         const s = setup();
+        s.offline.value = true;
 
         void s.prefs.setStarred(team, true, false);
         s.prefCalls[0].answer.resolve(refused("rpc.transport", null));
         await settle();
 
         expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "You're offline. Try again when you're back.", retry: expect.any(Function) });
+    });
+
+    test("a call that reached nothing while the connection holds is not called offline", async () => {
+        const s = setup();
+
+        void s.prefs.setStarred(team, true, false);
+        s.prefCalls[0].answer.resolve(refused("rpc.transport", null));
+        await settle();
+
+        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "Something went wrong in chat. Try again in a moment.", retry: expect.any(Function) });
     });
 
     // Star and hide are one save's two halves, so what is known saved is both of them.
