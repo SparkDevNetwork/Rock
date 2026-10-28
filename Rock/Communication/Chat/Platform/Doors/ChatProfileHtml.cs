@@ -43,7 +43,7 @@ namespace Rock.Communication.Chat.Platform.Doors
     /// </remarks>
     internal static class ChatProfileHtml
     {
-        // The elements a card's details may use: text structure, lists, links and https images.
+        // The elements a card's details may use: text structure, lists, links and images.
         private static readonly HashSet<string> AllowedElements = new HashSet<string>( StringComparer.Ordinal )
         {
             "p", "div", "span", "a", "strong", "em", "b", "i", "ul", "ol", "li", "br", "small",
@@ -62,22 +62,24 @@ namespace Rock.Communication.Chat.Platform.Doors
             "noembed", "noframes", "plaintext", "svg", "math"
         };
 
-        // The schemes a link may carry. A link with no scheme is a path on this site.
-        private static readonly HashSet<string> LinkSchemes = new HashSet<string>( StringComparer.Ordinal ) { "http", "https", "mailto", "tel" };
-
-        // Nesting deeper than any card needs is written as its text alone, so a pathological input
-        // cannot exhaust the stack.
+        // The walk below calls itself once for every element, kept or not, so the depth counts every
+        // element: nesting deeper than any card needs is written as its text alone, which the parser
+        // gathers without recursing, and thousands of nested tags in a person's own field cannot
+        // exhaust the web server's stack.
         private const int MaxDepth = 32;
 
         /// <summary>
         /// Keeps only the allowed elements and attributes of rendered HTML. An element not allowed
         /// is replaced by its contents; script, style, embedded documents and foreign markup are
-        /// dropped with theirs; a link keeps an http, https, mailto or tel address or a path, an
-        /// image an https address; every link opens with no opener and no referrer.
+        /// dropped with theirs; a link keeps an http, https, mailto or tel address or a path on this
+        /// site, and one leading off the church's site opens in a new tab; an image keeps a path on
+        /// this site or an https address on the church's own hosts; every link opens with no opener
+        /// and no referrer.
         /// </summary>
         /// <param name="html">The rendered HTML.</param>
+        /// <param name="siteHosts">The church's own hosts, from <see cref="SiteHostsOf(string[])"/>.</param>
         /// <returns>The safe HTML, or an empty string for blank input.</returns>
-        internal static string Sanitize( string html )
+        internal static string Sanitize( string html, ISet<string> siteHosts )
         {
             if ( string.IsNullOrWhiteSpace( html ) )
             {
@@ -91,10 +93,30 @@ namespace Rock.Communication.Chat.Platform.Doors
             var output = new StringBuilder( html.Length );
             foreach ( var node in nodes )
             {
-                Write( node, output, 0 );
+                Write( node, output, siteHosts, 0 );
             }
 
             return output.ToString();
+        }
+
+        /// <summary>
+        /// The hosts of the church's own site, read from its application roots, case ignored.
+        /// </summary>
+        /// <param name="applicationRoots">The church's public and internal application roots; a blank or unreadable one adds nothing.</param>
+        /// <returns>The hosts.</returns>
+        internal static ISet<string> SiteHostsOf( params string[] applicationRoots )
+        {
+            var hosts = new HashSet<string>( StringComparer.OrdinalIgnoreCase );
+            foreach ( var root in applicationRoots )
+            {
+                if ( Uri.TryCreate( root?.Trim(), UriKind.Absolute, out var uri )
+                    && ( uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp ) )
+                {
+                    hosts.Add( uri.Host );
+                }
+            }
+
+            return hosts;
         }
 
         /// <summary>
@@ -102,8 +124,9 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// </summary>
         /// <param name="node">The node.</param>
         /// <param name="output">Where the safe HTML is written.</param>
-        /// <param name="depth">How deep the node is.</param>
-        private static void Write( INode node, StringBuilder output, int depth )
+        /// <param name="siteHosts">The church's own hosts.</param>
+        /// <param name="depth">How many elements, kept or not, the node is inside.</param>
+        private static void Write( INode node, StringBuilder output, ISet<string> siteHosts, int depth )
         {
             if ( node.NodeType == NodeType.Text )
             {
@@ -138,7 +161,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             var isKept = AllowedElements.Contains( name );
             if ( isKept )
             {
-                if ( !WriteStartTag( element, output ) )
+                if ( !WriteStartTag( element, output, siteHosts ) )
                 {
                     return;
                 }
@@ -151,7 +174,7 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             foreach ( var child in element.ChildNodes )
             {
-                Write( child, output, isKept ? depth + 1 : depth );
+                Write( child, output, siteHosts, depth + 1 );
             }
 
             if ( isKept )
@@ -165,12 +188,14 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="output">Where the safe HTML is written.</param>
+        /// <param name="siteHosts">The church's own hosts.</param>
         /// <returns>False for an image with no safe address, which is dropped rather than drawn empty.</returns>
-        private static bool WriteStartTag( IElement element, StringBuilder output )
+        private static bool WriteStartTag( IElement element, StringBuilder output, ISet<string> siteHosts )
         {
             var name = element.LocalName;
             var attributes = new StringBuilder();
             var hasSource = false;
+            var isOffSite = false;
 
             foreach ( var attribute in element.Attributes )
             {
@@ -184,17 +209,21 @@ namespace Rock.Communication.Chat.Platform.Doors
                         break;
 
                     case "href" when name == "a":
-                        var link = SafeUrl( value, LinkSchemes, isPathAllowed: true );
-                        if ( link != null )
+                        var link = Destination( value, siteHosts, out var linkKind );
+                        if ( linkKind != UrlKind.Refused )
                         {
                             AppendAttribute( attributes, "href", link );
+                            isOffSite = linkKind == UrlKind.OffSite;
                         }
 
                         break;
 
+                    // An image loads as the card opens, with no click, so one from another host
+                    // would tell that host each time someone looked at this person's card.
                     case "src" when name == "img":
-                        var source = SafeUrl( value, ImageSchemes, isPathAllowed: false );
-                        if ( source != null )
+                        var source = Destination( value, siteHosts, out var sourceKind );
+                        if ( sourceKind == UrlKind.Path
+                            || ( sourceKind == UrlKind.ChurchSite && source.StartsWith( "https:", StringComparison.OrdinalIgnoreCase ) ) )
                         {
                             AppendAttribute( attributes, "src", source );
                             hasSource = true;
@@ -209,9 +238,16 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return false;
             }
 
-            // A link that opens a page must not hand that page this one, whatever the template asked.
             if ( name == "a" )
             {
+                // Followed in place, a link off the church's site would replace the chat page and
+                // whatever was being typed in it.
+                if ( isOffSite )
+                {
+                    AppendAttribute( attributes, "target", "_blank" );
+                }
+
+                // A link that opens a page must not hand that page this one, whatever the template asked.
                 AppendAttribute( attributes, "rel", "noopener noreferrer" );
             }
 
@@ -219,18 +255,48 @@ namespace Rock.Communication.Chat.Platform.Doors
             return true;
         }
 
-        // An image loads as the card opens, with no click, so it may come only from an https address.
-        private static readonly HashSet<string> ImageSchemes = new HashSet<string>( StringComparer.Ordinal ) { "https" };
+        /// <summary>
+        /// Where an address leads.
+        /// </summary>
+        private enum UrlKind
+        {
+            /// <summary>
+            /// Nowhere a card may point: a script, a document of its own, or another host written as a path.
+            /// </summary>
+            Refused,
+
+            /// <summary>
+            /// A path on the site the chat page is on.
+            /// </summary>
+            Path,
+
+            /// <summary>
+            /// An http or https address on one of the church's own hosts.
+            /// </summary>
+            ChurchSite,
+
+            /// <summary>
+            /// An http or https address anywhere else.
+            /// </summary>
+            OffSite,
+
+            /// <summary>
+            /// A mailto or tel address, which opens an app rather than a page.
+            /// </summary>
+            Contact
+        }
 
         /// <summary>
-        /// The address as a browser would follow it, when its scheme is one allowed, or null.
+        /// The address as a browser would follow it, and where that leads.
         /// </summary>
         /// <param name="value">The attribute's value, entities already decoded by the parser.</param>
-        /// <param name="schemes">The schemes allowed.</param>
-        /// <param name="isPathAllowed">Whether an address with no scheme, a path on this site, is allowed.</param>
-        /// <returns>The address to write, or null to leave the attribute out.</returns>
-        internal static string SafeUrl( string value, ISet<string> schemes, bool isPathAllowed )
+        /// <param name="siteHosts">The church's own hosts.</param>
+        /// <param name="kind">Where the address leads.</param>
+        /// <returns>The address to write, or null where it is refused.</returns>
+        private static string Destination( string value, ISet<string> siteHosts, out UrlKind kind )
         {
+            kind = UrlKind.Refused;
+
             // A browser removes tabs and line breaks anywhere in an address and trims spaces and
             // control characters from its ends, so "java&#9;script:" is a script link to it. The
             // address is judged and written in that same form, so what is checked is what is followed.
@@ -244,7 +310,11 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             var url = cleaned.ToString().Trim( TrimmedFromUrls );
-            if ( url.Length == 0 )
+
+            // A backslash reads as a slash in a browser, so "\\host" or "/\host" would leave this
+            // site while reading here as a path, and a host read past one could differ from the
+            // browser's.
+            if ( url.Length == 0 || url.IndexOf( '\\' ) >= 0 )
             {
                 return null;
             }
@@ -257,12 +327,30 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             if ( !hasScheme )
             {
-                // A backslash reads as a slash in a browser, so "\\host" would leave this site.
-                return isPathAllowed && url.IndexOf( '\\' ) < 0 ? url : null;
+                // "//host" names another host with this page's scheme, so it is no path on this site.
+                if ( url.StartsWith( "//", StringComparison.Ordinal ) )
+                {
+                    return null;
+                }
+
+                kind = UrlKind.Path;
+                return url;
             }
 
             var scheme = url.Substring( 0, colon ).ToLowerInvariant();
-            return schemes.Contains( scheme ) ? url : null;
+            if ( scheme == "mailto" || scheme == "tel" )
+            {
+                kind = UrlKind.Contact;
+                return url;
+            }
+
+            if ( ( scheme == "http" || scheme == "https" ) && Uri.TryCreate( url, UriKind.Absolute, out var uri ) )
+            {
+                kind = siteHosts.Contains( uri.Host ) ? UrlKind.ChurchSite : UrlKind.OffSite;
+                return url;
+            }
+
+            return null;
         }
 
         // Spaces and C0 controls, which a browser trims from an address's ends.

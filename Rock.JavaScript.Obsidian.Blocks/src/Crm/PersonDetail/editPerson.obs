@@ -278,7 +278,7 @@
                                 <RadioButtonList v-if="isChatVisible"
                                                  v-model="chatProfileVisibility"
                                                  label="Chat Profile Visibility"
-                                                 help="Whether this person's profile can be found in chat."
+                                                 help="Whether others in chat see this person's email, mobile phone, badges and profile card template."
                                                  :items="chatProfileVisibilityItems"
                                                  :showBlankItem="false" />
 

@@ -50,7 +50,20 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// </summary>
         internal const int MaxProfilesReadPerMinute = 30;
 
+        /// <summary>
+        /// How many reads, the same person again included, one person may make in a minute. Reading
+        /// someone again shows nothing new, so this is far above the people bound and only stops a
+        /// loop from running the church's template without end. An estimate, not a measurement:
+        /// about two cards a second for a whole minute.
+        /// </summary>
+        internal const int MaxProfileReadsPerMinute = 120;
+
         private static readonly TimeSpan ProfileReadPeriod = TimeSpan.FromMinutes( 1 );
+
+        // Held while a viewer's window is found or made and a read counted in it, so two reads at
+        // once can neither each make a window of their own nor both take the last place in one.
+        // Only a cache lookup and a set run under it, so one lock for every viewer costs nothing felt.
+        private static readonly object ProfileReadsLock = new object();
 
         /// <summary>
         /// The contact details and template output a person shows on their profile card, for the
@@ -60,10 +73,10 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="viewer">The person looking.</param>
         /// <param name="personAliasGuid">The person on the card, by any of their aliases.</param>
         /// <param name="configuration">The church's chat settings.</param>
-        /// <param name="mergeFields">The page's common merge fields for the person looking, which the template sees beside the person on the card.</param>
+        /// <param name="mergeFields">Makes the page's common merge fields for the person looking, which the template sees beside the person on the card; called only when the template runs.</param>
         /// <param name="rockContext">The context read in.</param>
         /// <returns>The details, or an empty answer wherever chat would not show this person to this viewer.</returns>
-        internal static ChatProfileDetailsBag GetProfileDetails( Person viewer, Guid personAliasGuid, ChatPlatformConfiguration configuration, IDictionary<string, object> mergeFields, RockContext rockContext )
+        internal static ChatProfileDetailsBag GetProfileDetails( Person viewer, Guid personAliasGuid, ChatPlatformConfiguration configuration, Func<IDictionary<string, object>> mergeFields, RockContext rockContext )
         {
             // The session gates and nothing more: the Direct Message Access data view is not read,
             // since nothing here starts a conversation.
@@ -75,7 +88,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // Counted before anything about the person is read, so a refused read costs nothing.
-            if ( !ProfileReadsOf( viewer.Id ).TryAdmit( personAliasGuid, MaxProfilesReadPerMinute ) )
+            if ( !TryAdmitProfileRead( viewer.Id, personAliasGuid ) )
             {
                 return new ChatProfileDetailsBag();
             }
@@ -196,11 +209,11 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// to draw in the viewer's page, or null when there is none or it failed.
         /// </summary>
         /// <param name="configuration">The church's chat settings, which hold the template and its commands.</param>
-        /// <param name="mergeFields">The page's common merge fields for the viewer.</param>
+        /// <param name="mergeFields">Makes the page's common merge fields for the viewer.</param>
         /// <param name="viewer">The person looking.</param>
         /// <param name="target">The person on the card.</param>
         /// <returns>The safe HTML, or null.</returns>
-        private static string RenderProfileTemplate( ChatPlatformConfiguration configuration, IDictionary<string, object> mergeFields, Person viewer, Person target )
+        private static string RenderProfileTemplate( ChatPlatformConfiguration configuration, Func<IDictionary<string, object>> mergeFields, Person viewer, Person target )
         {
             var template = configuration.ProfileCardLavaTemplate;
             if ( string.IsNullOrWhiteSpace( template ) )
@@ -208,9 +221,11 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return null;
             }
 
-            // A copy, so the caller's fields are not changed; the person on the card is the one
-            // field this adds, and CurrentPerson stays the viewer.
-            var fields = mergeFields != null ? new Dictionary<string, object>( mergeFields ) : new Dictionary<string, object>();
+            // Made only here, once a template will run, since the common fields read the page, the
+            // person and the church's own fields; the person on the card is the one field this
+            // adds, and CurrentPerson stays the viewer.
+            var common = mergeFields?.Invoke();
+            var fields = common != null ? new Dictionary<string, object>( common ) : new Dictionary<string, object>();
             fields["CurrentPerson"] = viewer;
             fields["Person"] = target;
 
@@ -231,55 +246,101 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return null;
             }
 
-            var html = ChatProfileHtml.Sanitize( result.Text );
+            // The church's own hosts, the only ones an image may load from as a card opens.
+            var siteHosts = ChatProfileHtml.SiteHostsOf(
+                GlobalAttributesCache.Value( "PublicApplicationRoot" ),
+                GlobalAttributesCache.Value( "InternalApplicationRoot" ) );
+
+            var html = ChatProfileHtml.Sanitize( result.Text, siteHosts );
             return string.IsNullOrWhiteSpace( html ) ? null : html;
         }
 
         /// <summary>
-        /// The people this viewer has read in the current minute, held in Rock's cache.
+        /// Counts one read of a person's card in the viewer's window, held in Rock's cache, unless
+        /// the window has no room left.
         /// </summary>
         /// <param name="viewerId">The person looking.</param>
-        /// <returns>The viewer's window, new when the last one has ended.</returns>
-        private static ProfileReadWindow ProfileReadsOf( int viewerId )
+        /// <param name="personAliasGuid">The person read.</param>
+        /// <returns>True when the read is allowed.</returns>
+        private static bool TryAdmitProfileRead( int viewerId, Guid personAliasGuid )
         {
-            return ( ProfileReadWindow ) RockCache.GetOrAddExisting(
-                "ChatProfileReads:" + viewerId,
-                "Chat",
-                () => new ProfileReadWindow(),
-                ProfileReadPeriod );
+            var now = RockDateTime.Now;
+
+            lock ( ProfileReadsLock )
+            {
+                // The window decides when its minute ends; the cache's expiry, the same minute, only frees it.
+                var window = ( ProfileReadWindow ) RockCache.GetOrAddExisting(
+                    "ChatProfileReads:" + viewerId,
+                    "Chat",
+                    () => new ProfileReadWindow( MaxProfilesReadPerMinute, MaxProfileReadsPerMinute, now ),
+                    ProfileReadPeriod );
+
+                return window.TryAdmit( personAliasGuid, now );
+            }
         }
 
         /// <summary>
-        /// The different people one viewer has read in one window. Reading the same person again
-        /// costs nothing, so reopening a card is never refused.
+        /// The reads one viewer has made in one minute: how many different people, and how many
+        /// reads in all. Reading the same person again is admitted while there is room for reads,
+        /// so reopening a card is not refused at the people bound.
         /// </summary>
+        /// <remarks>
+        /// Not safe to share between threads on its own; the caller holds the lock.
+        /// </remarks>
         internal sealed class ProfileReadWindow
         {
-            private readonly HashSet<Guid> _read = new HashSet<Guid>();
+            private readonly HashSet<Guid> _people = new HashSet<Guid>();
+            private readonly int _maxPeople;
+            private readonly int _maxReads;
+            private DateTime _startedAt;
+            private int _reads;
 
             /// <summary>
-            /// Counts a read of this person, unless the window already holds the most allowed.
+            /// Initializes a new instance of the <see cref="ProfileReadWindow"/> class.
+            /// </summary>
+            /// <param name="maxPeople">The most different people a minute allows.</param>
+            /// <param name="maxReads">The most reads a minute allows, the same person again included.</param>
+            /// <param name="startedAt">When the first minute starts.</param>
+            internal ProfileReadWindow( int maxPeople, int maxReads, DateTime startedAt )
+            {
+                _maxPeople = maxPeople;
+                _maxReads = maxReads;
+                _startedAt = startedAt;
+            }
+
+            /// <summary>
+            /// Counts a read of this person, unless the minute already holds the most allowed; a
+            /// minute that has ended gives way to a new one first.
             /// </summary>
             /// <param name="personAliasGuid">The person read.</param>
-            /// <param name="max">The most different people a window allows.</param>
+            /// <param name="now">When the read is made.</param>
             /// <returns>True when the read is allowed.</returns>
-            internal bool TryAdmit( Guid personAliasGuid, int max )
+            internal bool TryAdmit( Guid personAliasGuid, DateTime now )
             {
-                lock ( _read )
+                if ( now - _startedAt >= ProfileReadPeriod )
                 {
-                    if ( _read.Contains( personAliasGuid ) )
-                    {
-                        return true;
-                    }
+                    _startedAt = now;
+                    _people.Clear();
+                    _reads = 0;
+                }
 
-                    if ( _read.Count >= max )
+                if ( _reads >= _maxReads )
+                {
+                    return false;
+                }
+
+                if ( !_people.Contains( personAliasGuid ) )
+                {
+                    if ( _people.Count >= _maxPeople )
                     {
                         return false;
                     }
 
-                    _read.Add( personAliasGuid );
-                    return true;
+                    _people.Add( personAliasGuid );
                 }
+
+                _reads++;
+                return true;
             }
         }
     }

@@ -276,10 +276,9 @@ namespace Rock.Blocks.Communication.Chat
         {
             var person = GetChatPerson();
 
-            // The template sees the page's own merge fields for the person looking.
-            var mergeFields = person != null ? RequestContext.GetCommonMergeFields( person ) : null;
-
-            return ActionOk( ChatDoorHelper.GetProfileDetails( person, personAliasGuid, ChatPlatformConfigurationService.Read(), mergeFields, RockContext ) );
+            // The template sees the page's own merge fields for the person looking, made only
+            // when a template will run.
+            return ActionOk( ChatDoorHelper.GetProfileDetails( person, personAliasGuid, ChatPlatformConfigurationService.Read(), () => RequestContext.GetCommonMergeFields( person ), RockContext ) );
         }
 
         /// <summary>

@@ -327,7 +327,7 @@ export type Rooms = {
     /** Closes the profile card; an answer still on its way is dropped. */
     closeCard: () => void;
 
-    /** Asks Rock again for the open card once a change to the person's own switch has been saved. */
+    /** Reads the open card again, from the platform and from Rock, once a change to the person's own switch has been saved. */
     refreshCardDetails: (saved: Promise<unknown>) => void;
 
     /** A room's facts as last read, or null before the first read lands. */
@@ -496,8 +496,14 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     let cardGeneration = 0;
     let cardWaitTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Rock's answer for each person this visit, by alias in lower case, so a card opened again is whole at once.
+    // Rock's answer for each person showing details this visit, by alias in lower case, so a card
+    // opened again is whole at once. An answer showing nothing is never kept: the person may turn
+    // their details on, and a refusal for reading too many people in a minute looks the same.
     const rockAnswers = new Map<string, ChatProfileDetailsBag>();
+
+    // Each ask of Rock moves this on, so only the newest is drawn or kept: after quick changes of
+    // the person's own switch, an older answer arriving last would show what they no longer chose.
+    let rockAsk = 0;
 
     /** Puts a sentence in the live region. */
     function announce(text: string, isAssertive = false): void {
@@ -517,15 +523,23 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     // #region The profile card
 
-    /** Rock's half for a person, asked of its door; null when the door is absent, failed or gave nothing. */
-    async function askRock(personAliasGuid: string): Promise<ChatProfileDetailsBag | null> {
+    /**
+     * Rock's half for a person, asked of its door: null when the door is absent, failed or gave
+     * nothing, and undefined when a newer ask has started since, whose answer is the one that counts.
+     */
+    async function askRock(personAliasGuid: string): Promise<ChatProfileDetailsBag | null | undefined> {
         const door = dependencies.getProfileDetails;
         if (!door) {
             return null;
         }
 
+        const ask = ++rockAsk;
         const details = await door(personAliasGuid).catch(() => null);
-        if (details) {
+        if (ask !== rockAsk) {
+            return undefined;
+        }
+
+        if (details?.isShown) {
             rockAnswers.set(personAliasGuid.toLowerCase(), details);
         }
 
@@ -1143,7 +1157,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 }, profileDetailsWait);
 
                 void askRock(personAliasGuid).then(details => {
-                    if (isStopped || generation !== cardGeneration || !state.card) {
+                    if (details === undefined || isStopped || generation !== cardGeneration || !state.card) {
                         return;
                     }
 
@@ -1178,15 +1192,24 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
             const generation = cardGeneration;
             const isCurrent = (): boolean => !isStopped && generation === cardGeneration && !!state.card;
-            void saved.catch(() => undefined).then(async () => {
+            void saved.catch(() => undefined).then(() => {
                 if (!isCurrent()) {
                     return;
                 }
 
-                const details = await askRock(card.personAliasGuid);
-                if (isCurrent()) {
-                    state.card = { ...state.card as ProfileCardState, rock: details ? { kind: "answered", details } : { kind: "failed" } };
-                }
+                // The platform is read again too: the save waits for the change to reach it, and
+                // until then its answer, the badges among it, is the one from before the change.
+                void readPerson(card.personAliasGuid, card.channelId).then(person => {
+                    if (person && isCurrent()) {
+                        state.card = { ...state.card as ProfileCardState, person };
+                    }
+                });
+
+                void askRock(card.personAliasGuid).then(details => {
+                    if (details !== undefined && isCurrent()) {
+                        state.card = { ...state.card as ProfileCardState, rock: details ? { kind: "answered", details } : { kind: "failed" } };
+                    }
+                });
             });
         },
 
