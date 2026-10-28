@@ -2749,6 +2749,32 @@ describe("the live sidebar", () => {
             expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "idle" });
         });
 
+        // Rock pushes a pending name on after its door answers; until the platform's own signal for
+        // the room, a reload for anything else reads the old name, which must not replace the new.
+        test("a pending name stays through another reload until the platform's signal for the room", async () => {
+            const h = await startedLive({
+                renameConversation: async () => ({ code: "ok", message: null, isPending: true, personAliasGuid: person }) as never
+            });
+            await h.shell.rooms.rename(dmD, "Trail crew");
+            await settle();
+            expect(rowOf(h, dmD)?.title).toBe("Trail crew");
+            const reads = h.counts.bootstraps;
+
+            // the platform's rows, read before it has the name
+            h.bootstrap.value = snapshot();
+            askReload(h);
+            await settle();
+            expect(h.counts.bootstraps).toBe(reads + 1);
+            expect(rowOf(h, dmD)?.title).toBe("Trail crew");
+
+            const renamed = snapshot();
+            renamed.channels = renamed.channels.map(row => row.channel_id === dmD ? { ...row, name: "Hike crew", title: "Hike crew" } : row);
+            h.bootstrap.value = renamed;
+            personal(h, "channel.updated", { channel_id: dmD, id: "5e0000f9-0000-4000-8000-000000000000" });
+            await settle();
+            expect(rowOf(h, dmD)?.title).toBe("Hike crew");
+        });
+
         test("the members panel asks Rock's doors: its rights on open, and a remove of someone on the roster", async () => {
             const doorCalls: unknown[][] = [];
             const h = await startedLive({

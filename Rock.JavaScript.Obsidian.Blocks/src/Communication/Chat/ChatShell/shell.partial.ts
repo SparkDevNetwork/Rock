@@ -1268,8 +1268,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         void directMessages.membershipChanged(typeof changed === "string" ? changed : null);
                     }
                     // A room's facts change with its members and with its own name, description or kind.
-                    if (event === "membership.changed" || event === "channel.updated") {
+                    if (event === "membership.changed") {
                         rooms.roomChanged(typeof changed === "string" ? changed : null);
+                    }
+                    if (event === "channel.updated") {
+                        rooms.channelUpdated(typeof changed === "string" ? changed : null);
+                    }
+                    if (event === "membership.changed" || event === "channel.updated") {
                         members.roomChanged(typeof changed === "string" ? changed : null);
                     }
                     if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
