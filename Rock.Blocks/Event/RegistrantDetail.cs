@@ -474,7 +474,7 @@ namespace Rock.Blocks.Event
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
             var urls = new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = returnUrl.IsNotNullOrWhiteSpace() ? returnUrl : this.GetParentPageUrl( parentParams )
+                [NavigationUrlKey.ParentPage] = PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) ? returnUrl : this.GetParentPageUrl( parentParams )
             };
 
             var instancePage = PageCache.ParentPage?.ParentPage;
@@ -1139,7 +1139,7 @@ namespace Rock.Blocks.Event
                 : null;
 
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            return ActionOk( returnUrl.IsNotNullOrWhiteSpace() ? returnUrl : this.GetParentPageUrl( parentParams ) );
+            return ActionOk( PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) ? returnUrl : this.GetParentPageUrl( parentParams ) );
         }
 
         #endregion Block Actions

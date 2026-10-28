@@ -341,7 +341,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Navigates to the ReturnUrl page parameter if it is a safe local URL,
+        /// Navigates to the ReturnUrl page parameter if it is a safe redirect URL,
         /// otherwise navigates to the parent page with the supplied query parameters.
         /// </summary>
         /// <param name="pageParams">The query parameters to use when falling back to the parent page.</param>
@@ -358,15 +358,7 @@ namespace RockWeb.Blocks.Event
             */
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
 
-            // Only allow site-relative paths to prevent open redirects.
-            // "//" and "/\" are rejected because browsers treat them as protocol-relative.
-            var isSafeLocalUrl = returnUrl.IsNotNullOrWhiteSpace()
-                && returnUrl.StartsWith( "/" )
-                && !returnUrl.StartsWith( "//" )
-                && !returnUrl.StartsWith( @"/\" )
-                && !returnUrl.RedirectUrlContainsXss();
-
-            if ( isSafeLocalUrl )
+            if ( RockPage.Site.IsSafeRedirectUrl( returnUrl, Request.UrlProxySafe() ) )
             {
                 Response.Redirect( returnUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
