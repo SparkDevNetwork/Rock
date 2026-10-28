@@ -156,6 +156,7 @@
                       :conversationKey="root ? `thread:${root.id}` : null"
                       :sendFailure="replyFailure"
                       :lastFailure="lastFailure"
+                      :tray="tray"
                       @send="onSend"
                       @retryFailed="onRetryFailed"
                       @discardFailed="onDiscardFailed"
@@ -318,6 +319,7 @@
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { failureNote } from "../composables/saveRule.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
+    import { AttachmentTray } from "../composables/useAttachments.partial";
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
@@ -496,6 +498,12 @@
         draft: {
             type: Object as PropType<ComposerDraft>,
             default: () => ({ text: "", mentions: [] })
+        },
+
+        /** The files waiting to go with the next reply, or null where files cannot go. */
+        tray: {
+            type: Object as PropType<AttachmentTray | null>,
+            default: null
         },
 
         /** The message being quoted into the next reply, drawn in the composer's strip. */

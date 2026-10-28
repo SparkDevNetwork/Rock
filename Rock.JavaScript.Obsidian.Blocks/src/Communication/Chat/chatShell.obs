@@ -60,6 +60,8 @@
                 -->
                 <div class="chat-frame-under"
                      data-testid="frame-conversation"
+                     @dragover="onConversationDragOver"
+                     @drop="onConversationDrop"
                      :aria-hidden="mainView ? 'true' : undefined"
                      :inert="!!mainView || undefined">
                     <ChatHeader :title="activeTitle"
@@ -160,6 +162,7 @@
                               :conversationKey="activeChannelId"
                               :sendFailure="conversationFailure"
                               :lastFailure="shell.sender.lastFailure()"
+                              :tray="conversationTray"
                               @retryFailed="onRetryFailed(conversationSends)"
                               @discardFailed="onDiscardFailed(conversationSends)"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
@@ -338,6 +341,7 @@
                                   :isPersonLeader="threadRow?.is_leader ?? false"
                                   :organizationName="organizationName"
                                   :draft="threadDraft ?? undefined"
+                                  :tray="trayOf(drawnThread.channelId, drawnThread.rootId)"
                                   :quote="threadQuote"
                                   :isQuoteOwn="isOwnQuote(threadQuote)"
                                   :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
@@ -662,7 +666,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -698,6 +702,7 @@
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { ComposerDraft } from "./ChatShell/composables/useDrafts.partial";
+    import { attachmentViewsKey, AttachmentTray, canAttach } from "./ChatShell/composables/useAttachments.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
@@ -763,6 +768,16 @@
     // Replaced, not reloaded, when a birthdate lets the person in: the save answers with the
     // session a fresh page load would have had.
     const shell = shallowRef(buildShell(config.session ?? {}));
+
+    // Every row's files read the session's local copies and links through this, which follows the
+    // shell when it is built again, so a row never holds a session that has gone.
+    provide(attachmentViewsKey, {
+        previewOf: id => shell.value.attachments.previewOf(id),
+        links: {
+            request: items => shell.value.attachments.links.request(items),
+            linkOf: item => shell.value.attachments.links.linkOf(item)
+        }
+    });
 
     const birthdateMessage = ref<string | null>(null);
     const isSavingBirthdate = ref(false);
@@ -868,6 +883,9 @@
      * composer's place. A join stays here while pending, until the sidebar shows them a member.
      */
     const isJoinBarShown = computed((): boolean => activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
+
+    /** The open conversation's files waiting to go, or null where its composer takes none. */
+    const conversationTray = computed((): AttachmentTray | null => isJoinBarShown.value ? null : trayOf(activeChannelId.value));
 
     /** A conversation with one other person, where a name over each bubble would only repeat the header. */
     const isActiveDirectMessage = computed((): boolean => activeRow.value?.room_kind === "person");
@@ -1194,6 +1212,24 @@
         }
     }
 
+    /** A drag carrying files may be dropped anywhere on the conversation, where its composer takes files. */
+    function onConversationDragOver(event: DragEvent): void {
+        if (conversationTray.value && isConversationOpenToFiles() && event.dataTransfer?.types?.includes("Files")) {
+            event.preventDefault();
+        }
+    }
+
+    /** Files dropped on the feed go to the conversation's composer, as files dropped on the composer do. */
+    function onConversationDrop(event: DragEvent): void {
+        const files = event.dataTransfer?.files;
+        if (event.defaultPrevented || !conversationTray.value || !isConversationOpenToFiles() || !files?.length) {
+            return;
+        }
+
+        event.preventDefault();
+        conversationTray.value.add(Array.from(files));
+    }
+
     function onSendReply(body: string, isShownInChannel: boolean): void {
         if (drawnThread.value) {
             void shell.value.sendReply(drawnThread.value.rootId, body, isShownInChannel);
@@ -1380,6 +1416,16 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** A place's files waiting to go, or null where files cannot go: the platform answered no limits for them. */
+    function trayOf(channelId: string | null, rootId?: number): AttachmentTray | null {
+        return channelId && canAttach(shell.value.state.limits) ? shell.value.trayOf(channelId, rootId) : null;
+    }
+
+    /** Whether the conversation's composer is open, which a drop on the feed goes to. */
+    function isConversationOpenToFiles(): boolean {
+        return shell.value.state.isComposerOpen && !lockedReason(activeRow.value, shell.value.state.service);
+    }
 
     /** Opens a person's card for a room beside what asked, drawn afresh each time. */
     function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {

@@ -32,7 +32,7 @@ import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } f
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
-import { ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
+import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
@@ -211,7 +211,7 @@ export type ShellState = {
     isComposerOpen: boolean;
 
     /** The platform's limits as the latest token exchange answered them, which the screens draw. */
-    limits: PlatformLimits;
+    limits: PlatformLimits & AttachmentTypes;
 
     /** Whether the church's prompt timing would offer push now. */
     isPushOffered: boolean;

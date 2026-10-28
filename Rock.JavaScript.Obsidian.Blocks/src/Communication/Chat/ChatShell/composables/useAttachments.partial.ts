@@ -198,10 +198,20 @@ export const browserImageCodec: ImageCodec = {
             return;
         }
 
-        // A JPEG has no transparency, and a transparent WebP would otherwise turn black.
+        // A JPEG has no transparency, so a transparent WebP is laid on white first, else it turns
+        // black. The white is one pixel of full channels stretched over the canvas: a matte for the
+        // photo's bytes, not a colour of the chat's, which only the token sheet names.
         if (type === "image/jpeg") {
-            context.fillStyle = "white";
-            context.fillRect(0, 0, width, height);
+            const matte = document.createElement("canvas");
+            matte.width = 1;
+            matte.height = 1;
+            const pixel = matte.getContext("2d");
+            const full = pixel?.createImageData(1, 1);
+            if (pixel && full) {
+                full.data.fill(255);
+                pixel.putImageData(full, 0, 0);
+                context.drawImage(matte, 0, 0, width, height);
+            }
         }
         context.drawImage(image.source, 0, 0, width, height);
         canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("not encoded")), type, quality);
@@ -314,8 +324,16 @@ export type AttachmentTray = {
     retry: (localId: string) => void;
 };
 
-export function canAttach(_limits: AttachmentLimits): boolean {
-    return false;
+/**
+ * Whether files can be offered: the platform answered its limits for them. A platform that has
+ * not, or a session not started, answers none, and nothing is offered rather than guessed at.
+ *
+ * @param limits The platform's limits.
+ *
+ * @returns True when a file could be taken.
+ */
+export function canAttach(limits: AttachmentLimits): boolean {
+    return limits.attachment_max_files > 0 && limits.attachment_max_bytes > 0 && limits.attachment_types.length > 0;
 }
 
 /**
@@ -387,8 +405,10 @@ export type AttachmentViews = Pick<Attachments, "previewOf" | "links">;
 /** Where a row finds the session's attachment views, provided once by the chat. */
 export const attachmentViewsKey: InjectionKey<AttachmentViews> = Symbol("chat-attachment-views");
 
+/* eslint-disable @typescript-eslint/naming-convention */
 /** What an upload's record is answered with by begin. */
 type BeginAnswer = { upload_id?: string, key?: string };
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /** A file kept for the session once uploaded: its bytes, so it can be uploaded again. */
 type KeptFile = { blob: Blob, item: AttachmentItem };
