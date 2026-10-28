@@ -254,6 +254,15 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
+            // Deleting a streak type also deletes its enrollments and exclusions, so
+            // require the same rights on the streak type that the detail block does.
+            if ( !streakType.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || !streakType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            {
+                mdGridWarning.Show( "You are not authorized to delete this streak type.", ModalAlertType.Information );
+                return;
+            }
+
             var errorMessage = string.Empty;
             if ( !streakTypeService.CanDelete( streakType, out errorMessage, true ) )
             {

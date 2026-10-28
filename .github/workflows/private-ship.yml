@@ -11,8 +11,8 @@ name: Ship to Public
 #          target in. Never rebases these, because a rebase would drop the
 #          resolution.
 #        - otherwise: rebases onto it
-#   3. Checks commit messages use the release-note format (+ or -). Merge
-#      commits are skipped.
+#   3. Squashes the PR into one commit whose message is the PR title, so the
+#      title must use the release-note format (+ or -).
 #   4. Merges the change up every branch it must reach, following the
 #      MERGE_CHAIN variable. Every step is a real merge commit, never a squash.
 #      A conflicting step is finished automatically only when EVERY conflicted
@@ -39,14 +39,12 @@ name: Ship to Public
 # no merge-up. It's the escape hatch when a merge-up conflicts: ship with
 # `ship-only`, then do that merge-up by hand.
 #
-# The `squash` label (add it BEFORE `ship` or `ship-only`) squashes the PR's
-# commits into one after step 2. The PR title becomes the commit message, so it
-# must be a release note, and it's the whole message. The first commit's author
-# keeps authorship, and any other person who committed gets Co-authored-by
-# credit. Merge-ups are still real merge commits.
+# Every PR ships as one squashed commit. The PR title is the whole commit
+# message. The first commit's author keeps authorship, and any other person who
+# committed gets Co-authored-by credit. Merge-ups are still real merge commits.
 #
-# AI attribution trailers ("Co-Authored-By: Claude ...") are removed from every
-# shipped commit, squashed or not.
+# AI attribution trailers ("Co-Authored-By: Claude ...") are removed before the
+# squash, so they never reach the shipped commit.
 #
 # Shipping does NOT wait on a build, so it takes about a minute. This matches
 # how Rock already works: code lands on develop, then AppVeyor builds it.
@@ -91,7 +89,7 @@ permissions:
 # atomic push protects public: whichever pushes second is rejected and told to
 # retry.
 #
-# Other labels (sentinel, squash, ...) get a unique group, so they never wait
+# Other labels (sentinel, no-code-review, ...) get a unique group, so they never wait
 # behind or cancel a ship.
 concurrency:
   group: ${{ (github.event.label.name == 'ship' || github.event.label.name == 'ship-only') && format('ship-pr-{0}', github.event.pull_request.number) || format('ship-noop-{0}', github.run_id) }}
@@ -140,7 +138,6 @@ jobs:
       ACTOR: ${{ github.actor }}
       LABEL: ${{ github.event.label.name }}
       PR_TITLE: ${{ github.event.pull_request.title }}
-      SQUASH: ${{ contains(github.event.pull_request.labels.*.name, 'squash') }}
     steps:
       - name: Check the target branch
         run: |
@@ -255,8 +252,6 @@ jobs:
           fi
 
       - name: Squash into one commit
-        # Only when the PR also has the `squash` label.
-        if: env.SQUASH == 'true'
         run: |
           count=$(git rev-list --count --no-merges "public/$BASE..HEAD")
           if [ "$count" -eq 0 ]; then
@@ -266,7 +261,7 @@ jobs:
 
           # The PR title becomes the commit message, so it must be a release note.
           if ! printf '%s' "$PR_TITLE" | grep -qE '^[+-] '; then
-            echo "SHIP_FAIL=With \`squash\`, the PR title becomes the commit message, so it must use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Edit the title, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
+            echo "SHIP_FAIL=The PR title becomes the commit message, so it must use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Edit the title, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
             exit 1
           fi
 
@@ -287,20 +282,6 @@ jobs:
           git reset --soft "public/$BASE"
           git commit -q --author="$author" -F squash-message.txt
           echo "Squashed $count commits into: $(git log -1 --format='%h %s')"
-
-      - name: Check commit messages
-        run: |
-          # Merge commits ("Merge branch ...") aren't release notes, so they're skipped.
-          bad=$(git log --no-merges "public/$BASE..HEAD" --format='%s' | grep -vE '^[+-] ' || true)
-          if [ -n "$bad" ]; then
-            {
-              echo "SHIP_FAIL<<EOF"
-              echo "These commit messages don't use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Reword them, then add the \`$LABEL\` label again:"
-              echo "$bad" | sed 's/^/- /'
-              echo "EOF"
-            } >> "$GITHUB_ENV"
-            exit 1
-          fi
 
           # The rebased PR becomes the new tip of the target branch. Named after
           # the real branch so merge commits read "Merge branch '<branch>' into ...".
