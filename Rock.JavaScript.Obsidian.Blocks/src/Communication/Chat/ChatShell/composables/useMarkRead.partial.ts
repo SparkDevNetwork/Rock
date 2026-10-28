@@ -41,9 +41,10 @@ export type PageEventTargets = {
         addEventListener: (type: string, listener: () => void) => void;
         removeEventListener: (type: string, listener: () => void) => void;
     };
+    // The window hands each listener its event; the drafts read a storage event's key from it.
     window: {
-        addEventListener: (type: string, listener: () => void) => void;
-        removeEventListener: (type: string, listener: () => void) => void;
+        addEventListener: (type: string, listener: (event: unknown) => void) => void;
+        removeEventListener: (type: string, listener: (event: unknown) => void) => void;
     };
 };
 
