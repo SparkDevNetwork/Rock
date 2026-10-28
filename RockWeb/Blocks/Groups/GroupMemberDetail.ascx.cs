@@ -1142,10 +1142,34 @@ namespace RockWeb.Blocks.Groups
             var group = groupService.GetInclude( hfGroupId.ValueAsInt(), g => g.Members );
             var groupMemberId = hfGroupMemberId.ValueAsInt();
 
+            var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
+
+            if ( groupMemberId > 0 )
+            {
+                var savedMember = new GroupMemberService( rockContext )
+                    .GetSelect( groupMemberId, gm => new { gm.GroupId, gm.PersonId } );
+
+                if ( group == null || savedMember == null || savedMember.GroupId != group.Id )
+                {
+                    gmrcRequirements.RequirementStatuses = new List<GroupRequirementStatus>();
+                    gmrcRequirements.CreateRequirementStatusControls( 0, false, true );
+                    return;
+                }
+
+                // The person picker is disabled for saved members, so use the member's own person.
+                personId = savedMember.PersonId;
+            }
+
+            // Only show requirement statuses for groups the current person can view.
+            if ( group == null || !CanViewGroup( group ) )
+            {
+                gmrcRequirements.RequirementStatuses = new List<GroupRequirementStatus>();
+                gmrcRequirements.CreateRequirementStatusControls( 0, false, true );
+                return;
+            }
+
             var selectedGroupRoleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
             gmrcRequirements.SelectedGroupRoleId = selectedGroupRoleId;
-
-            var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
 
             // Try to pull this person's group requirement statuses out of view state.
             this.GroupRequirementStatusesByPersonState.TryGetValue( personId, out var requirementStatuses );
@@ -1190,7 +1214,7 @@ namespace RockWeb.Blocks.Groups
             gmrcRequirements.RequirementStatuses = requirementStatuses;
 
             // Determine whether the current person is a leader of the chosen group.
-            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupId.ValueAsInt() );
+            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( group.Id );
             var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
                 groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 
