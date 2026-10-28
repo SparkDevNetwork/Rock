@@ -114,8 +114,6 @@ describe("a channel's own image", () => {
 });
 
 describe("the subtitle, from the room's facts", () => {
-    const downtown = { guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "Downtown" };
-
     /** A room's facts in the exact shape chat_get_channel answers. */
     function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
         return {
@@ -146,7 +144,7 @@ describe("the subtitle, from the room's facts", () => {
     }
 
     test("is a channel's description", () => {
-        const w = mountHeader({ kind: "channel", facts: facts({ description: "Serve teams across the church" }), campuses: [downtown] });
+        const w = mountHeader({ kind: "channel", facts: facts({ description: "Serve teams across the church" }) });
 
         expect(w.get("[data-testid='header-subtitle']").text()).toBe("Serve teams across the church");
     });
@@ -157,19 +155,13 @@ describe("the subtitle, from the room's facts", () => {
         expect(w.find("[data-testid='header-subtitle']").exists()).toBe(false);
     });
 
-    test("is the other person's campus by name in a conversation of two, when they show their details", () => {
-        const w = mountHeader({ title: "Anna Reyes", kind: "person", people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ campus_id: downtown.guid, badge_keys: [] })] }), campuses: [downtown] });
+    test("is left out in a conversation of two, whose facts carry no campus: only a person's card names it", () => {
+        const shown = mountHeader({ title: "Anna Reyes", kind: "person", people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ badge_keys: [] })] }) });
+        expect(shown.find("[data-testid='header-subtitle']").exists()).toBe(false);
+        shown.unmount();
 
-        expect(w.get("[data-testid='header-subtitle']").text()).toBe("Downtown Campus");
-    });
-
-    test("is left out for a person who does not show their details, or has no campus", () => {
-        const hidden = mountHeader({ kind: "person", facts: facts({ channel_type: "dm", member_count: 2, people: [anna(null)] }), campuses: [downtown] });
+        const hidden = mountHeader({ kind: "person", facts: facts({ channel_type: "dm", member_count: 2, people: [anna(null)] }) });
         expect(hidden.find("[data-testid='header-subtitle']").exists()).toBe(false);
-        hidden.unmount();
-
-        const none = mountHeader({ kind: "person", facts: facts({ channel_type: "dm", member_count: 2, people: [anna({ campus_id: null, badge_keys: [] })] }), campuses: [downtown] });
-        expect(none.find("[data-testid='header-subtitle']").exists()).toBe(false);
     });
 
     test("is a group's head count from the room's members, a named group's included", () => {

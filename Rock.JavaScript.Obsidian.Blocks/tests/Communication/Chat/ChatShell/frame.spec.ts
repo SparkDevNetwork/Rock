@@ -352,6 +352,7 @@ function fakeRooms(): Record<string, unknown> {
         closeCard: jest.fn(() => {
             state.card = null;
         }),
+        refreshCardDetails: jest.fn(),
         stop: jest.fn()
     };
 }
@@ -2861,18 +2862,18 @@ describe("the header's subtitle, from the room's facts", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("Sunday teams");
     });
 
-    test("is the other person's campus, named from the init box's campuses", async () => {
+    test("is left out for a conversation of two, whose facts carry no campus: only a person's card names it", async () => {
         mockConfig.campuses = [{ guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "DT" }];
         const w = await mountBlock(1200);
         roomsOf().state.facts[dmAnna.channel_id] = roomFacts({
             channel_id: dmAnna.channel_id,
             channel_type: "dm",
             member_count: 2,
-            people: [{ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, details: { campus_id: "d0000001-0000-4000-8000-000000000000", badge_keys: [] } }]
+            people: [{ person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, details: { badge_keys: [] } }]
         });
         await openRow(w, dmAnna.channel_id);
 
-        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("Downtown Campus");
+        expect(w.find("[data-testid='frame-main'] [data-testid='header-subtitle']").exists()).toBe(false);
     });
 });
 
@@ -3193,6 +3194,45 @@ describe("the profile card", () => {
         expect(roomsOf().closeCard).toHaveBeenCalled();
     });
 
+    test("hands the card Rock's half as the rooms hold it, reserving the template's lines when the church has one", async () => {
+        mockConfig.session = { ...(mockConfig.session as Record<string, unknown>), isProfileLavaConfigured: true };
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: annaPerson.person_alias_guid, anchor });
+        roomsOf().state.card = { personAliasGuid: annaPerson.person_alias_guid, channelId: team.channel_id, person: annaProfile({ details: { badge_keys: [] } }), rock: { kind: "loading" } } as never;
+        await settle();
+
+        expect(document.querySelector("[data-testid='profile-lava-skeleton']")).not.toBeNull();
+
+        roomsOf().state.card = { ...(roomsOf().state.card as Record<string, unknown>), rock: { kind: "answered", details: { isShown: true, email: "anna@example.org", mobilePhone: null, mobilePhoneUri: null, lavaHtml: null } } } as never;
+        await settle();
+        expect(document.querySelector<HTMLAnchorElement>("[data-testid='profile-email']")?.getAttribute("href")).toBe("mailto:anna@example.org");
+    });
+
+    test("the person's own switch saves through their settings, and the card asks Rock again once it is saved", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = w.get("[data-testid='header-title']").element as HTMLElement;
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: "a0000001-0000-4000-8000-000000000000", anchor });
+        roomsOf().state.card = {
+            personAliasGuid: "a0000001-0000-4000-8000-000000000000",
+            channelId: team.channel_id,
+            person: { ...annaProfile(), person_alias_guid: "a0000001-0000-4000-8000-000000000000", is_self: true, can_message: false },
+            rock: { kind: "answered", details: { isShown: true } }
+        } as never;
+        await settle();
+
+        const prefs = mockShell!.prefs as Record<string, jest.Mock>;
+        const toggle = document.querySelector<HTMLElement>("[data-testid='switch-profile_details'] [role='switch']")!;
+        expect(toggle.getAttribute("aria-checked")).toBe("true");
+        toggle.click();
+        await settle();
+
+        expect(prefs.setSwitch).toHaveBeenCalledWith("profile_details", false);
+        expect(roomsOf().refreshCardDetails).toHaveBeenCalledWith(prefs.setSwitch.mock.results[0].value);
+    });
+
     test("closes on Escape, letting go of the person", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
@@ -3382,7 +3422,7 @@ describe("the members panel", () => {
     const hike: SidebarRow = sidebarRow({ channel_id: "c0000006-0000-4000-8000-000000000000", channel_type: "dm", name: "Hike planning", dm_people: [{ person_alias_guid: "caleb", nick_name: "Caleb", last_name: null, avatar_url: null }, { person_alias_guid: "hannah", nick_name: "Hannah", last_name: null, avatar_url: null }], dm_other_count: 2, room_kind: "group", title: "Hike planning" });
 
     /** Anna as chat_list_members answers her, exactly its keys. */
-    const annaMember = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, is_leader: false, details: { campus_id: null, badge_keys: ["serving"] }, can_message: true };
+    const annaMember = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, is_leader: false, details: { badge_keys: ["serving"] }, can_message: true };
 
     function membersOf(): { state: { channelId: string | null, rows: unknown[] }, open: jest.Mock, close: jest.Mock } {
         return mockShell!.members as ReturnType<typeof membersOf>;

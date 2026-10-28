@@ -14,7 +14,6 @@
                 <span class="chat-rm-prev" data-testid="remove-preview">
                     <Avatar :people="[faceOf(shown)]" :size="28" />
                     <b>{{ nameOf(shown) }}</b>
-                    <span v-if="campusOf(shown)" class="chat-rm-prev-campus">{{ campusOf(shown) }}</span>
                 </span>
             </template>
         </Dialog>
@@ -54,7 +53,6 @@
                     <Avatar :people="[faceOf(choice)]" :size="28" />
                     <span class="chat-rm-n">
                         <b>{{ nameOf(choice) }}<template v-if="isSelf(choice)"> (you)</template></b>
-                        <span v-if="campusOf(choice)">{{ campusOf(choice) }}</span>
                     </span>
                     <span class="chat-rm-dot" aria-hidden="true"></span>
                 </label>
@@ -97,12 +95,6 @@
 .chat-rm-prev b {
     font-weight: 600;
     color: var(--chat-text);
-}
-
-.chat-rm-prev-campus {
-    margin-left: auto;
-    font-size: 12.5px;
-    color: var(--chat-muted);
 }
 
 /* The members panel's search pill, as the design reuses it for "Find a member", with room under it. */
@@ -291,12 +283,6 @@
         personAliasGuid: {
             type: String,
             default: ""
-        },
-
-        /** The church's campus names by guid in lower case, from the init box. */
-        campusNames: {
-            type: Object as PropType<Record<string, string>>,
-            default: () => ({})
         }
     });
 
@@ -364,12 +350,6 @@
 
     function faceOf(person: RosterMember): AvatarPerson {
         return { name: nameOf(person), photoUrl: person.avatar_url };
-    }
-
-    /** The campus, only for a person who shows their details. */
-    function campusOf(person: RosterMember): string {
-        const campusId = person.details?.campus_id;
-        return campusId ? props.campusNames[campusId.toLowerCase()] ?? "" : "";
     }
 
     function isSelf(person: RosterMember): boolean {

@@ -48,7 +48,7 @@ export type MembersPanelDependencies = {
 export function useMembersPanel(dependencies: MembersPanelDependencies) {
     const { shell, roomTitles, roomKinds } = dependencies;
 
-    /** The church's campus names by guid in lower case, for a person's campus. */
+    /** The church's campus names by guid in lower case, for a person's campus in Add people's search. */
     const campusNames: Record<string, string> = Object.fromEntries(dependencies.campuses.map(campus => [campus.guid.toLowerCase(), campus.name ?? ""]));
 
     /** The room the roster is of: its name, whether it is a channel, and its head count once its facts are read. */
@@ -66,7 +66,6 @@ export function useMembersPanel(dependencies: MembersPanelDependencies) {
         const isQuery = members.query.trim() !== "";
         return {
             ...room.value,
-            campusNames,
             members: shownMembers(members),
             hasMore: isQuery ? members.search.hasMore : members.hasMore,
             isLoading: members.isLoading,
@@ -88,7 +87,6 @@ export function useMembersPanel(dependencies: MembersPanelDependencies) {
         return {
             channelName: room.value.channelName,
             isChannel: room.value.isChannel,
-            campusNames,
             member: confirming,
             isLastLeader: !!confirming && members.isSuccessorAsked,
             choices: successorChoices(members),

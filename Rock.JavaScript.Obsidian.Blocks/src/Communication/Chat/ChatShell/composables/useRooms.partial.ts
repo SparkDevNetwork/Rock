@@ -25,10 +25,14 @@
 // platform saying it holds the membership. A room opened with no sidebar row keeps a stand-in row
 // in the sidebar store until another conversation opens or a reload brings its real row. Leave and
 // a group's Rename go through Rock's doors as Join does, and the profile card reads its person for
-// the room it was opened from, keeping only the newest card's answer. Once stopped, nothing more
-// is asked and no answer still on its way reaches the screen.
+// the room it was opened from, keeping only the newest card's answer. Rock's half of the card, the
+// email, phone and template it alone holds, is asked beside the platform's person; a person who
+// shows details is drawn once both have answered or a short wait has passed, so the card rarely
+// grows after it appears, and each person's answer is kept for the visit. Once stopped, nothing
+// more is asked and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
+import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
 import { ChannelStore, startedTitle } from "../stores/channelStore.partial";
 import { ChannelFacts, ChatError, ChatPerson, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
 import type { MemberRights } from "./useMembers.partial";
@@ -161,12 +165,26 @@ export type RenameState =
     | { kind: "offline" }
     | { kind: "failed" };
 
-/** The open profile card: whom it is for, the room it was opened from, and the person once read. */
+/** Rock's half of a profile card: asked, answered, or not to be had. */
+export type ProfileRockState =
+    | { kind: "loading" }
+    | { kind: "answered", details: ChatProfileDetailsBag }
+    | { kind: "failed" };
+
+/** The open profile card: whom it is for, the room it was opened from, the person once read, and Rock's half. */
 export type ProfileCardState = {
     personAliasGuid: string;
     channelId: string;
     person: PersonProfile | null;
+    rock: ProfileRockState;
 };
+
+/**
+ * How long a card for someone showing details waits for Rock's half after it is opened, in ms,
+ * so the card usually appears whole; past it the card draws with Rock's rows reserved. Short
+ * enough that the wait is not felt beside the card's own entrance.
+ */
+export const profileDetailsWait = 150;
 
 /** A sentence for screen readers; the count moves on with each, so the same words twice are read twice. */
 export type RoomAnnouncement = {
@@ -221,6 +239,9 @@ export type RoomsDependencies = {
 
     /** Reads one person for the profile card, chat_get_person through the shell's call path. */
     getPerson: (personAliasGuid: string, channelId: string) => Promise<PersonProfileResult>;
+
+    /** Rock's half of a profile card, or null when Rock gave no answer; without it, the card has none. */
+    getProfileDetails?: (personAliasGuid: string) => Promise<ChatProfileDetailsBag | null>;
 
     /** Opens a conversation as a sidebar row does: the next one after a leave. */
     openChannel: (channelId: string) => void;
@@ -305,6 +326,9 @@ export type Rooms = {
 
     /** Closes the profile card; an answer still on its way is dropped. */
     closeCard: () => void;
+
+    /** Asks Rock again for the open card once a change to the person's own switch has been saved. */
+    refreshCardDetails: (saved: Promise<unknown>) => void;
 
     /** A room's facts as last read, or null before the first read lands. */
     factsOf: (channelId: string) => ChannelFacts | null;
@@ -459,6 +483,10 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     // Each card opened or closed moves this on, so a person read for a card no longer open never lands.
     let cardGeneration = 0;
+    let cardWaitTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // Rock's answer for each person this visit, by alias in lower case, so a card opened again is whole at once.
+    const rockAnswers = new Map<string, ChatProfileDetailsBag>();
 
     /** Puts a sentence in the live region. */
     function announce(text: string, isAssertive = false): void {
@@ -475,6 +503,32 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             .catch((): PersonProfileResult => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }));
         return !isStopped && result.ok ? result.person : null;
     }
+
+    // #region The profile card
+
+    /** Rock's half for a person, asked of its door; null when the door is absent, failed or gave nothing. */
+    async function askRock(personAliasGuid: string): Promise<ChatProfileDetailsBag | null> {
+        const door = dependencies.getProfileDetails;
+        if (!door) {
+            return null;
+        }
+
+        const details = await door(personAliasGuid).catch(() => null);
+        if (details) {
+            rockAnswers.set(personAliasGuid.toLowerCase(), details);
+        }
+
+        return details;
+    }
+
+    function cancelCardWait(): void {
+        if (cardWaitTimer !== null) {
+            clearTimeout(cardWaitTimer);
+            cardWaitTimer = null;
+        }
+    }
+
+    // #endregion The profile card
 
     // #region The directory
 
@@ -1019,24 +1073,99 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
 
+            cancelCardWait();
             const generation = ++cardGeneration;
-            state.card = { personAliasGuid, channelId, person: null };
-            void readPerson(personAliasGuid, channelId).then(person => {
-                if (isStopped || generation !== cardGeneration) {
+            const kept = rockAnswers.get(personAliasGuid.toLowerCase());
+            const card: ProfileCardState = {
+                personAliasGuid,
+                channelId,
+                person: null,
+                rock: kept ? { kind: "answered", details: kept } : dependencies.getProfileDetails ? { kind: "loading" } : { kind: "failed" }
+            };
+            state.card = card;
+
+            let read: PersonProfile | null | undefined;
+            let isWaitOver = false;
+
+            /**
+             * Draws the person once read: at once when Rock has answered or there is nothing of
+             * Rock's to wait for, else once Rock answers or the wait from the open is over.
+             */
+            const draw = (): void => {
+                if (isStopped || generation !== cardGeneration || read === undefined) {
                     return;
                 }
 
                 // A person the platform does not list, or a read that failed, draws no card: the
                 // opener stays as it was with nothing to show.
-                state.card = person ? { personAliasGuid, channelId, person } : null;
+                if (!read) {
+                    cancelCardWait();
+                    state.card = null;
+                    return;
+                }
+
+                const current = state.card as ProfileCardState;
+                if (current.rock.kind === "loading" && read.details !== null && !isWaitOver) {
+                    return;
+                }
+
+                cancelCardWait();
+                state.card = { ...current, person: read };
+            };
+
+            if (card.rock.kind === "loading") {
+                cardWaitTimer = setTimeout(() => {
+                    cardWaitTimer = null;
+                    isWaitOver = true;
+                    draw();
+                }, profileDetailsWait);
+
+                void askRock(personAliasGuid).then(details => {
+                    if (isStopped || generation !== cardGeneration || !state.card) {
+                        return;
+                    }
+
+                    state.card = { ...state.card, rock: details ? { kind: "answered", details } : { kind: "failed" } };
+                    draw();
+                });
+            }
+
+            void readPerson(personAliasGuid, channelId).then(person => {
+                read = person;
+                draw();
             });
         },
 
         readPerson,
 
         closeCard: (): void => {
+            cancelCardWait();
             cardGeneration++;
             state.card = null;
+        },
+
+        refreshCardDetails: (saved: Promise<unknown>): void => {
+            const card = state.card;
+            if (isStopped || !card || !dependencies.getProfileDetails) {
+                return;
+            }
+
+            // What Rock answered before the change no longer holds, here or at the next open.
+            rockAnswers.delete(card.personAliasGuid.toLowerCase());
+            state.card = { ...card, rock: { kind: "loading" } };
+
+            const generation = cardGeneration;
+            const isCurrent = (): boolean => !isStopped && generation === cardGeneration && !!state.card;
+            void saved.catch(() => undefined).then(async () => {
+                if (!isCurrent()) {
+                    return;
+                }
+
+                const details = await askRock(card.personAliasGuid);
+                if (isCurrent()) {
+                    state.card = { ...state.card as ProfileCardState, rock: details ? { kind: "answered", details } : { kind: "failed" } };
+                }
+            });
         },
 
         factsOf: (channelId: string): ChannelFacts | null => state.facts[channelId] ?? null,
@@ -1091,6 +1220,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             cancelPause();
             directoryGeneration++;
             cardGeneration++;
+            cancelCardWait();
         }
     };
 }

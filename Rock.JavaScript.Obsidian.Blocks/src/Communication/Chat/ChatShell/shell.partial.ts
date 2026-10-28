@@ -37,7 +37,7 @@ import { createThreads, Threads } from "./composables/useThreads.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms } from "./composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms, RoomsDependencies } from "./composables/useRooms.partial";
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import {
     openChannel,
@@ -103,6 +103,9 @@ export type ShellOptions = {
 
     /** Asks Rock whether the person may add and remove people in a room; without it, they may not. */
     getMemberRights?: MemberDoors["getRights"];
+
+    /** Asks Rock for its half of a profile card; without it, a card shows only what chat holds. */
+    getProfileDetails?: RoomsDependencies["getProfileDetails"];
 
     /** Asks Rock's door to add people to a room; without it, nobody is added. */
     addMembers?: MemberDoors["addMembers"];
@@ -741,6 +744,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         leaveChannel: options.leaveChannel,
         renameConversation: options.renameConversation,
         getMemberRights: options.getMemberRights,
+        getProfileDetails: options.getProfileDetails,
         // The next conversation after a leave opens as a sidebar row does.
         openChannel: channelId => {
             directMessages.close();

@@ -60,6 +60,8 @@ export type ChatConfigurationFormModel = {
     minimumAge: number | null;
     directMessageAccessDataView: ListItemBag | null;
     chatBadgeDataViews: ListItemBag[];
+    profileCardLavaTemplate: string;
+    profileCardEnabledLavaCommands: ListItemBag[];
 };
 
 /** Reads the settings the form may edit out of what the block sent. */
@@ -69,7 +71,9 @@ export function toFormModel(bag: Partial<ChatConfigurationBag> | null | undefine
         isOpenDirectMessagingAllowed: bag?.isOpenDirectMessagingAllowed ?? false,
         minimumAge: bag?.minimumAge ?? null,
         directMessageAccessDataView: bag?.directMessageAccessDataView ?? null,
-        chatBadgeDataViews: bag?.chatBadgeDataViews ?? []
+        chatBadgeDataViews: bag?.chatBadgeDataViews ?? [],
+        profileCardLavaTemplate: bag?.profileCardLavaTemplate ?? "",
+        profileCardEnabledLavaCommands: bag?.profileCardEnabledLavaCommands ?? []
     };
 }
 
@@ -90,7 +94,9 @@ export function hasUnsavedChanges(form: ChatConfigurationFormModel, saved: ChatC
         isOpenDirectMessagingAllowed: value.isOpenDirectMessagingAllowed,
         minimumAge: value.minimumAge ?? null,
         directMessageAccessDataView: value.directMessageAccessDataView?.value ?? null,
-        chatBadgeDataViews: value.chatBadgeDataViews.map(item => item.value ?? null)
+        chatBadgeDataViews: value.chatBadgeDataViews.map(item => item.value ?? null),
+        profileCardLavaTemplate: value.profileCardLavaTemplate,
+        profileCardEnabledLavaCommands: value.profileCardEnabledLavaCommands.map(item => item.value ?? null)
     });
 
     return stored(form) !== stored(saved);
@@ -103,6 +109,8 @@ export function toBag(form: ChatConfigurationFormModel): Partial<ChatConfigurati
         isOpenDirectMessagingAllowed: form.isOpenDirectMessagingAllowed,
         minimumAge: form.minimumAge,
         directMessageAccessDataView: form.directMessageAccessDataView,
-        chatBadgeDataViews: form.chatBadgeDataViews
+        chatBadgeDataViews: form.chatBadgeDataViews,
+        profileCardLavaTemplate: form.profileCardLavaTemplate,
+        profileCardEnabledLavaCommands: form.profileCardEnabledLavaCommands
     };
 }

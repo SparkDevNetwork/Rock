@@ -65,7 +65,6 @@
                     <ChatHeader :title="activeTitle"
                                 :subtitle="activeSubtitle"
                                 :facts="activeFacts"
-                                :campuses="campuses"
                                 :kind="activeKind"
                                 :isPublic="activeRow?.is_public ?? false"
                                 :iconUrl="activeRow?.icon_url ?? activeFacts?.icon_url ?? null"
@@ -396,9 +395,14 @@
                          :campuses="campuses"
                          :badges="shell.channels.badges"
                          :anchor="cardAnchor"
+                         :rock="shell.rooms.state.card.rock"
+                         :isLavaConfigured="isProfileLavaConfigured"
+                         :showsOwnDetails="shell.prefs.state.me.show_profile_details"
+                         :ownDetailsNote="shell.prefs.state.meNotes.profile_details ?? null"
                          @close="shell.rooms.closeCard"
                          @message="onCardMessage"
-                         @settings="onCardSettings" />
+                         @settings="onCardSettings"
+                         @toggleDetails="onCardToggleDetails" />
 
             <!-- Kept mounted while the room's facts are held, so closing plays the dialog's exit. -->
             <ConversationDetails v-if="activeChannelId && activeFacts && activeKind"
@@ -722,6 +726,9 @@
 
     /** The person's own campus, which the church's campus note in Browse channels names. */
     const personCampusGuid = ref(config.session?.personCampusGuid ?? null);
+
+    /** Whether the church has a profile card template, whose lines a card reserves while Rock renders it. */
+    const isProfileLavaConfigured = ref(config.session?.isProfileLavaConfigured === true);
 
     const buildShell = createBrowserShellBuilder({
         linkedChannelId: config.channelGuid ?? null,
@@ -1133,6 +1140,14 @@
         void shell.value.prefs.choose(activeChannelId.value, choice);
     }
 
+    /**
+     * The person's own card's switch for their details: saved by the one save rule, which shows the
+     * change at once, and Rock asked again for the card once the save has landed.
+     */
+    function onCardToggleDetails(value: boolean): void {
+        shell.value.rooms.refreshCardDetails(shell.value.prefs.setSwitch("profile_details", value));
+    }
+
     /** The person's own card's Chat settings: the card goes first, so it never stands over the dialog. */
     function onCardSettings(): void {
         shell.value.rooms.closeCard();
@@ -1223,6 +1238,7 @@
         personName.value = fullName(outcome.session);
         personPhotoUrl.value = outcome.session.personPhotoUrl ?? null;
         personCampusGuid.value = outcome.session.personCampusGuid ?? null;
+        isProfileLavaConfigured.value = outcome.session.isProfileLavaConfigured === true;
         shell.value = buildShell(outcome.session);
         void shell.value.start();
     }

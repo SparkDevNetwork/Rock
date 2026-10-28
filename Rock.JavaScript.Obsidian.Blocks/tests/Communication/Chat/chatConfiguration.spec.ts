@@ -29,6 +29,8 @@ function bag(): Record<string, unknown> {
         minimumAge: 13,
         directMessageAccessDataView: { value: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", text: "Members" },
         chatBadgeDataViews: [{ value: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", text: "Staff" }],
+        profileCardLavaTemplate: "{{ Person | Groups }}",
+        profileCardEnabledLavaCommands: [{ value: "RockEntity", text: "RockEntity" }],
         projectUrl: "https://example.supabase.co",
         publishableKey: "sb_publishable_test",
         tenantId: "11111111-1111-4111-8111-111111111111",
@@ -46,6 +48,15 @@ describe("chatConfiguration view model", () => {
         expect(form.minimumAge).toBe(13);
         expect(form.directMessageAccessDataView?.value).toBe("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
         expect(form.chatBadgeDataViews).toHaveLength(1);
+        expect(form.profileCardLavaTemplate).toBe("{{ Person | Groups }}");
+        expect(form.profileCardEnabledLavaCommands.map(item => item.value)).toEqual(["RockEntity"]);
+    });
+
+    it("starts a church with no profile card template on a blank one with no commands", () => {
+        const form = toFormModel({ ...bag(), profileCardLavaTemplate: null, profileCardEnabledLavaCommands: null });
+
+        expect(form.profileCardLavaTemplate).toBe("");
+        expect(form.profileCardEnabledLavaCommands).toEqual([]);
     });
 
     it("sends every church owned setting back, edits included", () => {
@@ -53,8 +64,13 @@ describe("chatConfiguration view model", () => {
         form.areChatProfilesVisible = false;
         form.minimumAge = 16;
         form.chatBadgeDataViews = [];
+        form.profileCardLavaTemplate = "<p>{{ Person.NickName }}</p>";
+        form.profileCardEnabledLavaCommands = [];
 
         const sent = toBag(form);
+
+        expect(sent.profileCardLavaTemplate).toBe("<p>{{ Person.NickName }}</p>");
+        expect(sent.profileCardEnabledLavaCommands).toHaveLength(0);
 
         expect(sent.areChatProfilesVisible).toBe(false);
         expect(sent.minimumAge).toBe(16);
@@ -79,7 +95,9 @@ describe("chatConfiguration view model", () => {
             "chatBadgeDataViews",
             "directMessageAccessDataView",
             "isOpenDirectMessagingAllowed",
-            "minimumAge"
+            "minimumAge",
+            "profileCardEnabledLavaCommands",
+            "profileCardLavaTemplate"
         ]);
     });
 
@@ -109,7 +127,9 @@ describe("chatConfiguration unsaved edits", () => {
             form => { form.directMessageAccessDataView = null; },
             form => { form.directMessageAccessDataView = { value: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", text: "Leaders" }; },
             form => { form.chatBadgeDataViews = []; },
-            form => { form.chatBadgeDataViews = [...form.chatBadgeDataViews, { value: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", text: "Elders" }]; }
+            form => { form.chatBadgeDataViews = [...form.chatBadgeDataViews, { value: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", text: "Elders" }]; },
+            form => { form.profileCardLavaTemplate = ""; },
+            form => { form.profileCardEnabledLavaCommands = [...form.profileCardEnabledLavaCommands, { value: "Sql", text: "Sql" }]; }
         ];
 
         for (const edit of edits) {

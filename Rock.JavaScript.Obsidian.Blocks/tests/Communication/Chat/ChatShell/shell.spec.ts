@@ -2559,9 +2559,10 @@ describe("the live sidebar", () => {
             nick_name: "Anna",
             last_name: "Reyes",
             avatar_url: null,
+            campus_id: null,
             is_self: false,
             is_leader: true,
-            details: { campus_id: null, badge_keys: [] },
+            details: { badge_keys: [] },
             can_message: true,
             dm_channel_id: dmD
         };
@@ -2574,7 +2575,7 @@ describe("the live sidebar", () => {
             await settle();
 
             expect(h.personCalls).toEqual([{ p_person_alias_guid: anna, p_channel_id: channelA }]);
-            expect(h.shell.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: channelA, person: annaProfile });
+            expect(h.shell.rooms.state.card).toEqual({ personAliasGuid: anna, channelId: channelA, person: annaProfile, rock: { kind: "failed" } });
         });
 
         test("a person the platform does not list opens no card", async () => {

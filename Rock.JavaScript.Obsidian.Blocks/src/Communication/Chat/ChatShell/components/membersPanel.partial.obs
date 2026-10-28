@@ -111,7 +111,6 @@
                                         <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
                                         <span v-if="row.isLeader" class="chat-pill" data-testid="member-leader">Leader</span>
                                     </span>
-                                    <span v-if="row.campus" class="chat-mb-sub" data-testid="member-campus">{{ row.campus }}</span>
                                 </span>
                             </button>
                             <!-- Drawn on every row, empty where there is nothing to do, so each row ends with its inset. -->
@@ -312,14 +311,6 @@
     flex: none;
     font-size: 13px;
     color: var(--chat-muted);
-}
-
-.chat-mb-sub {
-    overflow: hidden;
-    font-size: 12.5px;
-    color: var(--chat-muted);
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* A row's actions show on hover or focus, and always where there is no hover, as on a phone. */
@@ -677,7 +668,6 @@
         photoUrl: string | null;
         isSelf: boolean;
         isLeader: boolean;
-        campus: string;
         canMessage: boolean;
         label: string;
 
@@ -777,12 +767,6 @@
         personAliasGuid: {
             type: String,
             default: ""
-        },
-
-        /** The church's campus names by guid in lower case, from the init box. */
-        campusNames: {
-            type: Object as PropType<Record<string, string>>,
-            default: () => ({})
         },
 
         /** Whether the chat is in its one-pane phone layout, where a row's actions always show. */
@@ -964,9 +948,7 @@
         const name = `${member.nick_name ?? ""} ${member.last_name ?? ""}`.trim() || "Someone";
         const isSelf = member.person_alias_guid.toLowerCase() === props.personAliasGuid.toLowerCase();
         const isLeader = props.isChannel && member.is_leader;
-        const campusId = member.details?.campus_id;
-        const campus = campusId ? props.campusNames[campusId.toLowerCase()] ?? "" : "";
-        const parts = [name, isSelf ? "you" : "", isLeader ? "leader" : "", campus].filter(p => !!p);
+        const parts = [name, isSelf ? "you" : "", isLeader ? "leader" : ""].filter(p => !!p);
 
         const canMessage = member.can_message && !isSelf;
         const removal = props.removals[member.person_alias_guid];
@@ -977,7 +959,6 @@
             photoUrl: member.avatar_url,
             isSelf,
             isLeader,
-            campus,
             canMessage,
             label: `${parts.join(", ")}. View profile`,
             menu: isSelf || !props.canManageMembers ? null : menuOf(isLeader, canMessage),

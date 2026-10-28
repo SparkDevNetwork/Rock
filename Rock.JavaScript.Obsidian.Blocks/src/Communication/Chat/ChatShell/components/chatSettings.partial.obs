@@ -27,6 +27,7 @@
             <SettingSwitch name="profile_details"
                            icon="id-card"
                            :title="meTitles.profile_details"
+                           description="Adds your email, mobile phone and badges to your card."
                            :isOn="me.show_profile_details"
                            :note="notes.profile_details ?? null"
                            @toggle="onToggle('profile_details', $event)" />

@@ -15,7 +15,7 @@
 // </copyright>
 //
 // Removing someone from a room, asked over the frame from a member row's menu. The plain confirm
-// names the person and what leaving means by the room's kind, with their face, name and campus.
+// names the person and what leaving means by the room's kind, with their face and name.
 // The room's last leader is never removed without someone to lead next: a wide dialog searches the
 // room's members and offers them as one radiogroup, "New leader", and Remove waits for a pick,
 // then names who will lead. The door's refusal shows in that dialog in its own words.
@@ -24,8 +24,7 @@
 //
 //   props: member: RosterMember | null (who is being removed; null draws nothing), isChannel,
 //          channelName, isLastLeader: boolean, choices: RosterMember[] (who may lead next),
-//          query: string, refusal: string | null, isRemoving: boolean, personAliasGuid: string,
-//          campusNames: Record<string, string>
+//          query: string, refusal: string | null, isRemoving: boolean, personAliasGuid: string
 //   emits: close, confirm(replacementPersonAliasGuid: string | null), query(text)
 //   marks: the dialog's own (dialog, dialog-cancel, dialog-confirm, dialog-preview), remove-preview,
 //          leader-search, leader-choices, leader-choice, leader-radio, leader-none,
@@ -36,7 +35,6 @@ import RemoveMember from "../../../../../src/Communication/Chat/ChatShell/compon
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
-const downtown = "d0000001-0000-4000-8000-000000000000";
 
 /** One row of chat_list_members, exactly its keys. */
 function member(n: number, nickName: string, lastName: string, extra: Partial<RosterMember> = {}): RosterMember {
@@ -53,8 +51,8 @@ function member(n: number, nickName: string, lastName: string, extra: Partial<Ro
 }
 
 const tom = member(2, "Tom", "Hale", { is_leader: true });
-const grace = member(3, "Grace", "Kim", { details: { campus_id: downtown, badge_keys: [] } });
-const anna = member(4, "Anna", "Reyes", { details: { campus_id: downtown, badge_keys: [] } });
+const grace = member(3, "Grace", "Kim", { details: { badge_keys: [] } });
+const anna = member(4, "Anna", "Reyes", { details: { badge_keys: [] } });
 const self = member(1, "Jordan", "Lee");
 
 let wrapper: VueWrapper | null = null;
@@ -71,7 +69,6 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             refusal: null,
             isRemoving: false,
             personAliasGuid: me,
-            campusNames: { [downtown]: "Downtown" },
             ...props
         },
         attachTo: document.body
@@ -96,12 +93,12 @@ const read = (element: Element): string => spaced(element).replace(/\s+/g, " ").
 const text = (w: VueWrapper, mark: string): string => read(w.get(`[data-testid='${mark}']`).element);
 
 describe("the plain confirm", () => {
-    test("names the person, what leaving a channel means, and their face, name and campus", () => {
+    test("names the person, what leaving a channel means, and their face and name", () => {
         const w = draw();
 
         expect(w.get(".chat-dialog-title").text()).toBe("Remove Grace Kim?");
         expect(w.get(".chat-dialog-body").text()).toBe("Grace will leave young-adults and its group in Rock, and won't see new messages here unless someone adds them back.");
-        expect(text(w, "remove-preview")).toBe("Grace Kim Downtown");
+        expect(text(w, "remove-preview")).toBe("Grace Kim");
         expect(text(w, "dialog-confirm")).toBe("Remove");
     });
 
@@ -144,7 +141,7 @@ describe("the last leader", () => {
         expect(search.attributes("aria-label")).toBe("Find a member to lead");
         expect(w.get("[data-testid='leader-choices']").attributes("role")).toBe("radiogroup");
         expect(w.get("[data-testid='leader-choices']").attributes("aria-label")).toBe("New leader");
-        expect(w.findAll("[data-testid='leader-choice']").map(c => read(c.element))).toEqual(["Jordan Lee (you)", "Grace Kim Downtown", "Anna Reyes Downtown"]);
+        expect(w.findAll("[data-testid='leader-choice']").map(c => read(c.element))).toEqual(["Jordan Lee (you)", "Grace Kim", "Anna Reyes"]);
     });
 
     test("typing asks for that name", async () => {

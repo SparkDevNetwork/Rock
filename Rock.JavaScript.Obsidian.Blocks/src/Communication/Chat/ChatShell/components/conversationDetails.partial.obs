@@ -748,10 +748,9 @@
             return [facts.is_public ? "Public" : "Private", ...(campus ? [campus] : []), ...(facts.group_type_name ? [facts.group_type_name] : [])];
         }
 
+        // A person's campus is on their card, not here.
         if (props.kind === "person") {
-            // The campus only for a person who shows their details; the platform leaves them out otherwise.
-            const campus = campusName(facts.people[0]?.details?.campus_id);
-            return [...(campus ? [campus] : []), "Direct message"];
+            return ["Direct message"];
         }
 
         return [`${facts.member_count.toLocaleString()} people`, "Group message"];

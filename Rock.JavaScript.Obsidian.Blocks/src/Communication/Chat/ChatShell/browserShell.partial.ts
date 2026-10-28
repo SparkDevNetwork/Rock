@@ -24,6 +24,7 @@ import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Ch
 import { ChatMemberRightsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMemberRightsBag";
 import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMembershipResultBag";
 import { ChatPersonSettingResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatPersonSettingResultBag";
+import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
 import { DoorResult } from "./composables/useDirectMessage.partial";
 import { ChatShell, createChatShell, PlatformClientLike, ShellOptions } from "./shell.partial";
 
@@ -162,6 +163,11 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
                 canRename: rights?.canRename === true,
                 lastLeaderPersonAliasGuid: rights?.lastLeaderPersonAliasGuid ?? null
             };
+        },
+        getProfileDetails: async personAliasGuid => {
+            const result = await invokeBlockAction<ChatProfileDetailsBag>("GetProfileDetails", { personAliasGuid });
+            // Without Rock's answer the card shows only what chat holds.
+            return result.isSuccess && result.data ? result.data : null;
         },
         addMembers: (channelId, personAliasGuids) => membershipDoor("AddMembers", { channelGuid: channelId, personAliasGuids }),
         removeMember: (channelId, personAliasGuid, replacementPersonAliasGuid) => membershipDoor("RemoveMember", { channelGuid: channelId, personAliasGuid, replacementPersonAliasGuid }),

@@ -108,8 +108,6 @@
     --chat-av-l: 90%;
     --chat-av-tsat: 42%;
     --chat-av-tl: 31%;
-    /* How far a profile card's band leans toward the person's hue from the card's own fill. */
-    --chat-pc-band-mix: 62%;
     /*
         A badge's pill on a profile card: how much of the church's pale fill shows over the card,
         and how far its icon and edge lean to the badge's dark ink rather than to that fill. A dark
@@ -290,7 +288,6 @@
     --chat-av-l: 23%;
     --chat-av-tsat: 75%;
     --chat-av-tl: 82%;
-    --chat-pc-band-mix: 38%;
     --chat-badge-fill-mix: 14%;
     --chat-badge-ink-mix: 0%;
     --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
@@ -364,7 +361,6 @@
         --chat-av-l: 23%;
         --chat-av-tsat: 75%;
         --chat-av-tl: 82%;
-        --chat-pc-band-mix: 38%;
         --chat-badge-fill-mix: 14%;
         --chat-badge-ink-mix: 0%;
         --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
@@ -488,25 +484,6 @@
 
 .chat-pile {
     display: inline-flex;
-}
-
-/*
-    A profile card's band in the person's hue, here beside the avatar's since a component holds no
-    color of its own: a diagonal to a hue 38 degrees on, each end mixed toward the card's fill, with
-    a soft highlight at the top right.
-*/
-.chat-pc-band {
-    position: relative;
-    background: linear-gradient(125deg,
-        color-mix(in srgb, hsl(var(--chat-av-hue) 72% 60%) var(--chat-pc-band-mix), var(--chat-raised)),
-        color-mix(in srgb, hsl(calc(var(--chat-av-hue) + 38) 70% 54%) calc(var(--chat-pc-band-mix) - 14%), var(--chat-raised)));
-}
-
-.chat-pc-band::after {
-    position: absolute;
-    inset: 0;
-    content: "";
-    background: radial-gradient(90% 120% at 88% -10%, color-mix(in srgb, var(--chat-raised) 40%, transparent), transparent 62%);
 }
 
 /* Ringed in the background the pile sits on, so an overlapped face's initials are never cut. */

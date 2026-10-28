@@ -127,8 +127,8 @@ export type ChannelLeader = ChatPerson;
 
 /** One of the other people in a direct message, as chat_get_channel lists up to eight of them. */
 export type ChannelPerson = ChannelLeader & {
-    /** Their campus and badges, only when they show their details; null otherwise. */
-    details: { campus_id: string | null, badge_keys: string[] } | null;
+    /** Their badges, only when they show their details; null otherwise. */
+    details: PersonDetails | null;
 };
 
 /** What chat_get_channel answers about one room, read when it opens. */
@@ -469,7 +469,7 @@ export type PersonRow = {
     last_name: string;
     avatar_url: string | null;
 
-    /** Their campus, which the people search sends only for a person who shows their details. */
+    /** Their campus, by the guid the init box names it under; null when they have none. */
     campus_id?: string | null;
 
     /** Whether they are in the room the search was asked for; sent only when one was named. */
@@ -478,13 +478,16 @@ export type PersonRow = {
 
 /** One person as chat_get_person answers for the profile card, in the room the card was opened from. */
 export type PersonProfile = PersonRow & {
+    /** Their campus, shown whatever their setting; null when they have none. */
+    campus_id: string | null;
+
     is_self: boolean;
 
     /** Leads that room; false in a direct message and wherever the room hides its roster. */
     is_leader: boolean;
 
-    /** Their campus and badges, only when they show their details; null otherwise. */
-    details: { campus_id: string | null, badge_keys: string[] } | null;
+    /** Their badges, only when they show their details; null otherwise. */
+    details: PersonDetails | null;
 
     /** Whether the caller may message them: never themselves. */
     can_message: boolean;
@@ -503,11 +506,11 @@ export type FindDmAnswer = {
     channel_id: string | null;
 };
 
-/** What a person who shows their profile details lets others see. */
+/**
+ * What chat itself holds of a person's public profile details, sent only when they show them.
+ * Their email, mobile phone and the church's template are Rock's, read as their card opens.
+ */
 export type PersonDetails = {
-    /** Their campus, by the guid the init box names it under; null when they have none. */
-    campus_id: string | null;
-
     /** The church's chat badges they hold, by key, in no particular order. */
     badge_keys: string[];
 };
@@ -522,7 +525,7 @@ export type RosterMember = {
     /** Whether they lead this room. */
     is_leader: boolean;
 
-    /** Their campus and badges, only when they show their profile details; else null. */
+    /** Their badges, only when they show their profile details; else null. */
     details: PersonDetails | null;
 
     /** Whether the reader may message them from here. */
