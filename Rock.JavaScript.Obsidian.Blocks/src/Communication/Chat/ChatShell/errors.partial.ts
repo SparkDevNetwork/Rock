@@ -125,17 +125,32 @@ export function messageForError(error: ChatError): string {
         : "Something went wrong in chat. Try again in a moment.";
 }
 
+/** What the person is told where a call reached nothing and the place has no words of its own. */
+export const offlineSentence = "You're offline. Try again when you're back.";
+
 /**
- * What the person is told for a failure where a call that never reached the platform says so in
- * the words of the place it failed, and any other failure in the server's.
+ * Whether a call reached nothing: not the platform, nor Rock's door in front of it. Every place
+ * that calls the person offline does so for exactly these failures.
  *
  * @param error The classified failure.
- * @param offline The place's sentence for a call that never reached the platform.
+ *
+ * @returns True when nothing was reached.
+ */
+export function isUnreached(error: ChatError): boolean {
+    return error.code === "rpc.transport" || error.code === "door.unreachable";
+}
+
+/**
+ * What the person is told for a failure where a call that reached nothing says so in the words of
+ * the place it failed, and any other failure in the server's.
+ *
+ * @param error The classified failure.
+ * @param offline The place's sentence for a call that reached nothing; the plain one by default.
  *
  * @returns The sentence.
  */
-export function messageOrOffline(error: ChatError, offline: string): string {
-    return error.code === "rpc.transport" ? offline : messageForError(error);
+export function messageOrOffline(error: ChatError, offline: string = offlineSentence): string {
+    return isUnreached(error) ? offline : messageForError(error);
 }
 
 /**
