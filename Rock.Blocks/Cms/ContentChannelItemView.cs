@@ -298,6 +298,12 @@ Guid - ContentChannelItem Guid";
         /// </summary>
         private static readonly TimeSpan InteractionTokenLifetime = TimeSpan.FromHours( 4 );
 
+        /// <summary>
+        /// Purpose that binds the interaction token to this block, so a tampered
+        /// or foreign token fails verification.
+        /// </summary>
+        private const string InteractionTokenEncryptionPurpose = "Rock.Blocks.Cms.ContentChannelItemView.InteractionToken";
+
         private enum LaunchWorkflowCondition
         {
             Always = 0,
@@ -689,7 +695,7 @@ Guid - ContentChannelItem Guid";
                 PageUrl = pageUrl
             };
 
-            bag.InteractionToken = Rock.Security.Encryption.EncryptString( payload.ToJson() );
+            bag.InteractionToken = Rock.Security.Encryption.EncryptStringForPurpose( payload.ToJson(), InteractionTokenEncryptionPurpose );
             bag.InteractionTokenLifetimeSeconds = ( int ) InteractionTokenLifetime.TotalSeconds;
 
             return bag;
@@ -709,7 +715,7 @@ Guid - ContentChannelItem Guid";
             string json;
             try
             {
-                json = Rock.Security.Encryption.DecryptString( token );
+                json = Rock.Security.Encryption.DecryptStringForPurpose( token, InteractionTokenEncryptionPurpose );
             }
             catch
             {
