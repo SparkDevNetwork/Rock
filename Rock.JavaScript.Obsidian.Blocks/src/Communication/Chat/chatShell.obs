@@ -388,6 +388,7 @@
                          :key="reactionPicker.key"
                          mode="react"
                          :startsOn="reactionPicker.startsOn"
+                         :offered="reactionPicker.offered"
                          :source="emojiSource"
                          :mine="pickerMine"
                          :anchor="reactionPicker.anchor"

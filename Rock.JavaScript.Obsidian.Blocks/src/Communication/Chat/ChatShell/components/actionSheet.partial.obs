@@ -192,7 +192,7 @@ img.chat-sheet-glyph {
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref, toRaw, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
-    import { PickerStep } from "./emojiPicker.partial.obs";
+    import { PickerOpening } from "./emojiPicker.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
@@ -244,7 +244,7 @@ img.chat-sheet-glyph {
         (e: "delete", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
-        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, startsOn: PickerStep): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: PickerOpening): void;
         (e: "close"): void;
     }>();
 
@@ -347,7 +347,7 @@ img.chat-sheet-glyph {
 
         // The message itself, not the props' view of it, so the host finds the very message it holds.
         emit("close");
-        emit("openPicker", toRaw(message), anchor, "full");
+        emit("openPicker", toRaw(message), anchor, { startsOn: "full" });
     }
 
     // #endregion Event Handlers

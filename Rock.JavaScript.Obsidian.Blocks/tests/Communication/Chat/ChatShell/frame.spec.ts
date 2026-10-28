@@ -2501,11 +2501,34 @@ describe("reactions", () => {
         const anchor = document.createElement("button");
         shellRoot(w).append(anchor);
 
-        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor, startsOn: "full" });
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor, opening: { startsOn: "full" } });
         await settle();
 
         expect(pickerOf()?.querySelector("[role='toolbar']")).toBeNull();
         expect(pickerOf()?.querySelector("[role='grid'] [role='gridcell'][data-code='pray']")).not.toBeNull();
+    });
+
+    test("asked for by a control that already shows quick reactions, as the bar's Add reaction, opens on a tray without them", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const anchor = document.createElement("button");
+        shellRoot(w).append(anchor);
+
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor });
+        await settle();
+        const fullTray = Array.from(pickerOf()?.querySelectorAll<HTMLElement>("[role='toolbar'] [data-code]") ?? []).map(cell => cell.dataset.code);
+        anchor.click();
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor });
+        await settle();
+        expect(pickerOf()).toBeNull();
+
+        const offered = fullTray.slice(0, 1) as string[];
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor, opening: { offered } });
+        await settle();
+
+        const tray = Array.from(pickerOf()?.querySelectorAll<HTMLElement>("[role='toolbar'] [data-code]") ?? []).map(cell => cell.dataset.code);
+        expect(offered).toHaveLength(1);
+        expect(tray).toEqual(fullTray.slice(1));
     });
 
     test("asked for again by what opened it, closes", async () => {

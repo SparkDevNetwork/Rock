@@ -571,6 +571,13 @@ img.chat-picker-prev {
      */
     export type PickerStep = "tray" | "full";
 
+    /**
+     * How a control opens the reaction picker: where it starts, the tray unless told, and the quick
+     * reactions the control already shows beside it, which the tray leaves out so nothing is
+     * offered twice.
+     */
+    export type PickerOpening = { startsOn?: PickerStep, offered?: string[] };
+
     /** One drawn cell. The key tells a glyph in two sections apart, as favorites and a category. */
     type Cell = { key: string, item: PickerEmoji };
 
@@ -588,6 +595,12 @@ img.chat-picker-prev {
         startsOn: {
             type: String as PropType<PickerStep>,
             default: "full"
+        },
+
+        /** The quick reactions the control that opened the tray already shows, which the tray leaves out. */
+        offered: {
+            type: Array as PropType<string[]>,
+            default: () => []
         },
 
         source: {
@@ -644,7 +657,7 @@ img.chat-picker-prev {
     const recentLimit = 8;
     const rowLength = 8;
 
-    /** The tray's glyphs, the bar's three quick reactions grown to a row a reader can scan at once. */
+    /** The tray's glyphs, a row a reader can scan at once. */
     const trayLength = 8;
 
     /**
@@ -745,9 +758,14 @@ img.chat-picker-prev {
 
     const favoriteItems = computed((): PickerEmoji[] => props.source.favorites.map(item => byCode.value.get(item.code) ?? item));
 
-    /** The tray: the reader's recents, then the church's favorites, each once, eight in all. */
+    /**
+     * The tray: the reader's recents, then the church's favorites, each once, eight in all, past
+     * the quick reactions already shown beside what opened it.
+     */
     const trayItems = computed((): PickerEmoji[] => {
-        return eachOnce([...recents.value, ...favoriteItems.value]).slice(0, trayLength);
+        return eachOnce([...recents.value, ...favoriteItems.value])
+            .filter(item => !props.offered.includes(item.code))
+            .slice(0, trayLength);
     });
 
     const favoritesLabel = computed(() => `${props.source.churchName} favorites`);

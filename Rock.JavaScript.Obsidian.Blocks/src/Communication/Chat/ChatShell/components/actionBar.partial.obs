@@ -318,6 +318,7 @@ img.chat-tool-glyph {
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import { PickerOpening } from "./emojiPicker.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
@@ -400,7 +401,7 @@ img.chat-tool-glyph {
         (e: "delete", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
-        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: PickerOpening): void;
         (e: "holdChange", isHeld: boolean): void;
     }>();
 
@@ -567,10 +568,11 @@ img.chat-tool-glyph {
         }
     }
 
+    /** Add reaction opens the tray past the quick reactions the bar already shows. */
     function onOpenPicker(): void {
         const anchor = addTool.value?.buttonElement;
         if (props.message && anchor) {
-            emit("openPicker", props.message, anchor);
+            emit("openPicker", props.message, anchor, { offered: quickReactions.value.map(favorite => favorite.code) });
         }
     }
 

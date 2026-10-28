@@ -485,7 +485,7 @@ describe("the bar's quick reactions", () => {
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toEqual(["Add reaction"]);
 
         await add.trigger("click");
-        expect(w.emitted("openPicker")).toEqual([[target, add.element]]);
+        expect(w.emitted("openPicker")).toEqual([[target, add.element, { offered: favorites.slice(0, 3).map(favorite => favorite.code) }]]);
     });
 
     test("the bar stays while the picker its More reactions opened is up, and goes once it closes", async () => {

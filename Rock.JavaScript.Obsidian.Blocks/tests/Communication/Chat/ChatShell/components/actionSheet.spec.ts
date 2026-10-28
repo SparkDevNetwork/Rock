@@ -250,7 +250,7 @@ describe("the sheet's reactions", () => {
 
         await plus.trigger("click");
 
-        expect(w.emitted("openPicker")?.[0]).toEqual([target, plus.element, "full"]);
+        expect(w.emitted("openPicker")?.[0]).toEqual([target, plus.element, { startsOn: "full" }]);
         expect(w.emitted("react")).toBeUndefined();
     });
 });

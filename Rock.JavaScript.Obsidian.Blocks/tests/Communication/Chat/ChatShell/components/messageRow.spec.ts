@@ -1192,10 +1192,10 @@ describe("the phone's action sheet", () => {
         sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
         await nextTick();
 
-        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, startsOn?: string }];
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opening?: { startsOn?: string } }];
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(isChannel ? root(w) : w.get(".chat-bubble").element);
-        expect(request.startsOn).toBe("full");
+        expect(request.opening).toEqual({ startsOn: "full" });
     });
 });
 
@@ -1260,11 +1260,11 @@ describe("the reactions row", () => {
 
         await w.get("[data-testid='reaction-add']").trigger("click");
 
-        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement, startsOn?: string }];
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement, opening?: unknown }];
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(bubble ? w.get(bubble).element : root(w));
         expect(request.opener).toBe(w.get("[data-testid='reaction-add']").element);
-        expect(request.startsOn).toBeUndefined();
+        expect(request.opening).toBeUndefined();
     });
 
     test("tucks into the bubble, which grows its foot to make room", () => {

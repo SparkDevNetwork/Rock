@@ -76,9 +76,9 @@ test("the picker opens for the room it was asked in, with what opened it and whe
     const opener = document.createElement("button");
 
     view.onMessageAction({ kind: "openPicker", message, anchor, opener } as MessageActionRequest, null);
-    view.onMessageAction({ kind: "openPicker", message, anchor, startsOn: "full" } as MessageActionRequest, null);
+    view.onMessageAction({ kind: "openPicker", message, anchor, opening: { startsOn: "full" } } as MessageActionRequest, null);
 
-    expect(openReactionPicker.mock.calls).toEqual([[team, message, anchor, opener, undefined], [team, message, anchor, undefined, "full"]]);
+    expect(openReactionPicker.mock.calls).toEqual([[team, message, anchor, opener, undefined], [team, message, anchor, undefined, { startsOn: "full" }]]);
 });
 
 test("a quote waits under its place's key, and nothing is done once that place is gone", () => {

@@ -21,7 +21,7 @@
 // block's frame and elements, which the shell's half never sees.
 
 import { computed, ComputedRef, nextTick, Ref } from "vue";
-import { PickerStep } from "../components/emojiPicker.partial.obs";
+import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import { ChatShell } from "../shell.partial";
 import { ChatError, TimelineMessage } from "../types.partial";
@@ -53,7 +53,7 @@ export type MessageActionsViewDependencies = {
     panelElement: Readonly<Ref<HTMLElement | undefined>>;
 
     /** Opens the reaction picker for a message, beside what asked. */
-    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, startsOn?: PickerStep) => void;
+    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, opening?: PickerOpening) => void;
 
     /** Opens a person's card for a room, beside what asked. */
     openCard: (anchor: HTMLElement, personAliasGuid: string, channelId: string) => void;
@@ -198,7 +198,7 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
                 break;
 
             case "openPicker":
-                dependencies.openReactionPicker(channelId, request.message, request.anchor, request.opener, request.startsOn);
+                dependencies.openReactionPicker(channelId, request.message, request.anchor, request.opener, request.opening);
                 break;
 
             // the person is read for the room the author or chip was pressed in
