@@ -1,0 +1,22 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-attachments"></div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { AttachmentTray } from "../composables/useAttachments.partial";
+    import { AttachmentItem } from "../types.partial";
+
+    defineProps({
+        items: {
+            type: Array as PropType<AttachmentItem[]>,
+            default: () => []
+        },
+
+        tray: {
+            type: Object as PropType<AttachmentTray | null>,
+            default: null
+        }
+    });
+</script>

@@ -25,6 +25,7 @@ import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composa
 import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
+import { FakeRequest, limits as attachmentLimits, nextUpload } from "./attachmentFakes";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -66,7 +67,8 @@ const platformLimits = {
     mention_page_size: 30,
     thread_page_size: 30,
     directory_page_size: 45,
-    people_search_size: 10
+    people_search_size: 10,
+    ...attachmentLimits
 };
 
 function page(id: number): HistoryPage {
@@ -140,8 +142,13 @@ function build(options: {
     deviceAnswer: { value: { status: number, body: unknown } },
     exchangeSettings: { value: Record<string, unknown> },
     heldExchange: { value: Deferred<void> | null },
-    memberCalls: Array<Record<string, unknown>>
+    memberCalls: Array<Record<string, unknown>>,
+    begins: Array<Record<string, unknown>>,
+    uploads: FakeRequest[]
 } {
+    // Every attachment begun, and every upload to Storage, each answered by the test.
+    const begins: Array<Record<string, unknown>> = [];
+    const uploads: FakeRequest[] = [];
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
     const mintGate = { value: "ok" };
@@ -232,6 +239,10 @@ function build(options: {
                 return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value });
             }
             const body = JSON.parse(init.body as string);
+            if (url.endsWith("/rest/v1/rpc/chat_attachment_begin")) {
+                begins.push(body);
+                return fakeResponse(200, (body.p_files as unknown[]).map(() => nextUpload()));
+            }
             if (url.endsWith("/rest/v1/rpc/chat_register_device")) {
                 deviceCalls.push({ name: "chat_register_device", body });
                 return fakeResponse(200, {});
@@ -344,12 +355,17 @@ function build(options: {
         mentionViews: options.mentionViews,
         reloadPage: () => {
             reloads.count++;
+        },
+        newUploadRequest: () => {
+            const request = new FakeRequest();
+            uploads.push(request);
+            return request as unknown as XMLHttpRequest;
         }
     });
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -3142,5 +3158,43 @@ describe("the header's push offer", () => {
 
         expect(h.shell.state.isPushOffered).toBe(false);
         expect(h.shell.state.push).toBe("on");
+    });
+});
+
+// A place's files are uploaded before its send and handed over with its text, as the ids of their
+// uploads; text left blank goes as none, so a message of files alone is stored with no body.
+describe("a send with files", () => {
+    test("takes the conversation's uploaded files with its text, and leaves the tray empty", async () => {
+        const h = await started();
+        const tray = h.shell.trayOf(channelA);
+        tray.add([new File(["x"], "a.pdf", { type: "application/pdf" })]);
+        await settle();
+        expect(h.begins).toEqual([{ p_channel_id: channelA, p_files: [{ name: "a.pdf", type: "application/pdf", size: 1, width: null, height: null }] }]);
+        expect(h.uploads[0].url).toMatch(/^http:\/\/platform\/storage\/v1\/object\/chat-attachments\//);
+        h.uploads[0].respond(200);
+        await settle();
+        const uploadId = h.uploads[0].url.split("/").pop();
+
+        await h.shell.send("");
+        await settle();
+
+        expect(h.sent[0].args).toMatchObject({ p_channel_id: channelA, p_body: null, p_attachments: [uploadId] });
+        expect(tray.files).toEqual([]);
+    });
+
+    test("a reply takes its thread's files, never the conversation's", async () => {
+        const h = await started();
+        h.shell.trayOf(channelA).add([new File(["x"], "room.pdf", { type: "application/pdf" })]);
+        h.shell.trayOf(channelA, 10).add([new File(["x"], "thread.pdf", { type: "application/pdf" })]);
+        await settle();
+        h.uploads.forEach(upload => upload.respond(200));
+        await settle();
+
+        await h.shell.sendReply(10, "see this", false);
+        await settle();
+
+        const threadUpload = h.uploads[1].url.split("/").pop();
+        expect(h.sent[0].args).toMatchObject({ p_body: "see this", p_attachments: [threadUpload] });
+        expect(h.shell.trayOf(channelA).files.map(f => f.name)).toEqual(["room.pdf"]);
     });
 });

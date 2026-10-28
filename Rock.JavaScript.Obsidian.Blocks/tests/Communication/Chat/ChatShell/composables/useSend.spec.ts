@@ -18,7 +18,7 @@
 // keeps its text so it can be sent again.
 import { createSender, isComposerOpen, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { ChatErrorSeverity, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { AttachmentItem, ChatErrorSeverity, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -1398,5 +1398,101 @@ describe("lastFailure", () => {
         expect(sender.lastFailure()).toEqual({ localId: "local-2", count: 2 });
         await sender.retryAll(["local-1"]);
         expect(sender.lastFailure()).toEqual({ localId: "local-1", count: 3 });
+    });
+});
+
+// Files go with a message as the ids of their uploads, made before the send; the row shows them
+// at once, keeps them through a failure so Try again sends the same files, and becomes the
+// message the platform stored with them.
+describe("a send with files", () => {
+    const photo: AttachmentItem = { id: "d0000000-0000-4000-8000-000000000001", key: "t/d0000000-0000-4000-8000-000000000001", kind: "image", name: "p.jpg", size: 900, type: "image/jpeg", width: 400, height: 300 };
+    const pdf: AttachmentItem = { id: "d0000000-0000-4000-8000-000000000002", key: "t/d0000000-0000-4000-8000-000000000002", kind: "file", name: "a.pdf", size: 2000, type: "application/pdf", width: null, height: null };
+
+    async function filesSetup(answers: Array<SendResult | Deferred<SendResult>>, reupload?: (channelId: string, items: AttachmentItem[]) => Promise<AttachmentItem[] | null>): Promise<{
+        sender: ReturnType<typeof createSender>,
+        timelines: ReturnType<typeof createTimelines>,
+        sent: Array<{ body: string, attachments: AttachmentItem[] | undefined }>
+    }> {
+        const sent: Array<{ body: string, attachments: AttachmentItem[] | undefined }> = [];
+        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        let next = 0;
+        const sender = createSender({
+            send: (_c, body, _key, _reply, _quote, attachments) => {
+                sent.push({ body, attachments });
+                const answer = answers.shift() as SendResult | Deferred<SendResult>;
+                return "promise" in answer ? answer.promise : Promise.resolve(answer);
+            },
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => `local-${++next}`,
+            ...(reupload ? { reupload } : {})
+        });
+        return { sender, timelines, sent };
+    }
+
+    test("files with no text send, the row showing them, and the stored message takes the platform's summary", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines, sent } = await filesSetup([answer]);
+
+        const sending = sender.send(channel, "", undefined, undefined, undefined, [photo, pdf]);
+
+        expect(sent).toEqual([{ body: "", attachments: [photo, pdf] }]);
+        expect(sender.pending(channel)).toEqual([
+            { localId: "local-1", channelId: channel, body: "", status: "sending", errorCode: null, attachments: [photo, pdf] }
+        ]);
+
+        const stored = [{ ...photo, size: 880 }, pdf];
+        answer.resolve({ ok: true, id: 61, createdAt: "2026-10-28T10:00:00Z", attachments: stored });
+        expect(await sending).toBe(true);
+
+        const [confirmed] = timelines.state(channel).messages;
+        expect(confirmed.body).toBeNull();
+        expect(confirmed.attachments).toEqual(stored);
+        expect(sender.pending(channel)).toEqual([]);
+    });
+
+    test("blank text with no files still sends nothing", async () => {
+        const { sender, sent } = await filesSetup([]);
+
+        expect(await sender.send(channel, "  ", undefined, undefined, undefined, [])).toBe(false);
+        expect(sent).toEqual([]);
+    });
+
+    test("a failed send keeps its files, and Try again sends the same files under the same key", async () => {
+        const { sender, sent } = await filesSetup([
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 62, createdAt: "2026-10-28T10:00:00Z", attachments: [photo] }
+        ]);
+
+        expect(await sender.send(channel, "look", undefined, undefined, undefined, [photo])).toBe(false);
+        expect(sender.pending(channel)[0].attachments).toEqual([photo]);
+
+        expect(await sender.retryAll(["local-1"])).toBe(true);
+        expect(sent).toEqual([{ body: "look", attachments: [photo] }, { body: "look", attachments: [photo] }]);
+    });
+
+    test("a send that finds an upload gone uploads the files again and sends the new ones under the same key", async () => {
+        const renewed: AttachmentItem = { ...photo, id: "d0000000-0000-4000-8000-000000000009", key: "t/d0000000-0000-4000-8000-000000000009" };
+        const reupload = jest.fn(async () => [renewed]);
+        const { sender, sent, timelines } = await filesSetup([
+            { ok: false, error: { code: "rpc.attachment_missing", severity: "failed" } },
+            { ok: true, id: 63, createdAt: "2026-10-28T10:00:00Z", attachments: [renewed] }
+        ], reupload);
+
+        expect(await sender.send(channel, "", undefined, undefined, undefined, [photo])).toBe(true);
+
+        expect(reupload).toHaveBeenCalledWith(channel, [photo]);
+        expect(sent.map(s => s.attachments)).toEqual([[photo], [renewed]]);
+        expect(timelines.state(channel).messages[0].attachments).toEqual([renewed]);
+    });
+
+    test("files that cannot be uploaded again leave the row failed with them, to try again later", async () => {
+        const { sender } = await filesSetup([
+            { ok: false, error: { code: "rpc.attachment_missing", severity: "failed" } }
+        ], async () => null);
+
+        expect(await sender.send(channel, "", undefined, undefined, undefined, [photo])).toBe(false);
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "rpc.attachment_missing", attachments: [photo] });
     });
 });

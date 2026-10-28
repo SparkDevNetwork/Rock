@@ -30,7 +30,7 @@
 // the answer is lost. A key stands for one text from its first try, since that try may have been
 // stored with its answer lost; changed words are a new message under a new key.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
-import { ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
+import { AttachmentItem, ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { failureWords, finalWords, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
@@ -196,7 +196,7 @@ export function isOwnedByConversation(row: PendingMessage, openThreadRootId: num
 
 /** What the platform's send answers. */
 export type SendResult =
-    | { ok: true, id: number, createdAt: string, notice?: string | null, pieces?: DisplayPiece[] | null, blocks?: MessageBlock[] | null }
+    | { ok: true, id: number, createdAt: string, notice?: string | null, pieces?: DisplayPiece[] | null, blocks?: MessageBlock[] | null, attachments?: AttachmentItem[] | null }
     | { ok: false, error: ChatError };
 
 /**
@@ -296,9 +296,15 @@ export type ReplyTarget = {
 export type SenderDependencies = {
     /**
      * Sends a text message to a channel, with the key that makes a retry safe, as a reply when one
-     * is named, quoting a message when one is named.
+     * is named, quoting a message when one is named, carrying the files uploaded for it.
      */
-    send: (channelId: string, body: string, key?: string, reply?: ReplyTarget, quotedMessageId?: number) => Promise<SendResult>;
+    send: (channelId: string, body: string, key?: string, reply?: ReplyTarget, quotedMessageId?: number, attachments?: AttachmentItem[]) => Promise<SendResult>;
+
+    /**
+     * Uploads a send's files again when the platform no longer holds an upload, answering the
+     * files under their new uploads, or null when they could not be. Without it the refusal stands.
+     */
+    reupload?: (channelId: string, attachments: AttachmentItem[]) => Promise<AttachmentItem[] | null>;
 
     /** The timelines a confirmed message is put into. */
     timelines: Pick<Timelines, "upsert">;
@@ -348,7 +354,7 @@ export type Sender = {
      * tries, and sends that row's own text whatever text it is given; a reply names its root, and
      * a quote the message it quotes.
      */
-    send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number) => Promise<boolean>;
+    send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number, attachments?: AttachmentItem[]) => Promise<boolean>;
 
     /**
      * Sends failed rows again, one at a time and oldest first, each once the one before it is

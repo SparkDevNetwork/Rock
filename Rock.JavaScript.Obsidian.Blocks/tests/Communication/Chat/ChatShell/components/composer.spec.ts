@@ -26,6 +26,8 @@ import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
+import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
+import { harness, Harness, picked, settle } from "../attachmentFakes";
 
 function editorOf(wrapper: VueWrapper): HTMLElement {
     return wrapper.get("[data-testid='composer-input']").element as HTMLElement;
@@ -924,5 +926,117 @@ describe("the composer's strip for a failed send", () => {
         await wrapper.setProps({ conversationKey: "c2", sendFailure: null });
 
         expect(wrapper.find("[data-testid='composer-failed']").exists()).toBe(false);
+    });
+});
+
+// Files ride with the box: picked, dropped or pasted, each uploads at once into the strip above the
+// box, with its progress, a remove and a failure with Try again; Send waits until every one is up.
+describe("the composer's files", () => {
+    const place = "c0000001-0000-4000-8000-000000000000";
+
+    function trayed(props: Record<string, unknown> = {}): { wrapper: VueWrapper, tray: AttachmentTray, h: Harness } {
+        const h = harness();
+        const tray = createAttachments(h.dependencies).trayFor(place, place);
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", tray, ...props } });
+        return { wrapper, tray, h };
+    }
+
+    async function pick(wrapper: VueWrapper, files: File[]): Promise<void> {
+        const input = wrapper.get("[data-testid='composer-file-input']");
+        Object.defineProperty(input.element, "files", { value: files, configurable: true });
+        await input.trigger("change");
+        await settle();
+    }
+
+    test("offers Attach files only where files can go", () => {
+        expect(mountComposer().find("[data-testid='composer-attach']").exists()).toBe(false);
+
+        const { wrapper } = trayed();
+        expect(wrapper.get("[data-testid='composer-attach']").attributes("aria-label")).toBe("Attach files");
+    });
+
+    test("a picked file shows in the strip with its progress, and Send waits until it is up", async () => {
+        const { wrapper, h } = trayed();
+        await type(wrapper, "the notes");
+
+        await pick(wrapper, [picked("notes.pdf", "application/pdf")]);
+        h.requests[0].progress(400, 1000);
+        await nextTick();
+
+        const row = wrapper.get("[data-testid='attachment-tray-file']");
+        expect(row.get("[data-testid='attachment-tray-name']").text()).toBe("notes.pdf");
+        expect(row.get("[role='progressbar']").attributes("aria-valuenow")).toBe("40");
+        expect(wrapper.get("[data-testid='composer-send']").attributes("disabled")).toBeDefined();
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")).toBeUndefined();
+
+        h.requests[0].respond(200);
+        await settle();
+        await nextTick();
+        expect(wrapper.get("[data-testid='composer-send']").attributes("disabled")).toBeUndefined();
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")).toEqual([["the notes"]]);
+    });
+
+    test("files with no text send, except where a message must have text", async () => {
+        const { wrapper, h } = trayed();
+        await pick(wrapper, [picked("a.pdf", "application/pdf")]);
+        h.requests[0].respond(200);
+        await settle();
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='composer-send']").classes()).toContain("is-ready");
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")).toEqual([[""]]);
+
+        const announcing = trayed({ isTextRequired: true });
+        await pick(announcing.wrapper, [picked("a.pdf", "application/pdf")]);
+        announcing.h.requests[0].respond(200);
+        await settle();
+        await nextTick();
+
+        expect(announcing.wrapper.get("[data-testid='composer-send']").classes()).not.toContain("is-ready");
+        await announcing.wrapper.get("form").trigger("submit");
+        expect(announcing.wrapper.emitted("send")).toBeUndefined();
+        expect(announcing.wrapper.get("[data-testid='composer-text-required']").text()).toBe("An announcement needs a message with its files.");
+    });
+
+    test("a failed upload offers Try again on its own file, and Remove takes a file out", async () => {
+        const { wrapper, h, tray } = trayed();
+        await pick(wrapper, [picked("a.pdf", "application/pdf"), picked("b.pdf", "application/pdf")]);
+        h.requests[0].fail();
+        await settle();
+        await nextTick();
+
+        const [first, second] = wrapper.findAll("[data-testid='attachment-tray-file']");
+        expect(first.attributes("data-status")).toBe("failed");
+        expect(first.get("[data-testid='attachment-tray-failure']").text()).toBe("Couldn't upload.");
+        expect(second.find("[data-testid='attachment-tray-retry']").exists()).toBe(false);
+
+        await first.get("[data-testid='attachment-tray-retry']").trigger("click");
+        await settle();
+        expect(h.requests).toHaveLength(3);
+
+        await second.get("[data-testid='attachment-tray-remove']").trigger("click");
+        expect(tray.files.map(f => f.name)).toEqual(["a.pdf"]);
+        expect(second.get("[data-testid='attachment-tray-remove']").attributes("aria-label")).toBe("Remove b.pdf");
+    });
+
+    test("files dropped on the composer or pasted into it go into the strip", async () => {
+        const { wrapper, tray } = trayed();
+
+        const dropped = new Event("drop", { bubbles: true, cancelable: true }) as Event & { dataTransfer: unknown };
+        dropped.dataTransfer = { files: [picked("a.pdf", "application/pdf")], types: ["Files"] };
+        wrapper.element.dispatchEvent(dropped);
+        await settle();
+        expect(dropped.defaultPrevented).toBe(true);
+
+        const pasted = new Event("paste", { bubbles: true, cancelable: true }) as Event & { clipboardData: unknown };
+        pasted.clipboardData = { files: [picked("image.png", "image/png")], getData: () => "" };
+        wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
+        await settle();
+
+        expect(tray.files.map(f => f.name)).toEqual(["a.pdf", "image.png"]);
+        expect(pasted.defaultPrevented).toBe(true);
     });
 });

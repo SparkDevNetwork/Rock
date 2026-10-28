@@ -40,6 +40,7 @@ import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
 import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms, RoomsDependencies } from "./composables/useRooms.partial";
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
+import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -149,6 +150,9 @@ export type ShellOptions = {
      * landing on a message in the open conversation, and opening a thread at a reply.
      */
     mentionViews?: Pick<MentionsDependencies, "land" | "openThread">;
+
+    /** A fresh request for one upload to Storage; the browser's own when not given. */
+    newUploadRequest?: () => XMLHttpRequest;
 };
 
 /**
@@ -252,6 +256,12 @@ export type ChatShell = {
 
     /** What the person typed and has not sent, for each conversation and thread. */
     drafts: Drafts;
+
+    /** The files picked for each place, uploaded as they are picked, and every message's links. */
+    attachments: Attachments;
+
+    /** The files waiting to go with the next send in a conversation, or in a thread when a root is named. */
+    trayOf: (channelId: string, rootId?: number) => AttachmentTray;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -801,6 +811,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
         notify: notice => options.notify?.(notice)
     });
 
+    const attachments = createAttachments({
+        call,
+        fetch: options.fetch,
+        projectUrl,
+        publishableKey,
+        currentToken: session.currentToken,
+        newRequest: options.newUploadRequest,
+        limits: () => session.settings().limits
+    });
+
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId) => {
             const result = await call("chat_send_message", {
@@ -1200,6 +1220,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         members,
         prefs,
         drafts,
+        attachments,
+        trayOf: (channelId: string, rootId?: number): AttachmentTray => attachments.trayFor(quoteKey(channelId, rootId), channelId),
         isNewMessageShown: isNewMessageShown(options.session),
 
         start: async (): Promise<void> => {

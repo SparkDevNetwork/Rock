@@ -45,6 +45,17 @@ export type PlatformLimits = {
     thread_page_size: number;
     directory_page_size: number;
     people_search_size: number;
+
+    /** The largest file a message carries, in bytes. */
+    attachment_max_bytes: number;
+
+    /** The most files one message carries. */
+    attachment_max_files: number;
+};
+
+/** The file types a message may carry, bare, as the platform lists them; empty takes no files. */
+export type AttachmentTypes = {
+    attachment_types: string[];
 };
 
 /** The settings the token exchange answers, every key filled. Names are the platform's own. */
@@ -52,7 +63,7 @@ export type ChatSettings = {
     service: { state: string, banner: string | null };
     client: { update_required: boolean };
     routes: { send: string };
-    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number } & PlatformLimits;
+    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number } & PlatformLimits & AttachmentTypes;
     flags: Record<string, unknown>;
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
@@ -74,7 +85,7 @@ const pushPrompts = ["off", "offer", "after_send"];
  * The defaults when the platform sends nothing for a key. The reconnect and catch-up figures are
  * estimates, not measurements; the platform can change them without a release.
  */
-const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits> = {
+const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | keyof AttachmentTypes> = {
     reconnect_base_ms: 1000,
     reconnect_cap_ms: 30000,
     catch_up_page: 100,
@@ -91,7 +102,9 @@ const platformLimitKeys: Array<keyof PlatformLimits> = [
     "mention_page_size",
     "thread_page_size",
     "directory_page_size",
-    "people_search_size"
+    "people_search_size",
+    "attachment_max_bytes",
+    "attachment_max_files"
 ];
 
 /** An object's own value for a key, or undefined when the value is not an object. */
@@ -147,7 +160,11 @@ export function readSettings(raw: unknown): ChatSettings {
             // outside that would fail every catch-up
             catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
             catch_up_max: limit("catch_up_max"),
-            ...platformLimits
+            ...platformLimits,
+            // a list of anything but strings is no list, so files are refused rather than guessed at
+            attachment_types: Array.isArray(limits.attachment_types) && limits.attachment_types.every(type => typeof type === "string")
+                ? [...limits.attachment_types as string[]]
+                : []
         },
         flags: { ...flags },
         push: {

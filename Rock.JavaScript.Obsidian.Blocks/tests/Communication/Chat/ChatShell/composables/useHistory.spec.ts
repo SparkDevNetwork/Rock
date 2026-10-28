@@ -18,10 +18,11 @@
 // before the first page, and a message committed between the page's read and the join reaches
 // neither; every confirmed join pages forward from what a fetched page proved is held.
 import {
+    applyMessageChange,
     createTimelines,
     messageDisplay
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { AttachmentItem, HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 
@@ -1279,5 +1280,46 @@ describe("a copy carrying a send's key, as it lands", () => {
         await loading;
 
         expect(landed).toEqual([5]);
+    });
+});
+
+// A message's files are carried wherever its body is and withheld wherever its body is, so a
+// deleted, hidden or removed message never keeps them on screen, and one shown again brings them back.
+describe("files follow the body", () => {
+    const photo: AttachmentItem = { id: "d0000000-0000-4000-8000-000000000001", key: "t/d0000000-0000-4000-8000-000000000001", kind: "image", name: "p.jpg", size: 900, type: "image/jpeg", width: 400, height: 300 };
+
+    function held(): TimelineMessage {
+        return { id: 5, person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: null, attachments: [photo], created_at: "2026-10-28T10:00:00Z" };
+    }
+
+    test("a delete and a hide take the files away with the body", () => {
+        const deleted = held();
+        applyMessageChange(deleted, "message.deleted", { id: 5, channel_id: channel, deleted_at: "2026-10-28T10:01:00Z" });
+        expect(deleted.attachments).toBeNull();
+
+        const hidden = held();
+        applyMessageChange(hidden, "message.visibility", { id: 5, channel_id: channel, state: "hidden", notice: "Hidden by a leader." });
+        expect(hidden.attachments).toBeNull();
+    });
+
+    test("a message of files alone shown again brings its files back with its null body", () => {
+        const message = held();
+        applyMessageChange(message, "message.visibility", { id: 5, channel_id: channel, state: "hidden", notice: "Hidden." });
+
+        applyMessageChange(message, "message.visibility", { id: 5, channel_id: channel, state: "visible", notice: null, body: null, pieces: null, blocks: null, attachments: [photo] });
+
+        expect(message.visibility).toBe("visible");
+        expect(message.body).toBeNull();
+        expect(message.attachments).toEqual([photo]);
+    });
+
+    test("a live copy of a message held deleted does not bring its files back", async () => {
+        const timelines = createTimelines({ limits, fetchPage: async () => ({ messages: [held()], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        timelines.applyEvent(channel, "message.deleted", { id: 5, channel_id: channel, deleted_at: "2026-10-28T10:01:00Z" });
+
+        timelines.upsert(channel, held());
+
+        expect(timelines.state(channel).messages[0].attachments).toBeNull();
     });
 });

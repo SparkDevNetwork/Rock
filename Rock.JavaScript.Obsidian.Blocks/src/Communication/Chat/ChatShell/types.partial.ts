@@ -215,6 +215,31 @@ export type MessageAction = {
 };
 
 /**
+ * One file a message carries, as the platform summarises it on the message when it is sent; the
+ * summary never changes after. The key names the file's bytes in storage, and a link to them is
+ * signed only for someone who can read the message.
+ */
+export type AttachmentItem = {
+    /** The upload's id, which names the file everywhere, the link cache included. */
+    id: string;
+    key: string;
+
+    /** An image is drawn in the message; any other file is a card to download. */
+    kind: "image" | "file";
+    name: string;
+
+    /** Bytes as stored. */
+    size: number;
+
+    /** The declared type, bare, which the stored file was checked against at send. */
+    type: string;
+
+    /** An image's size after its orientation, so its place is held before it loads; null for a file. */
+    width?: number | null;
+    height?: number | null;
+};
+
+/**
  * The message a message quotes, as the platform previews it. Its body is withheld once it is
  * hidden or removed, and it is deleted or gone when the original went.
  */
@@ -226,6 +251,9 @@ export type QuotedMessage = {
     sender_avatar_url?: string | null;
     body: string | null;
     pieces?: DisplayPiece[] | null;
+
+    /** Its files, withheld with its body. */
+    attachments?: AttachmentItem[] | null;
     visibility?: string;
     visibility_notice?: string | null;
     created_at: string;
@@ -275,6 +303,12 @@ export type TimelineMessage = {
 
     /** The message laid out in blocks, drawn in place of the body; null for an ordinary message. */
     blocks?: MessageBlock[] | null;
+
+    /**
+     * The files it carries, in the order they were attached; null for none. Carried wherever the
+     * body is and withheld wherever the body is, so a hidden or deleted message shows none.
+     */
+    attachments?: AttachmentItem[] | null;
     metadata?: unknown;
     reply_count?: number;
     last_reply_at?: string | null;
@@ -469,6 +503,9 @@ export type SendAnswer = {
     /** The pieces the stored row draws, so the sender's own message shows them at once. */
     pieces?: DisplayPiece[] | null;
     blocks?: MessageBlock[] | null;
+
+    /** The files as stored, in the order sent; null for none. */
+    attachments?: AttachmentItem[] | null;
 };
 
 /** What chat_mark_read returns: the position as stored, and the channel's last message. */
@@ -630,6 +667,7 @@ export type MessageCreatedEvent = {
     body: string | null;
     pieces?: DisplayPiece[] | null;
     blocks?: MessageBlock[] | null;
+    attachments?: AttachmentItem[] | null;
     quoted_message_id?: number | null;
     quoted?: QuotedMessage | null;
 
@@ -667,17 +705,19 @@ export type MessageDeletedEvent = {
 };
 
 /**
- * A message hidden, removed or shown again, on a channel topic. It carries the body only when the
- * message is shown again, so a hidden body never travels.
+ * A message hidden, removed or shown again, on a channel topic. It carries the body and the files
+ * only when the message is shown again, so a hidden body never travels; a message of files alone
+ * comes back with its body null.
  */
 export type MessageVisibilityEvent = {
     id: number;
     channel_id: string;
     state: string;
     notice: string | null;
-    body?: string;
+    body?: string | null;
     pieces?: DisplayPiece[] | null;
     blocks?: MessageBlock[] | null;
+    attachments?: AttachmentItem[] | null;
 };
 
 /**
@@ -768,6 +808,12 @@ export type PendingMessage = {
 
     /** The message it quotes, sent on every try under the row's key. */
     quotedMessageId?: number;
+
+    /**
+     * The files it carries, uploaded before it was sent, sent on every try; a try that finds an
+     * upload gone sends the files uploaded again in their place.
+     */
+    attachments?: AttachmentItem[];
 
     /**
      * The refusal that ended this send for good, set only on such a failure: the row shows its

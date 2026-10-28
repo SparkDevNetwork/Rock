@@ -493,7 +493,11 @@ describe("settings from the token exchange", () => {
             mention_page_size: 0,
             thread_page_size: 0,
             directory_page_size: 0,
-            people_search_size: 0
+            people_search_size: 0,
+            attachment_max_bytes: 0,
+            attachment_max_files: 0,
+            // no list takes no files
+            attachment_types: []
         },
         flags: {},
         push: { web: null, vapid_key: null, prompt: "after_send" }
@@ -526,10 +530,16 @@ describe("settings from the token exchange", () => {
             mention_page_size: 30,
             thread_page_size: 30,
             directory_page_size: 50,
-            people_search_size: 10
+            people_search_size: 10,
+            attachment_max_bytes: 26214400,
+            attachment_max_files: 10,
+            attachment_types: ["image/jpeg", "application/pdf"]
         };
 
         expect(readSettings({ limits: platform }).limits).toEqual({ ...defaults.limits, ...platform });
+        // a list holding anything but types is no list, so no file is taken on a guess
+        expect(readSettings({ limits: { ...platform, attachment_types: ["image/jpeg", 7] } }).limits.attachment_types).toEqual([]);
+        expect(readSettings({ limits: { ...platform, attachment_types: "image/jpeg" } }).limits.attachment_types).toEqual([]);
         const odd = readSettings({ limits: { ...platform, dm_max_others: "8", history_page_size: 2.5, people_search_size: -1, member_page_size: undefined } }).limits;
         expect([odd.dm_max_others, odd.history_page_size, odd.people_search_size, odd.member_page_size]).toEqual([0, 0, 0, 0]);
     });
