@@ -364,8 +364,17 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                /*
+                    10/28/2026 - MSE
+
+                    Only load the location selected by the server. The posted hidden value
+                    must match the selection restored from protected ViewState.
+
+                    Reason: A posted location identifier must not select another address.
+                */
                 var locationId = _hfLocationId.ValueAsInt();
-                if ( locationId > 0 )
+                var serverLocationId = ViewState["SelectedLocationId"] as int?;
+                if ( locationId > 0 && serverLocationId == locationId )
                 {
                     return new LocationService( RockApp.Current.CreateRockContext() ).Get( locationId );
                 }
@@ -381,13 +390,23 @@ namespace Rock.Web.UI.Controls
                 {
                     _btnSelectNone.Attributes["class"] = "btn picker-select-none rollover-item";
                     _btnSelectNone.Style[HtmlTextWriterStyle.Display] = string.Empty;
+                    /*
+                        10/28/2026 - MSE
+
+                        Keep the server-selected location in protected ViewState and clear
+                        it with the selection so posted identifiers can be checked.
+
+                        Reason: The hidden location identifier is client controlled.
+                    */
                     _hfLocationId.Value = value.Id.ToString();
+                    ViewState["SelectedLocationId"] = value.Id;
                 }
                 else
                 {
                     _btnSelectNone.Attributes["class"] = "btn picker-select-none";
                     _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
                     _hfLocationId.Value = string.Empty;
+                    ViewState["SelectedLocationId"] = null;
                 }
 
                 _acAddress.SetValues( value );
