@@ -23,12 +23,12 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick, reactive } from "vue";
+import { defineComponent, nextTick, reactive } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
-import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
+import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -1134,18 +1134,34 @@ function host(favorites: unknown[], reactorNames: jest.Mock = jest.fn(async () =
 }
 
 // The bar holding the open picker stays drawn; every other row asks only about its own message,
-// so opening the picker on one message touches no other row.
+// so opening the picker on one message touches no other row. A row lends the column's one bar
+// its props, so the bar gets the anchor of whichever message it is on.
 describe("the open picker", () => {
-    test("is handed to the bar of the message it is open on, and to no other row's", () => {
+    test("is handed to the bar of the message it is open on, and to no other row's", async () => {
         const anchor = document.createElement("button");
         const target = message();
+        const other = message({ id: target.id + 1 });
         const reactionHost = { ...host([]), pickerAnchorOf: (messageId: number) => messageId === target.id ? anchor : null };
 
-        const opened = draw({ message: target, reactionHost });
-        const other = draw({ message: message({ id: target.id + 1 }), reactionHost });
+        const lent = new Map<number, ActionBarDock>();
+        const column = defineComponent({
+            components: { MessageRow },
+            setup() {
+                const bar = useActionBar(() => null);
+                const offer = bar.offer;
+                bar.offer = (messageId, dock): void => {
+                    lent.set(messageId, dock);
+                    offer(messageId, dock);
+                };
+                return { personAliasGuid: me, rows: [target, other], reactionHost };
+            },
+            template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :personAliasGuid="personAliasGuid" :reactionHost="reactionHost" /></div>`
+        });
+        mount(column);
+        await nextTick();
 
-        expect(opened.findComponent(ActionBar).props("pickerAnchor")).toBe(anchor);
-        expect(other.findComponent(ActionBar).props("pickerAnchor")).toBeNull();
+        expect(lent.get(target.id)?.props.value.pickerAnchor).toBe(anchor);
+        expect(lent.get(other.id)?.props.value.pickerAnchor).toBeNull();
     });
 });
 
