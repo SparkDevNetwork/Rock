@@ -29,11 +29,11 @@
                           data-testid="piece-mention"
                           :data-mention="piece.mention"
                           :aria-label="piece.label"
-                          @click="isOpenable(piece) && onPerson(piece, $event)"><span v-if="piece.mention === 'all'" class="chat-mn-glyph" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
+                          @click="isOpenable(piece) && onPerson(piece, $event)"><span v-if="piece.mention === 'all'" class="chat-mn-glyph chat-all-mark" aria-hidden="true"><Icon name="users" size="xs" /></span><span v-else
                           class="chat-av chat-mn-av"
                           :data-initial="piece.photoUrl ? undefined : piece.initial"
                           :style="{ '--chat-av-hue': piece.hue }"
-                          aria-hidden="true"><img v-if="piece.photoUrl" class="chat-av-photo" :src="piece.photoUrl" alt="" /></span><span v-if="piece.mention !== 'all'" class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
+                          aria-hidden="true"><img v-if="piece.photoUrl" class="chat-av-photo" :src="piece.photoUrl" alt="" /></span><span class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
                     <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
                     <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
                     <template v-else>{{ piece.text }}</template>
@@ -350,9 +350,9 @@ button.chat-mn {
         const name = text.replace(/^@/, "");
         const guid = textOf(piece.person_alias_guid).toLowerCase();
 
-        // The room's chip reads "@all" on screen; a person's chip shows the name, its "@" spoken only.
+        // Every chip shows its name and speaks its "@" only, the room's "all" as a person's name.
         if (piece.all === true || (!guid && name.toLowerCase() === "all")) {
-            return { kind: "mention", text, mention: "all", name: "@all", label: `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}` };
+            return { kind: "mention", text, mention: "all", name: "all", label: `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}` };
         }
 
         const isReader = !!guid && guid === props.personAliasGuid.toLowerCase();

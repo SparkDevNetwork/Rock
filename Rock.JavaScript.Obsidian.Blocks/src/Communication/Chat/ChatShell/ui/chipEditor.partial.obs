@@ -59,11 +59,7 @@
     makes the box a line taller.
 */
 .chat-ed :deep(.chat-mn) {
-    display: inline;
     line-height: inherit;
-    vertical-align: top;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
     cursor: default;
     user-select: all;
 }
@@ -734,11 +730,11 @@
         if (isAll) {
             chip.classList.add("is-all");
             chip.setAttribute("aria-label", `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}`);
-            const glyph = document.createElement("span");
-            glyph.className = "chat-mn-glyph";
-            glyph.setAttribute("aria-hidden", "true");
-            glyph.append(usersIcon());
-            chip.append(glyph);
+            const mark = document.createElement("span");
+            mark.className = "chat-mn-glyph chat-all-mark";
+            mark.setAttribute("aria-hidden", "true");
+            mark.append(usersIcon());
+            chip.append(mark);
         }
         else {
             const face = document.createElement("span");
@@ -755,15 +751,18 @@
             }
             face.style.setProperty("--chat-av-hue", String(avatarHue(name)));
             face.setAttribute("aria-hidden", "true");
-            const at = document.createElement("span");
-            at.className = "chat-sr-only";
-            at.textContent = "@";
-            chip.append(face, at);
+            chip.append(face);
         }
+
+        // Every chip speaks its "@" only, the room's "all" as a person's name.
+        const at = document.createElement("span");
+        at.className = "chat-sr-only";
+        at.textContent = "@";
+        chip.append(at);
 
         const label = document.createElement("span");
         label.className = "chat-mn-name";
-        label.textContent = name;
+        label.textContent = isAll ? "all" : name;
         chip.append(label);
 
         return chip;

@@ -436,14 +436,56 @@ describe("Community, in a channel", () => {
         expect(announcement.get("[data-testid='announcement-pill']").text()).toBe("Announcement");
     });
 
-    test("a mention of the reader by name washes the row and says so; @all does not", () => {
+    test("a mention of the reader by name washes the row and says so", () => {
         const byName = draw({ message: message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] }), isChannel: true });
-        const toAll = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel: true });
 
         expect(root(byName).classList.contains("is-mention-me")).toBe(true);
         expect(plain(root(byName).getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM, mentions you");
-        expect(root(toAll).classList.contains("is-mention-me")).toBe(false);
-        expect(toAll.find("[data-testid='mention-tag']").exists()).toBe(false);
+    });
+
+    // @all reaches the reader as surely as their name, so it takes the same wash; the words and
+    // the label say everyone rather than you, so the reader knows which it was.
+    test("a mention of everyone washes the row and says Mentioned everyone, after the time", () => {
+        const w = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel: true, position: "first" });
+
+        expect(root(w).classList.contains("is-mention-me")).toBe(true);
+        const head = w.get("[data-testid='message-head']");
+        const parts = Array.from(head.element.children).map(c => (c as HTMLElement).dataset.testid);
+        expect(head.get("[data-testid='mention-tag']").text()).toBe("Mentioned everyone");
+        expect(parts.indexOf("mention-tag")).toBe(parts.indexOf("message-time") + 1);
+        expect(head.get("[data-testid='mention-tag']").attributes("aria-hidden")).toBe("true");
+        expect(plain(root(w).getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM, mentions everyone");
+    });
+
+    test("a row without a head says Mentioned everyone at the end of its text", () => {
+        const w = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel: true, position: "middle" });
+
+        const tag = w.get(".chat-cm-text").get("[data-testid='mention-tag']");
+        expect(tag.text()).toBe("Mentioned everyone");
+        expect(root(w).classList.contains("is-mention-me")).toBe(true);
+    });
+
+    // Naming the reader is the nearer of the two, so a row that does both says you.
+    test("a row naming the reader and everyone says Mentioned you", () => {
+        const w = draw({ message: message({ body: "x", pieces: [mentionMe, { type: "text", text: " " }, mentionAll] }), isChannel: true, position: "first" });
+
+        expect(w.get("[data-testid='mention-tag']").text()).toBe("Mentioned you");
+        expect(plain(root(w).getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM, mentions you");
+    });
+
+    test("the reader's own @all is not a mention of them", () => {
+        const w = draw({ message: ownConfirmed({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isOwn: true, isChannel: true, position: "first" });
+
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+        expect(root(w).getAttribute("aria-label") ?? "").not.toContain("mentions");
+    });
+
+    test("a deleted @all leaves no mention treatment", () => {
+        const w = draw({ message: message({ body: "hi <@all>", pieces: [mentionAll], deleted_at: nineOhTwo }), isChannel: true, position: "first" });
+
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
     });
 
     // The wash is color alone, so the words carry the same signal for anyone who cannot see it.
@@ -493,9 +535,9 @@ describe("Community, in a channel", () => {
     test.each([
         ["a system line", { message_type: "system", person_alias_guid: null, system_kind: "added" }],
         ["a block card", { message_type: "system", blocks: [{ type: "text", text: "hi", pieces: null, fallback: { type: "text", text: "hi" } }] }]
-    ] as const)("%s that names the reader has no mention treatment", (_kind, extra) => {
+    ] as const)("%s that names the reader or everyone has no mention treatment", (_kind, extra) => {
         const w = draw({
-            message: message({ body: `Grace Kim added <@${me}>`, pieces: [{ type: "text", text: "Grace Kim added " }, mentionMe], ...extra } as Partial<TimelineMessage>),
+            message: message({ body: `Grace Kim added <@${me}> <@all>`, pieces: [{ type: "text", text: "Grace Kim added " }, mentionMe, { type: "text", text: " " }, mentionAll], ...extra } as Partial<TimelineMessage>),
             isChannel: true,
             position: "first"
         });
@@ -552,11 +594,12 @@ describe("Community, in a channel", () => {
         expect(1 + px(block(".chat-msg.is-community.is-mention-me.is-head"), "padding-top")).toBe(px(block(".chat-msg.is-community.is-head"), "padding-top"));
     });
 
-    // The reader's own chip in a washed row takes a thin amber ring, so it stands off the wash.
-    test("the reader's chip in a washed row is ringed in the warning color", () => {
+    // The chip that reached the reader, theirs or @all, takes a thin amber ring in a washed row, so
+    // it stands off the wash.
+    test("the reader's chip and the @all chip in a washed row are ringed in the warning color", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\),\s*\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-all\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
     });
@@ -615,6 +658,15 @@ describe("mentions", () => {
         expect(root(w).classList.contains("is-mention-me")).toBe(false);
         expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
         expect(w.get("[data-testid='piece-mention']").attributes("aria-label")).toBe("@Jordan Lee, you");
+    });
+
+    test("a bubble naming everyone is neither washed nor tagged", () => {
+        const w = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), position: "single" });
+
+        expect(root(w).classList.contains("is-conversational")).toBe(true);
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+        expect(root(w).getAttribute("aria-label") ?? "").not.toContain("mentions");
     });
 
     test("the @all chip in a direct message or group says conversation, not channel", () => {

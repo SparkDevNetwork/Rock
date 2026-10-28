@@ -323,6 +323,23 @@ describe("inserting a mention", () => {
         expect(await sent(w)).toBe("see <@all>  soon");
     });
 
+    // The same chip the message draws: the group mark in the face's slot, "@" spoken only, "all".
+    test("draws the @all chip as a person's chip with the group mark for a face", async () => {
+        const w = draw("@", null);
+        caretAtEnd(w);
+
+        insertMention(w, "<@all>", "@all");
+        await nextTick();
+
+        const chip = chips(w)[0];
+        expect(Array.from(chip.children).map(child => child.className)).toEqual(["chat-mn-glyph chat-all-mark", "chat-sr-only", "chat-mn-name"]);
+        expect(chip.querySelector(".chat-all-mark")?.getAttribute("aria-hidden")).toBe("true");
+        expect(chip.querySelector(".chat-all-mark svg")).not.toBeNull();
+        expect(chip.querySelector(".chat-mn-name")?.textContent).toBe("all");
+        expect(chip.getAttribute("aria-label")).toBe("@all, everyone in this channel");
+        expect(await sent(w)).toBe("<@all> ");
+    });
+
     test("leaves the caret after the space, so typing carries on there", async () => {
         const w = draw("@lee", null);
         caretAtEnd(w);

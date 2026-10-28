@@ -29,10 +29,8 @@
                             data-testid="mention-option"
                             @mousedown.prevent
                             @click="choose(row)">
-                        <span v-if="row.isAll" class="chat-mention-all" aria-hidden="true">
-                            <span class="chat-mention-all-glyph"><Icon name="users" size="xs" /></span>
-                        </span>
-                        <Avatar v-else :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="28" />
+                        <span v-if="row.isAll" class="chat-all-mark" :style="{ '--chat-all-mark-s': `${faceSize}px` }" aria-hidden="true"><Icon name="users" size="xs" /></span>
+                        <Avatar v-else :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="faceSize" />
                         <span class="chat-mention-main">
                             <b>{{ row.isAll ? "@all" : row.name }}</b>
                             <span v-if="row.isAll">Notify everyone in this {{ place }}</span>
@@ -115,32 +113,6 @@
 .chat-mention-main span {
     font-size: 12px;
     color: var(--chat-muted);
-}
-
-/* The room's mark, 16px, in the place of a 28px face, so its name lines up with the people's. */
-.chat-mention-all {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-}
-
-.chat-mention-all-glyph {
-    display: grid;
-    place-items: center;
-    width: 16px;
-    height: 16px;
-    color: var(--chat-on-info);
-    background: var(--chat-info);
-    border-radius: 50%;
-}
-
-/* Sized as the @all chip's glyph is, outranking the icon's own scoped size. */
-.chat-mention-all-glyph :deep(.chat-ic) {
-    width: 10px;
-    height: 10px;
-    stroke-width: 2.4;
 }
 
 .chat-mention-empty {
@@ -261,6 +233,9 @@
 
     /** The way out's length where the token sheet is not on the page. */
     const fallbackOutMs = 120;
+
+    /** A row's face, and the @all row's group mark in its place, so every name lines up. */
+    const faceSize = 28;
 
     const popElement = ref<HTMLElement>();
     const activeIndex = ref(0);
