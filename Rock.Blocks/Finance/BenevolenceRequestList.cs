@@ -113,6 +113,13 @@ namespace Rock.Blocks.Finance
             public const string FilterBenevolenceTypes = "filter-benevolence-types";
         }
 
+        private static class ColumnKey
+        {
+            public const string AssignedTo = "Assigned To";
+            public const string GovernmentId = "Government Id";
+            public const string TotalAmount = "Total Amount";
+        }
+
         #endregion Keys
 
         #region SQL Constants
@@ -166,7 +173,7 @@ namespace Rock.Blocks.Finance
         {
             var options = new BenevolenceRequestListOptionsBag();
 
-            var columnsToHide = GetAttributeValue( AttributeKey.HideColumnsAttributeKey ).Split( ',' ).ToList();
+            var columnsToHide = GetHiddenColumnKeys();
 
             // If we are working with a single campus hide campus column.
             if ( CampusCache.All().Count == 1 )
@@ -187,6 +194,18 @@ namespace Rock.Blocks.Finance
             options.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() );
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets the column keys selected in the Hide Columns on Grid setting.
+        /// </summary>
+        /// <returns>The keys of the columns to hide.</returns>
+        private List<string> GetHiddenColumnKeys()
+        {
+            return GetAttributeValue( AttributeKey.HideColumnsAttributeKey ).Split( ',' )
+                .Select( v => v.Trim() )
+                .Where( v => v.IsNotNullOrWhiteSpace() )
+                .ToList();
         }
 
         /// <summary>
@@ -307,13 +326,12 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<BenevolenceRequest> GetGridBuilder()
         {
-            return new GridBuilder<BenevolenceRequest>()
+            var builder = new GridBuilder<BenevolenceRequest>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddDateTimeField( "date", a => a.RequestDateTime )
                 .AddTextField( "campus", a => a.Campus?.Name )
                 .AddTextField( "connectionStatus", a => a.ConnectionStatusValue?.Value )
-                .AddTextField( "governmentId", a => a.GovernmentId )
                 .AddTextField( "requestText", a => a.RequestText )
                 .AddPersonField( "requestedBy", a => a.RequestedByPersonAlias?.Person )
                 .AddTextField( "requestedByIdKey", a => a.RequestedByPersonAlias?.Person?.IdKey )
@@ -322,11 +340,28 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "lastName", a => a.LastName )
                 .AddTextField( "resultSummary", a => a.ResultSummary )
                 .AddTextField( "benevolenceType", a => a.BenevolenceType?.Name )
-                .AddPersonField( "caseWorker", a => a.CaseWorkerPersonAlias?.Person )
                 .AddTextField( "requestStatus", a => a.RequestStatusValue?.Value )
-                .AddField( "totalAmount", a => a.TotalAmount )
                 .AddField( "resultSpecifics", a => ToBenevolenceResultBag( a.BenevolenceResults ) )
                 .AddAttributeFields( GetGridAttributes() );
+
+            var hiddenColumns = GetHiddenColumnKeys();
+
+            if ( !hiddenColumns.Contains( ColumnKey.AssignedTo ) )
+            {
+                builder.AddPersonField( "caseWorker", a => a.CaseWorkerPersonAlias?.Person );
+            }
+
+            if ( !hiddenColumns.Contains( ColumnKey.GovernmentId ) )
+            {
+                builder.AddTextField( "governmentId", a => a.GovernmentId );
+            }
+
+            if ( !hiddenColumns.Contains( ColumnKey.TotalAmount ) )
+            {
+                builder.AddField( "totalAmount", a => a.TotalAmount );
+            }
+
+            return builder;
         }
 
         /// <inheritdoc/>
