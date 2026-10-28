@@ -108,6 +108,12 @@ export type Harness = {
     signAnswer: { value: (paths: string[]) => SignItem[] };
     now: { value: number };
     revoked: string[];
+
+    /** The timers waiting, each with the moment it runs. */
+    timers: Array<{ at: number, run: () => void }>;
+
+    /** Moves the clock on, running each timer as its moment comes, in order. */
+    advance: (ms: number) => Promise<void>;
 };
 
 let uploadCounter = 0;
@@ -133,7 +139,24 @@ export function harness(codec: ImageCodec = fakeCodec()): Harness {
     };
     const now = { value: Date.parse("2026-10-28T10:00:00Z") };
     const revoked: string[] = [];
+    const timers: Harness["timers"] = [];
     let urls = 0;
+
+    async function advance(ms: number): Promise<void> {
+        const until = now.value + ms;
+        for (;;) {
+            const due = timers.filter(timer => timer.at <= until).sort((a, b) => a.at - b.at)[0];
+            if (!due) {
+                break;
+            }
+            timers.splice(timers.indexOf(due), 1);
+            now.value = Math.max(now.value, due.at);
+            due.run();
+            await settle();
+        }
+        now.value = until;
+        await settle();
+    }
 
     const dependencies: AttachmentDependencies = {
         call: async (name, args) => {
@@ -164,10 +187,23 @@ export function harness(codec: ImageCodec = fakeCodec()): Harness {
         limits: () => limits,
         codec,
         objectUrls: { create: () => `blob:local-${++urls}`, revoke: url => revoked.push(url) },
-        now: () => now.value
+        now: () => now.value,
+        timers: {
+            set: (run, ms) => {
+                const timer = { at: now.value + ms, run };
+                timers.push(timer);
+                return timer;
+            },
+            clear: handle => {
+                const index = timers.indexOf(handle as Harness["timers"][number]);
+                if (index >= 0) {
+                    timers.splice(index, 1);
+                }
+            }
+        }
     };
 
-    return { dependencies, requests, begins, beginAnswers, signs, signAnswer, now, revoked };
+    return { dependencies, requests, begins, beginAnswers, signs, signAnswer, now, revoked, timers, advance };
 }
 
 /** What the fake codec was asked to encode. */

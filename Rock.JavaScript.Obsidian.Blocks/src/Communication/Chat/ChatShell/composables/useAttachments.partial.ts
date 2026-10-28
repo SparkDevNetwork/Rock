@@ -23,12 +23,12 @@
 // is what strips their location, since a photo straight from a phone carries it.
 //
 // Reading a file needs a link Storage signs for the person, which it does only while they can
-// read the message; links last ten minutes, so they are kept by file and asked again shortly
-// before they expire, every file on screen asked in one call.
+// read the message; links last ten minutes, so they are kept by file, and the files of every row
+// on screen are signed again shortly before they expire, as many as can go in one call.
 //
 // This lives apart from the sender because its lifetime is not a send's: a tray outlives the
 // sends that take from it, and links outlive both.
-import { InjectionKey, markRaw, reactive } from "vue";
+import { InjectionKey, markRaw, reactive, ref } from "vue";
 import { failedWords, failureWords, finalWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
 import { AttachmentItem, FailureWords } from "../types.partial";
@@ -57,6 +57,9 @@ const bucket = "chat-attachments";
 /** How long a signed link lasts, in seconds, and how long before its end it is asked again. */
 const linkSeconds = 600;
 const linkRenewMs = 60 * 1000;
+
+/** How long after a signing that failed as a whole its files are asked again. */
+const linkRetryMs = 15 * 1000;
 
 /** The most keys Storage signs in one call. */
 const signBatch = 50;
@@ -104,6 +107,7 @@ const redrawnTypes: Record<string, { type: string, extension: string }> = {
 };
 
 const typeRefused = "This type of file can't be sent.";
+const fileEmpty = "This file is empty.";
 const photoUnreadable = "This photo can't be read in this browser. Save it as a JPEG and attach it again.";
 
 // #region Words
@@ -234,6 +238,11 @@ type PreparedFile = {
  * @returns The file, or the words it is refused with.
  */
 async function prepare(file: File, limits: AttachmentLimits, codec: ImageCodec): Promise<PreparedFile | FailureWords> {
+    // Said at once in its own words rather than as a failure from the platform later.
+    if (file.size === 0) {
+        return finalWords(fileEmpty);
+    }
+
     const type = declaredType(file.name, file.type);
     const redrawn = redrawnTypes[type];
     if (!redrawn && !limits.attachment_types.includes(type)) {
@@ -317,7 +326,7 @@ export type AttachmentTray = {
     /** Adds picked files, each uploading at once. */
     add: (files: File[]) => void;
 
-    /** Takes a file out; its upload, if made, is left for storage to sweep. */
+    /** Takes a file out, ending its upload if still going; one already made is left for storage to sweep. */
     remove: (localId: string) => void;
 
     /** Tries a failed file again. */
@@ -355,13 +364,20 @@ export type AttachmentLink = { url: string | null, downloadUrl: string | null, i
 /** The session's links, kept by file. */
 export type AttachmentLinks = {
     /**
-     * Asks for links to files, signed in one call with every other file asked for in the same
-     * moment. A file with a link that is not near its end is not asked again.
+     * Keeps files linked while a row draws them: each without a good link is signed now, in one
+     * call with every other file asked for in the same moment, and signed again shortly before
+     * its link ends, until the row lets go by calling what this answers.
      */
-    request: (items: AttachmentItem[]) => void;
+    subscribe: (items: AttachmentItem[]) => () => void;
 
-    /** A file's link, read reactively; null until signed, and once near its end. */
+    /** A file's link, read reactively; null until signed, and once it has ended. */
     linkOf: (item: AttachmentItem) => AttachmentLink | null;
+
+    /** Whether a file's link has time left to be followed. */
+    isFresh: (item: AttachmentItem) => boolean;
+
+    /** A file's link with time left to be followed, signed afresh when the one held is near its end. */
+    fresh: (item: AttachmentItem) => Promise<AttachmentLink | null>;
 };
 
 /** Files for the session: each place's tray and every message's links. */
@@ -375,9 +391,18 @@ export type Attachments = {
     /** Uploads files again from the copies kept, under new uploads; null when any cannot be. */
     reupload: (channelId: string, items: AttachmentItem[]) => Promise<AttachmentItem[] | null>;
 
-    /** The local copy of a photo this person sent from this page, so it never waits on a link. */
+    /**
+     * The local copy of a photo this person sent from this page, so it never waits on a link; let
+     * go once its link is signed, which draws it from then.
+     */
     previewOf: (id: string) => string | null;
     links: AttachmentLinks;
+
+    /** Lets go of the bytes kept for a send's files, once the platform has stored the message. */
+    release: (items: AttachmentItem[]) => void;
+
+    /** Ends every upload and renewal and lets every local copy go; nothing is written after. */
+    stop: () => void;
 };
 
 /** What attachments reach outside themselves. */
@@ -397,6 +422,9 @@ export type AttachmentDependencies = {
     codec?: ImageCodec;
     objectUrls?: { create: (blob: Blob) => string, revoke: (url: string) => void };
     now?: () => number;
+
+    /** The browser's timers unless a test stands in, for renewing links before they end. */
+    timers?: { set: (run: () => void, ms: number) => unknown, clear: (handle: unknown) => void };
 };
 
 /** What a row and the viewer read: local copies and the session's links. */
@@ -426,13 +454,25 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     const objectUrls = dependencies.objectUrls ?? { create: (blob: Blob) => URL.createObjectURL(blob), revoke: (url: string) => URL.revokeObjectURL(url) };
     const now = dependencies.now ?? ((): number => Date.now());
     const newRequest = dependencies.newRequest ?? ((): XMLHttpRequest => new XMLHttpRequest());
+    const timers = dependencies.timers ?? {
+        set: (run: () => void, ms: number): unknown => setTimeout(run, ms),
+        clear: (handle: unknown): void => clearTimeout(handle as ReturnType<typeof setTimeout>)
+    };
+
+    // Once stopped, every await that resumes leaves without writing, and nothing new starts.
+    let isStopped = false;
 
     const trays = new Map<string, AttachmentTray>();
 
-    // Per tray file, what is not drawn: its bytes, its room, and when begin recorded it.
-    const pending = new Map<string, { blob: Blob, channelId: string, begunAt: number }>();
+    // Per tray file, what is not drawn: its bytes, its room, when begin recorded it, and its
+    // upload while one is going, so taking the file out ends it.
+    const pending = new Map<string, { blob: Blob, channelId: string, begunAt: number, request: XMLHttpRequest | null }>();
 
-    // The person's own uploads by id, for the local copy and to upload again; held for the page.
+    // Every upload going, from a tray or sent again, so stopping ends them all.
+    const uploading = new Set<XMLHttpRequest>();
+
+    // The person's own uploads by id, to upload again while the send is unconfirmed, and the local
+    // copy of each photo until its link draws it.
     const kept = new Map<string, KeptFile>();
     const previews = reactive(new Map<string, string>());
     let localIds = 0;
@@ -458,8 +498,28 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         return { ok: true, uploads };
     }
 
-    /** Sends bytes to Storage under a key, telling progress as it goes. */
-    function upload(key: string, blob: Blob, type: string, onProgress: (fraction: number) => void): Promise<boolean> {
+    /**
+     * Whether Storage refused an upload because its key already holds a file. Begin makes each key
+     * for one upload, so the file there is this one, from an earlier try whose answer was lost; the
+     * send checks its size and type against begin's record all the same.
+     */
+    function isAlreadyStored(request: XMLHttpRequest): boolean {
+        if (request.status === 409) {
+            return true;
+        }
+
+        try {
+            const body = JSON.parse(request.responseText) as { statusCode?: string } | null;
+            return body?.statusCode === "409";
+        }
+        catch {
+            // not Storage's error body, so not its answer for a stored key
+            return false;
+        }
+    }
+
+    /** Sends bytes to Storage under a key, telling progress as it goes; the request is held where asked. */
+    function upload(key: string, blob: Blob, type: string, onProgress: (fraction: number) => void, holder?: { request: XMLHttpRequest | null }): Promise<boolean> {
         const token = dependencies.currentToken();
         if (!token) {
             return Promise.resolve(false);
@@ -467,6 +527,17 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
         return new Promise(resolve => {
             const request = newRequest();
+            uploading.add(request);
+            if (holder) {
+                holder.request = request;
+            }
+            const finish = (isUp: boolean): void => {
+                uploading.delete(request);
+                if (holder?.request === request) {
+                    holder.request = null;
+                }
+                resolve(isUp);
+            };
             request.open("POST", `${projectUrl}/storage/v1/object/${bucket}/${key}`);
             request.setRequestHeader("apikey", dependencies.publishableKey);
             request.setRequestHeader("Authorization", `Bearer ${token}`);
@@ -480,9 +551,9 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                     onProgress(event.loaded / event.total);
                 }
             };
-            request.onload = () => resolve(request.status >= 200 && request.status < 300);
-            request.onerror = () => resolve(false);
-            request.onabort = () => resolve(false);
+            request.onload = () => finish((request.status >= 200 && request.status < 300) || isAlreadyStored(request));
+            request.onerror = () => finish(false);
+            request.onabort = () => finish(false);
             request.send(blob);
         });
     }
@@ -501,7 +572,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         const isBegun = !!file.key && now() - held.begunAt < beginLifetimeMs;
         if (!isBegun) {
             const begun = await begin(held.channelId, [{ blob: held.blob, name: file.name, type: file.type, kind: file.kind, width: file.width, height: file.height }]);
-            if (!tray.files.includes(file)) {
+            if (isStopped || !tray.files.includes(file)) {
                 return;
             }
             if (!begun.ok) {
@@ -514,8 +585,8 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             held.begunAt = now();
         }
 
-        const isUp = await upload(file.key as string, held.blob, file.type, fraction => file.progress = fraction);
-        if (!tray.files.includes(file)) {
+        const isUp = await upload(file.key as string, held.blob, file.type, fraction => file.progress = fraction, held);
+        if (isStopped || !tray.files.includes(file)) {
             return;
         }
         if (!isUp) {
@@ -532,7 +603,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     async function start(tray: AttachmentTray, file: TrayFile, picked: File, channelId: string): Promise<void> {
         const limits = dependencies.limits();
         const prepared = await prepare(picked, limits, codec);
-        if (!tray.files.includes(file)) {
+        if (isStopped || !tray.files.includes(file)) {
             return;
         }
 
@@ -557,7 +628,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         if (prepared.kind === "image") {
             file.previewUrl = objectUrls.create(prepared.blob);
         }
-        pending.set(file.localId, { blob: markRaw(prepared.blob), channelId, begunAt: 0 });
+        pending.set(file.localId, { blob: markRaw(prepared.blob), channelId, begunAt: 0, request: null });
         await send(tray, file);
     }
 
@@ -595,6 +666,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                     return;
                 }
                 const [file] = tray.files.splice(index, 1);
+                pending.get(localId)?.request?.abort();
                 pending.delete(localId);
                 if (file.previewUrl) {
                     objectUrls.revoke(file.previewUrl);
@@ -618,21 +690,50 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
     // Each file's link by id, with when it ends; reactive, so a row draws its file once signed.
     const links = reactive(new Map<string, { link: AttachmentLink, endsAt: number }>());
+
+    // The moment links were last judged by, moved on as a watched link is renewed or ends, so a
+    // row reading a link follows it past its end though time itself is not reactive.
+    const clock = ref(now());
+
+    // The files rows on screen draw, each with how many rows draw it; only these are renewed.
+    const watched = new Map<string, { item: AttachmentItem, count: number }>();
+
+    // When a file whose signing failed as a whole may be asked again.
+    const retryAt = new Map<string, number>();
     const asked = new Map<string, AttachmentItem>();
     const inFlight = new Set<string>();
     let isFlushQueued = false;
+
+    // The one timer for the next moment a watched file needs anything.
+    let wake: unknown = null;
 
     function isFresh(id: string): boolean {
         const held = links.get(id);
         return !!held && held.endsAt - linkRenewMs > now();
     }
 
+    /** Asks for each file without a good link and not already being signed, together in a moment. */
+    function ask(items: AttachmentItem[]): void {
+        for (const item of items) {
+            if (!isFresh(item.id) && !inFlight.has(item.id)) {
+                asked.set(item.id, item);
+            }
+        }
+
+        if (asked.size > 0 && !isFlushQueued && !isStopped) {
+            isFlushQueued = true;
+            queueMicrotask(() => void flush());
+        }
+    }
+
     /** Signs every key asked for in this moment, fifty to a call. */
     async function flush(): Promise<void> {
         isFlushQueued = false;
+        if (isStopped) {
+            return;
+        }
         const items = Array.from(asked.values());
         asked.clear();
-        items.forEach(item => inFlight.add(item.id));
 
         const batches: AttachmentItem[][] = [];
         for (let i = 0; i < items.length; i += signBatch) {
@@ -640,9 +741,11 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         }
 
         await Promise.all(batches.map(sign));
+        schedule();
     }
 
     async function sign(items: AttachmentItem[]): Promise<void> {
+        items.forEach(item => inFlight.add(item.id));
         const startedAt = now();
         const token = dependencies.currentToken();
         let answer: Array<{ path?: string, signedURL?: string | null, error?: string | null }> | null = null;
@@ -664,13 +767,19 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             items.forEach(item => inFlight.delete(item.id));
         }
 
-        // A call that failed as a whole leaves its files unasked, so the next request asks again.
+        if (isStopped) {
+            return;
+        }
+
+        // A call that failed as a whole leaves its files' links as they were, asked again shortly.
         if (!answer) {
+            items.forEach(item => retryAt.set(item.id, now() + linkRetryMs));
             return;
         }
 
         const byPath = new Map(answer.map(entry => [entry.path, entry]));
         for (const item of items) {
+            retryAt.delete(item.id);
             const signed = byPath.get(item.key);
             const endsAt = startedAt + linkSeconds * 1000;
             if (!signed?.signedURL || signed.error) {
@@ -682,26 +791,107 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             // Storage names the download only when asked; a file always downloads under its own name.
             const downloadUrl = `${url}${url.includes("?") ? "&" : "?"}download=${encodeURIComponent(item.name)}`;
             links.set(item.id, { link: { url, downloadUrl, isUnavailable: false }, endsAt });
+
+            // The photo draws from its link from now on, so its local copy is let go.
+            const preview = previews.get(item.id);
+            if (preview) {
+                previews.delete(item.id);
+                objectUrls.revoke(preview);
+            }
         }
     }
 
+    /**
+     * Sets the one timer for the next moment a watched file needs anything: its link signed again
+     * a minute before its end, or once a failed signing may be tried again; or its link ending,
+     * which moves the clock so the rows drawing it see it gone.
+     */
+    function schedule(): void {
+        if (wake !== null) {
+            timers.clear(wake);
+            wake = null;
+        }
+        if (isStopped) {
+            return;
+        }
+
+        const at = now();
+        let next = Number.POSITIVE_INFINITY;
+        for (const id of watched.keys()) {
+            // its answer schedules again
+            if (inFlight.has(id) || asked.has(id)) {
+                continue;
+            }
+            const held = links.get(id);
+            next = Math.min(next, Math.max(held ? held.endsAt - linkRenewMs : at, retryAt.get(id) ?? 0));
+            if (held && held.endsAt > at) {
+                next = Math.min(next, held.endsAt);
+            }
+        }
+
+        if (next !== Number.POSITIVE_INFINITY) {
+            wake = timers.set(onWake, Math.max(0, next - at));
+        }
+    }
+
+    function onWake(): void {
+        wake = null;
+        const at = now();
+        clock.value = at;
+        ask(Array.from(watched.values(), entry => entry.item).filter(item => (retryAt.get(item.id) ?? 0) <= at));
+        schedule();
+    }
+
     const linkCache: AttachmentLinks = {
-        request: (items: AttachmentItem[]): void => {
-            for (const item of items) {
-                if (!isFresh(item.id) && !inFlight.has(item.id)) {
-                    asked.set(item.id, item);
-                }
+        subscribe: (items: AttachmentItem[]): (() => void) => {
+            if (isStopped) {
+                return () => undefined;
             }
 
-            if (asked.size > 0 && !isFlushQueued) {
-                isFlushQueued = true;
-                queueMicrotask(() => void flush());
+            for (const item of items) {
+                watched.set(item.id, { item, count: (watched.get(item.id)?.count ?? 0) + 1 });
             }
+            ask(items);
+            schedule();
+
+            let isReleased = false;
+            return (): void => {
+                if (isReleased) {
+                    return;
+                }
+                isReleased = true;
+                for (const item of items) {
+                    const entry = watched.get(item.id);
+                    if (entry && entry.count > 1) {
+                        entry.count--;
+                    }
+                    else {
+                        watched.delete(item.id);
+                    }
+                }
+                schedule();
+            };
         },
 
         linkOf: (item: AttachmentItem): AttachmentLink | null => {
+            // read so a row follows the clock past a link's end
+            void clock.value;
             const held = links.get(item.id);
-            return held && held.endsAt - linkRenewMs > now() ? held.link : null;
+            return held && held.endsAt > now() ? held.link : null;
+        },
+
+        isFresh: (item: AttachmentItem): boolean => isFresh(item.id),
+
+        fresh: async (item: AttachmentItem): Promise<AttachmentLink | null> => {
+            if (isStopped) {
+                return null;
+            }
+            if (!isFresh(item.id)) {
+                await sign([item]);
+                schedule();
+            }
+
+            return linkCache.linkOf(item);
         }
     };
 
@@ -758,20 +948,23 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
             const files = (copies as KeptFile[]).map(({ blob, item }) => ({ blob, name: item.name, type: item.type, kind: item.kind, width: item.width ?? null, height: item.height ?? null }));
             const begun = await begin(channelId, files);
-            if (!begun.ok) {
+            if (isStopped || !begun.ok) {
                 return null;
             }
 
             const renewed = items.map((item, index) => ({ ...item, id: begun.uploads[index].uploadId, key: begun.uploads[index].key }));
             const sent = await Promise.all(renewed.map((item, index) => upload(item.key, files[index].blob, item.type, () => undefined)));
-            if (sent.some(isUp => !isUp)) {
+            if (isStopped || sent.some(isUp => !isUp)) {
                 return null;
             }
 
+            // The files move to their new uploads; the old ones are never sent.
             renewed.forEach((item, index) => {
+                kept.delete(items[index].id);
                 kept.set(item.id, { blob: files[index].blob, item });
                 const preview = previews.get(items[index].id);
                 if (preview) {
+                    previews.delete(items[index].id);
                     previews.set(item.id, preview);
                 }
             });
@@ -780,6 +973,30 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
         previewOf: (id: string): string | null => previews.get(id) ?? null,
 
-        links: linkCache
+        links: linkCache,
+
+        release: (items: AttachmentItem[]): void => {
+            items.forEach(item => kept.delete(item.id));
+        },
+
+        stop: (): void => {
+            isStopped = true;
+            Array.from(uploading).forEach(request => request.abort());
+            uploading.clear();
+            schedule();
+            asked.clear();
+            watched.clear();
+
+            const urls = new Set(previews.values());
+            trays.forEach(tray => tray.files.forEach(file => {
+                if (file.previewUrl) {
+                    urls.add(file.previewUrl);
+                }
+            }));
+            urls.forEach(url => objectUrls.revoke(url));
+            previews.clear();
+            kept.clear();
+            pending.clear();
+        }
     };
 }

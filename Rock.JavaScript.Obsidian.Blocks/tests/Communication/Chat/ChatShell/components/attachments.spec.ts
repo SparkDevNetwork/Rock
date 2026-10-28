@@ -44,13 +44,13 @@ afterEach(() => {
 });
 
 /** Mounts a message's files inside a chat shell, as a row draws them, with the session's link cache. */
-async function mountFiles(items: AttachmentItem[], h: Harness = harness()): Promise<{ wrapper: VueWrapper, h: Harness }> {
+async function mountFiles(items: AttachmentItem[], h: Harness = harness(), props: Record<string, unknown> = {}): Promise<{ wrapper: VueWrapper, h: Harness }> {
     shell = document.createElement("div");
     shell.className = "chat-shell";
     document.body.appendChild(shell);
     const attachments = createAttachments(h.dependencies);
     wrapper = mount(Attachments, {
-        props: { items },
+        props: { items, ...props },
         attachTo: shell,
         global: { provide: { [attachmentViewsKey as symbol]: attachments } }
     });
@@ -130,6 +130,71 @@ describe("file cards", () => {
 
         const parts = wrapper.findAll("[data-testid='attachment-grid'], [data-testid='attachment-file']").map(part => part.attributes("data-testid"));
         expect(parts).toEqual(["attachment-grid", "attachment-file", "attachment-file"]);
+    });
+});
+
+describe("links over time", () => {
+    test("a row's links are renewed before they end while it is mounted, so its photo and card keep working, and stop once it is gone", async () => {
+        const { wrapper: row, h } = await mountFiles([image(1), file(2, "a.pdf")]);
+        expect(h.signs).toHaveLength(1);
+
+        h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=renewed`, error: null }));
+        await h.advance(9 * 60 * 1000 + 30 * 1000);
+        await nextTick();
+
+        expect(h.signs).toHaveLength(2);
+        expect(h.signs[1].body.paths).toEqual([image(1).key, file(2, "").key]);
+        expect(row.get("[data-testid='attachment-image'] img").attributes("src")).toContain("token=renewed");
+        expect(row.get("[data-testid='attachment-file']").attributes("href")).toContain("token=renewed");
+
+        row.unmount();
+        wrapper = null;
+        await h.advance(60 * 60 * 1000);
+        expect(h.signs).toHaveLength(2);
+        expect(h.timers).toEqual([]);
+    });
+
+    test("a card clicked as its link nears its end waits for a fresh link, then downloads from it", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const clicks: Array<{ href: string | null, isPrevented: boolean }> = [];
+        const record = (event: Event): void => {
+            clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented });
+            // jsdom has no navigation
+            event.preventDefault();
+        };
+        document.addEventListener("click", record);
+
+        try {
+            // its renewal was not answered, so the link left is near its end
+            const working = h.signAnswer.value;
+            h.signAnswer.value = () => {
+                throw new TypeError("Failed to fetch");
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+            const signed = h.signs.length;
+
+            wrapper.get("[data-testid='attachment-file']").element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(h.signs).toHaveLength(signed + 1);
+            expect(clicks.map(c => c.isPrevented)).toEqual([true, false]);
+            expect(clicks[1].href).toContain("-fresh&download=a.pdf");
+        }
+        finally {
+            document.removeEventListener("click", record);
+        }
+    });
+
+    test("a file card still being sent is plain text read by its visible name, with no label of its own", async () => {
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], harness(), { isPending: true });
+
+        const card = wrapper.get("[data-testid='attachment-file']");
+        expect(card.element.tagName).toBe("SPAN");
+        expect(card.attributes("aria-label")).toBeUndefined();
     });
 });
 

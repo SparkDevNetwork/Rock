@@ -3197,4 +3197,29 @@ describe("a send with files", () => {
         expect(h.sent[0].args).toMatchObject({ p_body: "see this", p_attachments: [threadUpload] });
         expect(h.shell.trayOf(channelA).files.map(f => f.name)).toEqual(["room.pdf"]);
     });
+    test("a confirmed send lets the bytes kept for it go", async () => {
+        const h = await started();
+        h.shell.trayOf(channelA).add([new File(["x"], "a.pdf", { type: "application/pdf" })]);
+        await settle();
+        h.uploads[0].respond(200);
+        await settle();
+        const [uploadId, key] = [h.uploads[0].url.split("/").pop() as string, h.uploads[0].url.split("/chat-attachments/").pop() as string];
+
+        await h.shell.send("");
+        await settle();
+
+        const item = { id: uploadId, key, kind: "file" as const, name: "a.pdf", size: 1, type: "application/pdf", width: null, height: null };
+        expect(await h.shell.attachments.reupload(channelA, [item])).toBeNull();
+        expect(h.begins).toHaveLength(1);
+    });
+
+    test("stopping the shell ends the uploads still going", async () => {
+        const h = await started();
+        h.shell.trayOf(channelA).add([new File(["x"], "a.pdf", { type: "application/pdf" })]);
+        await settle();
+
+        await h.shell.stop();
+
+        expect(h.uploads[0].isAborted).toBe(true);
+    });
 });

@@ -774,8 +774,10 @@
     provide(attachmentViewsKey, {
         previewOf: id => shell.value.attachments.previewOf(id),
         links: {
-            request: items => shell.value.attachments.links.request(items),
-            linkOf: item => shell.value.attachments.links.linkOf(item)
+            subscribe: items => shell.value.attachments.links.subscribe(items),
+            linkOf: item => shell.value.attachments.links.linkOf(item),
+            isFresh: item => shell.value.attachments.links.isFresh(item),
+            fresh: item => shell.value.attachments.links.fresh(item)
         }
     });
 

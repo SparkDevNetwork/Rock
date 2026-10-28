@@ -835,6 +835,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
             if (!result.ok) {
                 return { ok: false, error: result.error };
             }
+            // stored with the message now, so never uploaded again
+            if (files?.length) {
+                attachments.release(files);
+            }
             const sent = (result.data ?? {}) as Partial<SendAnswer>;
             return {
                 ok: true,
@@ -1531,6 +1535,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             members.stop();
             prefs.stop();
             drafts.stop();
+            attachments.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.

@@ -72,7 +72,8 @@
                        :data-unavailable="linkOf(item)?.isUnavailable ? 'true' : undefined"
                        :href="isPending ? undefined : linkOf(item)?.downloadUrl ?? undefined"
                        :rel="isPending ? undefined : 'noopener'"
-                       :aria-label="`Download ${item.name}, ${formatFileSize(item.size)}`">
+                       :aria-label="isPending || !linkOf(item)?.downloadUrl ? undefined : `Download ${item.name}, ${formatFileSize(item.size)}`"
+                       @click="onLinkClick($event, item)">
                 <span class="chat-attach-file-icon" aria-hidden="true"><Icon name="file" /></span>
                 <span class="chat-attach-file-main">
                     <span class="chat-attach-file-name" data-testid="attachment-file-name">{{ item.name }}</span>
@@ -97,7 +98,8 @@
                                data-testid="attachment-viewer-download"
                                :href="linkOf(viewed)?.downloadUrl ?? undefined"
                                rel="noopener"
-                               :aria-label="`Download ${viewed.name}`"><Icon name="download" /></a>
+                               :aria-label="`Download ${viewed.name}`"
+                               @click="onLinkClick($event, viewed)"><Icon name="download" /></a>
                             <IconButton icon="x" label="Close" data-testid="attachment-viewer-close" @click="viewerIndex = null" />
                         </template>
                         <img v-if="viewed && imageSource(viewed)"
@@ -523,6 +525,27 @@ a.chat-attach-file:focus-visible {
         void nextTick(() => viewerIndex.value = index);
     }
 
+    /**
+     * A download whose link is near its end waits for a fresh one, then is followed from it, so
+     * a link renewed late, or not at all while the network was away, never fails the click.
+     */
+    function onLinkClick(event: MouseEvent, item: AttachmentItem): void {
+        const anchor = event.currentTarget;
+        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || views.links.isFresh(item)) {
+            return;
+        }
+
+        event.preventDefault();
+        void views.links.fresh(item).then(async link => {
+            if (!link?.downloadUrl || !anchor.isConnected) {
+                return;
+            }
+            // the anchor takes the fresh link before it is followed
+            await nextTick();
+            anchor.click();
+        });
+    }
+
     /** Left and right step through the message's photos, round from the last to the first. */
     function onViewerKeydown(event: KeyboardEvent): void {
         if (event.key === "ArrowRight") {
@@ -563,10 +586,11 @@ a.chat-attach-file:focus-visible {
 
     // #region Watchers
 
-    // Each file on screen is linked, in one call with every other file drawn in the same moment.
-    watch(() => [props.items, props.isPending] as const, () => {
-        if (!props.isPending && props.items.length > 0) {
-            views?.links.request(props.items);
+    // Each file on screen is linked, in one call with every other file drawn in the same moment,
+    // and kept linked while the row is drawn; letting go when the files change or the row goes.
+    watch(() => [props.items, props.isPending] as const, (_value, _old, onCleanup) => {
+        if (!props.isPending && props.items.length > 0 && views) {
+            onCleanup(views.links.subscribe(props.items));
         }
     }, { immediate: true });
 

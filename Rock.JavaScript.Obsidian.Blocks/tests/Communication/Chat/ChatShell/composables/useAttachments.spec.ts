@@ -205,6 +205,53 @@ describe("a tray's files", () => {
         expect(isTrayReady(tray)).toBe(true);
     });
 
+    test("an empty file is refused with its own sentence before anything is begun", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+
+        tray.add([picked("empty.txt", "text/plain", 0)]);
+        await settle();
+
+        expect(h.begins).toEqual([]);
+        expect(tray.files.map(f => [f.status, f.failure?.alone, f.failure?.canRetry])).toEqual([["failed", "This file is empty.", false]]);
+    });
+
+    test("Try again after an upload whose answer was lost takes Storage's already-stored answer for its own key as uploaded", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+
+        tray.add([picked("a.pdf", "application/pdf")]);
+        await settle();
+        // the bytes landed, but the answer never came back
+        h.requests[0].fail();
+        await settle();
+        expect(tray.files[0].status).toBe("failed");
+
+        tray.retry(tray.files[0].localId);
+        await settle();
+        expect(h.requests[1].url).toBe(h.requests[0].url);
+        // Storage's answer to a second upload to a stored key, as its upload route writes it
+        h.requests[1].respond(400, { statusCode: "409", error: "Duplicate", message: "The resource already exists", code: "KeyAlreadyExists" });
+        await settle();
+
+        expect(tray.files[0].status).toBe("uploaded");
+        expect(isTrayReady(tray)).toBe(true);
+    });
+
+    test("removing a file stops its upload", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+
+        tray.add([picked("a.pdf", "application/pdf")]);
+        await settle();
+        tray.remove(tray.files[0].localId);
+
+        expect(h.requests[0].isAborted).toBe(true);
+    });
+
     test("each place keeps its own tray, so files picked in one room never go with a message in another", async () => {
         const h = harness();
         const attachments = createAttachments(h.dependencies);
@@ -319,8 +366,8 @@ describe("download links", () => {
         const photo = image("d0000000-0000-4000-8000-0000000000a1");
         const pdf = file("d0000000-0000-4000-8000-0000000000a2", "Q3 report #1 & notes.pdf");
 
-        attachments.links.request([photo]);
-        attachments.links.request([pdf]);
+        attachments.links.subscribe([photo]);
+        attachments.links.subscribe([pdf]);
         await settle();
 
         expect(h.signs).toHaveLength(1);
@@ -337,28 +384,86 @@ describe("download links", () => {
         expect(attachments.links.linkOf(pdf)?.downloadUrl).toBe(`${projectUrl}/storage/v1/object/sign/chat-attachments/${pdf.key}?token=t-00a2&download=Q3%20report%20%231%20%26%20notes.pdf`);
     });
 
-    test("a link is kept by id and asked again only about a minute before it expires", async () => {
+    test("a link is kept by id, drawn until it ends, and asked again for a row only once it is near its end", async () => {
         const h = harness();
         const attachments = createAttachments(h.dependencies);
         const photo = image("d0000000-0000-4000-8000-0000000000b1");
 
-        attachments.links.request([photo]);
+        attachments.links.subscribe([photo])();
         await settle();
-        attachments.links.request([photo]);
-        await settle();
-        expect(h.signs).toHaveLength(1);
-
-        h.now.value += 8 * 60 * 1000;
-        attachments.links.request([photo]);
+        attachments.links.subscribe([photo])();
         await settle();
         expect(h.signs).toHaveLength(1);
 
-        h.now.value += 90 * 1000;
-        expect(attachments.links.linkOf(photo)).toBeNull();
-        attachments.links.request([photo]);
+        // released, so no renewal runs; the link still works, and is drawn, until it ends
+        h.now.value += 9 * 60 * 1000 + 30 * 1000;
+        expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
+        attachments.links.subscribe([photo]);
         await settle();
         expect(h.signs).toHaveLength(2);
         expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
+    });
+
+    test("a row's links are signed again about a minute before they end, fifty to a call, and stop once released", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const items = Array.from({ length: 60 }, (_, i) => image(`d0000000-0000-4000-8000-${String(i + 500).padStart(12, "0")}`));
+
+        const release = attachments.links.subscribe(items);
+        await settle();
+        expect(h.signs.map(s => s.body.paths.length)).toEqual([50, 10]);
+
+        await h.advance(8 * 60 * 1000);
+        expect(h.signs).toHaveLength(2);
+        await h.advance(70 * 1000);
+        expect(h.signs.map(s => s.body.paths.length)).toEqual([50, 10, 50, 10]);
+        expect(items.every(item => attachments.links.linkOf(item)?.url)).toBe(true);
+
+        release();
+        await h.advance(30 * 60 * 1000);
+        expect(h.signs).toHaveLength(4);
+        expect(h.timers).toEqual([]);
+        // past its end, nothing is drawn from it
+        expect(attachments.links.linkOf(items[0])).toBeNull();
+    });
+
+    test("a renewal that fails is tried again, and the link is drawn until it ends", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const photo = image("d0000000-0000-4000-8000-0000000000b2");
+        attachments.links.subscribe([photo]);
+        await settle();
+
+        const working = h.signAnswer.value;
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
+        };
+        await h.advance(9 * 60 * 1000 + 1000);
+        expect(h.signs).toHaveLength(2);
+        expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
+
+        h.signAnswer.value = working;
+        await h.advance(30 * 1000);
+        expect(h.signs.length).toBeGreaterThan(2);
+        await h.advance(5 * 60 * 1000);
+        expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
+    });
+
+    test("a link at its end is signed afresh for a click, which waits on it", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const pdf = file("d0000000-0000-4000-8000-0000000000b3", "a.pdf");
+        attachments.links.subscribe([pdf])();
+        await settle();
+
+        expect((await attachments.links.fresh(pdf))?.downloadUrl).toContain("download=a.pdf");
+        expect(h.signs).toHaveLength(1);
+
+        h.now.value += 9 * 60 * 1000 + 30 * 1000;
+        h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=again`, error: null }));
+        const link = await attachments.links.fresh(pdf);
+        expect(h.signs).toHaveLength(2);
+        expect(link?.downloadUrl).toContain("token=again");
     });
 
     test("more than fifty at once go in calls of fifty", async () => {
@@ -366,7 +471,7 @@ describe("download links", () => {
         const attachments = createAttachments(h.dependencies);
         const items = Array.from({ length: 60 }, (_, i) => image(`d0000000-0000-4000-8000-${String(i).padStart(12, "0")}`));
 
-        attachments.links.request(items);
+        attachments.links.subscribe(items);
         await settle();
 
         expect(h.signs.map(s => s.body.paths.length)).toEqual([50, 10]);
@@ -382,7 +487,7 @@ describe("download links", () => {
             : { path, signedURL: `/object/sign/chat-attachments/${path}?token=ok`, error: null });
         const attachments = createAttachments(h.dependencies);
 
-        attachments.links.request([refused, fine]);
+        attachments.links.subscribe([refused, fine]);
         await settle();
 
         expect(attachments.links.linkOf(refused)).toEqual({ url: null, downloadUrl: null, isUnavailable: true });
@@ -446,6 +551,67 @@ describe("uploading again", () => {
         h.requests[1].respond(403);
 
         expect(await again).toBeNull();
+    });
+});
+
+describe("letting go", () => {
+    test("a confirmed send's kept bytes are let go, and a photo's local copy once its link draws it", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 400, height: 300 });
+        const attachments = createAttachments(h.dependencies);
+        attachments.trayFor(channel, channel).add([photo]);
+        await settle();
+        h.requests[0].respond(200);
+        await settle();
+        const items = attachments.take(channel) ?? [];
+        const preview = attachments.previewOf(items[0].id);
+        expect(preview).toMatch(/^blob:/);
+
+        attachments.release(items);
+        // nothing is left to upload again from
+        expect(await attachments.reupload(channel, items)).toBeNull();
+        expect(h.begins).toHaveLength(1);
+        // the photo still draws from its local copy until its link can
+        expect(attachments.previewOf(items[0].id)).toBe(preview);
+
+        attachments.links.subscribe(items);
+        await settle();
+        expect(attachments.previewOf(items[0].id)).toBeNull();
+        expect(h.revoked).toEqual([preview]);
+    });
+
+    test("stop ends every upload and renewal, lets every local copy go, and nothing is written after", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 400, height: 300 });
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+        tray.add([photo, picked("a.pdf", "application/pdf")]);
+        await settle();
+        const preview = tray.files[0].previewUrl;
+        const linked = image("d0000000-0000-4000-8000-0000000000e1");
+        attachments.links.subscribe([linked]);
+        await settle();
+        const unsigned = image("d0000000-0000-4000-8000-0000000000e2");
+        attachments.links.subscribe([unsigned]);
+
+        attachments.stop();
+        await settle();
+
+        expect(h.requests.map(r => r.isAborted)).toEqual([true, true]);
+        expect(tray.files.map(f => [f.status, f.failure])).toEqual([["uploading", null], ["uploading", null]]);
+        expect(h.revoked).toEqual([preview]);
+        expect(attachments.links.linkOf(unsigned)).toBeNull();
+        expect(h.timers).toEqual([]);
+
+        // a late answer changes nothing
+        h.requests[1].respond(200);
+        await h.advance(20 * 60 * 1000);
+        expect(tray.files.map(f => f.status)).toEqual(["uploading", "uploading"]);
+        expect(h.signs).toHaveLength(1);
     });
 });
 
