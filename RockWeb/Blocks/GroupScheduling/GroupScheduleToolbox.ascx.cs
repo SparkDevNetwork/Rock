@@ -168,6 +168,17 @@ namespace RockWeb.Blocks.GroupScheduling
         private int _selectedPersonId;
 
         /// <summary>
+        /// Set by <see cref="SetSelectedPerson" /> when the current person is not allowed to use the context person.
+        /// </summary>
+        private bool _isContextPersonUnauthorized;
+
+        /// <summary>
+        /// Set by <see cref="SetSelectedPerson" /> to the selected person's groups the current person can schedule.
+        /// When <c>null</c>, all of the selected person's groups are allowed.
+        /// </summary>
+        private HashSet<int> _authorizedGroupIds;
+
+        /// <summary>
         /// Gets or sets the current tab in the ViewState
         /// </summary>
         /// <value>
@@ -248,6 +259,12 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            if ( _isContextPersonUnauthorized )
+            {
+                base.OnLoad( e );
+                return;
+            }
+
             if ( !Page.IsPostBack )
             {
                 BindTabs();
@@ -295,21 +312,75 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
+        /// Gets the identifiers of the specified person's active groups that the current person
+        /// is authorized to schedule (SCHEDULE, EDIT or MANAGE_MEMBERS).
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>The authorized group identifiers.</returns>
+        private HashSet<int> GetAuthorizedGroupIds( int personId )
+        {
+            var rockContext = new RockContext();
+
+            var groupIds = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( gm => gm.PersonId == personId && gm.GroupMemberStatus == GroupMemberStatus.Active )
+                .Select( gm => gm.GroupId )
+                .Distinct()
+                .ToList();
+
+            // GroupCache walks parent groups from cache, so this avoids a query per group once cached.
+            // GroupCache.GetMany is internal to Rock, so each group is loaded with Get here.
+            // SCHEDULE is checked first because it never queries. MANAGE_MEMBERS comes before EDIT
+            // because its group member query also matches roles that can edit.
+            var authorizedGroupIds = groupIds
+                .Select( id => GroupCache.Get( id, rockContext ) )
+                .Where( g => g != null )
+                .Where( g => g.IsAuthorized( Rock.Security.Authorization.SCHEDULE, this.CurrentPerson )
+                    || g.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                    || g.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                .Select( g => g.Id );
+
+            return new HashSet<int>( authorizedGroupIds );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may act on the specified group for the selected person.
+        /// </summary>
+        /// <param name="groupId">The group identifier, or <c>null</c> for "All Groups".</param>
+        /// <returns><c>true</c> if the group is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsGroupAuthorized( int? groupId )
+        {
+            if ( _authorizedGroupIds == null )
+            {
+                return true;
+            }
+
+            return groupId.HasValue && _authorizedGroupIds.Contains( groupId.Value );
+        }
+
+        /// <summary>
         /// Sets the selected person.
         /// </summary>
         private void SetSelectedPerson()
         {
             var targetPerson = this.ContextEntity<Person>();
 
-            // Only honor a context person other than the current person if they
-            // are a member of the current person's family or the current person
-            // is authorized to edit this block.
+            // A context person other than the current person or a member of their
+            // family is limited to the groups the current person can schedule.
             if ( targetPerson != null
                 && targetPerson.Id != this.CurrentPersonId
-                && !IsUserAuthorized( Rock.Security.Authorization.EDIT )
                 && !IsFamilyMemberOfCurrentPerson( targetPerson.Id ) )
             {
-                targetPerson = null;
+                _authorizedGroupIds = GetAuthorizedGroupIds( targetPerson.Id );
+            }
+
+            if ( _authorizedGroupIds != null && !_authorizedGroupIds.Any() )
+            {
+                _isContextPersonUnauthorized = true;
+                this.SelectedPersonId = 0;
+                nbNotAuthorized.Visible = true;
+                pnlView.Visible = false;
+                return;
             }
 
             if ( targetPerson != null )
@@ -697,12 +768,21 @@ $('#{0}').tooltip();
                 .Where( a => a.Occurrence.OccurrenceDate >= currentDateTime )
                 .OrderBy( a => a.Occurrence.OccurrenceDate );
 
-            var confirmedScheduledList = qryConfirmedScheduled.ToList();
+            var confirmedScheduledList = qryConfirmedScheduled.ToList()
+                .Where( a => IsGroupAuthorized( a.Occurrence.GroupId ) )
+                .ToList();
 
             pnlUpcomingSchedules.Visible = confirmedScheduledList.Any();
 
             rptUpcomingSchedules.DataSource = confirmedScheduledList;
             rptUpcomingSchedules.DataBind();
+
+            // The feed includes every group, so don't offer it when limited to the groups the current person can schedule.
+            btnCopyToClipboard.Visible = _authorizedGroupIds == null;
+            if ( _authorizedGroupIds != null )
+            {
+                return;
+            }
 
             var personAliasService = new PersonAliasService( rockContext );
             var primaryAlias = personAliasService.GetPrimaryAlias( this.SelectedPersonId );
@@ -732,6 +812,8 @@ $('#{0}').tooltip();
                 var pendingConfirmations = new AttendanceService( rockContext ).GetPendingScheduledConfirmations()
                     .Where( a => a.PersonAlias.PersonId == this.SelectedPersonId )
                     .OrderBy( a => a.Occurrence.OccurrenceDate )
+                    .ToList()
+                    .Where( a => IsGroupAuthorized( a.Occurrence.GroupId ) )
                     .ToList();
 
                 if ( pendingConfirmations.Any() )
@@ -768,6 +850,8 @@ $('#{0}').tooltip();
                     .Where( x => x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
                     .OrderBy( x => new { x.Order, x.Name } )
                     .AsNoTracking()
+                    .ToList()
+                    .Where( x => IsGroupAuthorized( x.Id ) )
                     .ToList();
 
                 rptGroupPreferences.DataSource = groups;
@@ -961,6 +1045,11 @@ $('#{0}').tooltip();
         /// <param name="groupMemberAssignmentId">The group member assignment identifier.</param>
         private void AddEditGroupPreferenceAssignment( int groupId, int? groupMemberAssignmentId )
         {
+            if ( !IsGroupAuthorized( groupId ) )
+            {
+                return;
+            }
+
             hfGroupScheduleAssignmentId.Value = groupMemberAssignmentId.ToString();
 
             // bind repeater rptGroupPreferenceAssignments
@@ -1105,7 +1194,10 @@ $('#{0}').tooltip();
                 groupMemberAssignment = groupMemberAssignmentService.GetInclude( groupMemberAssignmentId.Value, a => a.GroupMember );
 
                 // The assignment id comes from a hidden field, so make sure it belongs to the selected person.
-                if ( groupMemberAssignment != null && ( groupMemberAssignment.GroupMember == null || groupMemberAssignment.GroupMember.PersonId != this.SelectedPersonId ) )
+                if ( groupMemberAssignment != null
+                    && ( groupMemberAssignment.GroupMember == null
+                        || groupMemberAssignment.GroupMember.PersonId != this.SelectedPersonId
+                        || !IsGroupAuthorized( groupMemberAssignment.GroupMember.GroupId ) ) )
                 {
                     return;
                 }
@@ -1120,6 +1212,11 @@ $('#{0}').tooltip();
             else
             {
                 groupMember = this.GetGroupMemberRecord( rockContext, groupId.Value, this.SelectedPersonId );
+            }
+
+            if ( groupMember == null )
+            {
+                return;
             }
 
             var scheduleId = ddlGroupScheduleAssignmentSchedule.SelectedValue.AsIntegerOrNull();
@@ -1283,7 +1380,8 @@ $('#{0}').tooltip();
         /// <returns></returns>
         private GroupMember GetGroupMemberRecord( RockContext rockContext, int groupId, int? personId )
         {
-            if ( !personId.HasValue )
+            // The group id usually comes from a hidden field, so make sure the current person can schedule it.
+            if ( !personId.HasValue || !IsGroupAuthorized( groupId ) )
             {
                 return null;
             }
@@ -1469,10 +1567,14 @@ $('#{0}').tooltip();
                         StartDate = DbFunctions.TruncateTime( e.StartDate ).Value,
                         EndDate = DbFunctions.TruncateTime( e.EndDate ).Value,
                         FullName = e.PersonAlias.Person.NickName + " " + e.PersonAlias.Person.LastName,
+                        GroupId = e.GroupId,
                         GroupName = e.Group.Name
                     } );
 
-                gBlackoutDates.DataSource = personScheduleExclusions.ToList();
+                // Only show blackout dates for groups the current person can schedule, which also hides "All Groups".
+                gBlackoutDates.DataSource = personScheduleExclusions.ToList()
+                    .Where( e => IsGroupAuthorized( e.GroupId ) )
+                    .ToList();
                 gBlackoutDates.DataBind();
             }
         }
@@ -1499,6 +1601,8 @@ $('#{0}').tooltip();
             }
 
             public string FullName { get; set; }
+
+            public int? GroupId { get; set; }
 
             public string GroupName
             {
@@ -1535,9 +1639,15 @@ $('#{0}').tooltip();
                         && g.Group.DisableScheduling == false
                         && g.Group.DisableScheduleToolboxAccess == false )
                     .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
+                    .ToList()
+                    .Where( g => IsGroupAuthorized( g.Value ) )
                     .ToList();
 
-                groups.Insert( 0, new { Value = ( int? ) null, Text = ALL_GROUPS_STRING } );
+                // "All Groups" is only offered when not limited to the groups the current person can schedule.
+                if ( _authorizedGroupIds == null )
+                {
+                    groups.Insert( 0, new { Value = ( int? ) null, Text = ALL_GROUPS_STRING } );
+                }
 
                 ddlBlackoutGroups.DataSource = groups;
                 ddlBlackoutGroups.DataValueField = "Value";
@@ -1602,6 +1712,11 @@ $('#{0}').tooltip();
             if ( !dateRange.Start.HasValue || !dateRange.End.HasValue )
             {
                 // show error
+                return;
+            }
+
+            if ( !IsGroupAuthorized( ddlBlackoutGroups.SelectedValueAsId() ) )
+            {
                 return;
             }
 
@@ -1945,6 +2060,11 @@ $('#{0}').tooltip();
         /// <returns><c>true</c> if the sign-up is allowed; otherwise, <c>false</c>.</returns>
         private bool IsScheduleSignUpAllowed( RockContext rockContext, int groupId, int scheduleId, int? locationId )
         {
+            if ( !IsGroupAuthorized( groupId ) )
+            {
+                return false;
+            }
+
             var selectedPersonId = this.SelectedPersonId;
 
             return new GroupLocationService( rockContext ).Queryable()
@@ -1988,6 +2108,12 @@ $('#{0}').tooltip();
                     && a.Group.DisableScheduling == false
                     && a.Group.DisableScheduleToolboxAccess == false
                     && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+
+                if ( _authorizedGroupIds != null )
+                {
+                    var authorizedGroupIds = _authorizedGroupIds.ToList();
+                    personGroupLocationQry = personGroupLocationQry.Where( a => authorizedGroupIds.Contains( a.GroupId ) );
+                }
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
                 var groupsThatHaveSchedulingRequirements = personGroupLocationQry.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();

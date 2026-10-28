@@ -3,6 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfSelectedPersonId" runat="server" />
+        <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Warning" Text="You are not authorized to view other people's schedules." Visible="false" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
