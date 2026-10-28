@@ -43,7 +43,6 @@
         <template v-else>
             <!-- The files waiting to go with the next send, each uploading as it was picked. -->
             <Attachments v-if="tray" :tray="tray" />
-            <span v-if="isTextAsked" class="chat-composer-note" data-testid="composer-text-required">An announcement needs a message with its files.</span>
 
             <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
                 <Icon name="reply" size="sm" />
@@ -374,13 +373,6 @@
     color: var(--chat-text);
 }
 
-/* Why files alone cannot go here, over the box. */
-.chat-composer-note {
-    padding: 0 14px;
-    font-size: 12px;
-    color: var(--chat-warning-ink);
-}
-
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
 .chat-composer-count {
     margin-left: auto;
@@ -591,12 +583,6 @@
         tray: {
             type: Object as PropType<AttachmentTray | null>,
             default: null
-        },
-
-        /** Whether a send here must carry text, as an announcement must: files alone do not go. */
-        isTextRequired: {
-            type: Boolean,
-            default: false
         }
     });
 
@@ -733,19 +719,16 @@
     /** Whether files wait in the tray. */
     const hasFiles = computed((): boolean => (props.tray?.files.length ?? 0) > 0);
 
-    /** Whether the text is blank, files waiting, and the place takes no files alone, which the box says. */
-    const isTextAsked = computed((): boolean => props.isTextRequired && hasFiles.value && props.text.trim() === "");
-
     /**
      * Whether there is something to send, which turns the send button to the church's fill: text,
-     * or files alone where they may go; and every file waiting is up, since the send names them.
+     * or files alone; and every file waiting is up, since the send names them.
      */
     const isReady = computed((): boolean => {
         if (hasFiles.value && !isTrayReady(props.tray as AttachmentTray)) {
             return false;
         }
 
-        return props.text.trim() !== "" || (hasFiles.value && !props.isTextRequired);
+        return props.text.trim() !== "" || hasFiles.value;
     });
 
     /** The emoji button, which the picker is placed above and hands focus back to. */
@@ -848,11 +831,13 @@
 
     /**
      * Pasted files, a copied photo above all, go into the tray. Taken before the editor sees the
-     * paste, which would otherwise keep only its text.
+     * paste, which would otherwise keep only its text. A paste that carries text is left to the
+     * editor: Word and Excel put a picture of what was copied beside its text, and the text is
+     * what was meant.
      */
     function onPaste(event: ClipboardEvent): void {
         const files = event.clipboardData?.files;
-        if (!props.tray || !files?.length) {
+        if (!props.tray || !files?.length || event.clipboardData?.getData("text/plain")) {
             return;
         }
 

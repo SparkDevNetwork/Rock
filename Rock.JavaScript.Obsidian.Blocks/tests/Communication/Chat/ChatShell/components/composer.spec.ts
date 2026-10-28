@@ -978,7 +978,7 @@ describe("the composer's files", () => {
         expect(wrapper.emitted("send")).toEqual([["the notes"]]);
     });
 
-    test("files with no text send, except where a message must have text", async () => {
+    test("files with no text send", async () => {
         const { wrapper, h } = trayed();
         await pick(wrapper, [picked("a.pdf", "application/pdf")]);
         h.requests[0].respond(200);
@@ -988,17 +988,6 @@ describe("the composer's files", () => {
         expect(wrapper.get("[data-testid='composer-send']").classes()).toContain("is-ready");
         await wrapper.get("form").trigger("submit");
         expect(wrapper.emitted("send")).toEqual([[""]]);
-
-        const announcing = trayed({ isTextRequired: true });
-        await pick(announcing.wrapper, [picked("a.pdf", "application/pdf")]);
-        announcing.h.requests[0].respond(200);
-        await settle();
-        await nextTick();
-
-        expect(announcing.wrapper.get("[data-testid='composer-send']").classes()).not.toContain("is-ready");
-        await announcing.wrapper.get("form").trigger("submit");
-        expect(announcing.wrapper.emitted("send")).toBeUndefined();
-        expect(announcing.wrapper.get("[data-testid='composer-text-required']").text()).toBe("An announcement needs a message with its files.");
     });
 
     test("a failed upload offers Try again on its own file, and Remove takes a file out", async () => {
@@ -1038,6 +1027,17 @@ describe("the composer's files", () => {
 
         expect(tray.files.map(f => f.name)).toEqual(["a.pdf", "image.png"]);
         expect(pasted.defaultPrevented).toBe(true);
+    });
+
+    test("a paste that carries text, as one from Word or Excel does with its picture, is left to the editor", async () => {
+        const { wrapper, tray } = trayed();
+
+        const pasted = new Event("paste", { bubbles: true, cancelable: true }) as Event & { clipboardData: unknown };
+        pasted.clipboardData = { files: [picked("image.png", "image/png")], getData: (type: string) => type === "text/plain" ? "Q3 totals" : "" };
+        wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
+        await settle();
+
+        expect(tray.files).toEqual([]);
     });
 });
 
