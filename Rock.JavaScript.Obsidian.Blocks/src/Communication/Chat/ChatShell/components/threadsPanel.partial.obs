@@ -75,7 +75,7 @@
                     <li v-for="(drawn, index) in drawnRows"
                         :key="drawn.rootId"
                         class="chat-ls-row"
-                        :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff, 'is-busy': drawn.isBusy }"
+                        :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
                         :style="{ '--chat-ls-i': Math.min(index, maxStaggered) }"
                         data-testid="thread-row">
                         <button type="button"
@@ -129,13 +129,13 @@
                                     data-testid="thread-row-follow"
                                     tabindex="-1"
                                     :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
-                                    :aria-busy="drawn.isBusy ? 'true' : undefined"
-                                    :aria-disabled="drawn.isBusy ? 'true' : undefined"
                                     @click="onFollow(drawn)" />
 
-                        <p v-if="drawn.error" class="chat-ls-rowerr" role="status" data-testid="thread-row-error">
-                            <Icon name="alert" size="xs" />{{ drawn.error }}
-                        </p>
+                        <SettingNote v-if="drawn.error"
+                                     class="chat-ls-rowerr"
+                                     role="alert"
+                                     :note="drawn.error"
+                                     data-testid="thread-row-error" />
                     </li>
                 </ul>
                 <div v-if="hasMore" ref="endElement" class="chat-ls-endmark" aria-hidden="true"></div>
@@ -325,7 +325,6 @@
 .chat-ls-row:hover :deep(.chat-ls-follow),
 .chat-ls-row:focus-within :deep(.chat-ls-follow),
 .chat-ls-row.is-off :deep(.chat-ls-follow),
-.chat-ls-row.is-busy :deep(.chat-ls-follow),
 .chat-ls-list.is-phone :deep(.chat-ls-follow) {
     pointer-events: auto;
     opacity: 1;
@@ -334,7 +333,6 @@
 .chat-ls-row:hover .chat-ls-t,
 .chat-ls-row:focus-within .chat-ls-t,
 .chat-ls-row.is-off .chat-ls-t,
-.chat-ls-row.is-busy .chat-ls-t,
 .chat-ls-list.is-phone .chat-ls-t {
     opacity: 0;
 }
@@ -366,20 +364,12 @@
     animation: chat-spin var(--chat-d-spin) linear infinite;
 }
 
+/* A refused follow under its row, in line with the row's words. */
 .chat-ls-rowerr {
     position: relative;
     z-index: 1;
-    display: flex;
-    gap: 5px;
-    align-items: center;
     padding-bottom: 10px;
     margin: -4px 10px 0 52px;
-    font-size: 12px;
-    color: var(--chat-danger-ink);
-}
-
-.chat-ls-rowerr :deep(.chat-ic) {
-    flex: none;
 }
 
 .chat-ls-endmark {
@@ -394,11 +384,13 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageForError } from "../errors.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { messageDisplay } from "../composables/useHistory.partial";
+    import { FollowError } from "../composables/useThreads.partial";
     import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -432,8 +424,7 @@
         isUnread: boolean;
         isFollowing: boolean;
         isOff: boolean;
-        isBusy: boolean;
-        error: string | null;
+        error: Note | null;
         label: string;
     };
 
@@ -476,15 +467,9 @@
             default: null
         },
 
-        /** The row whose follow change was refused, and why. */
-        rowError: {
-            type: Object as PropType<{ rootId: number, error: ChatError } | null>,
-            default: null
-        },
-
-        /** The row whose follow change is on its way. */
-        busyRootId: {
-            type: Number as PropType<number | null>,
+        /** The newest refused follow change, shown on its row with Try again. */
+        followError: {
+            type: Object as PropType<FollowError | null>,
             default: null
         },
 
@@ -551,7 +536,6 @@
     const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70]];
 
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
-    const offlineFollow = "Couldn't change this. You're offline, so try again in a moment.";
 
     /** The row that holds the list's one tab stop, once one has been focused. */
     const roveId = ref<number | null>(null);
@@ -610,11 +594,9 @@
         }
     }
 
+    /** The bell changes at once, so a second press while the first is out asks again. */
     function onFollow(row: DrawnRow): void {
-        // one change at a time, as the list holds one busy row
-        if (props.busyRootId === null) {
-            emit("follow", row.rootId, !row.isFollowing);
-        }
+        emit("follow", row.rootId, !row.isFollowing);
     }
 
     /** The tablist's own keys: either arrow flips between the two tabs, Home and End go to the ends. */
@@ -740,6 +722,7 @@
     function drawRow(row: ThreadListRow): DrawnRow {
         const root = row.root;
         const rootId = root.id;
+        const followError = props.followError;
         const display = messageDisplay(root);
         const isShown = display.kind === "message" || display.kind === "system";
         const isMine = !!props.personAliasGuid && root.person_alias_guid?.toLowerCase() === props.personAliasGuid.toLowerCase();
@@ -791,8 +774,7 @@
             isUnread: row.has_unread,
             isFollowing,
             isOff: !isFollowing && props.tab === "all",
-            isBusy: props.busyRootId === rootId,
-            error: props.rowError?.rootId === rootId ? sentenceFor(props.rowError.error, offlineFollow) : null,
+            error: followError && followError.rootId === rootId ? { kind: "error", text: followError.text, retry: () => emit("follow", rootId, followError.isFollowing) } : null,
             label
         };
     }

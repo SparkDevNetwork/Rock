@@ -20,17 +20,19 @@
 // reaction switch go to chat_set_prefs, the reaction switch with no room; the two privacy switches
 // go to Rock's SavePersonSetting door, one setting a call, since Rock owns them and pushes them on.
 // Star and hide pull against each other, so hiding unstars and starring unhides in the same patch.
-// A save marks its place Saving, then Saved, Saved, syncing where the door answers pending, or Not
-// saved, when the control goes back and the server's sentence stands under it. Each save has a
-// number; only the newest save of a setting may move it, so an answer to a change the person has
-// since made again moves nothing. Another device sees a change at its next load. Once stopped,
-// nothing more is asked and no answer reaches the screen.
+// The control is the feedback: a save that lands shows nothing more, so a change is seamless. A
+// save that fails puts the control back to the last value known saved and puts the server's
+// sentence under it with Try again, said aloud at once. Each save has a number; only the newest
+// save of a setting says how it went, so quick changes never flicker through older answers.
+// Another device sees a change at its next load. Once stopped, nothing more is asked and no answer
+// reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { messageForError } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError } from "../types.partial";
 import { ActionNotice } from "./useMessageActions.partial";
+import { createSaveRule, SaveChange, SaveOutcome } from "./saveRule.partial";
 
 /** What chat_set_prefs answered, through the shell's one call path. */
 export type PrefsCallResult = { ok: true, data: unknown } | { ok: false, error: ChatError };
@@ -51,15 +53,14 @@ export type MeSettings = {
 /** A room's notify mode, as the platform names them. */
 export type NotifyMode = "all" | "mentions" | "silent";
 
-/** Where the newest save of a place stands; the count moves with each save. */
-export type SaveMark = { state: "saving" | "saved" | "pending" | "refused", count: number };
+/**
+ * A line under a control: what a change means, or why its save failed with a way to ask it
+ * again, which a refusal always carries.
+ */
+export type SettingNote = { kind: "info" | "error", text: string, retry?: () => void };
 
-/** A line under a control: a word about the save, a pending save's, or a refusal's sentence. */
-export type SettingNote = { kind: "info" | "pending" | "error", text: string };
-
-/** A room's place in its details: its newest save, and the note under each of its controls. */
+/** A room's place in its details: the note under each of its controls. */
 export type RoomPrefs = {
-    save: SaveMark | null;
     notes: Partial<Record<"notify" | "star" | "hide", SettingNote>>;
 };
 
@@ -69,12 +70,6 @@ export type MeKey = PersonSettingKey | "reaction_push";
 /** What the settings hold for the screen. */
 export type PrefsState = {
     me: MeSettings;
-
-    /** Chat settings' newest save; Saving while any switch's save is out. */
-    meSave: SaveMark | null;
-
-    /** The switches whose save is out, each its own Saving. */
-    meSaving: Partial<Record<MeKey, boolean>>;
     meNotes: Partial<Record<MeKey, SettingNote>>;
 
     /** Each room's place, by its id; a room not here has saved nothing this visit. */
@@ -107,7 +102,7 @@ export type PrefsDependencies = {
     /** Whether the connection is lost, when the door would not be reached. */
     isOffline: () => boolean;
 
-    /** Shows a toast that is not a failure, for a change made from the header. */
+    /** Shows a toast for a change made from the header: what a notify mode means, or why a change failed. */
     notify: (notice: ActionNotice) => void;
 };
 
@@ -124,7 +119,7 @@ export type Prefs = {
     /** Writes a room's notify mode; from the header's menu it is told in a toast. */
     setNotifyMode: (channelId: string, mode: NotifyMode, isFromMenu: boolean) => Promise<void>;
 
-    /** Stars or unstars a room, unhiding it as it is starred; from the header it is told in a toast. */
+    /** Stars or unstars a room, unhiding it as it is starred; the star itself shows it, and only a refusal is toasted from the header. */
     setStarred: (channelId: string, isStarred: boolean, isFromMenu: boolean) => Promise<void>;
 
     /** Hides or shows a room, unstarring it as it is hidden. */
@@ -176,7 +171,7 @@ export function notifyOptionsFor(kind: string | null): NotifyOption[] {
     ];
 }
 
-/** Each switch's label as Chat settings shows it, which its saved sentence names. */
+/** Each switch's label as Chat settings shows it. */
 export const meTitles: Record<MeKey, string> = {
     profile_details: "Show my campus and badges",
     open_dm: "Anyone can message me",
@@ -190,7 +185,6 @@ const meFields: Record<MeKey, keyof MeSettings> = {
     reaction_push: "reaction_push"
 };
 
-const pendingSentence = "Saved. It can take a minute to reach everyone.";
 const offlineSentence = "You're offline. Try again when you're back.";
 const failedSentence = "Couldn't save. Try again in a moment.";
 const noDoorSentence = "That setting can't be changed right now.";
@@ -206,42 +200,25 @@ const leavesListSentence = "It leaves your list when you open another conversati
 export function createPrefs(dependencies: PrefsDependencies): Prefs {
     const state = reactive<PrefsState>({
         me: { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true },
-        meSave: null,
-        meSaving: {},
         meNotes: {},
         rooms: {},
         announcement: null
     }) as PrefsState;
 
     let isStopped = false;
-    let saveCount = 0;
     let announcementCount = 0;
+    const rule = createSaveRule(() => isStopped);
 
-    /** The newest save asked of each setting, by a key naming it, so an older answer moves nothing. */
-    const newest = new Map<string, number>();
-
-    function announce(text: string): void {
-        state.announcement = { text, isAssertive: false, count: ++announcementCount };
+    function announce(text: string, isAssertive = false): void {
+        state.announcement = { text, isAssertive, count: ++announcementCount };
     }
 
     function room(channelId: string): RoomPrefs {
-        return state.rooms[channelId] ??= { save: null, notes: {} };
+        return state.rooms[channelId] ??= { notes: {} };
     }
 
     function rowOf(channelId: string): RowPrefs | undefined {
         return dependencies.channels.rows.find(row => row.channel_id === channelId);
-    }
-
-    /** Numbers a save of a setting and marks it the newest of that setting. */
-    function begin(key: string): number {
-        const count = ++saveCount;
-        newest.set(key, count);
-        return count;
-    }
-
-    /** Whether an answer may still move what it saved: the shell runs and no newer save was asked. */
-    function isCurrent(key: string, count: number): boolean {
-        return !isStopped && newest.get(key) === count;
     }
 
     /** A refusal in the server's own words; a lost connection says so. */
@@ -249,72 +226,43 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         return error.code === "rpc.transport" ? offlineSentence : messageForError(error);
     }
 
-    /**
-     * Writes a room's patch, already shown, and settles it: the newest save marks the room and
-     * takes back what it showed on a refusal.
-     */
-    async function saveRoom(channelId: string, key: string, patch: Record<string, boolean | string | null>, was: RowPrefs, settled: {
-        saved: (data: unknown) => void,
-        refused: (text: string) => void
-    }): Promise<void> {
-        const count = begin(`${channelId}:${key}`);
-        room(channelId).save = { state: "saving", count };
+    /** A refusal's note under its control, with Try again asking the same change once more. */
+    function refusalNote(text: string, retry: () => Promise<void>): SettingNote {
+        return { kind: "error", text, retry: () => void retry() };
+    }
+
+    /** Saves a setting by the one save rule; a refusal is said at once, wherever it is shown. */
+    async function save<T>(key: string, change: SaveChange<T>): Promise<void> {
+        await rule.save(key, {
+            ...change,
+            refused: text => {
+                change.refused(text);
+                announce(`Not saved. ${text}`, true);
+            }
+        });
+    }
+
+    /** A room's patch through chat_set_prefs, as the save rule asks it. */
+    async function askRoom(channelId: string, patch: Record<string, boolean | string | null>): Promise<SaveOutcome> {
         const result = await dependencies.setPrefs(channelId, patch);
-        if (!isCurrent(`${channelId}:${key}`, count)) {
-            return;
-        }
-
-        if (result.ok) {
-            room(channelId).save = { state: "saved", count };
-            settled.saved(result.data);
-            return;
-        }
-
-        dependencies.channels.applyPrefs(channelId, was);
-        room(channelId).save = { state: "refused", count };
-        settled.refused(refusalText(result.error));
+        return result.ok ? { isSaved: true, data: result.data } : { isSaved: false, text: refusalText(result.error) };
     }
 
-    /** Settles a save of one of the person's own switches, already shown. */
-    function settleMe(key: MeKey, count: number, was: boolean, outcome: { pending: boolean } | { refused: string }): void {
-        if (!isCurrent(`me:${key}`, count)) {
-            return;
-        }
-
-        // Another switch's save still out keeps the head at Saving; its own answer settles it.
-        delete state.meSaving[key];
-        const isOtherOut = Object.keys(state.meSaving).length > 0;
-        if ("refused" in outcome) {
-            state.me[meFields[key]] = was;
-            state.meSave = isOtherOut ? state.meSave : { state: "refused", count };
-            state.meNotes[key] = { kind: "error", text: outcome.refused };
-            announce(`Not saved. ${outcome.refused}`);
-            return;
-        }
-
-        const now = state.me[meFields[key]] ? "on" : "off";
-        if (outcome.pending) {
-            state.meSave = isOtherOut ? state.meSave : { state: "pending", count };
-            state.meNotes[key] = { kind: "pending", text: pendingSentence };
-            announce(pendingSentence);
-        }
-        else {
-            state.meSave = isOtherOut ? state.meSave : { state: "saved", count };
-            // The label is a phrase of its own, so the state is read after a pause.
-            announce(`${meTitles[key]}, ${now}. Saved.`);
-        }
-    }
-
-    /** Shows one of the person's own switches at once and numbers its save. */
-    function beginMe(key: MeKey, value: boolean): { count: number, was: boolean } {
+    /** One of the person's own switches through the save rule. */
+    function saveMe(key: MeKey, value: boolean, ask: () => Promise<SaveOutcome>): Promise<void> {
         const field = meFields[key];
-        const was = state.me[field];
-        state.me[field] = value;
-        const count = begin(`me:${key}`);
-        state.meSave = { state: "saving", count };
-        state.meSaving[key] = true;
         delete state.meNotes[key];
-        return { count, was };
+        return save(`me:${key}`, {
+            was: state.me[field],
+            value,
+            show: shown => {
+                state.me[field] = shown;
+            },
+            ask,
+            refused: text => {
+                state.meNotes[key] = refusalNote(text, () => prefs.setSwitch(key, value));
+            }
+        });
     }
 
     const prefs: Prefs = {
@@ -333,13 +281,13 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
             // A switch whose save is out keeps what the person chose; its own answer settles it.
             for (const key of Object.keys(meFields) as MeKey[]) {
-                if (!state.meSaving[key]) {
+                if (!rule.isOut(`me:${key}`)) {
                     state.me[meFields[key]] = read[meFields[key]];
                 }
             }
         },
 
-        roomOf: (channelId: string): RoomPrefs => state.rooms[channelId] ?? { save: null, notes: {} },
+        roomOf: (channelId: string): RoomPrefs => state.rooms[channelId] ?? { notes: {} },
 
         setNotifyMode: async (channelId: string, mode: NotifyMode, isFromMenu: boolean): Promise<void> => {
             const row = rowOf(channelId);
@@ -347,24 +295,23 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 return;
             }
 
-            const was: RowPrefs = { notify_mode: row.notify_mode };
-            dependencies.channels.applyPrefs(channelId, { notify_mode: mode });
             delete room(channelId).notes.notify;
-
-            await saveRoom(channelId, "notify", { notify_mode: mode }, was, {
-                saved: data => {
+            await save<string | null | undefined>(`${channelId}:notify`, {
+                was: row.notify_mode,
+                value: mode,
+                show: shown => dependencies.channels.applyPrefs(channelId, { notify_mode: shown }),
+                ask: () => askRoom(channelId, { notify_mode: mode }),
+                landed: data => {
                     // the mode the room now has for the person, its default included where it is cleared
                     const effective = (data as { channel?: { notify_mode_effective?: unknown } } | null)?.channel?.notify_mode_effective;
                     if (typeof effective === "string") {
                         dependencies.channels.applyPrefs(channelId, { notify_mode: effective });
                     }
 
+                    // A menu closes as it chooses, so the toast says what the choice means.
                     if (isFromMenu) {
                         dependencies.notify({ code: "notify-mode", text: notifyWords[mode].toast, icon: notifyWords[mode].icon });
                         announce(notifyWords[mode].toast);
-                    }
-                    else {
-                        announce(`${notifyWords[mode].title}. Saved.`);
                     }
                 },
                 refused: text => {
@@ -372,9 +319,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                         dependencies.notify({ code: "notify-mode", text, icon: "alert" });
                     }
                     else {
-                        room(channelId).notes.notify = { kind: "error", text };
+                        room(channelId).notes.notify = refusalNote(text, () => prefs.setNotifyMode(channelId, mode, false));
                     }
-                    announce(`Not saved. ${text}`);
                 }
             });
         },
@@ -387,34 +333,28 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
             // starring a hidden room brings it back, in the same one save
             const isUnhiding = isStarred && row.hidden === true;
-            const was: RowPrefs = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };
             const patch: Record<string, boolean> = isUnhiding ? { is_favorite: true, hidden: false } : { is_favorite: isStarred };
-            dependencies.channels.applyPrefs(channelId, isUnhiding ? { is_favorite: true, hidden: false } : { is_favorite: isStarred });
-            delete room(channelId).notes.star;
-            delete room(channelId).notes.hide;
+            const notes = room(channelId).notes;
+            delete notes.star;
+            delete notes.hide;
+            if (isUnhiding && !isFromMenu) {
+                notes.star = { kind: "info", text: "Starred, so it's back in your list." };
+            }
 
             // star and hide are one save's two halves, so they share one newest
-            await saveRoom(channelId, "sidebar", patch, was, {
-                saved: () => {
-                    if (isFromMenu) {
-                        dependencies.notify({ code: "starred", text: isStarred ? "Starred" : "Removed from Starred", icon: "star" });
-                        announce(isStarred ? "Starred" : "Removed from Starred");
-                        return;
-                    }
-
-                    if (isUnhiding) {
-                        room(channelId).notes.star = { kind: "info", text: "Starred, so it's back in your list." };
-                    }
-                    announce(`${isStarred ? "Starred" : "Unstarred"}${isUnhiding ? ", and shown again" : ""}. Saved.`);
-                },
+            await save<RowPrefs>(`${channelId}:sidebar`, {
+                was: { is_favorite: row.is_favorite, hidden: row.hidden ?? false },
+                value: patch,
+                show: shown => dependencies.channels.applyPrefs(channelId, shown),
+                ask: () => askRoom(channelId, patch),
                 refused: text => {
                     if (isFromMenu) {
                         dependencies.notify({ code: "starred", text, icon: "alert" });
                     }
                     else {
-                        room(channelId).notes.star = { kind: "error", text };
+                        delete notes.hide;
+                        notes.star = refusalNote(text, () => prefs.setStarred(channelId, isStarred, false));
                     }
-                    announce(`Not saved. ${text}`);
                 }
             });
         },
@@ -427,22 +367,23 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
             // hiding a starred room takes it out of Starred, in the same one save
             const isUnstarring = isHidden && row.is_favorite === true;
-            const was: RowPrefs = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };
             const patch: Record<string, boolean> = isUnstarring ? { hidden: true, is_favorite: false } : { hidden: isHidden };
-            dependencies.channels.applyPrefs(channelId, isUnstarring ? { hidden: true, is_favorite: false } : { hidden: isHidden });
-            delete room(channelId).notes.star;
-            delete room(channelId).notes.hide;
+            const notes = room(channelId).notes;
+            delete notes.star;
+            delete notes.hide;
+            if (isHidden) {
+                // what hiding means is said with the change, since the room stays until another opens
+                notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Starred." : "Hidden."} ${leavesListSentence}` };
+            }
 
-            await saveRoom(channelId, "sidebar", patch, was, {
-                saved: () => {
-                    if (isHidden) {
-                        room(channelId).notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Starred." : "Hidden."} ${leavesListSentence}` };
-                    }
-                    announce(`${isHidden ? "Hidden from your sidebar" : "Shown in your sidebar"}${isUnstarring ? ", and unstarred" : ""}. Saved.`);
-                },
+            await save<RowPrefs>(`${channelId}:sidebar`, {
+                was: { is_favorite: row.is_favorite, hidden: row.hidden ?? false },
+                value: patch,
+                show: shown => dependencies.channels.applyPrefs(channelId, shown),
+                ask: () => askRoom(channelId, patch),
                 refused: text => {
-                    room(channelId).notes.hide = { kind: "error", text };
-                    announce(`Not saved. ${text}`);
+                    delete notes.star;
+                    notes.hide = refusalNote(text, () => prefs.setHidden(channelId, isHidden));
                 }
             });
         },
@@ -452,23 +393,25 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 return;
             }
 
-            const { count, was } = beginMe(setting, value);
-            if (!dependencies.savePersonSetting) {
-                settleMe(setting, count, was, { refused: noDoorSentence });
-                return;
-            }
+            const door = dependencies.savePersonSetting;
+            await saveMe(setting, value, async (): Promise<SaveOutcome> => {
+                if (!door) {
+                    return { isSaved: false, text: noDoorSentence };
+                }
 
-            const answer = await dependencies.savePersonSetting(setting, value);
-            if (answer.code === "ok") {
-                settleMe(setting, count, was, { pending: answer.isPending });
-            }
-            // Rock answering without its door decided nothing; the person may ask again.
-            else if (answer.code === "door.unavailable") {
-                settleMe(setting, count, was, { refused: dependencies.isOffline() ? offlineSentence : failedSentence });
-            }
-            else {
-                settleMe(setting, count, was, { refused: answer.message?.trim() || noDoorSentence });
-            }
+                // Pending has saved too: Rock holds it and the platform hears of it shortly.
+                const answer = await door(setting, value);
+                if (answer.code === "ok") {
+                    return { isSaved: true };
+                }
+
+                // Rock answering without its door decided nothing; the person may ask again.
+                if (answer.code === "door.unavailable") {
+                    return { isSaved: false, text: dependencies.isOffline() ? offlineSentence : failedSentence };
+                }
+
+                return { isSaved: false, text: answer.message?.trim() || noDoorSentence };
+            });
         },
 
         setReactionPush: async (value: boolean): Promise<void> => {
@@ -476,9 +419,10 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 return;
             }
 
-            const { count, was } = beginMe("reaction_push", value);
-            const result = await dependencies.setPrefs(null, { reaction_push: value });
-            settleMe("reaction_push", count, was, result.ok ? { pending: false } : { refused: refusalText(result.error) });
+            await saveMe("reaction_push", value, async (): Promise<SaveOutcome> => {
+                const result = await dependencies.setPrefs(null, { reaction_push: value });
+                return result.ok ? { isSaved: true } : { isSaved: false, text: refusalText(result.error) };
+            });
         },
 
         choose: async (channelId: string | null, choice: RoomChoice): Promise<void> => {

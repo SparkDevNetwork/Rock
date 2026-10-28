@@ -45,13 +45,13 @@
 //          desktop only), panel-back (the chevron: always on a phone, labelled "Back" there unless
 //          a back label says otherwise)
 //
-// The toggle's toasts come from useThreads' followNotice, which the shell shows once the change
-// is saved.
+// The toggle changes at once; a refused change comes back as followError, shown under the header
+// with Try again. Only an unfollow is toasted, from useThreads' unfollowNotice, once it lands.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
-import { followNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
+import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -401,9 +401,29 @@ describe("the Follow toggle", () => {
         expect(plain(w.get("[data-testid='thread-follow']").text())).toBe("Following");
     });
 
-    test("toasts the change in the design's words", () => {
-        expect(followNotice(true).text).toBe("Following this thread");
-        expect(followNotice(false).text).toBe("You won't be notified about new replies");
+    test("a refused change shows its sentence and Try again under the header, said at once, and Try again asks it again with focus on the toggle", async () => {
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { isFollowing: false, text: "You're no longer in this channel." } });
+        await nextTick();
+
+        const error = w.get("[data-testid='thread-follow-error']");
+        expect(plain(error.text())).toBe("You're no longer in this channel. Try again");
+        expect(error.attributes("role")).toBe("alert");
+
+        await error.get("[data-testid='note-retry']").trigger("click");
+
+        expect(w.emitted("follow")).toEqual([[false]]);
+        expect(document.activeElement).toBe(w.get("[data-testid='thread-follow']").element);
+    });
+
+    test("shows no refusal while there is none", () => {
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true });
+
+        expect(w.find("[data-testid='thread-follow-error']").exists()).toBe(false);
+    });
+
+    // Following shows as the bell itself; only unfollowing says what it means, as a notify mode does.
+    test("toasts only an unfollow, in the design's words", () => {
+        expect(unfollowNotice.text).toBe("You won't be notified about new replies");
     });
 });
 

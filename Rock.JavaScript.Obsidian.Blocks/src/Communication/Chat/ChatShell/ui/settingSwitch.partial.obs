@@ -6,7 +6,8 @@
                 :note="note"
                 class="chat-set-row"
                 :data-testid="`switch-${name}`"
-                @click="onRowClick">
+                @click="onRowClick"
+                @retry="switchElement?.focus()">
         <template #default="{ ids }">
             <!-- The words beside a switch toggle it too, as a label would. -->
             <button ref="switchElement"
@@ -16,7 +17,6 @@
                     :aria-checked="isOn ? 'true' : 'false'"
                     :aria-labelledby="ids.title ?? undefined"
                     :aria-describedby="describedBy(ids)"
-                    :aria-busy="isBusy ? 'true' : undefined"
                     @click.stop="onToggle">
                 <span class="chat-switch-knob"></span>
             </button>
@@ -39,7 +39,7 @@
     background: var(--chat-line-strong);
     border: 0;
     border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-base) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
+    transition: background-color var(--chat-t-base) var(--chat-ease-state);
 }
 
 .chat-switch:hover {
@@ -52,11 +52,6 @@
 
 .chat-switch[aria-checked="true"]:hover {
     background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
-}
-
-.chat-switch[aria-busy="true"] {
-    cursor: progress;
-    opacity: .7;
 }
 
 .chat-switch:focus-visible {
@@ -84,7 +79,7 @@
     import { PropType, ref } from "vue";
     import SettingRow, { RowIds, RowNote } from "./settingRow.partial.obs";
 
-    /** A line under a switch's words: a word about the save, a pending save's, or a refusal's sentence. */
+    /** A line under a switch's words: what a change means, or a failed save's sentence with Try again. */
     export type SwitchNote = RowNote;
 
     const props = defineProps({
@@ -111,12 +106,6 @@
         },
 
         isOn: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether its save is out, which marks the switch busy. */
-        isBusy: {
             type: Boolean,
             default: false
         },

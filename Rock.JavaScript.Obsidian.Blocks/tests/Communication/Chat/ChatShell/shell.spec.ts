@@ -2619,7 +2619,7 @@ describe("the live sidebar", () => {
             await settle();
 
             expect(doorCalls).toEqual([[dmD, "Trail crew"]]);
-            expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "pending" });
+            expect(h.shell.rooms.renameOf(dmD)).toEqual({ kind: "idle" });
         });
 
         test("the members panel asks Rock's doors: its rights on open, and a remove of someone on the roster", async () => {

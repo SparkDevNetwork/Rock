@@ -659,7 +659,7 @@ describe("the conversation name", () => {
         expect(w.emitted("rename")).toEqual([[""]]);
     });
 
-    test("reads Saving with Save held and the field read only while the door is out, focus kept in the field", async () => {
+    test("while the door is out Save is held with no word of its own and the field keeps focus", async () => {
         const w = mountGroup();
         const input = w.get("[data-testid='rename-input']");
         await input.setValue("Trail crew");
@@ -667,67 +667,34 @@ describe("the conversation name", () => {
 
         await w.setProps({ rename: { kind: "saving" } });
 
-        expect(plain(w.get("[data-testid='rename-save']").text())).toBe("Saving");
+        // A save shows nothing of its own: no Saving on the button, no spinner, nothing in the head.
+        expect(plain(w.get("[data-testid='rename-save']").text())).toBe("Save");
+        expect(w.find("[data-testid='rename-save'] .chat-spinner").exists()).toBe(false);
+        expect(w.find("[data-testid='details-save']").exists()).toBe(false);
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeDefined();
         expect(input.attributes("disabled")).toBeUndefined();
-        expect(input.attributes("readonly")).toBeDefined();
         expect(document.activeElement).toBe(input.element);
     });
 
     test("leaves focus in the field once saved, where Escape still closes the dialog", async () => {
         const w = mountGroup();
         const input = w.get("[data-testid='rename-input']");
-        await input.setValue("Trail crew");
+        await input.setValue("Trail crew ");
         (input.element as HTMLElement).focus();
         await w.setProps({ rename: { kind: "saving" } });
 
-        await w.setProps({ rename: { kind: "saved" }, groupName: "Trail crew" });
+        await w.setProps({ rename: { kind: "idle" }, groupName: "Trail crew" });
         await settle();
 
+        // Saved says nothing: the name itself is what shows it, and Save rests.
+        expect((input.element as HTMLInputElement).value).toBe("Trail crew");
+        expect(w.find("[data-testid='rename-note']").exists()).toBe(false);
+        expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeDefined();
+        expect(w.text()).not.toMatch(/Saving|Saved/);
         expect(document.activeElement).toBe(input.element);
         keydown(input.element, "Escape");
         await settle();
         expect(w.emitted("close")).toHaveLength(1);
-    });
-
-    test.each([
-        ["saving", { kind: "saving" }, "Saving"],
-        ["saved", { kind: "saved" }, "Saved"],
-        ["pending", { kind: "pending" }, "Saved, syncing"],
-        ["refused", { kind: "refused", text: "No." }, "Not saved"],
-        ["offline", { kind: "offline" }, "Not saved"],
-        ["failed", { kind: "failed" }, "Not saved"]
-    ])("the head's save indicator reads the rename %s", async (_kind, rename, words) => {
-        const w = mountGroup();
-
-        await w.setProps({ rename });
-
-        const indicator = w.get("[data-testid='details-save']");
-        expect(plain(indicator.text())).toBe(words);
-        expect(indicator.attributes("data-state")).toBe(_kind === "offline" || _kind === "failed" ? "refused" : _kind);
-    });
-
-    test("the head's Saved fades after 1.6 seconds", async () => {
-        jest.useFakeTimers();
-        try {
-            const w = mountGroup();
-            await w.setProps({ rename: { kind: "saved" } });
-            expect(w.get("[data-testid='details-save']").attributes("data-state")).toBe("saved");
-
-            jest.advanceTimersByTime(1600);
-            await settle();
-
-            expect(w.get("[data-testid='details-save']").attributes("data-state")).toBe("fade");
-        }
-        finally {
-            jest.useRealTimers();
-        }
-    });
-
-    test("the head shows nothing before a save", () => {
-        const w = mountGroup();
-
-        expect(plain(w.get("[data-testid='details-save']").text())).toBe("");
     });
 
     test("counts the characters from 90", async () => {
@@ -748,29 +715,25 @@ describe("the conversation name", () => {
 
         await w.setProps({ rename: { kind: "refused", text: "Chat is read only for a few minutes while Cedar Hill updates it. Try again soon." } });
 
-        expect(w.get("[data-testid='rename-note']").text()).toBe("Chat is read only for a few minutes while Cedar Hill updates it. Try again soon.");
+        expect(plain(w.get("[data-testid='rename-note']").text())).toBe("Chat is read only for a few minutes while Cedar Hill updates it. Try again soon. Try again");
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeUndefined();
         expect((w.get("[data-testid='rename-input']").element as HTMLInputElement).value).toBe("Trail crew");
     });
 
-    test("a save that failed while online says to try again, not that the person is offline, with Save offered again", async () => {
+    test("a save that failed while online says to try again, not that the person is offline, and Try again asks the same name", async () => {
         const w = mountGroup();
         await w.get("[data-testid='rename-input']").setValue("Trail crew");
         await w.setProps({ rename: { kind: "saving" } });
 
         await w.setProps({ rename: { kind: "failed" } });
 
-        expect(w.get("[data-testid='rename-note']").text()).toBe("Couldn't save the name. Try again in a moment.");
+        expect(plain(w.get("[data-testid='rename-note']").text())).toBe("Couldn't save the name. Try again in a moment. Try again");
         expect(w.get("[data-testid='rename-note']").attributes("data-kind")).toBe("error");
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeUndefined();
-    });
 
-    test("says a pending save can take a minute to reach everyone", async () => {
-        const w = mountGroup();
+        await w.get("[data-testid='rename-note'] [data-testid='note-retry']").trigger("click");
 
-        await w.setProps({ rename: { kind: "pending" } });
-
-        expect(w.get("[data-testid='rename-note']").text()).toBe("Saved. It can take a minute to reach everyone.");
+        expect(w.emitted("rename")).toEqual([["Trail crew"]]);
     });
 
     test("is not offered in a group the person is not in, which Rock's door says", () => {
@@ -966,27 +929,36 @@ describe("Sidebar", () => {
     });
 });
 
-describe("the save indicator for the room's settings", () => {
-    test("says Saving, Saved and Not saved as the newest save goes", async () => {
-        const w = mountDetails({ prefsSave: { state: "saving", count: 1 } });
-        const indicator = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='details-save']");
+// A save that lands shows nothing: the control already shows it. A refused one shows its sentence
+// and Try again under the control, and is said at once.
+describe("saving the room's settings", () => {
+    test("shows no word of its own anywhere in the dialog", () => {
+        const w = mountDetails();
 
-        expect(indicator().attributes("data-state")).toBe("saving");
-        expect(plain(indicator().text())).toBe("Saving");
-
-        await w.setProps({ prefsSave: { state: "saved", count: 1 } });
-        expect(plain(indicator().text())).toBe("Saved");
-
-        await w.setProps({ prefsSave: { state: "refused", count: 2 } });
-        expect(plain(indicator().text())).toBe("Not saved");
+        expect(w.find("[data-testid='details-save']").exists()).toBe(false);
+        expect(w.text()).not.toMatch(/Saving|Saved/);
     });
 
-    test("reads the room's settings' news in the dialog's live region", async () => {
+    test("a refused notify mode's Try again asks again and gives focus to the mode shown", async () => {
+        const retry = jest.fn();
+        const w = mountDetails({ notifyMode: "all", prefsNotes: { notify: { kind: "error", text: "Chat is read only tonight.", retry } } });
+
+        expect(plain(w.get("[data-testid='notify-error']").text())).toBe("Chat is read only tonight. Try again");
+        await w.get("[data-testid='notify-error'] [data-testid='note-retry']").trigger("click");
+        await settle();
+
+        expect(retry).toHaveBeenCalledTimes(1);
+        expect(document.activeElement?.getAttribute("data-value")).toBe("all");
+    });
+
+    test("reads the room's settings' news politely and a failed save at once", async () => {
         const w = mountDetails({ prefsAnnouncement: null });
 
-        await w.setProps({ prefsAnnouncement: { text: "Mentions only. Saved.", isAssertive: false, count: 4 } });
+        await w.setProps({ prefsAnnouncement: { text: "Starred", isAssertive: false, count: 4 } });
+        expect(w.get("[data-testid='details-announcement']").text()).toBe("Starred");
 
-        expect(w.get("[data-testid='details-announcement']").text()).toBe("Mentions only. Saved.");
+        await w.setProps({ prefsAnnouncement: { text: "Not saved. Chat is read only tonight.", isAssertive: true, count: 5 } });
+        expect(w.get("[data-testid='details-alert']").text()).toBe("Not saved. Chat is read only tonight.");
     });
 });
 

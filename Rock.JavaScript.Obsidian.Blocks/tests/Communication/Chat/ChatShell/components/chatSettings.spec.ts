@@ -17,9 +17,9 @@
 // Chat settings, mounted: the person's own settings dialog, opened from the sidebar's foot or their
 // own profile card. A grouped list: who they are and where their name and photo come from, then
 // Privacy's two switches, then Notifications' browser row in each of push's states and the
-// reaction switch, each row a short label with at most a short line under it. Each switch is told to the block at once, which saves it;
-// the head's indicator and the note under a switch show what the save came to, a pending save in
-// its own words and a refusal in the server's.
+// reaction switch, each row a short label with at most a short line under it. Each switch is told
+// to the block at once, which saves it; a save that lands shows nothing more, and a refused one
+// shows the server's sentence and Try again under its switch.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
@@ -41,7 +41,6 @@ function mountSettings(props: Record<string, unknown> = {}): VueWrapper {
             campusName: "Downtown Campus",
             organizationName: "Cedar Hill",
             me,
-            save: null,
             notes: {},
             announcement: null,
             push: "offered",
@@ -173,73 +172,52 @@ describe("Privacy", () => {
         expect(w.emitted("toggle")).toEqual([["profile_details", false], ["open_dm", true]]);
     });
 
-    test("a pending save's note says it can take a minute, and a refusal's carries the server's sentence", () => {
-        const w = mountSettings({
-            notes: {
-                profile_details: { kind: "pending", text: "Saved. It can take a minute to reach everyone." },
-                open_dm: { kind: "error", text: "Chat is not available to you right now." }
-            }
-        });
-
-        const pending = w.get("[data-testid='switch-profile_details'] [data-testid='switch-note']");
-        expect(pending.attributes("data-kind")).toBe("pending");
-        expect(pending.text()).toBe("Saved. It can take a minute to reach everyone.");
-        expect(hasIcon(w, pending, "clock")).toBe(true);
+    test("a refused save's note carries the server's sentence and Try again, which asks again and gives focus back to its switch", async () => {
+        const retry = jest.fn();
+        const w = mountSettings({ notes: { open_dm: { kind: "error", text: "Chat is not available to you right now.", retry } } });
 
         const refused = w.get("[data-testid='switch-open_dm'] [data-testid='switch-note']");
         expect(refused.attributes("data-kind")).toBe("error");
+        expect(plain(refused.text())).toBe("Chat is not available to you right now. Try again");
         expect(hasIcon(w, refused, "alert")).toBe(true);
+        // The switch is described by its note, so a screen reader hears why with the switch.
+        expect(document.getElementById(switchOf(w, "open_dm").attributes("aria-describedby")?.split(" ").pop() ?? "")?.textContent).toContain("Chat is not available to you right now.");
+
+        // after the dialog has put focus where it opens
+        await settle();
+        await refused.get("[data-testid='note-retry']").trigger("click");
+
+        expect(retry).toHaveBeenCalledTimes(1);
+        // Try again is not a press on the row, which would toggle the switch too.
+        expect(w.emitted("toggle")).toBeUndefined();
+        expect(document.activeElement).toBe(switchOf(w, "open_dm").element);
     });
 });
 
-describe("each switch's Saving", () => {
-    test("marks busy every switch whose save is out, not only the one pressed last", () => {
-        const w = mountSettings({ save: { state: "saving", count: 2 }, saving: { reaction_push: true, open_dm: true } });
-        const busy = (name: string): string | undefined => w.get(`[data-testid='switch-${name}'] [role='switch']`).attributes("aria-busy");
-
-        expect(busy("reaction_push")).toBe("true");
-        expect(busy("open_dm")).toBe("true");
-        expect(busy("profile_details")).not.toBe("true");
-    });
-});
-
-describe("the save indicator", () => {
-    test("says Saving, Saved, Saved, syncing and Not saved", async () => {
-        const w = mountSettings({ save: { state: "saving", count: 1 } });
-        const indicator = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='settings-save']");
-
-        expect(plain(indicator().text())).toBe("Saving");
-        await w.setProps({ save: { state: "saved", count: 1 } });
-        expect(plain(indicator().text())).toBe("Saved");
-        expect(indicator().attributes("data-state")).toBe("saved");
-        await w.setProps({ save: { state: "pending", count: 2 } });
-        expect(plain(indicator().text())).toBe("Saved, syncing");
-        await w.setProps({ save: { state: "refused", count: 3 } });
-        expect(plain(indicator().text())).toBe("Not saved");
-    });
-
-    test("fades Saved after a moment", async () => {
-        jest.useFakeTimers();
-        try {
-            const w = mountSettings({ save: { state: "saving", count: 1 } });
-            await w.setProps({ save: { state: "saved", count: 1 } });
-
-            jest.advanceTimersByTime(1600);
-            await settle();
-
-            expect(w.get("[data-testid='settings-save']").attributes("data-state")).toBe("fade");
-        }
-        finally {
-            jest.useRealTimers();
-        }
-    });
-
-    test("reads the settings' news in its live region", async () => {
+// A save that lands shows nothing: the switch already shows it. Nothing in the head, nothing under
+// the switch, and the switch never dims while its save is out.
+describe("a save that lands", () => {
+    test("shows no word in the head and no busy switch", () => {
         const w = mountSettings();
 
-        await w.setProps({ announcement: { text: "Anyone can message me, on. Saved.", isAssertive: false, count: 3 } });
+        expect(w.find("[data-testid='settings-save']").exists()).toBe(false);
+        expect(w.text()).not.toMatch(/Saving|Saved/);
+        expect(w.findAll("[role='switch'][aria-busy]")).toHaveLength(0);
+        expect(w.findAll("[data-testid='switch-note']")).toHaveLength(0);
+    });
+});
 
-        expect(w.get("[data-testid='settings-announcement']").text()).toBe("Anyone can message me, on. Saved.");
+describe("what is said aloud", () => {
+    test("reads the settings' news in its polite live region, and a failed save in its assertive one", async () => {
+        const w = mountSettings();
+
+        await w.setProps({ announcement: { text: "Starred", isAssertive: false, count: 3 } });
+        expect(w.get("[data-testid='settings-announcement']").text()).toBe("Starred");
+        expect(w.get("[data-testid='settings-alert']").text()).toBe("");
+
+        await w.setProps({ announcement: { text: "Not saved. Chat is read only tonight.", isAssertive: true, count: 4 } });
+        expect(w.get("[data-testid='settings-alert']").text()).toBe("Not saved. Chat is read only tonight.");
+        expect(w.get("[data-testid='settings-announcement']").text()).toBe("");
     });
 });
 

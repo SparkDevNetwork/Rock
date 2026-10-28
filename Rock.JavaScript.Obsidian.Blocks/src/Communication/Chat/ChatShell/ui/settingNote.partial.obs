@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="chat-set-note" :data-kind="note.kind">
+        <!-- A line under a setting: what a change means, or why its save failed and Try again. A
+             save that lands has no line, since the control already shows it. Kept inside the root,
+             since a comment beside it makes a fragment that drops the caller's attributes. -->
+        <Icon :name="note.kind === 'error' ? 'alert' : 'info'" size="xs" />
+        <span>{{ note.text }}<template v-if="note.retry">{{ " " }}<button type="button"
+                        class="chat-set-retry"
+                        data-testid="note-retry"
+                        @click.stop="onRetry">Try again</button></template></span>
+    </span>
+</template>
+
+<style scoped>
+.chat-set-note {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chat-muted);
+    animation: chat-set-note-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-set-note[data-kind="error"] {
+    color: var(--chat-danger-ink);
+}
+
+.chat-set-note :deep(.chat-ic) {
+    flex: none;
+    margin-top: 2px;
+}
+
+/* Try again reads as a link in the sentence's own color, underlined so it is not color alone. */
+.chat-set-retry {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    background: transparent;
+    border: 0;
+}
+
+.chat-set-retry:hover {
+    text-decoration-thickness: 2px;
+}
+
+@keyframes chat-set-note-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+}
+
+/* Reduced motion: a note only fades in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-set-note {
+        animation-name: chat-set-note-fade;
+    }
+}
+
+@keyframes chat-set-note-fade {
+    from {
+        opacity: 0;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Icon from "./icon.partial.obs";
+
+    /** A line under a setting: what a change means, or a failed save's sentence with a way to ask it again. */
+    export type Note = { kind: "info" | "error", text: string, retry?: () => void };
+
+    const props = defineProps({
+        note: {
+            type: Object as PropType<Note>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Try again was pressed, which takes the button away, so the control it is under takes focus. */
+        (e: "retry"): void;
+    }>();
+
+    // #region Event Handlers
+
+    function onRetry(): void {
+        props.note.retry?.();
+        emit("retry");
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -150,15 +150,13 @@ export type LeaveState =
     | { kind: "failed" };
 
 /**
- * Where a group's Rename is: not asked, the door on its way, saved, pending while the new name
- * reaches everyone, refused with the door's own sentence, not answered because the connection is
- * lost, or not answered while online.
+ * Where a group's Rename is: nothing to say, which a saved name is too since the name shows it,
+ * the door on its way, refused with the door's own sentence, not answered because the connection
+ * is lost, or not answered while online.
  */
 export type RenameState =
     | { kind: "idle" }
     | { kind: "saving" }
-    | { kind: "saved" }
-    | { kind: "pending" }
     | { kind: "refused", text: string }
     | { kind: "offline" }
     | { kind: "failed" };
@@ -699,10 +697,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
      * Draws a group's saved name at once in its sidebar row and its facts, which the header, the
      * sidebar and the details read, rather than waiting for the platform's signal to reload them.
      * With no name the group is titled by its people again, a title only the platform writes, so
-     * the sidebar is read again, as the platform's own signal would have it read. Only a saved
-     * answer does this: a pending one is not on the platform yet, which a reload would show.
+     * the sidebar is read again, as the platform's own signal would have it read; but not while
+     * the name is pending, since the platform does not have it yet and a reload would read the old
+     * one back. Its own signal reloads the sidebar when it lands.
      */
-    function showName(channelId: string, name: string): void {
+    function showName(channelId: string, name: string, isOnPlatform: boolean): void {
         const facts = state.facts[channelId];
         const row = channels.rows.find(r => r.channel_id === channelId);
         if (row) {
@@ -714,7 +713,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         if (facts) {
             facts.name = name || null;
         }
-        if (!name) {
+        if (!name && isOnPlatform) {
             dependencies.reloadSidebar();
         }
     }
@@ -987,16 +986,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
 
-            state.renames[channelId] = { kind: answer.isPending ? "pending" : "saved" };
-            if (!answer.isPending) {
-                showName(channelId, trimmed);
-            }
-            if (answer.isPending) {
-                announce("Saved. It can take a minute to reach everyone.");
-            }
-            else {
-                announce(trimmed === "" ? "Name removed. Showing everyone's names." : `Renamed to ${trimmed}.`);
-            }
+            // Saved, pending or not, shows only as the name itself; the button gives a screen
+            // reader nothing to hear, so the new name is said.
+            state.renames[channelId] = { kind: "idle" };
+            showName(channelId, trimmed, !answer.isPending);
+            announce(trimmed === "" ? "Name removed. Showing everyone's names." : `Renamed to ${trimmed}.`);
         },
 
         renameOf: (channelId: string): RenameState => state.renames[channelId] ?? { kind: "idle" },
