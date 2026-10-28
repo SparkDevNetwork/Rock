@@ -28,7 +28,8 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
     public class ChatConfigurationBag
     {
         /// <summary>
-        /// Gets or sets whether profile details are visible by default.
+        /// Gets or sets whether public profile details, email, mobile phone, badges and the
+        /// profile card template, are visible by default.
         /// </summary>
         public bool AreChatProfilesVisible { get; set; }
 
@@ -51,6 +52,17 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
         /// Gets or sets the Data Views whose members carry a badge.
         /// </summary>
         public List<ListItemBag> ChatBadgeDataViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Lava drawn on a person's profile card when they show their public
+        /// profile details, or blank for none.
+        /// </summary>
+        public string ProfileCardLavaTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Lava commands the profile card template may run.
+        /// </summary>
+        public List<ListItemBag> ProfileCardEnabledLavaCommands { get; set; }
 
         /// <summary>
         /// Gets or sets the chat project this church talks to. Issued when chat was

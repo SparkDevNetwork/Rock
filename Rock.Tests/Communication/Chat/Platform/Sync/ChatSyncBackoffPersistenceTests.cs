@@ -150,7 +150,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 {
                     AreChatProfilesVisible = true,
                     MinimumAge = 13,
-                    DirectMessageAccessDataViewGuid = dmAccess
+                    DirectMessageAccessDataViewGuid = dmAccess,
+                    ProfileCardLavaTemplate = "{{ Person.NickName }}",
+                    ProfileCardEnabledLavaCommands = new List<string> { "RockEntity" }
                 } );
                 SavePlatformCredentials( Credentials( tenantId ) );
 
@@ -161,6 +163,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 Assert.IsTrue( read.AreChatProfilesVisible );
                 Assert.AreEqual( 13, read.MinimumAge );
                 Assert.AreEqual( dmAccess, read.DirectMessageAccessDataViewGuid );
+                Assert.AreEqual( "{{ Person.NickName }}", read.ProfileCardLavaTemplate );
+                CollectionAssert.AreEqual( new List<string> { "RockEntity" }, read.ProfileCardEnabledLavaCommands );
                 Assert.AreEqual( tenantId, read.TenantId );
                 Assert.AreEqual( PrivateKey, read.PrivateKey, "a backoff write took the signing key away" );
             }

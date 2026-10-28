@@ -58,7 +58,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Configuration
                     IsOpenDirectMessagingAllowed = true,
                     MinimumAge = 13,
                     DirectMessageAccessDataViewGuid = dmAccess,
-                    ChatBadgeDataViewGuids = new List<Guid> { badgeOne, badgeTwo }
+                    ChatBadgeDataViewGuids = new List<Guid> { badgeOne, badgeTwo },
+                    ProfileCardLavaTemplate = "{{ Person.NickName }}",
+                    ProfileCardEnabledLavaCommands = new List<string> { "RockEntity", "Sql" }
                 } );
 
                 SavePlatformCredentials( Credentials( tenantId ) );
@@ -70,6 +72,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Configuration
                 Assert.AreEqual( 13, read.MinimumAge );
                 Assert.AreEqual( dmAccess, read.DirectMessageAccessDataViewGuid );
                 CollectionAssert.AreEqual( new List<Guid> { badgeOne, badgeTwo }, read.ChatBadgeDataViewGuids );
+                Assert.AreEqual( "{{ Person.NickName }}", read.ProfileCardLavaTemplate );
+                CollectionAssert.AreEqual( new List<string> { "RockEntity", "Sql" }, read.ProfileCardEnabledLavaCommands );
                 Assert.AreEqual( tenantId, read.TenantId );
                 Assert.AreEqual( "https://example.supabase.co", read.ProjectUrl );
                 Assert.AreEqual( "sb_publishable_test", read.PublishableKey );
@@ -226,7 +230,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Configuration
                     IsOpenDirectMessagingAllowed = true,
                     MinimumAge = 13,
                     DirectMessageAccessDataViewGuid = dmAccess,
-                    ChatBadgeDataViewGuids = new List<Guid> { badge }
+                    ChatBadgeDataViewGuids = new List<Guid> { badge },
+                    ProfileCardLavaTemplate = "{{ Person.NickName }}",
+                    ProfileCardEnabledLavaCommands = new List<string> { "RockEntity" }
                 } );
 
                 SavePlatformCredentials( Credentials() );
@@ -238,6 +244,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Configuration
                 Assert.AreEqual( 13, read.MinimumAge );
                 Assert.AreEqual( dmAccess, read.DirectMessageAccessDataViewGuid );
                 CollectionAssert.AreEqual( new List<Guid> { badge }, read.ChatBadgeDataViewGuids );
+                Assert.AreEqual( "{{ Person.NickName }}", read.ProfileCardLavaTemplate );
+                CollectionAssert.AreEqual( new List<string> { "RockEntity" }, read.ProfileCardEnabledLavaCommands );
             }
         }
 

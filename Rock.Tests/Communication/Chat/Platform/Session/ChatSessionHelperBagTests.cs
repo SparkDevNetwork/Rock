@@ -114,6 +114,21 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
+        public void OpenSession_Ok_SaysWhetherTheChurchHasAProfileCardTemplate()
+        {
+            var config = SigningConfig();
+            Assert.IsFalse( ChatSessionHelper.OpenSession( Adult(), config, _rockContext ).IsProfileLavaConfigured, "no template" );
+
+            config.Configuration.ProfileCardLavaTemplate = "  ";
+            Assert.IsFalse( ChatSessionHelper.OpenSession( Adult(), config, _rockContext ).IsProfileLavaConfigured, "a blank template is none" );
+
+            config.Configuration.ProfileCardLavaTemplate = "{{ Person.NickName }}";
+            var bag = ChatSessionHelper.OpenSession( Adult(), config, _rockContext );
+            Assert.IsTrue( bag.IsProfileLavaConfigured );
+            Assert.IsFalse( JsonConvert.SerializeObject( bag ).Contains( "Person.NickName" ), "the template itself never reaches the browser" );
+        }
+
+        [TestMethod]
         public void OpenSession_Ok_CarriesThePersonsOwnNameForTheirOwnMessages()
         {
             var person = Adult();

@@ -99,6 +99,8 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 stored.MinimumAge = source.MinimumAge;
                 stored.DirectMessageAccessDataViewGuid = source.DirectMessageAccessDataViewGuid;
                 stored.ChatBadgeDataViewGuids = source.ChatBadgeDataViewGuids;
+                stored.ProfileCardLavaTemplate = source.ProfileCardLavaTemplate;
+                stored.ProfileCardEnabledLavaCommands = source.ProfileCardEnabledLavaCommands;
 
                 Write( stored );
             }
@@ -175,6 +177,10 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 ChatBadgeDataViews = ( configuration.ChatBadgeDataViewGuids ?? new List<Guid>() )
                     .Select( guid => ToListItem( guid ) )
                     .ToList(),
+                ProfileCardLavaTemplate = configuration.ProfileCardLavaTemplate,
+                ProfileCardEnabledLavaCommands = ( configuration.ProfileCardEnabledLavaCommands ?? new List<string>() )
+                    .Select( command => new ListItemBag { Value = command, Text = command } )
+                    .ToList(),
                 ProjectUrl = configuration.ProjectUrl,
                 PublishableKey = configuration.PublishableKey,
                 TenantId = configuration.TenantId?.ToString(),
@@ -220,6 +226,12 @@ namespace Rock.Communication.Chat.Platform.Configuration
                         .Select( guid => guid.Value )
                         .Distinct()
                         .Where( guid => isPersonDataView( guid ) )
+                        .ToList(),
+                    ProfileCardLavaTemplate = sent.ProfileCardLavaTemplate.IsNotNullOrWhiteSpace() ? sent.ProfileCardLavaTemplate : null,
+                    ProfileCardEnabledLavaCommands = ( sent.ProfileCardEnabledLavaCommands ?? new List<ListItemBag>() )
+                        .Select( item => item?.Value?.Trim() )
+                        .Where( command => command.IsNotNullOrWhiteSpace() )
+                        .Distinct()
                         .ToList()
                 }
             };

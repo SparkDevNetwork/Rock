@@ -88,5 +88,11 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// an active one, so the chat can offer it first among the campuses.
         /// </summary>
         public Guid? PersonCampusGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the church has a profile card template, so a card can keep room
+        /// for its output while Rock renders it. The template itself never reaches the browser.
+        /// </summary>
+        public bool IsProfileLavaConfigured { get; set; }
     }
 }

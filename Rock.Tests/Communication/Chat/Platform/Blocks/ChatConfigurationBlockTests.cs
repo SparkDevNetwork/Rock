@@ -70,6 +70,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             Assert.AreEqual( 13, bag.MinimumAge );
             Assert.AreEqual( stored.DirectMessageAccessDataViewGuid.ToString(), bag.DirectMessageAccessDataView.Value );
             Assert.AreEqual( 1, bag.ChatBadgeDataViews.Count );
+            Assert.AreEqual( "{{ Person.NickName }}", bag.ProfileCardLavaTemplate );
+            Assert.AreEqual( "RockEntity", bag.ProfileCardEnabledLavaCommands.Single().Value );
         }
 
         #endregion What the browser is sent
@@ -131,6 +133,39 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             Assert.AreEqual( 16, result.Configuration.MinimumAge );
             Assert.AreEqual( newDataView, result.Configuration.DirectMessageAccessDataViewGuid );
             Assert.AreEqual( 0, result.Configuration.ChatBadgeDataViewGuids.Count );
+        }
+
+        [TestMethod]
+        public void SaveConfiguration_CarriesTheProfileCardTemplateAndItsCommands()
+        {
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( Stored() );
+            bag.ProfileCardLavaTemplate = "{{ Person.Email }}";
+            bag.ProfileCardEnabledLavaCommands = new List<ListItemBag>
+            {
+                new ListItemBag { Value = "Sql" },
+                null,
+                new ListItemBag { Value = " " },
+                new ListItemBag { Value = "Sql" },
+                new ListItemBag { Value = "RockEntity" }
+            };
+
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+
+            Assert.AreEqual( "{{ Person.Email }}", result.Configuration.ProfileCardLavaTemplate );
+            CollectionAssert.AreEqual( new List<string> { "Sql", "RockEntity" }, result.Configuration.ProfileCardEnabledLavaCommands );
+        }
+
+        [TestMethod]
+        public void SaveConfiguration_WithABlankProfileCardTemplate_StoresNone()
+        {
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( Stored() );
+            bag.ProfileCardLavaTemplate = "   ";
+            bag.ProfileCardEnabledLavaCommands = null;
+
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+
+            Assert.IsNull( result.Configuration.ProfileCardLavaTemplate );
+            Assert.AreEqual( 0, result.Configuration.ProfileCardEnabledLavaCommands.Count );
         }
 
         [TestMethod]
@@ -247,6 +282,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
                 MinimumAge = 13,
                 DirectMessageAccessDataViewGuid = Guid.Parse( "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" ),
                 ChatBadgeDataViewGuids = new List<Guid> { Guid.Parse( "cccccccc-cccc-4ccc-8ccc-cccccccccccc" ) },
+                ProfileCardLavaTemplate = "{{ Person.NickName }}",
+                ProfileCardEnabledLavaCommands = new List<string> { "RockEntity" },
                 PrivateKey = PrivateKey,
                 TenantId = Guid.Parse( "11111111-1111-4111-8111-111111111111" ),
                 ProjectUrl = "https://example.supabase.co",

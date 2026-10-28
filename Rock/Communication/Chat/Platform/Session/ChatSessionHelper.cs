@@ -285,7 +285,8 @@ namespace Rock.Communication.Chat.Platform.Session
                 PersonPhotoUrl = person.PhotoId.HasValue ? person.PhotoUrl : null,
                 // Only an active campus, by the rule the campus list is built on, so the chat is
                 // never handed a campus it cannot name.
-                PersonCampusGuid = campus?.IsActive == true ? campus.Guid : ( Guid? ) null
+                PersonCampusGuid = campus?.IsActive == true ? campus.Guid : ( Guid? ) null,
+                IsProfileLavaConfigured = configuration.ProfileCardLavaTemplate.IsNotNullOrWhiteSpace()
             };
         }
 
