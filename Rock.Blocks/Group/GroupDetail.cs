@@ -1624,7 +1624,7 @@ namespace Rock.Blocks.Group
             }
 
             var saveReturnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( saveReturnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( saveReturnUrl ) )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( saveReturnUrl, RequestContext.RequestUri ) )
             {
                 return ActionContent( System.Net.HttpStatusCode.OK, saveReturnUrl );
             }
@@ -2541,36 +2541,6 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Validates that a candidate <c>returnUrl</c> is same-origin
-        /// before any redirect honors it. Relative paths are accepted;
-        /// absolute URLs are accepted only when their host matches the
-        /// current request host.
-        /// </summary>
-        private bool IsSafeReturnUrl( string url )
-        {
-            if ( url.IsNullOrWhiteSpace() )
-            {
-                return true;
-            }
-
-            if ( !Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out var parsedUri ) )
-            {
-                return false;
-            }
-
-            if ( !parsedUri.IsAbsoluteUri )
-            {
-                // Reject protocol-relative ("//attacker.example/...") URLs
-                // that some parsers treat as relative.
-                return !url.StartsWith( "//", StringComparison.Ordinal );
-            }
-
-            var requestHost = RequestContext?.RequestUri?.Host;
-            return requestHost.IsNotNullOrWhiteSpace()
-                && string.Equals( parsedUri.Host, requestHost, StringComparison.OrdinalIgnoreCase );
-        }
-
-        /// <summary>
         /// Computes the post-Delete / post-Archive redirect URL. Honors a
         /// same-origin <c>returnUrl</c> first; otherwise resolves
         /// <c>GroupListPage</c> with the parent group's IdKey and the
@@ -2579,7 +2549,7 @@ namespace Rock.Blocks.Group
         private string NavigateAfterDeleteOrArchive( int? parentGroupId )
         {
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( returnUrl ) )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }
@@ -2618,7 +2588,7 @@ namespace Rock.Blocks.Group
         private string GetAddModeCancelUrl()
         {
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( returnUrl ) )
+            if ( PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }
