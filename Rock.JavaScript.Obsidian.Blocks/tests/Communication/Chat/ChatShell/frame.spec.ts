@@ -818,6 +818,32 @@ describe("drafts", () => {
 
         expect(boxText(w, "frame-main")).toBe("before the reload");
     });
+
+    // Another tab's write to the same draft never replaces the text of the box being typed in.
+    test("are told the place whose box has focus, as it moves to the thread and away", async () => {
+        const w = await mountBlock(1200);
+        const focus = jest.spyOn(mockShell!.drafts as { focus: (place: string | null) => void }, "focus");
+        await openRow(w, team.channel_id);
+        const root = { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>;
+        timelineOf(team.channel_id).messages.push(storedMessage(40, root));
+        await settle();
+        const outside = document.createElement("button");
+        document.body.append(outside);
+
+        (w.get("[data-testid='frame-main'] [data-testid='composer-input']").element as HTMLElement).focus();
+        await settle();
+        expect(focus).toHaveBeenLastCalledWith(team.channel_id);
+
+        await openThread(w, 0);
+        (w.get("[data-testid='frame-panel'] [data-testid='composer-input']").element as HTMLElement).focus();
+        await settle();
+        expect(focus).toHaveBeenLastCalledWith(`${team.channel_id}/40`);
+
+        outside.focus();
+        await settle();
+        expect(focus).toHaveBeenLastCalledWith(null);
+        outside.remove();
+    });
 });
 
 describe("the switch to phone panes", () => {

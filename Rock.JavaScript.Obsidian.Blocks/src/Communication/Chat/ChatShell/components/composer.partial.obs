@@ -17,7 +17,7 @@
                 <IconButton icon="x" icon-size="sm" label="Cancel quote" @click="emit('cancelQuote')" />
             </div>
 
-            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit" @focusin="onBoxFocusIn">
+            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit" @focusin="onBoxFocusIn" @focusout="onBoxFocusOut">
                 <IconButton ref="emojiButton"
                             icon="smile"
                             label="Add emoji"
@@ -435,6 +435,8 @@
         (e: "mentionQuery", query: string | null): void;
         /** Focus came into the box from outside it, so the shell can ready what typing here needs. */
         (e: "focus"): void;
+        /** Focus left the box, so the shell knows its text is no longer being typed. */
+        (e: "blur"): void;
         /** A send over the room's limit was held back; the block says why, naming the limit. */
         (e: "overLimit", maxLength: number): void
     }>();
@@ -593,6 +595,13 @@
     function onBoxFocusIn(event: FocusEvent): void {
         if (!boxElement.value?.contains(event.relatedTarget as Node | null)) {
             emit("focus");
+        }
+    }
+
+    /** Focus left the box, not for another of its own parts. */
+    function onBoxFocusOut(event: FocusEvent): void {
+        if (!boxElement.value?.contains(event.relatedTarget as Node | null)) {
+            emit("blur");
         }
     }
 

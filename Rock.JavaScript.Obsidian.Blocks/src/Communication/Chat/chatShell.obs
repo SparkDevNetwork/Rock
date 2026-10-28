@@ -161,7 +161,8 @@
                               :mentionSource="mentionSourceFor(activeRow)"
                               :conversationKey="activeChannelId"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
-                              @focus="onComposerFocus(activeRow)"
+                              @focus="onComposerFocus(activeRow, 'conversation')"
+                              @blur="onComposerBlur"
                               @send="shell.send"
                               @update:text="onDraftText(conversationQuoteKey, $event)"
                               @mention="onDraftMention(conversationQuoteKey, $event)"
@@ -344,7 +345,8 @@
                                   :emojiSource="emojiSource"
                                   :mentionSource="mentionSourceFor(threadRow)"
                                   @mentionQuery="onMentionQuery(threadRow, $event)"
-                                  @composerFocus="onComposerFocus(threadRow)"
+                                  @composerFocus="onComposerFocus(threadRow, 'thread')"
+                                  @composerBlur="onComposerBlur"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
@@ -733,6 +735,7 @@
     const buildShell = createBrowserShellBuilder({
         linkedChannelId: config.channelGuid ?? null,
         areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
+        isSignInPersisted: config.isSignInPersisted ?? false,
         // one toast per code, the newest kept, so a second copy or delete restarts its toast
         notify: notice => {
             notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
@@ -935,6 +938,18 @@
     const conversationDraft = computed((): ComposerDraft | null => conversationQuoteKey.value ? shell.value.drafts.of(conversationQuoteKey.value) : null);
     const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
 
+    /** The box focus is in, if either. */
+    const focusedComposer = ref<"conversation" | "thread" | null>(null);
+
+    // The drafts are told the place being typed in, as the room or thread under a focused box
+    // changes too, so another tab's write never replaces the text the person is typing.
+    watch([focusedComposer, conversationQuoteKey, threadQuoteKey, shell], () => {
+        const place = focusedComposer.value === "conversation" ? conversationQuoteKey.value
+            : focusedComposer.value === "thread" ? threadQuoteKey.value
+                : null;
+        shell.value.drafts.focus(place ?? null);
+    });
+
     /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
     const publicRooms = computed((): Record<string, boolean> => {
         const isPublic: Record<string, boolean> = {};
@@ -1112,10 +1127,15 @@
      * A composer took focus: the @ picker's first people for its conversation are fetched now, so
      * the first @ there draws them at once. Focus, not opening, so a person who only reads asks nothing.
      */
-    function onComposerFocus(row: SidebarRow | null): void {
+    function onComposerFocus(row: SidebarRow | null, box: "conversation" | "thread"): void {
+        focusedComposer.value = box;
         if (row) {
             shell.value.mentions.warm(row);
         }
+    }
+
+    function onComposerBlur(): void {
+        focusedComposer.value = null;
     }
 
     /** A box's text changed: it is kept for the conversation or thread the box types into. */

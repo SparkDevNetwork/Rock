@@ -66,5 +66,12 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
         /// or a person carries from. A campus renamed shows at the next page load.
         /// </summary>
         public List<ChatCampusBag> Campuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the person's sign-in outlasts the browser
+        /// session. The chat's sign-in mark lasts no longer than the sign-in, so closing the
+        /// browser forgets the unsent drafts it keeps when the sign-in ends with it too.
+        /// </summary>
+        public bool IsSignInPersisted { get; set; }
     }
 }
