@@ -865,9 +865,21 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public List<PageCache> GetPageHierarchy()
         {
-            var pages = new List<PageCache> { this };
+            /*
+                10/28/2026 - MSE
 
-            ParentPage?.GetPageHierarchy().ForEach( p => pages.Add( p ) );
+                Existing page data can contain a repeated parent.
+
+                Reason: Build the hierarchy without recursing through the same page again.
+            */
+            var pages = new List<PageCache>();
+            var visitedPageIds = new HashSet<int>();
+            var page = this;
+            while ( page != null && visitedPageIds.Add( page.Id ) )
+            {
+                pages.Add( page );
+                page = page.ParentPage;
+            }
 
             return pages;
         }
@@ -1121,10 +1133,23 @@ namespace Rock.Web.Cache
             var pageHyperLinkFormat = "<a href='{0}'>{1}</a>";
             var result = new StringBuilder( string.Format( pageHyperLinkFormat, $"/page/{this.Id}", HttpUtility.HtmlEncode( this.InternalName ) ) );
 
+            /*
+                10/28/2026 - MSE
+
+                Existing page data can contain a repeated or missing parent.
+
+                Reason: Stop breadcrumb lookup when a parent repeats or no longer exists.
+            */
+            var visitedPageIds = new HashSet<int> { this.Id };
             var parentPageId = this.ParentPageId;
-            while ( parentPageId.HasValue )
+            while ( parentPageId.HasValue && visitedPageIds.Add( parentPageId.Value ) )
             {
                 var parentPage = Get( parentPageId.Value );
+                if ( parentPage == null )
+                {
+                    break;
+                }
+
                 result.Insert( 0, " / " );
                 result.Insert( 0, string.Format( pageHyperLinkFormat, $"/page/{parentPage.Id}", HttpUtility.HtmlEncode( parentPage.InternalName ) ) );
                 parentPageId = parentPage.ParentPageId;
@@ -1143,10 +1168,23 @@ namespace Rock.Web.Cache
             var pageHyperLinkFormat = "<a href='{0}'>{1}</a>";
             var result = new StringBuilder( string.Format( pageHyperLinkFormat, new PageReference( this.Id ).BuildUrl(), HttpUtility.HtmlEncode( this.InternalName ) ) );
 
+            /*
+                10/28/2026 - MSE
+
+                Existing page data can contain a repeated or missing parent.
+
+                Reason: Stop breadcrumb lookup when a parent repeats or no longer exists.
+            */
+            var visitedPageIds = new HashSet<int> { this.Id };
             var parentPageId = this.ParentPageId;
-            while ( parentPageId.HasValue )
+            while ( parentPageId.HasValue && visitedPageIds.Add( parentPageId.Value ) )
             {
                 var parentPage = Get( parentPageId.Value );
+                if ( parentPage == null )
+                {
+                    break;
+                }
+
                 result.Insert( 0, " / " );
                 result.Insert( 0, string.Format( pageHyperLinkFormat, new PageReference( parentPage.Id ).BuildUrl(), HttpUtility.HtmlEncode( parentPage.InternalName ) ) );
                 parentPageId = parentPage.ParentPageId;

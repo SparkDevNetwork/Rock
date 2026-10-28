@@ -914,6 +914,33 @@ namespace Rock.Blocks.Administration
                 }
             }
 
+            /*
+                10/28/2026 - MSE
+
+                The parent selection must not make the page its own ancestor.
+
+                Reason: Validate parent changes before saving the page hierarchy.
+            */
+            if ( entity.Id != 0 && parentPageId.HasValue && parentPageId != originalParentPageId )
+            {
+                var visitedPageIds = new HashSet<int>();
+                var parentPage = PageCache.Get( parentPageId.Value );
+                while ( parentPage != null && visitedPageIds.Add( parentPage.Id ) )
+                {
+                    if ( parentPage.Id == entity.Id )
+                    {
+                        return ActionBadRequest( new PagePropertiesValidationResponseBag
+                        {
+                            Title = "Invalid Parent Page",
+                            Message = "A page cannot be its own parent or be moved under one of its child pages.",
+                            CurrentTab = "Basic Settings"
+                        }.ToCamelCaseJson( true, false ) );
+                    }
+
+                    parentPage = parentPage.ParentPage;
+                }
+            }
+
             if ( parentPageId.HasValue && parentPageId != 0 && entity.Id == 0 )
             {
                 // newly added page, make sure the Order is correct
