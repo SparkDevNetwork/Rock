@@ -47,7 +47,7 @@
 //   shownMembers(state): RosterMember[]      what the panel lists for the query typed
 //   searchStatus(state): "searching" | "answered" | "failed" | null
 //   memberSearchPause: 250; the page and search sizes are the platform's limits
-import { createMembers, MemberRights, memberSearchPause, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
+import { createMembers, MemberRights, memberSearchPause, rightsReadAheadFor, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -725,6 +725,83 @@ describe("the reader's rights in the room", () => {
 
         expect(doorCalls).toHaveLength(1);
         expect(members.state.canManageMembers).toBe(true);
+    });
+
+    test("rights read ahead too long before the open are drawn and asked again", async () => {
+        jest.useFakeTimers();
+        try {
+            const again = deferred<Rights>();
+            const { members, doorCalls } = doorHarness({ calls: [page([tom])], rights: [{ canManageMembers: true, lastLeaderPersonAliasGuid: guid(1) }, again] });
+
+            members.readAhead(channel);
+            await settle();
+            jest.advanceTimersByTime(rightsReadAheadFor + 1);
+
+            const opened = members.open(channel);
+            expect(members.state.canManageMembers).toBe(true);
+            expect(doorCalls).toHaveLength(2);
+            again.resolve({ canManageMembers: true, lastLeaderPersonAliasGuid: guid(2) });
+            await opened;
+            await settle();
+
+            expect(members.state.lastLeaderPersonAliasGuid).toBe(guid(2));
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("reaching for the panel again once what was read ahead has aged reads again", async () => {
+        jest.useFakeTimers();
+        try {
+            const { members, doorCalls } = doorHarness({ calls: [page([tom])], rights: [{ canManageMembers: true }, { canManageMembers: false }] });
+
+            members.readAhead(channel);
+            await settle();
+            members.readAhead(channel);
+            expect(doorCalls).toHaveLength(1);
+
+            jest.advanceTimersByTime(rightsReadAheadFor + 1);
+            members.readAhead(channel);
+            expect(doorCalls).toHaveLength(2);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("an open's read answered after the panel moved to another room spares no later open", async () => {
+        const first = deferred<Rights>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([ben]), page([tom])], rights: [first, { canManageMembers: false }, { canManageMembers: false }] });
+
+        void members.open(channel);
+        await members.open(otherChannel);
+        first.resolve({ canManageMembers: true });
+        await settle();
+
+        await members.open(channel);
+        await settle();
+
+        expect(doorCalls.map(c => c.args[0])).toEqual([channel, otherChannel, channel]);
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
+    test("a read ahead an open joined while on its way spares no later open", async () => {
+        const held = deferred<Rights>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [held, { canManageMembers: false }] });
+
+        members.readAhead(channel);
+        const opened = members.open(channel);
+        held.resolve({ canManageMembers: true });
+        await opened;
+        await settle();
+        members.close();
+
+        await members.open(channel);
+        await settle();
+
+        expect(doorCalls).toHaveLength(2);
+        expect(members.state.canManageMembers).toBe(false);
     });
 
     test("a room changed elsewhere drops what is held for it, so its next open asks again", async () => {

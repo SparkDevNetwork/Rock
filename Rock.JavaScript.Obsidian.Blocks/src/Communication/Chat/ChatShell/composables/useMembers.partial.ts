@@ -40,6 +40,13 @@ import { PlatformLimits } from "./useSession.partial";
 /** The people search's pause after the last keystroke before it asks the platform. */
 export const memberSearchPause = 250;
 
+/**
+ * How long rights read ahead stand in for the open's own read, in milliseconds: long enough to
+ * cover reaching for the panel and pressing it, short enough that a last leader or a grant
+ * changed elsewhere is never drawn as settled from long before.
+ */
+export const rightsReadAheadFor = 5000;
+
 /** The room's two searches: the panel's filter, and the last leader's dialog's "Find a member". */
 type RoomSearchKey = "search" | "successor";
 
@@ -389,11 +396,13 @@ export function createMembers(dependencies: MembersDependencies): Members {
     let addGeneration = 0;
 
     // Rock's answer for each room asked this session, kept so a reopen draws its rights on the
-    // first frame, with whether an open has drawn it yet: an answer read ahead serves the open it
-    // was read for, and any later open reads again. The read on its way for each, which a second
-    // ask joins; and a count each change moves on, so an answer asked before it is not kept.
-    const heldRights = new Map<string, { rights: MemberRights, isFresh: boolean }>();
-    const rightsReads = new Map<string, Promise<void>>();
+    // first frame, with when it was asked and whether it was read ahead with no open drawing it
+    // yet: only such an answer, asked within rightsReadAheadFor, serves an open, which spends it,
+    // and every other open reads again. The read on its way for each, which a second ask joins,
+    // an open's join spending it; and a count each change moves on, so an answer asked before it
+    // is not kept.
+    const heldRights = new Map<string, { rights: MemberRights, askedAt: number, isAhead: boolean }>();
+    const rightsReads = new Map<string, { done: Promise<void>, isAhead: boolean }>();
     const rightsGenerations = new Map<string, number>();
 
     /** How many people a page holds, as the platform sets it; a shorter page is the last. */
@@ -489,19 +498,27 @@ export function createMembers(dependencies: MembersDependencies): Members {
         state.isReadingRights = false;
     }
 
-    /** Asks Rock whether the reader may change who is in a room, joining a read already on its way. */
-    function readRights(channelId: string): Promise<void> {
+    /**
+     * Asks Rock whether the reader may change who is in a room, joining a read already on its way.
+     * A read asked ahead of an open is kept for one open to come; any other ask, joining one or not,
+     * is drawn as it lands and serves nothing later.
+     */
+    function readRights(channelId: string, isAhead: boolean): Promise<void> {
         const door = dependencies.doors?.getRights;
         const inFlight = rightsReads.get(channelId);
         if (!door || isStopped) {
             return Promise.resolve();
         }
         if (inFlight) {
-            return inFlight;
+            inFlight.isAhead &&= isAhead;
+            return inFlight.done;
         }
 
         const generation = rightsGenerations.get(channelId) ?? 0;
-        const read = (async (): Promise<void> => {
+        // The answer is as old as its ask, so a slow door never makes it look newer than it is.
+        const askedAt = Date.now();
+        const read = { done: Promise.resolve(), isAhead };
+        read.done = (async (): Promise<void> => {
             let rights: MemberRights | null = null;
             try {
                 rights = await door(channelId);
@@ -516,12 +533,18 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
             rightsReads.delete(channelId);
             if (rights) {
-                heldRights.set(channelId, { rights, isFresh: state.channelId !== channelId });
+                heldRights.set(channelId, { rights, askedAt, isAhead: read.isAhead });
             }
             showRights(channelId);
         })();
         rightsReads.set(channelId, read);
-        return read;
+        return read.done;
+    }
+
+    /** Whether rights held for a room were read ahead for an open still to come, and recently enough to serve it. */
+    function isReadAheadFresh(channelId: string): boolean {
+        const held = heldRights.get(channelId);
+        return !!held && held.isAhead && Date.now() - held.askedAt < rightsReadAheadFor;
     }
 
     /** Forgets what is held or on its way for a room whose people or roles may have changed. */
@@ -536,7 +559,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
      * until the answers come, as after the panel's own add or remove.
      */
     function rereadOpen(channelId: string): Promise<unknown> {
-        return Promise.all([refreshRoster(channelId), readRights(channelId)]);
+        return Promise.all([refreshRoster(channelId), readRights(channelId, false)]);
     }
 
     /** The query typed for one of the room's searches. */
@@ -698,21 +721,22 @@ export function createMembers(dependencies: MembersDependencies): Members {
             }
 
             // Every open reads the roster afresh. The reader's rights are drawn at once when held
-            // and read again beside it unless read ahead for this open; with nothing held they are
-            // said to be on their way, and the panel holds only its foot for them.
+            // and read again beside it, joining a read on its way, unless read ahead for this open
+            // moments ago; with nothing held they are said to be on their way, and the panel holds
+            // only its foot for them.
             reset();
             state.channelId = channelId;
             const held = heldRights.get(channelId);
             if (held) {
                 showRights(channelId);
-                const isFresh = held.isFresh;
-                held.isFresh = false;
-                await Promise.all([loadFirstPage(), isFresh ? Promise.resolve() : readRights(channelId)]);
+                const isServed = isReadAheadFresh(channelId);
+                held.isAhead = false;
+                await Promise.all([loadFirstPage(), isServed ? Promise.resolve() : readRights(channelId, false)]);
                 return;
             }
 
             state.isReadingRights = !!dependencies.doors?.getRights;
-            await Promise.all([loadFirstPage(), readRights(channelId)]);
+            await Promise.all([loadFirstPage(), readRights(channelId, false)]);
         },
 
         loadMore: async (): Promise<void> => {
@@ -801,10 +825,11 @@ export function createMembers(dependencies: MembersDependencies): Members {
             }
         },
 
-        // Reached for again after an open drew what was held, the room is read again for the next.
+        // Reached for again, the room is read again for the next open unless it was asked moments ago.
         readAhead: (channelId): void => {
-            if (!isStopped && !heldRights.get(channelId)?.isFresh) {
-                void readRights(channelId);
+            const held = heldRights.get(channelId);
+            if (!isStopped && !(held && Date.now() - held.askedAt < rightsReadAheadFor)) {
+                void readRights(channelId, true);
             }
         },
 
