@@ -822,13 +822,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     const sender = createSender({
-        send: async (channelId, body, key, reply, quotedMessageId) => {
+        send: async (channelId, body, key, reply, quotedMessageId, files) => {
             const result = await call("chat_send_message", {
                 p_channel_id: channelId,
-                p_body: body,
+                // files with blank text go as no text, which the platform stores as none
+                p_body: body.trim() === "" ? null : body,
                 p_client_key: key ?? null,
                 ...(reply ? { p_parent_id: reply.parentId, p_shown_in_channel: reply.isShownInChannel } : {}),
-                ...(typeof quotedMessageId === "number" ? { p_quoted_message_id: quotedMessageId } : {})
+                ...(typeof quotedMessageId === "number" ? { p_quoted_message_id: quotedMessageId } : {}),
+                ...(files?.length ? { p_attachments: files.map(file => file.id) } : {})
             });
             if (!result.ok) {
                 return { ok: false, error: result.error };
@@ -840,9 +842,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 createdAt: sent.created_at ?? new Date().toISOString(),
                 notice: sent.notice ?? null,
                 pieces: sent.pieces ?? null,
-                blocks: sent.blocks ?? null
+                blocks: sent.blocks ?? null,
+                attachments: sent.attachments ?? null
             };
         },
+        reupload: (channelId, files) => attachments.reupload(channelId, files),
         timelines,
         onReplyConfirmed: (channelId, message) => threads.upsertReply(channelId, message),
         join: options.joinChannel,
@@ -1425,7 +1429,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 await directMessages.sendFirst(body);
             }
             else if (state.activeChannelId && isSendKeyed()) {
-                await sender.send(state.activeChannelId, body, undefined, undefined, takeQuote(quoteKey(state.activeChannelId)));
+                const place = quoteKey(state.activeChannelId);
+                await sender.send(state.activeChannelId, body, undefined, undefined, takeQuote(place), attachments.take(place) ?? undefined);
                 notePushSend();
             }
         },
@@ -1436,7 +1441,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const channelId = thread?.rootId === rootId ? thread.channelId : state.activeChannelId;
             if (channelId && isSendKeyed()) {
                 // the thread's own quote, never the conversation's, which waits for a send there
-                await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel }, takeQuote(quoteKey(channelId, rootId)));
+                const place = quoteKey(channelId, rootId);
+                await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel }, takeQuote(place), attachments.take(place) ?? undefined);
                 notePushSend();
             }
         },
