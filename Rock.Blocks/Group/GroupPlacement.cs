@@ -480,7 +480,7 @@ namespace Rock.Blocks.Group
         private string GetBackPageUrl()
         {
             var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            if ( returnUrl.IsNotNullOrWhiteSpace() && this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }
