@@ -93,7 +93,7 @@
                         <template v-if="lookOf(row) === 'community'">
                             <ChannelMark class="chat-cs-slot" :isPublic="row.is_public" :imageUrl="row.icon_url" iconSize="sm" />
                             <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
-                            <Icon v-if="isMuted(row)" name="bell-off" class="chat-row-mute" data-testid="row-muted-icon" />
+                            <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
                         </template>
 
                         <!-- A direct message: the face, the name and time over the preview and the end mark. -->
@@ -105,7 +105,7 @@
                             <span class="chat-row-main">
                                 <span class="chat-row-top">
                                     <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
-                                    <Icon v-if="isMuted(row)" name="bell-off" class="chat-row-mute" data-testid="row-muted-icon" />
+                                    <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
                                     <span class="chat-row-time" data-testid="row-time">{{ timeOf(row) }}</span>
                                 </span>
                                 <span class="chat-row-sub">
@@ -726,6 +726,7 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
+    import { notifyIconFor } from "../composables/usePrefs.partial";
     import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
     import { SidebarRow } from "../types.partial";
 
@@ -832,6 +833,9 @@
 
     /** The name line's width in each loading row, varied so the rows read as a list. */
     const skeletonWidths = [58, 44, 66, 50, 40, 62, 48];
+
+    /** A muted room's mark, the glyph Off is drawn with everywhere. */
+    const mutedIcon = notifyIconFor("silent");
 
     /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
     const flashIds = ref(new Set<string>());

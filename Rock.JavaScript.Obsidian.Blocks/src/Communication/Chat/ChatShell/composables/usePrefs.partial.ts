@@ -143,9 +143,21 @@ export type Prefs = {
 /** Each mode's name and the toast a change from the header's menu shows. */
 const notifyWords: Record<NotifyMode, { title: string, toast: string, icon: string }> = {
     all: { title: "All messages", toast: "You'll be notified about every message", icon: "bell" },
-    mentions: { title: "Mentions only", toast: "You'll be notified only when mentioned", icon: "at-bell" },
+    mentions: { title: "Mentions only", toast: "You'll be notified only when mentioned", icon: "bell-at" },
     silent: { title: "Off", toast: "Muted. A mention by name still reaches you.", icon: "bell-off" }
 };
+
+/**
+ * The glyph that draws a notify mode wherever the mode is shown: the header's bell, the details'
+ * choices, a sidebar row's mark and the toast a change shows.
+ *
+ * @param mode The notify mode.
+ *
+ * @returns The name of the chat icon.
+ */
+export function notifyIconFor(mode: NotifyMode): string {
+    return notifyWords[mode].icon;
+}
 
 /**
  * One notify mode as the header's menu draws it, by its title and description, and the details'
