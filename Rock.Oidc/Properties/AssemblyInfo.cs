@@ -29,3 +29,6 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("8ccb8e2a-073c-48cb-b31a-621ec5430a42")]
+
+// Register friendly logging category names.
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Oidc" )]
