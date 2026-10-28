@@ -7,6 +7,7 @@
          aria-multiline="true"
          :aria-label="placeholder || undefined"
          :aria-disabled="isDisabled || undefined"
+         :tabindex="isDisabled ? -1 : undefined"
          :data-placeholder="placeholder"
          spellcheck="true"
          data-testid="chip-editor"
@@ -114,6 +115,10 @@
             default: ""
         },
 
+        /**
+         * Whether the box takes no typing. It can still be focused, marked unavailable, so focus
+         * sent to it while it waits is not lost to the page.
+         */
         isDisabled: {
             type: Boolean,
             default: false

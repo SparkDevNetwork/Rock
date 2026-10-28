@@ -16,7 +16,7 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, isInConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -83,7 +83,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline." }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back." }
         ]);
         expect(timelines.state(channel).messages).toEqual([]);
     });
@@ -101,7 +101,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline." }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back." }
         ]);
         sender.discard("local-1");
         expect(sender.pending(channel)).toEqual([]);
@@ -114,7 +114,7 @@ describe("createSender", () => {
         ]);
         await sender.send(channel, "again");
 
-        expect(await sender.retry("local-1")).toBe(true);
+        expect(await sender.retryAll(["local-1"])).toBe(true);
 
         expect(sent).toEqual(["again", "again"]);
         expect(sender.pending(channel)).toEqual([]);
@@ -126,7 +126,7 @@ describe("createSender", () => {
         const { sender } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }, second]);
         await sender.send(channel, "again");
 
-        const retrying = sender.retry("local-1");
+        const retrying = sender.retryAll(["local-1"]);
 
         expect(sender.pending(channel)[0].status).toBe("sending");
         second.resolve({ ok: true, id: 43, createdAt: "2026-09-23T10:00:00Z" });
@@ -202,7 +202,7 @@ describe("a send the platform can recognise again", () => {
         });
 
         await sender.send(channel, "once");
-        await sender.retry("3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22");
+        await sender.retryAll(["3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22"]);
 
         expect(keys).toEqual(["3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22", "3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22"]);
     });
@@ -468,7 +468,7 @@ describe("a send refused for good", () => {
         expect(await sender.send(channel, "hello <@all>")).toBe(false);
 
         expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: code, refusal: error });
-        expect(await sender.retry("local-1")).toBe(false);
+        expect(await sender.retryAll(["local-1"])).toBe(false);
         expect(sent).toHaveLength(1);
         expect(sender.pending(channel)[0].status).toBe("failed");
 
@@ -494,7 +494,7 @@ describe("a send refused for good", () => {
         await sender.send(channel, "again");
 
         expect(sender.pending(channel)[0].refusal).toBeUndefined();
-        expect(await sender.retry("local-1")).toBe(true);
+        expect(await sender.retryAll(["local-1"])).toBe(true);
         expect(sent).toEqual(["again", "again"]);
     });
 
@@ -507,7 +507,7 @@ describe("a send refused for good", () => {
         expect(await sender.send(channel, "hi", { localId: "local-9", isLast: true })).toBe(false);
 
         expect(sender.pending(channel)[0].refusal).toBeUndefined();
-        expect(await sender.retry("local-9")).toBe(true);
+        expect(await sender.retryAll(["local-9"])).toBe(true);
     });
 
     test("a first message refused for good still ends", async () => {
@@ -693,7 +693,7 @@ describe("a reply in a thread", () => {
         ]);
         await sendReply(sender, "count me in", { parentId: 40, isShownInChannel: true });
 
-        expect(await sender.retry("5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d")).toBe(true);
+        expect(await sender.retryAll(["5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d"])).toBe(true);
 
         expect(sent).toEqual([
             { body: "count me in", key: "5b1e2c3d-4f50-4a6b-8c7d-9e0f1a2b3c4d", reply: { parentId: 40, isShownInChannel: true } },
@@ -814,7 +814,7 @@ describe("a quoted send", () => {
         ]);
         await sendQuoting(sender, "count me in", 40);
 
-        expect(await sender.retry("6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e")).toBe(true);
+        expect(await sender.retryAll(["6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e"])).toBe(true);
 
         expect(sent).toEqual([
             { body: "count me in", key: "6c2f3d4e-5a61-4b7c-9d8e-0f1a2b3c4d5e", quotedMessageId: 40 },
@@ -1002,7 +1002,7 @@ describe("a send settles on the first copy of its message", () => {
         const h = await harness([transport, second]);
         await h.sender.send(channel, "again");
 
-        const retrying = h.sender.retry("local-1");
+        const retrying = h.sender.retryAll(["local-1"]);
         h.timelines.applyEvent(channel, "message.created", live(49, "local-1"));
 
         expect(await retrying).toBe(true);
@@ -1134,8 +1134,8 @@ describe("a send settles on the first copy of its message", () => {
 // own sentence for any other failure that brought one, and nothing where nothing was said.
 describe("a failed send's reason", () => {
     test.each([
-        ["nothing reached", { code: "rpc.transport", severity: "failed" as const }, "You're offline."],
-        ["Rock's door unreached", { code: "door.unreachable", severity: "failed" as const }, "You're offline."],
+        ["nothing reached", { code: "rpc.transport", severity: "failed" as const }, "You're offline. Try again when you're back."],
+        ["Rock's door unreached", { code: "door.unreachable", severity: "failed" as const }, "You're offline. Try again when you're back."],
         ["the server's sentence", { code: "rpc.read_only", severity: "failed" as const, text: "Chat is read only for a few minutes." }, "Chat is read only for a few minutes."],
         ["a refusal for good", { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." }, "You can't mention everyone in this channel."],
         ["a session ended", { code: "auth.expired", severity: "session" as const }, "Your chat session has ended. Refresh the page to continue."]
@@ -1160,7 +1160,7 @@ describe("a failed send's reason", () => {
         const { sender } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }, answer]);
         await sender.send(channel, "hello");
 
-        void sender.retry("local-1");
+        void sender.retryAll(["local-1"]);
 
         expect(sender.pending(channel)[0]).toMatchObject({ status: "sending" });
         expect(sender.pending(channel)[0].reason).toBeUndefined();
@@ -1182,19 +1182,44 @@ describe("sendFailure", () => {
 
     test("one failed send that can be tried again, with its reason", () => {
         expect(sendFailure([row("a", { reason: "You're offline." }), row("b", { status: "sending", errorCode: null })]))
-            .toEqual({ count: 1, reason: "You're offline.", canRetry: true });
+            .toEqual({ count: 1, reason: "You're offline.", canRetry: true, localIds: ["a"] });
     });
 
     test("several, counted, with the newest one's reason", () => {
-        expect(sendFailure([row("a", { reason: "You're offline." }), row("b")])).toEqual({ count: 2, reason: null, canRetry: true });
+        expect(sendFailure([row("a", { reason: "You're offline." }), row("b")])).toEqual({ count: 2, reason: null, canRetry: true, localIds: ["a", "b"] });
     });
 
     test("one refused for good offers no Try again and says why", () => {
-        expect(sendFailure([row("a", { refusal, reason: refusal.text })])).toEqual({ count: 1, reason: refusal.text, canRetry: false });
+        expect(sendFailure([row("a", { refusal, reason: refusal.text })])).toEqual({ count: 1, reason: refusal.text, canRetry: false, localIds: ["a"] });
     });
 
     test("any one that can pass keeps Try again beside one refused for good", () => {
-        expect(sendFailure([row("a"), row("b", { refusal, reason: refusal.text })])).toEqual({ count: 2, reason: refusal.text, canRetry: true });
+        expect(sendFailure([row("a"), row("b", { refusal, reason: refusal.text })])).toEqual({ count: 2, reason: refusal.text, canRetry: true, localIds: ["a", "b"] });
+    });
+
+    // A refusal can only be deleted, so the person must read why; a newer failure that can pass
+    // keeps its own reason on its marker.
+    test("a refusal's sentence over a newer failure's, said or not", () => {
+        expect(sendFailure([row("a", { refusal, reason: refusal.text }), row("b")])?.reason).toBe(refusal.text);
+        expect(sendFailure([row("a", { refusal, reason: refusal.text }), row("b", { reason: "You're offline." })])?.reason).toBe(refusal.text);
+    });
+});
+
+// One failure has one strip: the conversation's speaks for what it draws, except a reply whose
+// thread is open in the drawer, whose own strip speaks for it.
+describe("isOwnedByConversation", () => {
+    const base: PendingMessage = { localId: "a", channelId: channel, body: "a", status: "failed", errorCode: null };
+
+    test("a message, and a reply also sent there while its thread is not open", () => {
+        expect(isOwnedByConversation(base, null)).toBe(true);
+        expect(isOwnedByConversation(base, 4)).toBe(true);
+        expect(isOwnedByConversation({ ...base, parentId: 4, isShownInChannel: true }, null)).toBe(true);
+        expect(isOwnedByConversation({ ...base, parentId: 4, isShownInChannel: true }, 7)).toBe(true);
+    });
+
+    test("not a reply also sent there while its thread is open, nor one shown only in its thread", () => {
+        expect(isOwnedByConversation({ ...base, parentId: 4, isShownInChannel: true }, 4)).toBe(false);
+        expect(isOwnedByConversation({ ...base, parentId: 4, isShownInChannel: false }, null)).toBe(false);
     });
 });
 
@@ -1206,5 +1231,97 @@ describe("isInConversation", () => {
         expect(isInConversation(base)).toBe(true);
         expect(isInConversation({ ...base, parentId: 4, isShownInChannel: true })).toBe(true);
         expect(isInConversation({ ...base, parentId: 4, isShownInChannel: false })).toBe(false);
+    });
+});
+
+// Try again on a strip sends its failed messages one at a time, oldest first, each only once the
+// one before it is posted, so they land in the order they were written whatever order the
+// answers would come back in.
+describe("retryAll", () => {
+    const offline = { ok: false as const, error: { code: "rpc.transport", severity: "failed" as const } };
+
+    async function threeFailed(retries: Array<SendResult | Deferred<SendResult>>): Promise<Awaited<ReturnType<typeof setup>>> {
+        const h = await setup([offline, offline, offline, ...retries]);
+        await h.sender.send(channel, "one");
+        await h.sender.send(channel, "two");
+        await h.sender.send(channel, "three");
+        return h;
+    }
+
+    const turn = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 0));
+
+    test("sends each after the one before is answered, oldest first, whatever order it is asked in", async () => {
+        const answers = [deferred<SendResult>(), deferred<SendResult>(), deferred<SendResult>()];
+        const { sender, timelines, sent } = await threeFailed(answers);
+
+        const retrying = sender.retryAll(["local-3", "local-1", "local-2"]);
+        await turn();
+
+        // all three show as sending at once, and only the oldest is out
+        expect(sender.pending(channel).map(r => r.status)).toEqual(["sending", "sending", "sending"]);
+        expect(sent.slice(3)).toEqual(["one"]);
+
+        // the newest answers first, as a busy server might give them, can reorder nothing
+        answers[2].resolve({ ok: true, id: 53, createdAt: "2026-10-27T10:00:02Z" });
+        answers[1].resolve({ ok: true, id: 52, createdAt: "2026-10-27T10:00:01Z" });
+        await turn();
+        expect(sent.slice(3)).toEqual(["one"]);
+        answers[0].resolve({ ok: true, id: 51, createdAt: "2026-10-27T10:00:00Z" });
+
+        expect(await retrying).toBe(true);
+        expect(sent.slice(3)).toEqual(["one", "two", "three"]);
+        expect(timelines.state(channel).messages.map(m => m.body)).toEqual(["one", "two", "three"]);
+        expect(sender.pending(channel)).toEqual([]);
+    });
+
+    test("stops at a failure: the ones after it are not sent and stay failed as they were", async () => {
+        const { sender, sent } = await threeFailed([{ ok: true, id: 51, createdAt: "2026-10-27T10:00:00Z" }, offline]);
+
+        expect(await sender.retryAll(["local-1", "local-2", "local-3"])).toBe(false);
+
+        expect(sent.slice(3)).toEqual(["one", "two"]);
+        expect(sender.pending(channel).map(r => [r.body, r.status, r.reason])).toEqual([
+            ["two", "failed", "You're offline. Try again when you're back."],
+            ["three", "failed", "You're offline. Try again when you're back."]
+        ]);
+    });
+
+    test("leaves out a message refused for good and one not failed, and sends nothing when none can go", async () => {
+        const refusal = { code: "authz.not_member", severity: "permission" as const, text: "You're not in this channel." };
+        const { sender, sent } = await setup([{ ok: false, error: refusal }]);
+        await sender.send(channel, "refused");
+
+        expect(await sender.retryAll(["local-1", "local-9"])).toBe(false);
+        expect(sent).toEqual(["refused"]);
+    });
+
+    test("a message whose copy lands while it waits its turn is not sent again", async () => {
+        const first = deferred<SendResult>();
+        const { sender, sent } = await threeFailed([first, { ok: true, id: 53, createdAt: "2026-10-27T10:00:02Z" }]);
+
+        const retrying = sender.retryAll(["local-1", "local-2", "local-3"]);
+        // the second's first try was stored after all; its copy arrives while the first is out
+        sender.landed({ id: 52, client_key: "local-2" });
+        first.resolve({ ok: true, id: 51, createdAt: "2026-10-27T10:00:00Z" });
+
+        expect(await retrying).toBe(true);
+        expect(sent.slice(3)).toEqual(["one", "three"]);
+    });
+});
+
+// A failure is news once, when its try ends: the strip that holds that message then says it, and
+// none says it again as the person moves between places.
+describe("lastFailure", () => {
+    test("names the message whose try failed last, counted so the same one failing again is news again", async () => {
+        const offline = { ok: false as const, error: { code: "rpc.transport", severity: "failed" as const } };
+        const { sender } = await setup([offline, offline, offline]);
+
+        expect(sender.lastFailure()).toBeNull();
+        await sender.send(channel, "one");
+        expect(sender.lastFailure()).toEqual({ localId: "local-1", count: 1 });
+        await sender.send(channel, "two");
+        expect(sender.lastFailure()).toEqual({ localId: "local-2", count: 2 });
+        await sender.retryAll(["local-1"]);
+        expect(sender.lastFailure()).toEqual({ localId: "local-1", count: 3 });
     });
 });

@@ -33,7 +33,7 @@ import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { messageForError } from "../errors.partial";
+import { isUnreached, messageForError, offlineSentence } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 import { ChatSettings, readOnlySentence } from "./useSession.partial";
 
@@ -87,9 +87,6 @@ export function isFinalRefusal(error: ChatError, isFirstMessage: boolean): boole
     return finalRefusalCodes.has(error.code);
 }
 
-/** The failures that mean nothing could be reached: the platform, or Rock's door before it. */
-const unreachedCodes = new Set(["rpc.transport", "door.unreachable"]);
-
 /**
  * Why a try failed, in words the person can read, or null where nothing was said. A refusal for
  * good always has its sentence; a failure to reach anything is the person being offline; any other
@@ -105,8 +102,8 @@ function failureReason(error: ChatError, isFinal: boolean): string | null {
         return messageForError(error);
     }
 
-    if (unreachedCodes.has(error.code)) {
-        return "You're offline.";
+    if (isUnreached(error)) {
+        return offlineSentence;
     }
 
     return error.text || error.severity === "session" ? messageForError(error) : null;
@@ -117,11 +114,24 @@ export type SendFailure = {
     /** How many sends failed there. */
     count: number;
 
-    /** The newest failure's reason, or null where it said nothing. */
+    /**
+     * Why, or null where nothing was said: the newest refusal's sentence, since a message refused
+     * for good can only be deleted and the person must read why, else the newest failure's. Each
+     * message's own reason is also on its Not sent marker.
+     */
     reason: string | null;
 
     /** Whether any of them can be tried again; one refused for good offers only Delete. */
     canRetry: boolean;
+
+    /** The failed sends' keys, oldest first, so the strip can tell a failure it holds as it happens. */
+    localIds: string[];
+};
+
+/** The latest send to fail: its key, and how many failures the sender has had, so each is news once. */
+export type SendFailureNews = {
+    localId: string;
+    count: number;
 };
 
 /**
@@ -160,10 +170,14 @@ export function sendFailure(rows: PendingMessage[]): SendFailure | null {
         return null;
     }
 
+    const refused = failed.filter(row => row.refusal);
+    const telling = refused.length > 0 ? refused : failed;
+
     return {
         count: failed.length,
-        reason: failed[failed.length - 1].reason ?? null,
-        canRetry: retryableSends(rows).length > 0
+        reason: telling[telling.length - 1].reason ?? null,
+        canRetry: retryableSends(rows).length > 0,
+        localIds: failed.map(row => row.localId)
     };
 }
 
@@ -177,6 +191,20 @@ export function sendFailure(rows: PendingMessage[]): SendFailure | null {
  */
 export function isInConversation(row: PendingMessage): boolean {
     return typeof row.parentId !== "number" || row.isShownInChannel === true;
+}
+
+/**
+ * Whether the conversation's strip speaks for a send: each one the conversation draws, except a
+ * reply whose thread is open in the drawer, which speaks for it there. One failure has one strip,
+ * so it is said once and its Delete is in one place.
+ *
+ * @param row The send.
+ * @param openThreadRootId The root of the thread open in the drawer, or null while none is.
+ *
+ * @returns True when the conversation's strip holds it.
+ */
+export function isOwnedByConversation(row: PendingMessage, openThreadRootId: number | null): boolean {
+    return isInConversation(row) && (openThreadRootId === null || row.parentId !== openThreadRootId);
 }
 
 /** What the platform's send answers. */
@@ -332,8 +360,17 @@ export type Sender = {
      */
     send: (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number) => Promise<boolean>;
 
-    /** Sends a failed row's text again. */
-    retry: (localId: string) => Promise<boolean>;
+    /**
+     * Sends failed rows again, one at a time and oldest first, each once the one before it is
+     * posted, so they land in the order they were written. Every one shows as sending at once; a
+     * failure stops there, and the rows after it stay failed as they were, since sending them
+     * would land them ahead of it. A row refused for good, or not failed, is left out. Resolves
+     * true when every one went, false when one failed or none could go.
+     */
+    retryAll: (localIds: string[]) => Promise<boolean>;
+
+    /** The latest send to fail, or null before any has. */
+    lastFailure: () => SendFailureNews | null;
 
     /** Drops a failed row. */
     discard: (localId: string) => void;
@@ -362,6 +399,7 @@ export type Sender = {
 export function createSender(dependencies: SenderDependencies): Sender {
     const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
     const sentKeys = new Set<string>();
+    const failures = reactive<{ last: SendFailureNews | null }>({ last: null });
 
     // The id each key's message landed under. A key in here is posted, whatever an answer still
     // on its way says: the answer may have been lost, or refused a replay of a different text.
@@ -472,6 +510,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
             row.status = "failed";
             row.errorCode = result.error.code;
+            failures.last = { localId: row.localId, count: (failures.last?.count ?? 0) + 1 };
             const isFinal = isFinalRefusal(result.error, row.isFirstMessage === true);
             if (isFinal) {
                 row.refusal = result.error;
@@ -582,16 +621,34 @@ export function createSender(dependencies: SenderDependencies): Sender {
             return deliver(rows[rows.length - 1], attempt?.isLast);
         },
 
-        retry: async (localId: string): Promise<boolean> => {
-            const row = rows.find(r => r.localId === sendKey(localId));
-
-            // a row refused for good offers no retry, and one asked for anyway sends nothing
-            if (!row || row.status !== "failed" || row.refusal) {
+        retryAll: async (localIds: string[]): Promise<boolean> => {
+            // read in the rows' own order, which is the order they were written
+            const keys = new Set(localIds.map(sendKey));
+            const queue = rows.filter(r => keys.has(r.localId) && r.status === "failed" && !r.refusal);
+            if (queue.length === 0) {
                 return false;
             }
 
-            return deliver(row);
+            // Each waiting row keeps its last reason until its own try clears it.
+            queue.forEach(row => row.status = "sending");
+            for (let index = 0; index < queue.length; index++) {
+                const row = queue[index];
+
+                // a copy of its first try landed while it waited, so it is posted already
+                if (!rows.includes(row)) {
+                    continue;
+                }
+
+                if (!await deliver(row)) {
+                    queue.slice(index + 1).filter(r => rows.includes(r)).forEach(r => r.status = "failed");
+                    return false;
+                }
+            }
+
+            return true;
         },
+
+        lastFailure: (): SendFailureNews | null => failures.last,
 
         discard: (localId: string): void => {
             const index = rows.findIndex(r => r.localId === sendKey(localId) && r.status === "failed");

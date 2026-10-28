@@ -153,7 +153,9 @@
                       :isQuoteOwn="isQuoteOwn"
                       :emojiSource="emojiSource"
                       :mentionSource="mentionSource"
+                      :conversationKey="root ? `thread:${root.id}` : null"
                       :sendFailure="replyFailure"
+                      :lastFailure="lastFailure"
                       @send="onSend"
                       @retryFailed="onRetryFailed"
                       @discardFailed="onDiscardFailed"
@@ -318,7 +320,7 @@
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { failedSends, retryableSends, sendFailure, SendFailure, useSentHold } from "../composables/useSend.partial";
+    import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
@@ -349,6 +351,12 @@
         pending: {
             type: Array as PropType<PendingMessage[]>,
             default: () => []
+        },
+
+        /** The latest send to fail, which the reply composer's strip says aloud when it is one of this thread's. */
+        lastFailure: {
+            type: Object as PropType<SendFailureNews | null>,
+            default: null
         },
 
         isFollowing: {
@@ -551,7 +559,8 @@
         (e: "send", body: string, isShownInChannel: boolean): void,
         (e: "seen", messageId: number): void,
         (e: "loadOlder"): void,
-        (e: "retry", localId: string): void,
+        /** Try again on the strip: the replies to send again, oldest first, which go one at a time in that order. */
+        (e: "retry", localIds: string[]): void,
         (e: "discard", localId: string): void,
         (e: "cancelQuote"): void,
         /** The reply composer's text changed. */
@@ -716,9 +725,9 @@
         followElement.value?.focus();
     }
 
-    /** Try again on the strip: each of the thread's failed replies that can go, for the owner to resend. */
+    /** Try again on the strip: the thread's failed replies that can go, for the owner to resend in turn. */
     function onRetryFailed(): void {
-        retryableSends(pendingReplies.value).forEach(row => emit("retry", row.localId));
+        emit("retry", retryableSends(pendingReplies.value).map(row => row.localId));
     }
 
     /** Delete on the strip: every failed reply of the thread. */

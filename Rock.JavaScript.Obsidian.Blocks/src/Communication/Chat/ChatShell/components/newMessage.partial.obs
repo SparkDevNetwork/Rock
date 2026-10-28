@@ -141,6 +141,7 @@
                           :emojiSource="emojiSource"
                           conversationKey="new-message"
                           :sendFailure="pendingPhase === 'failed' ? draftFailure : null"
+                          :lastFailure="draftNews"
                           @retryFailed="emit('retry')"
                           @discardFailed="emit('discard')"
                           @vue:mounted="onComposerMounted"
@@ -563,7 +564,7 @@
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
-    import { SendFailure } from "../composables/useSend.partial";
+    import { SendFailure, SendFailureNews } from "../composables/useSend.partial";
     import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -736,8 +737,14 @@
         trying: "Sending…"
     };
 
+    /** The first message's one key to its strip, which has no row of the sender's. */
+    const draftKey = "first-message";
+
     /** The first message failed with nothing more said: one message, which can be tried again. */
-    const draftFailure: SendFailure = { count: 1, reason: null, canRetry: true };
+    const draftFailure: SendFailure = { count: 1, reason: null, canRetry: true, localIds: [draftKey] };
+
+    /** How many times the first message has failed, so each failure is said as it happens. */
+    const failedCount = ref(0);
 
     /** Counts the text typed, so an answer for text the person has since changed is dropped. */
     let searchCount = 0;
@@ -747,6 +754,9 @@
     // #region Computed Values
 
     const isLocked = computed((): boolean => props.draft?.status === "starting");
+
+    /** The first message's latest failure, the news its strip says aloud. */
+    const draftNews = computed((): SendFailureNews | null => failedCount.value > 0 ? { localId: draftKey, count: failedCount.value } : null);
 
     const isFound = computed((): boolean => props.lookup.status === "found");
 
@@ -978,7 +988,10 @@
             return;
         }
 
-        if (phase !== "failed") {
+        if (phase === "failed") {
+            failedCount.value++;
+        }
+        else {
             announce(phaseWords[phase]);
         }
     });

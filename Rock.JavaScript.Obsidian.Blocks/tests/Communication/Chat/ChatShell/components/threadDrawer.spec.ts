@@ -29,7 +29,8 @@
 //          mentionSource: MentionPickerSource | null (the reply composer's @ picker; null offers none)
 //          draft: ComposerDraft (the reply its owner keeps for the thread)
 //   emits: close, back, follow(isFollowing: boolean), send(body: string, isShownInChannel: boolean),
-//          seen(messageId: number), loadOlder, retry(localId: string), discard(localId: string),
+//          seen(messageId: number), loadOlder, retry(localIds: string[]) (oldest first, sent in turn),
+//          discard(localId: string),
 //          mentionQuery(query: string | null) (the reply composer's @ query, for the search),
 //          composerFocus (focus came into the reply composer),
 //          draftText(text: string), draftMention(piece) (the reply composer's changes, for its owner)
@@ -52,6 +53,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
+import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -486,6 +488,14 @@ describe("the reply composer", () => {
     });
 });
 
+// The reply composer types into the thread, not the conversation, so what it keeps for one place
+// (the names its chips draw, what it last said aloud) is the thread's.
+test("the reply composer is keyed by its thread", () => {
+    const w = draw();
+
+    expect(w.findComponent(Composer).props("conversationKey")).toBe("thread:40");
+});
+
 describe("the reply composer's @ picker", () => {
     test("opens on @ from the drawer's mention source, tells the drawer's owner the query, and takes Enter for the chip", async () => {
         const mentionSource = { canMention: true, people: [{ person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor" }], isAllOffered: false };
@@ -852,14 +862,22 @@ describe("the person's failed replies", () => {
         expect(w.get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
     });
 
-    test("Try again resends each that can go, oldest first, and Delete drops each", async () => {
+    test("Try again asks for each that can go, oldest first, in one go so they are sent in turn, and Delete drops each", async () => {
         const w = draw({ pending: [failed("a"), failed("refused", { refusal, reason: refusal.text }), failed("b")] });
 
         await w.get("[data-testid='composer-failed-retry']").trigger("click");
-        expect(w.emitted("retry")).toEqual([["a"], ["b"]]);
+        expect(w.emitted("retry")).toEqual([[["a", "b"]]]);
 
         await w.get("[data-testid='composer-failed-discard']").trigger("click");
         expect(w.emitted("discard")).toEqual([["a"], ["refused"], ["b"]]);
+    });
+
+    test("say a reply's failure as it happens, from the sender's news", async () => {
+        const w = draw({ pending: [failed("a")] });
+
+        await w.setProps({ lastFailure: { localId: "a", count: 1 } });
+
+        expect(w.get("[data-testid='composer-failed-announcement']").text()).toBe("Your message wasn't sent. You're offline.");
     });
 
     test("draw no strip while every reply is on its way", () => {
