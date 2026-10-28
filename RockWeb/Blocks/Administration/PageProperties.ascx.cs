@@ -965,6 +965,24 @@ namespace RockWeb.Blocks.Administration
 
                 hfPageId.Value = page.IdKey;
             }
+            else
+            {
+                /*
+                    10/28/2026 - MSE
+
+                    Model validation errors must be visible when a page cannot be saved.
+
+                    Reason: Show rejected parent changes in the existing validation summary.
+                */
+                var cvPageModel = new CustomValidator
+                {
+                    IsValid = false,
+                    Display = ValidatorDisplay.None,
+                    ValidationGroup = valSummaryTop.ValidationGroup,
+                    ErrorMessage = page.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "<br />" )
+                };
+                Page.Validators.Add( cvPageModel );
+            }
         }
 
         /// <summary>
