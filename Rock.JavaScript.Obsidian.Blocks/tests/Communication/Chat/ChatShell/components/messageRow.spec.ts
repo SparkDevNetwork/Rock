@@ -856,8 +856,30 @@ describe("a failed send's row", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal, reason: refusal.text }), isOwn: true, isChannel, position: "single" });
 
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
-        expect(wrapper.text()).not.toContain(refusal.text);
+        // the strip shows the sentence; the row keeps it only for a screen reader and a hover
+        const shown = wrapper.element.cloneNode(true) as HTMLElement;
+        shown.querySelectorAll(".chat-sr-only").forEach(hidden => hidden.remove());
+        expect(shown.textContent).not.toContain(refusal.text);
         expect(wrapper.findAll("button").filter(button => /Try again|Delete/.test(button.text()))).toHaveLength(0);
+    });
+
+    // The strip says one reason for all of a place's failed sends, so each message keeps its own
+    // where a screen reader reads the marker and a pointer rests on it: no reason is shown nowhere.
+    test.each([["a direct message", false], ["a channel", true]] as const)("a failed send's own reason rides its Not sent marker in %s", (_kind, isChannel) => {
+        const reason = "You're offline. Try again when you're back.";
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport", reason }), isOwn: true, isChannel, position: "single" });
+        const marker = wrapper.get("[data-testid='message-state']").element.parentElement as HTMLElement;
+
+        expect(marker.getAttribute("title")).toBe(reason);
+        expect(marker.querySelector(".chat-sr-only")?.textContent).toBe(`. ${reason}`);
+    });
+
+    test("a failed send that said nothing has no reason on its marker", () => {
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.unknown" }), isOwn: true, position: "single" });
+        const marker = wrapper.get("[data-testid='message-state']").element.parentElement as HTMLElement;
+
+        expect(marker.hasAttribute("title")).toBe(false);
+        expect(marker.querySelector(".chat-sr-only")).toBeNull();
     });
 
     test("its look has no tint, edge, ring or links of its own", () => {
