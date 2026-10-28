@@ -521,7 +521,6 @@ button.chat-header-id:hover .chat-header-chev {
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { notifyIconFor, notifyOptionsFor } from "../composables/usePrefs.partial";
     import { ChannelFacts, ChatError, ChatPerson } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -574,12 +573,6 @@ button.chat-header-id:hover .chat-header-chev {
         facts: {
             type: Object as PropType<ChannelFacts | null>,
             default: null
-        },
-
-        /** The church's campuses, which name a person's campus. */
-        campuses: {
-            type: Array as PropType<ChatCampusBag[]>,
-            default: () => []
         },
 
         /** What the room is, or null to draw no mark beside the title. */
@@ -731,9 +724,9 @@ button.chat-header-id:hover .chat-header-chev {
     // #region Computed Values
 
     /**
-     * The line under the title, from the room's facts once read: a channel's description, the
-     * other person's campus when they show their details, or a group's head count, a named
-     * group's included. Until then, whatever the shell worked out.
+     * The line under the title, from the room's facts once read: a channel's description, or a
+     * group's head count, a named group's included; none for a conversation of two, whose facts
+     * carry no campus, which only a person's card names. Until then, whatever the shell worked out.
      */
     const shownSubtitle = computed((): string | null => {
         const facts = props.facts;
@@ -745,10 +738,8 @@ button.chat-header-id:hover .chat-header-chev {
             case "channel":
                 return facts.description?.trim() || null;
 
-            case "person": {
-                const campusId = facts.people[0]?.details?.campus_id?.toLowerCase();
-                return campusId ? props.campuses.find(campus => campus.guid.toLowerCase() === campusId)?.name ?? null : null;
-            }
+            case "person":
+                return null;
 
             case "group":
                 // the listed count leaves out anyone not shown, so a group can be down to one

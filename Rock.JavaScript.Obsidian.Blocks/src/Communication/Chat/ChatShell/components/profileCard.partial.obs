@@ -15,15 +15,70 @@
                 Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
                 a card drawn inside it; left in place where there is no root, as when a part is drawn alone.
             -->
-            <div class="chat-pc-band" aria-hidden="true"></div>
-            <div class="chat-pc-body">
-                <span class="chat-pc-av"><Avatar :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" /></span>
-                <div class="chat-pc-name">
-                    <b data-testid="profile-name">{{ fullName }}</b>
-                    <span v-if="person.is_leader" class="chat-pill" data-testid="profile-leader">Leader</span>
-                    <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">This is you</span>
+            <div class="chat-pc-id" data-testid="profile-identity">
+                <Avatar :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" />
+                <div class="chat-pc-who">
+                    <div class="chat-pc-name">
+                        <b data-testid="profile-name">{{ fullName }}</b>
+                        <span v-if="person.is_leader" class="chat-pill" data-testid="profile-leader">Leader</span>
+                        <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">You</span>
+                    </div>
+                    <div v-if="campusName" class="chat-pc-line" data-testid="profile-campus"><Icon name="pin" size="xs" />{{ campusName }}</div>
                 </div>
-                <div v-if="campusName" class="chat-pc-line" data-testid="profile-campus"><Icon name="pin" size="xs" />{{ campusName }}</div>
+            </div>
+
+            <!-- The person's own card is the way to their settings, the switch for these details first. -->
+            <div v-if="person.is_self" class="chat-pc-acts" data-testid="profile-actions">
+                <div class="chat-pc-set">
+                    <SettingSwitch name="profile_details"
+                                   icon="id-card"
+                                   :title="meTitles.profile_details"
+                                   :description="ownDetailsLine"
+                                   :isOn="showsOwnDetails"
+                                   :note="ownDetailsNote"
+                                   @toggle="emit('toggleDetails', $event)" />
+                </div>
+                <button type="button"
+                        class="chat-pc-btn is-line"
+                        data-testid="profile-settings"
+                        @click="emit('settings')"><Icon name="settings" size="xs" />Chat settings</button>
+            </div>
+            <div v-else class="chat-pc-acts" data-testid="profile-actions">
+                <button v-if="person.can_message"
+                        type="button"
+                        class="chat-pc-btn"
+                        data-testid="profile-message"
+                        @click="emit('message', person)"><Icon name="message" size="xs" />Message</button>
+                <div v-else class="chat-pc-muted" data-testid="profile-cannot-message">
+                    <Icon name="mail" size="xs" />
+                    <span><b>Direct messages aren't available with {{ person.nick_name }}.</b> You can still mention them in a channel you share.</span>
+                </div>
+            </div>
+
+            <!--
+                Below the action, so Rock answering late only lengthens the card's foot. Rock's rows are
+                reserved at their own heights while it answers, and its answer fades in over them.
+            -->
+            <div v-if="isDetailsShown"
+                 class="chat-pc-details"
+                 :aria-busy="isRockLoading ? 'true' : undefined"
+                 data-testid="profile-details">
+                <div v-if="isRockLoading" class="chat-pc-contact" aria-hidden="true">
+                    <div v-for="width in contactSkeletonWidths" :key="width" class="chat-pc-skr" data-testid="profile-contact-skeleton">
+                        <i class="chat-skeleton chat-pc-sk-ic"></i><i class="chat-skeleton chat-pc-sk-bar" :style="{ width }"></i>
+                    </div>
+                </div>
+                <div v-else-if="rockDetails && (rockDetails.email || rockDetails.mobilePhone)" class="chat-pc-contact" data-testid="profile-contact">
+                    <a v-if="rockDetails.email"
+                       :href="mailtoOf(rockDetails.email)"
+                       :class="{ 'is-arriving': wasRockLoading }"
+                       data-testid="profile-email"><Icon name="mail" size="sm" /><span>{{ rockDetails.email }}</span></a>
+                    <a v-if="rockDetails.mobilePhone && rockDetails.mobilePhoneUri"
+                       :href="rockDetails.mobilePhoneUri"
+                       :class="{ 'is-arriving': wasRockLoading }"
+                       data-testid="profile-phone"><Icon name="phone" size="sm" /><span>{{ rockDetails.mobilePhone }}</span></a>
+                </div>
+
                 <ul v-if="shownBadges.length > 0" class="chat-pc-badges" aria-label="Badges" data-testid="profile-badges">
                     <li v-for="badge in shownBadges"
                         :key="badge.key"
@@ -31,36 +86,32 @@
                         :style="badge.colors"
                         data-testid="profile-badge"><i v-if="badge.iconCss" :class="badge.iconCss" aria-hidden="true"></i>{{ badge.name }}</li>
                 </ul>
-                <p v-if="note" class="chat-pc-note" data-testid="profile-note"><Icon v-if="!person.is_self" name="eye-off" size="xs" />{{ note }}</p>
-                <!-- The person's own card is the way to their settings. -->
-                <div v-if="person.is_self" class="chat-pc-acts">
-                    <button type="button"
-                            class="chat-pc-btn is-line"
-                            data-testid="profile-settings"
-                            @click="emit('settings')"><Icon name="settings" size="xs" />Chat settings</button>
+
+                <div v-if="isRockLoading && isLavaConfigured" class="chat-pc-skl" aria-hidden="true" data-testid="profile-lava-skeleton">
+                    <i class="chat-skeleton is-head"></i><i class="chat-skeleton is-long"></i><i class="chat-skeleton is-short"></i>
                 </div>
-                <div v-else class="chat-pc-acts">
-                    <button v-if="person.can_message"
-                            type="button"
-                            class="chat-pc-btn"
-                            data-testid="profile-message"
-                            @click="emit('message', person)"><Icon name="message" size="xs" />Message</button>
-                    <div v-else class="chat-pc-muted" data-testid="profile-cannot-message">
-                        <Icon name="mail" size="xs" />
-                        <span><b>Direct messages aren't available with {{ person.nick_name }}.</b> You can still mention them in a channel you share.</span>
-                    </div>
-                </div>
+                <!-- Rock's own output, already cut to an allowlist of tags and addresses on the server. -->
+                <div v-else-if="rockDetails?.lavaHtml"
+                     class="chat-pc-lava"
+                     :class="{ 'is-arriving': wasRockLoading }"
+                     role="region"
+                     tabindex="0"
+                     :aria-label="`More about ${person.nick_name}`"
+                     data-testid="profile-lava"
+                     v-html="rockDetails.lavaHtml"></div>
             </div>
+            <p v-else-if="!person.is_self" class="chat-pc-note" data-testid="profile-note"><Icon name="eye-off" size="xs" />{{ person.nick_name }} keeps profile details private.</p>
         </div>
     </Teleport>
 </template>
 
 <style scoped>
-/* Fixed, so the chat's clipped frame cannot cut a card near its edge; no padding, the band runs to the edge. */
+/* Fixed, so the chat's clipped frame cannot cut a card near its edge. */
 .chat-pc {
     z-index: 1050;
     width: 300px;
     max-width: calc(100vw - 16px);
+    padding: 16px 16px 14px;
     overflow: hidden;
     color: var(--chat-text);
     background: var(--chat-raised);
@@ -76,26 +127,16 @@
     animation: chat-pc-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 
-/* The band's gradient is in the sheet, beside the avatar's, since both are drawn from the person's hue. */
-.chat-pc-band {
-    height: 68px;
+/* The face beside the name and campus, the first thing read. */
+.chat-pc-id {
+    display: flex;
+    gap: 12px;
+    align-items: center;
 }
 
-.chat-pc-body {
-    position: relative;
-    padding: 0 18px 16px;
-}
-
-/*
-    Overlaps the band by 30px, ringed in the card's own fill so the band never touches the face.
-    Set at the top of its line, so the line is the face's own height and no text's baseline moves it.
-*/
-.chat-pc-av {
-    display: inline-block;
-    margin-top: -30px;
-    vertical-align: top;
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px var(--chat-raised);
+.chat-pc-who {
+    flex: 1;
+    min-width: 0;
 }
 
 .chat-pc-name {
@@ -103,11 +144,12 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 8px;
-    margin-top: 8px;
 }
 
 .chat-pc-name b {
-    font-size: 18px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 17px;
     font-weight: 700;
     line-height: 1.25;
     letter-spacing: -.01em;
@@ -138,15 +180,149 @@
     color: var(--chat-icon);
 }
 
-/* The person's badges under a rule, each a pill in its badge's colors or the plain pill where it has none. */
+/* The details under a rule: Rock's contact rows, the badges, the church's template. */
+.chat-pc-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    margin-top: 14px;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-pc-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* A row's own height is the skeleton's, so Rock's answer lands without moving anything below it. */
+.chat-pc-contact a {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 8px;
+    margin: 0 -8px;
+    font-size: 13px;
+    color: var(--chat-text);
+    text-decoration: none;
+    border-radius: var(--chat-r-sm);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pc-contact a:hover {
+    background: var(--chat-hover);
+}
+
+.chat-pc-contact a :deep(.chat-ic) {
+    flex: none;
+    color: var(--chat-icon);
+}
+
+.chat-pc-contact a span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-pc-skr {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    height: 28px;
+}
+
+.chat-pc-sk-ic {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border-radius: var(--chat-r-xs);
+}
+
+.chat-pc-sk-bar {
+    height: 10px;
+}
+
+.chat-pc-skl {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.chat-pc-skl i {
+    height: 10px;
+}
+
+.chat-pc-skl .is-head {
+    width: 30%;
+    height: 8px;
+}
+
+.chat-pc-skl .is-long {
+    width: 88%;
+}
+
+.chat-pc-skl .is-short {
+    width: 72%;
+}
+
+/*
+    The church's template: its own words in the card's type, capped in height and scrolling inside
+    past that. Contained, so nothing it draws can reach outside the card, however it is classed.
+*/
+.chat-pc-lava {
+    max-height: 160px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--chat-text-2);
+    contain: layout paint;
+}
+
+.chat-pc-lava :deep(:is(p, ul, ol, h1, h2, h3, h4, h5, h6)) {
+    margin: 0 0 4px;
+}
+
+.chat-pc-lava :deep(:is(ul, ol)) {
+    padding-left: 18px;
+}
+
+.chat-pc-lava :deep(:is(h1, h2, h3, h4, h5, h6)) {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--chat-text);
+}
+
+.chat-pc-lava :deep(:is(b, strong)) {
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-pc-lava :deep(a) {
+    color: var(--chat-brand-ink);
+}
+
+.chat-pc-lava :deep(img) {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Rock's answer landing on rows the card already reserved. */
+.is-arriving {
+    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* The person's badges, each a pill in its badge's colors or the plain pill where it has none. */
 .chat-pc-badges {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 12px 0 0;
-    margin: 12px 0 0;
+    padding: 0;
+    margin: 0;
     list-style: none;
-    border-top: 1px solid var(--chat-line);
 }
 
 .chat-pc-badges li {
@@ -196,7 +372,15 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 12px;
+}
+
+/* The person's own switch for these details, boxed as a setting. */
+.chat-pc-set {
+    overflow: hidden;
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-md);
 }
 
 .chat-pc-btn {
@@ -278,13 +462,17 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { avatarHue, tokenDuration } from "../ui/brand.partial";
+    import SettingSwitch, { SwitchNote } from "../ui/settingSwitch.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
+    import { meTitles } from "../composables/usePrefs.partial";
+    import { ProfileRockState } from "../composables/useRooms.partial";
     import { ChatBadge, PersonProfile } from "../types.partial";
 
     const props = defineProps({
@@ -310,6 +498,30 @@
         anchor: {
             type: Object as PropType<HTMLElement | null>,
             default: null
+        },
+
+        /** Rock's half of the card, its contact details and the church's template, as Rock answered. */
+        rock: {
+            type: Object as PropType<ProfileRockState>,
+            default: (): ProfileRockState => ({ kind: "failed" })
+        },
+
+        /** Whether the church has a profile card template, so its lines are reserved while Rock answers. */
+        isLavaConfigured: {
+            type: Boolean,
+            default: false
+        },
+
+        /** On the person's own card, whether they show their details now, as their switch last chose. */
+        showsOwnDetails: {
+            type: Boolean,
+            default: false
+        },
+
+        /** On the person's own card, why their switch's last save failed, with Try again. */
+        ownDetailsNote: {
+            type: Object as PropType<SwitchNote | null>,
+            default: null
         }
     });
 
@@ -318,12 +530,23 @@
         (e: "message", person: PersonProfile): void;
         /** The person's own card's Chat settings. */
         (e: "settings"): void;
+        /** The person's own switch for their details, and the value it asks for. */
+        (e: "toggleDetails", value: boolean): void;
     }>();
 
     // #region Values
 
     const cardElement = ref<HTMLElement>();
     const isClosing = ref(false);
+
+    /** The two contact rows' bars, reserved while Rock answers, each a different length as text would be. */
+    const contactSkeletonWidths = ["62%", "40%"];
+
+    /**
+     * Whether this card has shown Rock's rows reserved, so its answer fades in over them; a card
+     * drawn with the answer already here draws it plainly, once.
+     */
+    const wasRockLoading = ref(props.rock.kind === "loading");
 
     /** The chat's root, which the card is drawn in; null where the card is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(overlayHostOf(props.anchor));
@@ -387,11 +610,25 @@
 
     const fullName = computed((): string => [props.person.nick_name, props.person.last_name].filter(part => !!part).join(" "));
 
-    /** The campus by its name, only when the person shows details and the church still lists it. */
+    /** The campus by its name, whatever the person's setting, while the church still lists it. */
     const campusName = computed((): string => {
-        const id = props.person.details?.campus_id?.toLowerCase();
+        const id = props.person.campus_id?.toLowerCase();
         return id ? props.campuses.find(campus => campus.guid?.toLowerCase() === id)?.name ?? "" : "";
     });
+
+    /**
+     * Whether the details block shows: on the person's own card as their switch stands, so it
+     * follows the switch at once; on anyone else's as the platform answered.
+     */
+    const isDetailsShown = computed((): boolean => props.person.is_self ? props.showsOwnDetails : props.person.details !== null);
+
+    const isRockLoading = computed((): boolean => props.rock.kind === "loading");
+
+    /** What Rock answered for a person it shows, or null where it has nothing to show. */
+    const rockDetails = computed((): ChatProfileDetailsBag | null => props.rock.kind === "answered" && props.rock.details.isShown ? props.rock.details : null);
+
+    /** The line under the person's own switch: what others see either way. */
+    const ownDetailsLine = computed((): string => props.showsOwnDetails ? "Others see what's below" : "Name, photo and campus only");
 
     /**
      * The person's badges in the church's order, only when they show their details; a key the
@@ -415,17 +652,8 @@
             });
     });
 
-    /** What the person's own card tells them others see, or that someone else keeps details private. */
-    const note = computed((): string => {
-        if (props.person.is_self) {
-            return props.person.details ? "Others see your campus and badges." : "Your campus and badges are hidden. Others see only your name and photo.";
-        }
-
-        return props.person.details ? "" : `${props.person.nick_name} keeps profile details private.`;
-    });
-
     /**
-     * The placement, the person's hue for the band, and the pop grown toward what opened it. Beside
+     * The placement, and the pop grown toward what opened it. Beside
      * the panel the opener is to the side, so the card grows from its edge at the opener's middle
      * and does not rise; above or below it, it comes in from just toward the opener.
      */
@@ -436,7 +664,6 @@
 
         return {
             ...(props.anchor ? floatingStyles.value : {}),
-            "--chat-av-hue": String(avatarHue(fullName.value)),
             "--chat-pop-toward": side ? "0" : placement.value.startsWith("top") ? "1" : "-1",
             transformOrigin: side ? `100% ${originY}px` : placement.value.startsWith("top") ? "0 100%" : "0 0"
         };
@@ -495,6 +722,11 @@
 
     // #region Functions
 
+    /** A mail link for an address, every part but the @ escaped so nothing in it adds to the link. */
+    function mailtoOf(email: string): string {
+        return `mailto:${encodeURIComponent(email).replace(/%40/g, "@")}`;
+    }
+
     /**
      * Plays the way out, then asks to be removed, since a removed element cannot animate; where
      * nothing animates the word goes at once, and a hidden tab that holds the animation still lets
@@ -527,6 +759,16 @@
     }
 
     // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.rock.kind, kind => {
+        if (kind === "loading") {
+            wasRockLoading.value = true;
+        }
+    });
+
+    // #endregion Watchers
 
     // #region Lifecycle Hooks
 

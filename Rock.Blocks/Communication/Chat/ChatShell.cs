@@ -266,6 +266,23 @@ namespace Rock.Blocks.Communication.Chat
         }
 
         /// <summary>
+        /// Reads what Rock adds to a person's profile card as it opens: their email, mobile phone
+        /// and the church's template, when they show their public profile details.
+        /// </summary>
+        /// <param name="personAliasGuid">The person on the card, by any of their aliases.</param>
+        /// <returns>The details, or an empty answer where chat would not show them.</returns>
+        [BlockAction]
+        public BlockActionResult GetProfileDetails( Guid personAliasGuid )
+        {
+            var person = GetChatPerson();
+
+            // The template sees the page's own merge fields for the person looking.
+            var mergeFields = person != null ? RequestContext.GetCommonMergeFields( person ) : null;
+
+            return ActionOk( ChatDoorHelper.GetProfileDetails( person, personAliasGuid, ChatPlatformConfigurationService.Read(), mergeFields, RockContext ) );
+        }
+
+        /// <summary>
         /// Renames a group conversation the person is in, or gives it back its members' names
         /// when the name is blank.
         /// </summary>

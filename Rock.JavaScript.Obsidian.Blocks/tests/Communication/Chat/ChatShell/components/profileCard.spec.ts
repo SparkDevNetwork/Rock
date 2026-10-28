@@ -15,17 +15,20 @@
 // </copyright>
 //
 // The profile card, mounted: the person a name, a face or a chip names, as chat_get_person answers
-// them. Their name, the Leader pill in the room it was opened from, "This is you" on the person's
-// own card, the campus by its name from the init box only when they show their details, and a note
-// when they do not. Message for someone the person may message, a quiet box for someone they may
-// not. The card is a dialog named for the person, takes focus as it opens, and Escape gives focus
-// back to what opened it. The person's badges, in the church's order with its colors, under a rule
-// when they show their details. The person's own card offers Chat settings.
+// them. Their face, name, the Leader pill in the room it was opened from or "You" on the person's
+// own card, and their campus by its name from the init box, whatever their setting. Message for
+// someone the person may message, a quiet box for someone they may not. Below the action, only when
+// they show their public profile details, a block under a rule: Rock's contact rows, the badges
+// chat holds, and the church's template, with Rock's rows reserved while Rock answers; a note when
+// someone keeps them private. The person's own card has the switch for them and Chat settings.
+// The card is a dialog named for the person, takes focus as it opens, and Escape gives focus back
+// to what opened it.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ProfileCard from "../../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import { ChatBadge, PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ProfileRockState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 
 // #region Fixtures
 
@@ -39,12 +42,21 @@ function profile(overrides: Partial<PersonProfile> = {}): PersonProfile {
         nick_name: "Anna",
         last_name: "Reyes",
         avatar_url: null,
+        campus_id: downtown.guid,
         is_self: false,
         is_leader: false,
-        details: { campus_id: downtown.guid, badge_keys: ["member", "baptized"] },
+        details: { badge_keys: ["member", "baptized"] },
         can_message: true,
         dm_channel_id: null,
         ...overrides
+    };
+}
+
+/** Rock's answer for Anna, who shows her details. */
+function answered(extra: Record<string, unknown> = {}): ProfileRockState {
+    return {
+        kind: "answered",
+        details: { isShown: true, email: "anna.reyes@gmail.com", mobilePhone: "(602) 555-0142", mobilePhoneUri: "tel:+16025550142", lavaHtml: null, ...extra }
     };
 }
 
@@ -227,60 +239,222 @@ describe("the name line", () => {
         expect(w.find("[data-testid='profile-you']").exists()).toBe(false);
     });
 
-    test("says This is you on the person's own card", () => {
+    test("says You on the person's own card", () => {
         const w = mountCard(profile({ is_self: true }));
 
-        expect(w.get("[data-testid='profile-you']").text()).toBe("This is you");
+        expect(w.get("[data-testid='profile-you']").text()).toBe("You");
     });
 });
 
 describe("the campus line", () => {
-    test("names the campus from the init box's campuses when the person shows their details", () => {
-        const w = mountCard();
+    test("names the campus from the init box's campuses, whatever the person's setting", () => {
+        const shown = mountCard();
+        expect(shown.get("[data-testid='profile-campus']").text()).toBe("Downtown Campus");
+        shown.unmount();
 
-        expect(w.get("[data-testid='profile-campus']").text()).toBe("Downtown Campus");
+        const kept = mountCard(profile({ details: null }));
+        expect(kept.get("[data-testid='profile-campus']").text()).toBe("Downtown Campus");
     });
 
     test("matches the campus in any letter case", () => {
-        const w = mountCard(profile({ details: { campus_id: downtown.guid.toUpperCase(), badge_keys: [] } }));
+        const w = mountCard(profile({ campus_id: downtown.guid.toUpperCase() }));
 
         expect(w.get("[data-testid='profile-campus']").text()).toBe("Downtown Campus");
     });
 
-    test("is left out for a person who keeps their details private, or has no campus, or one the church no longer lists", () => {
-        const hidden = mountCard(profile({ details: null }));
-        expect(hidden.find("[data-testid='profile-campus']").exists()).toBe(false);
-        hidden.unmount();
-
-        const none = mountCard(profile({ details: { campus_id: null, badge_keys: [] } }));
+    test("is left out for a person with no campus, or one the church no longer lists", () => {
+        const none = mountCard(profile({ campus_id: null }));
         expect(none.find("[data-testid='profile-campus']").exists()).toBe(false);
         none.unmount();
 
-        const gone = mountCard(profile({ details: { campus_id: "d0000009-0000-4000-8000-000000000000", badge_keys: [] } }));
+        const gone = mountCard(profile({ campus_id: "d0000009-0000-4000-8000-000000000000" }));
         expect(gone.find("[data-testid='profile-campus']").exists()).toBe(false);
     });
 });
 
-describe("the notes", () => {
-    test("say a person who keeps their details private does, by their first name", () => {
-        const w = mountCard(profile({ details: null }));
+describe("the look", () => {
+    test("has no band: the face sits in a row with the name and campus", () => {
+        const w = mountCard();
 
-        expect(w.get("[data-testid='profile-note']").text()).toBe("Anna keeps profile details private.");
+        expect(w.find(".chat-pc-band").exists()).toBe(false);
+        expect(card(w).style.getPropertyValue("--chat-av-hue")).toBe("");
+        const identity = w.get("[data-testid='profile-identity']");
+        expect(identity.find("[data-testid='profile-name']").exists()).toBe(true);
+        expect(identity.find("[data-testid='profile-campus']").exists()).toBe(true);
     });
 
-    test("are left out for someone else who shows their details", () => {
-        const w = mountCard();
+    test("puts the details after the action, so Rock's answer only lengthens the card's foot", () => {
+        const w = mountCard(profile(), { rock: answered() });
+
+        const actions = w.get("[data-testid='profile-actions']").element;
+        const details = w.get("[data-testid='profile-details']").element;
+        expect(actions.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+});
+
+describe("the private note", () => {
+    test("says a person who keeps their details private does, by their first name, with no details block", () => {
+        const w = mountCard(profile({ details: null }), { rock: { kind: "answered", details: { isShown: false } } });
+
+        expect(w.get("[data-testid='profile-note']").text()).toBe("Anna keeps profile details private.");
+        expect(w.find("[data-testid='profile-details']").exists()).toBe(false);
+    });
+
+    test("is left out for someone who shows their details", () => {
+        const w = mountCard(profile(), { rock: answered() });
 
         expect(w.find("[data-testid='profile-note']").exists()).toBe(false);
     });
 
-    test("tell the person what others see of them on their own card", () => {
-        const shown = mountCard(profile({ is_self: true }));
-        expect(shown.get("[data-testid='profile-note']").text()).toBe("Others see your campus and badges.");
-        shown.unmount();
+    test("is left out of the person's own card, whose switch says it instead", () => {
+        const w = mountCard(profile({ is_self: true, details: null }), { showsOwnDetails: false });
 
-        const hidden = mountCard(profile({ is_self: true, details: null }));
-        expect(hidden.get("[data-testid='profile-note']").text()).toBe("Your campus and badges are hidden. Others see only your name and photo.");
+        expect(w.find("[data-testid='profile-note']").exists()).toBe(false);
+    });
+});
+
+// Rock's half: the contact rows and the church's template, read as the card opens.
+describe("Rock's details", () => {
+    test("draw the email as a mail link and the mobile phone as a call link", () => {
+        const w = mountCard(profile(), { rock: answered() });
+
+        const email = w.get("[data-testid='profile-email']");
+        expect(email.element.tagName).toBe("A");
+        expect(email.attributes("href")).toBe("mailto:anna.reyes@gmail.com");
+        expect(email.text()).toBe("anna.reyes@gmail.com");
+
+        const phone = w.get("[data-testid='profile-phone']");
+        expect(phone.attributes("href")).toBe("tel:+16025550142");
+        expect(phone.text()).toBe("(602) 555-0142");
+    });
+
+    test("leave out a row Rock has nothing for, and the whole contact list when it has neither", () => {
+        const noPhone = mountCard(profile(), { rock: answered({ mobilePhone: null, mobilePhoneUri: null }) });
+        expect(noPhone.find("[data-testid='profile-phone']").exists()).toBe(false);
+        expect(noPhone.find("[data-testid='profile-email']").exists()).toBe(true);
+        noPhone.unmount();
+
+        const neither = mountCard(profile(), { rock: answered({ email: null, mobilePhone: null, mobilePhoneUri: null }) });
+        expect(neither.find("[data-testid='profile-contact']").exists()).toBe(false);
+    });
+
+    test("an email address is never made into a link Rock did not give", () => {
+        const w = mountCard(profile(), { rock: answered({ email: "a@b.org?bcc=x@y.org" }) });
+
+        expect(w.get("[data-testid='profile-email']").attributes("href")).toBe("mailto:a@b.org%3Fbcc%3Dx@y.org");
+    });
+
+    test("are reserved while Rock answers: two contact rows, and the template's lines only when the church has one", () => {
+        const plain = mountCard(profile(), { rock: { kind: "loading" } });
+        expect(plain.get("[data-testid='profile-details']").attributes("aria-busy")).toBe("true");
+        expect(plain.findAll("[data-testid='profile-contact-skeleton']")).toHaveLength(2);
+        expect(plain.find("[data-testid='profile-lava-skeleton']").exists()).toBe(false);
+        plain.unmount();
+
+        const templated = mountCard(profile(), { rock: { kind: "loading" }, isLavaConfigured: true });
+        expect(templated.find("[data-testid='profile-lava-skeleton']").exists()).toBe(true);
+    });
+
+    test("reserve nothing for someone keeping details private", () => {
+        const w = mountCard(profile({ details: null }), { rock: { kind: "loading" }, isLavaConfigured: true });
+
+        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-lava-skeleton']").exists()).toBe(false);
+    });
+
+    test("Rock answering before the card is drawn draws it once, whole, with nothing reserved", () => {
+        const w = mountCard(profile(), { rock: answered({ lavaHtml: "<p>Serving in Kids</p>" }), isLavaConfigured: true });
+
+        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-lava-skeleton']").exists()).toBe(false);
+        expect(w.find(".is-arriving").exists()).toBe(false);
+        expect(w.get("[data-testid='profile-details']").attributes("aria-busy")).toBeUndefined();
+    });
+
+    test("Rock answering after the card is drawn fills the reserved rows in place", async () => {
+        const w = mountCard(profile(), { rock: { kind: "loading" }, isLavaConfigured: true });
+
+        await w.setProps({ rock: answered({ lavaHtml: "<p>Serving in Kids</p>" }) });
+
+        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
+        expect(w.get("[data-testid='profile-email']").classes()).toContain("is-arriving");
+        expect(w.get("[data-testid='profile-lava']").classes()).toContain("is-arriving");
+    });
+
+    test("Rock failing collapses its rows and keeps the badges chat holds", () => {
+        const badges = [{ badge_key: "member", name: "Member", icon_css: null, bg_color: null, fg_color: null, sort_order: 1 }];
+        const w = mountCard(profile(), { rock: { kind: "failed" }, isLavaConfigured: true, badges });
+
+        expect(w.find("[data-testid='profile-contact']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-contact-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-lava']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='profile-badge']").map(b => b.text())).toEqual(["Member"]);
+    });
+
+    test("Rock saying the person is not shown, while chat still says they are, collapses its rows", () => {
+        const badges = [{ badge_key: "member", name: "Member", icon_css: null, bg_color: null, fg_color: null, sort_order: 1 }];
+        const w = mountCard(profile(), { rock: { kind: "answered", details: { isShown: false } }, badges });
+
+        expect(w.find("[data-testid='profile-contact']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='profile-badge']")).toHaveLength(1);
+    });
+});
+
+describe("the church's template", () => {
+    test("is drawn from Rock's safe output in a box capped in height that scrolls and can be reached by keyboard", () => {
+        const w = mountCard(profile(), { rock: answered({ lavaHtml: "<div class=\"lh\">Serving in</div><ul><li><b>Kids</b></li></ul>" }) });
+
+        const lava = w.get("[data-testid='profile-lava']");
+        expect(lava.find("ul li b").text()).toBe("Kids");
+        expect(lava.attributes("tabindex")).toBe("0");
+        expect(lava.attributes("aria-label")).toBe("More about Anna");
+        expect(lava.attributes("role")).toBe("region");
+    });
+
+    test("is left out when Rock rendered nothing", () => {
+        const w = mountCard(profile(), { rock: answered({ lavaHtml: null }), isLavaConfigured: true });
+
+        expect(w.find("[data-testid='profile-lava']").exists()).toBe(false);
+    });
+});
+
+describe("the person's own switch", () => {
+    test("is on their own card, by its name, saying what others see either way", () => {
+        const on = mountCard(profile({ is_self: true, can_message: false }), { showsOwnDetails: true, rock: answered() });
+        const onRow = on.get("[data-testid='switch-profile_details']");
+        expect(onRow.text()).toContain("Show public profile details");
+        expect(onRow.text()).toContain("Others see what's below");
+        expect(onRow.get("[role='switch']").attributes("aria-checked")).toBe("true");
+        expect(on.find("[data-testid='profile-details']").exists()).toBe(true);
+        on.unmount();
+
+        const off = mountCard(profile({ is_self: true, can_message: false, details: null }), { showsOwnDetails: false });
+        const offRow = off.get("[data-testid='switch-profile_details']");
+        expect(offRow.text()).toContain("Name, photo and campus only");
+        expect(offRow.get("[role='switch']").attributes("aria-checked")).toBe("false");
+        expect(off.find("[data-testid='profile-details']").exists()).toBe(false);
+    });
+
+    test("asks for the change, and the details follow the person's own setting at once", async () => {
+        const w = mountCard(profile({ is_self: true, can_message: false, details: null }), { showsOwnDetails: false });
+
+        await w.get("[data-testid='switch-profile_details'] [role='switch']").trigger("click");
+        expect(w.emitted("toggleDetails")).toEqual([[true]]);
+
+        await w.setProps({ showsOwnDetails: true, rock: { kind: "loading" } });
+        expect(w.findAll("[data-testid='profile-contact-skeleton']")).toHaveLength(2);
+    });
+
+    test("shows a failed save's sentence under it", () => {
+        const w = mountCard(profile({ is_self: true, can_message: false }), { showsOwnDetails: true, ownDetailsNote: { kind: "error", text: "Couldn't save. Try again in a moment.", retry: () => undefined } });
+
+        expect(w.get("[data-testid='switch-profile_details']").text()).toContain("Couldn't save. Try again in a moment.");
+    });
+
+    test("is not on anyone else's card", () => {
+        const w = mountCard();
+
+        expect(w.find("[data-testid='switch-profile_details']").exists()).toBe(false);
     });
 });
 
@@ -331,7 +505,7 @@ describe("badges", () => {
     }
 
     test("lists the person's badges under a rule in the church's order", () => {
-        const w = mountCard(profile({ details: { campus_id: downtown.guid, badge_keys: ["member", "serving", "baptized"] } }), { badges: [member, baptized, serving] });
+        const w = mountCard(profile({ details: { badge_keys: ["member", "serving", "baptized"] } }), { badges: [member, baptized, serving] });
 
         const list = w.get("[data-testid='profile-badges']");
         expect(list.element.tagName).toBe("UL");
@@ -340,10 +514,10 @@ describe("badges", () => {
     });
 
     test("drops a key the church's list does not know, and draws no list when none is left", async () => {
-        const w = mountCard(profile({ details: { campus_id: null, badge_keys: ["retired", "member"] } }), { badges: [member] });
+        const w = mountCard(profile({ details: { badge_keys: ["retired", "member"] } }), { badges: [member] });
         expect(pillNames(w)).toEqual(["Member"]);
 
-        await w.setProps({ person: profile({ details: { campus_id: null, badge_keys: ["retired"] } }) });
+        await w.setProps({ person: profile({ details: { badge_keys: ["retired"] } }) });
         expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
     });
 
@@ -354,7 +528,7 @@ describe("badges", () => {
     });
 
     test("tints each pill by its badge's colors, and leaves a badge with none plain", () => {
-        const w = mountCard(profile({ details: { campus_id: null, badge_keys: ["member", "serving"] } }), { badges: [member, serving] });
+        const w = mountCard(profile({ details: { badge_keys: ["member", "serving"] } }), { badges: [member, serving] });
 
         const [tinted, plain] = w.findAll("[data-testid='profile-badge']").map(pill => pill.element as HTMLElement);
         expect(tinted.style.getPropertyValue("--chat-badge-bg")).toBe("#fdf1d8");
@@ -366,7 +540,7 @@ describe("badges", () => {
     });
 
     test("draws the badge's own icon class, and no icon where it has none", () => {
-        const w = mountCard(profile({ details: { campus_id: null, badge_keys: ["member", "serving"] } }), { badges: [member, { ...serving, icon_css: "  " }] });
+        const w = mountCard(profile({ details: { badge_keys: ["member", "serving"] } }), { badges: [member, { ...serving, icon_css: "  " }] });
 
         const [withIcon, without] = w.findAll("[data-testid='profile-badge']");
         const icon = withIcon.get("i");
@@ -376,7 +550,7 @@ describe("badges", () => {
     });
 
     test("never draws a badge for leading the room", () => {
-        const w = mountCard(profile({ is_leader: true, details: { campus_id: null, badge_keys: [] } }), { badges: [member] });
+        const w = mountCard(profile({ is_leader: true, details: { badge_keys: [] } }), { badges: [member] });
 
         expect(w.find("[data-testid='profile-badges']").exists()).toBe(false);
         expect(w.get("[data-testid='profile-leader']").text()).toBe("Leader");

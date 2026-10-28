@@ -24,7 +24,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The church's chat settings as the configuration screen sees them. */
 export type ChatConfigurationBag = {
-    /** Gets or sets whether profile details are visible by default. */
+    /**
+     * Gets or sets whether public profile details, email, mobile phone, badges and the
+     * profile card template, are visible by default.
+     */
     areChatProfilesVisible: boolean;
 
     /** Gets or sets whether anyone may start a direct message by default. */
@@ -38,6 +41,15 @@ export type ChatConfigurationBag = {
 
     /** Gets or sets the Data Views whose members carry a badge. */
     chatBadgeDataViews?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets the Lava drawn on a person's profile card when they show their public
+     * profile details, or blank for none.
+     */
+    profileCardLavaTemplate?: string | null;
+
+    /** Gets or sets the Lava commands the profile card template may run. */
+    profileCardEnabledLavaCommands?: ListItemBag[] | null;
 
     /** Gets or sets the chat project this church talks to. Read only. */
     projectUrl?: string | null;

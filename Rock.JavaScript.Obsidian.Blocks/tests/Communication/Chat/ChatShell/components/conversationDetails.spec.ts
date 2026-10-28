@@ -88,7 +88,7 @@ function personFacts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
         member_count: 2,
         leaders: [],
         faces: [],
-        people: [person(4, "Anna", "Reyes", { campus_id: downtown.guid, badge_keys: [] })],
+        people: [person(4, "Anna", "Reyes", { badge_keys: [] })],
         ...overrides
     });
 }
@@ -358,17 +358,11 @@ describe("a channel's identity", () => {
 });
 
 describe("a direct message's identity", () => {
-    test("draws the other person's face and name, their campus when they show it, and Direct message", () => {
+    test("draws the other person's face and name, and Direct message, with no campus: only a person's card names it", () => {
         const w = mountDetails({ kind: "person", title: "Anna Reyes", facts: personFacts() });
 
         expect(w.get("[data-testid='details-identity']").findComponent(Avatar).props("people")).toEqual([{ name: "Anna Reyes", photoUrl: null }]);
         expect(w.get("[data-testid='details-name']").text()).toBe("Anna Reyes");
-        expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Downtown Campus", "Direct message"]);
-    });
-
-    test("leaves the campus out for a person who keeps their details private", () => {
-        const w = mountDetails({ kind: "person", title: "Anna Reyes", facts: personFacts({ people: [person(4, "Anna", "Reyes", null)] }) });
-
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["Direct message"]);
     });
 });

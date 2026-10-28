@@ -125,7 +125,8 @@ describe("the dialog", () => {
 
         const help = w.findAll(".chat-sg-sub, [data-testid='settings-foot']").map(line => line.text());
         expect(help.length).toBeGreaterThan(0);
-        expect(help.reduce((sum, line) => sum + words(line), 0)).toBeLessThanOrEqual(32);
+        // 32 words, and the ten of the line under "Show public profile details", which says what it now shares
+        expect(help.reduce((sum, line) => sum + words(line), 0)).toBeLessThanOrEqual(42);
     });
 });
 
@@ -137,7 +138,7 @@ describe("Privacy", () => {
         expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Privacy");
         expect(switchOf(w, "profile_details").attributes("aria-checked")).toBe("true");
         expect(switchOf(w, "open_dm").attributes("aria-checked")).toBe("false");
-        expect(plain(w.get("[data-testid='switch-profile_details']").text())).toBe("Show my campus and badges");
+        expect(plain(w.get("[data-testid='switch-profile_details']").text())).toBe("Show public profile details Adds your email, mobile phone and badges to your card.");
         expect(plain(w.get("[data-testid='switch-open_dm']").text())).toBe("Anyone can message me Off: only people in a private channel with you");
         expect(hasIcon(w, w.get("[data-testid='switch-profile_details']"), "id-card")).toBe(true);
         expect(hasIcon(w, w.get("[data-testid='switch-open_dm']"), "message")).toBe(true);
@@ -149,7 +150,9 @@ describe("Privacy", () => {
         const openDm = switchOf(w, "open_dm");
         expect(document.getElementById(openDm.attributes("aria-labelledby") ?? "")?.textContent).toBe("Anyone can message me");
         expect(document.getElementById(openDm.attributes("aria-describedby") ?? "")?.textContent?.trim()).toBe("Off: only people in a private channel with you");
-        expect(switchOf(w, "profile_details").attributes("aria-describedby")).toBeUndefined();
+        const details = switchOf(w, "profile_details");
+        expect(document.getElementById(details.attributes("aria-labelledby") ?? "")?.textContent).toBe("Show public profile details");
+        expect(document.getElementById(details.attributes("aria-describedby") ?? "")?.textContent?.trim()).toBe("Adds your email, mobile phone and badges to your card.");
     });
 
     test("a press on a row's words toggles its switch, as a label does", async () => {

@@ -21,7 +21,7 @@
                     <div class="col-md-6">
                         <CheckBox v-model="form.areChatProfilesVisible"
                                   label="Chat Profiles Are Visible"
-                                  help="Whether a person's profile details are visible to other people in chat. A person who has set this for themselves keeps their own answer."
+                                  help="Whether a person's public profile details show on their chat profile card by default: their email, mobile phone (unless marked unlisted), badges and the profile card template below. Anyone signed in to chat can read them, up to a limit of people a minute. A person who has set this for themselves keeps their own answer."
                                   :disabled="isSaving" />
 
                         <CheckBox v-model="form.isOpenDirectMessagingAllowed"
@@ -58,6 +58,20 @@
                                         :disabled="isSaving" />
                     </div>
                 </div>
+
+                <CodeEditor v-model="form.profileCardLavaTemplate"
+                            label="Profile Card Lava Template"
+                            help="Shown on a person's chat profile card below their contact details, only when they show public profile details, to anyone signed in to chat. Merge fields: Person, the person on the card; CurrentPerson, who is looking. The card hides nothing the template prints, an unlisted phone included, so print only what everyone in chat may see, and pass a person's own fields through | Escape. Shown at most 160px tall, scrolling past that."
+                            mode="lava"
+                            :editorHeight="200"
+                            :disabled="isSaving" />
+
+                <LavaCommandPicker v-model="form.profileCardEnabledLavaCommands"
+                                   label="Enabled Lava Commands"
+                                   help="The Lava commands the profile card template may run. The template runs each time a card opens, so keep it light."
+                                   :enhanceForLongLists="false"
+                                   multiple
+                                   :disabled="isSaving" />
 
                 <div class="actions">
                     <RockButton :btnType="BtnType.Primary" type="submit" :disabled="isSaving">Save</RockButton>
@@ -101,6 +115,8 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ChatSyncNowButton from "@Obsidian/Controls/Internal/chatSyncNowButton.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";

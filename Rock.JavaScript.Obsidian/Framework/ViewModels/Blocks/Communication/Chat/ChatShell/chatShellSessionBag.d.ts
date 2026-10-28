@@ -86,4 +86,10 @@ export type ChatShellSessionBag = {
      * an active one, so the chat can offer it first among the campuses.
      */
     personCampusGuid?: Guid | null;
+
+    /**
+     * Gets or sets whether the church has a profile card template, so a card can keep room
+     * for its output while Rock renders it. The template itself never reaches the browser.
+     */
+    isProfileLavaConfigured: boolean;
 };

@@ -17,8 +17,8 @@
 // The members panel: who is in a room, in the shared panel host. A channel lists "Leaders" then
 // "Members", a group conversation "In this conversation"; a heading counts its rows only once the
 // loaded rows prove the count, since the roster carries no total. A row is the person's face and
-// name, "(you)" for the reader, the Leader pill in a channel, the campus only when they show their
-// details, and "Message" where they can be messaged. The filter searches the whole room: a line
+// name, "(you)" for the reader, the Leader pill in a channel, never a campus, and "Message" where
+// they can be messaged. The filter searches the whole room: a line
 // says it is searching, then how many it found, or that no one matches. Paging is "Load more",
 // "Loading" while busy, "Couldn't load more." with Try again, and "That's everyone." at the end of
 // a channel. A room the reader has not joined, one that keeps its list from them, a failed first
@@ -31,12 +31,12 @@
 //          hasMore, isLoading, isLoadingMore: boolean, error, moreError: ChatError | null,
 //          refusal: "not_member" | "no_roster_right" | null, query: string,
 //          searchStatus: "searching" | "answered" | "failed" | null, personAliasGuid: string,
-//          campusNames: Record<string, string> (by campus guid in lower case), isPhone: boolean
+//          isPhone: boolean
 //   emits: query(text), loadMore, retry, retrySearch, message(personAliasGuid),
 //          person(personAliasGuid), close
 //   marks: members-panel, members-filter, members-clear, members-section (with
 //          members-section-count), member-row, member-who, member-you, member-leader,
-//          member-campus, member-message, member-skeleton, members-state (data-state),
+//          member-message, member-skeleton, members-state (data-state),
 //          members-retry, members-more, members-more-error, members-end, members-hint,
 //          members-search-retry, members-none
 import { mount, VueWrapper } from "@vue/test-utils";
@@ -47,7 +47,6 @@ import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/ty
 // #region Fixtures
 
 const me = "a0000001-0000-4000-8000-000000000000";
-const downtown = "d0000001-0000-4000-8000-000000000000";
 
 let next = 10;
 
@@ -66,9 +65,9 @@ function member(nickName: string, lastName: string, extra: Partial<RosterMember>
     };
 }
 
-const tom = member("Tom", "Hale", { is_leader: true, details: { campus_id: downtown, badge_keys: [] } });
+const tom = member("Tom", "Hale", { is_leader: true, details: { badge_keys: [] } });
 const grace = member("Grace", "Kim", { is_leader: true });
-const anna = member("Anna", "Reyes", { details: { campus_id: downtown, badge_keys: [] } });
+const anna = member("Anna", "Reyes", { details: { badge_keys: [] } });
 const ben = member("Ben", "Okafor", { can_message: false });
 const self = member("Jordan", "Lee", { person_alias_guid: me });
 
@@ -89,7 +88,6 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             query: "",
             searchStatus: null,
             personAliasGuid: me,
-            campusNames: { [downtown]: "Downtown" },
             isPhone: false,
             ...props
         },
@@ -120,7 +118,7 @@ describe("sections", () => {
 
         expect(all(w, "members-section")).toEqual(["Leaders 2", "Members 3"]);
         expect(w.findAll("[data-testid='member-row']").map(r => r.get("[data-testid='member-who']").attributes("aria-label")))
-            .toEqual(["Tom Hale, leader, Downtown. View profile", "Grace Kim, leader. View profile", "Anna Reyes, Downtown. View profile", "Ben Okafor. View profile", "Jordan Lee, you. View profile"]);
+            .toEqual(["Tom Hale, leader. View profile", "Grace Kim, leader. View profile", "Anna Reyes. View profile", "Ben Okafor. View profile", "Jordan Lee, you. View profile"]);
     });
 
     test("with more to load, Members carries no count, and Leaders only once a member row has loaded", () => {
@@ -139,22 +137,15 @@ describe("sections", () => {
 });
 
 describe("a row", () => {
-    test("draws the name, (you), the Leader pill and the campus only when the person shows details", () => {
+    test("draws the name, (you) and the Leader pill, and no campus, which only a person's card shows", () => {
         const w = draw();
         const rows = w.findAll("[data-testid='member-row']");
 
         expect(rows[0].get("[data-testid='member-leader']").text()).toBe("Leader");
         expect(rows[0].get("[data-testid='member-leader']").classes()).toContain("chat-pill");
-        expect(rows[0].get("[data-testid='member-campus']").text()).toBe("Downtown");
-        expect(rows[1].find("[data-testid='member-campus']").exists()).toBe(false);
         expect(rows[2].find("[data-testid='member-leader']").exists()).toBe(false);
         expect(rows[4].get("[data-testid='member-you']").text()).toBe("(you)");
         expect(rows[0].find("[data-testid='member-you']").exists()).toBe(false);
-    });
-
-    test("a campus the init box does not name draws nothing", () => {
-        const w = draw({ campusNames: {} });
-
         expect(w.find("[data-testid='member-campus']").exists()).toBe(false);
     });
 

@@ -29,8 +29,9 @@ namespace Rock.Communication.Chat.Platform.Configuration
         #region Church half
 
         /// <summary>
-        /// Whether a person's profile details are visible to other people by default.
-        /// A person's own setting wins where they have one.
+        /// Whether a person's public profile details, their email, mobile phone, badges and the
+        /// profile card template, are visible to other people by default. A person's own setting
+        /// wins where they have one.
         /// </summary>
         public bool AreChatProfilesVisible { get; set; }
 
@@ -56,6 +57,17 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// Data Views whose members carry a badge in chat.
         /// </summary>
         public List<Guid> ChatBadgeDataViewGuids { get; set; }
+
+        /// <summary>
+        /// The Lava drawn on a person's profile card below their contact details, only when they
+        /// show their public profile details, or blank for none.
+        /// </summary>
+        public string ProfileCardLavaTemplate { get; set; }
+
+        /// <summary>
+        /// The Lava commands that template may run. None unless the church names them.
+        /// </summary>
+        public List<string> ProfileCardEnabledLavaCommands { get; set; }
 
         #endregion Church half
 

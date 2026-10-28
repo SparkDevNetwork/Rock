@@ -185,7 +185,7 @@ export function notifyOptionsFor(kind: string | null): NotifyOption[] {
 
 /** Each switch's label as Chat settings shows it. */
 export const meTitles: Record<MeKey, string> = {
-    profile_details: "Show my campus and badges",
+    profile_details: "Show public profile details",
     open_dm: "Anyone can message me",
     reaction_push: "Reactions to my messages"
 };
