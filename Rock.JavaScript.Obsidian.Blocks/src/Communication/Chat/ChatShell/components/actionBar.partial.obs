@@ -38,7 +38,7 @@
                             :tabindex="tabIndexOf('add')"
                             @click="onOpenPicker" />
             </div>
-            <span v-if="!isNarrow" class="chat-tools-sep" aria-hidden="true" data-testid="action-bar-separator"></span>
+            <span v-if="form === 'full'" class="chat-tools-sep" aria-hidden="true" data-testid="action-bar-separator"></span>
             <IconButton v-if="!isInThread"
                         class="chat-tool"
                         icon="thread"
@@ -68,9 +68,10 @@
 <style scoped>
 /*
     Beside the bubble it acts on, its top on the bubble's top, on the side away from the face: right
-    of another person's bubble, left of the reader's own, 6px off it. It stays within the bubble's
-    own height, so it never covers the message above or below. Where the column has no room beside
-    the bubble, it lies over the bubble's own top corner instead.
+    of another person's bubble, left of the reader's own, 6px off it, in the widest form that fits
+    there, so it covers neither its own message nor the ones above and below. Where not even its
+    tools alone fit beside the bubble, it stands 4px above the bubble's top at the bubble's own edge,
+    or 4px below the bubble where the column's top leaves no room above; never over its own text.
 */
 .chat-tools {
     position: absolute;
@@ -97,6 +98,19 @@
     right: 100%;
     left: auto;
     margin-right: 6px;
+}
+
+.chat-tools.is-flush {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 4px;
+}
+
+.chat-tools.is-flush.is-low {
+    top: 100%;
+    bottom: auto;
+    margin-top: 4px;
+    margin-bottom: 0;
 }
 
 .chat-tools.is-flush:not(.is-own) {
@@ -134,13 +148,18 @@
 
 /*
     Pads the bar's hit area, so the pointer moving onto it from the message never falls into a gap:
-    across the 6px to the bubble beside it, or down into a channel's row under it.
+    across the 6px to the bubble beside it, the 4px to the bubble under or over it, or down into a
+    channel's row under it.
 */
 .chat-tools::before {
     position: absolute;
     inset: 0 -6px;
     content: "";
     border-radius: inherit;
+}
+
+.chat-tools.is-flush::before {
+    inset: -6px;
 }
 
 .chat-tools.is-community::before {
@@ -333,6 +352,12 @@ img.chat-tool-glyph {
     /** The bar's tools, in the order the keyboard walks them: "react <code>" for a quick reaction. */
     type Tool = `react ${string}` | "add" | "reply" | "quote" | "more";
 
+    /**
+     * How much the bar draws, widest first: three quick reactions and the separator; the first quick
+     * reaction alone; or the tools alone, Add reaction still opening every reaction.
+     */
+    type Form = "full" | "one" | "bare";
+
     // #endregion Types
 
     const props = defineProps({
@@ -414,11 +439,16 @@ img.chat-tool-glyph {
     /** A column this narrow or less keeps one quick reaction and takes the bar closer to its edge. */
     const narrowColumnPx = 560;
 
+    /** The forms, widest first, and how many quick reactions each draws. */
+    const forms: Form[] = ["full", "one", "bare"];
+    const quickCounts: Record<Form, number> = { full: 3, one: 1, bare: 0 };
+
     /** A channel's row this close to its column's top keeps its bar lower, inside the column. */
     const nearTopPx = 30;
 
-    /** How far a bubble's bar stands off the bubble, as its styles draw it. */
+    /** How far a bubble's bar stands off the bubble beside it, and above or below it, as its styles draw them. */
     const besideGapPx = 6;
+    const aboveGapPx = 4;
 
     const instance = getCurrentInstance();
 
@@ -434,6 +464,10 @@ img.chat-tool-glyph {
     const isFlush = ref(false);
     const isLow = ref(false);
     const isNarrow = ref(false);
+    const form = ref<Form>("full");
+
+    /** Counts the placings, so one overtaken while it waits for the bar to redraw stops there. */
+    let placing = 0;
 
     /** The quick reaction the one tip names, moved to whichever the pointer rests on or a key reaches. */
     const tipAnchor = ref<HTMLElement>();
@@ -459,8 +493,8 @@ img.chat-tool-glyph {
 
     const isDrawn = computed((): boolean => !!props.message && (props.isShown || isHeld.value));
 
-    /** The first three favorites, or the first alone where the column is narrow. */
-    const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, isNarrow.value ? 1 : 3));
+    /** The favorites the bar's form has room for, first first. */
+    const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, quickCounts[form.value]));
 
     const tools = computed((): Tool[] => [
         ...quickReactions.value.map((favorite): Tool => `react ${favorite.code}`),
@@ -660,10 +694,24 @@ img.chat-tool-glyph {
     }
 
     /**
-     * Places the bar for the room around its message. A bubble's bar lies over the bubble's own top
-     * corner when the column has no room beside it; a channel's row drops it lower near the column's
-     * top, where the feed's edge would cut it, and keeps it inside the row under the New divider,
-     * off the divider's label.
+     * Draws the bar in a form and waits for it to be drawn, so it can be measured. False when
+     * another placing began meanwhile, or the bar went, and this one should stop.
+     */
+    async function drawForm(next: Form, run: number, bar: HTMLElement): Promise<boolean> {
+        if (form.value !== next) {
+            form.value = next;
+            await nextTick();
+        }
+
+        return run === placing && barElement.value === bar;
+    }
+
+    /**
+     * Places the bar for the room around its message. A bubble's bar takes the widest form that fits
+     * beside the bubble, measured as drawn, all before the browser paints; where none fits it stands
+     * above the bubble's top in the column's form, or below the bubble where the column's top leaves
+     * no room above. A channel's row drops it lower near the column's top, where the feed's edge
+     * would cut it, and keeps it inside the row under the New divider, off the divider's label.
      */
     async function place(): Promise<void> {
         // The row's dock draws no box of its own, so the bar is placed against what holds the dock.
@@ -674,28 +722,40 @@ img.chat-tool-glyph {
             return;
         }
 
-        // A narrow column drops two quick reactions, so the bar is measured once it has.
-        const isNarrowNow = scroller.getBoundingClientRect().width <= narrowColumnPx;
-        if (isNarrowNow !== isNarrow.value) {
-            isNarrow.value = isNarrowNow;
-            await nextTick();
-        }
-
+        const run = ++placing;
         const box = scroller.getBoundingClientRect();
         const anchor = host.getBoundingClientRect();
+
+        // A narrow column, the thread drawer or a feed squeezed by a panel, keeps one quick reaction at most.
+        isNarrow.value = box.width <= narrowColumnPx;
+        const widest: Form = isNarrow.value ? "one" : "full";
 
         if (props.isCommunity) {
             const group = host.parentElement;
             const before = group && group.firstElementChild === host ? group.previousElementSibling : null;
             isFlush.value = false;
             isLow.value = !!before?.classList.contains("chat-new-divider") || anchor.top - box.top < nearTopPx;
+            await drawForm(widest, run, bar);
             return;
         }
 
-        // A bubble's bar is level with the bubble, so only the room beside it decides.
-        const room = props.isOwn ? anchor.left - box.left : box.right - anchor.right;
-        isFlush.value = room < bar.offsetWidth + besideGapPx;
+        isFlush.value = false;
         isLow.value = false;
+        const room = props.isOwn ? anchor.left - box.left : box.right - anchor.right;
+        for (const candidate of forms.slice(forms.indexOf(widest))) {
+            if (!await drawForm(candidate, run, bar)) {
+                return;
+            }
+            if (bar.offsetWidth + besideGapPx <= room) {
+                return;
+            }
+        }
+
+        if (!await drawForm(widest, run, bar)) {
+            return;
+        }
+        isFlush.value = true;
+        isLow.value = anchor.top - box.top < bar.offsetHeight + aboveGapPx;
     }
 
     // #endregion Functions
