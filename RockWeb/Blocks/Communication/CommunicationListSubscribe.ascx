@@ -9,6 +9,7 @@
                 <h1 class="panel-title"><i class="ti ti-speakerphone"></i>Email Preferences</h1>
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Warning" Text="You are not authorized to manage other people's communication preferences." Visible="false" />
                 <Rock:NotificationBox ID="nbNoCommunicationLists" runat="server" NotificationBoxType="Info" Text="You are not subscribed to any communication lists." Visible="false" />
                 
                 <asp:Panel ID="pnlCommunicationPreferences" runat="server">

@@ -116,6 +116,11 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private Person _person;
 
+        /// <summary>
+        /// Set by <see cref="GetPerson" /> when the requested person is someone else the current person may not manage.
+        /// </summary>
+        private bool _isPersonUnauthorized;
+
         #endregion
 
         #region Base Control Methods
@@ -353,6 +358,9 @@ namespace RockWeb.Blocks.Communication
             var currentPerson = GetPerson();
             var personId = currentPerson?.Id;
 
+            nbNotAuthorized.Visible = _isPersonUnauthorized;
+            pnlCommunicationPreferences.Visible = !_isPersonUnauthorized;
+
             if ( personId == null )
             {
                 return;
@@ -536,7 +544,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private Person GetPerson( RockContext rockContext = null )
         {
-            if ( _person == null )
+            if ( _person == null && !_isPersonUnauthorized )
             {
                 // 1.) Context Entity
                 _person = ContextEntity<Person>();
@@ -557,13 +565,14 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
 
-                // Only honor a person other than the current person if the
-                // current person is authorized to edit this block.
+                // Only honor a person other than the current person if the current person
+                // is authorized to edit this block. Otherwise show nobody's preferences.
                 if ( _person != null
                     && _person.Id != CurrentPersonId
                     && !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
                 {
-                    _person = CurrentPerson;
+                    _person = null;
+                    _isPersonUnauthorized = true;
                 }
             }
 

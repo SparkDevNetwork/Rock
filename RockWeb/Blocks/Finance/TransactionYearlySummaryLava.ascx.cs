@@ -101,6 +101,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
+            nbNotAuthorized.Visible = false;
+
             var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( contributionType != null )
             {
@@ -119,6 +121,7 @@ namespace RockWeb.Blocks.Finance
                     if ( !IsAuthorizedForPerson( targetPerson ) )
                     {
                         lLavaOutput.Text = string.Empty;
+                        nbNotAuthorized.Visible = true;
                         return;
                     }
 
