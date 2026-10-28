@@ -192,7 +192,6 @@
     import GridSettingsModal from "./BenevolenceRequestList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<BenevolenceRequestListOptionsBag>>();
-    console.log("🚀 ~ config:", config.options?.columnsToHide);
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
 
