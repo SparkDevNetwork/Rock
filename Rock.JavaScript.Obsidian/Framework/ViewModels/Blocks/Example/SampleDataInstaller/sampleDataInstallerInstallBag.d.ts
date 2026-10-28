@@ -32,6 +32,9 @@ export type SampleDataInstallerInstallBag = {
     /** Gets or sets the number of years of history to generate. */
     historyYears: number;
 
+    /** Gets or sets the password every sample login uses. Blank makes no logins. It is never stored. */
+    loginPassword?: string | null;
+
     /** Gets or sets the keys of the parts to include. */
     parts?: string[] | null;
 

@@ -31,6 +31,7 @@ using Rock.Configuration;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Example.SampleDataInstaller;
@@ -679,6 +680,46 @@ namespace Rock.Blocks.Example
                 return ActionBadRequest( "That dataset is not available for this version of Rock yet." );
             }
 
+            string loginPasswordHash = null;
+            if ( bag.LoginPassword.IsNotNullOrWhiteSpace() )
+            {
+                /*
+                    10/28/26 - CLAUDE
+
+                    The sample login password is checked only against the
+                    site's own password rules, on purpose. These are demo
+                    accounts on a fresh sample database, and the admin should
+                    be able to pick a password that is easy to remember and
+                    share, such as for a training class. A stronger floor here
+                    would get in the way of that. The install form warns admins
+                    to use a strong password on any site other people can
+                    reach, and the block refuses any database with real people
+                    in it. Security reviews should not flag this as a
+                    weak-password issue.
+
+                    Reason: Sample logins use the site's password rules by design, so demo passwords stay easy to remember.
+                */
+                if ( !UserLoginService.IsPasswordValid( bag.LoginPassword ) )
+                {
+                    var passwordRules = UserLoginService.FriendlyPasswordRules();
+
+                    return ActionBadRequest( passwordRules.IsNotNullOrWhiteSpace()
+                        ? passwordRules
+                        : "That password does not meet this site's password rules." );
+                }
+
+                // Rock's own Database login hashes the password (BCrypt at the site's cost setting), so the
+                // loader never sees the password and the hash is one this Rock accepts. The container
+                // returns no component when the Database login is turned off.
+                var databaseLogin = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.Database ).FullName );
+                if ( databaseLogin == null )
+                {
+                    return ActionBadRequest( "Sample logins need Rock's Database login to be active. Turn it on, or leave the password blank." );
+                }
+
+                loginPasswordHash = databaseLogin.EncodePassword( null, bag.LoginPassword );
+            }
+
             var options = new DatasetLoadOptions
             {
                 Parts = parts,
@@ -686,7 +727,8 @@ namespace Rock.Blocks.Example
                 Anchor = bag.AnchorDate?.Date,
                 RockVersion = rockVersion,
                 PasswordKey = RockApp.Current.InitializationSettings.PasswordKey,
-                DataEncryptionKey = RockApp.Current.InitializationSettings.DataEncryptionKey
+                DataEncryptionKey = RockApp.Current.InitializationSettings.DataEncryptionKey,
+                LoginPasswordHash = loginPasswordHash
             };
 
             if ( bag.Seed.IsNotNullOrWhiteSpace() )

@@ -51,6 +51,11 @@ namespace Rock.ViewModels.Blocks.Example.SampleDataInstaller
         public string Seed { get; set; }
 
         /// <summary>
+        /// Gets or sets the password every sample login uses. Blank makes no logins. It is never stored.
+        /// </summary>
+        public string LoginPassword { get; set; }
+
+        /// <summary>
         /// Gets or sets the RealTime connection that receives progress reports.
         /// </summary>
         public string RealTimeConnectionId { get; set; }

@@ -21,6 +21,16 @@
                          heading="Sample data installed">
             <p>Happy tire-kicking! The sample data is in your database. The install took {{ elapsedText }}.</p>
             <p v-for="warning in completionWarnings" :key="warning"><strong>{{ warning }}</strong></p>
+            <template v-if="hasSampleLogins">
+                <p>You can sign in as:</p>
+                <ul>
+                    <li><strong>admin</strong>: Alisha Marble, the Rock administrator. Her password is still the site's admin password.</li>
+                    <li><strong>tdecker</strong>: Ted Decker, the Outreach Pastor, with most staff roles.</li>
+                    <li><strong>pfoster</strong>: Pete Foster, the Senior Pastor.</li>
+                    <li><strong>cdecker</strong>: Cindy Decker, a staff-like volunteer with finance access.</li>
+                </ul>
+                <p>All sample logins use the password you chose.</p>
+            </template>
             <p class="mb-0">Hint: try <a :href="personSearchUrl">searching for the Decker family</a>.</p>
         </NotificationBox>
 
@@ -141,6 +151,18 @@
                 <NotificationBox v-if="startError" :alertType="AlertType.Danger">
                     {{ startError }}
                 </NotificationBox>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="loginPassword"
+                                 label="Password for sample logins"
+                                 help="Every sample person with a login, such as Ted Decker (tdecker), gets this password. Leave it blank to make no logins. The password is not saved."
+                                 type="password"
+                                 autocomplete="new-password"
+                                 :disabled="isFormDisabled" />
+                    </div>
+                </div>
+                <p class="text-muted"><small>Use a strong password on any site other people can reach. Staff logins such as tdecker can see private notes and giving.</small></p>
 
                 <p v-if="chosenDatasetName">
                     Ready to install <strong>{{ chosenDatasetName }}</strong> with {{ includedPartCount }} of {{ parts.length }} optional parts.
@@ -348,6 +370,10 @@
     const historyYears = ref<number | null>(config.bag?.historyYears ?? null);
     const anchorDate = ref<string | null>(config.bag?.anchorDate ?? null);
     const seed = ref(config.bag?.seed ?? "");
+    const loginPassword = ref("");
+
+    /** Whether the install that finished was given a password, so its sample logins can be signed in to. */
+    const hasSampleLogins = ref(false);
 
     const installState = ref<InstallState>("idle");
     const startError = ref("");
@@ -449,6 +475,7 @@
             historyYears: historyYears.value ?? 1,
             anchorDate: anchorDate.value,
             seed: seed.value,
+            loginPassword: loginPassword.value,
             realTimeConnectionId
         };
 
@@ -457,7 +484,11 @@
         if (!result.isSuccess) {
             installState.value = "idle";
             startError.value = result.errorMessage ?? "The install could not be started.";
+            return;
         }
+
+        hasSampleLogins.value = loginPassword.value.trim() !== "";
+        loginPassword.value = "";
     }
 
     // #endregion Event Handlers
