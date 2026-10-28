@@ -301,7 +301,15 @@ function build(options: {
             saves.push({ channelId: body.p_channel_id, messageId: body.p_message_id, answer, token });
             return answer.promise;
         },
-        storage: { getItem: k => stored[k] ?? null, setItem: (k, v) => stored[k] = v },
+        storage: {
+            get length(): number {
+                return Object.keys(stored).length;
+            },
+            key: index => Object.keys(stored)[index] ?? null,
+            getItem: k => stored[k] ?? null,
+            setItem: (k, v) => stored[k] = v,
+            removeItem: k => delete stored[k]
+        },
         pageTargets: {
             document: pageDocument,
             window: {

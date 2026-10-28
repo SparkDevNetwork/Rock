@@ -140,14 +140,13 @@
                           :isDisabled="isLocked"
                           :isLocked="isServiceLocked"
                           :lockedReason="lockedReason"
-                          :heldText="heldText"
-                          :heldBy="heldBy"
+                          :text="boxText"
                           :isTextKeptOnSend="isTextKeptOnSend(draft)"
                           :emojiSource="emojiSource"
                           conversationKey="new-message"
                           @vue:mounted="onComposerMounted"
                           @send="onSend"
-                          @edit="onEdit"
+                          @update:text="onText"
                           @emojiPickerOpen="emit('emojiPickerOpen')"
                           @emojiChosen="emit('emojiChosen', $event)" />
                 <div class="chat-nd-foot">
@@ -725,11 +724,10 @@
     const sentText = ref<string | null>(null);
 
     /**
-     * What holds the box's text: the draft, or a fresh object standing in for it. The box takes
-     * held text only when this changes, never as it mounts, so a box drawn over a draft that
-     * already has text is handed a new holder to put that text in it.
+     * The box's text. It takes the draft's text whenever the draft or its text changes, so a new
+     * empty draft does not show what was typed for other people, and keeps what is typed between.
      */
-    const heldBy = ref<object | null>(props.draft);
+    const boxText = ref("");
 
     /** The newest sentence for screen readers, counted so the same words are read twice. */
     const announcement = ref<{ text: string, count: number } | null>(null);
@@ -891,10 +889,6 @@
     }
 
     function onComposerMounted(): void {
-        if (heldText.value) {
-            heldBy.value = {};
-        }
-
         if (isEditorFocusOwed) {
             isEditorFocusOwed = false;
             // A phone's keyboard would cover the start block the person has not read yet, and a
@@ -912,7 +906,8 @@
      * its text moves onto the pending message, so that clearing is no edit of the person's: taken
      * as one, it would empty the draft and a refusal would have no text to put back.
      */
-    function onEdit(body: string): void {
+    function onText(body: string): void {
+        boxText.value = body;
         if (!isLocked.value) {
             emit("edit", body);
         }
@@ -980,9 +975,9 @@
 
     // #region Watchers
 
-    watch(() => props.draft, draft => {
-        heldBy.value = draft;
-    });
+    watch([heldText, () => props.draft], () => {
+        boxText.value = heldText.value;
+    }, { immediate: true });
 
     // A first message that is over, sent or refused, takes its text off the pending message; a
     // refusal puts it back in the box through the draft. Each phase it moves to is told, since it

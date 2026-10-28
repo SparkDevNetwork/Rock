@@ -34,6 +34,7 @@ import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs }
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
+import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
 import { createMentions, Mentions, MentionsDependencies } from "./composables/useMentions.partial";
@@ -45,7 +46,6 @@ import {
     readRememberedChannel,
     rememberedChannelKey,
     startPageLoad,
-    StorageLike,
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
@@ -122,8 +122,14 @@ export type ShellOptions = {
     createPlatformClient: (url: string, key: string, accessToken: () => Promise<string>, realtime: RealtimeOptions) => PlatformClientLike;
 
     fetch: (url: string, init: RequestInit) => Promise<Response>;
-    storage: StorageLike | null;
+    storage: DraftStorage | null;
     pageTargets: PageEventTargets;
+
+    /**
+     * The mark Rock's sign-out takes away, which tells the drafts the last person signed out;
+     * without it, drafts are kept for the page only.
+     */
+    signInMark?: DraftsDependencies["signInMark"];
     mark: (name: string) => void;
 
     /** The browser's push, or nothing where this browser has none. */
@@ -240,6 +246,9 @@ export type ChatShell = {
 
     /** Each room's notify mode, star and hide, and the person's own switches. */
     prefs: Prefs;
+
+    /** What the person typed and has not sent, for each conversation and thread. */
+    drafts: Drafts;
 
     /** Whether the sidebar shows the New message button. */
     isNewMessageShown: boolean;
@@ -840,6 +849,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.isPushOffered = push?.isOffered() ?? false;
     }
 
+    const drafts = createDrafts({
+        storage: options.storage,
+        tenantId,
+        personAliasGuid,
+        signInMark: options.signInMark ?? null,
+        window: options.pageTargets.window
+    });
+
     const directMessages = createDirectMessages({
         search: async query => {
             const result = await call("chat_search_people", { p_query: query, p_limit: session.settings().limits.people_search_size, p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
@@ -879,7 +896,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
         limits: () => session.settings().limits,
-        report
+        report,
+        holdText: (channelId, text) => drafts.append(quoteKey(channelId), text)
     });
 
     // A sidebar read is a snapshot taken some time after it is asked for. Each read takes the next
@@ -1131,6 +1149,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         rooms,
         members,
         prefs,
+        drafts,
         isNewMessageShown: isNewMessageShown(options.session),
 
         start: async (): Promise<void> => {
@@ -1420,6 +1439,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             rooms.stop();
             members.stop();
             prefs.stop();
+            drafts.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.

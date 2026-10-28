@@ -1010,6 +1010,7 @@ namespace Rock.Security
         public static void SignOut()
         {
             UnregisterChatPushDevice();
+            ExpireChatSignedInCookie();
             ExpireUnsecuredPersonIdentifierCookie();
 
             var domainCookieName = $"{FormsAuthentication.FormsCookieName}_DOMAIN";
@@ -1070,6 +1071,24 @@ namespace Rock.Security
                 // Push is extra; a failure here must never stop a person signing out.
                 ExceptionLogService.LogException( exception );
             }
+        }
+
+        /// <summary>
+        /// Expires the cookie the Chat block keeps while nobody has signed out here, so the next
+        /// Chat block on this browser forgets the drafts the last person left unsent.
+        /// </summary>
+        private static void ExpireChatSignedInCookie()
+        {
+            if ( HttpContext.Current?.Request.Cookies.AllKeys.Contains( Rock.Communication.Chat.Platform.Session.ChatSessionHelper.SignedInCookieName ) != true )
+            {
+                return;
+            }
+
+            RockPage.AddOrUpdateCookie( new HttpCookie( Rock.Communication.Chat.Platform.Session.ChatSessionHelper.SignedInCookieName )
+            {
+                Path = "/",
+                Expires = RockDateTime.SystemDateTime.AddDays( -1d )
+            } );
         }
 
         /// <summary>

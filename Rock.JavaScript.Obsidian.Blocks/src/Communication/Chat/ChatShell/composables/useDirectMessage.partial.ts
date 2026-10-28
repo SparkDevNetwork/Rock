@@ -157,6 +157,12 @@ export type DirectMessageDependencies = {
 
     /** Tells the person about a failure that has no draft on screen to show it. */
     report?: (error: ChatError) => void;
+
+    /**
+     * Puts text Rock refused while the person was elsewhere in the box of the conversation those
+     * people now share, after what it holds; without it, the text is not put back.
+     */
+    holdText?: (channelId: string, text: string) => void;
 };
 
 /** The direct messages a shell holds. */
@@ -169,13 +175,6 @@ export type DirectMessages = {
 
     /** The sentence for the last thing that failed, or null. */
     error: string | null;
-
-    /**
-     * Text Rock refused while the person was elsewhere, for the box of the conversation those
-     * people now share, or null. A new object each time, so the box takes it even when the
-     * same text comes back.
-     */
-    held: { body: string } | null;
 
     /** The conversation the people chosen already have, as New message last looked it up. */
     lookup: DirectMessageLookup;
@@ -296,7 +295,6 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         chosen: [] as PersonRow[],
         draft: null as DirectMessageDraft | null,
         error: null as string | null,
-        held: null as { body: string } | null,
         lookup: { status: "idle", channelId: null, isSlow: false } as DirectMessageLookup,
         recent: null as TimelineMessage[] | null,
         refused: null as { person: PersonRow, text: string } | null
@@ -727,7 +725,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             keptMessages.forEach(keep);
         }
         else if (refusedText !== "") {
-            state.held = { body: refusedText };
+            dependencies.holdText?.(channelId, refusedText);
         }
         return isOpened;
     }
@@ -919,7 +917,6 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
             state.chosen = [];
             leaveDraft();
-            state.held = null;
 
             // Kept messages for these people are taken either way, into their new draft or the
             // conversation they share now. One posted since it was kept needs nothing more.
@@ -940,7 +937,6 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             // is on screen; Rock is asked nothing.
             const found = state.lookup.status === "found" ? state.lookup.channelId : null;
             if (!draft && found && body.trim() !== "") {
-                state.held = null;
                 if (!await openShared([...state.chosen], found) || isStopped) {
                     return false;
                 }

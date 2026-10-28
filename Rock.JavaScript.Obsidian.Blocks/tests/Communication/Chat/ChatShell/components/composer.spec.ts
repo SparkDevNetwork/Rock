@@ -46,13 +46,30 @@ async function type(wrapper: VueWrapper, text: string): Promise<void> {
     await nextTick();
 }
 
+/**
+ * Mounts the composer with an owner keeping its text, as the shell keeps each conversation's:
+ * each change the box tells comes back to it as its text.
+ */
+function mountComposer(options: Record<string, unknown> = {}): VueWrapper {
+    const props = (options.props ?? {}) as Record<string, unknown>;
+    const wrapper: VueWrapper = mount(Composer, {
+        ...options,
+        props: {
+            text: "",
+            "onUpdate:text": (text: string) => wrapper.setProps({ text }),
+            ...props
+        }
+    });
+    return wrapper;
+}
+
 /** The wire text the box holds now, as a send would hand it over. */
 function boxText(wrapper: VueWrapper): string {
     return (wrapper.findComponent(ChipEditor).vm as unknown as { getText: () => string }).getText();
 }
 
 async function sendFrom(isTextKeptOnSend: boolean): Promise<{ box: string, sent: unknown[] }> {
-    const wrapper = mount(Composer, { props: { isTextKeptOnSend } });
+    const wrapper = mountComposer({ props: { isTextKeptOnSend } });
     await type(wrapper, "hello");
     await wrapper.get("form").trigger("submit");
 
@@ -97,11 +114,21 @@ describe("the composer", () => {
 });
 
 describe("the composer's box", () => {
-    test("tells the shell each change to its text, so a draft holds what the person sees", async () => {
-        const wrapper = mount(Composer);
+    test("tells its owner each change to its text, so the draft holds what the person sees", async () => {
+        const wrapper = mountComposer();
         await type(wrapper, "hello, edited");
 
-        expect(wrapper.emitted("edit")?.slice(-1)).toEqual([["hello, edited"]]);
+        expect(wrapper.emitted("update:text")?.slice(-1)).toEqual([["hello, edited"]]);
+    });
+
+    test("tells its owner each chip drawn, with the name and photo it shows", async () => {
+        const wrapper = mountComposer({ attachTo: document.body });
+        (wrapper.findComponent(ChipEditor).vm as unknown as { insertMention: (token: string, name: string, photo: string | null) => void })
+            .insertMention("<@a0000002-0000-4000-8000-000000000000>", "Anna Kim", "https://x/anna.jpg");
+        await nextTick();
+
+        expect(wrapper.emitted("mention")).toEqual([[{ type: "mention", text: "@Anna Kim", person_alias_guid: "a0000002-0000-4000-8000-000000000000", avatar_url: "https://x/anna.jpg" }]]);
+        wrapper.unmount();
     });
 });
 
@@ -110,7 +137,7 @@ describe("the composer's focus", () => {
     test("is told once each time focus comes into the box, not as it moves within it", async () => {
         const outside = document.createElement("button");
         document.body.append(outside);
-        const wrapper = mount(Composer, { attachTo: document.body });
+        const wrapper = mountComposer({ attachTo: document.body });
         const emoji = wrapper.get("[data-testid='composer-emoji']").element as HTMLElement;
 
         editorOf(wrapper).focus();
@@ -127,28 +154,45 @@ describe("the composer's focus", () => {
     });
 });
 
-describe("the composer's held text", () => {
-    test("is put back in the box whenever what holds it changes, so a new empty draft does not show text typed in a channel", async () => {
-        const wrapper = mount(Composer, { props: { heldText: "", heldBy: null } });
+describe("the composer's text, kept by its owner", () => {
+    test("is the text of the place the box types into: another place's text replaces it, empty included", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "team" } });
         await type(wrapper, "typed in a channel");
 
-        await wrapper.setProps({ heldText: "", heldBy: { people: [] } });
-
+        await wrapper.setProps({ text: "", conversationKey: "anna" });
         expect(boxText(wrapper)).toBe("");
         expect(editorOf(wrapper).textContent).toBe("");
+
+        await wrapper.setProps({ text: "typed in a channel", conversationKey: "team" });
+        expect(boxText(wrapper)).toBe("typed in a channel");
+    });
+
+    test("draws a kept chip with the name and photo it was chosen with", async () => {
+        const anna = "a0000002-0000-4000-8000-000000000000";
+        const wrapper = mountComposer({
+            props: {
+                text: `Thanks <@${anna}>`,
+                mentions: [{ type: "mention", text: "@Anna Kim", person_alias_guid: anna, avatar_url: "https://x/anna.jpg" }]
+            }
+        });
+
+        const chip = editorOf(wrapper).querySelector("[data-testid='editor-chip']");
+        expect(chip?.textContent).toContain("Anna Kim");
+        expect(chip?.querySelector("img")?.getAttribute("src")).toBe("https://x/anna.jpg");
+        expect(boxText(wrapper)).toBe(`Thanks <@${anna}>`);
     });
 });
 
 describe("the composer's placeholder", () => {
     test("names a channel plainly, with no hash character, since the hash is an icon", () => {
-        const wrapper = mount(Composer, { props: { title: "young-adults", isChannel: true } });
+        const wrapper = mountComposer({ props: { title: "young-adults", isChannel: true } });
 
         expect(wrapper.get("[data-testid='composer-input']").attributes("data-placeholder")).toBe("Message young-adults");
         expect(wrapper.get("[data-testid='composer-input']").attributes("aria-label")).toBe("Message young-adults");
     });
 
     test("names the other person of a direct message", () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes" } });
 
         expect(wrapper.get("[data-testid='composer-input']").attributes("data-placeholder")).toBe("Message Anna Reyes");
         expect(wrapper.get("[data-testid='composer-input']").attributes("aria-label")).toBe("Message Anna Reyes");
@@ -157,13 +201,13 @@ describe("the composer's placeholder", () => {
 
 describe("the composer's key hint", () => {
     test("says how to send and how to start a new line", () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes" } });
 
         expect(wrapper.get("[data-testid='composer-hint']").text()).toBe("Enter to send, Shift + Enter for a new line");
     });
 
     test("is left out on a phone, which has no Enter key worth naming", () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes", isPhone: true } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", isPhone: true } });
 
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
@@ -171,7 +215,7 @@ describe("the composer's key hint", () => {
 
 describe("the composer's keys", () => {
     test("Enter sends the text", async () => {
-        const wrapper = mount(Composer);
+        const wrapper = mountComposer();
         const input = wrapper.get("[data-testid='composer-input']");
         await type(wrapper, "hello");
 
@@ -182,7 +226,7 @@ describe("the composer's keys", () => {
     });
 
     test("Shift and Enter does not send, leaving the new line to the box", async () => {
-        const wrapper = mount(Composer);
+        const wrapper = mountComposer();
         const input = wrapper.get("[data-testid='composer-input']");
         await type(wrapper, "hello");
 
@@ -195,7 +239,7 @@ describe("the composer's keys", () => {
 
 describe("the composer's send button", () => {
     test("is ready, in the church's fill, only once there is text to send", async () => {
-        const wrapper = mount(Composer);
+        const wrapper = mountComposer();
         const send = wrapper.get("[data-testid='composer-send']");
         expect(send.classes()).not.toContain("is-ready");
         expect(send.attributes("aria-label")).toBe("Send");
@@ -211,7 +255,7 @@ describe("the composer's send button", () => {
 // the lines drawn, and no fixed height set over them.
 describe("the composer's text box", () => {
     test("grows to the height of what is typed, which the sheet caps before it scrolls", async () => {
-        const wrapper = mount(Composer, { attachTo: document.body });
+        const wrapper = mountComposer({ attachTo: document.body });
 
         await type(wrapper, "one\ntwo\nthree\nfour");
 
@@ -223,7 +267,7 @@ describe("the composer's text box", () => {
     });
 
     test("goes back to one line once it is emptied by a send", async () => {
-        const wrapper = mount(Composer, { attachTo: document.body });
+        const wrapper = mountComposer({ attachTo: document.body });
         await type(wrapper, "one\ntwo\nthree\nfour");
 
         await wrapper.get("form").trigger("submit");
@@ -239,7 +283,7 @@ describe("the composer's text box", () => {
 
 describe("the composer while the service is paused", () => {
     test("is a locked bar saying sending is paused, with no box to type into", () => {
-        const wrapper = mount(Composer, { props: { title: "young-adults", isChannel: true, isLocked: true } });
+        const wrapper = mountComposer({ props: { title: "young-adults", isChannel: true, isLocked: true } });
 
         expect(wrapper.get("[data-testid='composer-locked']").text()).toBe("Sending is paused for maintenance.");
         expect(wrapper.find("[data-testid='composer-input']").exists()).toBe(false);
@@ -251,7 +295,7 @@ describe("the composer while the service is paused", () => {
 // says so by emitting editLast.
 describe("the composer's Up key", () => {
     test("in an empty box asks to edit the newest own message, and keeps the key from moving the caret", async () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes" } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes" } });
 
         const event = new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, cancelable: true });
         wrapper.get("[data-testid='composer-input']").element.dispatchEvent(event);
@@ -261,13 +305,13 @@ describe("the composer's Up key", () => {
     });
 
     test("with text in the box asks for nothing", async () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes", heldText: "", heldBy: null } });
-        await wrapper.setProps({ heldText: "draft", heldBy: { draft: 1 } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes" } });
+        await wrapper.setProps({ text: "draft" });
 
         await wrapper.get("[data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
         expect(wrapper.emitted("editLast")).toBeUndefined();
 
-        await wrapper.setProps({ heldText: "", heldBy: { draft: 2 } });
+        await wrapper.setProps({ text: "" });
         await wrapper.get("[data-testid='composer-input']").trigger("keydown", { key: "ArrowUp" });
         expect(wrapper.emitted("editLast")).toEqual([[]]);
     });
@@ -290,16 +334,16 @@ describe("the composer's quote strip", () => {
     };
 
     test("is not drawn with nothing quoted", () => {
-        const quoting = mount(Composer, { props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+        const quoting = mountComposer({ props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
         expect(quoting.find("[data-testid='composer-quote']").exists()).toBe(true);
 
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: null } as Record<string, unknown> });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote: null } as Record<string, unknown> });
 
         expect(wrapper.find("[data-testid='composer-quote']").exists()).toBe(false);
     });
 
     test("names the person quoted over a preview of the message", () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
 
         const strip = wrapper.get("[data-testid='composer-quote']");
         expect(strip.text()).toContain("Quoting Anna Reyes");
@@ -308,14 +352,14 @@ describe("the composer's quote strip", () => {
 
     test("says Quoting yourself for the person's own message", () => {
         const own = { ...annasMessage, person_alias_guid: "a0000001-0000-4000-8000-000000000000", sender_nick_name: "Jordan", sender_last_name: "Ellis" };
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: own, isQuoteOwn: true } as Record<string, unknown> });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote: own, isQuoteOwn: true } as Record<string, unknown> });
 
         expect(wrapper.get("[data-testid='composer-quote']").text()).toContain("Quoting yourself");
         expect(wrapper.get("[data-testid='composer-quote']").text()).not.toContain("Jordan");
     });
 
     test("its cancel button says what it does and drops the quote", async () => {
-        const wrapper = mount(Composer, { props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote: annasMessage } as Record<string, unknown> });
 
         await wrapper.get("[data-testid='composer-quote'] button[aria-label='Cancel quote']").trigger("click");
 
@@ -393,7 +437,7 @@ describe("the composer's emoji button", () => {
     }
 
     test("is Add emoji, and opens the picker in insert mode", async () => {
-        mounted = mount(Composer, { props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        mounted = mountComposer({ props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
         const button = mounted.get("[data-testid='composer-emoji']");
         expect(button.attributes("aria-label")).toBe("Add emoji");
         expect(document.querySelector("[role='grid']")).toBeNull();
@@ -407,7 +451,7 @@ describe("the composer's emoji button", () => {
     });
 
     test("puts the chosen emoji's glyph in the box at the caret, and leaves the person typing", async () => {
-        mounted = mount(Composer, { props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        mounted = mountComposer({ props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
         await typeWithCaret(mounted, "Hi there", 2);
 
         await mounted.get("[data-testid='composer-emoji']").trigger("click");
@@ -422,7 +466,7 @@ describe("the composer's emoji button", () => {
     });
 
     test("puts an image emoji in the box as its code", async () => {
-        mounted = mount(Composer, { props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
+        mounted = mountComposer({ props: { title: "Anna Reyes", emojiSource } as Record<string, unknown>, attachTo: document.body });
         await typeWithCaret(mounted, "Welcome ", 8);
 
         await mounted.get("[data-testid='composer-emoji']").trigger("click");
@@ -474,7 +518,7 @@ describe("the composer's @ picker", () => {
     }
 
     test("appears above the box once @ is typed, and tells the shell the query", async () => {
-        mounted = mount(Composer, { props: { title: "young-adults", isChannel: true, mentionSource } as Record<string, unknown>, attachTo: document.body });
+        mounted = mountComposer({ props: { title: "young-adults", isChannel: true, mentionSource } as Record<string, unknown>, attachTo: document.body });
 
         await typeToEnd(mounted, "Hi @an");
 
@@ -483,7 +527,7 @@ describe("the composer's @ picker", () => {
     });
 
     test("takes Enter while open: the chip goes in and nothing is sent", async () => {
-        mounted = mount(Composer, { props: { title: "young-adults", isChannel: true, mentionSource } as Record<string, unknown>, attachTo: document.body });
+        mounted = mountComposer({ props: { title: "young-adults", isChannel: true, mentionSource } as Record<string, unknown>, attachTo: document.body });
         await typeToEnd(mounted, "Hi @an");
         expect(document.querySelector("[data-testid='mention-picker']")).not.toBeNull();
 
@@ -503,7 +547,7 @@ describe("the composer's @ picker", () => {
 // the room's max_length and over it, and a send over the limit is held back with a toast's word.
 describe("the composer where the person cannot post", () => {
     test("is a locked bar carrying the server's sentence, with no box", () => {
-        const wrapper = mount(Composer, { props: { lockedReason: "Only leaders can post in Announcements." } });
+        const wrapper = mountComposer({ props: { lockedReason: "Only leaders can post in Announcements." } });
 
         const bar = wrapper.get("[data-testid='composer-locked']");
         expect(bar.text()).toBe("Only leaders can post in Announcements.");
@@ -511,7 +555,7 @@ describe("the composer where the person cannot post", () => {
     });
 
     test("is the box again once there is no reason", async () => {
-        const wrapper = mount(Composer, { props: { lockedReason: "Only leaders can post in Announcements." } });
+        const wrapper = mountComposer({ props: { lockedReason: "Only leaders can post in Announcements." } });
 
         await wrapper.setProps({ lockedReason: null });
 
@@ -522,14 +566,14 @@ describe("the composer where the person cannot post", () => {
 
 describe("the composer's counter", () => {
     test("is silent until the last 500 characters of the limit", async () => {
-        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        const wrapper = mountComposer({ props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(4500));
 
         expect(wrapper.get("[data-testid='composer-count']").text()).toBe("");
     });
 
     test("counts down in the warning ink inside the last 500", async () => {
-        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        const wrapper = mountComposer({ props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(4812));
 
         const count = wrapper.get("[data-testid='composer-count']");
@@ -538,7 +582,7 @@ describe("the composer's counter", () => {
     });
 
     test("says how far over in the danger ink past the limit", async () => {
-        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        const wrapper = mountComposer({ props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(5012));
 
         const count = wrapper.get("[data-testid='composer-count']");
@@ -547,7 +591,7 @@ describe("the composer's counter", () => {
     });
 
     test("holds a send over the limit back, keeping the text, and says why", async () => {
-        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        const wrapper = mountComposer({ props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(5001));
         await wrapper.get("form").trigger("submit");
 
@@ -557,7 +601,7 @@ describe("the composer's counter", () => {
     });
 
     test("counts an emoji as one character, as the platform does", async () => {
-        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        const wrapper = mountComposer({ props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(4998) + "\u{1F600}\u{1F600}");
 
         expect(wrapper.get("[data-testid='composer-count']").text()).toBe("0 left");
@@ -566,7 +610,7 @@ describe("the composer's counter", () => {
     });
 
     test("sends at exactly the limit", async () => {
-        const wrapper = mount(Composer, { props: { maxLength: 5000 } });
+        const wrapper = mountComposer({ props: { maxLength: 5000 } });
         await type(wrapper, "x".repeat(5000));
         await wrapper.get("form").trigger("submit");
 

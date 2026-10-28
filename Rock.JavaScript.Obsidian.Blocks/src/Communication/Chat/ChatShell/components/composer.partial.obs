@@ -29,7 +29,8 @@
                             data-testid="composer-emoji"
                             @click="onEmojiClick" />
                 <ChipEditor ref="editor"
-                            v-model:text="text"
+                            :text="text"
+                            :pieces="mentions"
                             class="chat-composer-input"
                             :placeholder="placeholder"
                             :isDisabled="isDisabled"
@@ -37,6 +38,8 @@
                             :people="mentionSource?.people ?? []"
                             :conversationKey="conversationKey"
                             data-testid="composer-input"
+                            @update:text="emit('update:text', $event)"
+                            @mention="emit('mention', $event)"
                             @send="onSubmit"
                             @upWhenEmpty="emit('editLast')"
                             @mentionQuery="onMentionQuery" />
@@ -289,11 +292,11 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref } from "vue";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { canMakeSendKey, textAfterSend } from "../composables/useSend.partial";
-    import { TimelineMessage } from "../types.partial";
+    import { DisplayPiece, TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -347,22 +350,18 @@
         },
 
         /**
-         * Text the shell holds for the person, put back in the box whenever it changes. A draft's
-         * first message has no row in a feed to keep it on, so the draft holds it here instead.
+         * The box's wire text, a mention written as its token, as its owner keeps it for the place
+         * the box types into; each change comes back as update:text.
          */
-        heldText: {
+        text: {
             type: String,
             default: ""
         },
 
-        /**
-         * What holds the text, such as the draft on screen. The box takes the held text again
-         * whenever this changes, even when the text is the same, so a new empty draft does not
-         * open showing what was typed in a channel.
-         */
-        heldBy: {
-            type: Object as PropType<object | null>,
-            default: null
+        /** A mention piece for each chip the text holds, with the name and photo the chip is drawn with. */
+        mentions: {
+            type: Array as PropType<DisplayPiece[]>,
+            default: () => []
         },
 
         /**
@@ -421,7 +420,10 @@
     const emit = defineEmits<{
         /** The text, and for a thread's reply whether it is also sent to the conversation. */
         (e: "send", body: string, isAlsoSent?: boolean): void;
-        (e: "edit", body: string): void;
+        /** The box's text changed, a send's emptying included. */
+        (e: "update:text", text: string): void;
+        /** A chip was drawn in the box, with the name and photo it shows. */
+        (e: "mention", piece: DisplayPiece): void;
         /** Up in an empty box: the person asks to edit their newest message. */
         (e: "editLast"): void;
         (e: "cancelQuote"): void;
@@ -438,9 +440,6 @@
     }>();
 
     // #region Values
-
-    /** The box's wire text, a mention written as its token, kept in step with the editor both ways. */
-    const text = ref("");
 
     /** A thread reply's choice to show it in the conversation too, cleared with each send. */
     const isAlsoSent = ref(false);
@@ -497,7 +496,7 @@
     });
 
     /** The text's length as the platform counts it, by code point, so an emoji is one. */
-    const length = computed((): number => Array.from(text.value).length);
+    const length = computed((): number => Array.from(props.text).length);
 
     /** How the counter reads near and past the limit, or null while it has nothing to say. */
     const count = computed((): { text: string, tone: "warn" | "over" } | null => {
@@ -514,7 +513,7 @@
     });
 
     /** Whether there is something to send, which turns the send button to the church's fill. */
-    const isReady = computed((): boolean => text.value.trim() !== "");
+    const isReady = computed((): boolean => props.text.trim() !== "");
 
     /** The emoji button, which the picker is placed above and hands focus back to. */
     const emojiAnchor = computed((): HTMLElement | null => emojiButton.value?.buttonElement ?? null);
@@ -533,12 +532,12 @@
     // #region Event Handlers
 
     /**
-     * Hands the text to the shell and clears the box, unless it is kept. A send that fails keeps
+     * Hands the text to the shell and asks the box's owner to clear it, unless it is kept. A send that fails keeps
      * its text on its own row in the feed with a retry, so clearing there loses nothing; a browser
      * that cannot make a send key makes no row, so the box keeps the text instead.
      */
     function onSubmit(): void {
-        if (text.value.trim() === "") {
+        if (props.text.trim() === "") {
             return;
         }
 
@@ -548,13 +547,14 @@
             return;
         }
 
+        const body = props.text;
         if (props.isThread) {
-            emit("send", text.value, isAlsoSent.value);
+            emit("send", body, isAlsoSent.value);
         }
         else {
-            emit("send", text.value);
+            emit("send", body);
         }
-        text.value = textAfterSend(text.value, props.isTextKeptOnSend || !canMakeSendKey());
+        emit("update:text", textAfterSend(body, props.isTextKeptOnSend || !canMakeSendKey()));
         isAlsoSent.value = false;
     }
 
@@ -614,19 +614,4 @@
     }
 
     // #endregion Event Handlers
-
-    // #region Watchers
-
-    watch([() => props.heldText, () => props.heldBy], ([held]) => {
-        text.value = held;
-    });
-
-    // The shell keeps a failed draft's text when the person leaves it, so it is told what the
-    // box holds now, not only what was last sent. The editor grows with its lines by itself, up
-    // to its cap, so nothing here sizes it.
-    watch(text, value => {
-        emit("edit", value);
-    });
-
-    // #endregion Watchers
 </script>

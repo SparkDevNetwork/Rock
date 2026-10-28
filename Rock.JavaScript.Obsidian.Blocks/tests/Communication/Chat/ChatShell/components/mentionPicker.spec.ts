@@ -97,9 +97,18 @@ async function press(target: HTMLElement, key: string, extra: KeyboardEventInit 
     return event;
 }
 
+/** The composer, its owner keeping its text as the shell keeps each conversation's. */
+function mountComposer(props: Record<string, unknown>): VueWrapper {
+    const mounted: VueWrapper = mount(Composer, {
+        props: { text: "", "onUpdate:text": (text: string) => mounted.setProps({ text }), ...props },
+        attachTo: document.body
+    });
+    return mounted;
+}
+
 /** The composer with a picker source. */
 function drawComposer(source: Record<string, unknown> | null): VueWrapper {
-    wrapper = mount(Composer, { props: { mentionSource: source }, attachTo: document.body });
+    wrapper = mountComposer({ mentionSource: source });
     return wrapper;
 }
 
@@ -290,7 +299,7 @@ describe("the picker in a direct message or group", () => {
     });
 
     test("is told so by its composer, which is not a channel's, and the @all chip it inserts says so too", async () => {
-        wrapper = mount(Composer, { props: { mentionSource: { ...people, isAllOffered: true }, isChannel: false }, attachTo: document.body });
+        wrapper = mountComposer({ mentionSource: { ...people, isAllOffered: true }, isChannel: false });
         await typeNodes(wrapper, ["@"]);
 
         expect(picker()?.textContent).toContain("People in this conversation");
@@ -300,7 +309,7 @@ describe("the picker in a direct message or group", () => {
     });
 
     test("a channel's composer keeps saying channel", async () => {
-        wrapper = mount(Composer, { props: { mentionSource: { ...people, isAllOffered: true }, isChannel: true }, attachTo: document.body });
+        wrapper = mountComposer({ mentionSource: { ...people, isAllOffered: true }, isChannel: true });
         await typeNodes(wrapper, ["@"]);
 
         expect(picker()?.textContent).toContain("People in this channel");
@@ -468,7 +477,7 @@ describe("the picker in the composer", () => {
     });
 
     test("forgets the chips it drew in one conversation once it is another's, so a pasted token from there stays text", async () => {
-        wrapper = mount(Composer, { props: { mentionSource: people, conversationKey: "room-1" }, attachTo: document.body });
+        wrapper = mountComposer({ mentionSource: people, conversationKey: "room-1" });
         const w = wrapper;
         await typeNodes(w, ["@be"]);
         await w.setProps({ mentionSource: { ...people, people: [benPerson] } });

@@ -138,11 +138,15 @@
                       :isLocked="isLocked"
                       :lockedReason="lockedReason"
                       :maxLength="maxLength"
+                      :text="draft.text"
+                      :mentions="draft.mentions"
                       :quote="quote"
                       :isQuoteOwn="isQuoteOwn"
                       :emojiSource="emojiSource"
                       :mentionSource="mentionSource"
                       @send="onSend"
+                      @update:text="emit('draftText', $event)"
+                      @mention="emit('draftMention', $event)"
                       @editLast="emit('editLast')"
                       @cancelQuote="emit('cancelQuote')"
                       @emojiPickerOpen="emit('emojiPickerOpen')"
@@ -297,12 +301,13 @@
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { useHotMessage } from "../composables/useHotMessage.partial";
+    import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
-    import { ChatError, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -464,6 +469,12 @@
             default: () => new Set<string>()
         },
 
+        /** The reply this thread's composer holds, as its owner keeps it for the thread. */
+        draft: {
+            type: Object as PropType<ComposerDraft>,
+            default: () => ({ text: "", mentions: [] })
+        },
+
         /** The message being quoted into the next reply, drawn in the composer's strip. */
         quote: {
             type: Object as PropType<TimelineMessage | null>,
@@ -529,6 +540,10 @@
         (e: "retry", localId: string): void,
         (e: "discard", localId: string): void,
         (e: "cancelQuote"): void,
+        /** The reply composer's text changed. */
+        (e: "draftText", text: string): void,
+        /** A chip was drawn in the reply composer. */
+        (e: "draftMention", piece: DisplayPiece): void,
         (e: "editLast"): void,
         (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void,

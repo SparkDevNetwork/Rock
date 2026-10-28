@@ -48,6 +48,12 @@ export type BrowserShellOptions = {
 const pushCookieName = "rock_chat_push";
 
 /**
+ * The cookie Rock's sign-out expires. Storage is the browser's alone, so a block that finds this
+ * gone knows someone signed out here and forgets the drafts on this device before showing any.
+ */
+const signInMarkCookieName = "rock_chat_signed_in";
+
+/**
  * Makes the block's shell builder. A birthdate save replaces the shell with one for the session
  * it answers with, so the builder is kept for the block's life and every shell it builds shares
  * the one Firebase app, which Firebase refuses to make twice under its name.
@@ -177,6 +183,14 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
         fetch: (url, init) => window.fetch(url, init),
         storage: safeLocalStorage(),
+        signInMark: {
+            isSet: () => document.cookie.split("; ").some(part => part.startsWith(`${signInMarkCookieName}=`)),
+            set: () => {
+                const secure = window.location.protocol === "https:" ? "; Secure" : "";
+                // a year, a choice: sign-out is what ends it, and the block writes it again on every load
+                document.cookie = `${signInMarkCookieName}=1; path=/; max-age=31536000; SameSite=Lax${secure}`;
+            }
+        },
         pageTargets: { document, window },
         push: browserPush(),
         mark: name => {
