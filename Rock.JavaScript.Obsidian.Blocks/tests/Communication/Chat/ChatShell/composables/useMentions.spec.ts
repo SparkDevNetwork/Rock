@@ -1154,15 +1154,21 @@ describe("the header's dot", () => {
         expect(later.mentions.state.hasDot).toBe(true);
     });
 
-    test("does not rise for @all, which the inbox never lists", () => {
+    test("rises for @all, which the inbox lists beside the mentions by name", () => {
         const h = setup();
         h.mentions.setUnread([]);
 
         h.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 80, parent_id: null, in_channel: true, all: true });
-        expect(h.mentions.state.hasDot).toBe(false);
-
-        h.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 81, parent_id: null, in_channel: true, all: false });
         expect(h.mentions.state.hasDot).toBe(true);
+    });
+
+    test("does not rise for @all on a message already read in the conversation", () => {
+        const h = setup();
+        h.mentions.setUnread([]);
+        h.readCursors.set(channel, 80);
+
+        h.mentions.applyPersonalEvent("channel.mention", { channel_id: channel, message_id: 80, parent_id: null, in_channel: true, all: true });
+        expect(h.mentions.state.hasDot).toBe(false);
     });
 
     test("ignores an event it does not know and a payload it cannot read", () => {

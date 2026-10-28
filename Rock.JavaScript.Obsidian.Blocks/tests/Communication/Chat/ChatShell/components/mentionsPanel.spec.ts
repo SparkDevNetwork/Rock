@@ -336,7 +336,7 @@ describe("loading, empty and failed", () => {
 
         const empty = w.get("[data-testid='mentions-empty']");
         expect(plain(empty.text())).toContain("No mentions yet");
-        expect(plain(empty.text())).toContain("When someone @mentions you by name, it shows up here so you can jump straight to it.");
+        expect(plain(empty.text())).toContain("When someone @mentions you or uses @all, it shows up here so you can jump straight to it.");
         expect(w.find("[data-testid='mentions-end']").exists()).toBe(false);
     });
 

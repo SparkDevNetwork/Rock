@@ -37,7 +37,7 @@
             <div v-else-if="rows.length === 0" class="chat-ls-empty" data-testid="mentions-empty">
                 <span class="chat-ls-empty-ic" aria-hidden="true"><Icon name="at" /></span>
                 <b>No mentions yet</b>
-                <span>When someone @mentions you by name, it shows up here so you can jump straight to it.</span>
+                <span>When someone @mentions you or uses @all, it shows up here so you can jump straight to it.</span>
             </div>
 
             <template v-else>
