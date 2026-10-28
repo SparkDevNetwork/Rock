@@ -228,6 +228,11 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( "Unable to find the selected business." );
             }
 
+            if ( person.RecordTypeValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id )
+            {
+                return ActionBadRequest( "The selected record is not a business." );
+            }
+
             var formerFullName = person.FullName;
 
             person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
@@ -279,6 +284,11 @@ namespace Rock.Blocks.Finance
             if ( person == null )
             {
                 return ActionBadRequest( "Unable to find the selected person." );
+            }
+
+            if ( person.RecordTypeValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id )
+            {
+                return ActionBadRequest( "The selected record is not a person." );
             }
 
             var validationResult = ValidateCanConvertToBusiness( person );
