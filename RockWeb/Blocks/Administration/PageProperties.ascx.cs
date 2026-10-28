@@ -913,7 +913,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     IsValid = false,
                     Display = ValidatorDisplay.None,
-                    ValidationGroup = BlockValidationGroup,
+                    ValidationGroup = valSummaryTop.ValidationGroup,
                     ErrorMessage = page.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "<br />" )
                 };
                 Page.Validators.Add( cvPageModel );
