@@ -10,8 +10,7 @@
              :aria-label="toolbarLabel"
              data-testid="action-bar"
              @keydown="onKeydown"
-             @focusin="onFocusIn"
-             @focusout="onFocusOut">
+             @focusin="onFocusIn">
             <div class="chat-tools-react" role="group" aria-label="Quick reactions">
                 <button v-for="favorite in quickReactions"
                         :key="favorite.code"
@@ -429,7 +428,6 @@ img.chat-tool-glyph {
     const barElement = ref<HTMLElement>();
 
     const isMenuOpen = ref(false);
-    const isFocusInside = ref(false);
 
     /** The tool the arrows last moved to; the first tool holds the tab stop until they move. */
     const activeTool = ref<Tool | null>(null);
@@ -468,8 +466,11 @@ img.chat-tool-glyph {
     /** The picker is up beside this bar's More reactions. */
     const isPickerOpen = computed((): boolean => !!props.pickerAnchor && !!barElement.value?.contains(props.pickerAnchor));
 
-    /** A menu, a picker or a keyboard's focus inside keeps the bar, wherever the pointer went. */
-    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value || isPickerOpen.value);
+    /**
+     * A menu or a picker open from the bar keeps it, wherever the pointer went. A keyboard's focus
+     * inside it keeps it too, which its column reads from the focus events that reach it.
+     */
+    const isHeld = computed((): boolean => isMenuOpen.value || isPickerOpen.value);
 
     const isDrawn = computed((): boolean => canAct.value && (props.isShown || isHeld.value));
 
@@ -640,29 +641,11 @@ img.chat-tool-glyph {
         elements[next].focus();
     }
 
-    /**
-     * Only a keyboard's focus holds the bar: a click leaves focus on the tool it pressed, and a bar
-     * kept for that would stay after the pointer has gone. Told apart by :focus-visible where the
-     * browser can tell; the oldest Safari Rock supports cannot, and holds for every focus.
-     */
+    /** A tool reached by Tab or a click holds the tab stop, so Tab back into the bar returns to it. */
     function onFocusIn(event: FocusEvent): void {
-        const target = event.target as HTMLElement;
-        try {
-            isFocusInside.value = target.matches(":focus-visible");
-        }
-        catch {
-            isFocusInside.value = true;
-        }
-
-        const index = toolElements().indexOf(target);
+        const index = toolElements().indexOf(event.target as HTMLElement);
         if (index >= 0) {
             activeTool.value = tools.value[index];
-        }
-    }
-
-    function onFocusOut(event: FocusEvent): void {
-        if (!barElement.value?.contains(event.relatedTarget as Node | null)) {
-            isFocusInside.value = false;
         }
     }
 
@@ -732,10 +715,12 @@ img.chat-tool-glyph {
 
     // #region Watchers
 
-    // The column moves the one bar from message to message: the arrows start again from the
-    // first tool, and the tip of the last message's quick reaction goes.
+    // The column moves the one bar from message to message, or takes it off a message that went:
+    // the arrows start again from the first tool, the tip of the last message's quick reaction
+    // goes, and a menu left open on a message taken away holds nothing.
     watch(() => props.message?.id, () => {
         activeTool.value = null;
+        isMenuOpen.value = false;
         hideTip();
     });
 
@@ -743,7 +728,6 @@ img.chat-tool-glyph {
     watch(canAct, isAble => {
         if (!isAble) {
             isMenuOpen.value = false;
-            isFocusInside.value = false;
         }
     });
 

@@ -121,12 +121,15 @@
             </section>
         </div>
 
-        <!-- The feed's one action bar, drawn in the dock of the message it is on. -->
-        <Teleport v-if="actionBar.dock.value" :to="actionBar.dock.value.element">
-            <ActionBar v-bind="actionBar.dock.value.props.value"
+        <!--
+            The feed's one action bar, drawn in the dock of the message it is on. One element for the
+            feed's life, left here while it is on no message, so every show plays its entrance.
+        -->
+        <Teleport :to="actionBar.dock.value?.element" :disabled="!actionBar.dock.value">
+            <ActionBar v-bind="actionBar.dock.value?.props.value"
                        :isShown="actionBar.isShown.value"
                        :isInstant="actionBar.isInstant.value"
-                       v-on="actionBar.dock.value.handlers"
+                       v-on="actionBar.dock.value?.handlers ?? {}"
                        @holdChange="actionBar.onHoldChange" />
         </Teleport>
 

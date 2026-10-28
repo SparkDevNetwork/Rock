@@ -1289,11 +1289,39 @@ describe("the action bar", () => {
         jest.restoreAllMocks();
     });
 
-    /** Four messages from Anna, in a channel or a direct message, the feed in the page so focus can land. */
-    function drawFour(isChannel: boolean): VueWrapper {
-        const messages = [1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id)));
-        mounted = mount(MessageFeed, { props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel, isDirectMessage: !isChannel }, attachTo: document.body });
+    /** The four messages drawFour draws, held so a test can change one as the platform would. */
+    let held: TimelineState;
+
+    /**
+     * Four messages from Anna, in a channel or a direct message, the feed in the page so focus can
+     * land. A test about the bar's entrance keeps Vue's real Transition, which marks an element
+     * entering as a browser plays it.
+     */
+    function drawFour(isChannel: boolean, isTransitionKept = false): VueWrapper {
+        held = timeline([1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id))));
+        mounted = mount(MessageFeed, {
+            props: { pending: [], personAliasGuid: me, timeline: held, isChannel, isDirectMessage: !isChannel },
+            attachTo: document.body,
+            global: isTransitionKept ? { stubs: { transition: false } } : {}
+        });
+
+        // Vue drops an event stamped no later than the moment its listener was attached, as one
+        // fired while the page was being drawn, and the fake clock stands still until moved.
+        jest.advanceTimersByTime(1);
         return mounted;
+    }
+
+    /** Whether the bar on screen is playing its entrance. */
+    function isEntering(w: VueWrapper): boolean {
+        return bars(w)[0]?.classList.contains("chat-tools-enter-active") ?? false;
+    }
+
+    /** A keyboard's focus, which a browser tells apart by :focus-visible and jsdom cannot, so is told. */
+    function focusIsKeyboard(): void {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? true : matches.call(this, selector);
+        });
     }
 
     async function settle(): Promise<void> {
@@ -1455,6 +1483,114 @@ describe("the action bar", () => {
         placeScroll(w, 100);
         await settle();
 
+        expect(barOn(w)).toBeNull();
+    });
+
+    // The bar is one element for the feed's life, so its first show, the first in a conversation
+    // just opened, plays the same entrance as every show after.
+    test.each([["a channel", true], ["a direct message", false]])("in %s, plays its entrance the first time it shows, as every time after", async (_kind, isChannel) => {
+        const w = drawFour(isChannel, true);
+
+        await pointTo(w, 2);
+        await wait(150);
+        expect(barOn(w)).toBe(2);
+        expect(isEntering(w)).toBe(true);
+
+        // Vue's Transition holds a leaving element until the frames after its fade.
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(1000);
+        await wait(100);
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        expect(isEntering(w)).toBe(true);
+    });
+
+    test("goes at once when its message is deleted while it shows, and the next bar plays its entrance", async () => {
+        const w = drawFour(true, true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        held.messages[1].deleted_at = at(14, 50);
+        held.messages[1].body = null;
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        expect(isEntering(w)).toBe(true);
+    });
+
+    test("goes when its message is deleted while its menu holds it, and holds nothing after", async () => {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+
+        held.messages[1].deleted_at = at(14, 50);
+        held.messages[1].body = null;
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        // Nothing still holds it: the next message shows its bar after the rest, and it leaves after the grace.
+        await pointTo(w, 3);
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(220);
+        expect(barOn(w)).toBeNull();
+    });
+
+    // The bar's own tools sit inside its message's row, so Tab out of them into the next message
+    // must leave the bar there, not keep it held where it was.
+    test("Tab from one message's bar into another message shows that message's bar at once", async () => {
+        focusIsKeyboard();
+        const w = drawFour(true);
+
+        (w.get("[data-hot-id='2']").element as HTMLElement).focus();
+        await settle();
+        expect(barOn(w)).toBe(2);
+
+        (w.get("[data-testid='action-bar'] button").element as HTMLElement).focus();
+        await settle();
+        expect(barOn(w)).toBe(2);
+
+        (w.get("[data-hot-id='3']").element as HTMLElement).focus();
+        await settle();
+        expect(barOn(w)).toBe(3);
+
+        await wait(1000);
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("a keyboard's focus inside the bar holds it while the pointer goes, and once focus leaves the feed it goes after its grace", async () => {
+        focusIsKeyboard();
+        const w = drawFour(true);
+        const outside = document.createElement("button");
+        document.body.appendChild(outside);
+
+        (w.get("[data-hot-id='2']").element as HTMLElement).focus();
+        await settle();
+        (w.get("[data-testid='action-bar'] button").element as HTMLElement).focus();
+        await settle();
+
+        await pointTo(w, 4);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(1000);
+        expect(barOn(w)).toBe(2);
+
+        outside.focus();
+        await wait(219);
+        expect(barOn(w)).toBe(2);
+        await wait(1);
         expect(barOn(w)).toBeNull();
     });
 });
