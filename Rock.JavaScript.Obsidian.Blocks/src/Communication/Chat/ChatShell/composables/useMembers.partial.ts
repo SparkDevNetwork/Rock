@@ -24,9 +24,10 @@
 // stopped, nothing more is fetched and no answer still on its way reaches the screen.
 //
 // It also changes who is in the room, through Rock's doors, which decide every change: the
-// rights the panel offers are asked on each open, a remove is confirmed and then works on its row,
-// and Add people searches the people the room may take. The doors answer in their own words,
-// which are shown as they come.
+// rights the panel offers are asked once a room and kept until the room changes, read ahead as
+// the person reaches for the panel so they are there as it opens; a remove is confirmed and then
+// works on its row; and Add people searches the people the room may take. The doors answer in
+// their own words, which are shown as they come.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
@@ -76,8 +77,14 @@ export type MembersState = {
     query: string;
     search: MemberSearchState;
 
-    /** Whether Rock lets the reader add and remove people here, asked on every open; false until it answers. */
+    /** Whether Rock lets the reader add and remove people here; false until it answers. */
     canManageMembers: boolean;
+
+    /**
+     * Rock has not yet answered what the reader may change in this room and nothing is held for
+     * it, so the panel draws as loading rather than letting Add people arrive after the list.
+     */
+    isReadingRights: boolean;
 
     /** Whether the reader is a Chat Administrator, the only person who may remove a channel's leader. */
     isChatAdministrator: boolean;
@@ -194,6 +201,12 @@ export type Members = {
     stop: () => void;
 
     /**
+     * Reads ahead what the reader may change about a room, as they reach for its members, unless
+     * it is held or already on its way, so the panel opens with it.
+     */
+    readAhead: (channelId: string) => void;
+
+    /**
      * Who is in a room, or the room itself, changed on the person's topic: the panel holding that
      * room reads its roster and the reader's rights again, in place.
      */
@@ -238,6 +251,7 @@ function emptyState(): MembersState {
         query: "",
         search: noSearch(),
         canManageMembers: false,
+        isReadingRights: false,
         isChatAdministrator: false,
         lastLeaderPersonAliasGuid: null,
         removals: {},
@@ -364,6 +378,13 @@ export function createMembers(dependencies: MembersDependencies): Members {
     let addSearchTimer: ReturnType<typeof setTimeout> | null = null;
     let addGeneration = 0;
 
+    // Rock's answer for each room asked this session, kept until the room changes so a reopen
+    // draws its rights on the first frame; the read on its way for each, which a second ask
+    // joins; and a count each change moves on, so an answer asked before it is not kept.
+    const heldRights = new Map<string, MemberRights>();
+    const rightsReads = new Map<string, Promise<void>>();
+    const rightsGenerations = new Map<string, number>();
+
     /** How many people a page holds, as the platform sets it; a shorter page is the last. */
     function pageSize(): number {
         return dependencies.limits().member_page_size;
@@ -418,8 +439,8 @@ export function createMembers(dependencies: MembersDependencies): Members {
     }
 
     /**
-     * Reads the first page again in place, with no loading state, so the list and the Add people
-     * row focus returns to stay drawn; a failure keeps what is shown.
+     * Reads the first page again in place, with no loading state, so the list focus returns to
+     * stays drawn; a failure keeps what is shown.
      */
     async function refreshRoster(channelId: string): Promise<void> {
         const generation = rosterGeneration;
@@ -433,24 +454,58 @@ export function createMembers(dependencies: MembersDependencies): Members {
         state.hasMore = members.length >= pageSize();
     }
 
-    /** Asks Rock whether the reader may change who is in the room; anything but a yes is a no. */
-    async function loadRights(channelId: string): Promise<void> {
-        const door = dependencies.doors?.getRights;
-        if (!door) {
+    /** Draws what is held for the room on screen; nothing held, after a failed read, is a no. */
+    function showRights(channelId: string): void {
+        if (state.channelId !== channelId) {
             return;
         }
 
-        const generation = rosterGeneration;
-        try {
-            const rights = await door(channelId);
-            if (!isStopped && generation === rosterGeneration) {
-                state.canManageMembers = rights.canManageMembers === true;
-                state.lastLeaderPersonAliasGuid = rights.lastLeaderPersonAliasGuid?.toLowerCase() ?? null;
+        const rights = heldRights.get(channelId);
+        state.canManageMembers = rights?.canManageMembers === true;
+        state.lastLeaderPersonAliasGuid = rights?.lastLeaderPersonAliasGuid?.toLowerCase() ?? null;
+        state.isReadingRights = false;
+    }
+
+    /** Asks Rock whether the reader may change who is in a room, joining a read already on its way. */
+    function readRights(channelId: string): Promise<void> {
+        const door = dependencies.doors?.getRights;
+        const inFlight = rightsReads.get(channelId);
+        if (!door || isStopped) {
+            return Promise.resolve();
+        }
+        if (inFlight) {
+            return inFlight;
+        }
+
+        const generation = rightsGenerations.get(channelId) ?? 0;
+        const read = (async (): Promise<void> => {
+            let rights: MemberRights | null = null;
+            try {
+                rights = await door(channelId);
             }
-        }
-        catch {
-            // Intentionally ignored: with no answer nothing is offered, and the doors still decide.
-        }
+            catch {
+                // Intentionally ignored: with no answer nothing is offered, and the doors still decide.
+            }
+
+            if (isStopped || (rightsGenerations.get(channelId) ?? 0) !== generation) {
+                return;
+            }
+
+            rightsReads.delete(channelId);
+            if (rights) {
+                heldRights.set(channelId, rights);
+            }
+            showRights(channelId);
+        })();
+        rightsReads.set(channelId, read);
+        return read;
+    }
+
+    /** Forgets what is held or on its way for a room whose people or roles may have changed. */
+    function forgetRights(channelId: string): void {
+        rightsGenerations.set(channelId, (rightsGenerations.get(channelId) ?? 0) + 1);
+        rightsReads.delete(channelId);
+        heldRights.delete(channelId);
     }
 
     /** The query typed for one of the room's searches. */
@@ -611,10 +666,18 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            // Every open reads the roster and the reader's rights afresh, side by side.
+            // Every open reads the roster afresh; the reader's rights are drawn at once when held,
+            // and otherwise read beside it, the panel loading until both are in.
             reset();
             state.channelId = channelId;
-            await Promise.all([loadFirstPage(), loadRights(channelId)]);
+            if (heldRights.has(channelId)) {
+                showRights(channelId);
+                await loadFirstPage();
+                return;
+            }
+
+            state.isReadingRights = !!dependencies.doors?.getRights;
+            await Promise.all([loadFirstPage(), readRights(channelId)]);
         },
 
         loadMore: async (): Promise<void> => {
@@ -678,13 +741,26 @@ export function createMembers(dependencies: MembersDependencies): Members {
         close: reset,
 
         roomChanged: (channelId): void => {
-            if (isStopped || !channelId || channelId !== state.channelId) {
+            if (isStopped || !channelId) {
                 return;
             }
 
-            // Read as after the panel's own add or remove: whoever came or went may have been a
-            // leader, and the reader's own role may be what changed.
-            void Promise.all([refreshRoster(channelId), loadRights(channelId)]);
+            // Whoever came or went may have been a leader, and the reader's own role may be what
+            // changed, so nothing held for the room stands.
+            forgetRights(channelId);
+            if (channelId !== state.channelId) {
+                return;
+            }
+
+            // The panel holding it reads again in place, as after its own add or remove, keeping
+            // what it shows until the answers come.
+            void Promise.all([refreshRoster(channelId), readRights(channelId)]);
+        },
+
+        readAhead: (channelId): void => {
+            if (!isStopped && !heldRights.has(channelId)) {
+                void readRights(channelId);
+            }
         },
 
         stop: (): void => {
@@ -808,7 +884,8 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
             // Marked at once, then read again, since Rock may have given the role to more rows than
             // the one shown, and who leads last has changed.
-            await Promise.all([refreshRoster(channelId), loadRights(channelId)]);
+            forgetRights(channelId);
+            await Promise.all([refreshRoster(channelId), readRights(channelId)]);
         },
 
         dismissRemoval: (personAliasGuid): void => {

@@ -61,21 +61,6 @@
             </div>
 
             <div v-else class="chat-mb-list">
-                <!-- Offered only where Rock lets the reader add; a full group shows why it cannot take more. -->
-                <template v-if="canManageMembers && !isQuery">
-                    <div v-if="isGroupFull" class="chat-mb-add is-full" aria-disabled="true" data-testid="members-add-full">
-                        <span class="chat-mb-add-ic" aria-hidden="true"><Icon name="plus" /></span>
-                        <span class="chat-mb-add-t">Add people<span>Full, 9 of 9</span></span>
-                    </div>
-                    <button v-else
-                            type="button"
-                            class="chat-mb-add"
-                            data-testid="members-add"
-                            @click="emit('addPeople')">
-                        <span class="chat-mb-add-ic" aria-hidden="true"><Icon name="plus" /></span>Add people
-                    </button>
-                </template>
-
                 <p v-if="searchStatus === 'failed'" class="chat-mb-hint is-error" data-testid="members-hint">
                     <Icon name="alert" size="xs" />Couldn't search right now.
                     <button type="button" class="chat-mb-link" data-testid="members-search-retry" @click="emit('retrySearch')">Try again</button>
@@ -172,6 +157,25 @@
 
             <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
         </div>
+
+        <!--
+            Pinned under the list, so it is reachable however far the list scrolls, and drawn from
+            the first frame, the roster loading or not. A full group keeps it focusable but
+            disabled, its reason said under it and read with it.
+        -->
+        <template v-if="isAddShown" #foot>
+            <div class="chat-mb-foot" data-testid="members-foot">
+                <button type="button"
+                        class="chat-mb-add"
+                        data-testid="members-add"
+                        :aria-disabled="isGroupFull ? 'true' : undefined"
+                        :aria-describedby="isGroupFull ? fullHintId : undefined"
+                        @click="onAdd">
+                    <Icon name="user-plus" size="sm" />Add people
+                </button>
+                <p v-if="isGroupFull" :id="fullHintId" class="chat-mb-foot-hint" data-testid="members-add-full">Full, {{ groupCapacity }} of {{ groupCapacity }}</p>
+            </div>
+        </template>
     </PanelHost>
 </template>
 
@@ -423,69 +427,54 @@
     }
 }
 
+/* The foot under the list: one outlined button the width of the panel, as the design's members panel. */
+.chat-mb-foot {
+    flex: none;
+    padding: 10px 14px 12px;
+    border-top: 1px solid var(--chat-line);
+}
+
 .chat-mb-add {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     align-items: center;
+    justify-content: center;
     width: 100%;
-    padding: 6px 8px;
-    margin-top: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--chat-text-2);
-    text-align: left;
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-lg);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-mb-add:hover {
-    color: var(--chat-text);
-    background: var(--chat-hover);
-}
-
-.chat-mb-add-ic {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 36px;
     height: 36px;
+    padding: 0 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-mb-add .chat-ic {
     color: var(--chat-brand-ink);
-    border: 1.5px dashed var(--chat-line-strong);
-    border-radius: 50%;
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-mb-add:hover .chat-mb-add-ic {
-    background: var(--chat-brand-wash);
-    border-color: color-mix(in srgb, var(--chat-brand) 60%, var(--chat-line));
+.chat-mb-add:hover:not([aria-disabled="true"]) {
+    background: var(--chat-hover);
+    border-color: var(--chat-icon);
 }
 
-.chat-mb-add.is-full {
+.chat-mb-add[aria-disabled="true"] {
     cursor: default;
     color: var(--chat-muted);
-}
-
-.chat-mb-add.is-full:hover {
-    background: none;
-}
-
-.chat-mb-add.is-full .chat-mb-add-ic {
-    color: var(--chat-icon);
     opacity: .6;
 }
 
-.chat-mb-add-t {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.3;
+.chat-mb-add[aria-disabled="true"] .chat-ic {
+    color: var(--chat-icon);
 }
 
-.chat-mb-add-t span {
-    font-size: 12.5px;
-    font-weight: 500;
+.chat-mb-foot-hint {
+    margin: 6px 0 0;
+    font-size: 12px;
     color: var(--chat-muted);
+    text-align: center;
 }
 
 @media (hover: none) {
@@ -659,6 +648,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
@@ -839,6 +829,8 @@
     /** A group holds at most nine people, so a full one takes nobody more. */
     const groupCapacity = 9;
 
+    const fullHintId = `chat-mb-full-${newGuid()}`;
+
     // #endregion Values
 
     // #region Computed Values
@@ -899,6 +891,9 @@
 
     const isGroupFull = computed((): boolean => !props.isChannel && (props.memberCount ?? 0) >= groupCapacity);
 
+    /** Offered where Rock lets the reader add, unless the list itself is refused or failed. */
+    const isAddShown = computed((): boolean => props.canManageMembers && !props.refusal && !props.error);
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -948,6 +943,13 @@
     function onRowBeforeLeave(element: Element): void {
         const row = element as HTMLElement;
         row.style.setProperty("--chat-mb-row-h", `${row.offsetHeight}px`);
+    }
+
+    /** A full group's button is reached and heard, but asks for nothing. */
+    function onAdd(): void {
+        if (!isGroupFull.value) {
+            emit("addPeople");
+        }
     }
 
     function onLoadMore(): void {

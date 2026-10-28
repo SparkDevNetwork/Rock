@@ -593,6 +593,21 @@ describe("the way into the members panel", () => {
         expect(pair.find("[data-testid='header-members']").exists()).toBe(false);
     });
 
+    test("says the person is reaching for it, on hover, focus or press, so the panel's rights are read before the click", async () => {
+        const channel = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts() });
+        const pile = channel.get("[data-testid='header-members']");
+        await pile.trigger("pointerenter");
+        await pile.trigger("focus");
+        await pile.trigger("pointerdown");
+        expect(channel.emitted("membersIntent")).toHaveLength(3);
+        expect(channel.emitted("members")).toBeUndefined();
+        channel.unmount();
+
+        const group = mountHeader({ title: "Hike planning", kind: "group", people: [], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
+        await group.get("[data-testid='header-members']").trigger("pointerenter");
+        expect(group.emitted("membersIntent")).toHaveLength(1);
+    });
+
     test("shows as expanded while the members panel is open", async () => {
         const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts() });
         expect(w.get("[data-testid='header-members']").attributes("aria-expanded")).toBe("false");

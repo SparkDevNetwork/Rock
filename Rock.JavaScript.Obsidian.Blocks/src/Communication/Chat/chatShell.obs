@@ -91,6 +91,7 @@
                                 @threads="onListPanel('threads')"
                                 @mentions="onListPanel('mentions')"
                                 @members="onListPanel('members')"
+                                @membersIntent="activeChannelId && shell.members.readAhead(activeChannelId)"
                                 @turnOnPush="onTurnOnPush"
                                 @notify="onRoomChoice({ kind: 'notify', mode: $event })"
                                 @star="onRoomChoice({ kind: 'star' })"

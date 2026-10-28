@@ -598,6 +598,113 @@ describe("the reader's rights in the room", () => {
         expect(members.state.canManageMembers).toBe(false);
     });
 
+    test("while nothing is held for the room, the open says its rights are still being read", async () => {
+        const held = deferred<Rights>();
+        const { members } = doorHarness({ calls: [page([tom])], rights: [held] });
+
+        const opened = members.open(channel);
+        expect(members.state.isReadingRights).toBe(true);
+        held.resolve({ canManageMembers: true });
+        await opened;
+        await settle();
+
+        expect(members.state.isReadingRights).toBe(false);
+        expect(members.state.canManageMembers).toBe(true);
+    });
+
+    test("a failed read is a no, and no longer being read", async () => {
+        const failing = createMembers({
+            call: () => Promise.resolve(page([tom])),
+            doors: { getRights: () => Promise.reject(new Error("unreached")) },
+            limits
+        });
+
+        await failing.open(channel);
+        await settle();
+
+        expect(failing.state.isReadingRights).toBe(false);
+        expect(failing.state.canManageMembers).toBe(false);
+    });
+
+    test("rights read once are kept for the room, so a reopen draws them on its first frame and asks nothing", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [{ canManageMembers: true, lastLeaderPersonAliasGuid: guid(1) }] });
+        await members.open(channel);
+        await settle();
+        members.close();
+
+        void members.open(channel);
+        expect(members.state.canManageMembers).toBe(true);
+        expect(members.state.lastLeaderPersonAliasGuid).toBe(guid(1));
+        expect(members.state.isReadingRights).toBe(false);
+        await settle();
+
+        expect(doorCalls).toEqual([{ door: "getRights", args: [channel] }]);
+    });
+
+    test("reading ahead, as the person reaches for the panel, has the rights there when it opens", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom])], rights: [{ canManageMembers: true }] });
+
+        members.readAhead(channel);
+        members.readAhead(channel);
+        await settle();
+        expect(members.state.channelId).toBeNull();
+
+        void members.open(channel);
+        expect(members.state.canManageMembers).toBe(true);
+        expect(members.state.isReadingRights).toBe(false);
+        await settle();
+
+        expect(doorCalls).toHaveLength(1);
+    });
+
+    test("an open while a read ahead is still on its way waits for that answer rather than asking again", async () => {
+        const held = deferred<Rights>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom])], rights: [held] });
+
+        members.readAhead(channel);
+        const opened = members.open(channel);
+        expect(members.state.isReadingRights).toBe(true);
+        held.resolve({ canManageMembers: true });
+        await opened;
+        await settle();
+
+        expect(doorCalls).toHaveLength(1);
+        expect(members.state.canManageMembers).toBe(true);
+    });
+
+    test("a room changed elsewhere drops what is held for it, so its next open asks again", async () => {
+        const { members, doorCalls } = doorHarness({ calls: [page([tom]), page([tom])], rights: [{ canManageMembers: true }, { canManageMembers: false }] });
+        await members.open(channel);
+        await settle();
+        members.close();
+
+        members.roomChanged(channel);
+        const opened = members.open(channel);
+        expect(members.state.isReadingRights).toBe(true);
+        expect(members.state.canManageMembers).toBe(false);
+        await opened;
+        await settle();
+
+        expect(doorCalls.map(c => c.args[0])).toEqual([channel, channel]);
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
+    test("an answer asked before the room changed is not kept", async () => {
+        const first = deferred<Rights>();
+        const { members, doorCalls } = doorHarness({ calls: [page([tom])], rights: [first, { canManageMembers: false }] });
+
+        members.readAhead(channel);
+        members.roomChanged(channel);
+        first.resolve({ canManageMembers: true });
+        await settle();
+
+        await members.open(channel);
+        await settle();
+
+        expect(doorCalls).toHaveLength(2);
+        expect(members.state.canManageMembers).toBe(false);
+    });
+
     test("a page with no doors offers nothing, and whether the reader is a Chat Administrator comes from Rock's page load", async () => {
         const bare = createMembers({ call: () => Promise.resolve(page([tom])), limits });
         await bare.open(channel);
