@@ -217,14 +217,13 @@ describe("the timeline", () => {
         expect(sections[sections.length - 1].element.contains(pending[1])).toBe(true);
     });
 
-    test("a failed send's Try again and Delete reach the shell by the row's local id", async () => {
+    // What to do about a failed send is the strip's, over the composer; the feed only marks it.
+    test("a failed send is marked Not sent, with nothing on the row to press", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("b", "failed")] });
+        const row = wrapper.get("[data-testid='pending-row']");
 
-        await wrapper.get("[data-testid='retry-send']").trigger("click");
-        await wrapper.get("[data-testid='discard-send']").trigger("click");
-
-        expect(wrapper.emitted("retry")).toEqual([["b"]]);
-        expect(wrapper.emitted("discard")).toEqual([["b"]]);
+        expect(row.get("[data-testid='message-state']").text()).toBe("Not sent");
+        expect(row.findAll("button").filter(button => /Try again|Delete/.test(button.text()))).toHaveLength(0);
     });
 
     test("each stored row still carries its message id, which the read position is saved from", () => {
@@ -1145,7 +1144,7 @@ describe("a send that fails", () => {
     test("is scrolled into view, out from under the feed's bottom fade", async () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")] });
         await nextTick();
-        // the failed row grows by its Not sent line
+        // the strip over the composer takes its height from the feed
         placeScroll(wrapper, 1500, 2060);
 
         await wrapper.setProps({ pending: [pendingRow("a", "failed")] });

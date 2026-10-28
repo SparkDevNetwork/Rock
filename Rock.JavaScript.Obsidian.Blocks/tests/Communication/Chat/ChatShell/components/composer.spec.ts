@@ -640,3 +640,187 @@ describe("the composer's counter", () => {
         expect(wrapper.get("[data-testid='composer-count']").text()).toBe("");
     });
 });
+
+// A thread's reply can also go to the conversation. The choice is the chat's own switch, the one
+// Chat settings draws, at its small size in the foot line, named by the words beside it, and a
+// press on the words toggles it as a label does. It is per message: each send turns it off.
+describe("the reply composer's Also send switch", () => {
+    function alsoSwitch(wrapper: VueWrapper): ReturnType<VueWrapper["get"]> {
+        return wrapper.get("[data-testid='composer-also'] [role='switch']");
+    }
+
+    test("is the chat's small switch, off, named by the words beside it", () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+        const control = alsoSwitch(wrapper);
+
+        expect(wrapper.find("[data-testid='composer-also'] input").exists()).toBe(false);
+        expect(control.element.tagName).toBe("BUTTON");
+        expect(control.attributes("type")).toBe("button");
+        expect(control.classes()).toEqual(expect.arrayContaining(["chat-switch", "is-sm"]));
+        expect(control.attributes("aria-checked")).toBe("false");
+        // the label around it gives it its name
+        expect(wrapper.get("[data-testid='composer-also']").element.tagName).toBe("LABEL");
+        expect(wrapper.get("[data-testid='composer-also']").text().replace(/\s+/g, " ").trim()).toBe("Also send to young-adults");
+        expect(wrapper.get("[data-testid='composer-also'] b").text()).toBe("young-adults");
+    });
+
+    test("turns on and off from the switch, and the reply carries the choice", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+
+        await alsoSwitch(wrapper).trigger("click");
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("true");
+        await alsoSwitch(wrapper).trigger("click");
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("false");
+        await alsoSwitch(wrapper).trigger("click");
+
+        await type(wrapper, "Count me in");
+        await wrapper.get("form").trigger("submit");
+
+        expect(wrapper.emitted("send")).toEqual([["Count me in", true]]);
+    });
+
+    test("turns off again after each send", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+        await alsoSwitch(wrapper).trigger("click");
+        await type(wrapper, "Count me in");
+        await wrapper.get("form").trigger("submit");
+
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("false");
+
+        await type(wrapper, "And Ben");
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")?.[1]).toEqual(["And Ben", false]);
+    });
+
+    test("a press on the words toggles it, as a label does", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+
+        await wrapper.get("[data-testid='composer-also'] b").trigger("click");
+
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("true");
+    });
+
+    test("a direct message's thread names the conversation", () => {
+        const wrapper = mountComposer({ props: { isThread: true, title: "Anna Reyes" } });
+
+        expect(wrapper.get("[data-testid='composer-also']").text().replace(/\s+/g, " ").trim()).toBe("Also send to the conversation");
+    });
+});
+
+// A send that failed is marked on its message; what to do about it waits here, in a strip over the
+// box the person types in: what happened, the newest reason, and real buttons. One strip speaks for
+// every failed send in the place the box types into, by count, and its buttons act on them all.
+// A failure is said aloud once, assertively, when it happens; a strip already there when the
+// person comes back to the room, or opens the box, is not said again.
+describe("the composer's strip for a failed send", () => {
+    const offline = { count: 1, reason: "You're offline.", canRetry: true };
+
+    function strip(wrapper: VueWrapper): ReturnType<VueWrapper["get"]> {
+        return wrapper.get("[data-testid='composer-failed']");
+    }
+
+    function announced(wrapper: VueWrapper): string {
+        return wrapper.get("[data-testid='composer-failed-announcement']").text();
+    }
+
+    test("is not drawn while nothing failed", () => {
+        const wrapper = mountComposer({ props: { title: "young-adults", isChannel: true } });
+
+        expect(wrapper.find("[data-testid='composer-failed']").exists()).toBe(false);
+    });
+
+    test("says what happened and why above the box, with Try again and Delete as real buttons", () => {
+        const wrapper = mountComposer({ props: { title: "young-adults", isChannel: true, sendFailure: offline } });
+
+        expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("Your message wasn't sent");
+        expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
+        expect(strip(wrapper).find(".chat-fail-mark").exists()).toBe(true);
+        const buttons = strip(wrapper).findAll("button");
+        expect(buttons.map(button => button.text())).toEqual(["Try again", "Delete"]);
+        expect(buttons.every(button => button.attributes("type") === "button")).toBe(true);
+        // over the box, never under it
+        const form = wrapper.get("form").element;
+        expect(strip(wrapper).element.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    test("a failure that said nothing has no reason line", () => {
+        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: null, canRetry: true } } });
+
+        expect(strip(wrapper).find("[data-testid='composer-failed-reason']").exists()).toBe(false);
+    });
+
+    test("several are counted, and its buttons act on them all", () => {
+        const wrapper = mountComposer({ props: { sendFailure: { count: 3, reason: "You're offline.", canRetry: true } } });
+
+        expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("3 messages weren't sent");
+        expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Try again", "Delete all"]);
+    });
+
+    test("a send refused for good shows its sentence and Delete alone", () => {
+        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: "You can't mention everyone in this channel.", canRetry: false } } });
+
+        expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You can't mention everyone in this channel.");
+        expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Delete"]);
+    });
+
+    test("Try again and Delete reach the owner, and focus goes back to the box", async () => {
+        const wrapper = mountComposer({ props: { sendFailure: offline }, attachTo: document.body });
+
+        await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
+        expect(wrapper.emitted("retryFailed")).toHaveLength(1);
+        expect(document.activeElement).toBe(editorOf(wrapper));
+
+        await strip(wrapper).get("[data-testid='composer-failed-discard']").trigger("click");
+        expect(wrapper.emitted("discardFailed")).toHaveLength(1);
+        expect(document.activeElement).toBe(editorOf(wrapper));
+        wrapper.unmount();
+    });
+
+    test("stays over a locked box, so a failed send can still be deleted", () => {
+        const wrapper = mountComposer({ props: { isLocked: true, sendFailure: offline } });
+
+        expect(wrapper.find("[data-testid='composer-locked']").exists()).toBe(true);
+        expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Try again", "Delete"]);
+    });
+
+    test("says a new failure aloud once, assertively", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "c1" } });
+        const region = wrapper.get("[data-testid='composer-failed-announcement']");
+        expect(region.attributes("aria-live")).toBe("assertive");
+        expect(announced(wrapper)).toBe("");
+
+        await wrapper.setProps({ sendFailure: offline });
+        expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
+
+        // the same failures again, as another send of the room changes, say nothing new
+        await wrapper.setProps({ sendFailure: { ...offline } });
+        expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
+
+        // a second failure is said
+        await wrapper.setProps({ sendFailure: { count: 2, reason: null, canRetry: true } });
+        expect(announced(wrapper)).toBe("2 messages weren't sent.");
+    });
+
+    test("says a failure again when a try again fails", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "c1" } });
+        await wrapper.setProps({ sendFailure: offline });
+        const first = wrapper.get("[data-testid='composer-failed-announcement'] span").element;
+
+        await wrapper.setProps({ sendFailure: null });
+        await wrapper.setProps({ sendFailure: offline });
+
+        // drawn afresh, so a screen reader reads the same words again
+        expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
+        expect(wrapper.get("[data-testid='composer-failed-announcement'] span").element).not.toBe(first);
+    });
+
+    test("does not say failures already there when the box opens or the person comes back to the room", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "c1", sendFailure: offline } });
+        expect(announced(wrapper)).toBe("");
+
+        await wrapper.setProps({ conversationKey: "c2", sendFailure: null });
+        await wrapper.setProps({ conversationKey: "c1", sendFailure: offline });
+
+        expect(announced(wrapper)).toBe("");
+    });
+});

@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button ref="buttonElement"
+            type="button"
+            class="chat-switch"
+            :class="{ 'is-sm': size === 'sm' }"
+            role="switch"
+            :aria-checked="isOn ? 'true' : 'false'">
+        <!-- The press is the owner's: a setting saves it, a composer keeps it for the next send. -->
+        <span class="chat-switch-knob"></span>
+    </button>
+</template>
+
+<style scoped>
+/*
+    The chat's one switch: the line's color off and the church's fill on, its knob sliding across.
+    Its size is the track's; the knob keeps a 2px margin and slides the track's width less its own.
+*/
+.chat-switch {
+    --chat-switch-w: 36px;
+    --chat-switch-h: 20px;
+    position: relative;
+    flex: none;
+    width: var(--chat-switch-w);
+    height: var(--chat-switch-h);
+    padding: 0;
+    background: var(--chat-line-strong);
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* The small size, for a choice that rides a foot line rather than a settings row. */
+.chat-switch.is-sm {
+    --chat-switch-w: 28px;
+    --chat-switch-h: 16px;
+}
+
+.chat-switch:hover {
+    background: color-mix(in srgb, var(--chat-line-strong) 80%, var(--chat-text));
+}
+
+.chat-switch[aria-checked="true"] {
+    background: var(--chat-brand-fill);
+}
+
+.chat-switch[aria-checked="true"]:hover {
+    background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
+}
+
+.chat-switch:focus-visible {
+    outline-offset: 3px;
+}
+
+.chat-switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(var(--chat-switch-h) - 4px);
+    height: calc(var(--chat-switch-h) - 4px);
+    background: var(--chat-knob);
+    border-radius: 50%;
+    box-shadow: var(--chat-shadow-knob);
+    transition: transform var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-switch[aria-checked="true"] .chat-switch-knob {
+    transform: translateX(calc(var(--chat-switch-w) - var(--chat-switch-h)));
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+
+    defineProps({
+        isOn: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A settings row's 36px track, or the small 28px one a foot line holds. */
+        size: {
+            type: String as PropType<"md" | "sm">,
+            default: "md"
+        }
+    });
+
+    // #region Values
+
+    const buttonElement = ref<HTMLButtonElement>();
+
+    // #endregion Values
+
+    // #region Functions
+
+    /** Gives the switch focus, as a press on its words does. */
+    function focus(): void {
+        buttonElement.value?.focus();
+    }
+
+    // #endregion Functions
+
+    defineExpose({ focus });
+</script>

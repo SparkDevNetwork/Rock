@@ -119,8 +119,6 @@
                                 :isEditSaving="isEditSaving"
                                 :reactionHost="reactionHost"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
-                                @retry="emit('retry', $event)"
-                                @discard="emit('discard', $event)"
                                 @jump="emit('jump', $event)"
                                 @messageAction="emit('messageAction', $event)" />
                 </div>
@@ -153,7 +151,10 @@
                       :isQuoteOwn="isQuoteOwn"
                       :emojiSource="emojiSource"
                       :mentionSource="mentionSource"
+                      :sendFailure="replyFailure"
                       @send="onSend"
+                      @retryFailed="onRetryFailed"
+                      @discardFailed="onDiscardFailed"
                       @update:text="emit('draftText', $event)"
                       @mention="emit('draftMention', $event)"
                       @editLast="emit('editLast')"
@@ -315,7 +316,7 @@
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { useSentHold } from "../composables/useSend.partial";
+    import { failedSends, retryableSends, sendFailure, SendFailure, useSentHold } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
@@ -638,6 +639,9 @@
     /** This root's replies the person is still sending, as the conversation draws its own. */
     const pendingReplies = computed((): PendingMessage[] => props.root ? props.pending.filter(row => row.parentId === props.root?.id) : []);
 
+    /** What this thread's failed replies come to, for the strip over the reply composer. */
+    const replyFailure = computed((): SendFailure | null => sendFailure(pendingReplies.value));
+
     /** The keys of the person's replies that settled while the thread was open, each showing "Sent" for a moment, as in the conversation. */
     const justSentKeys = useSentHold(() => pendingReplies.value, bodyElement);
 
@@ -708,6 +712,16 @@
     async function onFollowRetry(): Promise<void> {
         await nextTick();
         followElement.value?.focus();
+    }
+
+    /** Try again on the strip: each of the thread's failed replies that can go, for the owner to resend. */
+    function onRetryFailed(): void {
+        retryableSends(pendingReplies.value).forEach(row => emit("retry", row.localId));
+    }
+
+    /** Delete on the strip: every failed reply of the thread. */
+    function onDiscardFailed(): void {
+        failedSends(pendingReplies.value).forEach(row => emit("discard", row.localId));
     }
 
     function onSend(body: string, isAlsoSent?: boolean): void {

@@ -33,6 +33,7 @@ import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
+import { messageForError } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 import { ChatSettings, readOnlySentence } from "./useSession.partial";
 
@@ -84,6 +85,98 @@ export function isFinalRefusal(error: ChatError, isFirstMessage: boolean): boole
     }
 
     return finalRefusalCodes.has(error.code);
+}
+
+/** The failures that mean nothing could be reached: the platform, or Rock's door before it. */
+const unreachedCodes = new Set(["rpc.transport", "door.unreachable"]);
+
+/**
+ * Why a try failed, in words the person can read, or null where nothing was said. A refusal for
+ * good always has its sentence; a failure to reach anything is the person being offline; any other
+ * failure says only what the server wrote for it, or that the session ended.
+ *
+ * @param error The failure that ended the try.
+ * @param isFinal Whether the same text can only be refused again.
+ *
+ * @returns The sentence, or null.
+ */
+function failureReason(error: ChatError, isFinal: boolean): string | null {
+    if (isFinal) {
+        return messageForError(error);
+    }
+
+    if (unreachedCodes.has(error.code)) {
+        return "You're offline.";
+    }
+
+    return error.text || error.severity === "session" ? messageForError(error) : null;
+}
+
+/** What the strip over a composer says for the person's failed sends in the place it types into. */
+export type SendFailure = {
+    /** How many sends failed there. */
+    count: number;
+
+    /** The newest failure's reason, or null where it said nothing. */
+    reason: string | null;
+
+    /** Whether any of them can be tried again; one refused for good offers only Delete. */
+    canRetry: boolean;
+};
+
+/**
+ * The sends a strip's Delete drops: every one that failed.
+ *
+ * @param rows The pending and failed sends in one place, oldest first.
+ *
+ * @returns The failed ones, oldest first.
+ */
+export function failedSends(rows: PendingMessage[]): PendingMessage[] {
+    return rows.filter(row => row.status === "failed");
+}
+
+/**
+ * The sends a strip's Try again resends: every failed one not refused for good, oldest first, so
+ * they land in the order they were written.
+ *
+ * @param rows The pending and failed sends in one place, oldest first.
+ *
+ * @returns The ones to send again.
+ */
+export function retryableSends(rows: PendingMessage[]): PendingMessage[] {
+    return failedSends(rows).filter(row => !row.refusal);
+}
+
+/**
+ * What the strip over a composer says, from the person's sends in the place its box types into.
+ *
+ * @param rows The pending and failed sends there, oldest first.
+ *
+ * @returns The strip's words, or null while nothing failed.
+ */
+export function sendFailure(rows: PendingMessage[]): SendFailure | null {
+    const failed = failedSends(rows);
+    if (failed.length === 0) {
+        return null;
+    }
+
+    return {
+        count: failed.length,
+        reason: failed[failed.length - 1].reason ?? null,
+        canRetry: retryableSends(rows).length > 0
+    };
+}
+
+/**
+ * Whether the conversation draws a send: every message, and a reply only when it was also sent
+ * there. The thread draws its replies whatever they chose.
+ *
+ * @param row The send.
+ *
+ * @returns True when the conversation's feed draws it.
+ */
+export function isInConversation(row: PendingMessage): boolean {
+    return typeof row.parentId !== "number" || row.isShownInChannel === true;
 }
 
 /** What the platform's send answers. */
@@ -343,6 +436,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
         row.status = "sending";
         row.errorCode = null;
         delete row.refusal;
+        delete row.reason;
 
         let endTry!: () => void;
         const copyLanded = new Promise<boolean>(resolve => endTry = () => resolve(true));
@@ -378,8 +472,13 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
             row.status = "failed";
             row.errorCode = result.error.code;
-            if (isFinalRefusal(result.error, row.isFirstMessage === true)) {
+            const isFinal = isFinalRefusal(result.error, row.isFirstMessage === true);
+            if (isFinal) {
                 row.refusal = result.error;
+            }
+            const reason = failureReason(result.error, isFinal);
+            if (reason) {
+                row.reason = reason;
             }
             return false;
         }

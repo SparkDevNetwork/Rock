@@ -759,6 +759,12 @@ export type PendingMessage = {
     refusal?: ChatError;
 
     /**
+     * Why the last try failed, in words the person can read, where anything was said: a refusal's
+     * sentence, "You're offline." when nothing could be reached, or the server's own sentence.
+     */
+    reason?: string;
+
+    /**
      * Set on a direct message's first message, whose conversation the platform may not hold yet,
      * so a refusal as not a member is not taken as final.
      */

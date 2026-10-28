@@ -1,6 +1,33 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-thread': isThread, 'is-phone': isPhone }">
+        <!--
+            The person's failed sends here, each marked Not sent on its message: what happened, the
+            newest reason and the choices, by the box they type in. Over a locked box too, so a
+            send that cannot go can still be deleted.
+        -->
+        <div v-if="sendFailure" class="chat-composer-failed" data-testid="composer-failed">
+            <span class="chat-composer-failed-text">
+                <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
+                <b data-testid="composer-failed-lead">{{ failedLead }}</b>
+                <span v-if="sendFailure.reason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ sendFailure.reason }}</span>
+            </span>
+            <span class="chat-composer-failed-acts">
+                <button v-if="sendFailure.canRetry"
+                        type="button"
+                        class="chat-ls-btn is-retry"
+                        data-testid="composer-failed-retry"
+                        @click="onRetryFailed"><Icon name="refresh" size="xs" />Try again</button>
+                <button type="button"
+                        class="chat-ls-btn"
+                        data-testid="composer-failed-discard"
+                        @click="onDiscardFailed"><Icon name="trash" size="xs" />{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</button>
+            </span>
+        </div>
+
+        <!-- A failure said once as it happens; keyed, so the same words are read again for the next one. -->
+        <span class="chat-sr-only" aria-live="assertive" data-testid="composer-failed-announcement"><span v-if="failedAnnouncement" :key="failedAnnouncement.count">{{ failedAnnouncement.text }}</span></span>
+
         <!-- A paused service, or a room the person cannot post in, in the server's own words. -->
         <div v-if="isLocked || lockedReason" class="chat-composer-locked" data-testid="composer-locked">
             <Icon name="lock" />
@@ -54,8 +81,10 @@
             </form>
 
             <div class="chat-composer-foot">
+                <!-- The label names the switch and passes a press on its words to it. -->
                 <label v-if="isThread" class="chat-composer-also" data-testid="composer-also">
-                    <input v-model="isAlsoSent" type="checkbox"> {{ alsoText }}
+                    <Switch size="sm" :isOn="isAlsoSent" @click="isAlsoSent = !isAlsoSent" />
+                    <span>Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
                 </label>
                 <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
@@ -100,6 +129,56 @@
 
 .chat-composer.is-phone {
     padding: 0 10px 10px;
+}
+
+/* The failed sends' strip: a soft danger card over the box, rising into place as it appears. */
+.chat-composer-failed {
+    --chat-fail-mark-s: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    padding: 8px 8px 8px 12px;
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-lg);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chat-danger) 28%, transparent);
+    animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* The mark beside the first line, the reason under it; a long reason wraps in its own column. */
+.chat-composer-failed-text {
+    display: grid;
+    flex: 1 1 200px;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 9px;
+    align-items: center;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.chat-composer-failed-text b {
+    font-weight: 700;
+    color: var(--chat-danger-ink);
+}
+
+.chat-composer-failed-reason {
+    grid-column: 2;
+    font-size: 12.5px;
+    color: var(--chat-text-2);
+}
+
+/* At a narrow width the buttons wrap under the words, still at the strip's end. */
+.chat-composer-failed-acts {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    margin-left: auto;
+}
+
+/* Try again is the way forward, in the danger ink; Delete stays the plain outline. */
+.chat-composer-failed-acts .chat-ls-btn.is-retry {
+    color: var(--chat-danger-ink);
 }
 
 /* The message being quoted, above the box, rising into place as it appears. */
@@ -231,20 +310,18 @@
 
 .chat-composer-also {
     display: inline-flex;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
     margin: 0;
+    font-size: 12px;
     font-weight: 500;
     color: var(--chat-text-2);
     cursor: pointer;
 }
 
-/* Rock's theme nudges a checkbox down and sizes it; here it sits on the label's line at 15px. */
-.chat-composer-also input {
-    width: 15px;
-    height: 15px;
-    margin: 0;
-    accent-color: var(--chat-brand);
+.chat-composer-also b {
+    font-weight: 600;
+    color: var(--chat-text);
 }
 
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
@@ -278,28 +355,30 @@
     color: var(--chat-icon);
 }
 
-/* Reduced motion: the send button does not lift or press, and the quote only fades in. */
+/* Reduced motion: the send button does not lift or press, and the strips only fade in. */
 @media (prefers-reduced-motion: reduce) {
     .chat-composer-send.is-ready:hover,
     .chat-composer-send.is-ready:active {
         transform: none;
     }
 
-    .chat-composer-quote {
+    .chat-composer-quote,
+    .chat-composer-failed {
         animation-name: chat-crossfade;
     }
 }
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
-    import { canMakeSendKey, textAfterSend } from "../composables/useSend.partial";
+    import { canMakeSendKey, SendFailure, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Switch from "../ui/switch.partial.obs";
 
     const props = defineProps({
         isDisabled: {
@@ -414,6 +493,12 @@
         conversationKey: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** What the person's failed sends in the place the box types into come to, or null while none failed. */
+        sendFailure: {
+            type: Object as PropType<SendFailure | null>,
+            default: null
         }
     });
 
@@ -438,7 +523,11 @@
         /** Focus left the box, so the shell knows its text is no longer being typed. */
         (e: "blur"): void;
         /** A send over the room's limit was held back; the block says why, naming the limit. */
-        (e: "overLimit", maxLength: number): void
+        (e: "overLimit", maxLength: number): void;
+        /** Try again on the failed sends here: every one that can be tried again. */
+        (e: "retryFailed"): void;
+        /** Delete on the failed sends here: every one of them. */
+        (e: "discardFailed"): void
     }>();
 
     // #region Values
@@ -462,6 +551,9 @@
     /** The counter shows from this many characters short of the limit. */
     const countdownFrom = 500;
 
+    /** The last failure said aloud, counted so the same words are read again for the next one. */
+    const failedAnnouncement = ref<{ text: string, count: number } | null>(null);
+
     // #endregion Values
 
     // #region Computed Values
@@ -474,8 +566,8 @@
         return props.title ? `Message ${props.title}` : "";
     });
 
-    /** A channel is named, plain, as everywhere else; a direct message's people are "the conversation". */
-    const alsoText = computed((): string => props.isChannel && props.title ? `Also send to ${props.title}` : "Also send to the conversation");
+    /** A channel is named, plain, as everywhere else; a direct message's people are "the conversation", so null. */
+    const alsoName = computed((): string | null => props.isChannel && props.title ? props.title : null);
 
     const quoteTitle = computed((): string => {
         if (props.isQuoteOwn) {
@@ -495,6 +587,12 @@
 
         const text = quote.pieces?.length ? quote.pieces.map(piece => piece.text).join("") : quote.body ?? "";
         return text.replace(/\s+/g, " ").trim();
+    });
+
+    /** The strip's first line: one message, or how many. */
+    const failedLead = computed((): string => {
+        const count = props.sendFailure?.count ?? 0;
+        return count > 1 ? `${count} messages weren't sent` : "Your message wasn't sent";
     });
 
     /** The text's length as the platform counts it, by code point, so an emoji is one. */
@@ -560,6 +658,20 @@
         isAlsoSent.value = false;
     }
 
+    /**
+     * Try again and Delete each take the strip's buttons away, as the sends go back to sending or
+     * go, so focus goes on to the box rather than being lost with them.
+     */
+    function onRetryFailed(): void {
+        emit("retryFailed");
+        editor.value?.focus();
+    }
+
+    function onDiscardFailed(): void {
+        emit("discardFailed");
+        editor.value?.focus();
+    }
+
     /** The emoji button opens the picker, or closes it when it is already open. */
     function onEmojiClick(): void {
         if (isEmojiOpen.value || !props.emojiSource) {
@@ -623,4 +735,23 @@
     }
 
     // #endregion Event Handlers
+
+    // #region Watchers
+
+    // A failure is said as it happens: one appearing, or another joining it, in the place the box
+    // was already typing into. Failures already there when the box opens or comes back to a room
+    // were said when they happened, so moving between rooms says nothing.
+    watch(() => [props.sendFailure, props.conversationKey] as const, ([failure, key], [previous, previousKey]) => {
+        if (key !== previousKey || !failure) {
+            failedAnnouncement.value = null;
+            return;
+        }
+
+        if (!previous || failure.count > previous.count) {
+            const text = failure.reason ? `${failedLead.value}. ${failure.reason}` : `${failedLead.value}.`;
+            failedAnnouncement.value = { text, count: (failedAnnouncement.value?.count ?? 0) + 1 };
+        }
+    });
+
+    // #endregion Watchers
 </script>
