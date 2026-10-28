@@ -222,3 +222,13 @@ describe("the reply line, in a channel", () => {
         expect(w.emitted("jump")).toEqual([[40]]);
     });
 });
+
+// A quoted message of files alone reads as its files, in the platform's words.
+describe("a quote of files alone", () => {
+    test("reads as its files", () => {
+        const photo = { id: "d1", key: "t/d1", kind: "image", name: "p.jpg", size: 9, type: "image/jpeg", width: 4, height: 3 };
+        const wrapper = draw(reply(ben, quoted({ body: null, attachments: [photo, { ...photo, id: "d2" }] })));
+
+        expect(wrapper.get("[data-testid='quote-body']").text()).toBe("2 photos");
+    });
+});

@@ -1497,3 +1497,37 @@ describe("the author's face, with no quote connector to paint over", () => {
         expect(style).not.toMatch(/\.chat-cm-av\s*\{[^}]*position:/);
     });
 });
+
+// A message's files are drawn under its text in both looks; a message of files alone draws no
+// empty bubble, and a message whose text is withheld shows none of its files.
+describe("a message's files", () => {
+    const photo = { id: "d0000000-0000-4000-8000-000000000001", key: "t/d0000000-0000-4000-8000-000000000001", kind: "image" as const, name: "p.jpg", size: 900, type: "image/jpeg", width: 400, height: 300 };
+
+    test.each([false, true])("files alone draw the files and no empty text (Community: %s)", isChannel => {
+        const wrapper = draw({ message: message({ body: null, attachments: [photo] }), isChannel });
+
+        expect(wrapper.find("[data-testid='attachment-grid']").exists()).toBe(true);
+        expect(wrapper.find(".chat-bubble").exists()).toBe(false);
+        expect(wrapper.find(".chat-cm-text").exists()).toBe(isChannel);
+    });
+
+    test("text and files draw both, the files after the text", () => {
+        const wrapper = draw({ message: message({ attachments: [photo] }) });
+
+        expect(wrapper.find(".chat-bubble").text()).toContain("Morning all");
+        expect(wrapper.find("[data-testid='attachment-grid']").exists()).toBe(true);
+    });
+
+    test("a deleted or hidden message draws none of its files", () => {
+        expect(draw({ message: message({ body: null, attachments: [photo], deleted_at: nineOhTwo }) }).find("[data-testid='attachment-grid']").exists()).toBe(false);
+        expect(draw({ message: message({ body: null, attachments: [photo], visibility: "hidden", visibility_notice: "Hidden." }) }).find("[data-testid='attachment-grid']").exists()).toBe(false);
+    });
+
+    test("a send still going draws its files from what was picked", () => {
+        const wrapper = draw({ pending: pendingRow({ body: "", attachments: [photo] }), isOwn: true });
+
+        expect(wrapper.find("[data-testid='attachment-grid']").exists()).toBe(true);
+        expect(wrapper.find(".chat-bubble").exists()).toBe(false);
+        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Sending…");
+    });
+});

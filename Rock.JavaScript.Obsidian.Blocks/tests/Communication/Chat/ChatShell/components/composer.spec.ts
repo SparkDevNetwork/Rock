@@ -1040,3 +1040,13 @@ describe("the composer's files", () => {
         expect(pasted.defaultPrevented).toBe(true);
     });
 });
+
+describe("the composer's quote of files alone", () => {
+    test("reads as its files", () => {
+        const pdf = { id: "d1", key: "t/d1", kind: "file" as const, name: "Q3.pdf", size: 9, type: "application/pdf", width: null, height: null };
+        const quote = { id: 40, person_alias_guid: "a0000002-0000-4000-8000-000000000000", sender_nick_name: "Anna", sender_last_name: "Reyes", message_type: "text", body: null, attachments: [pdf], created_at: "2026-10-15T09:00:00Z" };
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", quote } as Record<string, unknown> });
+
+        expect(wrapper.get("[data-testid='composer-quote-preview']").text()).toBe("File: Q3.pdf");
+    });
+});
