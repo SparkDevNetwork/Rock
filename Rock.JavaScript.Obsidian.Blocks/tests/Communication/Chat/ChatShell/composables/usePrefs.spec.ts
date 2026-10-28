@@ -331,7 +331,7 @@ describe("a room's notify mode", () => {
 });
 
 describe("star and hide", () => {
-    test("starring writes the star alone and moves the room into Starred at once", async () => {
+    test("starring writes the room's whole sidebar setting and moves the room into Starred at once", async () => {
         const s = setup();
 
         void s.prefs.setStarred(prayer, true, false);
@@ -339,7 +339,7 @@ describe("star and hide", () => {
         expect(rowOf(s, prayer)?.is_favorite).toBe(true);
         // starred rooms sort first, as the platform's sidebar sorts them
         expect(s.channels.rows[0].channel_id).toBe(prayer);
-        expect(s.prefCalls.map(c => c.changes)).toEqual([{ is_favorite: true }]);
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ is_favorite: true, hidden: false }]);
 
         s.prefCalls[0].answer.resolve(written(prayer, { is_favorite: true }));
         await settle();
@@ -354,7 +354,7 @@ describe("star and hide", () => {
 
         void s.prefs.setHidden(team, true);
 
-        expect(s.prefCalls.map(c => c.changes)).toEqual([{ hidden: true, is_favorite: false }]);
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ is_favorite: false, hidden: true }]);
         expect(rowOf(s, team)?.is_favorite).toBe(false);
         expect(rowOf(s, team)?.hidden).toBe(true);
         // What hiding means is said with the change, not after its save.
@@ -367,12 +367,12 @@ describe("star and hide", () => {
         expect(s.prefs.state.announcement).toBeNull();
     });
 
-    test("hiding a room that is not starred writes Hide alone", async () => {
+    test("hiding a room that is not starred writes it hidden and still not starred", async () => {
         const s = setup();
 
         void s.prefs.setHidden(team, true);
 
-        expect(s.prefCalls.map(c => c.changes)).toEqual([{ hidden: true }]);
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ is_favorite: false, hidden: true }]);
         expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden. It leaves your list when you open another conversation." });
     });
 
@@ -438,10 +438,27 @@ describe("star and hide", () => {
 
         void s.prefs.setStarred(team, true, false);
         void s.prefs.setHidden(team, true);
-        expect(s.prefCalls[1].changes).toEqual({ hidden: true, is_favorite: false });
+        expect(s.prefCalls[1].changes).toEqual({ is_favorite: false, hidden: true });
         s.prefCalls[0].answer.resolve(written(team, { is_favorite: true }));
         await settle();
         s.prefCalls[1].answer.resolve(refused());
+        await settle();
+
+        expect(rowOf(s, team)?.is_favorite).toBe(true);
+        expect(rowOf(s, team)?.hidden).toBe(false);
+    });
+
+    // The newest save is the whole value shown, so it lands what is shown whatever an older one
+    // still out does: here the unhide is refused, but the star after it carried the unhide too.
+    test("an unhide still out and then a star: the star asks for the room shown, starred and not hidden", async () => {
+        const s = setup([sidebarRow(team, { hidden: true }), sidebarRow(prayer, { name: "Prayer" })]);
+
+        void s.prefs.setHidden(team, false);
+        void s.prefs.setStarred(team, true, false);
+        expect(s.prefCalls[1].changes).toEqual({ is_favorite: true, hidden: false });
+        s.prefCalls[1].answer.resolve(written(team, { is_favorite: true }));
+        await settle();
+        s.prefCalls[0].answer.resolve(refused());
         await settle();
 
         expect(rowOf(s, team)?.is_favorite).toBe(true);
@@ -665,9 +682,9 @@ describe("a room's choice and Chat settings' switches", () => {
         void s.prefs.choose(prayer, { kind: "star", isStarred: true, isFromMenu: false });
 
         expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([
-            [team, { is_favorite: false }],
-            [prayer, { is_favorite: true }],
-            [prayer, { is_favorite: true }]
+            [team, { is_favorite: false, hidden: false }],
+            [prayer, { is_favorite: true, hidden: false }],
+            [prayer, { is_favorite: true, hidden: false }]
         ]);
     });
 
@@ -677,7 +694,7 @@ describe("a room's choice and Chat settings' switches", () => {
         void s.prefs.choose(null, { kind: "notify", mode: "silent" });
         void s.prefs.choose(team, { kind: "hide", isHidden: true });
 
-        expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([[team, { hidden: true }]]);
+        expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([[team, { is_favorite: false, hidden: true }]]);
     });
 
     test("the reaction switch goes to the platform and the privacy switches to Rock's door", () => {
