@@ -87,6 +87,11 @@ namespace RockWeb.Blocks.Finance
         /// </value>
         protected Person TargetPerson { get; private set; }
 
+        /// <summary>
+        /// Set by <see cref="OnInit" /> when there is a context person the current person may not view.
+        /// </summary>
+        private bool _isContextPersonUnauthorized;
+
         #endregion
 
         #region Base Control Methods
@@ -104,6 +109,7 @@ namespace RockWeb.Blocks.Finance
             if ( GetAttributeValue( "UsePersonContext" ).AsBoolean() )
             {
                 TargetPerson = GetAuthorizedContextPerson();
+                _isContextPersonUnauthorized = TargetPerson == null && ContextEntity<Person>() != null;
             }
             else
             {
@@ -185,6 +191,13 @@ namespace RockWeb.Blocks.Finance
 
         private void DisplayResults()
         {
+            nbNotAuthorized.Visible = _isContextPersonUnauthorized;
+            if ( _isContextPersonUnauthorized )
+            {
+                lResults.Text = string.Empty;
+                return;
+            }
+
             var numberOfYears = GetAttributeValue( "MaxYearsToDisplay" ).AsInteger();
 
             RockContext rockContext = new RockContext();
