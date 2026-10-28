@@ -47,6 +47,9 @@ export type JoinResult = {
 /** The refusal of a send into a room the person may join and has not. */
 const joinRequiredCode = "authz.join_required";
 
+/** The refusal of a send naming an upload the platform no longer holds. */
+const attachmentMissingCode = "rpc.attachment_missing";
+
 /**
  * How many times a send waits and tries again while a join is still reaching the platform, after
  * the first send that follows the join: five sends in all.
@@ -418,6 +421,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
         try {
             // read off the row, so a retry sends the same reply the first try did
             const reply = typeof row.parentId === "number" ? { parentId: row.parentId, isShownInChannel: row.isShownInChannel === true } : undefined;
+            if (row.attachments?.length) {
+                return await dependencies.send(row.channelId, row.body, row.localId, reply, row.quotedMessageId, row.attachments);
+            }
             return typeof row.quotedMessageId === "number"
                 ? await dependencies.send(row.channelId, row.body, row.localId, reply, row.quotedMessageId)
                 : await dependencies.send(row.channelId, row.body, row.localId, reply);
@@ -499,6 +505,16 @@ export function createSender(dependencies: SenderDependencies): Sender {
             result = await joinAndResend(row, dependencies.join);
         }
 
+        // The platform no longer holds an upload, so nothing was stored: the files go up again
+        // from the copies kept, and the message goes once more under its key with the new ones.
+        if (!result.ok && result.error.code === attachmentMissingCode && row.attachments?.length && dependencies.reupload) {
+            const renewed = await dependencies.reupload(row.channelId, row.attachments);
+            if (renewed) {
+                row.attachments = renewed;
+                result = await sendOnce(row);
+            }
+        }
+
         if (!result.ok) {
             // A copy already landed, so the message is posted: the answer was lost after the
             // commit, or a replay was refused, and the row has already gone.
@@ -534,10 +550,13 @@ export function createSender(dependencies: SenderDependencies): Sender {
             person_alias_guid: dependencies.personAliasGuid,
             sender_listed: true,
             message_type: "text",
-            body: row.body,
+            // blank text with files is stored as no text
+            body: row.body.trim() === "" ? null : row.body,
             // the pieces the server built, so a mention shows as one before the event arrives
             pieces: result.pieces ?? null,
             blocks: result.blocks ?? null,
+            // the files as stored, under the keys the platform answered
+            ...(row.attachments?.length ? { attachments: result.attachments ?? row.attachments } : {}),
             created_at: result.createdAt,
             notice: result.notice ?? null,
             client_key: row.localId
@@ -576,8 +595,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
     return {
         pending: (channelId: string): PendingMessage[] => rows.filter(row => row.channelId === channelId),
 
-        send: async (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number): Promise<boolean> => {
-            if (body.trim() === "") {
+        send: async (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number, attachments?: AttachmentItem[]): Promise<boolean> => {
+            // files alone are a message; blank text alone is nothing
+            if (body.trim() === "" && !attachments?.length) {
                 return false;
             }
 
@@ -614,7 +634,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 // only a direct message's first message is sent with a try of its own
                 ...(attempt ? { isFirstMessage: true } : {}),
                 ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {}),
-                ...(typeof quotedMessageId === "number" ? { quotedMessageId } : {})
+                ...(typeof quotedMessageId === "number" ? { quotedMessageId } : {}),
+                ...(attachments?.length ? { attachments } : {})
             });
 
             // The row read back from the list is the reactive one, so the status the person

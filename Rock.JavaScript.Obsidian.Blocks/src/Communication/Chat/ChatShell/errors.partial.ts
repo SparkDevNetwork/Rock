@@ -144,6 +144,11 @@ const refusedForGoodCodes = new Set([
     "rpc.message_hidden",
     "rpc.not_editable",
     "rpc.person_not_found",
+    // a file's type, size or count, or the uploads a send names, refused as they are
+    "rpc.attachment_type",
+    "rpc.attachment_size",
+    "rpc.attachment_count",
+    "rpc.bad_attachments",
     // the same key was first sent with other text, so the same ask is refused every time
     "rpc.idempotency_mismatch",
     "door.bad_request",

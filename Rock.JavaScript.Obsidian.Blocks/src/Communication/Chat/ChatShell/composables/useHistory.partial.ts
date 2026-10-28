@@ -151,6 +151,7 @@ export function applyMessageChange(message: TimelineMessage, event: string, payl
         message.body = null;
         message.pieces = null;
         message.blocks = null;
+        message.attachments = null;
         message.metadata = null;
     }
     else if (event === "message.visibility") {
@@ -164,12 +165,15 @@ export function applyMessageChange(message: TimelineMessage, event: string, payl
             message.body = null;
             message.pieces = null;
             message.blocks = null;
+            message.attachments = null;
             message.metadata = null;
         }
-        else if (typeof changed.body === "string" && !message.deleted_at) {
+        else if (changed.body !== undefined && !message.deleted_at) {
+            // a message of files alone comes back with its body null and its files
             message.body = changed.body;
             message.pieces = changed.pieces ?? null;
             message.blocks = changed.blocks ?? null;
+            message.attachments = changed.attachments ?? null;
         }
     }
 }
@@ -320,6 +324,7 @@ function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMess
         result.body = null;
         result.pieces = null;
         result.blocks = null;
+        result.attachments = null;
         result.metadata = null;
     }
 
@@ -332,6 +337,7 @@ function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMess
         result.body = null;
         result.pieces = null;
         result.blocks = null;
+        result.attachments = null;
         result.metadata = null;
     }
 
@@ -501,7 +507,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 }
             }
             if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
-                incoming = { ...incoming, body: null, pieces: null, blocks: null, metadata: null };
+                incoming = { ...incoming, body: null, pieces: null, blocks: null, attachments: null, metadata: null };
             }
             if (incoming.id === openThreadRootId && incoming.thread_unread === true) {
                 incoming = { ...incoming, thread_unread: false };
@@ -612,7 +618,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             if (message) {
                 applyMessageChange(message, event, deleted);
             }
-            recordLive(deleted.id, { deleted_at: deleted.deleted_at, body: null, pieces: null, blocks: null, metadata: null });
+            recordLive(deleted.id, { deleted_at: deleted.deleted_at, body: null, pieces: null, blocks: null, attachments: null, metadata: null });
         }
         else if (event === "message.visibility") {
             const changed = payload as MessageVisibilityEvent;
@@ -625,8 +631,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 visibility: changed.state,
                 visibility_notice: changed.notice,
                 ...(shown
-                    ? (typeof changed.body === "string" ? { body: changed.body, pieces: changed.pieces ?? null, blocks: changed.blocks ?? null } : {})
-                    : { body: null, pieces: null, blocks: null, metadata: null })
+                    ? (changed.body !== undefined ? { body: changed.body, pieces: changed.pieces ?? null, blocks: changed.blocks ?? null, attachments: changed.attachments ?? null } : {})
+                    : { body: null, pieces: null, blocks: null, attachments: null, metadata: null })
             });
         }
     }
