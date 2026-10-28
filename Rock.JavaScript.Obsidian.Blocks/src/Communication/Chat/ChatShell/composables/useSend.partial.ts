@@ -33,9 +33,9 @@ import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { failureWords, finalWords, isOfflineFailure, messageForError, offlineWords } from "../errors.partial";
+import { failureWords, finalWords, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
-import { ChatSettings, readOnlySentence } from "./useSession.partial";
+import { ChatSettings } from "./useSession.partial";
 
 /** What Rock's Join door answers. */
 export type JoinResult = {
@@ -54,22 +54,6 @@ const joinRequiredCode = "authz.join_required";
 const joinWaits = 4;
 
 /**
- * The refusals of a send that the same text under the same key can only meet again: the person is
- * not in the room (removed or banned, or a Rock join door that will not let them in), or lacks a
- * right the text needs, or the sign-in can never post. Anything else, a code a later platform adds
- * included, keeps its retry: a join or a session gate can still open, and a failure to reach the
- * platform can pass.
- */
-const finalRefusalCodes = new Set([
-    "authz.not_member",
-    "authz.no_announcement_right",
-    "authz.no_mention_all_right",
-    "authz.wrong_scope",
-    "door.not_allowed",
-    "door.not_found"
-]);
-
-/**
  * Whether a failed send can never pass on another try.
  *
  * @param error The failure that ended the try.
@@ -84,7 +68,9 @@ export function isFinalRefusal(error: ChatError, isFirstMessage: boolean): boole
         return false;
     }
 
-    return finalRefusalCodes.has(error.code);
+    // Read only and maintenance are not final: the box is closed until the service opens, and
+    // the message can then be tried again.
+    return isRefusedForGood(error);
 }
 
 /**

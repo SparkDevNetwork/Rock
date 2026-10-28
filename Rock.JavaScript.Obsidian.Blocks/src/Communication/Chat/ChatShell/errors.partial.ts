@@ -110,32 +110,110 @@ export function messageForError(error: ChatError): string {
 /** What asks the person to try a failure again where no Try again stands beside it. */
 const tryAgainLater = "Try again in a moment.";
 
+/** What a failure says that this client has no better words for. */
+const wentWrong = "Something went wrong in chat.";
+
 /** What a change says when it could not be made because the person is offline, wherever it was asked. */
 export const offlineSentence = "You're offline. Try again when you're back.";
+
+/** What read only says where the church set no banner of its own and the server sent no sentence. */
+export const readOnlySentence = "Chat is read-only while we do some maintenance. You can read messages but not send them.";
+
+/** What maintenance says where the church set no banner of its own and the server sent no sentence. */
+export const maintenanceSentence = "Chat is down for maintenance. Try again later.";
 
 /** Being offline, which another try can pass once the person is back. */
 export const offlineWords: FailureWords = { alone: offlineSentence, besideRetry: "You're offline.", canRetry: true };
 
 /**
- * Whether asking the same again can pass. Read only and maintenance refuse every change until the
- * service opens, which its banner says; a refusal for want of a right is answered the same each
- * time; and an ended session needs the page refreshed.
+ * The refusals another ask can only meet again, whatever severity they came with: the ask itself
+ * is wrong, or what it names is gone or will not change. Rock's door words its own refusals, and
+ * a place may hand one over with any severity, so the code decides.
+ */
+const refusedForGoodCodes = new Set([
+    "rpc.bad_request",
+    "rpc.bad_body",
+    "rpc.bad_message_type",
+    "rpc.bad_parent",
+    "rpc.bad_quote",
+    "rpc.bad_blocks",
+    "rpc.bad_reaction",
+    "rpc.channel_not_found",
+    "rpc.message_not_found",
+    "rpc.message_deleted",
+    "rpc.message_hidden",
+    "rpc.not_editable",
+    "rpc.person_not_found",
+    // the same key was first sent with other text, so the same ask is refused every time
+    "rpc.idempotency_mismatch",
+    "door.bad_request",
+    "door.forbidden",
+    "door.not_allowed",
+    "door.not_found",
+    "door.not_member",
+    "door.self",
+    "door.target_not_eligible"
+]);
+
+/**
+ * The refusals of a right that another ask can still pass: a send into a room the person may join
+ * passes once the join lands, and Rock's door that could not be asked may answer next time.
+ */
+const passableRefusalCodes = new Set([
+    "authz.join_required",
+    "door.unavailable"
+]);
+
+/**
+ * The client's own words beside a Try again for the failures another try can pass. The server's
+ * sentence for these already asks the person to try again, which the button beside it does, so it
+ * is kept for where the sentence stands alone.
+ */
+const besideRetryWords: Record<string, string> = {
+    "rpc.rate_limited": "You're sending messages too quickly.",
+    "rpc.unavailable": "Chat is having trouble right now.",
+    "rpc.system_author_missing": "Chat is still being set up for this organization.",
+    "authz.join_required": "Join this channel to post."
+};
+
+/**
+ * Whether no later ask of the same can pass: the refusals that only repeat, a refusal for want of
+ * a right, and an ended session, which needs the page refreshed. The one rule every place asks
+ * before it offers Try again, and the one a send asks before it ends its message.
  *
  * @param error The classified failure.
  *
- * @returns True when a Try again can help.
+ * @returns True when asking again can only be refused again.
  */
-function canRetry(error: ChatError): boolean {
-    if (error.code === "rpc.read_only" || error.code === "rpc.maintenance") {
+export function isRefusedForGood(error: ChatError): boolean {
+    if (refusedForGoodCodes.has(error.code)) {
+        return true;
+    }
+
+    if (passableRefusalCodes.has(error.code)) {
         return false;
     }
 
-    return error.severity !== "permission" && error.severity !== "session";
+    return error.severity === "permission" || error.severity === "session";
 }
 
 /**
- * A failure of a call that was answered, in words. The few codes this client acts on itself keep
- * its own sentence; any other shows the server's when it sent one.
+ * Whether the service refused the ask because it is closed to changes. Read only and maintenance
+ * refuse every change until the service opens, which its banner says, so no Try again helps until
+ * then; the ask itself is not wrong, and passes once it opens.
+ *
+ * @param error The classified failure.
+ *
+ * @returns True for read only and maintenance.
+ */
+function isServiceClosed(error: ChatError): boolean {
+    return error.code === "rpc.read_only" || error.code === "rpc.maintenance";
+}
+
+/**
+ * A failure of a call that was answered, in words. A failure another try can pass says the
+ * server's sentence alone, which may ask to try again, and the client's own beside the Try again
+ * that asks it; any other says the server's sentence in both, or the client's where it sent none.
  *
  * @param error The classified failure.
  *
@@ -154,16 +232,25 @@ function answeredWords(error: ChatError): FailureWords {
         return finalWords("Your chat session has ended. Refresh the page to continue.");
     }
 
-    const retry = canRetry(error);
-    if (isSentence(error.text, error.code)) {
-        return { alone: error.text, besideRetry: error.text, canRetry: retry };
+    const serverSentence = isSentence(error.text, error.code) ? error.text : null;
+    if (!isServiceClosed(error) && !isRefusedForGood(error)) {
+        const words = failedWords(besideRetryWords[error.code] ?? wentWrong);
+        return serverSentence ? { ...words, alone: serverSentence } : words;
     }
 
-    if (error.severity === "permission") {
-        return finalWords("You do not have access to that.");
+    if (serverSentence) {
+        return finalWords(serverSentence);
     }
 
-    return retry ? failedWords("Something went wrong in chat.") : finalWords("Something went wrong in chat.");
+    if (error.code === "rpc.read_only") {
+        return finalWords(readOnlySentence);
+    }
+
+    if (error.code === "rpc.maintenance") {
+        return finalWords(maintenanceSentence);
+    }
+
+    return finalWords(error.severity === "permission" ? "You do not have access to that." : wentWrong);
 }
 
 /**

@@ -26,10 +26,13 @@ import {
     failureWords,
     finalWords,
     isOfflineFailure,
+    isRefusedForGood,
     isUnreached,
+    maintenanceSentence,
     messageForError,
     messageOrOffline,
-    offlineSentence
+    offlineSentence,
+    readOnlySentence
 } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 
 describe("classifyPlatformError", () => {
@@ -193,7 +196,7 @@ describe("codes a released client was not built with", () => {
         expect(classifyPlatformError({ message: "rpc.bad_request", hint: "   ", status: 400 }))
             .toEqual({ code: "rpc.bad_request", severity: "failed" });
         expect(messageForError({ code: "rpc.unavailable", severity: "failed", text: "rpc.unavailable" }))
-            .toBe("Something went wrong in chat. Try again in a moment.");
+            .toBe("Chat is having trouble right now. Try again in a moment.");
     });
 
     test("with no sentence from the server the severity's sentence is shown", () => {
@@ -298,8 +301,69 @@ describe("failureWords", () => {
         expect(failureWords(transport, true)).toEqual({ alone: offlineSentence, besideRetry: "You're offline.", canRetry: true });
     });
 
-    test("the server's own sentence is said as it is, in both places", () => {
-        expect(failureWords({ code: "rpc.busy", severity: "failed", text: "Chat is busy." })).toEqual({ alone: "Chat is busy.", besideRetry: "Chat is busy.", canRetry: true });
+    test("a code this client does not know is said in the server's sentence alone, and in the client's beside Try again", () => {
+        // The server's sentence may ask to try again itself, so beside the button it is never shown.
+        expect(failureWords({ code: "rpc.busy", severity: "failed", text: "Chat is busy. Try again soon." }))
+            .toEqual({ alone: "Chat is busy. Try again soon.", besideRetry: "Something went wrong in chat.", canRetry: true });
+    });
+
+    // The sentences the platform's catalog holds for these codes, word for word: each already asks
+    // the person to try again, so beside a Try again the client says what happened in its own words.
+    test.each([
+        ["rpc.unavailable", "Chat is having trouble right now. Try again in a moment.", "Chat is having trouble right now."],
+        ["rpc.rate_limited", "You're sending messages too quickly. Wait a moment and try again.", "You're sending messages too quickly."],
+        ["rpc.system_author_missing", "Chat is still being set up for this organization. Try again shortly.", "Chat is still being set up for this organization."]
+    ])("%s keeps the server's sentence alone and never asks twice beside Try again", (code, hint, beside) => {
+        const words = failureWords(classifyPlatformError({ message: code, hint }));
+
+        expect(words).toEqual({ alone: hint, besideRetry: beside, canRetry: true });
+        expect(words.besideRetry).not.toMatch(/try/i);
+    });
+
+    test("a code another try can pass, with no sentence from the server, asks in the client's words alone", () => {
+        expect(failureWords({ code: "rpc.rate_limited", severity: "failed" }))
+            .toEqual({ alone: "You're sending messages too quickly. Try again in a moment.", besideRetry: "You're sending messages too quickly.", canRetry: true });
+    });
+
+    // Asked again, these only meet the same answer: the ask itself is wrong, or what it names is gone.
+    test.each([
+        ["rpc.bad_request", "Chat could not understand that request."],
+        ["rpc.bad_body", "A message needs some text, up to 5,000 characters."],
+        ["rpc.bad_parent", "That message can't be replied to."],
+        ["rpc.message_not_found", "That message no longer exists."],
+        ["rpc.message_deleted", "That message was deleted."],
+        ["rpc.message_hidden", "That message is hidden and can't be changed."],
+        ["rpc.channel_not_found", "That channel no longer exists."],
+        ["rpc.not_editable", "This message can't be edited."],
+        ["rpc.person_not_found", "That person isn't available in chat."],
+        ["rpc.idempotency_mismatch", "This message could not be sent. Try sending it again."]
+    ])("%s offers no Try again", (code, hint) => {
+        expect(failureWords(classifyPlatformError({ message: code, hint }))).toEqual({ alone: hint, besideRetry: hint, canRetry: false });
+        expect(isRefusedForGood(classifyPlatformError({ message: code, hint }))).toBe(true);
+    });
+
+    test.each(["door.not_allowed", "door.not_found", "door.bad_request", "door.not_member"])("Rock's door refusing as %s offers no Try again, whatever severity it was given", code => {
+        expect(failureWords({ code, severity: "failed", text: "No." }).canRetry).toBe(false);
+    });
+
+    test("a send that needs a join can pass once the join lands, and Rock's door that could not be asked can pass later", () => {
+        expect(failureWords({ code: "authz.join_required", severity: "permission", text: "Join this channel to post." }).canRetry).toBe(true);
+        expect(failureWords({ code: "door.unavailable", severity: "permission" }).canRetry).toBe(true);
+    });
+
+    test("read only and maintenance are not refused for good, only closed until the service opens", () => {
+        expect(isRefusedForGood({ code: "rpc.read_only", severity: "failed" })).toBe(false);
+        expect(isRefusedForGood({ code: "rpc.maintenance", severity: "failed" })).toBe(false);
+        expect(isRefusedForGood({ code: "auth.expired", severity: "session" })).toBe(true);
+        expect(isRefusedForGood({ code: "authz.not_member", severity: "permission" })).toBe(true);
+        expect(isRefusedForGood({ code: "rpc.transport", severity: "failed" })).toBe(false);
+    });
+
+    test("read only and maintenance with no sentence from the server say their own, not that something went wrong", () => {
+        expect(failureWords({ code: "rpc.read_only", severity: "failed" })).toEqual(finalWords(readOnlySentence));
+        expect(failureWords({ code: "rpc.maintenance", severity: "failed" })).toEqual(finalWords(maintenanceSentence));
+        expect(readOnlySentence).toBe("Chat is read-only while we do some maintenance. You can read messages but not send them.");
+        expect(maintenanceSentence).toBe("Chat is down for maintenance. Try again later.");
     });
 
     test("read only and maintenance offer no Try again, which cannot help until the service opens", () => {

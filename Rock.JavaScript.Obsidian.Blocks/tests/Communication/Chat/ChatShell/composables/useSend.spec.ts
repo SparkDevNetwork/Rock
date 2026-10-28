@@ -18,7 +18,7 @@
 // keeps its text so it can be sent again.
 import { createSender, isComposerOpen, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChatErrorSeverity, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -455,20 +455,28 @@ describe("a send into a room the person has not joined", () => {
 // keeps the sentence and Delete, and is never sent again. A refusal that can pass later, a join
 // still reaching the platform, a failure to reach anything, keeps the row's Try again.
 describe("a send refused for good", () => {
-    const refusals: Array<[string, string]> = [
-        ["authz.not_member", "You're not a member of this channel."],
-        ["authz.no_mention_all_right", "You can't mention everyone in this channel."],
-        ["authz.no_announcement_right", "You can't post announcements in this channel."],
-        ["authz.wrong_scope", "This sign-in can't be used for chat."]
+    // The one rule of what another try can pass decides it, so the strip never offers Try again
+    // beside a sentence that says it cannot help.
+    const refusals: Array<[string, ChatErrorSeverity, string]> = [
+        ["authz.not_member", "permission", "You're not a member of this channel."],
+        ["authz.no_mention_all_right", "permission", "You can't mention everyone in this channel."],
+        ["authz.no_announcement_right", "permission", "You can't post announcements in this channel."],
+        ["authz.wrong_scope", "permission", "This sign-in can't be used for chat."],
+        ["authz.some_later_code", "permission", "Not for you."],
+        ["rpc.idempotency_mismatch", "failed", "This message could not be sent. Try sending it again."],
+        ["rpc.bad_body", "failed", "A message needs some text, up to 5,000 characters."],
+        ["auth.expired", "session", "Your chat session expired. Reconnecting."],
+        ["door.not_allowed", "permission", "You can't join this channel."]
     ];
 
-    test.each(refusals)("%s keeps its sentence on the row and is never sent again", async (code, text) => {
-        const error = { code, severity: "permission" as const, text };
+    test.each(refusals)("%s keeps its sentence on the row and is never sent again", async (code, severity, text) => {
+        const error = { code, severity, text };
         const { sender, sent } = await setup([{ ok: false, error }]);
 
         expect(await sender.send(channel, "hello <@all>")).toBe(false);
 
         expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: code, refusal: error });
+        expect(sendFailure(sender.pending(channel))).toMatchObject({ canRetry: false, reason: { canRetry: false } });
         expect(await sender.retryAll(["local-1"])).toBe(false);
         expect(sent).toHaveLength(1);
         expect(sender.pending(channel)[0].status).toBe("failed");
@@ -482,10 +490,11 @@ describe("a send refused for good", () => {
         ["door.unreachable", "failed"],
         ["rpc.unavailable", "failed"],
         ["rpc.rate_limited", "failed"],
+        ["rpc.unknown", "unknown"],
+        ["rpc.read_only", "failed"],
+        ["rpc.maintenance", "failed"],
         ["authz.join_required", "permission"],
-        ["sign_in_required", "permission"],
-        ["age_verification_required", "permission"],
-        ["authz.some_later_code", "permission"]
+        ["door.unavailable", "permission"]
     ] as const)("%s keeps the row's retry", async (code, severity) => {
         const { sender, sent } = await setup([
             { ok: false, error: { code, severity, text: "Not now." } },

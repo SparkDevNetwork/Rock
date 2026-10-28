@@ -975,6 +975,17 @@ describe("following", () => {
         expect(threads.state.followError?.failure).toEqual({ alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true });
     });
 
+    test("following a thread whose root is gone offers no Try again, which would only be refused again", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_list_threads = [listAnswer([listRow(40)])];
+        answers.chat_follow_thread = [{ ok: false, status: 400, error: { code: "rpc.message_not_found", severity: "failed", text: "That message no longer exists." }, retryAfterSeconds: null }];
+        await threads.openList(channel);
+
+        await threads.follow(40, false);
+
+        expect(threads.state.followError?.failure).toEqual({ alone: "That message no longer exists.", besideRetry: "That message no longer exists.", canRetry: false });
+    });
+
     test("a refusal carries the server's own sentence when it has one", async () => {
         const { threads, answers } = await setup();
         answers.chat_list_threads = [listAnswer([listRow(40)])];
