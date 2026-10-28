@@ -3,6 +3,7 @@
     <PanelHost title="Threads"
                :subtitle="subtitle"
                :isPhone="isPhone"
+               :entranceKeys="entranceKeys"
                @close="emit('close')">
         <template #actions>
             <IconButton class="chat-ls-refresh"
@@ -74,9 +75,9 @@
                     @keydown="onListKeydown">
                     <li v-for="(drawn, index) in drawnRows"
                         :key="drawn.rootId"
-                        class="chat-ls-row"
+                        class="chat-ls-row chat-enter"
                         :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
-                        :style="{ '--chat-ls-i': Math.min(index, maxStaggered) }"
+                        :style="{ '--chat-enter-i': index }"
                         data-testid="thread-row">
                         <button type="button"
                                 class="chat-ls-hit"
@@ -530,9 +531,6 @@
     /** Ids this panel's tabs, hint and tab panel are tied together by, unique per panel drawn. */
     const uid = `chat-ls-${newGuid()}`;
 
-    /** The design staggers the first rows only, so a long list does not trickle in. */
-    const maxStaggered = 8;
-
     const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70]];
 
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
@@ -582,6 +580,9 @@
     const errorSentence = computed((): string => props.error ? sentenceFor(props.error, offlineRefresh) : "");
 
     const drawnRows = computed((): DrawnRow[] => props.rows.map(drawRow));
+
+    /** The list's rows for the panel's entrance, none while a tab's first page loads. */
+    const entranceKeys = computed((): string[] | null => props.isLoading ? null : props.rows.map(row => String(row.root.id)));
 
     // #endregion Computed Values
 

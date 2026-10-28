@@ -696,6 +696,24 @@ describe("the components' own styles", () => {
         expect(reducedFrames).not.toContain("transform");
     });
 
+    // The one list entrance, written once in the sheet: a row the panel host marks rises from the
+    // rise over t-msg on the entrance curve, 26ms after the row above, the ninth and later with the
+    // eighth, and only while its panel is entering. No panel keeps a rise of its own beside it.
+    test("panel rows rise in by the sheet's one staggered entrance, and by nothing else", () => {
+        const selector = ".chat-shell .chat-panel-body.is-entering .chat-enter";
+        expect(declarationOf(sheetPath, selector, "animation")).toBe(normalize("chat-enter var(--chat-t-msg) var(--chat-ease-in) both"));
+        expect(declarationOf(sheetPath, selector, "animation-delay")).toBe(normalize("calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-enter-cap")).toBe("8");
+
+        const frames = normalize(keyframesBody(sheetPath, "chat-enter") ?? "");
+        expect(frames).toContain("opacity:0");
+        expect(frames).toContain(normalize("transform: translateY(var(--chat-rise))"));
+
+        expect(declarationOf(sheetPath, ".chat-shell .chat-ls-row", "animation")).toBe("");
+        const membersPath = resolve(components, "membersPanel.partial.obs");
+        expect(selectorsOf(readSheet(membersPath)).some(s => s.selector.includes(".chat-mb-row.is-in"))).toBe(false);
+    });
+
     // The panel column opens from 0px wide with focus already inside it, so it clips rather than
     // hides, as the frame does: a box that hides its overflow can still be scrolled by a focus or a
     // find on the page, which would drag the panel in from the column's edge instead of sliding it.

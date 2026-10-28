@@ -5,6 +5,7 @@
                :isPhone="isPhone"
                :backLabel="isFromList ? `Back to ${listTitle}` : null"
                closeLabel="Close thread"
+               :entranceKeys="entranceKeys"
                @close="emit('close')"
                @back="emit('back')">
         <template #actions>
@@ -70,10 +71,16 @@
                 </div>
             </template>
 
-            <template v-for="item in items" :key="item.key">
-                <div v-if="item.kind === 'thread-divider'" class="chat-th-div" data-testid="thread-divider">{{ dividerText }}</div>
+            <!-- The thread waterfalls in by its parts: the root, the replies line, then each run of replies. -->
+            <template v-for="(item, index) in items" :key="item.key">
+                <div v-if="item.kind === 'thread-divider'"
+                     class="chat-th-div chat-enter"
+                     :style="{ '--chat-enter-i': index }"
+                     data-testid="thread-divider">{{ dividerText }}</div>
 
                 <MessageRow v-else-if="item.kind !== 'group'"
+                            class="chat-enter"
+                            :style="{ '--chat-enter-i': index }"
                             :message="item.message"
                             :personAliasGuid="personAliasGuid"
                             :organizationName="organizationName"
@@ -86,7 +93,7 @@
                             @jump="emit('jump', $event)"
                             @messageAction="emit('messageAction', $event)" />
 
-                <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
+                <div v-else class="chat-grp chat-enter" :class="{ 'is-own': item.isOwn }" :style="{ '--chat-enter-i': index }">
                     <MessageRow v-for="row in item.rows"
                                 :key="row.key"
                                 :message="row.message"
@@ -629,6 +636,9 @@
             ...flatten(props.replies, pendingReplies.value, true)
         ];
     });
+
+    /** The thread's parts for the panel's entrance, none until the root is there to draw. */
+    const entranceKeys = computed((): string[] | null => props.root ? items.value.map(item => item.key) : null);
 
     /** Every reply of the thread, not only those loaded, as the root counts them. */
     const dividerText = computed((): string => {

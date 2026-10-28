@@ -198,6 +198,8 @@
     --chat-d-view: 220ms;
     --chat-d-tab-thumb: 240ms;
     --chat-d-stagger: 26ms;
+    /* How many rows of an entrance wait their turn; the rest rise with the last of them. */
+    --chat-enter-cap: 8;
     --chat-d-row-collapse: 200ms;
     --chat-d-fd-pop: 420ms;
     --chat-d-saved-hold: 1.6s;
@@ -774,20 +776,29 @@
     padding-left: 6px;
 }
 
-/* Fetched rows rise in, a little apart, so a fresh list reads as arriving rather than blinking. */
-.chat-shell .chat-ls-row {
-    position: relative;
-    border-radius: var(--chat-r-md);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-    animation: chat-ls-rise var(--chat-t-msg) var(--chat-ease-in) both;
-    animation-delay: calc(var(--chat-ls-i, 0) * var(--chat-d-stagger));
+/*
+    The panel column's one entrance. A panel that opens with its first page waterfalls in: each row
+    the panel marks rises from the rise, a little after the row above it, so a fresh list reads as
+    arriving rather than blinking. The panel host marks its body entering for that first page only,
+    so a live arrival, a later page or a filter is simply there. Under reduced motion the rise and
+    the stagger are 0, leaving one short fade.
+*/
+.chat-shell .chat-panel-body.is-entering .chat-enter {
+    animation: chat-enter var(--chat-t-msg) var(--chat-ease-in) both;
+    animation-delay: calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger));
 }
 
-@keyframes chat-ls-rise {
+@keyframes chat-enter {
     from {
         opacity: 0;
         transform: translateY(var(--chat-rise));
     }
+}
+
+.chat-shell .chat-ls-row {
+    position: relative;
+    border-radius: var(--chat-r-md);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
 .chat-shell .chat-ls-row + .chat-ls-row {

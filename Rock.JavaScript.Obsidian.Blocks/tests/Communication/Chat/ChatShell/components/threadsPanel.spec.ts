@@ -521,3 +521,38 @@ describe("a row's text", () => {
         expect(chip?.body).toMatch(/box-decoration-break:\s*clone;/);
     });
 });
+
+// The list waterfalls in when the panel opens with its first page: each row carries the panel's
+// one entrance and its place in the list, and the host enters from the first page alone.
+describe("the list's entrance", () => {
+    function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
+        return {
+            isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
+            order: w.findAll("[data-testid='thread-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+        };
+    }
+
+    test("the first page's rows rise in, one after another in list order", async () => {
+        const w = draw({ isLoading: true, rows: [] });
+        expect(entered(w).isEntering).toBe(false);
+
+        await w.setProps({ isLoading: false, rows: [row(40), row(41), row(42)] });
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
+    });
+
+    test("a thread that moves in live, or a refresh's new row, does not rise in", async () => {
+        const w = draw({ rows: [row(40), row(41)] });
+
+        await w.setProps({ rows: [row(43), row(40), row(41)] });
+        expect(entered(w).isEntering).toBe(false);
+    });
+
+    test("the other tab's first page rises in as the list's own", async () => {
+        const w = draw({ rows: [row(40)] });
+        await w.setProps({ rows: [row(41), row(40)] });
+
+        await w.setProps({ tab: "all", isLoading: true, rows: [] });
+        await w.setProps({ isLoading: false, rows: [row(50), row(51)] });
+        expect(entered(w).isEntering).toBe(true);
+    });
+});

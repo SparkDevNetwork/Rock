@@ -3,6 +3,7 @@
     <PanelHost title="Mentions"
                subtitle="Where people @mentioned you"
                :isPhone="isPhone"
+               :entranceKeys="entranceKeys"
                @close="emit('close')">
         <template #actions>
             <IconButton class="chat-ls-refresh"
@@ -47,9 +48,9 @@
                         <ul class="chat-ls-list" :class="{ 'is-phone': isPhone }">
                             <li v-for="drawn in day.rows"
                                 :key="drawn.messageId"
-                                class="chat-ls-row chat-ls-mn"
+                                class="chat-ls-row chat-ls-mn chat-enter"
                                 :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
-                                :style="{ '--chat-ls-i': drawn.stagger }"
+                                :style="{ '--chat-enter-i': drawn.index }"
                                 data-testid="mention-row">
                                 <button type="button"
                                         class="chat-ls-hit"
@@ -290,7 +291,9 @@
         isConversation: boolean;
         isNew: boolean;
         isCurrent: boolean;
-        stagger: number;
+
+        /** Its place in the inbox across every day, its turn in the panel's entrance. */
+        index: number;
         label: string;
     };
 
@@ -401,9 +404,6 @@
     /** Ties the rows to their hint, unique per panel drawn. */
     const uid = `chat-ls-${newGuid()}`;
 
-    /** The design staggers the first rows of a fetch only, so a long list does not trickle in. */
-    const maxStaggered = 8;
-
     const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70], [42, 78, 52]];
 
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
@@ -411,9 +411,6 @@
 
     /** The row that holds the list's one tab stop, once one has been focused. */
     const roveId = ref<number | null>(null);
-
-    /** Where the rows of the latest fetch start, so an older page rises in from its own first row. */
-    const staggerFrom = ref(0);
 
     const announcement = ref("");
 
@@ -442,6 +439,9 @@
 
         return drawn;
     });
+
+    /** The inbox's rows for the panel's entrance, none while its first page loads. */
+    const entranceKeys = computed((): string[] | null => props.isLoading ? null : props.rows.map(row => String(row.message.id)));
 
     // #endregion Computed Values
 
@@ -578,7 +578,7 @@
             isConversation: roomKind === "person" || roomKind === "group",
             isNew,
             isCurrent,
-            stagger: Math.max(0, Math.min(index - staggerFrom.value, maxStaggered)),
+            index,
             label
         };
     }
@@ -601,11 +601,6 @@
         if (isLoadingOlder) {
             olderFrom = props.rows.length;
         }
-    });
-
-    // A fresh list rises from its first row, an older page from the first row it added.
-    watch(() => props.rows, rows => {
-        staggerFrom.value = olderFrom !== null && rows.length > olderFrom ? olderFrom : 0;
     });
 
     // A screen reader hears what a fetch brought, since the rows change under it without a word.
