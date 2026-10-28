@@ -24,8 +24,9 @@
 // stopped, nothing more is fetched and no answer still on its way reaches the screen.
 //
 // It also changes who is in the room, through Rock's doors, which decide every change: the
-// rights the panel offers are asked once a room and kept until the room changes, read ahead as
-// the person reaches for the panel so they are there as it opens; a remove is confirmed and then
+// rights the panel offers are read ahead as the person reaches for the panel so they are there as
+// it opens, and kept, so a reopen draws them at once while they are read again, since a promotion
+// or a grant made elsewhere reaches only the person it changed; a remove is confirmed and then
 // works on its row; and Add people searches the people the room may take. The doors answer in
 // their own words, which are shown as they come.
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -212,6 +213,12 @@ export type Members = {
      */
     roomChanged: (channelId: string | null) => void;
 
+    /**
+     * The person's topic was joined again, so a change to any room may have been missed: nothing
+     * held stands, and the panel open reads its room again, in place.
+     */
+    rejoined: () => void;
+
     /** Opens the remove confirm, or the last leader's dialog, for a person on the roster. */
     askRemove: (personAliasGuid: string) => void;
     cancelRemove: () => void;
@@ -381,10 +388,11 @@ export function createMembers(dependencies: MembersDependencies): Members {
     let addSearchTimer: ReturnType<typeof setTimeout> | null = null;
     let addGeneration = 0;
 
-    // Rock's answer for each room asked this session, kept until the room changes so a reopen
-    // draws its rights on the first frame; the read on its way for each, which a second ask
-    // joins; and a count each change moves on, so an answer asked before it is not kept.
-    const heldRights = new Map<string, MemberRights>();
+    // Rock's answer for each room asked this session, kept so a reopen draws its rights on the
+    // first frame, with whether an open has drawn it yet: an answer read ahead serves the open it
+    // was read for, and any later open reads again. The read on its way for each, which a second
+    // ask joins; and a count each change moves on, so an answer asked before it is not kept.
+    const heldRights = new Map<string, { rights: MemberRights, isFresh: boolean }>();
     const rightsReads = new Map<string, Promise<void>>();
     const rightsGenerations = new Map<string, number>();
 
@@ -475,7 +483,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             return;
         }
 
-        const rights = heldRights.get(channelId);
+        const rights = heldRights.get(channelId)?.rights;
         state.canManageMembers = rights?.canManageMembers === true;
         state.lastLeaderPersonAliasGuid = rights?.lastLeaderPersonAliasGuid?.toLowerCase() ?? null;
         state.isReadingRights = false;
@@ -508,7 +516,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
             rightsReads.delete(channelId);
             if (rights) {
-                heldRights.set(channelId, rights);
+                heldRights.set(channelId, { rights, isFresh: state.channelId !== channelId });
             }
             showRights(channelId);
         })();
@@ -521,6 +529,14 @@ export function createMembers(dependencies: MembersDependencies): Members {
         rightsGenerations.set(channelId, (rightsGenerations.get(channelId) ?? 0) + 1);
         rightsReads.delete(channelId);
         heldRights.delete(channelId);
+    }
+
+    /**
+     * Reads the open room's roster and the reader's rights again in place, keeping what it shows
+     * until the answers come, as after the panel's own add or remove.
+     */
+    function rereadOpen(channelId: string): Promise<unknown> {
+        return Promise.all([refreshRoster(channelId), readRights(channelId)]);
     }
 
     /** The query typed for one of the room's searches. */
@@ -681,13 +697,17 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            // Every open reads the roster afresh; the reader's rights are drawn at once when held,
-            // and otherwise read beside it, the panel loading until both are in.
+            // Every open reads the roster afresh. The reader's rights are drawn at once when held
+            // and read again beside it unless read ahead for this open; with nothing held they are
+            // said to be on their way, and the panel holds only its foot for them.
             reset();
             state.channelId = channelId;
-            if (heldRights.has(channelId)) {
+            const held = heldRights.get(channelId);
+            if (held) {
                 showRights(channelId);
-                await loadFirstPage();
+                const isFresh = held.isFresh;
+                held.isFresh = false;
+                await Promise.all([loadFirstPage(), isFresh ? Promise.resolve() : readRights(channelId)]);
                 return;
             }
 
@@ -767,13 +787,23 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            // The panel holding it reads again in place, as after its own add or remove, keeping
-            // what it shows until the answers come.
-            void Promise.all([refreshRoster(channelId), readRights(channelId)]);
+            void rereadOpen(channelId);
         },
 
+        rejoined: (): void => {
+            if (isStopped) {
+                return;
+            }
+
+            new Set([...heldRights.keys(), ...rightsReads.keys()]).forEach(channelId => forgetRights(channelId));
+            if (state.channelId) {
+                void rereadOpen(state.channelId);
+            }
+        },
+
+        // Reached for again after an open drew what was held, the room is read again for the next.
         readAhead: (channelId): void => {
-            if (!isStopped && !heldRights.has(channelId)) {
+            if (!isStopped && !heldRights.get(channelId)?.isFresh) {
                 void readRights(channelId);
             }
         },
@@ -900,7 +930,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             // Marked at once, then read again, since Rock may have given the role to more rows than
             // the one shown, and who leads last has changed.
             forgetRights(channelId);
-            await Promise.all([refreshRoster(channelId), readRights(channelId)]);
+            await rereadOpen(channelId);
         },
 
         dismissRemoval: (personAliasGuid): void => {
