@@ -135,6 +135,24 @@ describe("file cards", () => {
     });
 });
 
+/**
+ * Records each click reaching the document, with its link and whether the card held it back. jsdom
+ * has no navigation, so each is held back once recorded; a card clicked over and over is taken off
+ * the page after a few, so a loop ends and fails rather than hanging the run.
+ */
+function recordClicks(card: Element): Array<{ href: string | null, isPrevented: boolean }> & { stop: () => void } {
+    const clicks: Array<{ href: string | null, isPrevented: boolean }> = [];
+    const record = (event: Event): void => {
+        clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented });
+        event.preventDefault();
+        if (clicks.length > 5) {
+            card.remove();
+        }
+    };
+    document.addEventListener("click", record);
+    return Object.assign(clicks, { stop: () => document.removeEventListener("click", record) });
+}
+
 describe("links over time", () => {
     test("a row's links are renewed before they end while it is mounted, so its photo and card keep working, and stop once it is gone", async () => {
         const { wrapper: row, h } = await mountFiles([image(1), file(2, "a.pdf")]);
@@ -191,12 +209,79 @@ describe("links over time", () => {
         }
     });
 
+    test("a card clicked as its link nears its end, whose fresh signing fails, downloads once from the link it still has", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            h.signAnswer.value = () => {
+                throw new TypeError("Failed to fetch");
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            const signed = h.signs.length;
+
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(h.signs.length).toBeLessThanOrEqual(signed + 1);
+            expect(clicks.map(c => c.isPrevented)).toEqual([true, false]);
+            expect(clicks[1].href).toContain("token=t-0001&download=a.pdf");
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
+    test("a card clicked as its link nears its end, with no session to sign by, asks once and follows the link it still has once", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            let asks = 0;
+            h.dependencies.currentToken = () => {
+                asks++;
+                return null;
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            const asked = asks;
+
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(asks).toBeLessThanOrEqual(asked + 1);
+            expect(clicks.map(c => c.isPrevented)).toEqual([true, false]);
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
     test("a file card still being sent is plain text read by its visible name, with no label of its own", async () => {
         const { wrapper } = await mountFiles([file(1, "a.pdf")], harness(), { isPending: true });
 
         const card = wrapper.get("[data-testid='attachment-file']");
         expect(card.element.tagName).toBe("SPAN");
         expect(card.attributes("aria-label")).toBeUndefined();
+        expect(card.attributes("rel")).toBeUndefined();
+    });
+
+    test("a file card whose link is refused is plain text, with no label and no link relation", async () => {
+        const h = harness();
+        h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: null, error: "Either the object does not exist or you do not have access to it" }));
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+
+        const card = wrapper.get("[data-testid='attachment-file']");
+        expect(card.element.tagName).toBe("SPAN");
+        expect(card.attributes("aria-label")).toBeUndefined();
+        expect(card.attributes("rel")).toBeUndefined();
     });
 });
 

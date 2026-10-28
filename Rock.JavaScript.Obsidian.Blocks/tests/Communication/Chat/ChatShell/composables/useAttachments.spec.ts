@@ -395,8 +395,14 @@ describe("download links", () => {
         await settle();
         expect(h.signs).toHaveLength(1);
 
+        // eight minutes into its life, the link held is still good for a row
+        h.now.value += 8 * 60 * 1000;
+        attachments.links.subscribe([photo])();
+        await settle();
+        expect(h.signs).toHaveLength(1);
+
         // released, so no renewal runs; the link still works, and is drawn, until it ends
-        h.now.value += 9 * 60 * 1000 + 30 * 1000;
+        h.now.value += 60 * 1000 + 30 * 1000;
         expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
         attachments.links.subscribe([photo]);
         await settle();

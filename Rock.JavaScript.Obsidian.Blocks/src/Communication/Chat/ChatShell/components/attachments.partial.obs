@@ -74,7 +74,7 @@
                        data-testid="attachment-file"
                        :data-unavailable="linkOf(item)?.isUnavailable ? 'true' : undefined"
                        :href="isPending ? undefined : linkOf(item)?.downloadUrl ?? undefined"
-                       :rel="isPending ? undefined : 'noopener'"
+                       :rel="isPending || !linkOf(item)?.downloadUrl ? undefined : 'noopener'"
                        :aria-label="isPending || !linkOf(item)?.downloadUrl ? undefined : `Download ${item.name}, ${formatFileSize(item.size)}`"
                        @click="onLinkClick($event, item)">
                 <span class="chat-attach-file-icon" aria-hidden="true"><Icon name="file" /></span>
@@ -518,6 +518,9 @@ a.chat-attach-file:focus-visible {
     const isViewerMounted = ref(false);
     const viewerHost = ref<HTMLElement | null>(null);
 
+    /** The card being followed by the click the chat made itself, which its handler lets through. */
+    let following: HTMLAnchorElement | null = null;
+
     /** The most tiles the grid draws; the last of them counts the rest. */
     const gridTiles = 4;
 
@@ -567,22 +570,36 @@ a.chat-attach-file:focus-visible {
 
     /**
      * A download whose link is near its end waits for a fresh one, then is followed from it, so
-     * a link renewed late, or not at all while the network was away, never fails the click.
+     * a link renewed late, or not at all while the network was away, never fails the click. When
+     * no fresh link can be had, the one still held is followed while it lasts; past its end the
+     * click does nothing, and the card is drawn as text once its link is gone.
      */
     function onLinkClick(event: MouseEvent, item: AttachmentItem): void {
         const anchor = event.currentTarget;
-        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || views.links.isFresh(item)) {
+        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || anchor === following || views.links.isFresh(item)) {
             return;
         }
 
         event.preventDefault();
-        void views.links.fresh(item).then(async link => {
+        const links = views.links;
+        void links.fresh(item).then(async fresh => {
+            const link = fresh ?? links.linkOf(item);
             if (!link?.downloadUrl || !anchor.isConnected) {
                 return;
             }
             // the anchor takes the fresh link before it is followed
             await nextTick();
-            anchor.click();
+            if (!anchor.isConnected) {
+                return;
+            }
+            // followed once, as it now reads, never held back again
+            following = anchor;
+            try {
+                anchor.click();
+            }
+            finally {
+                following = null;
+            }
         });
     }
 

@@ -929,6 +929,13 @@ describe("the composer's strip for a failed send", () => {
     });
 });
 
+/** A paste carrying these files and these kinds of text, as a browser's clipboard lists them. */
+function pasteOf(files: File[], texts: Record<string, string>): Event {
+    const pasted = new Event("paste", { bubbles: true, cancelable: true }) as Event & { clipboardData: unknown };
+    pasted.clipboardData = { files, types: [...Object.keys(texts), ...(files.length ? ["Files"] : [])], getData: (type: string) => texts[type] ?? "" };
+    return pasted;
+}
+
 // Files ride with the box: picked, dropped or pasted, each uploads at once into the strip above the
 // box, with its progress, a remove and a failure with Try again; Send waits until every one is up.
 describe("the composer's files", () => {
@@ -1020,8 +1027,7 @@ describe("the composer's files", () => {
         await settle();
         expect(dropped.defaultPrevented).toBe(true);
 
-        const pasted = new Event("paste", { bubbles: true, cancelable: true }) as Event & { clipboardData: unknown };
-        pasted.clipboardData = { files: [picked("image.png", "image/png")], getData: () => "" };
+        const pasted = pasteOf([picked("image.png", "image/png")], {});
         wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
         await settle();
 
@@ -1029,15 +1035,25 @@ describe("the composer's files", () => {
         expect(pasted.defaultPrevented).toBe(true);
     });
 
-    test("a paste that carries text, as one from Word or Excel does with its picture, is left to the editor", async () => {
+    test("a paste from Word or Excel, its rich text beside a picture of it, is left to the editor", async () => {
         const { wrapper, tray } = trayed();
 
-        const pasted = new Event("paste", { bubbles: true, cancelable: true }) as Event & { clipboardData: unknown };
-        pasted.clipboardData = { files: [picked("image.png", "image/png")], getData: (type: string) => type === "text/plain" ? "Q3 totals" : "" };
+        const pasted = pasteOf([picked("image.png", "image/png")], { "text/plain": "Q3 totals", "text/html": "<table><tr><td>Q3 totals</td></tr></table>" });
         wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
         await settle();
 
         expect(tray.files).toEqual([]);
+    });
+
+    test("a file copied from a file manager, which also puts its name as plain text, is attached", async () => {
+        const { wrapper, tray } = trayed();
+
+        const pasted = pasteOf([picked("budget.pdf", "application/pdf")], { "text/plain": "budget.pdf" });
+        wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
+        await settle();
+
+        expect(tray.files.map(f => f.name)).toEqual(["budget.pdf"]);
+        expect(pasted.defaultPrevented).toBe(true);
     });
 });
 

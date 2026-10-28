@@ -376,7 +376,10 @@ export type AttachmentLinks = {
     /** Whether a file's link has time left to be followed. */
     isFresh: (item: AttachmentItem) => boolean;
 
-    /** A file's link with time left to be followed, signed afresh when the one held is near its end. */
+    /**
+     * A file's link with time left to be followed, signed afresh when the one held is near its
+     * end; null when no such link can be had now, as when the signing fails or there is no session.
+     */
     fresh: (item: AttachmentItem) => Promise<AttachmentLink | null>;
 };
 
@@ -891,7 +894,8 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 schedule();
             }
 
-            return linkCache.linkOf(item);
+            // a signing that failed as a whole left the old link, which is not what was asked for
+            return !isStopped && isFresh(item.id) ? linkCache.linkOf(item) : null;
         }
     };
 
