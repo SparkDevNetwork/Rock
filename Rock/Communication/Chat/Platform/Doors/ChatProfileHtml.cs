@@ -77,7 +77,7 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// and no referrer.
         /// </summary>
         /// <param name="html">The rendered HTML.</param>
-        /// <param name="siteHosts">The church's own hosts, from <see cref="SiteHostsOf(string[])"/>.</param>
+        /// <param name="siteHosts">The church's own hosts, from <see cref="SiteHostsOf(IEnumerable{string}, IEnumerable{string})"/>.</param>
         /// <returns>The safe HTML, or an empty string for blank input.</returns>
         internal static string Sanitize( string html, ISet<string> siteHosts )
         {
@@ -100,17 +100,32 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
-        /// The hosts of the church's own site, read from its application roots, case ignored.
+        /// The hosts of the church's own sites, case ignored: those of its application roots and
+        /// the domains its active Rock sites answer on.
         /// </summary>
         /// <param name="applicationRoots">The church's public and internal application roots; a blank or unreadable one adds nothing.</param>
+        /// <param name="siteDomains">The domains of the church's active sites, a host with or without a port; a blank or unreadable one adds nothing.</param>
         /// <returns>The hosts.</returns>
-        internal static ISet<string> SiteHostsOf( params string[] applicationRoots )
+        internal static ISet<string> SiteHostsOf( IEnumerable<string> applicationRoots, IEnumerable<string> siteDomains )
         {
             var hosts = new HashSet<string>( StringComparer.OrdinalIgnoreCase );
             foreach ( var root in applicationRoots )
             {
                 if ( Uri.TryCreate( root?.Trim(), UriKind.Absolute, out var uri )
                     && ( uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp ) )
+                {
+                    hosts.Add( uri.Host );
+                }
+            }
+
+            // A site's domain is a bare host, so it is read as one would be under https, which also
+            // drops a port; anything with a path or other parts is no host and adds nothing.
+            foreach ( var domain in siteDomains )
+            {
+                var trimmed = domain?.Trim();
+                if ( !string.IsNullOrEmpty( trimmed )
+                    && Uri.TryCreate( Uri.UriSchemeHttps + Uri.SchemeDelimiter + trimmed, UriKind.Absolute, out var uri )
+                    && uri.PathAndQuery == "/" && uri.Fragment.Length == 0 && uri.UserInfo.Length == 0 )
                 {
                     hosts.Add( uri.Host );
                 }

@@ -246,10 +246,11 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return null;
             }
 
-            // The church's own hosts, the only ones an image may load from as a card opens.
+            // The church's own hosts, the only ones an image may load from as a card opens: its
+            // application roots and every domain its active sites answer on, where its images live.
             var siteHosts = ChatProfileHtml.SiteHostsOf(
-                GlobalAttributesCache.Value( "PublicApplicationRoot" ),
-                GlobalAttributesCache.Value( "InternalApplicationRoot" ) );
+                new[] { GlobalAttributesCache.Value( "PublicApplicationRoot" ), GlobalAttributesCache.Value( "InternalApplicationRoot" ) },
+                SiteCache.GetAllActiveSites().SelectMany( site => site.SiteDomainNames ?? Enumerable.Empty<string>() ) );
 
             var html = ChatProfileHtml.Sanitize( result.Text, siteHosts );
             return string.IsNullOrWhiteSpace( html ) ? null : html;

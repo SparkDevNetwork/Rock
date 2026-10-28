@@ -83,9 +83,18 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         [TestMethod]
         public void SiteHostsAreReadFromTheChurchsApplicationRoots()
         {
-            var hosts = ChatProfileHtml.SiteHostsOf( "https://Church.Example.org/", "https://rock.church.example.org:8443/x", " ", null, "not a url" );
+            var hosts = ChatProfileHtml.SiteHostsOf( new[] { "https://Church.Example.org/", "https://rock.church.example.org:8443/x", " ", null, "not a url" }, new string[0] );
 
             CollectionAssert.AreEquivalent( new[] { "church.example.org", "rock.church.example.org" }, hosts.ToList() );
+        }
+
+        [TestMethod]
+        public void SiteHostsIncludeTheDomainsOfTheChurchsSites()
+        {
+            var hosts = ChatProfileHtml.SiteHostsOf( new[] { "https://church.example.org/" }, new[] { "Give.Church.Example.org", "rock.local:6229", " ", null, "not a host/" } );
+
+            CollectionAssert.AreEquivalent( new[] { "church.example.org", "give.church.example.org", "rock.local" }, hosts.ToList() );
+            Assert.AreEqual( "<img src=\"https://give.church.example.org/a.png\">", ChatProfileHtml.Sanitize( "<img src=\"https://give.church.example.org/a.png\">", hosts ) );
         }
 
         [TestMethod]
@@ -183,7 +192,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AChurchWithNoApplicationRootLoadsImagesOnlyFromPaths()
         {
-            var none = ChatProfileHtml.SiteHostsOf();
+            var none = ChatProfileHtml.SiteHostsOf( new string[0], new string[0] );
 
             Assert.AreEqual( string.Empty, ChatProfileHtml.Sanitize( "<img src=\"https://church.example.org/a.png\">", none ) );
             Assert.AreEqual( "<img src=\"/a.png\">", ChatProfileHtml.Sanitize( "<img src=\"/a.png\">", none ) );
@@ -298,7 +307,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         #region Helpers
 
         // The church's public and internal application roots' hosts.
-        private static readonly ISet<string> Site = ChatProfileHtml.SiteHostsOf( "https://church.example.org/", "https://rock.church.example.org/" );
+        private static readonly ISet<string> Site = ChatProfileHtml.SiteHostsOf( new[] { "https://church.example.org/", "https://rock.church.example.org/" }, new string[0] );
 
         private static string Clean( string html )
         {
