@@ -612,6 +612,15 @@ describe("day sections", () => {
         element.getBoundingClientRect = () => ({ top, bottom: top + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
     }
 
+    /**
+     * Lays the label's box out at a height in the frame, which a transform never moves. The feed
+     * stands at the frame's top in these tests, so the frame's heights are the feed's too.
+     */
+    function layOut(element: Element, top: number, height: number): void {
+        Object.defineProperty(element, "offsetTop", { configurable: true, get: () => top });
+        Object.defineProperty(element, "offsetHeight", { configurable: true, get: () => height });
+    }
+
     // A label stuck inside the feed sits on whatever text scrolls under it, since the feed's fade
     // cannot hide that text without hiding the label too. The day of what is at the feed's top is
     // drawn over the feed instead, above the band the fade hides.
@@ -625,7 +634,7 @@ describe("day sections", () => {
         expect(float.attributes("aria-hidden")).toBe("true");
 
         // At the top, every day's own pill is in view below the label's place, so none is labelled.
-        placeAt(float.element, 108);
+        layOut(float.element, 108, 26);
         placeAt(pills[0], 160);
         placeAt(pills[1], 400);
         placeScroll(wrapper, 0);
@@ -661,10 +670,10 @@ describe("day sections", () => {
 
     /**
      * The label's box is the band over the feed's top: the label's own height and the fade under
-     * it, here from 108 to 146 on screen.
+     * it, here from 108 to 146.
      */
     function placeBand(element: Element, top: number): void {
-        element.getBoundingClientRect = () => ({ top, bottom: top + 38, left: 0, right: 300, width: 300, height: 38, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+        layOut(element, top, 38);
     }
 
     /** Draws two days with their pills at the given heights on screen, the label's band at 108. */
@@ -725,6 +734,64 @@ describe("day sections", () => {
         // A jump the other way lands with Today's pill far above; nothing is left between.
         await twoDaysAt(wrapper, -900, -500);
         expect(shown(wrapper)).toEqual({ label: "Today", offset: "0px", carried: [false, true] });
+    });
+
+    // The feed rises 6px into place as a conversation opens, and the landing scroll runs while it
+    // does. A pill is placed by where the feed lays it out, so the label carries the same pill the
+    // same distance during the rise as after it.
+    test("a feed still rising in carries the pill by where it is laid out, not where the rise has it", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+        const scroller = wrapper.get("[data-testid='message-feed']").element;
+
+        // Laid out, Today's pill stands at 140, 32px into the band; the rise draws everything 6px lower.
+        placeAt(scroller, 6);
+        await twoDaysAt(wrapper, -214, 146);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+
+        // Laid out at 143, 3px above the band's foot: the rise would put it past the foot, uncarried.
+        await twoDaysAt(wrapper, -211, 149);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "35px", carried: [false, true] });
+    });
+
+    // A reflow moves the pills with no scroll: the column resized, a panel opened beside it.
+    test("the label is placed again when the feed changes size, without a scroll", async () => {
+        const watching: Array<{ callback: ResizeObserverCallback, targets: Element[] }> = [];
+        const previous = window.ResizeObserver;
+        window.ResizeObserver = class {
+            private readonly entry: { callback: ResizeObserverCallback, targets: Element[] };
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                watching.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        } as unknown as typeof ResizeObserver;
+
+        try {
+            const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+            const scroller = wrapper.get("[data-testid='message-feed']").element;
+            await twoDaysAt(wrapper, -200, 160);
+            expect(shown(wrapper).label).toBe("Yesterday");
+
+            // Narrower, the text above wraps longer and Today's pill rises into the band.
+            const pills = wrapper.findAll("[data-testid='day-pill']").map(pill => pill.element);
+            placeAt(pills[0], -260);
+            placeAt(pills[1], 120);
+            for (const observer of watching.filter(o => o.targets.includes(scroller))) {
+                observer.callback([], observer as unknown as ResizeObserver);
+            }
+            await nextTick();
+
+            expect(shown(wrapper)).toEqual({ label: "Today", offset: "12px", carried: [false, true] });
+        }
+        finally {
+            window.ResizeObserver = previous;
+        }
     });
 
     test("at the top of history every pill is drawn where its day starts, and nothing is labelled", async () => {
