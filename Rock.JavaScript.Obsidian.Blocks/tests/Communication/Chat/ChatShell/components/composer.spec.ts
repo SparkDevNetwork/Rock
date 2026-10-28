@@ -906,4 +906,14 @@ describe("the composer's strip for a failed send", () => {
         expect(style).toMatch(/\.chat-strip-leave-active\s*\{[^}]*grid-template-rows var\(--chat-t-base\)/);
         expect(reduced).toMatch(/\.chat-strip-leave-to\s*\{[^}]*grid-template-rows: 1fr/);
     });
+
+    // The strip belongs to the place it was raised in: moving to another place takes it away with
+    // that place rather than playing its exit over the next one.
+    test("is gone at once when the conversation changes, with no exit over the next one", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "c1", sendFailure: offline }, global: { stubs: { transition: false } } });
+
+        await wrapper.setProps({ conversationKey: "c2", sendFailure: null });
+
+        expect(wrapper.find("[data-testid='composer-failed']").exists()).toBe(false);
+    });
 });

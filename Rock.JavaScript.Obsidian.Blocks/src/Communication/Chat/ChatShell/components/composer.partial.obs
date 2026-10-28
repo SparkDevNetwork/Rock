@@ -5,9 +5,10 @@
             The person's failed sends here, each marked Not sent on its message: what happened, the
             reason and the choices, by the box they type in. Over a locked box too, so a send that
             cannot go can still be deleted; Try again waits for the box to open. Its going gives
-            back the space it held smoothly, so the feed above does not jump.
+            back the space it held smoothly, so the feed above does not jump. Keyed by the place,
+            so moving to another one takes the strip with it rather than playing its exit there.
         -->
-        <Transition name="chat-strip">
+        <Transition name="chat-strip" :key="conversationKey">
             <div v-if="sendFailure" ref="stripElement" class="chat-composer-failed-wrap">
                 <div class="chat-composer-failed" data-testid="composer-failed">
                     <span class="chat-composer-failed-text">
