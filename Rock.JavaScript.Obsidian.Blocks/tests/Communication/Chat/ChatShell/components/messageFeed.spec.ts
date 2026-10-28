@@ -657,6 +657,101 @@ describe("day sections", () => {
         // Clear through the label's bottom edge, so no text shows beside or under it.
         expect(mask).toMatch(/mask-image:\s*linear-gradient\(to bottom,\s*transparent 0,\s*transparent var\(--chat-day-bottom\)/);
     });
+
+    /**
+     * The label's box is the band over the feed's top: the label's own height and the fade under
+     * it, here from 108 to 146 on screen.
+     */
+    function placeBand(element: Element, top: number): void {
+        element.getBoundingClientRect = () => ({ top, bottom: top + 38, left: 0, right: 300, width: 300, height: 38, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+    }
+
+    /** Draws two days with their pills at the given heights on screen, the label's band at 108. */
+    async function twoDaysAt(wrapper: VueWrapper, yesterday: number, today: number): Promise<void> {
+        const pills = wrapper.findAll("[data-testid='day-pill']").map(pill => pill.element);
+        placeBand(wrapper.get("[data-testid='day-float']").element, 108);
+        placeAt(pills[0], yesterday);
+        placeAt(pills[1], today);
+        placeScroll(wrapper, 400);
+        await nextTick();
+    }
+
+    function shown(wrapper: VueWrapper): { label: string | null, offset: string | undefined, carried: boolean[] } {
+        const float = wrapper.get("[data-testid='day-float']");
+        return {
+            label: float.classes().includes("is-on") ? float.text() : null,
+            offset: (float.element as HTMLElement).style.getPropertyValue("--chat-day-offset"),
+            carried: wrapper.findAll("[data-testid='day-pill']").map(pill => pill.classes().includes("is-carried"))
+        };
+    }
+
+    // The bug: a day's pill rising into the band showed its lower part faded in under the label,
+    // which still said the day before. The pill that enters the band is carried by the label from
+    // there: the label takes its day and stands where the pill is, the pill itself is not drawn,
+    // and the label parks once it reaches its place. So the band only ever shows one pill.
+    test("a day's pill that reaches the band is carried up by the label, and is never drawn under it", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+
+        // Today's pill is below the band, solid in the feed; the label says the day above it.
+        await twoDaysAt(wrapper, -200, 160);
+        expect(shown(wrapper)).toEqual({ label: "Yesterday", offset: "0px", carried: [true, false] });
+
+        // Its top crosses into the fade: the label says Today where the pill is, and only once.
+        await twoDaysAt(wrapper, -220, 140);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+
+        await twoDaysAt(wrapper, -240, 120);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "12px", carried: [false, true] });
+
+        // At the label's place and past it, the label stays parked there.
+        await twoDaysAt(wrapper, -252, 108);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "0px", carried: [false, true] });
+
+        await twoDaysAt(wrapper, -500, -140);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "0px", carried: [false, true] });
+    });
+
+    test("scrolling back down the band, the label lets the pill go as it leaves the band, in one frame, however far it jumped", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+
+        await twoDaysAt(wrapper, -240, 120);
+        expect(shown(wrapper).label).toBe("Today");
+
+        // A fling or a jump moves the pill straight out of the band below it.
+        await twoDaysAt(wrapper, -100, 260);
+        expect(shown(wrapper)).toEqual({ label: "Yesterday", offset: "0px", carried: [true, false] });
+
+        // A jump the other way lands with Today's pill far above; nothing is left between.
+        await twoDaysAt(wrapper, -900, -500);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "0px", carried: [false, true] });
+    });
+
+    test("at the top of history every pill is drawn where its day starts, and nothing is labelled", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+
+        // The first pill starts below the band, as the feed's top room puts it.
+        await twoDaysAt(wrapper, 160, 400);
+        expect(shown(wrapper)).toEqual({ label: null, offset: "0px", carried: [false, false] });
+
+        // A pixel into the band, the label already carries it, so the pill never fades under it.
+        await twoDaysAt(wrapper, 145, 385);
+        expect(shown(wrapper)).toEqual({ label: "Yesterday", offset: "37px", carried: [true, false] });
+    });
+
+    test("the label's box spans the band, it moves only by the carried pill's offset, and the carried pill stays readable to assistive technology", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const float = /\.chat-day-float\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const floatLabel = /\.chat-day-float span\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const carried = /\.chat-day-pill\.is-carried\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(float).toMatch(/height:\s*calc\(var\(--chat-day-height\) \+ var\(--chat-day-fade\)\)/);
+        expect(float).toMatch(/align-items:\s*flex-start/);
+        expect(floatLabel).toMatch(/transform:\s*translateY\(var\(--chat-day-offset\)\)/);
+        // Hidden by opacity, not visibility, so the pill still names its day to a screen reader.
+        expect(carried).toMatch(/opacity:\s*0/);
+        expect(carried).not.toMatch(/visibility/);
+    });
 });
 
 describe("the New divider and the unread strip", () => {
