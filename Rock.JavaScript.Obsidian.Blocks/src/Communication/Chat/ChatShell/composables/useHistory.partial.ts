@@ -117,6 +117,18 @@ export function pendingPieces(body: string, names: ReadonlyMap<string, string>):
 }
 
 /**
+ * Whether a piece mentions the whole room. The platform marks the room's mention as such when it
+ * admits it, and nothing else does, so a piece's text never makes one.
+ *
+ * @param piece A piece of a message's body.
+ *
+ * @returns True for the room's mention, @all.
+ */
+export function isRoomMention(piece: Readonly<Record<string, unknown>>): boolean {
+    return piece.type === "mention" && piece.all === true;
+}
+
+/**
  * Lays an edit, a delete or a change of visibility over a message held on screen, wherever it is
  * held: the conversation's timeline or an open thread. A deleted message keeps no edit, and a
  * hidden or removed body never stays on screen.
