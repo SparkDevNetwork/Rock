@@ -1606,6 +1606,30 @@ describe("the action bar", () => {
         expect(barOn(w)).toBe(3);
     });
 
+    test("goes when its message opens in the editor while its menu holds it, and holds nothing after", async () => {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+
+        await w.setProps({ editingId: 2 });
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBeNull();
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(220);
+        expect(barOn(w)).toBeNull();
+    });
+
     test("a send on its way or failed offers no bar", async () => {
         const messages = [1, 2].map(id => message(id, me, at(14, 40 + id)));
         const pending: PendingMessage[] = [
