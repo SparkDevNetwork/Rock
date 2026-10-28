@@ -287,7 +287,7 @@ describe("the push offer on a desktop", () => {
         const w = mountHeader({ kind: "channel", isPushOffered: true, isPrefsOffered: true, notifyMode: "all", isThreadsOffered: true, isMentionsOffered: true });
         const header = w.get("[data-testid='chat-header']");
 
-        const bells = w.findAllComponents(Icon).filter(icon => ["bell", "at-bell", "bell-off"].includes(icon.props("name")) && header.element.contains(icon.element));
+        const bells = w.findAllComponents(Icon).filter(icon => ["bell", "bell-at", "bell-off"].includes(icon.props("name")) && header.element.contains(icon.element));
         expect(bells).toHaveLength(1);
         expect(w.get("[data-testid='header-notify']").element.contains(bells[0].element)).toBe(true);
     });
@@ -640,7 +640,7 @@ describe("the notify menu and Star", () => {
         expect(hasIcon(w, bell(), "bell")).toBe(true);
 
         await w.setProps({ notifyMode: "mentions" });
-        expect(hasIcon(w, bell(), "at-bell")).toBe(true);
+        expect(hasIcon(w, bell(), "bell-at")).toBe(true);
 
         await w.setProps({ notifyMode: "silent" });
         expect(hasIcon(w, bell(), "bell-off")).toBe(true);

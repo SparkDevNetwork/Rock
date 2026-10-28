@@ -761,7 +761,7 @@ describe("Notifications", () => {
         expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Notifications");
         expect(radios(w).map(r => r.getAttribute("role"))).toEqual(["radio", "radio", "radio"]);
         expect(radios(w).map(r => plain(r.textContent ?? ""))).toEqual(["All", "Mentions", "Off"]);
-        expect(radios(w).map(r => w.findAllComponents(Icon).find(icon => r.contains(icon.element))?.props("name"))).toEqual(["bell", "at-bell", "bell-off"]);
+        expect(radios(w).map(r => w.findAllComponents(Icon).find(icon => r.contains(icon.element))?.props("name"))).toEqual(["bell", "bell-at", "bell-off"]);
         expect(radios(w).map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
         // one stop for Tab, on the choice made
         expect(radios(w).map(r => r.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
