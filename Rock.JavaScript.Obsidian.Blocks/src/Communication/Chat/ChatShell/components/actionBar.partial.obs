@@ -10,8 +10,7 @@
              :aria-label="toolbarLabel"
              data-testid="action-bar"
              @keydown="onKeydown"
-             @focusin="onFocusIn"
-             @focusout="onFocusOut">
+             @focusin="onFocusIn">
             <div class="chat-tools-react" role="group" aria-label="Quick reactions">
                 <button v-for="favorite in quickReactions"
                         :key="favorite.code"
@@ -280,10 +279,13 @@ img.chat-tool-glyph {
         transform: none;
     }
 
-    /* No fade either: the bar is there or not. */
-    .chat-tools-enter-active,
+    /* Fades in and out where it stands, as every entrance does, without the rise and sink. */
+    .chat-tools-enter-active {
+        animation: chat-tools-fade-in var(--chat-d-tools-show) linear;
+    }
+
     .chat-tools-leave-active {
-        animation: none;
+        animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards;
     }
 }
 
@@ -316,10 +318,11 @@ img.chat-tool-glyph {
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import { PickerOpening } from "./emojiPicker.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
-    import { PendingMessage, ReactionFavorite, TimelineMessage } from "../types.partial";
+    import { ReactionFavorite, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -329,15 +332,13 @@ img.chat-tool-glyph {
     // #endregion Types
 
     const props = defineProps({
-        /** The stored message, carrying the actions the server listed on it. */
+        /**
+         * The stored message the column docks the bar on, carrying the actions the server listed on
+         * it; null while it is on none. Its row lends the bar a dock only while the message can be
+         * acted on, so the bar draws for any message it is given.
+         */
         message: {
             type: Object as PropType<TimelineMessage | null>,
-            default: null
-        },
-
-        /** The person's own row still sending, or failed, which no action applies to yet. */
-        pending: {
-            type: Object as PropType<PendingMessage | null>,
             default: null
         },
 
@@ -348,18 +349,6 @@ img.chat-tool-glyph {
 
         /** Inside the thread drawer, where Reply in thread has no place. */
         isInThread: {
-            type: Boolean,
-            default: false
-        },
-
-        /** A room the person has not joined, where they may read but not act. */
-        isPreviewing: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The message is open in the editor, which takes the bar's place. */
-        isEditing: {
             type: Boolean,
             default: false
         },
@@ -412,7 +401,7 @@ img.chat-tool-glyph {
         (e: "delete", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
-        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: PickerOpening): void;
         (e: "holdChange", isHeld: boolean): void;
     }>();
 
@@ -429,7 +418,6 @@ img.chat-tool-glyph {
     const barElement = ref<HTMLElement>();
 
     const isMenuOpen = ref(false);
-    const isFocusInside = ref(false);
 
     /** The tool the arrows last moved to; the first tool holds the tab stop until they move. */
     const activeTool = ref<Tool | null>(null);
@@ -453,25 +441,16 @@ img.chat-tool-glyph {
 
     // #region Computed Values
 
-    /** Whether anything can be done to the message: stored, live, shown, not a system line, and the person may act here. */
-    const canAct = computed((): boolean => {
-        const message = props.message;
-        if (!message || props.pending || props.isEditing || props.isPreviewing) {
-            return false;
-        }
-
-        const isLive = !message.deleted_at && (message.visibility ?? "visible") === "visible";
-        const isSystemLine = message.message_type === "system" && !(message.blocks && message.blocks.length > 0);
-        return isLive && !isSystemLine;
-    });
-
     /** The picker is up beside this bar's More reactions. */
     const isPickerOpen = computed((): boolean => !!props.pickerAnchor && !!barElement.value?.contains(props.pickerAnchor));
 
-    /** A menu, a picker or a keyboard's focus inside keeps the bar, wherever the pointer went. */
-    const isHeld = computed((): boolean => isMenuOpen.value || isFocusInside.value || isPickerOpen.value);
+    /**
+     * A menu or a picker open from the bar keeps it, wherever the pointer went. A keyboard's focus
+     * inside it keeps it too, which its column reads from the focus events that reach it.
+     */
+    const isHeld = computed((): boolean => isMenuOpen.value || isPickerOpen.value);
 
-    const isDrawn = computed((): boolean => canAct.value && (props.isShown || isHeld.value));
+    const isDrawn = computed((): boolean => !!props.message && (props.isShown || isHeld.value));
 
     /** The first three favorites, or the first alone where the column is narrow. */
     const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, isNarrow.value ? 1 : 3));
@@ -589,10 +568,11 @@ img.chat-tool-glyph {
         }
     }
 
+    /** Add reaction opens the tray past the quick reactions the bar already shows. */
     function onOpenPicker(): void {
         const anchor = addTool.value?.buttonElement;
         if (props.message && anchor) {
-            emit("openPicker", props.message, anchor);
+            emit("openPicker", props.message, anchor, { offered: quickReactions.value.map(favorite => favorite.code) });
         }
     }
 
@@ -640,29 +620,11 @@ img.chat-tool-glyph {
         elements[next].focus();
     }
 
-    /**
-     * Only a keyboard's focus holds the bar: a click leaves focus on the tool it pressed, and a bar
-     * kept for that would stay after the pointer has gone. Told apart by :focus-visible where the
-     * browser can tell; the oldest Safari Rock supports cannot, and holds for every focus.
-     */
+    /** A tool reached by Tab or a click holds the tab stop, so Tab back into the bar returns to it. */
     function onFocusIn(event: FocusEvent): void {
-        const target = event.target as HTMLElement;
-        try {
-            isFocusInside.value = target.matches(":focus-visible");
-        }
-        catch {
-            isFocusInside.value = true;
-        }
-
-        const index = toolElements().indexOf(target);
+        const index = toolElements().indexOf(event.target as HTMLElement);
         if (index >= 0) {
             activeTool.value = tools.value[index];
-        }
-    }
-
-    function onFocusOut(event: FocusEvent): void {
-        if (!barElement.value?.contains(event.relatedTarget as Node | null)) {
-            isFocusInside.value = false;
         }
     }
 
@@ -732,19 +694,13 @@ img.chat-tool-glyph {
 
     // #region Watchers
 
-    // The column moves the one bar from message to message: the arrows start again from the
-    // first tool, and the tip of the last message's quick reaction goes.
+    // The column moves the one bar from message to message, or takes it off one that can no longer
+    // be acted on, deleted or opened in the editor: the arrows start again from the first tool, the
+    // tip of the last message's quick reaction goes, and a menu left open there holds nothing.
     watch(() => props.message?.id, () => {
         activeTool.value = null;
+        isMenuOpen.value = false;
         hideTip();
-    });
-
-    // A message that can no longer be acted on, deleted or opened in the editor, lets go of its hold.
-    watch(canAct, isAble => {
-        if (!isAble) {
-            isMenuOpen.value = false;
-            isFocusInside.value = false;
-        }
     });
 
     // Placed each time it shows or moves to another message, since the message may have moved since

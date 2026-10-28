@@ -54,8 +54,20 @@ test("opens on the quick tray, or on the full picker when the control that asked
     picker.openReactionPicker(team, message(7), anchor);
     expect(picker.reactionPicker.value?.startsOn).toBe("tray");
 
-    picker.openReactionPicker(team, message(7), sheetPlus, sheetPlus, "full");
+    picker.openReactionPicker(team, message(7), sheetPlus, sheetPlus, { startsOn: "full" });
     expect(picker.reactionPicker.value?.startsOn).toBe("full");
+});
+
+test("keeps the quick reactions the control that asked already shows, for its tray to leave out", () => {
+    const picker = setUp();
+    const add = document.createElement("button");
+
+    picker.openReactionPicker(team, message(7), add, add, { offered: ["thumbsup", "heart", "joy"] });
+    expect(picker.reactionPicker.value).toMatchObject({ startsOn: "tray", offered: ["thumbsup", "heart", "joy"] });
+
+    picker.closeReactionPicker();
+    picker.openReactionPicker(team, message(7), add);
+    expect(picker.reactionPicker.value?.offered).toEqual([]);
 });
 
 test("opening and closing reaches only the rows of the message it is open on", () => {

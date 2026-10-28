@@ -29,6 +29,7 @@
 //   props: {
 //       mode: "react" | "insert",
 //       startsOn: "tray" | "full",          where it opens; "full" by default, the tray in react mode only
+//       offered: string[],                 the quick reactions the control that opened it already shows, left out of the tray
 //       source: {
 //           favorites: [{ code, label, emoji, image_url }],      the bootstrap's 24, in order
 //           catalog: [{ code, emoji, image_url, label, category, keywords }] | null,   null while it loads
@@ -147,7 +148,7 @@ const fullCatalog: Emoji[] = fullSizes.flatMap(([category, size]) => Array.from(
 let wrapper: VueWrapper | null = null;
 let anchor: HTMLButtonElement;
 
-type PickerProps = { mode?: "react" | "insert", startsOn?: "tray" | "full", recents?: string[], catalog?: Emoji[] | null, mine?: string[] };
+type PickerProps = { mode?: "react" | "insert", startsOn?: "tray" | "full", offered?: string[], recents?: string[], catalog?: Emoji[] | null, mine?: string[] };
 
 async function settle(): Promise<void> {
     for (let i = 0; i < 3; i++) {
@@ -166,6 +167,7 @@ async function open(props: PickerProps = {}): Promise<VueWrapper> {
         props: {
             mode: props.mode ?? "react",
             ...(props.startsOn ? { startsOn: props.startsOn } : {}),
+            ...(props.offered ? { offered: props.offered } : {}),
             source: { favorites, catalog: props.catalog === undefined ? catalog : props.catalog, recents: props.recents ?? [], churchName: "Cedar Hill" },
             mine: props.mine ?? [],
             anchor
@@ -302,6 +304,15 @@ describe("the quick tray", () => {
         expect(drawnGlyphs()).toBe(8);
         expect(document.querySelector("[role='grid']")).toBeNull();
         expect(document.querySelector("input[aria-label='Search emoji']")).toBeNull();
+    });
+
+    // The bar's Add reaction sits beside the bar's own quick reactions, so the tray it opens offers
+    // the next eight instead of those again.
+    test("leaves out the quick reactions the control that opened it already shows, and fills from the recents then the favorites", async () => {
+        await open({ startsOn: "tray", offered: ["thumbsup", "heart", "joy"], recents: ["fire", "heart", "grinning"] });
+
+        expect(codesOf(trayGlyphs())).toEqual(["fire", "grinning", ...favorites.map(f => f.code).filter(code => !["thumbsup", "heart", "joy"].includes(code)).slice(0, 6)]);
+        expect(trayGlyphs()).toHaveLength(8);
     });
 
     test("with no recents is the first eight favorites, and leaves out a recent it no longer knows", async () => {

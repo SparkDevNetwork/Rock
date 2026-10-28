@@ -19,7 +19,9 @@
 // is drawn in the dock of the message it is on. It first shows once the pointer rests on a message,
 // then follows the pointer from message to message at once, with no fade, and hides a moment after
 // the pointer leaves the messages. A menu or the picker open from it, or a keyboard's focus inside
-// it, holds it where it is; a keyboard reaching a message shows it there at once.
+// it, holds it where it is; a keyboard reaching a message shows it there at once. The column reads
+// focus inside the bar itself, from the focus events that bubble up from the bar's dock, so a
+// keyboard leaving the bar for another message is never taken for focus still inside it.
 //
 // The conversation's feed and the thread drawer each keep one, binding the handlers below on
 // their scroller, whose rows each mark themselves with data-hot-id.
@@ -61,7 +63,7 @@ export type ColumnActionBar = {
     onFocusIn: (event: FocusEvent) => void;
     onFocusOut: (event: FocusEvent) => void;
 
-    /** The bar reports a menu, the picker or a keyboard's focus holding it, and letting go. */
+    /** The bar reports its menu or the picker holding it, and letting go. */
     onHoldChange: (isHeld: boolean) => void;
 
     /** Stops every timer, as the column goes. */
@@ -127,14 +129,27 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
     /** The hot message came from a keyboard's focus, which the pointer leaving does not let go of. */
     let isHotFromFocus = false;
 
-    /** A menu, the picker or a keyboard's focus inside keeps the bar on its message. */
-    let isHeld = false;
+    /** A menu or the picker open from the bar, as the bar reports, keeps it on its message. */
+    let isOpenHeld = false;
+
+    /** A keyboard's focus inside the bar keeps it on its message too. */
+    let isFocusHeld = false;
 
     /** Set by a scroll and cleared by the next move, so the rows passing under a still pointer stay cold. */
     let isScrollMuted = false;
 
     let restTimer: ReturnType<typeof setTimeout> | null = null;
     let graceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function isHeld(): boolean {
+        return isOpenHeld || isFocusHeld;
+    }
+
+    /** Whether a node is inside the bar, which is all its dock holds. */
+    function isInBar(node: EventTarget | null): boolean {
+        const element = dock.value?.element;
+        return !!element && node instanceof Node && element.contains(node);
+    }
 
     function hoverMs(token: string, fallbackMs: number): number {
         const element = timingElement();
@@ -211,7 +226,7 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
 
         hotId = id;
         isHotFromFocus = false;
-        if (!isHeld) {
+        if (!isHeld()) {
             follow(id);
         }
     }
@@ -222,7 +237,7 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
         }
 
         hotId = null;
-        if (!isHeld) {
+        if (!isHeld()) {
             follow(null);
         }
     }
@@ -235,7 +250,7 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
 
         isScrollMuted = false;
         hotId = hotIdAt(event.target);
-        if (!isHeld) {
+        if (!isHeld()) {
             follow(hotId);
         }
     }
@@ -245,15 +260,27 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
         isScrollMuted = true;
         hotId = null;
         isHotFromFocus = false;
-        if (!isHeld) {
+        if (!isHeld()) {
             hide(true);
         }
     }
 
-    /** A keyboard reaching a message's links or buttons shows its bar at once, so Tab can go on into it. */
+    /**
+     * A keyboard reaching a message's links or buttons shows its bar at once, so Tab can go on into
+     * it. Only a keyboard's focus inside the bar holds it: a click leaves focus on the tool it
+     * pressed, and a bar kept for that would stay after the pointer has gone.
+     */
     function onFocusIn(event: FocusEvent): void {
+        const isKeyboard = isKeyboardFocus(event.target);
+        if (isInBar(event.target) && isFocusHeld !== isKeyboard) {
+            isFocusHeld = isKeyboard;
+            if (!isHeld()) {
+                letGo();
+            }
+        }
+
         const id = hotIdAt(event.target);
-        if (id === null || !isKeyboardFocus(event.target) || (isHeld && id !== barId.value)) {
+        if (id === null || !isKeyboard || (isHeld() && id !== barId.value)) {
             return;
         }
 
@@ -268,21 +295,36 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
     }
 
     function onFocusOut(event: FocusEvent): void {
+        const isLeavingBar = isFocusHeld && isInBar(event.target) && !isInBar(event.relatedTarget);
+        if (isLeavingBar) {
+            isFocusHeld = false;
+        }
+
         if (!isHotFromFocus || hotIdAt(event.relatedTarget) === hotId) {
+            if (isLeavingBar && !isHeld()) {
+                letGo();
+            }
+
             return;
         }
 
         hotId = null;
         isHotFromFocus = false;
-        if (!isHeld) {
+        if (!isHeld()) {
             hide(true);
         }
     }
 
-    /** Let go, the bar goes where the pointer is now, or starts its grace if it is on none. */
     function onHoldChange(isHolding: boolean): void {
-        isHeld = isHolding;
-        if (!isHolding && hotId !== barId.value) {
+        isOpenHeld = isHolding;
+        if (!isHeld()) {
+            letGo();
+        }
+    }
+
+    /** Let go, the bar goes where the pointer is now, or starts its grace if it is on none. */
+    function letGo(): void {
+        if (hotId !== barId.value) {
             follow(hotId);
         }
     }
@@ -303,7 +345,8 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
         }
 
         if (barId.value === messageId) {
-            isHeld = false;
+            isOpenHeld = false;
+            isFocusHeld = false;
             hide(true);
         }
     }

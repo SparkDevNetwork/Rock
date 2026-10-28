@@ -481,6 +481,25 @@ describe("Community, in a channel", () => {
         expect(root(w).getAttribute("aria-label") ?? "").not.toContain("mentions");
     });
 
+    // A person previewing a room they have not joined is not in "everyone" yet.
+    test("a room the reader is only previewing does not mention them by @all", () => {
+        const w = draw({ message: message({ body: "hi <@all>", pieces: [{ type: "text", text: "hi " }, mentionAll] }), isChannel: true, position: "first", isPreviewing: true });
+
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-testid='mention-tag']").exists()).toBe(false);
+        expect(root(w).getAttribute("aria-label") ?? "").not.toContain("mentions");
+        expect(w.find("[data-mention='all']").exists()).toBe(true);
+    });
+
+    // The platform marks the room's mention as such; a piece without that mark names no room,
+    // whatever its text says, so the wash and the chip read the one mark alike.
+    test("a mention piece only says all, without the room's mark, is not a mention of everyone", () => {
+        const w = draw({ message: message({ body: "hi", pieces: [{ type: "text", text: "hi " }, { type: "mention", text: "@all" }] }), isChannel: true, position: "first" });
+
+        expect(root(w).classList.contains("is-mention-me")).toBe(false);
+        expect(w.find("[data-mention='all']").exists()).toBe(false);
+    });
+
     test("a deleted @all leaves no mention treatment", () => {
         const w = draw({ message: message({ body: "hi <@all>", pieces: [mentionAll], deleted_at: nineOhTwo }), isChannel: true, position: "first" });
 
@@ -1173,10 +1192,10 @@ describe("the phone's action sheet", () => {
         sheet()?.querySelector<HTMLElement>("[data-testid='action-sheet-reactions'] button[aria-label='More reactions']")?.click();
         await nextTick();
 
-        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, startsOn?: string }];
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opening?: { startsOn?: string } }];
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(isChannel ? root(w) : w.get(".chat-bubble").element);
-        expect(request.startsOn).toBe("full");
+        expect(request.opening).toEqual({ startsOn: "full" });
     });
 });
 
@@ -1241,11 +1260,11 @@ describe("the reactions row", () => {
 
         await w.get("[data-testid='reaction-add']").trigger("click");
 
-        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement, startsOn?: string }];
+        const [request] = (w.emitted("messageAction") ?? [])[0] as [{ kind: string, anchor: HTMLElement, opener?: HTMLElement, opening?: unknown }];
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(bubble ? w.get(bubble).element : root(w));
         expect(request.opener).toBe(w.get("[data-testid='reaction-add']").element);
-        expect(request.startsOn).toBeUndefined();
+        expect(request.opening).toBeUndefined();
     });
 
     test("tucks into the bubble, which grows its foot to make room", () => {

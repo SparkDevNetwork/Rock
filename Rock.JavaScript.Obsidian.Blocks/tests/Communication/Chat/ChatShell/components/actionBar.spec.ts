@@ -21,17 +21,16 @@
 // moving between its tools. The quick reactions are the church's first three favorites, pressed
 // when the reader reacted with one; in a narrow column only the first stays. More
 // opens the message's menu: Edit (the person's own message, never a block post), Copy, the actions
-// the server listed, then Delete (their own). A message nothing can be done to draws no bar.
+// the server listed, then Delete (their own). Whether a message can be acted on at all is its row's
+// call: the row lends the column's bar a dock only while it can, so the bar draws for the message
+// it is given and nothing while it is given none.
 //
 // The component these tests are written to, components/actionBar.partial.obs:
 //
 //   props: {
-//       message: TimelineMessage | null,   the stored message, carrying actions: [{ id, label, call }]
-//       pending: PendingMessage | null,    the person's own row still sending, or failed
+//       message: TimelineMessage | null,   the stored message, carrying actions: [{ id, label, call }]; null on none
 //       isOwn: boolean,
 //       isInThread: boolean,               inside the thread drawer, where Reply in thread has no place
-//       isPreviewing: boolean,             a room the person has not joined
-//       isEditing: boolean,                the message is open in the editor
 //       isShown: boolean                   the column shows its bar on this message
 //       isInstant: boolean                 the column showed or hid it without a fade
 //       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first three are quick
@@ -47,11 +46,13 @@
 // and the tools is data-testid="action-bar-separator". The column is the nearest element marked
 // data-chat-scroller, narrow at 560px wide or less.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { nextTick } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { isActionCall } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
-import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -106,11 +107,8 @@ function own(extra: Record<string, unknown> = {}): TimelineMessage {
 
 type BarProps = {
     message?: TimelineMessage | null;
-    pending?: PendingMessage | null;
     isOwn?: boolean;
     isInThread?: boolean;
-    isPreviewing?: boolean;
-    isEditing?: boolean;
     isShown?: boolean;
     favorites?: unknown[];
     pickerAnchor?: HTMLElement | null;
@@ -125,7 +123,7 @@ async function settle(): Promise<void> {
 
 /** Mounts the bar as its column shows it, so it is drawn if it may be. */
 async function shown(props: BarProps): Promise<VueWrapper> {
-    wrapper = mount(ActionBar, { props: { message: null, pending: null, isShown: true, favorites, ...props }, attachTo: document.body });
+    wrapper = mount(ActionBar, { props: { message: null, isShown: true, favorites, ...props }, attachTo: document.body });
     await settle();
     return wrapper;
 }
@@ -301,27 +299,17 @@ describe("the menu", () => {
     });
 });
 
-// Each case is held beside a message the same bar does draw, so the case fails for its own reason.
-describe("a message nothing can be done to draws no bar", () => {
-    const pendingRow = (status: "sending" | "failed"): PendingMessage => ({ localId: "local-1", channelId: "c1", body: "On my way", status, errorCode: null });
+// The row decides whether its message can be acted on, and lends the bar a dock only then; the
+// cases it refuses are the feed's tests of the bar.
+describe("the bar's message", () => {
+    test("is drawn for the message it is given, and nothing while it is given none", async () => {
+        const w = await shown({ message: message() });
+        expect(bar(w).exists()).toBe(true);
 
-    test.each([
-        ["a deleted message", { message: message({ deleted_at: nineOhTwo, body: null }) }],
-        ["a hidden message", { message: message({ visibility: "hidden", visibility_notice: "Hidden by a moderator.", body: null }) }],
-        ["a removed message", { message: message({ visibility: "removed", visibility_notice: "Removed by Cedar Hill staff.", body: null }) }],
-        ["a message still sending", { pending: pendingRow("sending"), isOwn: true }],
-        ["a message that failed to send", { pending: pendingRow("failed"), isOwn: true }],
-        ["a message open in the editor", { message: own(), isOwn: true, isEditing: true }],
-        ["a room the person is previewing", { message: message(), isPreviewing: true }]
-    ] as Array<[string, BarProps]>)("%s", async (_what, props) => {
-        const live = await shown({ message: message() });
-        expect(bar(live).exists()).toBe(true);
-        live.unmount();
-        wrapper = null;
+        await w.setProps({ message: null });
+        await settle();
 
-        const none = await shown(props);
-
-        expect(bar(none).exists()).toBe(false);
+        expect(bar(w).exists()).toBe(false);
     });
 });
 
@@ -382,7 +370,7 @@ describe("the bar's keyboard", () => {
 // The column decides when its bar shows; the bar draws at once as told, and says when it is held.
 describe("showing and holding", () => {
     test("is drawn the moment its column shows it, and gone the moment it hides it, with no wait of its own", async () => {
-        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isShown: false }, attachTo: document.body });
+        wrapper = mount(ActionBar, { props: { message: message(), isShown: false }, attachTo: document.body });
         await settle();
         expect(bar(wrapper).exists()).toBe(false);
 
@@ -497,7 +485,7 @@ describe("the bar's quick reactions", () => {
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toEqual(["Add reaction"]);
 
         await add.trigger("click");
-        expect(w.emitted("openPicker")).toEqual([[target, add.element]]);
+        expect(w.emitted("openPicker")).toEqual([[target, add.element, { offered: favorites.slice(0, 3).map(favorite => favorite.code) }]]);
     });
 
     test("the bar stays while the picker its More reactions opened is up, and goes once it closes", async () => {
@@ -542,7 +530,7 @@ describe("the bar in a narrow column", () => {
         scroller.append(host);
         document.body.append(scroller);
 
-        wrapper = mount(ActionBar, { props: { message: message(), pending: null, isShown: true, favorites }, attachTo: host });
+        wrapper = mount(ActionBar, { props: { message: message(), isShown: true, favorites }, attachTo: host });
         await settle();
         await settle();
         return wrapper;
@@ -560,5 +548,37 @@ describe("the bar in a narrow column", () => {
 
         expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
         expect(w.find("[data-testid='action-bar-separator']").exists()).toBe(true);
+    });
+});
+
+// Asked for less motion, an entrance becomes a short fade rather than nothing: the bar fades in
+// and out where it stands, without its 3px rise and sink.
+describe("the bar under reduced motion", () => {
+    /** Each rule the bar's styles give under reduced motion, by selector. */
+    function reducedMotionRules(): Map<string, string> {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        const start = style.indexOf("@media (prefers-reduced-motion: reduce)");
+        let depth = 0;
+        let end = style.indexOf("{", start);
+        do {
+            depth += style[end] === "{" ? 1 : style[end] === "}" ? -1 : 0;
+            end++;
+        } while (depth > 0 && end < style.length);
+        const inner = style.slice(style.indexOf("{", start) + 1, end - 1);
+        const rules = new Map<string, string>();
+        for (const rule of inner.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+            for (const selector of rule[1].split(",")) {
+                rules.set(selector.trim(), rule[2].trim());
+            }
+        }
+        return rules;
+    }
+
+    test("fades in and out, with no rise or sink", () => {
+        const rules = reducedMotionRules();
+
+        expect(rules.get(".chat-tools-enter-active")).toMatch(/animation:\s*chat-tools-fade-in var\(--chat-d-tools-show\) linear;?$/);
+        expect(rules.get(".chat-tools-leave-active")).toMatch(/animation:\s*chat-tools-fade-out var\(--chat-d-tools-hide\) linear forwards;?$/);
     });
 });

@@ -612,6 +612,15 @@ describe("day sections", () => {
         element.getBoundingClientRect = () => ({ top, bottom: top + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
     }
 
+    /**
+     * Lays the label's box out at a height in the frame, which a transform never moves. The feed
+     * stands at the frame's top in these tests, so the frame's heights are the feed's too.
+     */
+    function layOut(element: Element, top: number, height: number): void {
+        Object.defineProperty(element, "offsetTop", { configurable: true, get: () => top });
+        Object.defineProperty(element, "offsetHeight", { configurable: true, get: () => height });
+    }
+
     // A label stuck inside the feed sits on whatever text scrolls under it, since the feed's fade
     // cannot hide that text without hiding the label too. The day of what is at the feed's top is
     // drawn over the feed instead, above the band the fade hides.
@@ -625,7 +634,7 @@ describe("day sections", () => {
         expect(float.attributes("aria-hidden")).toBe("true");
 
         // At the top, every day's own pill is in view below the label's place, so none is labelled.
-        placeAt(float.element, 108);
+        layOut(float.element, 108, 26);
         placeAt(pills[0], 160);
         placeAt(pills[1], 400);
         placeScroll(wrapper, 0);
@@ -661,10 +670,10 @@ describe("day sections", () => {
 
     /**
      * The label's box is the band over the feed's top: the label's own height and the fade under
-     * it, here from 108 to 146 on screen.
+     * it, here from 108 to 146.
      */
     function placeBand(element: Element, top: number): void {
-        element.getBoundingClientRect = () => ({ top, bottom: top + 38, left: 0, right: 300, width: 300, height: 38, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+        layOut(element, top, 38);
     }
 
     /** Draws two days with their pills at the given heights on screen, the label's band at 108. */
@@ -725,6 +734,64 @@ describe("day sections", () => {
         // A jump the other way lands with Today's pill far above; nothing is left between.
         await twoDaysAt(wrapper, -900, -500);
         expect(shown(wrapper)).toEqual({ label: "Today", offset: "0px", carried: [false, true] });
+    });
+
+    // The feed rises 6px into place as a conversation opens, and the landing scroll runs while it
+    // does. A pill is placed by where the feed lays it out, so the label carries the same pill the
+    // same distance during the rise as after it.
+    test("a feed still rising in carries the pill by where it is laid out, not where the rise has it", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+        const scroller = wrapper.get("[data-testid='message-feed']").element;
+
+        // Laid out, Today's pill stands at 140, 32px into the band; the rise draws everything 6px lower.
+        placeAt(scroller, 6);
+        await twoDaysAt(wrapper, -214, 146);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+
+        // Laid out at 143, 3px above the band's foot: the rise would put it past the foot, uncarried.
+        await twoDaysAt(wrapper, -211, 149);
+        expect(shown(wrapper)).toEqual({ label: "Today", offset: "35px", carried: [false, true] });
+    });
+
+    // A reflow moves the pills with no scroll: the column resized, a panel opened beside it.
+    test("the label is placed again when the feed changes size, without a scroll", async () => {
+        const watching: Array<{ callback: ResizeObserverCallback, targets: Element[] }> = [];
+        const previous = window.ResizeObserver;
+        window.ResizeObserver = class {
+            private readonly entry: { callback: ResizeObserverCallback, targets: Element[] };
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                watching.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        } as unknown as typeof ResizeObserver;
+
+        try {
+            const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
+            const scroller = wrapper.get("[data-testid='message-feed']").element;
+            await twoDaysAt(wrapper, -200, 160);
+            expect(shown(wrapper).label).toBe("Yesterday");
+
+            // Narrower, the text above wraps longer and Today's pill rises into the band.
+            const pills = wrapper.findAll("[data-testid='day-pill']").map(pill => pill.element);
+            placeAt(pills[0], -260);
+            placeAt(pills[1], 120);
+            for (const observer of watching.filter(o => o.targets.includes(scroller))) {
+                observer.callback([], observer as unknown as ResizeObserver);
+            }
+            await nextTick();
+
+            expect(shown(wrapper)).toEqual({ label: "Today", offset: "12px", carried: [false, true] });
+        }
+        finally {
+            window.ResizeObserver = previous;
+        }
     });
 
     test("at the top of history every pill is drawn where its day starts, and nothing is labelled", async () => {
@@ -1289,11 +1356,47 @@ describe("the action bar", () => {
         jest.restoreAllMocks();
     });
 
-    /** Four messages from Anna, in a channel or a direct message, the feed in the page so focus can land. */
-    function drawFour(isChannel: boolean): VueWrapper {
-        const messages = [1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id)));
-        mounted = mount(MessageFeed, { props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel, isDirectMessage: !isChannel }, attachTo: document.body });
+    /** The four messages drawFour draws, held so a test can change one as the platform would. */
+    let held: TimelineState;
+
+    /**
+     * Four messages from Anna, in a channel or a direct message, the feed in the page so focus can
+     * land. A test about the bar's entrance keeps Vue's real Transition, which marks an element
+     * entering as a browser plays it.
+     */
+    function drawFour(isChannel: boolean, isTransitionKept = false): VueWrapper {
+        held = timeline([1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id))));
+        mounted = mount(MessageFeed, {
+            props: { pending: [], personAliasGuid: me, timeline: held, isChannel, isDirectMessage: !isChannel },
+            attachTo: document.body,
+            global: isTransitionKept ? { stubs: { transition: false } } : {}
+        });
+
+        // Vue drops an event stamped no later than the moment its listener was attached, as one
+        // fired while the page was being drawn, and the fake clock stands still until moved.
+        jest.advanceTimersByTime(1);
         return mounted;
+    }
+
+    /** Four messages from Anna in a channel, the second as given, with the feed's own props. */
+    function drawCase(second: Partial<TimelineMessage>, feedProps: Record<string, unknown> = {}): VueWrapper {
+        const messages = [1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id), id === 2 ? second : {}));
+        mounted = mount(MessageFeed, { props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel: true, ...feedProps }, attachTo: document.body });
+        jest.advanceTimersByTime(1);
+        return mounted;
+    }
+
+    /** Whether the bar on screen is playing its entrance. */
+    function isEntering(w: VueWrapper): boolean {
+        return bars(w)[0]?.classList.contains("chat-tools-enter-active") ?? false;
+    }
+
+    /** A keyboard's focus, which a browser tells apart by :focus-visible and jsdom cannot, so is told. */
+    function focusIsKeyboard(): void {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? true : matches.call(this, selector);
+        });
     }
 
     async function settle(): Promise<void> {
@@ -1455,6 +1558,201 @@ describe("the action bar", () => {
         placeScroll(w, 100);
         await settle();
 
+        expect(barOn(w)).toBeNull();
+    });
+
+    // Whether a message offers a bar is one rule, the row's: a message that offers none is not a
+    // place the bar can be, so resting on it shows nothing and counts for nothing.
+    test.each([
+        ["a deleted message", { deleted_at: at(14, 50), body: null }, {}],
+        ["a hidden message", { visibility: "hidden", visibility_notice: "Hidden by a moderator.", body: null }, {}],
+        ["a removed message", { visibility: "removed", visibility_notice: "Removed by Cedar Hill staff.", body: null }, {}],
+        ["a message open in the editor", {}, { editingId: 2 }]
+    ] as Array<[string, Partial<TimelineMessage>, Record<string, unknown>]>)("%s offers no bar, so the next message's bar still waits for the rest", async (_what, second, feedProps) => {
+        const w = drawCase(second, feedProps);
+
+        expect(w.find("[data-hot-id='2']").exists()).toBe(false);
+        await w.get("[data-message-id='2']").trigger("pointerover");
+        await wait(1000);
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBeNull();
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("a room the person is previewing offers no bar on any message", async () => {
+        const w = drawCase({}, { isPreviewing: true });
+
+        expect(w.findAll("[data-hot-id]")).toHaveLength(0);
+        await w.get("[data-message-id='2']").trigger("pointerover");
+        await wait(1000);
+        expect(bars(w)).toHaveLength(0);
+    });
+
+    test("goes at once when its message opens in the editor, and the next message's bar waits for the rest", async () => {
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        await w.setProps({ editingId: 2 });
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBeNull();
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("goes when its message opens in the editor while its menu holds it, and holds nothing after", async () => {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+
+        await w.setProps({ editingId: 2 });
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBeNull();
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(220);
+        expect(barOn(w)).toBeNull();
+    });
+
+    test("a send on its way or failed offers no bar", async () => {
+        const messages = [1, 2].map(id => message(id, me, at(14, 40 + id)));
+        const pending: PendingMessage[] = [
+            { localId: "local-1", channelId: "c1", body: "On my way", status: "sending", errorCode: null },
+            { localId: "local-2", channelId: "c1", body: "Still here", status: "failed", errorCode: null }
+        ];
+        mounted = mount(MessageFeed, { props: { pending, personAliasGuid: me, timeline: timeline(messages), isChannel: true }, attachTo: document.body });
+
+        const rows = mounted.findAll("[data-testid='pending-row']");
+        expect(rows).toHaveLength(2);
+        for (const row of rows) {
+            expect(row.attributes("data-hot-id")).toBeUndefined();
+            await row.trigger("pointerover");
+            await wait(1000);
+            expect(bars(mounted)).toHaveLength(0);
+        }
+    });
+
+    // The bar is one element for the feed's life, so its first show, the first in a conversation
+    // just opened, plays the same entrance as every show after.
+    test.each([["a channel", true], ["a direct message", false]])("in %s, plays its entrance the first time it shows, as every time after", async (_kind, isChannel) => {
+        const w = drawFour(isChannel, true);
+
+        await pointTo(w, 2);
+        await wait(150);
+        expect(barOn(w)).toBe(2);
+        expect(isEntering(w)).toBe(true);
+
+        // Vue's Transition holds a leaving element until the frames after its fade.
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(1000);
+        await wait(100);
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        expect(isEntering(w)).toBe(true);
+    });
+
+    test("goes at once when its message is deleted while it shows, and the next bar plays its entrance", async () => {
+        const w = drawFour(true, true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        held.messages[1].deleted_at = at(14, 50);
+        held.messages[1].body = null;
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        expect(isEntering(w)).toBe(true);
+    });
+
+    test("goes when its message is deleted while its menu holds it, and holds nothing after", async () => {
+        const matches = Element.prototype.matches;
+        jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? false : matches.call(this, selector);
+        });
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+        (w.get("[data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        await settle();
+
+        held.messages[1].deleted_at = at(14, 50);
+        held.messages[1].body = null;
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        // Nothing still holds it: the next message shows its bar after the rest, and it leaves after the grace.
+        await pointTo(w, 3);
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(220);
+        expect(barOn(w)).toBeNull();
+    });
+
+    // The bar's own tools sit inside its message's row, so Tab out of them into the next message
+    // must leave the bar there, not keep it held where it was.
+    test("Tab from one message's bar into another message shows that message's bar at once", async () => {
+        focusIsKeyboard();
+        const w = drawFour(true);
+
+        (w.get("[data-hot-id='2']").element as HTMLElement).focus();
+        await settle();
+        expect(barOn(w)).toBe(2);
+
+        (w.get("[data-testid='action-bar'] button").element as HTMLElement).focus();
+        await settle();
+        expect(barOn(w)).toBe(2);
+
+        (w.get("[data-hot-id='3']").element as HTMLElement).focus();
+        await settle();
+        expect(barOn(w)).toBe(3);
+
+        await wait(1000);
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("a keyboard's focus inside the bar holds it while the pointer goes, and once focus leaves the feed it goes after its grace", async () => {
+        focusIsKeyboard();
+        const w = drawFour(true);
+        const outside = document.createElement("button");
+        document.body.appendChild(outside);
+
+        (w.get("[data-hot-id='2']").element as HTMLElement).focus();
+        await settle();
+        (w.get("[data-testid='action-bar'] button").element as HTMLElement).focus();
+        await settle();
+
+        await pointTo(w, 4);
+        await w.get("[data-testid='message-feed']").trigger("pointerleave");
+        await wait(1000);
+        expect(barOn(w)).toBe(2);
+
+        outside.focus();
+        await wait(219);
+        expect(barOn(w)).toBe(2);
+        await wait(1);
         expect(barOn(w)).toBeNull();
     });
 });

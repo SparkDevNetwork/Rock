@@ -1025,7 +1025,7 @@
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
+    import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
@@ -1389,7 +1389,8 @@
 
     /**
      * Whom the message names that reaches the reader: "you" by name, else "everyone" by @all, else
-     * nothing. Never the reader's own message, nor one deleted.
+     * nothing. Never the reader's own message, nor one deleted; and never "everyone" for a person
+     * only previewing the room, who is not among them until they join.
      */
     const mentionOfReader = computed((): "you" | "everyone" | null => {
         const me = props.personAliasGuid.toLowerCase();
@@ -1402,7 +1403,7 @@
             return "you";
         }
 
-        return mentions.some(piece => piece.all === true) ? "everyone" : null;
+        return !props.isPreviewing && mentions.some(isRoomMention) ? "everyone" : null;
     });
 
     /**
@@ -1488,17 +1489,20 @@
     const isTouchLayout = computed((): boolean => props.isPhone || isHoverless);
 
     /**
-     * Whether the row offers a bar at all: a stored message as the person reads it, on a pointer
-     * screen. A tombstone, a send on its way or failed, a system line and a block post have none,
-     * and a phone acts from a sheet instead.
+     * Whether the message can be acted on now, the one rule the bar and the sheet both follow: a
+     * stored message as the person reads it, not open in the editor, in a room the person has
+     * joined. A tombstone, a send on its way or failed, a system line and a block post cannot be.
      */
-    const isBarOffered = computed((): boolean => !!props.message && !props.pending && !isTouchLayout.value && isActionable.value);
+    const canAct = computed((): boolean => !!props.message && !props.pending && isActionable.value && !props.isPreviewing && !props.isEditing);
+
+    /** Whether the row lends the column's bar a dock: a message that can be acted on, on a pointer screen; a phone acts from a sheet instead. */
+    const isBarOffered = computed((): boolean => canAct.value && !isTouchLayout.value);
 
     /** The rows that hold a sheet at all, kept while it slides away whatever the message became. */
     const isSheetSurface = computed((): boolean => !!props.message && !props.pending && isTouchLayout.value);
 
     /** Whether a tap opens the sheet now: as the bar would show, never on a previewed room or an open editor. */
-    const isSheetOffered = computed((): boolean => isSheetSurface.value && isActionable.value && !props.isPreviewing && !props.isEditing);
+    const isSheetOffered = computed((): boolean => isSheetSurface.value && canAct.value);
 
     /** The editor takes the text's place while the message is live; a delete that lands meanwhile shows its tombstone. */
     const isEditorShown = computed((): boolean => props.isEditing && !!props.message && !props.pending && isActionable.value);
@@ -1508,8 +1512,6 @@
         message: props.message,
         isOwn: props.isOwn,
         isInThread: props.isInThread,
-        isPreviewing: props.isPreviewing,
-        isEditing: props.isEditing,
         isCommunity: layout.value === "community",
         senderName: displayName.value,
         favorites: props.reactionHost?.favorites ?? [],

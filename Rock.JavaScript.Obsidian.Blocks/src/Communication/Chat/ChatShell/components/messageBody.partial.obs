@@ -142,6 +142,7 @@ button.chat-mn {
     import Icon from "../ui/icon.partial.obs";
     import { avatarHue } from "../ui/brand.partial";
     import { isActionCall } from "../composables/useMessageActions.partial";
+    import { isRoomMention } from "../composables/useHistory.partial";
     import { MessageAction } from "../types.partial";
 
     // #region Types
@@ -351,7 +352,7 @@ button.chat-mn {
         const guid = textOf(piece.person_alias_guid).toLowerCase();
 
         // Every chip shows its name and speaks its "@" only, the room's "all" as a person's name.
-        if (piece.all === true || (!guid && name.toLowerCase() === "all")) {
+        if (isRoomMention(piece)) {
             return { kind: "mention", text, mention: "all", name: "all", label: `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}` };
         }
 

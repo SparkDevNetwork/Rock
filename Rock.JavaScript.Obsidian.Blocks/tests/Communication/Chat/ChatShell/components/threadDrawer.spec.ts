@@ -102,9 +102,14 @@ function replies(count: number): TimelineMessage[] {
 
 let wrapper: VueWrapper | null = null;
 
-/** Mounts the drawer, its owner keeping the reply composer's text as the shell keeps each thread's. */
-function draw(props: Record<string, unknown> = {}): VueWrapper {
+/**
+ * Mounts the drawer, its owner keeping the reply composer's text as the shell keeps each thread's.
+ * A test about an entrance keeps Vue's real Transition, which marks an element entering as a
+ * browser plays it.
+ */
+function draw(props: Record<string, unknown> = {}, isTransitionKept = false): VueWrapper {
     const drawn: VueWrapper = mount(ThreadDrawer, {
+        global: isTransitionKept ? { stubs: { transition: false } } : {},
         props: {
             draft: { text: "", mentions: [] },
             onDraftText: (text: string) => drawn.setProps({ draft: { text, mentions: [] } }),
@@ -752,5 +757,79 @@ describe("the thread's action bar", () => {
         finally {
             jest.useRealTimers();
         }
+    });
+
+    describe("once shown", () => {
+        beforeEach(() => {
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        async function settle(): Promise<void> {
+            await nextTick();
+            await nextTick();
+        }
+
+        async function wait(ms: number): Promise<void> {
+            jest.advanceTimersByTime(ms);
+            await settle();
+        }
+
+        /** The reply the one bar is drawn on, or null with none drawn. */
+        function barOn(w: VueWrapper): number | null {
+            const drawn = w.findAll("[data-testid='action-bar']");
+            expect(drawn.length).toBeLessThanOrEqual(1);
+            const row = drawn[0]?.element.closest<HTMLElement>("[data-hot-id]");
+            return row ? Number(row.dataset.hotId) : null;
+        }
+
+        async function showOn(w: VueWrapper, id: number): Promise<void> {
+            await w.get(`[data-hot-id='${id}']`).trigger("pointerover");
+            await wait(150);
+        }
+
+        // A drawer opened on another thread is a fresh drawer, and its first bar enters as any other.
+        test("the first bar in a drawer just opened plays its entrance", async () => {
+            const w = draw({}, true);
+            await settle();
+
+            await showOn(w, 41);
+
+            expect(barOn(w)).toBe(41);
+            expect(w.get("[data-testid='action-bar']").classes()).toContain("chat-tools-enter-active");
+        });
+
+        test("hides 220ms after the pointer leaves the thread, and a pointer back inside that keeps it", async () => {
+            const w = draw();
+            await settle();
+            await showOn(w, 41);
+            const body = w.get(".chat-th-body");
+
+            await body.trigger("pointerleave");
+            await wait(150);
+            await w.get("[data-hot-id='42']").trigger("pointerover");
+            await wait(1000);
+            expect(barOn(w)).toBe(42);
+
+            await body.trigger("pointerleave");
+            await wait(219);
+            expect(barOn(w)).toBe(42);
+            await wait(1);
+            expect(barOn(w)).toBeNull();
+        });
+
+        test("a scroll of the thread hides it at once", async () => {
+            const w = draw();
+            await settle();
+            await showOn(w, 41);
+
+            w.get(".chat-panel-body").element.dispatchEvent(new Event("scroll"));
+            await settle();
+
+            expect(barOn(w)).toBeNull();
+        });
     });
 });

@@ -121,12 +121,15 @@
             </section>
         </div>
 
-        <!-- The feed's one action bar, drawn in the dock of the message it is on. -->
-        <Teleport v-if="actionBar.dock.value" :to="actionBar.dock.value.element">
-            <ActionBar v-bind="actionBar.dock.value.props.value"
+        <!--
+            The feed's one action bar, drawn in the dock of the message it is on. One element for the
+            feed's life, left here while it is on no message, so every show plays its entrance.
+        -->
+        <Teleport :to="actionBar.dock.value?.element" :disabled="!actionBar.dock.value">
+            <ActionBar v-bind="actionBar.dock.value?.props.value"
                        :isShown="actionBar.isShown.value"
                        :isInstant="actionBar.isInstant.value"
-                       v-on="actionBar.dock.value.handlers"
+                       v-on="actionBar.dock.value?.handlers ?? {}"
                        @holdChange="actionBar.onHoldChange" />
         </Teleport>
 
@@ -805,6 +808,9 @@
     const actionBar = useActionBar(() => feed.value);
     let observer: IntersectionObserver | null = null;
     let dividerObserver: IntersectionObserver | null = null;
+
+    /** Places the day label again when the feed's size changes, which moves the pills with no scroll. */
+    let sizeObserver: ResizeObserver | null = null;
     let dividerElement: Element | null = null;
 
     /** Whether the New divider is out of view, and on which side, as the browser last reported. */
@@ -1022,27 +1028,34 @@
      * never shows a pill fading under the label. The label parks at the band's top once the pill
      * passes it, and lets the pill go as it leaves the band below. Read from where the pills are,
      * so a fling, a jump or a page drawn above lands right in one frame.
+     *
+     * Every height is where the frame lays things out, from the feed's top: the feed's own rise as
+     * it enters moves its box and the pills in it alike, so a pill measured from the feed's box is
+     * where it will stand once the rise ends, and the band is laid out where it always is.
      */
     function placeTopDay(): void {
         const scroller = feed.value;
-        if (!scroller || !dayFloat.value) {
+        const float = dayFloat.value;
+        if (!scroller || !float) {
             return;
         }
 
-        const band = dayFloat.value.getBoundingClientRect();
+        const bandTop = float.offsetTop - scroller.offsetTop;
+        const bandBottom = bandTop + float.offsetHeight;
+        const feedTop = scroller.getBoundingClientRect().top;
         const pills = scroller.querySelectorAll<HTMLElement>("[data-testid='day-pill']");
         let day: { key: string, label: string, offset: number } | null = null;
         for (let index = 0; index < pills.length; index++) {
-            const top = pills[index].getBoundingClientRect().top;
+            const top = pills[index].getBoundingClientRect().top - feedTop;
 
             // Half a pixel either way is the browser's rounding, not a pill inside the band.
-            if (top > band.bottom - 0.5) {
+            if (top > bandBottom - 0.5) {
                 break;
             }
 
             const section = sections.value[index];
             if (section) {
-                day = { key: section.key, label: section.label, offset: Math.max(0, top - band.top) };
+                day = { key: section.key, label: section.label, offset: Math.max(0, top - bandTop) };
             }
         }
 
@@ -1250,6 +1263,11 @@
             dividerObserver.observe(dividerElement);
         }
 
+        if (typeof ResizeObserver !== "undefined" && feed.value) {
+            sizeObserver = new ResizeObserver(placeTopDay);
+            sizeObserver.observe(feed.value);
+        }
+
         // A first page that is quick never shows the skeleton, so a fast load does not flicker.
         if (!props.timeline.isLoaded) {
             skeletonTimer = setTimeout(() => {
@@ -1274,6 +1292,8 @@
         observer = null;
         dividerObserver?.disconnect();
         dividerObserver = null;
+        sizeObserver?.disconnect();
+        sizeObserver = null;
         if (skeletonTimer) {
             clearTimeout(skeletonTimer);
         }
