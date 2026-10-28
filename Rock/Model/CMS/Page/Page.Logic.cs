@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using Rock.Utility;
@@ -48,6 +50,44 @@ namespace Rock.Model
                 {
                     return base.ParentAuthority;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result && Id != 0 && ParentPageId.HasValue )
+                {
+                    /*
+                        10/28/2026 - MSE
+
+                        A page cannot be moved beneath itself or one of its descendants.
+
+                        Reason: Keep the stored page hierarchy free of parent cycles.
+                    */
+                    var visitedPageIds = new HashSet<int>();
+                    int? ancestorPageId = ParentPageId;
+                    while ( ancestorPageId.HasValue && visitedPageIds.Add( ancestorPageId.Value ) )
+                    {
+                        if ( ancestorPageId.Value == Id )
+                        {
+                            ValidationResults.Add( new ValidationResult( "Parent Page cannot be this page or one of its child pages (recursion)." ) );
+                            return false;
+                        }
+
+                        ancestorPageId = PageCache.Get( ancestorPageId.Value )?.ParentPageId;
+                    }
+                }
+
+                return result;
             }
         }
 
@@ -116,8 +156,16 @@ namespace Rock.Model
 
             result = string.Format( "<a href='{0}'>{1}</a>", new PageReference( Id ).BuildUrl(), result );
 
+            /*
+                10/28/2026 - MSE
+
+                Existing page data can contain a repeated parent.
+
+                Reason: Stop the name lookup when an ancestor has already been visited.
+            */
+            var visitedPageIds = new HashSet<int> { Id };
             var parent = ParentPage;
-            while ( parent != null )
+            while ( parent != null && visitedPageIds.Add( parent.Id ) )
             {
                 result = string.Format( "<a href='{0}'>{1}</a> / {2}", new PageReference( parent.Id ).BuildUrl(), parent.InternalName.EncodeHtml(), result );
                 parent = parent.ParentPage;
