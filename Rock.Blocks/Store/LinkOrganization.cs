@@ -97,7 +97,7 @@ namespace Rock.Blocks.Store
                 var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
                 var result = await provider.CompleteLinkOrganizationAsync( requestId, cancellationToken );
 
-                if ( result.Context.IsNotNullOrWhiteSpace() )
+                if ( result.Context.IsNotNullOrWhiteSpace() && PageCache.Layout.Site.IsSafeRedirectUrl( result.Context, RequestContext.RequestUri ) )
                 {
                     RequestContext.Response.RedirectToUrl( result.Context );
                 }
@@ -141,7 +141,7 @@ namespace Rock.Blocks.Store
                         var result = await provider.UpgradeLegacyIdentifierAsync( upgradeCts.Token );
                         var upgradeReturnUrl = PageParameter( PageParameterKey.ReturnUrl );
 
-                        if ( upgradeReturnUrl.IsNotNullOrWhiteSpace() )
+                        if ( upgradeReturnUrl.IsNotNullOrWhiteSpace() && PageCache.Layout.Site.IsSafeRedirectUrl( upgradeReturnUrl, RequestContext.RequestUri ) )
                         {
                             return ActionOk( upgradeReturnUrl );
                         }
