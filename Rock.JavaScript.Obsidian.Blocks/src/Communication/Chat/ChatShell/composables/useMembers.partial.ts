@@ -351,6 +351,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
     // room since left is dropped.
     let rosterGeneration = 0;
 
+    // Each read in place moves this on, so of two quick changes the older read never lands last.
+    let refreshGeneration = 0;
+
     // The panel's filter and the last leader's dialog each search the room, each with its own
     // pause; each query, close and stop moves its count on, so an answer to an older query is dropped.
     const searches: Record<RoomSearchKey, { generation: number, timer: ReturnType<typeof setTimeout> | null }> = {
@@ -418,19 +421,31 @@ export function createMembers(dependencies: MembersDependencies): Members {
     }
 
     /**
-     * Reads the first page again in place, with no loading state, so the list and the Add people
-     * row focus returns to stay drawn; a failure keeps what is shown.
+     * Reads the roster again in place, with no loading state, as many people as are loaded, page
+     * by page, so the list keeps its length and the row focus is on stays drawn while that person
+     * is still there. Only the newest read lands, and a failure keeps what is shown.
      */
     async function refreshRoster(channelId: string): Promise<void> {
         const generation = rosterGeneration;
-        const result = await fetchPage(channelId, undefined, null);
-        if (isStopped || generation !== rosterGeneration || !result.ok) {
-            return;
+        const refresh = ++refreshGeneration;
+        const wanted = Math.max(state.rows.length, 1);
+        const read: RosterMember[] = [];
+        let hasMore = true;
+        while (hasMore && read.length < wanted) {
+            const result = await fetchPage(channelId, read[read.length - 1], null);
+            if (isStopped || generation !== rosterGeneration || refresh !== refreshGeneration || !result.ok) {
+                return;
+            }
+
+            // A person who joined between pages can shift the keyset by a row; never list them twice.
+            const held = new Set(read.map(member => member.person_alias_guid));
+            const members = membersOf(result);
+            read.push(...members.filter(member => !held.has(member.person_alias_guid)));
+            hasMore = members.length >= pageSize();
         }
 
-        const members = membersOf(result);
-        state.rows = members;
-        state.hasMore = members.length >= pageSize();
+        state.rows = read;
+        state.hasMore = hasMore;
     }
 
     /** Asks Rock whether the reader may change who is in the room; anything but a yes is a no. */
