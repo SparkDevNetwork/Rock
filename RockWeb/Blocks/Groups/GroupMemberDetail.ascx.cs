@@ -1595,7 +1595,7 @@ namespace RockWeb.Blocks.Groups
                 if ( cvGroupMember.IsValid )
                 {
                     var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-                    if ( returnUrl.IsNotNullOrWhiteSpace() )
+                    if ( RockPage.Site.IsSafeRedirectUrl( returnUrl, Request.UrlProxySafe() ) )
                     {
                         Response.Redirect( returnUrl );
                     }
@@ -2028,7 +2028,7 @@ namespace RockWeb.Blocks.Groups
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            if ( RockPage.Site.IsSafeRedirectUrl( returnUrl, Request.UrlProxySafe() ) )
             {
                 Response.Redirect( returnUrl );
             }
