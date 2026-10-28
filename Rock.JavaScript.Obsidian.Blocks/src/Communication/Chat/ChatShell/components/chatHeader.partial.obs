@@ -47,6 +47,9 @@
                     data-testid="header-members"
                     :aria-label="membersButton.label"
                     :aria-expanded="isMembersOpen ? 'true' : 'false'"
+                    @pointerenter="emit('membersIntent')"
+                    @focus="emit('membersIntent')"
+                    @pointerdown="emit('membersIntent')"
                     @click="emit('members')">
                 <Avatar v-if="membersButton.faces.length > 0" :people="membersButton.faces" :size="26" />
                 <span v-else class="chat-header-pile-ic"><Icon name="users" size="sm" /></span>
@@ -543,6 +546,8 @@ button.chat-header-id:hover .chat-header-chev {
         (e: "threads"): void,
         (e: "mentions"): void,
         (e: "members"): void,
+        /** The person is reaching for the members button, so what the panel needs can be read first. */
+        (e: "membersIntent"): void,
         (e: "details"): void,
         /** A notify mode other than the room's own was chosen from the bell's menu. */
         (e: "notify", mode: "all" | "mentions" | "silent"): void,

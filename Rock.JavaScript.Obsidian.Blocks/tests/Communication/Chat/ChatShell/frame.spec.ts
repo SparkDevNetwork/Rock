@@ -386,7 +386,7 @@ function fakeMembers(): Record<string, unknown> {
         channelId: null as string | null, rows: [], hasMore: false, isLoading: false, isLoadingMore: false,
         error: null, moreError: null, refusal: null, query: "",
         search: { query: null, rows: [], hasMore: false, isSearching: false, error: null },
-        canManageMembers: false, isChatAdministrator: false, removals: {}, confirming: null as unknown,
+        canManageMembers: false, isReadingRights: false, isChatAdministrator: false, removals: {}, confirming: null as unknown,
         successorQuery: "", successor: { query: null, rows: [], hasMore: false, isSearching: false, error: null }, successorRefusal: null,
         adding: { isOpen: false, query: "", people: null, isSearching: false, error: null, isAdding: false, refusal: null }
     });
@@ -403,6 +403,7 @@ function fakeMembers(): Record<string, unknown> {
             state.channelId = null;
         }),
         stop: jest.fn(),
+        readAhead: jest.fn(),
         askRemove: jest.fn(),
         cancelRemove: jest.fn(),
         remove: jest.fn(async () => undefined),
@@ -3771,6 +3772,27 @@ describe("the members panel", () => {
         await settle();
         return members;
     }
+
+    test("reaching for the header's members button reads the room's rights ahead, and the panel loads until they are in", async () => {
+        const w = await mountBlock(1200);
+        await openTeam(w);
+        const members = mockShell!.members as Record<string, jest.Mock> & { state: Record<string, unknown> };
+
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("pointerenter");
+        expect(members.readAhead).toHaveBeenCalledWith(team.channel_id);
+
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        members.state.isReadingRights = true;
+        await settle();
+        expect(w.find("[data-testid='member-skeleton']").exists()).toBe(true);
+
+        members.state.isReadingRights = false;
+        members.state.canManageMembers = true;
+        await settle();
+        expect(w.find("[data-testid='member-skeleton']").exists()).toBe(false);
+        expect(w.find("[data-testid='members-add']").exists()).toBe(true);
+    });
 
     test("the panel's Add people opens the dialog over the frame, which searches, adds and closes through the roster", async () => {
         const w = await mountBlock(1200);

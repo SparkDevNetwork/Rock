@@ -69,7 +69,9 @@ export function useMembersPanel(dependencies: MembersPanelDependencies) {
             campusNames,
             members: shownMembers(members),
             hasMore: isQuery ? members.search.hasMore : members.hasMore,
-            isLoading: members.isLoading,
+            // Loading until Rock says what the reader may change too, so Add people is never
+            // drawn after the list it belongs with.
+            isLoading: members.isLoading || members.isReadingRights,
             isLoadingMore: members.isLoadingMore,
             error: members.error,
             moreError: members.moreError,

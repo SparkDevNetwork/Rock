@@ -356,8 +356,9 @@ describe("the subtitle", () => {
     });
 });
 
-// Changing who is in the room. Where Rock lets the reader manage the room's people, the list opens
-// with an Add people row (a group of nine draws it disabled, "Full, 9 of 9"), and each other row
+// Changing who is in the room. Where Rock lets the reader manage the room's people, an Add people
+// button is pinned to the panel's foot under the list, there from the first frame and under a
+// query too (a group of nine keeps it disabled, "Full, 9 of 9" under it), and each other row
 // gains a More menu: View profile, Message where the person can be messaged, then Remove, or for a
 // leader's row seen by someone who is not a Chat Administrator, a lock note in Remove's place. A
 // row being removed dims with "Removing"; a refusal shows under the row in the door's words with a
@@ -366,7 +367,7 @@ describe("the subtitle", () => {
 //   props += canManageMembers: boolean, isChatAdministrator: boolean,
 //            removals: Record<string, { kind: "removing" } | { kind: "refused", text, isStale }>
 //   emits += addPeople, remove(personAliasGuid), dismissRemoval(personAliasGuid)
-//   marks += members-add, members-add-full, member-more, member-removing, member-refusal,
+//   marks += members-foot, members-add, members-add-full (the full group's reason), member-more, member-removing, member-refusal,
 //            member-refusal-dismiss; the menu's items by data-key (profile, message, remove) and
 //            its menu-note
 
@@ -379,29 +380,61 @@ async function openMenu(w: VueWrapper, index: number): Promise<void> {
 }
 
 describe("Add people", () => {
-    test("the row opens the list for those who may add, and asks for the dialog", async () => {
+    /** The panel's foot: the Add people button pinned under the list. */
+    const foot = (w: VueWrapper): ReturnType<VueWrapper["get"]> => w.get("[data-testid='members-foot']");
+
+    test("is a button pinned to the panel's foot, under the list, that asks for the dialog", async () => {
         const w = draw({ canManageMembers: true });
 
-        expect(text(w, "members-add")).toBe("Add people");
-        await w.get("[data-testid='members-add']").trigger("click");
+        const button = foot(w).get("[data-testid='members-add']");
+        expect(button.element.tagName).toBe("BUTTON");
+        expect(read(button.element)).toBe("Add people");
+        expect(w.get("[data-testid='members-panel']").find("[data-testid='members-add']").exists()).toBe(false);
+
+        await button.trigger("click");
         expect(w.emitted("addPeople")).toHaveLength(1);
     });
 
-    test("is not offered to someone who may not add, nor under a query", async () => {
-        expect(draw().find("[data-testid='members-add']").exists()).toBe(false);
+    test("stands from the first frame while the first page loads, and under a query, so it never arrives late", () => {
+        const loading = draw({ canManageMembers: true, isLoading: true, members: [] });
+        expect(loading.find("[data-testid='member-skeleton']").exists()).toBe(true);
+        expect(foot(loading).find("[data-testid='members-add']").exists()).toBe(true);
         wrapper?.unmount();
 
-        const w = draw({ canManageMembers: true, query: "an", searchStatus: "answered" });
-        expect(w.find("[data-testid='members-add']").exists()).toBe(false);
+        const searching = draw({ canManageMembers: true, query: "an", searchStatus: "answered" });
+        expect(foot(searching).find("[data-testid='members-add']").exists()).toBe(true);
     });
 
-    test("a full group draws it disabled, as Full, 9 of 9", () => {
+    test("is not offered to someone who may not add, nor where the list is refused or failed", () => {
+        expect(draw().find("[data-testid='members-foot']").exists()).toBe(false);
+        wrapper?.unmount();
+
+        expect(draw({ canManageMembers: true, refusal: "not_member", members: [] }).find("[data-testid='members-foot']").exists()).toBe(false);
+        wrapper?.unmount();
+
+        expect(draw({ canManageMembers: true, error: { code: "rpc.transport", severity: "failed" }, members: [] }).find("[data-testid='members-foot']").exists()).toBe(false);
+    });
+
+    test("a full group keeps the button, disabled, with Full, 9 of 9 under it as its description", async () => {
         const w = draw({ canManageMembers: true, isChannel: false, channelName: "Hike planning", memberCount: 9, members: [anna, self] });
 
-        expect(w.find("[data-testid='members-add']").exists()).toBe(false);
-        const full = w.get("[data-testid='members-add-full']");
-        expect(read(full.element)).toBe("Add people Full, 9 of 9");
-        expect(full.attributes("aria-disabled")).toBe("true");
+        const button = foot(w).get("[data-testid='members-add']");
+        expect(button.attributes("aria-disabled")).toBe("true");
+        const hint = foot(w).get("[data-testid='members-add-full']");
+        expect(read(hint.element)).toBe("Full, 9 of 9");
+        expect(button.attributes("aria-describedby")).toBe(hint.attributes("id"));
+
+        // Still reachable by the keyboard, so the reason is heard, but it asks for nothing.
+        expect(button.attributes("disabled")).toBeUndefined();
+        await button.trigger("click");
+        expect(w.emitted("addPeople")).toBeUndefined();
+    });
+
+    test("a group with room to spare says nothing under it", () => {
+        const w = draw({ canManageMembers: true, isChannel: false, channelName: "Hike planning", memberCount: 8, members: [anna, self] });
+
+        expect(foot(w).get("[data-testid='members-add']").attributes("aria-disabled")).toBeUndefined();
+        expect(foot(w).find("[data-testid='members-add-full']").exists()).toBe(false);
     });
 });
 
