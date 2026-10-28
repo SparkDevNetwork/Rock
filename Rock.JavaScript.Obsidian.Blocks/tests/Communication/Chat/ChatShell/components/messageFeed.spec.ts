@@ -1155,6 +1155,69 @@ describe("a send that fails", () => {
     });
 });
 
+// The composer under the feed grows with its text, its strip of files and its failure strip, and
+// takes that height from the feed. A reader at the newest message keeps it in view as the feed
+// shrinks; a reader scrolled up is left where they are.
+describe("the feed giving height to the composer", () => {
+    let resized: Array<{ callback: ResizeObserverCallback, targets: Element[] }> = [];
+    let previous: typeof ResizeObserver;
+
+    beforeEach(() => {
+        resized = [];
+        previous = window.ResizeObserver;
+        window.ResizeObserver = class {
+            private readonly entry: { callback: ResizeObserverCallback, targets: Element[] };
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                resized.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        } as unknown as typeof ResizeObserver;
+    });
+
+    afterEach(() => {
+        window.ResizeObserver = previous;
+    });
+
+    /** Shrinks the feed's box to a new height, as the composer below it growing does, with no scroll. */
+    async function shrinkTo(wrapper: VueWrapper, clientHeight: number): Promise<void> {
+        const scroller = wrapper.get("[data-testid='message-feed']").element;
+        Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => clientHeight });
+        for (const observer of resized.filter(o => o.targets.includes(scroller))) {
+            observer.callback([], observer as unknown as ResizeObserver);
+        }
+        await nextTick();
+    }
+
+    test("a reader at the newest message keeps it in view as the composer's strip appears", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        placeScroll(wrapper, 1500, 2000, 500);
+        await nextTick();
+
+        await shrinkTo(wrapper, 430);
+
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        expect(scroller.scrollTop).toBe(2000);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    test("a reader scrolled up is left where they are", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        placeScroll(wrapper, 800, 2000, 500);
+        await nextTick();
+
+        await shrinkTo(wrapper, 430);
+
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(800);
+    });
+});
+
 describe("a block post's buttons", () => {
     test("a press reaches the feed's owner as the message's server action", async () => {
         const card = message(7, anna, at(14, 50), {

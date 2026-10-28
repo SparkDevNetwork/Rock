@@ -145,7 +145,11 @@
     scrollbar-width: thin;
 }
 
-/* A photo's panel fills the frame, its body holding the photo whole and centred. */
+/*
+    A photo's panel fills the frame, its body holding the photo whole and centred. The body's one
+    cell is the body's own size rather than its content's, so a photo's limits in percent are read
+    against it and a tall photo fits the height instead of running past the foot.
+*/
 .chat-dialog.is-media {
     width: 100%;
     height: 100%;
@@ -155,6 +159,7 @@
 .chat-dialog.is-media .chat-dialog-scroll {
     display: grid;
     flex: 1;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
     place-items: center;
     min-height: 0;
     padding: 12px;

@@ -807,8 +807,14 @@
     let observer: IntersectionObserver | null = null;
     let dividerObserver: IntersectionObserver | null = null;
 
-    /** Places the day label again when the feed's size changes, which moves the pills with no scroll. */
+    /**
+     * Watches the feed's own box, which changes with no scroll: the composer below growing with its
+     * text, its strip of files or its failure strip, or the column resizing.
+     */
     let sizeObserver: ResizeObserver | null = null;
+
+    /** The feed's height when its box was last seen, so only a change of height moves the reader. */
+    let feedHeight = 0;
     let dividerElement: Element | null = null;
 
     /** Whether the New divider is out of view, and on which side, as the browser last reported. */
@@ -1061,6 +1067,23 @@
         gutterPx.value = scroller.offsetWidth - scroller.clientWidth;
     }
 
+    /**
+     * The feed's box changed size. The day label is placed again, since the pills moved with no
+     * scroll; and when the feed's height changed, a reader at the newest message is kept there, as
+     * the browser keeps a scroll's top and would leave the newest rows under the composer.
+     */
+    function onFeedResize(): void {
+        placeTopDay();
+
+        const height = feed.value?.clientHeight ?? 0;
+        if (height !== feedHeight) {
+            feedHeight = height;
+            if (!isScrolledUp.value) {
+                scrollToBottom();
+            }
+        }
+    }
+
     /** Whether the person is at, or near, the bottom of the feed. */
     function isNearBottom(): boolean {
         const element = feed.value;
@@ -1262,7 +1285,8 @@
         }
 
         if (typeof ResizeObserver !== "undefined" && feed.value) {
-            sizeObserver = new ResizeObserver(placeTopDay);
+            feedHeight = feed.value.clientHeight;
+            sizeObserver = new ResizeObserver(onFeedResize);
             sizeObserver.observe(feed.value);
         }
 

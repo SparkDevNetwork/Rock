@@ -14,7 +14,15 @@
                     </span>
                     <span class="chat-attach-chip-main">
                         <span class="chat-attach-chip-name" data-testid="attachment-tray-name" :title="file.name">{{ file.name }}</span>
-                        <span v-if="file.status === 'failed'" class="chat-attach-chip-failure" data-testid="attachment-tray-failure">{{ failureText(file) }}</span>
+                        <!-- A failure stands where a file's size does: its words, then Try again as a link. -->
+                        <span v-if="file.status === 'failed'" class="chat-attach-chip-line">
+                            <span class="chat-attach-chip-failure" data-testid="attachment-tray-failure" :title="failureText(file)">{{ failureText(file) }}</span>
+                            <button v-if="file.failure?.canRetry"
+                                    type="button"
+                                    class="chat-attach-chip-retry"
+                                    data-testid="attachment-tray-retry"
+                                    @click="tray.retry(file.localId)">Try again</button>
+                        </span>
                         <span v-else-if="file.status !== 'uploaded'"
                               class="chat-attach-progress"
                               role="progressbar"
@@ -26,11 +34,6 @@
                         </span>
                         <span v-else class="chat-attach-chip-size">{{ formatFileSize(file.size) }}</span>
                     </span>
-                    <button v-if="file.status === 'failed' && file.failure?.canRetry"
-                            type="button"
-                            class="chat-ls-btn is-retry"
-                            data-testid="attachment-tray-retry"
-                            @click="tray.retry(file.localId)"><Icon name="refresh" size="xs" />Try again</button>
                     <IconButton icon="x"
                                 icon-size="sm"
                                 class="chat-attach-chip-remove"
@@ -158,7 +161,6 @@
 }
 
 .chat-attach-chip[data-status="failed"] {
-    flex-wrap: wrap;
     background: var(--chat-danger-soft);
     border-color: transparent;
 }
@@ -204,9 +206,47 @@
     color: var(--chat-muted);
 }
 
-.chat-attach-chip-failure {
+/*
+    A failed file's line under its name, as its size would be: the words give way, cut short, before
+    Try again does, so the chip stays one size and Try again stays in reach.
+*/
+.chat-attach-chip-line {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    min-width: 0;
     font-size: 11.5px;
     color: var(--chat-danger-ink);
+    white-space: nowrap;
+}
+
+.chat-attach-chip-failure {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Try again reads as a link in the line's own color, underlined so it is not color alone. */
+.chat-attach-chip-retry {
+    flex: none;
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    background: transparent;
+    border: 0;
+}
+
+.chat-attach-chip-retry:hover {
+    text-decoration-thickness: 2px;
+}
+
+.chat-attach-chip-retry:focus-visible {
+    border-radius: var(--chat-r-sm);
+    outline: 2px solid var(--chat-focus-line);
+    outline-offset: 1px;
 }
 
 /* Progress fills from the left by transform alone, so nothing lays out again as it moves. */
@@ -226,10 +266,6 @@
     transition: transform var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-attach-chip .chat-ls-btn.is-retry {
-    color: var(--chat-danger-ink);
-}
-
 .chat-attach-chip-remove {
     width: 28px;
     height: 28px;
@@ -243,12 +279,15 @@
 
 /*
  * The photo grid: one photo at its own shape, two side by side, three with the first standing
- * tall, four or more in a square of four. Each tile holds its place before its photo loads.
+ * tall, four or more in a square of four. Each tile holds its place before its photo loads, which
+ * needs the grid's own width: a row's column is sized to what it holds, so a width in percent
+ * alone would be read against nothing and the tiles would wait for their photos to have a size.
  */
 .chat-attach-grid {
     display: grid;
     gap: 2px;
-    width: min(320px, 100%);
+    width: 320px;
+    max-width: 100%;
     overflow: hidden;
     border-radius: var(--chat-r-lg);
 }
@@ -323,12 +362,13 @@
     background: var(--chat-scrim);
 }
 
-/* A file: a card with its icon, name and size, downloading under its name. */
+/* A file: a card with its icon, name and size, downloading under its name; as wide as the grid. */
 .chat-attach-file {
     display: flex;
     gap: 10px;
     align-items: center;
-    width: min(320px, 100%);
+    width: 320px;
+    max-width: 100%;
     padding: 8px 12px 8px 8px;
     color: var(--chat-text);
     text-decoration: none;
@@ -386,7 +426,7 @@ a.chat-attach-file:focus-visible {
     color: var(--chat-icon);
 }
 
-/* The viewer's photo, whole within the frame. */
+/* The viewer's photo, whole within the dialog's body at any shape, and never past its own size. */
 .chat-attach-viewer-image {
     display: block;
     max-width: 100%;

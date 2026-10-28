@@ -16,10 +16,12 @@
 //
 // A message's files, mounted: photos in a grid that holds its size before anything loads, other
 // files as cards that download under their own names, and a viewer over the chat for the photos.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, reactive } from "vue";
 import Attachments from "../../../../../src/Communication/Chat/ChatShell/components/attachments.partial.obs";
-import { attachmentViewsKey, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
+import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, projectUrl, settle, tenant } from "../attachmentFakes";
 
@@ -260,5 +262,125 @@ describe("the viewer", () => {
         await nextTick();
 
         expect(document.querySelector("[data-testid='attachment-viewer-image']")).toBeNull();
+    });
+});
+
+/** The declarations a component's styles give a selector, comments left out. */
+function ruleOf(file: string, selector: string): Record<string, string> {
+    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell", file), "utf8");
+    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+    const declarations: Record<string, string> = {};
+    for (const match of style.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        if (match[1].split(",").some(part => part.trim() === selector)) {
+            for (const declaration of match[2].split(";")) {
+                const colon = declaration.indexOf(":");
+                if (colon > 0) {
+                    declarations[declaration.slice(0, colon).trim()] = declaration.slice(colon + 1).trim();
+                }
+            }
+        }
+    }
+    return declarations;
+}
+
+// The viewer's body is the photo's frame. Its one cell has a definite size, so the photo's limits
+// are read against it: a tall photo is drawn whole rather than running past the dialog's foot, a
+// wide one whole across it, and a small one at its own size, never stretched.
+describe("the viewer's photo", () => {
+    test("is held whole within the dialog's body, centred, and never drawn past its own size", () => {
+        const body = ruleOf("ui/dialog.partial.obs", ".chat-dialog.is-media .chat-dialog-scroll");
+        expect(body["grid-template"]).toBe("minmax(0, 1fr) / minmax(0, 1fr)");
+        expect(body["place-items"]).toBe("center");
+        expect(body.overflow).toBe("hidden");
+
+        const photo = ruleOf("components/attachments.partial.obs", ".chat-attach-viewer-image");
+        expect(photo["max-width"]).toBe("100%");
+        expect(photo["max-height"]).toBe("100%");
+        expect(photo["object-fit"]).toBe("contain");
+        expect(photo.width).toBeUndefined();
+        expect(photo.height).toBeUndefined();
+    });
+});
+
+// A failed file is a chip like the others: its name keeps the same room, and the line under it,
+// where a file's size or progress stands, holds the failure and Try again on one line.
+describe("the composer's strip", () => {
+    function trayOf(files: Array<Partial<TrayFile>>): AttachmentTray {
+        return reactive({
+            files: files.map((file, index) => ({
+                localId: `local-${index}`,
+                name: `file-${index}.pdf`,
+                kind: "file" as const,
+                type: "application/pdf",
+                size: 48_000,
+                width: null,
+                height: null,
+                previewUrl: null,
+                status: "uploaded" as const,
+                progress: 1,
+                failure: null,
+                uploadId: null,
+                key: null,
+                ...file
+            })),
+            notice: null,
+            add: jest.fn(),
+            remove: jest.fn(),
+            retry: jest.fn()
+        });
+    }
+
+    test("a failed file keeps a chip's shape, its failure and Try again on the one line under its name", async () => {
+        const tray = trayOf([
+            { name: "Q4 budget.xlsx", status: "failed", progress: 0, failure: { alone: "Couldn't upload. Try again later.", besideRetry: "Couldn't upload.", canRetry: true } }
+        ]);
+        const { wrapper } = await mountFiles([], harness(), { tray });
+
+        const chip = wrapper.get("[data-testid='attachment-tray-file']");
+        const name = chip.get("[data-testid='attachment-tray-name']");
+        const failure = chip.get("[data-testid='attachment-tray-failure']");
+        const retry = chip.get("[data-testid='attachment-tray-retry']");
+        expect(name.text()).toBe("Q4 budget.xlsx");
+        expect(failure.text()).toBe("Couldn't upload.");
+
+        // the line under the name, as a file's size stands, holds both
+        const line = failure.element.parentElement;
+        expect(retry.element.parentElement).toBe(line);
+        expect(line?.parentElement).toBe(name.element.parentElement);
+        expect(line?.previousElementSibling).toBe(name.element);
+
+        // no wrapping into a taller chip; the words give way before Try again does
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-chip[data-status=\"failed\"]")["flex-wrap"]).toBeUndefined();
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-chip-line")["white-space"]).toBe("nowrap");
+        const words = ruleOf("components/attachments.partial.obs", ".chat-attach-chip-failure");
+        expect(words["text-overflow"]).toBe("ellipsis");
+        expect(words["min-width"]).toBe("0");
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-chip-retry").flex).toBe("none");
+
+        await retry.trigger("click");
+        expect(tray.retry).toHaveBeenCalledWith("local-0");
+    });
+
+    test("a file refused for good says why alone on that line, with no Try again", async () => {
+        const tray = trayOf([
+            { name: "video.mov", status: "failed", progress: 0, failure: { alone: "Files can be up to 25 MB.", besideRetry: "Files can be up to 25 MB.", canRetry: false } }
+        ]);
+        const { wrapper } = await mountFiles([], harness(), { tray });
+
+        const chip = wrapper.get("[data-testid='attachment-tray-file']");
+        expect(chip.get("[data-testid='attachment-tray-failure']").text()).toBe("Files can be up to 25 MB.");
+        expect(chip.get("[data-testid='attachment-tray-failure']").attributes("title")).toBe("Files can be up to 25 MB.");
+        expect(chip.find("[data-testid='attachment-tray-retry']").exists()).toBe(false);
+    });
+});
+
+// A row's column is sized to what it holds, in both looks, so a width in percent alone is read
+// against nothing and the photos collapse until they load, then push the feed down under the
+// reader. The grid and a file's card each ask for their own width, kept within the column.
+describe("the room a message's files take", () => {
+    test.each([".chat-attach-grid", ".chat-attach-file"])("%s asks for 320px of its own, never past its column", selector => {
+        const declarations = ruleOf("components/attachments.partial.obs", selector);
+        expect(declarations.width).toBe("320px");
+        expect(declarations["max-width"]).toBe("100%");
     });
 });
