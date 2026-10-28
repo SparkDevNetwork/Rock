@@ -94,7 +94,7 @@
 
                 <div v-else-if="directory.error" class="chat-fd-error" role="status" data-testid="directory-error">
                     <Icon name="alert" size="sm" />
-                    <span>{{ errorSentence(directory.error, "Couldn't load channels. Check your connection and try again.") }}</span>
+                    <span>{{ messageOrOffline(directory.error, "Couldn't load channels. Check your connection and try again.") }}</span>
                     <button type="button" class="chat-fd-btn" data-testid="directory-retry" @click="emit('retry')">Try again</button>
                 </div>
 
@@ -182,7 +182,7 @@
                     </div>
                     <div v-else-if="directory.moreError" class="chat-fd-error" role="status" data-testid="directory-more-error">
                         <Icon name="alert" size="sm" />
-                        <span>{{ errorSentence(directory.moreError, "Couldn't load more channels. Check your connection and try again.") }}</span>
+                        <span>{{ messageOrOffline(directory.moreError, "Couldn't load more channels. Check your connection and try again.") }}</span>
                         <button type="button" class="chat-fd-btn" @click="emit('retry')">Try again</button>
                     </div>
                 </template>
@@ -889,9 +889,8 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-    import { messageForError } from "../errors.partial";
+    import { messageOrOffline } from "../errors.partial";
     import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
-    import { ChatError } from "../types.partial";
 
     // #region Types
 
@@ -1201,11 +1200,6 @@
     function isChipPressed(campus: DirectoryCampus): boolean {
         const chosen = props.directory.campus;
         return chosen.kind === campus.kind && (chosen.kind !== "campus" || (campus.kind === "campus" && chosen.campusId === campus.campusId));
-    }
-
-    /** A refusal's sentence is the server's; a call that never reached the platform says so in this view's words. */
-    function errorSentence(error: ChatError, offline: string): string {
-        return error.text || error.severity === "session" ? messageForError(error) : offline;
     }
 
     // #endregion Functions

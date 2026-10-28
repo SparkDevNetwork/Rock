@@ -1236,6 +1236,43 @@ describe("Rename", () => {
         expect(s.rooms.factsOf(group)?.name).toBeNull();
     });
 
+    // The platform has a pending name only once Rock's push lands, which its channel.updated says;
+    // until then any other sidebar load or facts read brings the old name back.
+    test("a saved name stays through sidebar loads and facts reads until the platform says the room changed", async () => {
+        const s = setup();
+        sidebarOfThree(s);
+        s.active.value = group;
+        void s.rooms.channelOpened(group);
+        s.channelCalls[0].answer.resolve({ ok: true, facts: facts(group, "Old name", { channel_type: "dm", is_public: false }) });
+        await settle();
+
+        void s.rooms.rename(group, "Trail crew");
+        s.renameCalls[0].answer.resolve(door("ok", null, true));
+        await settle();
+
+        // A load and a facts read that the platform answered before it had the name.
+        const old = s.channels.rows.find(r => r.channel_id === group)!;
+        s.channels.setSidebar(s.channels.rows.map(r => r.channel_id === group ? { ...old, name: "Old name", title: "Old name" } : r));
+        s.rooms.sidebarLoaded();
+        s.rooms.roomChanged(group);
+        s.channelCalls[1].answer.resolve({ ok: true, facts: facts(group, "Old name", { channel_type: "dm", is_public: false }) });
+        await settle();
+
+        expect(s.channels.rows.find(r => r.channel_id === group)?.name).toBe("Trail crew");
+        expect(s.channels.rows.find(r => r.channel_id === group)?.title).toBe("Trail crew");
+        expect(s.rooms.factsOf(group)?.name).toBe("Trail crew");
+
+        // The platform has it now; what it reads next is taken as read, another's rename included.
+        s.rooms.channelUpdated(group);
+        s.channelCalls[2].answer.resolve({ ok: true, facts: facts(group, "Hike crew", { channel_type: "dm", is_public: false }) });
+        await settle();
+        s.channels.setSidebar(s.channels.rows.map(r => r.channel_id === group ? { ...old, name: "Hike crew", title: "Hike crew" } : r));
+        s.rooms.sidebarLoaded();
+
+        expect(s.channels.rows.find(r => r.channel_id === group)?.title).toBe("Hike crew");
+        expect(s.rooms.factsOf(group)?.name).toBe("Hike crew");
+    });
+
     test("pending has saved too, so it names the group at once, with no reload before the platform has it", async () => {
         const s = setup();
         sidebarOfThree(s);

@@ -109,6 +109,7 @@ namespace Rock.Blocks.Communication.Chat
 
             box.AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean();
             box.Campuses = ChatSessionHelper.ListActiveCampuses( CampusCache.All( RockContext ) );
+            box.IsSignInPersisted = ChatSessionHelper.IsSignInPersisted( System.Web.HttpContext.Current?.User );
 
             return box;
         }

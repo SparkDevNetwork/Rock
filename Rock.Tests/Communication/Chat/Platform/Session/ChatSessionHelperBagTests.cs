@@ -17,6 +17,8 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Principal;
+using System.Web.Security;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -199,6 +201,19 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             CollectionAssert.AreEqual(
                 new[] { "c9303000-0000-4000-8000-000000000001|East Campus|", "c9301000-0000-4000-8000-000000000001|Main Campus|MAIN" },
                 listed.Select( c => $"{c.Guid}|{c.Name}|{c.ShortCode}" ).ToArray() );
+        }
+
+        [TestMethod]
+        public void IsSignInPersisted_ReadsTheSignInTicket()
+        {
+            var kept = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( "ted.decker", true, 30 ) ), null );
+            var forTheSession = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( "ted.decker", false, 30 ) ), null );
+            var notTheSignInCookie = new GenericPrincipal( new GenericIdentity( "ted.decker" ), null );
+
+            Assert.IsTrue( ChatSessionHelper.IsSignInPersisted( kept ) );
+            Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( forTheSession ) );
+            Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( notTheSignInCookie ) );
+            Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( null ) );
         }
 
         [TestMethod]

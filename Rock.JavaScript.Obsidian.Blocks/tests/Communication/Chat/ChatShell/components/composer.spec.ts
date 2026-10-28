@@ -152,6 +152,24 @@ describe("the composer's focus", () => {
         wrapper.unmount();
         outside.remove();
     });
+
+    // The shell's drafts leave the text of a box being typed in alone when another tab writes it.
+    test("is told once each time focus leaves the box, not as it moves within it", async () => {
+        const outside = document.createElement("button");
+        document.body.append(outside);
+        const wrapper = mountComposer({ attachTo: document.body });
+        const emoji = wrapper.get("[data-testid='composer-emoji']").element as HTMLElement;
+
+        editorOf(wrapper).focus();
+        emoji.focus();
+        expect(wrapper.emitted("blur")).toBeUndefined();
+
+        outside.focus();
+        expect(wrapper.emitted("blur")).toHaveLength(1);
+
+        wrapper.unmount();
+        outside.remove();
+    });
 });
 
 describe("the composer's text, kept by its owner", () => {

@@ -112,9 +112,6 @@
     import Icon from "./icon.partial.obs";
     import SettingNote, { Note } from "./settingNote.partial.obs";
 
-    /** A line under a row's words: what a change means, or a failed save's sentence with Try again. */
-    export type RowNote = Note;
-
     /** The ids of the row's words, for its control to be named and described by; null for a line it does not have. */
     export type RowIds = { title: string | null, sub: string | null, note: string | null };
 
@@ -137,7 +134,7 @@
         },
 
         note: {
-            type: Object as PropType<RowNote | null>,
+            type: Object as PropType<Note | null>,
             default: null
         },
 

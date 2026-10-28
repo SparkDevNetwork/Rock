@@ -20,6 +20,9 @@
 // how it went, so quick changes never flicker through older answers; a refusal puts the control
 // back to the last value known saved, and its owner shows why with Try again.
 
+/** What a save that failed without the server's words says, as a call that threw. */
+export const saveFailedSentence = "Couldn't save. Try again in a moment.";
+
 /** How a save went: landed, with what the server read back, or refused in a sentence. */
 export type SaveOutcome = { isSaved: true, data?: unknown } | { isSaved: false, text: string };
 
@@ -86,7 +89,14 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
             track.isRefused = false;
             change.show(change.value);
 
-            const outcome = await change.ask();
+            // A call that throws is a failed save like any other, so the save is never left out.
+            let outcome: SaveOutcome;
+            try {
+                outcome = await change.ask();
+            }
+            catch {
+                outcome = { isSaved: false, text: saveFailedSentence };
+            }
             if (isStopped()) {
                 return false;
             }

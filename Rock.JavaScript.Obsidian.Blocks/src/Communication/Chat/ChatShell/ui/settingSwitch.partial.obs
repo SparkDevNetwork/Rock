@@ -77,10 +77,8 @@
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
-    import SettingRow, { RowIds, RowNote } from "./settingRow.partial.obs";
-
-    /** A line under a switch's words: what a change means, or a failed save's sentence with Try again. */
-    export type SwitchNote = RowNote;
+    import { Note } from "./settingNote.partial.obs";
+    import SettingRow, { RowIds } from "./settingRow.partial.obs";
 
     const props = defineProps({
         /** The setting's key, which names the row for tests and the dialog's own wiring. */
@@ -111,7 +109,7 @@
         },
 
         note: {
-            type: Object as PropType<SwitchNote | null>,
+            type: Object as PropType<Note | null>,
             default: null
         }
     });

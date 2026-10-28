@@ -514,7 +514,7 @@ describe("loading", () => {
     });
 
     test("says why the first page did not come, with Try again", async () => {
-        const w = mountDirectory({ directory: directory({ rows: [], total: 0, error: { code: "network", severity: "degraded", text: null } }) });
+        const w = mountDirectory({ directory: directory({ rows: [], total: 0, error: { code: "rpc.transport", severity: "failed" } }) });
 
         expect(w.get("[data-testid='directory-error']").text()).toContain("Couldn't load channels.");
         await w.get("[data-testid='directory-retry']").trigger("click");
@@ -554,7 +554,7 @@ describe("the next page", () => {
     });
 
     test("keeps the rows and offers Try again when it did not come", async () => {
-        const w = mountDirectory({ directory: directory({ hasMore: true, moreError: { code: "network", severity: "degraded", text: null } }) });
+        const w = mountDirectory({ directory: directory({ hasMore: true, moreError: { code: "rpc.transport", severity: "failed" } }) });
 
         expect(w.findAll("[data-testid='directory-row']")).toHaveLength(3);
         await w.get("[data-testid='directory-more-error'] button").trigger("click");

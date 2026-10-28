@@ -331,7 +331,13 @@ export type Rooms = {
      */
     roomChanged: (channelId: string | null) => void;
 
-    /** A sidebar reload landed: a pending join it shows as a member is joined. */
+    /**
+     * The room's own name, description or kind changed on the platform: a name this person saved
+     * is the platform's now, so what it reads next is taken as read, and the facts are read again.
+     */
+    channelUpdated: (channelId: string | null) => void;
+
+    /** A sidebar reload landed: a pending join it shows as a member is joined, and a saved name the platform has not yet stays. */
     sidebarLoaded: () => void;
 
     stop: () => void;
@@ -454,6 +460,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     // Each room's newest facts read, so an older read answering last is dropped.
     const factsGeneration = new Map<string, number>();
+
+    // A name the person saved, by room, kept on the screen until the platform says the room
+    // changed: Rock pushes a name on after its door answers, so until then a sidebar load or a
+    // facts read brings the old name back.
+    const savedNames = new Map<string, string>();
 
     let announcements = 0;
 
@@ -606,7 +617,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             return;
         }
 
-        state.facts[channelId] = result.facts;
+        const savedName = savedNames.get(channelId);
+        state.facts[channelId] = savedName === undefined ? result.facts : { ...result.facts, name: savedName || null };
 
         // Only the room still on screen is previewed; one left meanwhile is not the person's to see
         // in the sidebar. A direct message with no row is one nobody has written in yet.
@@ -754,6 +766,15 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     }
 
     // #endregion Leave and Rename
+
+    /** A room changed on the person's topic: its facts are read again, if held. */
+    function readChangedRoom(channelId: string | null): void {
+        // Only a room this session has asked about is held, its first read perhaps still on its
+        // way; any other is read when it opens.
+        if (channelId && factsGeneration.has(channelId)) {
+            void readFacts(channelId);
+        }
+    }
 
     return {
         state,
@@ -989,6 +1010,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // Saved, pending or not, shows only as the name itself; the button gives a screen
             // reader nothing to hear, so the new name is said.
             state.renames[channelId] = { kind: "idle" };
+            savedNames.set(channelId, trimmed);
             showName(channelId, trimmed, !answer.isPending);
             announce(trimmed === "" ? "Name removed. Showing everyone's names." : `Renamed to ${trimmed}.`);
         },
@@ -1065,13 +1087,14 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
         },
 
-        roomChanged: (channelId: string | null): void => {
-            // Only a room this session has asked about is held, its first read perhaps still on
-            // its way; any other is read when it opens.
-            if (channelId && factsGeneration.has(channelId)) {
-                void readFacts(channelId);
+        channelUpdated: (channelId: string | null): void => {
+            if (channelId) {
+                savedNames.delete(channelId);
             }
+            readChangedRoom(channelId);
         },
+
+        roomChanged: readChangedRoom,
 
         sidebarLoaded: (): void => {
             if (isStopped) {
@@ -1084,6 +1107,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                     finishJoin(channelId);
                 }
             }
+
+            savedNames.forEach((name, channelId) => showName(channelId, name, false));
         },
 
         stop: (): void => {

@@ -336,6 +336,18 @@ namespace Rock.Communication.Chat.Platform.Session
         }
 
         /// <summary>
+        /// Tells whether a sign-in outlasts the browser session, which the Chat block's sign-in
+        /// mark lasts as long as: a browser closed ends a session sign-in with no sign-out Rock
+        /// sees, so the mark must end with it for the drafts to be forgotten.
+        /// </summary>
+        /// <param name="principal">Who the request is signed in as, or null.</param>
+        /// <returns><c>true</c> only for Rock's sign-in cookie with a persisted ticket.</returns>
+        internal static bool IsSignInPersisted( IPrincipal principal )
+        {
+            return ( principal?.Identity as FormsIdentity )?.Ticket?.IsPersistent == true;
+        }
+
+        /// <summary>
         /// The church's active campuses, as the chat names them.
         /// </summary>
         /// <param name="campuses">Every campus, as Rock caches them.</param>

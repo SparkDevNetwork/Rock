@@ -34,6 +34,9 @@ export type BrowserShellOptions = {
 
     areSharedChannelsFilteredByCampus: boolean;
 
+    /** Whether the person's sign-in outlasts the browser session, which the sign-in mark lasts as long as. */
+    isSignInPersisted: boolean;
+
     /** Shows a toast that is not a failure. */
     notify: NonNullable<ShellOptions["notify"]>;
 
@@ -51,7 +54,27 @@ const pushCookieName = "rock_chat_push";
  * The cookie Rock's sign-out expires. Storage is the browser's alone, so a block that finds this
  * gone knows someone signed out here and forgets the drafts on this device before showing any.
  */
-const signInMarkCookieName = "rock_chat_signed_in";
+export const signInMarkCookieName = "rock_chat_signed_in";
+
+/**
+ * The sign-in mark as this browser keeps it. A sign-in that ends with the browser session gets a
+ * mark that ends with it, so closing the browser on a shared computer, which Rock never sees as a
+ * sign-out, forgets the drafts too; a kept sign-in's mark lasts a year, written again on every load.
+ *
+ * @param isSignInPersisted Whether the sign-in outlasts the browser session.
+ *
+ * @returns The mark.
+ */
+export function browserSignInMark(isSignInPersisted: boolean): NonNullable<ShellOptions["signInMark"]> {
+    return {
+        isSet: () => document.cookie.split("; ").some(part => part.startsWith(`${signInMarkCookieName}=`)),
+        set: () => {
+            const lifetime = isSignInPersisted ? "; max-age=31536000" : "";
+            const secure = window.location.protocol === "https:" ? "; Secure" : "";
+            document.cookie = `${signInMarkCookieName}=1; path=/${lifetime}; SameSite=Lax${secure}`;
+        }
+    };
+}
 
 /**
  * Makes the block's shell builder. A birthdate save replaces the shell with one for the session
@@ -183,14 +206,7 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
         fetch: (url, init) => window.fetch(url, init),
         storage: safeLocalStorage(),
-        signInMark: {
-            isSet: () => document.cookie.split("; ").some(part => part.startsWith(`${signInMarkCookieName}=`)),
-            set: () => {
-                const secure = window.location.protocol === "https:" ? "; Secure" : "";
-                // a year, a choice: sign-out is what ends it, and the block writes it again on every load
-                document.cookie = `${signInMarkCookieName}=1; path=/; max-age=31536000; SameSite=Lax${secure}`;
-            }
-        },
+        signInMark: browserSignInMark(options.isSignInPersisted),
         pageTargets: { document, window },
         push: browserPush(),
         mark: name => {

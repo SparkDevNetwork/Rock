@@ -254,7 +254,9 @@ describe("paging", () => {
         await w.setProps({ isLoadingMore: false, members: [tom, grace, anna, ben, self] });
         await nextTick();
 
-        expect(w.get(".chat-panel-body").classes()).not.toContain("is-entering");
+        // the first page's rows go on rising; the page's own are simply there
+        const rows = w.findAll("[data-testid='member-row']");
+        expect(rows.filter(r => r.attributes("data-chat-settled") !== undefined)).toHaveLength(2);
         expect(document.activeElement).toBe(w.findAll("[data-testid='member-who']")[3].element);
     });
 });
@@ -547,11 +549,11 @@ describe("the roster's entrance", () => {
         expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2", "3", "4"] });
     });
 
-    test("a filter's rows do not rise in", async () => {
-        const w = draw();
+    test("a filter's rows that were not on the first page do not rise in", async () => {
+        const w = draw({ members: [tom, grace] });
 
         await w.setProps({ query: "an", members: [anna, ben] });
-        expect(entered(w).isEntering).toBe(false);
+        expect(w.findAll("[data-testid='member-row']").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([true, true]);
     });
 
     test("a first page that failed and was tried again rises in once it lands", async () => {

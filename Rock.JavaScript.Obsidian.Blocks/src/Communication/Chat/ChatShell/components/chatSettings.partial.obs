@@ -203,12 +203,13 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { MeKey, MeSettings, meTitles, PrefsState, SettingNote } from "../composables/usePrefs.partial";
+    import { MeKey, MeSettings, meTitles, PrefsState } from "../composables/usePrefs.partial";
     import { PushState } from "../composables/usePush.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import SettingGroup from "../ui/settingGroup.partial.obs";
+    import { Note } from "../ui/settingNote.partial.obs";
     import SettingRow from "../ui/settingRow.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
 
@@ -249,7 +250,7 @@
 
         /** The note under each switch: only a failed save's, since one that lands shows nothing more. */
         notes: {
-            type: Object as PropType<Partial<Record<MeKey, SettingNote>>>,
+            type: Object as PropType<Partial<Record<MeKey, Note>>>,
             default: () => ({})
         },
 

@@ -25,7 +25,13 @@
 //
 // A shared computer must not keep the last person's words. Rock's sign-out takes away a mark the
 // block sets, and a block that finds the mark gone forgets every draft on the device before it
-// reads any. Storage that is missing, blocked or full keeps drafts for the page only.
+// reads any. A browser closed or a sign-in left to expire signs out with no sign-out Rock sees,
+// so a block also forgets every draft not its own person's: someone else signed in since.
+// Storage that is missing, blocked or full keeps drafts for the page only.
+//
+// Two tabs of the same person share the device's drafts. Each tab hears the other's writes and
+// shows them in any box not being typed in, so a draft sent in one is never left to send again
+// in the other, and the bound on how many are kept is counted from what the device holds.
 import { reactive } from "vue";
 import { DisplayPiece } from "../types.partial";
 
@@ -63,8 +69,11 @@ export type DraftsDependencies = {
      */
     signInMark: { isSet: () => boolean, set: () => void } | null;
 
-    /** The page, whose leaving writes what typing has not yet paused for. */
-    window?: { addEventListener: (type: string, listener: () => void) => void, removeEventListener: (type: string, listener: () => void) => void };
+    /**
+     * The page, whose leaving writes what typing has not yet paused for, and whose storage
+     * events carry another tab's writes.
+     */
+    window?: { addEventListener: (type: string, listener: (event: unknown) => void) => void, removeEventListener: (type: string, listener: (event: unknown) => void) => void };
 
     now?: () => number;
 };
@@ -82,6 +91,9 @@ export type Drafts = {
 
     /** Puts held text after what a place's box holds, a blank line between, as refused text comes back. */
     append: (place: string, text: string) => void;
+
+    /** The place whose box has focus, or null: another tab's writes never replace what is being typed. */
+    focus: (place: string | null) => void;
 
     /** Writes what is waiting and stops listening to the page. */
     stop: () => void;
@@ -132,18 +144,20 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
 
     let writeTimer: ReturnType<typeof setTimeout> | null = null;
 
-    /** When each of the person's drafts on the device was written, by key; read once, at the first write. */
-    let stored: Map<string, number> | null = null;
+    /** The place whose box has focus, whose text another tab's write leaves alone. */
+    let focusedPlace: string | null = null;
 
     // Set again on every load, so the mark lasts as long as nobody signs out.
     if (storage && dependencies.signInMark) {
-        if (!dependencies.signInMark.isSet()) {
-            forget(draftPrefix);
-        }
+        const isSignedOut = !dependencies.signInMark.isSet();
+        keysStartingWith(draftPrefix)
+            .filter(key => isSignedOut || !key.startsWith(personPrefix))
+            .forEach(remove);
         dependencies.signInMark.set();
     }
 
     dependencies.window?.addEventListener("pagehide", writeWaiting);
+    dependencies.window?.addEventListener("storage", onStorage);
 
     // #region Functions
 
@@ -175,7 +189,6 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
         const draft = parse(value);
         if (!draft || draft.at < now() - keptForMs) {
             remove(personPrefix + place);
-            stored?.delete(personPrefix + place);
             return empty;
         }
 
@@ -251,15 +264,11 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
     }
 
     /**
-     * The person's drafts on the device and when each was written, read once a page, at its
-     * first write, dropping any too old to keep.
+     * The person's drafts on the device and when each was written, read at each write because
+     * another tab of the person's writes there too, dropping any too old to keep.
      */
     function storedDrafts(): Map<string, number> {
-        if (stored) {
-            return stored;
-        }
-
-        stored = new Map<string, number>();
+        const stored = new Map<string, number>();
         const oldest = now() - keptForMs;
         for (const key of keysStartingWith(personPrefix)) {
             let at: number | undefined;
@@ -287,9 +296,29 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
         return draft.mentions.filter(piece => tokens.has(mentionKey(piece)));
     }
 
-    /** Removes every draft whose key starts with the prefix. */
-    function forget(prefix: string): void {
-        keysStartingWith(prefix).forEach(remove);
+    /**
+     * Another tab wrote the device's storage. A draft of this person's this tab holds takes the
+     * other's text, or empties as the other sent or cleared it, unless its box is being typed in
+     * or this tab has a change of its own still to write: that write comes after and wins.
+     */
+    function onStorage(event: unknown): void {
+        const { key = null, newValue = null } = event as { key?: string | null, newValue?: string | null };
+        if (key !== null && !key.startsWith(personPrefix)) {
+            return;
+        }
+
+        // A null key is the whole storage cleared, every draft with it.
+        const fresh = newValue !== null ? parse(newValue) : null;
+        const places = key === null ? Array.from(drafts.keys()) : [key.slice(personPrefix.length)];
+        for (const place of places) {
+            const draft = drafts.get(place);
+            if (!draft || place === focusedPlace || waiting.has(place)) {
+                continue;
+            }
+
+            draft.text = fresh?.text ?? "";
+            draft.mentions = fresh?.mentions ?? [];
+        }
     }
 
     function keysStartingWith(prefix: string): string[] {
@@ -349,9 +378,14 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
             scheduleWrite(place);
         },
 
+        focus: (place: string | null): void => {
+            focusedPlace = place;
+        },
+
         stop: (): void => {
             writeWaiting();
             dependencies.window?.removeEventListener("pagehide", writeWaiting);
+            dependencies.window?.removeEventListener("storage", onStorage);
         }
     };
 }

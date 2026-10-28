@@ -395,6 +395,22 @@ describe("following from a row", () => {
 
         expect(w.emitted("follow")).toEqual([[40, false]]);
     });
+
+    // Try again takes its button away as the change is asked again, so focus goes to the bell it
+    // asked again, and that row holds the list's tab stop.
+    test("Try again leaves focus on the row's bell it asked again", async () => {
+        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 30, isFollowing: false, text: "No." } });
+
+        (w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").element as HTMLElement).focus();
+        await w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").trigger("click");
+        // the shell clears the refusal as it asks again
+        await w.setProps({ followError: null });
+        await nextTick();
+
+        const second = rowsOf(w)[1];
+        expect(document.activeElement).toBe(second.get("[data-testid='thread-row-follow']").element);
+        expect(second.get("[data-testid='thread-row-open']").attributes("tabindex")).toBe("0");
+    });
 });
 
 describe("loading, empty and failed", () => {
@@ -540,11 +556,12 @@ describe("the list's entrance", () => {
         expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
     });
 
-    test("a thread that moves in live, or a refresh's new row, does not rise in", async () => {
+    test("a thread that moves in live, or a refresh's new row, does not rise in, and the first page's rows go on rising", async () => {
         const w = draw({ rows: [row(40), row(41)] });
 
         await w.setProps({ rows: [row(43), row(40), row(41)] });
-        expect(entered(w).isEntering).toBe(false);
+        expect(entered(w).isEntering).toBe(true);
+        expect(w.findAll("[data-testid='thread-row']").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([true, false, false]);
     });
 
     test("the other tab's first page rises in as the list's own", async () => {

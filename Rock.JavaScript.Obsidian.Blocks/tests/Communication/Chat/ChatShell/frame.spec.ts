@@ -33,6 +33,7 @@ import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/comp
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
+import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
 
 // #region Stand-ins
@@ -817,6 +818,32 @@ describe("drafts", () => {
         await nextTick();
 
         expect(boxText(w, "frame-main")).toBe("before the reload");
+    });
+
+    // Another tab's write to the same draft never replaces the text of the box being typed in.
+    test("are told the place whose box has focus, as it moves to the thread and away", async () => {
+        const w = await mountBlock(1200);
+        const focus = jest.spyOn(mockShell!.drafts as { focus: (place: string | null) => void }, "focus");
+        await openRow(w, team.channel_id);
+        const root = { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>;
+        timelineOf(team.channel_id).messages.push(storedMessage(40, root));
+        await settle();
+        const outside = document.createElement("button");
+        document.body.append(outside);
+
+        (w.get("[data-testid='frame-main'] [data-testid='composer-input']").element as HTMLElement).focus();
+        await settle();
+        expect(focus).toHaveBeenLastCalledWith(team.channel_id);
+
+        await openThread(w, 0);
+        (w.get("[data-testid='frame-panel'] [data-testid='composer-input']").element as HTMLElement).focus();
+        await settle();
+        expect(focus).toHaveBeenLastCalledWith(`${team.channel_id}/40`);
+
+        outside.focus();
+        await settle();
+        expect(focus).toHaveBeenLastCalledWith(null);
+        outside.remove();
     });
 });
 
@@ -1884,6 +1911,21 @@ describe("following a thread", () => {
         threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
         await settle();
         expect(w.findComponent(ThreadDrawerComponent).props("followError")).toEqual({ rootId: 40, isFollowing: false, text: "No." });
+    });
+
+    // A refusal is said once, where it was made: the list the drawer goes back to leaves it unsaid.
+    test("the list the drawer goes back to does not say the drawer's refusal again, and says its other rows'", async () => {
+        const w = await openDrawer();
+        threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
+        await settle();
+
+        w.findComponent(ThreadDrawerComponent).vm.$emit("back");
+        await settle();
+        expect(w.findComponent(ThreadsPanelComponent).props("followError")).toBeNull();
+
+        threadsOf().state.followError = { rootId: 99, isFollowing: true, text: "Not now." };
+        await settle();
+        expect(w.findComponent(ThreadsPanelComponent).props("followError")).toEqual({ rootId: 99, isFollowing: true, text: "Not now." });
     });
 });
 

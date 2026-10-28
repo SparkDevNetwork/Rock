@@ -18,7 +18,7 @@
         <div data-testid="mentions-panel" :aria-busy="isLoading ? 'true' : 'false'">
             <div v-if="error" class="chat-ls-err" role="status" data-testid="mentions-error">
                 <Icon name="alert" size="sm" />
-                <span>{{ sentenceFor(error, offlineRefresh) }}</span>
+                <span>{{ messageOrOffline(error, offlineRefresh) }}</span>
                 <button type="button" class="chat-ls-btn" @click="emit('refresh')">Try again</button>
             </div>
 
@@ -94,7 +94,7 @@
                 <div v-if="hasMore" class="chat-ls-more">
                     <div v-if="olderError" class="chat-ls-err" role="status">
                         <Icon name="alert" size="sm" />
-                        <span data-testid="mentions-older-error">{{ sentenceFor(olderError, offlineOlder) }}</span>
+                        <span data-testid="mentions-older-error">{{ messageOrOffline(olderError, offlineOlder) }}</span>
                     </div>
                     <button type="button"
                             class="chat-ls-btn"
@@ -259,7 +259,7 @@
     import PanelHost from "../ui/panelHost.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
-    import { messageForError } from "../errors.partial";
+    import { messageOrOffline } from "../errors.partial";
     import { dayLabel, timeLabel } from "../feedLayout.partial";
     import { messageDisplay } from "../composables/useHistory.partial";
     import { ChatError, DisplayPiece, MentionRow, MessageBlock, TimelineMessage } from "../types.partial";
@@ -496,14 +496,6 @@
         return isRoveShown ? roveId.value === messageId : props.rows[0]?.message.id === messageId;
     }
 
-    /**
-     * A refusal's sentence is the server's; a call that never reached the platform carries none,
-     * and says the person is offline in the words of the place it failed.
-     */
-    function sentenceFor(error: ChatError, offline: string): string {
-        return error.text || error.severity === "session" ? messageForError(error) : offline;
-    }
-
     function fullName(nickName: string | null | undefined, lastName: string | null | undefined): string {
         return `${nickName ?? ""} ${lastName ?? ""}`.trim();
     }
@@ -624,7 +616,7 @@
 
         olderFrom = null;
         if (props.olderError) {
-            announcement.value = sentenceFor(props.olderError, offlineOlder);
+            announcement.value = messageOrOffline(props.olderError, offlineOlder);
             return;
         }
 

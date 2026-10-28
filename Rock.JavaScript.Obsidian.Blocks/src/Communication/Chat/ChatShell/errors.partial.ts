@@ -126,6 +126,19 @@ export function messageForError(error: ChatError): string {
 }
 
 /**
+ * What the person is told for a failure where a call that never reached the platform says so in
+ * the words of the place it failed, and any other failure in the server's.
+ *
+ * @param error The classified failure.
+ * @param offline The place's sentence for a call that never reached the platform.
+ *
+ * @returns The sentence.
+ */
+export function messageOrOffline(error: ChatError, offline: string): string {
+    return error.code === "rpc.transport" ? offline : messageForError(error);
+}
+
+/**
  * Which failure this is to the person: its code and the sentence they are shown. Two failures
  * under one code that read differently, as two refused messages or a lost read from a channel and
  * one from a conversation, are each told and each closed on their own; the same one twice is one.

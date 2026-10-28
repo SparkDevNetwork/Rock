@@ -378,11 +378,12 @@ describe("the inbox's entrance", () => {
         expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
     });
 
-    test("an older page does not rise in", async () => {
+    test("an older page does not rise in, and the first page's rows go on rising", async () => {
         const w = draw({ hasMore: true, rows: [row(52), row(51)] });
 
         await w.setProps({ isLoadingOlder: true });
         await w.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50, { created_at: at(9, 0, 1) })] });
-        expect(entered(w).isEntering).toBe(false);
+        expect(entered(w).isEntering).toBe(true);
+        expect(w.findAll(".chat-ls-row").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([false, false, true]);
     });
 });

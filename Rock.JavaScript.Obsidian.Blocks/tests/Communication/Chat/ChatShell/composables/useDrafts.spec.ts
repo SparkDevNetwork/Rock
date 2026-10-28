@@ -263,6 +263,139 @@ describe("after Rock's sign-out", () => {
     });
 });
 
+describe("another person signed in on this device", () => {
+    test("forgets every draft not this person's, with the mark still set, as a sign-out Rock never saw", () => {
+        const storage = memoryStorage();
+        storage.items.set(storedKey(team, anna), JSON.stringify({ text: "the last person's", mentions: [], at: now }));
+        storage.items.set(`rock-chat:draft:other-church:${jordan.toLowerCase()}:${team}`, JSON.stringify({ text: "another church's", mentions: [], at: now }));
+        storage.items.set(storedKey(youth), JSON.stringify({ text: "mine", mentions: [], at: now }));
+        storage.items.set("rock-chat:last-channel:x:y", team);
+
+        const d = drafts(storage, mark(true));
+
+        expect(Array.from(storage.items.keys()).sort()).toEqual(["rock-chat:last-channel:x:y", storedKey(youth)].sort());
+        expect(d.of(youth).text).toBe("mine");
+    });
+});
+
+describe("in two tabs of the same person", () => {
+    /** The page's window, whose storage events a test sends as another tab's writes arrive. */
+    function page(): { addEventListener: jest.Mock, removeEventListener: jest.Mock, send: (key: string | null, newValue: string | null) => void } {
+        const listeners = new Map<string, Set<(event: unknown) => void>>();
+        return {
+            addEventListener: jest.fn((type: string, listener: (event: unknown) => void) => {
+                if (!listeners.has(type)) {
+                    listeners.set(type, new Set());
+                }
+                listeners.get(type)?.add(listener);
+            }),
+            removeEventListener: jest.fn((type: string, listener: (event: unknown) => void) => {
+                listeners.get(type)?.delete(listener);
+            }),
+            send: (key, newValue) => listeners.get("storage")?.forEach(listener => listener({ key, newValue }))
+        };
+    }
+
+    function tab(storage: DraftStorage, window: ReturnType<typeof page>): ReturnType<typeof createDrafts> {
+        return createDrafts({ storage, tenantId: tenant, personAliasGuid: jordan, signInMark: mark(), window, now: () => now });
+    }
+
+    test("a draft the other tab changes is shown here while its box is not focused", () => {
+        const storage = memoryStorage();
+        const window = page();
+        const d = tab(storage, window);
+        expect(d.of(team).text).toBe("");
+
+        window.send(storedKey(team), JSON.stringify({ text: `from the other tab <@${anna}>`, mentions: [{ type: "mention", text: "@Anna Kim", person_alias_guid: anna }], at: now }));
+
+        expect(d.of(team).text).toBe(`from the other tab <@${anna}>`);
+        expect(d.of(team).mentions).toEqual([{ type: "mention", text: "@Anna Kim", person_alias_guid: anna }]);
+        expect(storage.writes).toBe(0);
+    });
+
+    test("a draft the other tab sent is dropped here, so it is never sent twice", () => {
+        const storage = memoryStorage();
+        storage.items.set(storedKey(team), JSON.stringify({ text: "hello", mentions: [], at: now }));
+        const window = page();
+        const d = tab(storage, window);
+        expect(d.of(team).text).toBe("hello");
+
+        storage.items.delete(storedKey(team));
+        window.send(storedKey(team), null);
+
+        expect(d.of(team).text).toBe("");
+    });
+
+    test("the box being typed in keeps its text, and its next write wins", () => {
+        const storage = memoryStorage();
+        const window = page();
+        const d = tab(storage, window);
+        d.focus(team);
+        d.write(team, "typing here");
+
+        window.send(storedKey(team), JSON.stringify({ text: "from the other tab", mentions: [], at: now }));
+        expect(d.of(team).text).toBe("typing here");
+
+        jest.advanceTimersByTime(300);
+        expect(JSON.parse(storage.items.get(storedKey(team)) ?? "null")?.text).toBe("typing here");
+    });
+
+    test("once the box loses focus, the other tab's changes show again", () => {
+        const storage = memoryStorage();
+        const window = page();
+        const d = tab(storage, window);
+        expect(d.of(team).text).toBe("");
+        d.focus(team);
+        d.focus(null);
+
+        window.send(storedKey(team), JSON.stringify({ text: "from the other tab", mentions: [], at: now }));
+
+        expect(d.of(team).text).toBe("from the other tab");
+    });
+
+    test("another person's or another place's keys change nothing here", () => {
+        const storage = memoryStorage();
+        const window = page();
+        const d = tab(storage, window);
+        d.write(team, "mine");
+
+        window.send(storedKey(team, anna), JSON.stringify({ text: "anna's", mentions: [], at: now }));
+        window.send("rock-chat:last-channel:x:y", youth);
+
+        expect(d.of(team).text).toBe("mine");
+    });
+
+    test("keeps at most 50 between them: the oldest go by what storage holds, not what this tab wrote", () => {
+        const storage = memoryStorage();
+        const d = tab(storage, page());
+        d.write(team, "first");
+        jest.advanceTimersByTime(300);
+
+        // The other tab writes fifty more, each newer than this tab's first.
+        for (let i = 0; i < 50; i++) {
+            storage.items.set(storedKey(`room-${i}`), JSON.stringify({ text: `draft ${i}`, mentions: [], at: now + i + 1 }));
+        }
+        now += 100;
+        d.write(youth, "second");
+        jest.advanceTimersByTime(300);
+
+        const kept = Array.from(storage.items.keys()).filter(key => key.startsWith("rock-chat:draft:"));
+        expect(kept).toHaveLength(50);
+        expect(kept).toContain(storedKey(youth));
+        expect(kept).not.toContain(storedKey(team));
+        expect(kept).not.toContain(storedKey("room-0"));
+    });
+
+    test("stops listening when the drafts stop", () => {
+        const window = page();
+        const d = tab(memoryStorage(), window);
+
+        d.stop();
+
+        expect(window.removeEventListener).toHaveBeenCalledWith("storage", expect.any(Function));
+    });
+});
+
 describe("without the device's storage", () => {
     test("drafts are kept for the page when storage refuses every call", () => {
         const refusing: DraftStorage = {

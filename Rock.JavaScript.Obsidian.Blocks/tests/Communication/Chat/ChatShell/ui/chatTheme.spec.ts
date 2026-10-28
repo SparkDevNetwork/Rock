@@ -343,7 +343,6 @@ const namedLiterals: Named[] = [
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-fd-pop", value: "420ms", reduced: "0ms" },
-    { name: "d-saved-hold", value: "1.6s" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-divider-fade", value: "600ms" },
     { name: "d-read-fade", value: "400ms" },
@@ -701,7 +700,7 @@ describe("the components' own styles", () => {
     // rise over t-msg on the entrance curve, 26ms after the row above, the ninth and later with the
     // eighth, and only while its panel is entering. No panel keeps a rise of its own beside it.
     test("panel rows rise in by the sheet's one staggered entrance, and by nothing else", () => {
-        const selector = ".chat-shell .chat-panel-body.is-entering .chat-enter";
+        const selector = ".chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled])";
         expect(declarationOf(sheetPath, selector, "animation")).toBe(normalize("chat-enter var(--chat-t-msg) var(--chat-ease-in) both"));
         expect(declarationOf(sheetPath, selector, "animation-delay")).toBe(normalize("calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger))"));
         expect(declarationOf(sheetPath, ".chat-shell", "--chat-enter-cap")).toBe("8");

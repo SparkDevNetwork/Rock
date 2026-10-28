@@ -18,32 +18,55 @@
 // when the panel opens with its first page: the host marks its body entering, and the chat's
 // sheet plays each marked row's rise from that mark. The host is told the keys of the rows it
 // draws, in order, or null while the first page is still loading. It enters once, when the first
-// rows are drawn, and stops as soon as the list changes under it (a live arrival, a later page, a
-// filter) or every row has risen, so nothing after the first page rises with it. A list that
-// loads again from nothing, as a tab switch or a retry does, enters again.
+// rows are drawn. A row drawn after that, a live arrival, a later page or a filter cleared, is
+// marked settled and does not rise, while the first page's rows keep rising; the entrance ends
+// once every first-page row has risen or gone. A list that loads again from nothing, as a tab
+// switch or a retry does, enters again.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { defineComponent, h, PropType } from "vue";
 import PanelHost from "../../../../../src/Communication/Chat/ChatShell/ui/panelHost.partial.obs";
 
 let wrapper: VueWrapper | null = null;
 
-function draw(entranceKeys: readonly string[] | null): VueWrapper {
-    wrapper = mount(PanelHost, {
-        props: { title: "Threads", entranceKeys },
-        slots: { default: "<ul><li class=\"chat-enter\">One</li></ul>" },
-        attachTo: document.body
-    });
+/** A panel drawing one entering row for each key, as the lists do. */
+const panel = defineComponent({
+    props: {
+        keys: {
+            type: Array as PropType<readonly string[] | null>,
+            default: null
+        }
+    },
+    setup(props) {
+        return () => h(PanelHost, { title: "Threads", entranceKeys: props.keys }, {
+            default: () => h("ul", (props.keys ?? []).map(key => h("li", { key, class: "chat-enter", "data-key": key }, key)))
+        });
+    }
+});
+
+function draw(keys: readonly string[] | null): VueWrapper {
+    wrapper = mount(panel, { props: { keys }, attachTo: document.body });
     return wrapper;
+}
+
+async function show(w: VueWrapper, keys: readonly string[] | null): Promise<void> {
+    await w.setProps({ keys });
+    await w.vm.$nextTick();
 }
 
 function isEntering(w: VueWrapper): boolean {
     return w.get(".chat-panel-body").classes().includes("is-entering");
 }
 
+/** The keys of the rows that rise while the panel is entering: those not marked settled. */
+function risingKeys(w: VueWrapper): string[] {
+    return w.findAll(".chat-panel-body li").filter(li => li.attributes("data-chat-settled") === undefined).map(li => li.attributes("data-key") ?? "");
+}
+
 /** A row's rise ending, as the browser reports it from the row up through the body. */
-function riseEnds(w: VueWrapper, name = "chat-enter"): void {
+function riseEnds(w: VueWrapper, key: string, name = "chat-enter"): void {
     const event = new Event("animationend", { bubbles: true });
     Object.defineProperty(event, "animationName", { value: name });
-    w.get(".chat-panel-body li").element.dispatchEvent(event);
+    w.get(`.chat-panel-body li[data-key='${key}']`).element.dispatchEvent(event);
 }
 
 afterEach(() => {
@@ -56,67 +79,97 @@ describe("the panel's entrance", () => {
         const w = draw(null);
         expect(isEntering(w)).toBe(false);
 
-        await w.setProps({ entranceKeys: ["a", "b", "c"] });
+        await show(w, ["a", "b", "c"]);
         expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["a", "b", "c"]);
     });
 
-    test("a panel opened with its first page already held enters at once", () => {
-        expect(isEntering(draw(["a", "b"]))).toBe(true);
-    });
-
-    test("a row added after the first page, live or by a later page, ends the entrance so it does not rise", async () => {
+    test("a panel opened with its first page already held enters at once", async () => {
         const w = draw(["a", "b"]);
+        await w.vm.$nextTick();
 
-        await w.setProps({ entranceKeys: ["a", "b", "c"] });
-        expect(isEntering(w)).toBe(false);
+        expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["a", "b"]);
     });
 
-    test("a filter that changes the rows ends the entrance, and clearing it does not replay it", async () => {
-        const w = draw(["a", "b", "c"]);
+    test("a row added after the first page, live or by a later page, does not rise, and the first page's rows keep rising", async () => {
+        const w = draw(["a", "b"]);
+        await w.vm.$nextTick();
 
-        await w.setProps({ entranceKeys: ["b"] });
-        expect(isEntering(w)).toBe(false);
-        await w.setProps({ entranceKeys: ["a", "b", "c"] });
-        expect(isEntering(w)).toBe(false);
+        await show(w, ["c", "a", "b"]);
+
+        expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["a", "b"]);
+    });
+
+    test("a filter keeps the rows it leaves rising, and clearing it does not replay the rest", async () => {
+        const w = draw(["a", "b", "c"]);
+        await w.vm.$nextTick();
+
+        await show(w, ["b"]);
+        expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["b"]);
+
+        await show(w, ["a", "b", "c"]);
+        expect(risingKeys(w)).toEqual(["b"]);
     });
 
     test("a redraw of the same rows keeps the entrance playing", async () => {
         const w = draw(["a", "b"]);
+        await w.vm.$nextTick();
 
-        await w.setProps({ entranceKeys: ["a", "b"] });
+        await show(w, ["a", "b"]);
         expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["a", "b"]);
     });
 
     test("an empty first page does not enter, nor do rows that arrive into it later", async () => {
         const w = draw(null);
 
-        await w.setProps({ entranceKeys: [] });
+        await show(w, []);
         expect(isEntering(w)).toBe(false);
-        await w.setProps({ entranceKeys: ["a"] });
+        await show(w, ["a"]);
         expect(isEntering(w)).toBe(false);
     });
 
-    test("a list that loads again from nothing enters again", async () => {
+    test("a list that loads again from nothing enters again, every row of it", async () => {
         const w = draw(["a", "b"]);
-        await w.setProps({ entranceKeys: ["a", "b", "c"] });
+        await w.vm.$nextTick();
+        await show(w, ["a", "b", "c"]);
 
-        await w.setProps({ entranceKeys: null });
+        await show(w, null);
         expect(isEntering(w)).toBe(false);
-        await w.setProps({ entranceKeys: ["x", "y"] });
+        await show(w, ["c", "x"]);
         expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["c", "x"]);
     });
 
     // Once every row has risen the mark goes, so a row's own later motion, such as a member row
     // collapsing as it is removed, is never held under the finished entrance.
-    test("the entrance ends once every row has risen, and other animations do not count", async () => {
+    test("the entrance ends once every first-page row has risen, and other animations do not count", async () => {
         const w = draw(["a", "b"]);
+        await w.vm.$nextTick();
 
-        riseEnds(w, "chat-skeleton");
-        riseEnds(w);
+        riseEnds(w, "a", "chat-skeleton");
+        riseEnds(w, "a");
         await w.vm.$nextTick();
         expect(isEntering(w)).toBe(true);
 
-        riseEnds(w);
+        riseEnds(w, "b");
+        await w.vm.$nextTick();
+        expect(isEntering(w)).toBe(false);
+    });
+
+    test("a first-page row that goes before it has risen leaves the entrance to the rest", async () => {
+        const w = draw(["a", "b", "c"]);
+        await w.vm.$nextTick();
+        await show(w, ["a", "c", "d"]);
+
+        riseEnds(w, "a");
+        await w.vm.$nextTick();
+        expect(isEntering(w)).toBe(true);
+
+        riseEnds(w, "c");
         await w.vm.$nextTick();
         expect(isEntering(w)).toBe(false);
     });

@@ -1048,6 +1048,43 @@ describe("a room changed elsewhere", () => {
         expect(members.state.channelId).toBe(otherChannel);
         expect(names(members.state.rows)).toEqual(["Ben"]);
     });
+
+    test("of two quick changes, the newer read is what shows, whichever answers last", async () => {
+        const older = deferred<CallResult>();
+        const newer = deferred<CallResult>();
+        const { members } = doorHarness({ calls: [page([tom]), older, newer] });
+        await members.open(channel);
+
+        members.roomChanged(channel);
+        members.roomChanged(channel);
+        newer.resolve(page([tom, anna, ben]));
+        await settle();
+        older.resolve(page([tom, anna]));
+        await settle();
+
+        expect(names(members.state.rows)).toEqual(["Tom", "Anna", "Ben"]);
+    });
+
+    test("reads again as many people as were loaded, page by page, so a list loaded further never shrinks", async () => {
+        const first = fullPage(10);
+        const second = fullPage(100);
+        const { members, calls } = doorHarness({ calls: [page(first), page(second), page(first), page([...second.slice(0, 5), anna])] });
+        await members.open(channel);
+        await members.loadMore();
+        await settle();
+        expect(members.state.rows).toHaveLength(memberPageSize * 2);
+
+        members.roomChanged(channel);
+        await settle();
+
+        expect(calls.slice(2).map(c => c.args)).toEqual([
+            { p_channel_id: channel, p_after: null, p_limit: memberPageSize, p_query: null },
+            { p_channel_id: channel, p_after: first[first.length - 1].person_alias_guid, p_limit: memberPageSize, p_query: null }
+        ]);
+        expect(members.state.rows).toHaveLength(memberPageSize + 6);
+        expect(members.state.rows[members.state.rows.length - 1]).toEqual(anna);
+        expect(members.state.hasMore).toBe(false);
+    });
 });
 
 // #endregion A room changed elsewhere

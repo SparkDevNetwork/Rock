@@ -431,6 +431,71 @@ describe("star and hide", () => {
 
         expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "You're offline. Try again when you're back.", retry: expect.any(Function) });
     });
+
+    // Star and hide are one save's two halves, so what is known saved is both of them.
+    test("a star that lands and then a hide refused goes back to what landed: starred and not hidden", async () => {
+        const s = setup();
+
+        void s.prefs.setStarred(team, true, false);
+        void s.prefs.setHidden(team, true);
+        expect(s.prefCalls[1].changes).toEqual({ hidden: true, is_favorite: false });
+        s.prefCalls[0].answer.resolve(written(team, { is_favorite: true }));
+        await settle();
+        s.prefCalls[1].answer.resolve(refused());
+        await settle();
+
+        expect(rowOf(s, team)?.is_favorite).toBe(true);
+        expect(rowOf(s, team)?.hidden).toBe(false);
+    });
+
+    test("a save whose call throws goes back, says it couldn't save with Try again, and is no longer out", async () => {
+        const s = setup();
+
+        void s.prefs.setStarred(team, true, false);
+        s.prefCalls[0].answer.reject(new Error("lost"));
+        await settle();
+
+        expect(rowOf(s, team)?.is_favorite).toBe(false);
+        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "Couldn't save. Try again in a moment.", retry: expect.any(Function) });
+
+        // Nothing is out, so the next load is taken as read.
+        s.prefs.setRooms([sidebarRow(team, { is_favorite: true }), sidebarRow(prayer, { name: "Prayer" })]);
+        expect(rowOf(s, team)?.is_favorite).toBe(true);
+    });
+});
+
+describe("a sidebar load", () => {
+    test("while a room's save is out leaves that room's setting as the person chose it, in its place in the list", async () => {
+        const s = setup();
+
+        void s.prefs.setStarred(prayer, true, false);
+        void s.prefs.setNotifyMode(team, "silent", false);
+        void s.prefs.setHidden(team, true);
+
+        // A load read before the saves landed.
+        s.prefs.setRooms([sidebarRow(team, { last_message_id: 11 }), sidebarRow(prayer, { name: "Prayer" })]);
+
+        expect(rowOf(s, team)?.last_message_id).toBe(11);
+        expect(rowOf(s, team)?.notify_mode).toBe("silent");
+        expect(rowOf(s, team)?.hidden).toBe(true);
+        expect(rowOf(s, prayer)?.is_favorite).toBe(true);
+        expect(s.channels.rows[0].channel_id).toBe(prayer);
+    });
+
+    test("once the saves are answered takes the rooms as read", async () => {
+        const s = setup();
+
+        void s.prefs.setStarred(prayer, true, false);
+        void s.prefs.setNotifyMode(team, "silent", false);
+        s.prefCalls[0].answer.resolve(written(prayer, { is_favorite: true }));
+        s.prefCalls[1].answer.resolve(refused());
+        await settle();
+
+        s.prefs.setRooms([sidebarRow(team, { notify_mode: "mentions" }), sidebarRow(prayer, { name: "Prayer" })]);
+
+        expect(rowOf(s, team)?.notify_mode).toBe("mentions");
+        expect(rowOf(s, prayer)?.is_favorite).toBe(false);
+    });
 });
 
 describe("the person's own switches", () => {

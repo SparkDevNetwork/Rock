@@ -162,6 +162,7 @@
                       @emojiChosen="emit('emojiChosen', $event)"
                       @mentionQuery="emit('mentionQuery', $event)"
                       @focus="emit('composerFocus')"
+                      @blur="emit('composerBlur')"
                       @overLimit="emit('overLimit', $event)" />
         </template>
     </PanelHost>
@@ -563,6 +564,8 @@
         (e: "mentionQuery", query: string | null): void,
         /** Focus came into the reply composer, for the search to ready its people. */
         (e: "composerFocus"): void,
+        /** Focus left the reply composer. */
+        (e: "composerBlur"): void,
         /** A reply over the room's limit was held back. */
         (e: "overLimit", maxLength: number): void
     }>();

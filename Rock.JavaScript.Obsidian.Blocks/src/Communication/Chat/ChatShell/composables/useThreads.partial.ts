@@ -50,7 +50,7 @@ import { applyMessageChange, Timelines, withSendKey } from "./useHistory.partial
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
-import { messageForError } from "../errors.partial";
+import { messageOrOffline } from "../errors.partial";
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
@@ -300,12 +300,6 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             root.thread_unread = false;
         }
     }
-
-    /** A refused follow change in the server's own words; one that never reached it says the person is offline. */
-    function followSentence(error: ChatError): string {
-        return error.text || error.severity === "session" ? messageForError(error) : offlineFollowSentence;
-    }
-
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
     async function fetchList(mode: "fresh" | "refresh" | "more"): Promise<void> {
@@ -617,7 +611,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 show: following => showFollowing(rootId, following),
                 ask: async (): Promise<SaveOutcome> => {
                     const result = await dependencies.call("chat_follow_thread", { p_root_id: rootId, p_follow: isFollowing });
-                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, text: followSentence(result.error) };
+                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, text: messageOrOffline(result.error, offlineFollowSentence) };
                 },
                 landed: data => {
                     const answer = body<FollowThreadAnswer>(data as Extract<CallResult, { ok: true }>);
