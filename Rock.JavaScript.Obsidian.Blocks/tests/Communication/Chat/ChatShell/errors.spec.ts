@@ -22,7 +22,8 @@ import {
     classifyPlatformError,
     classifyRealtimeMessage,
     classifyRealtimeStatus,
-    messageForError
+    messageForError,
+    messageOrOffline
 } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 
 describe("classifyPlatformError", () => {
@@ -192,5 +193,26 @@ describe("codes a released client was not built with", () => {
     test("with no sentence from the server the severity's sentence is shown", () => {
         expect(messageForError({ code: "rpc.something_new", severity: "failed" }))
             .toBe("Something went wrong in chat. Try again in a moment.");
+    });
+});
+
+// One rule for a place that names a lost connection in its own words: only a call that never
+// reached the platform is offline; any other failure is said in the server's words, or the
+// severity's own sentence where the server sent none.
+describe("messageOrOffline", () => {
+    test("a call that never reached the platform says the place's offline sentence", () => {
+        expect(messageOrOffline({ code: "rpc.transport", severity: "failed" }, "You're offline.")).toBe("You're offline.");
+    });
+
+    test("a refusal says the server's sentence", () => {
+        expect(messageOrOffline({ code: "rpc.read_only", severity: "failed", text: "Chat is read only." }, "You're offline.")).toBe("Chat is read only.");
+    });
+
+    test("a failure that reached the platform with no sentence is not called offline", () => {
+        expect(messageOrOffline({ code: "rpc.unknown", severity: "unknown" }, "You're offline.")).toBe("Something went wrong in chat. Try again in a moment.");
+    });
+
+    test("an ended session says so", () => {
+        expect(messageOrOffline({ code: "auth.expired", severity: "session" }, "You're offline.")).toBe("Your chat session has ended. Refresh the page to continue.");
     });
 });

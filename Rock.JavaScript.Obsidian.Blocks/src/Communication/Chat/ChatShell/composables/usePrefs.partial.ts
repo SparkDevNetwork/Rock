@@ -24,15 +24,18 @@
 // save that fails puts the control back to the last value known saved and puts the server's
 // sentence under it with Try again, said aloud at once. Each save has a number; only the newest
 // save of a setting says how it went, so quick changes never flicker through older answers.
-// Another device sees a change at its next load. Once stopped, nothing more is asked and no answer
+// A sidebar load while a room's save is out leaves that setting as the person chose it, as the
+// person's own switches are left; its own answer settles it. Another device sees a change at its
+// next load. Once stopped, nothing more is asked and no answer
 // reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { messageForError } from "../errors.partial";
+import { messageOrOffline } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
-import { ChatError } from "../types.partial";
+import { ChatError, SidebarRow } from "../types.partial";
+import { Note } from "../ui/settingNote.partial.obs";
 import { ActionNotice } from "./useMessageActions.partial";
-import { createSaveRule, SaveChange, SaveOutcome } from "./saveRule.partial";
+import { createSaveRule, SaveChange, saveFailedSentence, SaveOutcome } from "./saveRule.partial";
 
 /** What chat_set_prefs answered, through the shell's one call path. */
 export type PrefsCallResult = { ok: true, data: unknown } | { ok: false, error: ChatError };
@@ -53,15 +56,9 @@ export type MeSettings = {
 /** A room's notify mode, as the platform names them. */
 export type NotifyMode = "all" | "mentions" | "silent";
 
-/**
- * A line under a control: what a change means, or why its save failed with a way to ask it
- * again, which a refusal always carries.
- */
-export type SettingNote = { kind: "info" | "error", text: string, retry?: () => void };
-
 /** A room's place in its details: the note under each of its controls. */
 export type RoomPrefs = {
-    notes: Partial<Record<"notify" | "star" | "hide", SettingNote>>;
+    notes: Partial<Record<"notify" | "star" | "hide", Note>>;
 };
 
 /** One of the person's own switches, by the key the dialog names it. */
@@ -70,7 +67,7 @@ export type MeKey = PersonSettingKey | "reaction_push";
 /** What the settings hold for the screen. */
 export type PrefsState = {
     me: MeSettings;
-    meNotes: Partial<Record<MeKey, SettingNote>>;
+    meNotes: Partial<Record<MeKey, Note>>;
 
     /** Each room's place, by its id; a room not here has saved nothing this visit. */
     rooms: Record<string, RoomPrefs>;
@@ -97,7 +94,7 @@ export type PrefsDependencies = {
     savePersonSetting?: (setting: PersonSettingKey, value: boolean) => Promise<PersonSettingResult>;
 
     /** The sidebar, whose rows show a room's settings. */
-    channels: Pick<ChannelStore, "rows" | "applyPrefs">;
+    channels: Pick<ChannelStore, "rows" | "applyPrefs" | "setSidebar">;
 
     /** Whether the connection is lost, when the door would not be reached. */
     isOffline: () => boolean;
@@ -112,6 +109,9 @@ export type Prefs = {
 
     /** The bootstrap's me, read at every sidebar load. */
     setMe: (me: Partial<MeSettings> | null | undefined) => void;
+
+    /** The bootstrap's rooms, read at every sidebar load, into the sidebar. */
+    setRooms: (rows: SidebarRow[]) => void;
 
     /** A room's place, idle when it has saved nothing. */
     roomOf: (channelId: string) => RoomPrefs;
@@ -186,7 +186,6 @@ const meFields: Record<MeKey, keyof MeSettings> = {
 };
 
 const offlineSentence = "You're offline. Try again when you're back.";
-const failedSentence = "Couldn't save. Try again in a moment.";
 const noDoorSentence = "That setting can't be changed right now.";
 const leavesListSentence = "It leaves your list when you open another conversation.";
 
@@ -223,11 +222,11 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
     /** A refusal in the server's own words; a lost connection says so. */
     function refusalText(error: ChatError): string {
-        return error.code === "rpc.transport" ? offlineSentence : messageForError(error);
+        return messageOrOffline(error, offlineSentence);
     }
 
     /** A refusal's note under its control, with Try again asking the same change once more. */
-    function refusalNote(text: string, retry: () => Promise<void>): SettingNote {
+    function refusalNote(text: string, retry: () => Promise<void>): Note {
         return { kind: "error", text, retry: () => void retry() };
     }
 
@@ -287,6 +286,27 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             }
         },
 
+        setRooms: (rows: SidebarRow[]): void => {
+            // What the person chose in each room whose save is out, as the rows show it now.
+            const chosen = new Map<string, RowPrefs>();
+            for (const row of dependencies.channels.rows) {
+                const kept: RowPrefs = {};
+                if (rule.isOut(`${row.channel_id}:notify`)) {
+                    kept.notify_mode = row.notify_mode;
+                }
+                if (rule.isOut(`${row.channel_id}:sidebar`)) {
+                    kept.is_favorite = row.is_favorite;
+                    kept.hidden = row.hidden ?? false;
+                }
+                if (Object.keys(kept).length > 0) {
+                    chosen.set(row.channel_id, kept);
+                }
+            }
+
+            dependencies.channels.setSidebar(rows);
+            chosen.forEach((kept, channelId) => dependencies.channels.applyPrefs(channelId, kept));
+        },
+
         roomOf: (channelId: string): RoomPrefs => state.rooms[channelId] ?? { notes: {} },
 
         setNotifyMode: async (channelId: string, mode: NotifyMode, isFromMenu: boolean): Promise<void> => {
@@ -341,10 +361,12 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 notes.star = { kind: "info", text: "Starred, so it's back in your list." };
             }
 
-            // star and hide are one save's two halves, so they share one newest
+            // Star and hide are one save's two halves, so they share one newest, and what is known
+            // saved is always both of them, whichever the patch wrote.
+            const was = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };
             await save<RowPrefs>(`${channelId}:sidebar`, {
-                was: { is_favorite: row.is_favorite, hidden: row.hidden ?? false },
-                value: patch,
+                was,
+                value: { ...was, ...patch },
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
                 ask: () => askRoom(channelId, patch),
                 refused: text => {
@@ -376,9 +398,10 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 notes.hide = { kind: "info", text: `${isUnstarring ? "Hidden, and taken out of Starred." : "Hidden."} ${leavesListSentence}` };
             }
 
+            const was = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };
             await save<RowPrefs>(`${channelId}:sidebar`, {
-                was: { is_favorite: row.is_favorite, hidden: row.hidden ?? false },
-                value: patch,
+                was,
+                value: { ...was, ...patch },
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
                 ask: () => askRoom(channelId, patch),
                 refused: text => {
@@ -407,7 +430,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
                 // Rock answering without its door decided nothing; the person may ask again.
                 if (answer.code === "door.unavailable") {
-                    return { isSaved: false, text: dependencies.isOffline() ? offlineSentence : failedSentence };
+                    return { isSaved: false, text: dependencies.isOffline() ? offlineSentence : saveFailedSentence };
                 }
 
                 return { isSaved: false, text: answer.message?.trim() || noDoorSentence };

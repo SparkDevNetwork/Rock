@@ -384,7 +384,7 @@
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
-    import { messageForError } from "../errors.partial";
+    import { messageOrOffline } from "../errors.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { messageDisplay } from "../composables/useHistory.partial";
     import { FollowError } from "../composables/useThreads.partial";
@@ -573,7 +573,7 @@
         ? "You follow a thread when you start it, reply in it or are mentioned in it. New replies to those threads collect here."
         : "Reply to any message to start one. Threads you follow from every conversation are under All.");
 
-    const errorSentence = computed((): string => props.error ? sentenceFor(props.error, offlineRefresh) : "");
+    const errorSentence = computed((): string => props.error ? messageOrOffline(props.error, offlineRefresh) : "");
 
     const drawnRows = computed((): DrawnRow[] => props.rows.map(drawRow));
 
@@ -669,14 +669,6 @@
     function isTabStop(rootId: number, index: number): boolean {
         const isRoveShown = roveId.value !== null && props.rows.some(r => r.root.id === roveId.value);
         return isRoveShown ? roveId.value === rootId : index === 0;
-    }
-
-    /**
-     * A refusal's sentence is the server's; a call that never reached the platform carries none,
-     * and says the person is offline in the words of the place it failed.
-     */
-    function sentenceFor(error: ChatError, offline: string): string {
-        return error.text || error.severity === "session" ? messageForError(error) : offline;
     }
 
     function fullName(nickName: string | null | undefined, lastName: string | null | undefined): string {

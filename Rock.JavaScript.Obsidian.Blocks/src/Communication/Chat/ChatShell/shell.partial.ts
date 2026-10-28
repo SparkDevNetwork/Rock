@@ -1012,7 +1012,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         /* eslint-disable-next-line @typescript-eslint/naming-convention */
         const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[] } } | null;
         const rows = answer?.channels ?? [];
-        channels.setSidebar(rows);
+        // through the settings, which keep any room setting whose save is still out
+        prefs.setRooms(rows);
         // every load restates the unread mentions, so one read elsewhere stops lighting the dot
         mentions.setUnread(answer?.me?.unread_mentions ?? []);
         // the person's own switches, as another device may have changed them since

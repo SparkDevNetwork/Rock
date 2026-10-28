@@ -343,7 +343,6 @@ const namedLiterals: Named[] = [
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-fd-pop", value: "420ms", reduced: "0ms" },
-    { name: "d-saved-hold", value: "1.6s" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-divider-fade", value: "600ms" },
     { name: "d-read-fade", value: "400ms" },
