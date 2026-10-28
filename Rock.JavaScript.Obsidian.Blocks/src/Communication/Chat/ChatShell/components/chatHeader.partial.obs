@@ -40,26 +40,18 @@
         </component>
 
         <div class="chat-header-actions">
-            <!-- A channel's leaders over its head count, or the people icon where none can be shown. -->
-            <button v-if="membersKind === 'channel' && facts && !isPhone"
+            <!-- A channel's or a group's other people then "+N", or the people icon and the head count where none can be shown. -->
+            <button v-if="membersButton && !isPhone"
                     type="button"
                     class="chat-header-pile"
                     data-testid="header-members"
-                    :aria-label="memberCountLabel"
+                    :aria-label="membersButton.label"
                     :aria-expanded="isMembersOpen ? 'true' : 'false'"
                     @click="emit('members')">
-                <Avatar v-if="pileFaces.length > 0" :people="pileFaces" :size="26" />
+                <Avatar v-if="membersButton.faces.length > 0" :people="membersButton.faces" :size="26" />
                 <span v-else class="chat-header-pile-ic"><Icon name="users" size="sm" /></span>
-                {{ facts.member_count.toLocaleString() }}
+                <span v-if="membersButton.count" class="chat-header-pile-count" data-testid="header-members-count" aria-hidden="true">{{ membersButton.count }}</span>
             </button>
-
-            <IconButton v-else-if="membersKind === 'group' && !isPhone"
-                        icon="users"
-                        :label="groupMembersLabel"
-                        tooltip="Members"
-                        data-testid="header-members"
-                        :aria-expanded="isMembersOpen ? 'true' : 'false'"
-                        @click="emit('members')" />
 
             <IconButton v-if="isThreadsOffered && !isPhone"
                         icon="thread"
@@ -333,18 +325,18 @@ button.chat-header-id:hover .chat-header-chev {
     box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
-/* The facepile: up to three faces then the head count, in one pill-shaped button. */
+/*
+    The members button: up to three faces then a "+N" disc for the people not drawn, or the people
+    icon then the head count's disc, in one pill-shaped button.
+*/
 .chat-header-pile {
     display: inline-flex;
     flex: none;
-    gap: 6px;
     align-items: center;
     height: 34px;
-    padding: 0 10px 0 6px;
+    padding: 0 4px;
     margin-right: 4px;
     font: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
     color: var(--chat-text-2);
     background: transparent;
     border: 0;
@@ -370,6 +362,27 @@ button.chat-header-id:hover .chat-header-chev {
     color: var(--chat-icon);
     background: var(--chat-hover);
     border-radius: 50%;
+}
+
+/*
+    The count joins the stack as its last disc, overlapping as a face does and ringed like one, in
+    the quiet fill a group's mark gives its own "+N".
+*/
+.chat-header-pile-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 5px;
+    margin-left: -5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.02em;
+    color: var(--chat-text-2);
+    background: var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    box-shadow: 0 0 0 2px var(--chat-av-ring, var(--chat-surface));
 }
 
 /* The banner opens by its own height, which script measures, since grid rows do not animate in Safari 14. */
@@ -756,21 +769,40 @@ button.chat-header-id:hover .chat-header-chev {
     /** How many other people a group holds: the row's count, else the room's head count less the reader. */
     const groupOtherCount = computed((): number | null => props.otherCount ?? (props.facts ? props.facts.member_count - 1 : null));
 
-    /** Which way into the members panel the room offers: a channel's facepile, a group's button, or none. */
+    /** Which rooms offer the members button: a channel or a group, never a conversation of two. */
     const membersKind = computed((): "channel" | "group" | null => props.isMembersOffered && (props.kind === "channel" || props.kind === "group") ? props.kind : null);
 
-    /** Up to three of the room's people, its leaders first, only for someone in it. */
-    const pileFaces = computed((): AvatarPerson[] => props.facts?.is_member ? (props.facts.faces ?? []).slice(0, 3).map(personFace) : []);
+    /**
+     * What the members button draws, one control for a channel and a group: up to three of the
+     * room's other people then "+N" for everyone not drawn, or where no face can be shown, the
+     * people icon then the head count. A channel's faces, its leaders first, come with its facts
+     * and only for someone in it; a group's are the people the header already has. Null leaves
+     * the button out, as for a channel whose facts are not read yet.
+     */
+    const membersButton = computed((): { faces: AvatarPerson[], count: string | null, label: string } | null => {
+        let total: number;
+        let shown: AvatarPerson[];
 
-    const memberCountLabel = computed((): string => {
-        const count = props.facts?.member_count ?? 0;
-        return `${count.toLocaleString()} ${count === 1 ? "member" : "members"}`;
-    });
+        if (membersKind.value === "channel" && props.facts) {
+            total = props.facts.member_count;
+            shown = props.facts.is_member ? (props.facts.faces ?? []).slice(0, 3).map(personFace) : [];
+        }
+        else if (membersKind.value === "group") {
+            total = props.facts?.member_count ?? (props.otherCount ?? props.people.length) + 1;
+            shown = faces.value.slice(0, 3);
+        }
+        else {
+            return null;
+        }
 
-    /** A group's head count, the reader included, from its facts once read. */
-    const groupMembersLabel = computed((): string => {
-        const count = props.facts?.member_count ?? props.people.length + 1;
-        return `Members, ${count.toLocaleString()} ${count === 1 ? "person" : "people"}`;
+        const label = `${total.toLocaleString()} ${total === 1 ? "member" : "members"}, open member list`;
+        if (shown.length === 0) {
+            return { faces: [], count: shortCount(total), label };
+        }
+
+        // Faces are drawn only for someone in the room, so the reader is one of the total.
+        const rest = total - 1 - shown.length;
+        return { faces: shown, count: rest > 0 ? `+${shortCount(rest)}` : null, label };
     });
 
     /** The title button's name and role, for a room; the plain title of no room has none. */
@@ -840,6 +872,24 @@ button.chat-header-id:hover .chat-header-chev {
     });
 
     // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * A head count short enough for a 26px disc: in full to 999, then in thousands with one
+     * decimal under ten thousand and none above (1k, 1.2k, 13k), rounded down so it never says
+     * more people than there are.
+     */
+    function shortCount(count: number): string {
+        if (count < 1000) {
+            return String(count);
+        }
+
+        const thousands = count < 10000 ? Math.floor(count / 100) / 10 : Math.floor(count / 1000);
+        return `${thousands}k`;
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 

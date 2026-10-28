@@ -506,9 +506,11 @@ describe("the end of an outage", () => {
     });
 });
 
-// A channel's facepile and a group's Members button open the members panel, before Threads. The
-// facepile draws up to three of the room's people, its leaders first, over the head count, or the
-// people icon where there are none to show; a conversation of two has neither. On a phone they fold into the menu.
+// One members button, for a channel and a group alike, opens the members panel, before Threads: up
+// to three of the room's other people, a channel's leaders first, then "+N" for everyone not
+// drawn, or where no face can be shown (a hidden roster, someone not in the room) the people icon
+// and the head count. A count past 999 is shortened and the label keeps it whole. A conversation of
+// two has none. On a phone it folds into the menu.
 describe("the way into the members panel", () => {
     /** A room's facts in the exact shape chat_get_channel answers. */
     function facts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
@@ -543,15 +545,26 @@ describe("the way into the members panel", () => {
     const grace = leader(2, "Grace", "Kim");
     const jordan = leader(3, "Jordan", "Lee");
 
-    test("is a channel's facepile of its faces then the count, before Threads", async () => {
+    /** The disc after the faces: "+N" for the people not drawn, or the head count after the people icon. */
+    function countOf(button: ReturnType<VueWrapper["get"]>): string | null {
+        const disc = button.find("[data-testid='header-members-count']");
+        return disc.exists() ? disc.text() : null;
+    }
+
+    function person(n: number, nick: string, last: string): ChannelFacts["people"][number] {
+        return { person_alias_guid: `b000000${n}-0000-4000-8000-000000000000`, nick_name: nick, last_name: last, avatar_url: null };
+    }
+
+    test("is a channel's three faces then +N for the people not drawn, before Threads", async () => {
         const w = mountHeader({ kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts({ leaders: [tom], faces: [tom, grace, jordan] }) });
 
         const pile = w.get("[data-testid='header-members']");
         expect(pile.element.tagName).toBe("BUTTON");
-        expect(pile.attributes("aria-label")).toBe("42 members");
-        expect(pile.text()).toContain("42");
-        expect(pile.findAll(".chat-av").map(face => face.attributes("style"))).toHaveLength(3);
+        expect(pile.attributes("aria-label")).toBe("42 members, open member list");
+        expect(pile.findAll(".chat-av")).toHaveLength(3);
         expect(pile.findAll(".chat-av").every(face => face.attributes("style")?.includes("width: 26px"))).toBe(true);
+        // 42 members less the reader and the three drawn
+        expect(countOf(pile)).toBe("+38");
         expect(hasIcon(w, pile, "users")).toBe(false);
 
         const buttons = w.findAll(".chat-header-actions button");
@@ -561,35 +574,72 @@ describe("the way into the members panel", () => {
         expect(w.emitted("members")).toHaveLength(1);
     });
 
+    test("draws no +N when every other person is a face", () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 3, faces: [tom, grace] }) });
+
+        const pile = w.get("[data-testid='header-members']");
+        expect(pile.findAll(".chat-av")).toHaveLength(2);
+        expect(countOf(pile)).toBeNull();
+        expect(pile.attributes("aria-label")).toBe("3 members, open member list");
+    });
+
     test("draws the people icon and the count where no face can be shown, and says one member", () => {
         const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 1 }) });
 
         const pile = w.get("[data-testid='header-members']");
-        expect(pile.attributes("aria-label")).toBe("1 member");
+        expect(pile.attributes("aria-label")).toBe("1 member, open member list");
         expect(pile.findAll(".chat-av")).toHaveLength(0);
         expect(hasIcon(w, pile, "users")).toBe(true);
+        expect(countOf(pile)).toBe("1");
     });
 
-    test("shows no faces to someone not in the room, only the icon and the count", () => {
+    test("shows no faces to someone not in the room, only the icon and the whole count", () => {
         const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ is_member: false, leaders: [tom], faces: [tom] }) });
 
         const pile = w.get("[data-testid='header-members']");
         expect(pile.findAll(".chat-av")).toHaveLength(0);
         expect(hasIcon(w, pile, "users")).toBe(true);
+        expect(countOf(pile)).toBe("42");
     });
 
-    test("is a group's Members button naming its head count, and nothing for a conversation of two", async () => {
-        const group = mountHeader({ title: "Hike planning", kind: "group", people: [{ person_alias_guid: "caleb-brooks", nick_name: "Caleb", last_name: "Brooks", avatar_url: null }, { person_alias_guid: "hannah-diaz", nick_name: "Hannah", last_name: "Diaz", avatar_url: null }], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 4 }) });
+    test("shortens a count past 999 and keeps it whole in the label", async () => {
+        const w = mountHeader({ kind: "channel", isMembersOffered: true, facts: facts({ member_count: 1000, faces: [tom, grace, jordan] }) });
+        const pile = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-members']");
+        expect(countOf(pile())).toBe("+996");
+
+        await w.setProps({ facts: facts({ member_count: 1004, faces: [tom, grace, jordan] }) });
+        expect(countOf(pile())).toBe("+1k");
+        expect(pile().attributes("aria-label")).toBe("1,004 members, open member list");
+
+        await w.setProps({ facts: facts({ is_member: false, member_count: 1250 }) });
+        expect(countOf(pile())).toBe("1.2k");
+
+        await w.setProps({ facts: facts({ is_member: false, member_count: 13536 }) });
+        expect(countOf(pile())).toBe("13k");
+        expect(pile().attributes("aria-label")).toBe("13,536 members, open member list");
+    });
+
+    test("is the same button for a group, its people's faces then +N, and nothing for a conversation of two", async () => {
+        const people = [person(1, "Caleb", "Brooks"), person(2, "Hannah", "Diaz"), person(3, "Iris", "Moore"), person(4, "Jon", "Park")];
+        const group = mountHeader({ title: "Hike planning", kind: "group", people, otherCount: 5, isMembersOffered: true });
 
         const members = group.get("[data-testid='header-members']");
-        expect(members.classes()).toContain("chat-icon-btn");
-        expect(members.attributes("aria-label")).toBe("Members, 4 people");
-        expect(hasIcon(group, members, "users")).toBe(true);
+        expect(members.classes()).toContain("chat-header-pile");
+        expect(members.attributes("aria-label")).toBe("6 members, open member list");
+        expect(members.findAll(".chat-av")).toHaveLength(3);
+        expect(countOf(members)).toBe("+2");
+        expect(hasIcon(group, members, "users")).toBe(false);
         await members.trigger("click");
         expect(group.emitted("members")).toHaveLength(1);
+
+        // once read, the room's facts give the head count
+        await group.setProps({ people: people.slice(0, 2), otherCount: null, facts: facts({ channel_type: "dm", member_count: 4 }) });
+        expect(members.attributes("aria-label")).toBe("4 members, open member list");
+        expect(members.findAll(".chat-av")).toHaveLength(2);
+        expect(countOf(members)).toBe("+1");
         group.unmount();
 
-        const pair = mountHeader({ title: "Anna Kim", kind: "person", people: [{ person_alias_guid: "anna-kim", nick_name: "Anna", last_name: "Kim", avatar_url: null }], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });
+        const pair = mountHeader({ title: "Anna Kim", kind: "person", people: [person(5, "Anna", "Kim")], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });
         expect(pair.find("[data-testid='header-members']").exists()).toBe(false);
     });
 
