@@ -81,7 +81,7 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
         get favorites() {
             return shell.value.reactions.favorites;
         },
-        reactorNames: (messageId, reaction) => shell.value.reactions.reactorNames(messageId, reaction),
+        listReactors: (messageId, code, after) => shell.value.reactions.listReactors(messageId, code, after),
         pickerAnchorOf: messageId => anchorsByMessage.get(messageId) ?? null
     });
 

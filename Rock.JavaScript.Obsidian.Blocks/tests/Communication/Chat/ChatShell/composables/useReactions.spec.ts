@@ -18,13 +18,14 @@
 // then replaced by the platform's answer, which is the message's whole list as the server counts
 // it; the live events of everyone reacting, applied by who reacted, so the reader's own reaction
 // and its echo never count twice; the emoji catalog, fetched once for the page however often the
-// picker opens; the recently used emoji, kept on the device; and the names of who reacted, asked
-// for once per chip until that chip changes. Nothing resolves into state once the reactions are
-// stopped.
+// picker opens; the recently used emoji, kept on the device; who reacted, the newest three each
+// chip carries and the card's people drawn from them; and the full list behind See all. Nothing
+// resolves into state once the reactions are stopped.
 //
 // The composable these tests are written to, in useReactions.partial.ts:
 //
-//   type Reaction = { code, count, mine, emoji, image_url, label }   as every page message carries them
+//   type Reaction = { code, count, mine, emoji, image_url, label, reactors? }   as every page message carries them;
+//       reactors: the newest three, [{ person_alias_guid, nick_name, last_name, avatar_url, reacted_at, reactor_person_alias_guid }]
 //   type ReactionFavorite = { code, label, emoji, image_url }        the bootstrap's reactions key, in order
 //   type CatalogEmoji = { code, emoji, image_url, label, category, keywords }   chat_list_emojis, in picker order
 //
@@ -46,18 +47,19 @@
 //       applyEvent(channelId: string, event: "reaction.added" | "reaction.removed", payload): void,
 //       loadCatalog(): Promise<CatalogEmoji[] | null>,     one call for the page; null when it failed
 //       recordRecent(code: string): void,
-//       reactorNames(messageId: number, reaction: Reaction): Promise<string[] | null>,   "You" for the reader
+//       listReactors(messageId: number, code: string | null, after: { reacted_at, reactor_person_alias_guid, code } | null): Promise<ReactorsPage | null>,
 //       stop(): void
 //   }
 //
-//   reactorLine(reaction: Reaction, names: string[] | null): string   the chip's tooltip
+//   whoReacted(reaction, reader: { personAliasGuid, name, photoUrl }): { people: [{ key, label, face }], rest, isMoreShown }   the card's rows
+//   whoReactedLine(reaction, reader): string   the card in one sentence
 //
 // The add and the remove answer { message_id, reactions }, the message's whole list; the events
-// carry { message_id, channel_id, code, person_alias_guid, emoji, image_url, label };
+// carry { message_id, channel_id, code, person_alias_guid, emoji, image_url, label, reactors };
 // chat_list_reactors answers { reactors: [{ person_alias_guid, nick_name, last_name, avatar_url,
-// reacted_at, reactor_person_alias_guid }], has_more }; chat_list_emojis answers { emojis }.
+// reacted_at, reactor_person_alias_guid, code }], has_more }; chat_list_emojis answers { emojis }.
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
-import { createReactions, reactorLine } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
+import { createReactions, whoReacted, whoReactedLine } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
@@ -574,83 +576,181 @@ describe("the recently used emoji", () => {
     });
 });
 
+// Each chip carries its newest three reactors, so who reacted is on the message before anyone
+// rests on a chip: an event lays the chip's three as the server read them after the change, an
+// answer copies the whole chip, and nothing is asked for on a hover.
 describe("who reacted", () => {
-    const reactor = (alias: string, nick: string, last: string): Record<string, unknown> => ({
-        person_alias_guid: alias, nick_name: nick, last_name: last, avatar_url: null, reacted_at: "2026-10-16T09:01:00Z", reactor_person_alias_guid: alias
+    const person = (alias: string, nick: string | null, last: string | null, at = "2026-10-16T09:01:00Z"): Record<string, unknown> => ({
+        person_alias_guid: alias, nick_name: nick, last_name: last, avatar_url: null, reacted_at: at, reactor_person_alias_guid: alias
     });
 
-    test("asks chat_list_reactors for the first three, and leaves the reader out of the names, whose mark the line reads", async () => {
-        const { reactions, calls } = await setup([message(42, [rx("pray", 3, true)])], [
-            ok({ reactors: [reactor(anna, "Anna", "Reyes"), reactor(me, "Jordan", "Ellis"), reactor(david, "David", "Okafor")], has_more: false })
-        ]);
+    function heldReactors(timelines: ReturnType<typeof createTimelines>, code: string): unknown {
+        const held = timelines.state(channel).messages.find(m => m.id === 42) as unknown as { reactions?: Array<{ code: string, reactors?: unknown }> };
+        return held.reactions?.find(r => r.code === code)?.reactors;
+    }
 
-        const names = await reactions.reactorNames(42, rx("pray", 3, true) as never);
+    test("another person's reaction lays the event's three on the chip, the count still moved by one", async () => {
+        const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 2, true), reactors: [person(me, "Jordan", "Ellis")] } as never])]);
+        const three = [person(anna, "Anna", "Reyes"), person(me, "Jordan", "Ellis")];
 
-        expect(calls).toEqual([{ name: "chat_list_reactors", args: { p_message_id: 42, p_reaction: "pray", p_after_at: null, p_after_alias: null, p_limit: 3 } }]);
-        expect(names).toEqual(["Anna Reyes", "David Okafor"]);
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", anna), reactors: three });
+
+        expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 3, mine: true }]);
+        expect(heldReactors(timelines, "pray")).toEqual(three);
     });
 
-    // A person who left or was never synced comes back with no name; they are counted, not drawn blank.
-    test("leaves out a reactor the platform cannot name", async () => {
-        const nameless = { ...reactor(david, "", ""), nick_name: null, last_name: null };
-        const { reactions } = await setup([message(42, [rx("tada", 47)])], [ok({ reactors: [nameless, reactor(anna, "Anna", "Reyes"), { ...nameless, person_alias_guid: "a0000009-0000-4000-8000-000000000000" }], has_more: true })]);
+    test("a new chip from an event carries the event's three", async () => {
+        const { reactions, timelines } = await setup([message(42)]);
 
-        expect(await reactions.reactorNames(42, rx("tada", 47) as never)).toEqual(["Anna Reyes"]);
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", anna), reactors: [person(anna, "Anna", "Reyes")] });
+
+        expect(heldReactors(timelines, "pray")).toEqual([person(anna, "Anna", "Reyes")]);
     });
 
-    test("are asked for once per chip until its count or the reader's mark changes", async () => {
-        const answer = { reactors: [reactor(anna, "Anna", "Reyes")], has_more: false };
-        const { reactions, calls } = await setup([message(42, [rx("pray", 1)])], [ok(answer), ok(answer), ok(answer), ok(answer)]);
+    test("a removal lays the three that are left", async () => {
+        const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 2), reactors: [person(anna, "Anna", "Reyes"), person(david, "David", "Okafor")] } as never])]);
 
-        await reactions.reactorNames(42, rx("pray", 1) as never);
-        await reactions.reactorNames(42, rx("pray", 1) as never);
-        expect(calls).toHaveLength(1);
+        reactions.applyEvent(channel, "reaction.removed", { ...added("pray", anna), reactors: [person(david, "David", "Okafor")] });
 
-        await reactions.reactorNames(42, rx("heart", 1) as never);
-        expect(calls).toHaveLength(2);
-
-        await reactions.reactorNames(42, rx("pray", 2) as never);
-        expect(calls).toHaveLength(3);
-
-        await reactions.reactorNames(42, rx("pray", 2, true) as never);
-        expect(calls).toHaveLength(4);
+        expect(heldReactors(timelines, "pray")).toEqual([person(david, "David", "Okafor")]);
     });
 
-    test("a refusal answers no names, so the tooltip keeps its count line", async () => {
-        const { reactions } = await setup([message(42, [rx("pray", 3)])], [refused("rpc.message_not_found", "That message is no longer here.")]);
+    test("the reader's own echo lays the three too, though it leaves the count and mark as the press drew them", async () => {
+        const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 2, true), reactors: [person(anna, "Anna", "Reyes")] } as never])]);
+        const three = [person(me, "Jordan", "Ellis"), person(anna, "Anna", "Reyes")];
 
-        expect(await reactions.reactorNames(42, rx("pray", 3) as never)).toBeNull();
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", me), reactors: three });
+
+        expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 2, mine: true }]);
+        expect(heldReactors(timelines, "pray")).toEqual(three);
+    });
+
+    test("an event carrying no three leaves the chip's own", async () => {
+        const held = [person(anna, "Anna", "Reyes")];
+        const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 1), reactors: held } as never])]);
+
+        reactions.applyEvent(channel, "reaction.added", added("pray", david));
+
+        expect(heldReactors(timelines, "pray")).toEqual(held);
+    });
+
+    test("an answer's chip brings its three", async () => {
+        const three = [person(me, "Jordan", "Ellis"), person(anna, "Anna", "Reyes")];
+        const { reactions, timelines } = await setup([message(42, [rx("pray", 1)])], [ok({ message_id: 42, reactions: [{ ...rx("pray", 2, true), reactors: three }] })]);
+
+        await reactions.toggle(channel, 42, glyph("pray"));
+
+        expect(heldReactors(timelines, "pray")).toEqual(three);
     });
 });
 
-describe("the tooltip's line", () => {
-    const pray = (count: number, mine = false): never => rx("pray", count, mine) as never;
+// Everyone who reacted, behind See all: one emoji or every emoji, a page at a time after the last
+// row held, the emoji part of the cursor since one person can react with two at the same moment.
+describe("the full list", () => {
+    const row = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null, reacted_at: "2026-10-16T09:01:00Z", reactor_person_alias_guid: anna, code: "pray" };
 
-    test.each([
-        [["Anna Reyes"], 1, "Anna Reyes reacted with 🙏"],
-        [["Anna Reyes", "David Okafor"], 2, "Anna Reyes and David Okafor reacted with 🙏"],
-        [["Anna Reyes", "David Okafor"], 3, "Anna Reyes, David Okafor and 1 more reacted with 🙏"],
-        [["Anna Reyes", "David Okafor", "Cara Lin"], 7, "Anna Reyes, David Okafor, Cara Lin and 4 more reacted with 🙏"]
-    ] as Array<[string[], number, string]>)("names %j of %d", (names, count, line) => {
-        expect(reactorLine(pray(count), names)).toBe(line);
+    test("asks chat_list_reactors for one emoji's first page, 50 at a time", async () => {
+        const { reactions, calls } = await setup([message(42, [rx("pray", 3)])], [ok({ reactors: [row], has_more: false })]);
+
+        const page = await reactions.listReactors(42, "pray", null);
+
+        expect(calls).toEqual([{ name: "chat_list_reactors", args: { p_message_id: 42, p_reaction: "pray", p_after_at: null, p_after_alias: null, p_limit: 50, p_after_code: null } }]);
+        expect(page).toEqual({ reactors: [row], has_more: false });
     });
 
-    // The reader leads, whether or not they are among the newest three the names were read from.
-    test.each([
-        [[], 1, "You reacted with 🙏"],
-        [["Priya Shah"], 2, "You and Priya Shah reacted with 🙏"],
-        [["Priya Shah", "Marcus Reed"], 3, "You, Priya Shah and Marcus Reed reacted with 🙏"],
-        [["Priya Shah"], 3, "You, Priya Shah and 1 more reacted with 🙏"],
-        [["Priya Shah", "Marcus Reed", "Cara Lin"], 7, "You, Priya Shah, Marcus Reed and 4 more reacted with 🙏"],
-        [[], 3, "You and 2 more reacted with 🙏"]
-    ] as Array<[string[], number, string]>)("on the reader's own chip leads with You: %j of %d", (names, count, line) => {
-        expect(reactorLine(pray(count, true), names)).toBe(line);
+    test("asks for every emoji with none named, and pages after a row by its time, alias and emoji", async () => {
+        const { reactions, calls } = await setup([message(42, [rx("pray", 3)])], [ok({ reactors: [], has_more: false })]);
+
+        await reactions.listReactors(42, null, { reacted_at: row.reacted_at, reactor_person_alias_guid: anna, code: "pray" });
+
+        expect(calls[0].args).toEqual({ p_message_id: 42, p_reaction: null, p_after_at: row.reacted_at, p_after_alias: anna, p_limit: 50, p_after_code: "pray" });
     });
 
-    test("before the names arrive, or without them, reads the count", () => {
-        expect(reactorLine(pray(1), null)).toBe("1 person reacted with 🙏");
-        expect(reactorLine(pray(3), null)).toBe("3 people reacted with 🙏");
-        expect(reactorLine(pray(47), [])).toBe("47 people reacted with 🙏");
+    test("a refusal answers null", async () => {
+        const { reactions } = await setup([message(42, [rx("pray", 3)])], [refused("rpc.message_not_found", "That message is no longer here.")]);
+
+        expect(await reactions.listReactors(42, "pray", null)).toBeNull();
+    });
+});
+
+// The card's people: You first from the chip's mark, whatever the newest three hold, then the
+// others the chip carries; a person the platform cannot name is counted, never drawn blank.
+describe("the card's people", () => {
+    const reader = { personAliasGuid: me, name: "Jordan Ellis", photoUrl: "https://rock.example.org/jordan.jpg" };
+    const person = (alias: string, nick: string | null, last: string | null, avatar: string | null = null): Record<string, unknown> => ({
+        person_alias_guid: alias, nick_name: nick, last_name: last, avatar_url: avatar, reacted_at: "2026-10-16T09:01:00Z", reactor_person_alias_guid: alias
+    });
+    const cara = "a0000004-0000-4000-8000-000000000000";
+    const chip = (count: number, mine: boolean, reactors: unknown[]): never => ({ ...rx("pray", count, mine), reactors }) as never;
+
+    test("names the newest three, and how many more", () => {
+        const card = whoReacted(chip(12, false, [person(anna, "Anna", "Reyes", "https://rock.example.org/anna.jpg"), person(david, "David", "Okafor"), person(cara, "Cara", "Lin")]), reader);
+
+        expect(card.people.map(p => [p.label, p.face.photoUrl])).toEqual([["Anna Reyes", "https://rock.example.org/anna.jpg"], ["David Okafor", null], ["Cara Lin", null]]);
+        expect(card.rest).toBe(9);
+        expect(card.isMoreShown).toBe(true);
+    });
+
+    test("leads with You from the chip's mark, with the reader's own photo, even when the reader is not among the three", () => {
+        const card = whoReacted(chip(12, true, [person(anna, "Anna", "Reyes"), person(david, "David", "Okafor"), person(cara, "Cara", "Lin")]), reader);
+
+        expect(card.people.map(p => p.label)).toEqual(["You", "Anna Reyes", "David Okafor"]);
+        expect(card.people[0].face).toEqual({ name: "Jordan Ellis", photoUrl: "https://rock.example.org/jordan.jpg" });
+        expect(card.rest).toBe(9);
+    });
+
+    test("never names the reader twice, under their primary or the alias they reacted with", () => {
+        const underOther = { ...person(me, "Jordan", "Ellis"), person_alias_guid: "a0000009-0000-4000-8000-000000000000", reactor_person_alias_guid: me };
+        const card = whoReacted(chip(3, true, [person(me, "Jordan", "Ellis"), underOther, person(anna, "Anna", "Reyes")]), reader);
+
+        expect(card.people.map(p => p.label)).toEqual(["You", "Anna Reyes"]);
+        expect(card.rest).toBe(1);
+    });
+
+    test("leaves a nameless person to the count", () => {
+        const card = whoReacted(chip(2, false, [person(david, null, null), person(anna, "Anna", "Reyes")]), reader);
+
+        expect(card.people.map(p => p.label)).toEqual(["Anna Reyes"]);
+        expect(card.rest).toBe(1);
+        expect(card.isMoreShown).toBe(true);
+    });
+
+    test("draws no more row when everyone is named", () => {
+        const card = whoReacted(chip(2, true, [person(me, "Jordan", "Ellis"), person(anna, "Anna", "Reyes")]), reader);
+
+        expect(card.rest).toBe(0);
+        expect(card.isMoreShown).toBe(false);
+    });
+
+    test("one nameless person is the count alone, with nothing more to see", () => {
+        const card = whoReacted(chip(1, false, [person(david, null, null)]), reader);
+
+        expect(card.people).toEqual([]);
+        expect(card.isMoreShown).toBe(false);
+    });
+
+    test("nameless people the chip does not all carry still offer the rest", () => {
+        const card = whoReacted(chip(5, false, [person(david, null, null), person(anna, null, null), person(cara, null, null)]), reader);
+
+        expect(card.people).toEqual([]);
+        expect(card.rest).toBe(5);
+        expect(card.isMoreShown).toBe(true);
+    });
+
+    test("a chip from a platform that carries no three is You or the count", () => {
+        expect(whoReacted({ ...rx("pray", 3, true) } as never, reader).people.map(p => p.label)).toEqual(["You"]);
+        expect(whoReacted({ ...rx("pray", 3) } as never, reader).people).toEqual([]);
+    });
+
+    test.each([
+        [chip(12, true, [person(anna, "Anna", "Reyes"), person(david, "David", "Okafor")]), "You, Anna Reyes, David Okafor and 9 others reacted with folded hands"],
+        [chip(2, false, [person(anna, "Anna", "Reyes"), person(david, "David", "Okafor")]), "Anna Reyes and David Okafor reacted with folded hands"],
+        [chip(2, false, [person(anna, "Anna", "Reyes")]), "Anna Reyes and 1 other reacted with folded hands"],
+        [chip(1, true, []), "You reacted with folded hands"],
+        [chip(1, false, [person(david, null, null)]), "1 person reacted with folded hands"],
+        [chip(5, false, []), "5 people reacted with folded hands"]
+    ])("reads as one sentence for a screen reader: %#", (reaction, sentence) => {
+        expect(whoReactedLine(reaction, reader)).toBe(sentence);
     });
 });
 
@@ -920,13 +1020,13 @@ describe("after stop", () => {
         expect(notices).not.toHaveBeenCalled();
     });
 
-    test("the catalog's answer is not kept, and the reactor names answer none", async () => {
+    test("the catalog's answer is not kept, and the full list answers none", async () => {
         const catalogAnswer = deferred<CallResult>();
         const namesAnswer = deferred<CallResult>();
         const { reactions } = await setup([message(42, [rx("pray", 1)])], [catalogAnswer, namesAnswer]);
 
         const loading = reactions.loadCatalog();
-        const naming = reactions.reactorNames(42, rx("pray", 1) as never);
+        const naming = reactions.listReactors(42, "pray", null);
         reactions.stop();
         catalogAnswer.resolve(ok({ emojis: catalog }));
         namesAnswer.resolve(ok({ reactors: [], has_more: false }));
@@ -942,7 +1042,7 @@ describe("after stop", () => {
         reactions.stop();
         await reactions.toggle(channel, 42, glyph("heart"));
         await reactions.loadCatalog();
-        await reactions.reactorNames(42, rx("heart", 4) as never);
+        await reactions.listReactors(42, "heart", null);
         reactions.applyEvent(channel, "reaction.added", added("heart", anna));
 
         expect(calls).toEqual([]);

@@ -278,7 +278,7 @@ function fakeShell(): Record<string, unknown> {
             toggleCode: jest.fn(async () => undefined),
             loadCatalog: jest.fn(async () => null),
             recordRecent: jest.fn(),
-            reactorNames: jest.fn(async () => null)
+            listReactors: jest.fn(async () => null)
         }
     };
 

@@ -83,6 +83,8 @@
                             :style="{ '--chat-enter-i': index }"
                             :message="item.message"
                             :personAliasGuid="personAliasGuid"
+                            :personName="personName"
+                            :personPhotoUrl="personPhotoUrl"
                             :organizationName="organizationName"
                             :isChannel="isChannel"
                             :isPhone="isPhone"

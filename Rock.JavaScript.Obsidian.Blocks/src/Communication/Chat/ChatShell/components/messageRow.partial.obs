@@ -993,7 +993,7 @@
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
-    import { ChatError, DisplayPiece, PendingMessage, Reaction, SystemKind, TimelineMessage } from "../types.partial";
+    import { ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -1475,12 +1475,18 @@
         pickerAnchor: props.message ? props.reactionHost?.pickerAnchorOf(props.message.id) ?? null : null
     }));
 
-    /** The reactions row's props; a previewer sees the chips but cannot press them, and a touch screen has no add chip. */
+    /**
+     * The reactions row's props; a previewer sees the chips and who reacted but cannot press them,
+     * a touch screen has no add chip, and no chip's card shows while the picker is open on this
+     * message; asked by message, so the picker opening wakes no other row.
+     */
     const reactionsProps = computed(() => ({
         message: props.message as TimelineMessage,
         isPreviewing: props.isPreviewing,
         isPhone: isTouchLayout.value,
-        loadReactorNames
+        reader: { personAliasGuid: props.personAliasGuid, name: props.personName, photoUrl: props.personPhotoUrl },
+        listReactors,
+        isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id)
     }));
 
     const rootClasses = computed((): Record<string, boolean> => ({
@@ -1530,9 +1536,9 @@
         messageAnchor
     });
 
-    /** Who reacted with a chip's emoji, asked of the reactions the shell holds. */
-    function loadReactorNames(reaction: Reaction): Promise<string[] | null> {
-        return props.message && props.reactionHost ? props.reactionHost.reactorNames(props.message.id, reaction) : Promise.resolve(null);
+    /** A page of who reacted to this message, asked of the reactions the shell holds. */
+    function listReactors(code: string | null, after: ReactorsCursor | null): Promise<ReactorsPage | null> {
+        return props.message && props.reactionHost ? props.reactionHost.listReactors(props.message.id, code, after) : Promise.resolve(null);
     }
 
     /**

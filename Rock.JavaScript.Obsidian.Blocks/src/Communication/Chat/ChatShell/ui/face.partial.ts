@@ -54,3 +54,31 @@ export function personFace(person: ChatPerson): AvatarPerson {
 export function rowPeople(row: Pick<SidebarRow, "dm_people" | "dm_names">): ChatPerson[] {
     return row.dm_people ?? (row.dm_names ?? []).map(name => ({ person_alias_guid: "", nick_name: name, last_name: null, avatar_url: null }));
 }
+
+/** The photos already asked for on this page, so each is fetched once. */
+const preloaded = new Set<string>();
+
+/**
+ * Starts fetching and decoding photos a part is about to draw, such as the faces of a card that
+ * shows once the pointer has rested, so they draw whole the moment it shows rather than pop in.
+ *
+ * @param urls The photos; a null or one already asked for is skipped.
+ */
+export function preloadPhotos(urls: Array<string | null | undefined>): void {
+    if (typeof Image === "undefined") {
+        return;
+    }
+
+    for (const url of urls) {
+        if (!url || preloaded.has(url)) {
+            continue;
+        }
+
+        preloaded.add(url);
+        const image = new Image();
+        image.src = url;
+
+        // A photo that fails to decode is drawn by the avatar as it would be anyway.
+        image.decode?.().catch(() => undefined);
+    }
+}

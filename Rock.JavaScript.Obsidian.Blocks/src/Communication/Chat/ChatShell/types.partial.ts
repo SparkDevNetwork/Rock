@@ -324,6 +324,23 @@ export type Reaction = {
     emoji: string | null;
     image_url: string | null;
     label: string;
+
+    /**
+     * The newest three who reacted with it, newest first, the reader among them as anyone else; the
+     * first three of the full list. Absent on a chip drawn before the server answered, read as none.
+     */
+    reactors?: ChipReactor[];
+};
+
+/**
+ * One person who reacted, under their primary alias, with no name or photo for a person the chat
+ * no longer lists. The time and the alias it was made under place them in the full list.
+ */
+export type ChipReactor = ChatPerson & {
+    reacted_at: string;
+
+    /** The alias the reaction was made under, which pages the list. */
+    reactor_person_alias_guid: string;
 };
 
 /** The glyph of an emoji, which is all a toggle or a new chip needs of it. */
@@ -349,18 +366,13 @@ export type ReactionAnswer = {
     reactions: Reaction[];
 };
 
-/** One person who reacted, as chat_list_reactors returns them, newest first. */
-export type Reactor = {
-    /** The person's primary alias. */
-    person_alias_guid: string;
-    nick_name: string | null;
-    last_name: string | null;
-    avatar_url: string | null;
-    reacted_at: string;
-
-    /** The alias the reaction was made under, which pages the list. */
-    reactor_person_alias_guid: string;
+/** One person who reacted, as chat_list_reactors returns them, newest first, with the emoji they reacted with. */
+export type Reactor = ChipReactor & {
+    code: string;
 };
+
+/** Where the next page of the full list starts: after this row. */
+export type ReactorsCursor = Pick<Reactor, "reacted_at" | "reactor_person_alias_guid" | "code">;
 
 /** What chat_list_reactors returns. */
 export type ReactorsPage = {
@@ -376,6 +388,9 @@ export type ReactionEvent = EmojiGlyph & {
     message_id: number;
     channel_id: string;
     person_alias_guid: string;
+
+    /** The chip's newest three as the server read them after the change, none once it is empty. */
+    reactors: ChipReactor[];
 };
 
 /** One person who replied in a thread, under their primary alias. */

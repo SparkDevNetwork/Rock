@@ -211,6 +211,7 @@
     --chat-d-skeleton: 1.6s;
     --chat-d-tip-delay: 500ms;
     --chat-d-tip-delay-rx: 350ms;
+    --chat-d-long-press: 450ms;
     --chat-d-search-people: 250ms;
     --chat-d-search-channels: 200ms;
     --chat-d-lookup-line: 300ms;

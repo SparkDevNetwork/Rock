@@ -15,7 +15,8 @@
 // </copyright>
 //
 // Reacting to a message: the toggle, the live events of everyone reacting, the emoji catalog the
-// picker draws, the emoji the person used recently, and the names of who reacted.
+// picker draws, the emoji the person used recently, and who reacted: the newest three each chip
+// carries, which the card draws as they are, and the full list behind See all.
 //
 // A toggle is drawn at once and then replaced by the platform's answer, which is the message's
 // whole list as the server counts it. The reader's own reaction reaches them twice, in that answer
@@ -29,11 +30,13 @@
 import { reactive } from "vue";
 import { messageForError } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
-import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, ReactorsPage, TimelineMessage } from "../types.partial";
+import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
+import type { AvatarPerson } from "../ui/avatar.partial.obs";
+import { personFace, personName } from "../ui/face.partial";
 import { Timelines } from "./useHistory.partial";
 import { Threads } from "./useThreads.partial";
 
-export type { CatalogEmoji, EmojiGlyph, Reaction, ReactionFavorite } from "../types.partial";
+export type { CatalogEmoji, EmojiGlyph, Reaction, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
 
 /** A toast the reactions ask the shell to show. */
 export type ReactionNotice = {
@@ -116,59 +119,107 @@ export type Reactions = {
     recordRecent: (code: string) => void;
 
     /**
-     * The full names of the others who reacted with a chip, newest first: never the reader, whose
-     * own mark the chip carries, nor a person the platform cannot name. Null when not known.
+     * A page of everyone who reacted to a message, newest first: with one emoji, or with every
+     * emoji when none is named, after the row given. Null when the page cannot be had.
      */
-    reactorNames: (messageId: number, reaction: Reaction) => Promise<string[] | null>;
+    listReactors: (messageId: number, code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>;
 
     /** Ends the reactions for good. */
     stop: () => void;
 };
 
 /**
- * What a message row reads of the reactions: the favorites its bar and sheet draw, who reacted
- * for a chip's tooltip, and what the open picker is placed beside when it is open on the row's
+ * What a message row reads of the reactions: the favorites its bar and sheet draw, the full list
+ * behind a chip's See all, and what the open picker is placed beside when it is open on the row's
  * own message, so the bar holding it stays. Asked by message, so the picker opening reaches the
  * rows of its message and no other.
  */
 export type ReactionHost = {
     favorites: ReactionFavorite[];
-    reactorNames: Reactions["reactorNames"];
+    listReactors: Reactions["listReactors"];
     pickerAnchorOf: (messageId: number) => HTMLElement | null;
+};
+
+/** The reader as a chip's card draws them: "You", with their own face. */
+export type ReactionReader = {
+    /** The session's alias, which also tells the reader's own row from the others'. */
+    personAliasGuid: string;
+    name: string;
+    photoUrl: string | null;
+};
+
+/** One person a chip's card draws. */
+export type CardPerson = {
+    key: string;
+    label: string;
+    face: AvatarPerson;
+};
+
+/** Who a chip's card draws: up to three people, how many more reacted, and whether See all is offered. */
+export type WhoReacted = {
+    people: CardPerson[];
+    rest: number;
+    isMoreShown: boolean;
 };
 
 /** How many recently used emoji the picker shows. */
 const recentLimit = 8;
 
-/** How many names a chip's tooltip shows before it counts the rest. */
-const reactorLimit = 3;
+/** How many people a chip's card names, the same three every chip carries. */
+const cardLimit = 3;
+
+/** How many people a page of the full list holds. */
+const reactorsPageSize = 50;
 
 /**
- * The tooltip line of a chip: "You" first when the reader reacted, then the names of the others
- * and how many more; before the names arrive, or with none to show, the count alone.
+ * Who a chip's card draws, from what the chip carries and nothing else, so the card is whole the
+ * moment it shows: "You" first whenever the chip is the reader's, whether or not they are among
+ * its newest three, then the others it carries. A person the chat no longer lists is counted
+ * among the rest, never drawn blank. See all is offered while more reacted than are drawn, unless
+ * every one of them is a nameless person the chip already carries, whom the list would draw blank.
  *
  * @param reaction The chip.
- * @param names The others who reacted, as reactorNames answers; null while unknown.
+ * @param reader The reader.
  *
- * @returns The line.
+ * @returns The card's people.
  */
-export function reactorLine(reaction: Reaction, names: string[] | null): string {
-    // An image emoji has no glyph to put in a sentence, so it is named by the code a person types.
-    const glyph = reaction.emoji ?? `:${reaction.code}:`;
+export function whoReacted(reaction: Reaction, reader: ReactionReader): WhoReacted {
+    const carried = reaction.reactors ?? [];
 
-    // The reader leads whether or not they were among the newest few the names were read from,
-    // so the line still names no more people than the limit.
-    const others = names?.slice(0, reaction.mine ? reactorLimit - 1 : reactorLimit) ?? [];
-    if (!names || (!reaction.mine && others.length === 0)) {
-        return `${reaction.count} ${reaction.count === 1 ? "person" : "people"} reacted with ${glyph}`;
+    // The reader may have reacted under an alias other than the session's.
+    const others = carried
+        .filter(reactor => reactor.person_alias_guid !== reader.personAliasGuid && reactor.reactor_person_alias_guid !== reader.personAliasGuid)
+        .filter(reactor => personName(reactor) !== "")
+        .map((reactor): CardPerson => ({ key: reactor.person_alias_guid, label: personName(reactor), face: personFace(reactor) }));
+
+    const you: CardPerson = { key: reader.personAliasGuid, label: "You", face: { name: reader.name, photoUrl: reader.photoUrl } };
+    const people = reaction.mine ? [you, ...others.slice(0, cardLimit - 1)] : others.slice(0, cardLimit);
+    const rest = Math.max(reaction.count - people.length, 0);
+
+    return { people, rest, isMoreShown: rest > 0 && (people.length > 0 || reaction.count > carried.length) };
+}
+
+/**
+ * A chip's card in one sentence, which a screen reader hears as the chip's description.
+ *
+ * @param reaction The chip.
+ * @param reader The reader.
+ *
+ * @returns The sentence.
+ */
+export function whoReactedLine(reaction: Reaction, reader: ReactionReader): string {
+    const { people, rest } = whoReacted(reaction, reader);
+    if (people.length === 0) {
+        return `${reaction.count} ${reaction.count === 1 ? "person" : "people"} reacted with ${reaction.label}`;
     }
 
-    const named = reaction.mine ? ["You", ...others] : others;
-    const rest = reaction.count - named.length;
-    const parts = rest > 0 ? [...named, `${rest} more`] : named;
+    const parts = people.map(person => person.label);
+    if (rest > 0) {
+        parts.push(`${rest} ${rest === 1 ? "other" : "others"}`);
+    }
     const who = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 
-    return `${who} reacted with ${glyph}`;
+    return `${who} reacted with ${reaction.label}`;
 }
 
 /**
@@ -314,10 +365,6 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     // then, so while presses cross an answer speaks only for its own emoji.
     const outstanding = new Map<number, { count: number, isCrossed: boolean }>();
 
-    // The names asked for per message and emoji, held while the chip's count and mark are the
-    // ones they were asked for.
-    const names = new Map<string, { count: number, mine: boolean, names: Promise<string[] | null> }>();
-
     /** The conversation's copy of a message, if its timeline holds it. */
     function timelineCopy(channelId: string, messageId: number): TimelineMessage | undefined {
         return dependencies.timelines.state(channelId).messages.find(message => message.id === messageId);
@@ -385,34 +432,49 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         const isAdded = event === "reaction.added";
         const emoji: EmojiGlyph = { code: reaction.code, emoji: reaction.emoji ?? null, image_url: reaction.image_url ?? null, label: reaction.label ?? reaction.code };
         const isReaders = reaction.person_alias_guid === dependencies.personAliasGuid;
+        const reactors = Array.isArray(reaction.reactors) ? reaction.reactors : null;
 
         return {
             messageId: reaction.message_id,
             apply: copy => {
-                // The reader's own moves only a mark it would change: their toggle already drew
-                // it, and another device of theirs has not.
-                if (isReaders) {
-                    setOwnReaction(copy, emoji, isAdded, placeOf);
-                    return;
-                }
+                moveCount(copy, emoji, isAdded, isReaders);
 
+                // The count moves by one as it always has, but who reacted is the server's whole
+                // answer: the chip's newest three as read after this change, the reader's own
+                // echo included, since their toggle drew only the mark.
                 const chip = copy.reactions?.find(existing => existing.code === emoji.code);
-                if (isAdded) {
-                    if (chip) {
-                        chip.count++;
-                    }
-                    else {
-                        addChip(copy, emoji, false, placeOf);
-                    }
-                }
-                else if (chip) {
-                    chip.count--;
-                    if (chip.count <= 0) {
-                        copy.reactions!.splice(copy.reactions!.indexOf(chip), 1);
-                    }
+                if (chip && reactors) {
+                    chip.reactors = reactors.map(reactor => ({ ...reactor }));
                 }
             }
         };
+    }
+
+    /**
+     * Moves a chip's count and mark for one reaction an event carried. The reader's own moves
+     * only a mark it would change: their toggle already drew it, and another device of theirs has not.
+     */
+    function moveCount(copy: TimelineMessage, emoji: EmojiGlyph, isAdded: boolean, isReaders: boolean): void {
+        if (isReaders) {
+            setOwnReaction(copy, emoji, isAdded, placeOf);
+            return;
+        }
+
+        const chip = copy.reactions?.find(existing => existing.code === emoji.code);
+        if (isAdded) {
+            if (chip) {
+                chip.count++;
+            }
+            else {
+                addChip(copy, emoji, false, placeOf);
+            }
+        }
+        else if (chip) {
+            chip.count--;
+            if (chip.count <= 0) {
+                copy.reactions!.splice(copy.reactions!.indexOf(chip), 1);
+            }
+        }
     }
 
     /**
@@ -594,50 +656,26 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
             }
         },
 
-        reactorNames: (messageId: number, reaction: Reaction): Promise<string[] | null> => {
+        listReactors: async (messageId: number, code: string | null, after: ReactorsCursor | null): Promise<ReactorsPage | null> => {
             if (isStopped) {
-                return Promise.resolve(null);
+                return null;
             }
 
-            const key = `${messageId}/${reaction.code}`;
-            const held = names.get(key);
-            if (held && held.count === reaction.count && held.mine === reaction.mine) {
-                return held.names;
+            const result = await dependencies.call("chat_list_reactors", {
+                p_message_id: messageId,
+                p_reaction: code,
+                p_after_at: after?.reacted_at ?? null,
+                p_after_alias: after?.reactor_person_alias_guid ?? null,
+                p_limit: reactorsPageSize,
+                p_after_code: after?.code ?? null
+            });
+
+            const page = result.ok ? result.data as Partial<ReactorsPage> | null : null;
+            if (isStopped || !Array.isArray(page?.reactors)) {
+                return null;
             }
 
-            const entry = { count: reaction.count, mine: reaction.mine, names: Promise.resolve<string[] | null>(null) };
-            entry.names = (async (): Promise<string[] | null> => {
-                const result = await dependencies.call("chat_list_reactors", {
-                    p_message_id: messageId,
-                    p_reaction: reaction.code,
-                    p_after_at: null,
-                    p_after_alias: null,
-                    p_limit: reactorLimit
-                });
-
-                if (isStopped) {
-                    return null;
-                }
-
-                const page = result.ok ? result.data as Partial<ReactorsPage> | null : null;
-                if (!Array.isArray(page?.reactors)) {
-                    // Forgotten, so the next hover asks again; the tooltip keeps its count line.
-                    if (names.get(key) === entry) {
-                        names.delete(key);
-                    }
-                    return null;
-                }
-
-                // The reader may have reacted under an alias other than the session's primary one.
-                // Someone the platform cannot name, gone or never synced, is counted, not drawn blank.
-                return page.reactors
-                    .filter(reactor => reactor.person_alias_guid !== dependencies.personAliasGuid && reactor.reactor_person_alias_guid !== dependencies.personAliasGuid)
-                    .map(reactor => [reactor.nick_name, reactor.last_name].filter(part => !!part).join(" "))
-                    .filter(name => name.length > 0);
-            })();
-
-            names.set(key, entry);
-            return entry.names;
+            return { reactors: page.reactors, has_more: page.has_more === true };
         },
 
         stop: (): void => {

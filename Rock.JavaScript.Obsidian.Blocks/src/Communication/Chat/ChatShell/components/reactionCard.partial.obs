@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-rx-card"
+         role="group"
+         :aria-label="`Who reacted with ${reaction.label}`"
+         data-testid="reaction-card">
+        <div class="chat-rx-card-head">
+            <img v-if="reaction.image_url" class="chat-rx-card-e is-image" :src="reaction.image_url" alt="" />
+            <span v-else class="chat-rx-card-e" aria-hidden="true">{{ reaction.emoji }}</span>
+            <span class="chat-rx-card-title">
+                <b class="chat-rx-card-label">{{ reaction.label }}</b>
+                <span class="chat-rx-card-count" data-testid="reaction-card-count">{{ countText }}</span>
+            </span>
+        </div>
+        <div v-for="person in card.people"
+             :key="person.key"
+             class="chat-rx-card-row"
+             data-testid="reaction-card-person">
+            <Avatar :people="[person.face]" :size="24" />
+            <span class="chat-rx-card-name">{{ person.label }}</span>
+        </div>
+        <!-- The rest as a fourth row on the same grid, so it lines up with the people above it. -->
+        <button v-if="card.isMoreShown"
+                type="button"
+                class="chat-rx-card-row is-more"
+                data-testid="reaction-card-more"
+                :aria-label="`See all ${reaction.count} reactions`"
+                @click="emit('seeAll')">
+            <span class="chat-rx-card-disc" aria-hidden="true">+{{ card.rest }}</span>
+            <span class="chat-rx-card-name is-muted">{{ restText }}</span>
+            <span class="chat-rx-card-see">See all<Icon name="right" size="xs" /></span>
+        </button>
+    </div>
+</template>
+
+<style scoped>
+.chat-rx-card {
+    z-index: 1060;
+    width: 248px;
+    padding: 10px 6px 6px;
+    color: var(--chat-text);
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-rx-card-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+@keyframes chat-rx-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+.chat-rx-card-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 0 8px 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-rx-card-e {
+    flex: none;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.chat-rx-card-e.is-image {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.chat-rx-card-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.chat-rx-card-label {
+    font-size: 13px;
+}
+
+/* A catalog's label is written in lower case; the card's title reads as a name. */
+.chat-rx-card-label::first-letter {
+    text-transform: uppercase;
+}
+
+.chat-rx-card-count {
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+.chat-rx-card-row {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    width: 100%;
+    height: 34px;
+    padding: 0 8px;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--chat-text);
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-item);
+}
+
+.chat-rx-card-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-rx-card-name.is-muted {
+    color: var(--chat-muted);
+}
+
+.chat-rx-card-row.is-more {
+    cursor: pointer;
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-rx-card-row.is-more:hover {
+    background: var(--chat-hover);
+}
+
+/* The rest's face: a neutral disc the size of a face, holding the count. */
+.chat-rx-card-disc {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-text-2);
+    background: var(--chat-sidebar);
+    border-radius: 50%;
+}
+
+.chat-rx-card-see {
+    display: inline-flex;
+    flex: none;
+    gap: 2px;
+    align-items: center;
+    margin-left: auto;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-brand-ink);
+}
+
+/* Reduced motion: the card only fades in. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-rx-card {
+        animation-name: chat-crossfade;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import { ReactionReader, WhoReacted, whoReacted } from "../composables/useReactions.partial";
+    import { Reaction } from "../types.partial";
+
+    const props = defineProps({
+        /** The chip, which carries everything the card draws, so it is whole the moment it shows. */
+        reaction: {
+            type: Object as PropType<Reaction>,
+            required: true
+        },
+
+        /** The reader, drawn as "You" with their own face. */
+        reader: {
+            type: Object as PropType<ReactionReader>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "seeAll"): void
+    }>();
+
+    // #region Computed Values
+
+    const card = computed((): WhoReacted => whoReacted(props.reaction, props.reader));
+
+    const countText = computed((): string => `${props.reaction.count} ${props.reaction.count === 1 ? "person" : "people"}`);
+
+    // Under named people the rest are others; with no one named above, they are everyone.
+    const restText = computed((): string => card.value.people.length === 0
+        ? countText.value
+        : `${card.value.rest} ${card.value.rest === 1 ? "other" : "others"}`);
+
+    // #endregion Computed Values
+</script>
