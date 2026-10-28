@@ -213,21 +213,18 @@ describe("the states, in Conversational", () => {
         expect(plain(wrapper.get("[data-testid='message-meta']").text())).toBe("9:02 AM");
     });
 
-    test("failed: Not sent., with Try again and Delete, and a spoken alert", async () => {
+    // The choices for a failed send are the strip's, over the composer, which also says it aloud;
+    // the message only says it was not sent, where Sending… was.
+    test("failed: Not sent under the bubble, where Sending… was, and nothing to press", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "network" }), isOwn: true });
+        const meta = wrapper.get("[data-testid='message-meta']");
 
         expect(root(wrapper).getAttribute("data-state")).toBe("failed");
         expect(root(wrapper).getAttribute("data-status")).toBe("failed");
-        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent.");
-        expect(wrapper.get("[data-testid='retry-send']").text()).toBe("Try again");
-        expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
-        expect(wrapper.get("[aria-live='assertive']").text()).toBe("Your message was not sent. Try again.");
-
-        await wrapper.get("[data-testid='retry-send']").trigger("click");
-        await wrapper.get("[data-testid='discard-send']").trigger("click");
-
-        expect(wrapper.emitted("retry")).toEqual([["local-1"]]);
-        expect(wrapper.emitted("discard")).toEqual([["local-1"]]);
+        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
+        expect(meta.find(".chat-fail-mark").exists()).toBe(true);
+        expect(meta.findAll("button")).toHaveLength(0);
+        expect(wrapper.find("[aria-live]").exists()).toBe(false);
     });
 
     test("deleted: the sentence in place of the body, and nothing else of it", () => {
@@ -339,11 +336,10 @@ describe("the group's furniture, in Conversational", () => {
         expect(plain(draw({ message: message(), position: "last" }).get("[data-testid='message-meta']").text())).toBe("9:02 AM");
     });
 
-    test("a failed send mid-group still shows its own Not sent. line", () => {
+    test("a failed send mid-group still shows its own Not sent line", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, position: "first" });
 
-        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent.");
-        expect(wrapper.find("[data-testid='retry-send']").exists()).toBe(true);
+        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
     });
 
     test("the row says which place in its group it holds, for its corners", () => {
@@ -419,13 +415,17 @@ describe("Community, in a channel", () => {
         expect(sent.get("[data-testid='message-state']").text()).toBe("Sent");
     });
 
-    test("a failed send keeps Not sent., Try again and Delete under the text", () => {
+    test("a failed send's Not sent rides inline after the text, where Sending… was, with nothing to press", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true });
+        const state = wrapper.get(".chat-cm-text .chat-cm-state");
 
         expect(root(wrapper).getAttribute("data-state")).toBe("failed");
-        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent.");
-        expect(wrapper.get("[data-testid='retry-send']").text()).toBe("Try again");
-        expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
+        expect(state.classes()).toContain("is-failed");
+        expect(state.find(".chat-fail-mark").exists()).toBe(true);
+        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
+        expect(wrapper.find("[data-testid='message-meta']").exists()).toBe(false);
+        expect(wrapper.findAll(".chat-cm-main button")).toHaveLength(0);
+        expect(wrapper.find("[aria-live]").exists()).toBe(false);
     });
 
     test("tombstones and the announcement pill draw as in Conversational", () => {
@@ -818,74 +818,53 @@ describe("a reply also sent to the conversation", () => {
     });
 });
 
-// A failed send's Delete is the quieter of its two links, so Try again reads as the way forward.
-describe("a failed send's links", () => {
-    test.each([["a direct message", false], ["a channel", true]] as const)("Delete is drawn muted beside Try again in %s", (_kind, isChannel) => {
-        const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel, position: "single" });
-
-        expect(wrapper.get("[data-testid='discard-send']").classes()).toContain("is-quiet");
-        expect(wrapper.get("[data-testid='retry-send']").classes()).not.toContain("is-quiet");
-    });
-});
-
-// A send refused for good can only be refused again, so its row says why and offers Delete alone.
-describe("a send refused for good", () => {
+// A failed send is marked, never painted: no tinted row, no red edge, no ring on the bubble, no
+// links on the row. A send refused for good is marked the same; its sentence is the strip's.
+describe("a failed send's row", () => {
     const refusal = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
+    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
-    test.each([["a direct message", false], ["a channel", true]] as const)("shows its sentence and Delete, and no Try again, in %s", async (_kind, isChannel) => {
-        const wrapper = draw({
-            pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal }),
-            isOwn: true,
-            isChannel,
-            position: "single"
-        });
+    /** The declarations of every rule written for exactly this selector, alone. */
+    function rule(selector: string): string {
+        return [...style.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^}]*)\}/g)]
+            .filter(match => match[1].trim() === selector)
+            .map(match => match[2])
+            .join("");
+    }
 
-        expect(root(wrapper).getAttribute("data-state")).toBe("failed");
-        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent.");
-        expect(wrapper.get("[data-testid='message-refusal']").text()).toBe("You can't mention everyone in this channel.");
-        expect(wrapper.find("[data-testid='retry-send']").exists()).toBe(false);
-        expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
-        expect(wrapper.get("[aria-live='assertive']").text()).toBe("Your message was not sent. You can't mention everyone in this channel.");
+    test.each([["a direct message", false], ["a channel", true]] as const)("a send refused for good is marked Not sent like any other in %s", (_kind, isChannel) => {
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal, reason: refusal.text }), isOwn: true, isChannel, position: "single" });
 
-        await wrapper.get("[data-testid='discard-send']").trigger("click");
-        expect(wrapper.emitted("discard")).toEqual([["local-1"]]);
+        expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
+        expect(wrapper.text()).not.toContain(refusal.text);
+        expect(wrapper.findAll("button").filter(button => /Try again|Delete/.test(button.text()))).toHaveLength(0);
     });
 
-    test("a refusal with no sentence of its own says the person has no access", () => {
-        const wrapper = draw({
-            pending: pendingRow({ status: "failed", errorCode: "authz.not_member", refusal: { code: "authz.not_member", severity: "permission" } }),
-            isOwn: true,
-            position: "single"
-        });
-
-        expect(wrapper.get("[data-testid='message-refusal']").text()).toBe("You do not have access to that.");
-        expect(wrapper.find("[data-testid='retry-send']").exists()).toBe(false);
+    test("its look has no tint, edge, ring or links of its own", () => {
+        expect(style).not.toMatch(/\.is-community\.is-failed\s*\{/);
+        expect(style).not.toMatch(/\.is-failed \.chat-bubble\s*\{/);
+        expect(style).not.toMatch(/chat-link-button|has-refusal/);
+        expect(source).not.toMatch(/retry-send|discard-send|message-refusal/);
     });
 
-    test.each([["a direct message", false], ["a channel", true]] as const)("an ordinary failure still offers Try again and no sentence in %s", (_kind, isChannel) => {
-        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport" }), isOwn: true, isChannel, position: "single" });
+    // The state rides the text's line by the mention chip's rule: a flex box whose words keep the
+    // text's baseline and whose mark is centred on them by the box, never sunk or lifted a set
+    // number of pixels, which held for one font only and left the words low on the line.
+    test("Sending…, Sent and Not sent keep the text's baseline, their mark centred on the words", () => {
+        expect(rule(".chat-cm-state")).toMatch(/display:\s*inline-flex/);
+        expect(rule(".chat-cm-state")).toMatch(/align-items:\s*center/);
+        expect(rule(".chat-cm-state")).not.toMatch(/vertical-align/);
+        expect(rule(".chat-cm-state-words")).toMatch(/align-self:\s*baseline/);
 
-        expect(wrapper.find("[data-testid='message-refusal']").exists()).toBe(false);
-        expect(wrapper.get("[data-testid='retry-send']").text()).toBe("Try again");
-        expect(wrapper.get("[data-testid='discard-send']").text()).toBe("Delete");
-        expect(wrapper.get("[data-testid='message-meta']").classes()).not.toContain("has-refusal");
-    });
-
-    // A flex row squeezes each piece into its own column at a phone's width, "Not sent." broken
-    // beside a tall narrow sentence; a sentence wraps as text, the icon and Delete in its run.
-    test.each([["a direct message", false], ["a channel", true]] as const)("its sentence wraps as one run of text with Delete at its end in %s", (_kind, isChannel) => {
-        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal }), isOwn: true, isChannel, position: "single" });
-        const meta = wrapper.get("[data-testid='message-meta']");
-
-        expect(meta.classes()).toContain("has-refusal");
-        expect([...meta.element.children].map(child => child.getAttribute("data-testid") ?? child.tagName.toLowerCase()))
-            .toEqual(["svg", "message-state", "message-refusal", "discard-send"]);
-
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-meta\.has-refusal\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
-        expect(rule).toMatch(/display:\s*block/);
-        expect(style).not.toMatch(/\.has-refusal[^{]*\{[^}]*white-space:\s*nowrap/);
+        const states = [
+            draw({ pending: pendingRow(), isOwn: true, isChannel: true }),
+            draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, isChannel: true }),
+            draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true })
+        ];
+        for (const wrapper of states) {
+            expect(wrapper.get(".chat-cm-state [data-testid='message-state']").classes()).toContain("chat-cm-state-words");
+        }
     });
 });
 

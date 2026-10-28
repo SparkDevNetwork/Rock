@@ -111,8 +111,6 @@
                                     :isEditSaving="isEditSaving"
                                     :reactionHost="reactionHost"
                                     :data-message-id="row.message?.id"
-                                    @retry="emit('retry', $event)"
-                                    @discard="emit('discard', $event)"
                                     @openThread="emit('openThread', $event)"
                                     @jump="emit('jump', $event)"
                                     @messageAction="emit('messageAction', $event)" />
@@ -642,7 +640,7 @@
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { useSentHold } from "../composables/useSend.partial";
+    import { isInConversation, useSentHold } from "../composables/useSend.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -778,8 +776,6 @@
     const emit = defineEmits<{
         (e: "seen", messageId: number): void,
         (e: "firstShown"): void,
-        (e: "retry", localId: string): void,
-        (e: "discard", localId: string): void,
         (e: "loadOlder"): void,
         (e: "markRead", messageId: number): void,
         (e: "openThread", rootId: number): void,
@@ -876,7 +872,7 @@
      * The sends this conversation draws: a reply that stays in its thread is drawn in the thread
      * drawer alone, so it neither shows nor moves the conversation while it is on its way.
      */
-    const channelPending = computed((): PendingMessage[] => props.pending.filter(row => typeof row.parentId !== "number" || row.isShownInChannel === true));
+    const channelPending = computed((): PendingMessage[] => props.pending.filter(isInConversation));
 
     /** The keys of the person's sends that settled while the feed was open, each showing "Sent" for a moment. */
     const justSentKeys = useSentHold(() => channelPending.value, feed);
@@ -1191,8 +1187,8 @@
         scrollToBottom();
     });
 
-    // A send that fails grows its row by the Not sent line, which would sit under the feed's
-    // bottom fade, so the feed brings it into view.
+    // A send that fails opens the strip over the composer, which takes its height from the feed
+    // and would leave the failed message under the feed's bottom fade, so the feed brings it into view.
     watch(() => channelPending.value.filter(row => row.status === "failed").length, async (failed, previous) => {
         if (failed > previous) {
             await nextTick();

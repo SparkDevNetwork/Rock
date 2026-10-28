@@ -125,8 +125,6 @@
                                  @seen="shell.seen"
                                  @markRead="shell.markRead"
                                  @firstShown="shell.firstMessageShown"
-                                 @retry="onRetry"
-                                 @discard="shell.sender.discard"
                                  @loadOlder="shell.loadOlder"
                                  @openThread="onOpenThread"
                                  @jump="onJump($event, false)"
@@ -160,6 +158,9 @@
                               :emojiSource="emojiSource"
                               :mentionSource="mentionSourceFor(activeRow)"
                               :conversationKey="activeChannelId"
+                              :sendFailure="conversationFailure"
+                              @retryFailed="onRetryFailed(conversationSends)"
+                              @discardFailed="onDiscardFailed(conversationSends)"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
                               @focus="onComposerFocus(activeRow)"
                               @send="shell.send"
@@ -693,11 +694,11 @@
     import { useJump } from "./ChatShell/composables/useJump.partial";
     import { ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
-    import { lockedReason } from "./ChatShell/composables/useSend.partial";
+    import { failedSends, isInConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./ChatShell/composables/useSend.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { joinNames } from "./ChatShell/stores/channelStore.partial";
-    import { ChannelFacts, ChatPerson, DisplayPiece, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
+    import { ChannelFacts, ChatPerson, DisplayPiece, PendingMessage, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
     import { rowPeople } from "./ChatShell/ui/face.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
@@ -934,6 +935,12 @@
      */
     const conversationDraft = computed((): ComposerDraft | null => conversationQuoteKey.value ? shell.value.drafts.of(conversationQuoteKey.value) : null);
     const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
+
+    /** The person's sends the open conversation draws, still going or failed; a reply only when also sent there. */
+    const conversationSends = computed((): PendingMessage[] => activeChannelId.value ? shell.value.sender.pending(activeChannelId.value).filter(isInConversation) : []);
+
+    /** What the conversation's failed sends come to, for the strip over its composer. */
+    const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
 
     /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
     const publicRooms = computed((): Record<string, boolean> => {
@@ -1222,6 +1229,16 @@
 
     function onRetry(localId: string): void {
         void shell.value.sender.retry(localId);
+    }
+
+    /** Try again on the conversation's strip. */
+    function onRetryFailed(sends: PendingMessage[]): void {
+        retryableSends(sends).forEach(row => onRetry(row.localId));
+    }
+
+    /** Delete on the conversation's strip. */
+    function onDiscardFailed(sends: PendingMessage[]): void {
+        failedSends(sends).forEach(row => shell.value.sender.discard(row.localId));
     }
 
     async function onSaveBirthdate(birthDate: DatePartsPickerValueBag): Promise<void> {

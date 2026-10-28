@@ -1053,6 +1053,41 @@ describe("the reader's own send in a channel", () => {
     });
 });
 
+// The conversation's failed sends are marked on their rows and offered in the strip over its
+// composer: a reply shown only in its thread is the thread's, so it is neither counted nor sent.
+describe("the conversation's failed sends", () => {
+    const sends = (): unknown[] => [
+        { localId: "l1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport", reason: "You're offline." },
+        { localId: "l2", channelId: team.channel_id, body: "Count me in", status: "failed", errorCode: "rpc.transport", parentId: 40, isShownInChannel: false },
+        { localId: "l3", channelId: team.channel_id, body: "@all lunch", status: "failed", errorCode: "authz.no_mention_all_right", refusal: { code: "authz.no_mention_all_right", severity: "permission" }, reason: "You do not have access to that." },
+        { localId: "l4", channelId: team.channel_id, body: "Still going", status: "sending", errorCode: null }
+    ];
+
+    test("are counted over the composer, with the newest reason", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.sender as { pending: () => unknown[] }).pending = sends;
+
+        await openRow(w, team.channel_id);
+
+        const strip = w.get("[data-testid='frame-main'] [data-testid='composer-failed']");
+        expect(strip.get("[data-testid='composer-failed-lead']").text()).toBe("2 messages weren't sent");
+        expect(strip.get("[data-testid='composer-failed-reason']").text()).toBe("You do not have access to that.");
+    });
+
+    test("Try again resends each that can go, and Delete drops each, the thread's own left alone", async () => {
+        const w = await mountBlock(1200);
+        (mockShell!.sender as { pending: () => unknown[] }).pending = sends;
+        await openRow(w, team.channel_id);
+        const strip = w.get("[data-testid='frame-main'] [data-testid='composer-failed']");
+
+        await strip.get("[data-testid='composer-failed-retry']").trigger("click");
+        await strip.get("[data-testid='composer-failed-discard']").trigger("click");
+
+        expect((mockShell!.sender as { retry: jest.Mock }).retry.mock.calls).toEqual([["l1"]]);
+        expect((mockShell!.sender as { discard: jest.Mock }).discard.mock.calls).toEqual([["l1"], ["l3"]]);
+    });
+});
+
 describe("a phone pane out of view", () => {
     /** Whether a pane is taken out of the page's tab order by its style, which every browser honours, unlike inert. */
     function isOutOfReach(w: VueWrapper, testId: string): boolean {
@@ -3131,8 +3166,8 @@ describe("New message", () => {
         });
         await settle();
 
-        await w.get("[data-testid='nd-retry']").trigger("click");
-        await w.get("[data-testid='nd-discard']").trigger("click");
+        await w.get("[data-testid='composer-failed-retry']").trigger("click");
+        await w.get("[data-testid='composer-failed-discard']").trigger("click");
 
         expect(directMessagesOf().sendFirst).toHaveBeenCalledWith("hello");
         expect(directMessagesOf().discardFailed).toHaveBeenCalledTimes(1);

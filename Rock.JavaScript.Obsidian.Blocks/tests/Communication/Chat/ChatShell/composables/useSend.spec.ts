@@ -16,9 +16,9 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, JoinResult, lockedReason, newLocalId, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, isInConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -83,7 +83,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport" }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline." }
         ]);
         expect(timelines.state(channel).messages).toEqual([]);
     });
@@ -101,7 +101,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport" }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline." }
         ]);
         sender.discard("local-1");
         expect(sender.pending(channel)).toEqual([]);
@@ -388,7 +388,8 @@ describe("a send into a room the person has not joined", () => {
                 body: "hello room",
                 status: "failed",
                 errorCode: "door.not_allowed",
-                refusal: { code: "door.not_allowed", severity: "permission", text: "You can't join this channel." }
+                refusal: { code: "door.not_allowed", severity: "permission", text: "You can't join this channel." },
+                reason: "You can't join this channel."
             }
         ]);
     });
@@ -1125,5 +1126,85 @@ describe("a send settles on the first copy of its message", () => {
 
         expect(ids(h)).toEqual([58, 59]);
         expect(h.sender.pending(channel)).toEqual([]);
+    });
+});
+
+// Why a send failed, in words, is kept on its row for the strip over the composer: the refusal's
+// sentence when it ended for good, "You're offline." when nothing could be reached, the server's
+// own sentence for any other failure that brought one, and nothing where nothing was said.
+describe("a failed send's reason", () => {
+    test.each([
+        ["nothing reached", { code: "rpc.transport", severity: "failed" as const }, "You're offline."],
+        ["Rock's door unreached", { code: "door.unreachable", severity: "failed" as const }, "You're offline."],
+        ["the server's sentence", { code: "rpc.read_only", severity: "failed" as const, text: "Chat is read only for a few minutes." }, "Chat is read only for a few minutes."],
+        ["a refusal for good", { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." }, "You can't mention everyone in this channel."],
+        ["a session ended", { code: "auth.expired", severity: "session" as const }, "Your chat session has ended. Refresh the page to continue."]
+    ])("%s", async (_name, error, reason) => {
+        const { sender } = await setup([{ ok: false, error }]);
+
+        await sender.send(channel, "hello");
+
+        expect(sender.pending(channel)[0].reason).toBe(reason);
+    });
+
+    test("a failure that said nothing keeps no reason", async () => {
+        const { sender } = await setup([{ ok: false, error: { code: "rpc.unknown", severity: "unknown" } }]);
+
+        await sender.send(channel, "hello");
+
+        expect(sender.pending(channel)[0].reason).toBeUndefined();
+    });
+
+    test("a try again clears the last try's reason while it sends", async () => {
+        const answer = deferred<SendResult>();
+        const { sender } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }, answer]);
+        await sender.send(channel, "hello");
+
+        void sender.retry("local-1");
+
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "sending" });
+        expect(sender.pending(channel)[0].reason).toBeUndefined();
+        answer.resolve({ ok: true, id: 9, createdAt: "2026-09-23T10:00:00Z" });
+    });
+});
+
+// The strip over a composer speaks for every failed send in the place the box types into: how
+// many, the newest one's reason, and whether any can be tried again.
+describe("sendFailure", () => {
+    const row = (localId: string, extra: Partial<PendingMessage> = {}): PendingMessage =>
+        ({ localId, channelId: channel, body: localId, status: "failed", errorCode: "rpc.transport", ...extra });
+    const refusal = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
+
+    test("is nothing while nothing failed", () => {
+        expect(sendFailure([])).toBeNull();
+        expect(sendFailure([row("a", { status: "sending", errorCode: null })])).toBeNull();
+    });
+
+    test("one failed send that can be tried again, with its reason", () => {
+        expect(sendFailure([row("a", { reason: "You're offline." }), row("b", { status: "sending", errorCode: null })]))
+            .toEqual({ count: 1, reason: "You're offline.", canRetry: true });
+    });
+
+    test("several, counted, with the newest one's reason", () => {
+        expect(sendFailure([row("a", { reason: "You're offline." }), row("b")])).toEqual({ count: 2, reason: null, canRetry: true });
+    });
+
+    test("one refused for good offers no Try again and says why", () => {
+        expect(sendFailure([row("a", { refusal, reason: refusal.text })])).toEqual({ count: 1, reason: refusal.text, canRetry: false });
+    });
+
+    test("any one that can pass keeps Try again beside one refused for good", () => {
+        expect(sendFailure([row("a"), row("b", { refusal, reason: refusal.text })])).toEqual({ count: 2, reason: refusal.text, canRetry: true });
+    });
+});
+
+// The conversation draws a reply only when it was also sent there; the thread draws it always.
+describe("isInConversation", () => {
+    test("a message, and a reply also sent to the conversation, but not a reply shown only in its thread", () => {
+        const base: PendingMessage = { localId: "a", channelId: channel, body: "a", status: "failed", errorCode: null };
+
+        expect(isInConversation(base)).toBe(true);
+        expect(isInConversation({ ...base, parentId: 4, isShownInChannel: true })).toBe(true);
+        expect(isInConversation({ ...base, parentId: 4, isShownInChannel: false })).toBe(false);
     });
 });

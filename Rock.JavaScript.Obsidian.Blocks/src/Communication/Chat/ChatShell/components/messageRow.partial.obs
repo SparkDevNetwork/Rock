@@ -92,17 +92,11 @@
                     <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
                     <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
-                    <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span data-testid="message-state">Sending…</span></span>
-                    <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
+                    <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
+                    <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
+                    <span v-else-if="state === 'failed'" class="chat-cm-state is-failed"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span><span class="chat-cm-state-words" data-testid="message-state">Not sent</span></span>
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
                     <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
-                </div>
-                <div v-if="state === 'failed'" class="chat-meta is-failed" :class="{ 'has-refusal': !!refusalSentence }" data-testid="message-meta">
-                    <Icon name="alert" size="xs" />
-                    <span data-testid="message-state">Not sent.</span>
-                    <span v-if="refusalSentence" data-testid="message-refusal">{{ refusalSentence }}</span>
-                    <button v-else type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
-                    <button type="button" class="chat-link-button" :class="{ 'is-quiet': !refusalSentence }" data-testid="discard-send" @click="onDiscard">Delete</button>
                 </div>
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
                 <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
@@ -171,13 +165,10 @@
                 </template>
             </MessageReactions>
             <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
-            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed', 'has-refusal': state === 'failed' && !!refusalSentence }" data-testid="message-meta">
+            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
                 <template v-if="state === 'failed'">
-                    <Icon name="alert" size="xs" />
-                    <span data-testid="message-state">Not sent.</span>
-                    <span v-if="refusalSentence" data-testid="message-refusal">{{ refusalSentence }}</span>
-                    <button v-else type="button" class="chat-link-button" data-testid="retry-send" @click="onRetry">Try again</button>
-                    <button type="button" class="chat-link-button" :class="{ 'is-quiet': !refusalSentence }" data-testid="discard-send" @click="onDiscard">Delete</button>
+                    <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
+                    <span data-testid="message-state">Not sent</span>
                 </template>
                 <template v-else-if="state === 'sending'">
                     <Icon name="clock" size="xs" />
@@ -204,9 +195,6 @@
                      :favorites="reactionHost?.favorites ?? []"
                      v-on="actionHandlers"
                      @close="onSheetClose" />
-
-        <!-- A failed send is spoken at once, wherever the person is looking. -->
-        <span v-if="state === 'failed'" class="chat-sr-only" aria-live="assertive">Your message was not sent. {{ refusalSentence || "Try again." }}</span>
     </div>
 </template>
 
@@ -498,10 +486,6 @@
     opacity: .62;
 }
 
-.is-failed .chat-bubble {
-    box-shadow: inset 0 0 0 1.5px var(--chat-danger);
-}
-
 .is-unknown .chat-bubble,
 .is-unknown .chat-cm-text {
     color: var(--chat-muted);
@@ -528,25 +512,11 @@
     padding-left: 54px;
 }
 
+/* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
 .chat-meta.is-failed {
-    font-weight: 600;
+    gap: 4px;
+    font-weight: 700;
     color: var(--chat-danger-ink);
-}
-
-/*
-    A refusal is a sentence, so its line runs as text and wraps at any width with the icon and
-    Delete in its run, rather than a row of columns each squeezed to its own narrow wrap.
-*/
-.chat-meta.has-refusal {
-    display: block;
-}
-
-.chat-meta.has-refusal > * + * {
-    margin-inline-start: 6px;
-}
-
-.chat-meta.has-refusal .chat-ic {
-    vertical-align: middle;
 }
 
 .chat-meta-sent,
@@ -569,22 +539,6 @@
 
 .chat-meta-sent {
     color: var(--chat-success);
-}
-
-.chat-link-button {
-    padding: 0;
-    font-weight: 700;
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    background: none;
-    border: 0;
-}
-
-/* Delete is the quieter of a failed send's two links, so Try again reads as the way forward. */
-.chat-link-button.is-quiet {
-    font-weight: 600;
-    color: var(--chat-muted);
 }
 
 .chat-notice {
@@ -771,11 +725,6 @@
     margin-right: calc(-1 * var(--chat-cm-inset));
 }
 
-.is-community.is-failed {
-    background-color: var(--chat-danger-soft);
-    box-shadow: inset 2px 0 0 var(--chat-danger);
-}
-
 .chat-cm-gutter {
     display: flex;
     justify-content: center;
@@ -904,12 +853,26 @@
     white-space: nowrap;
 }
 
+/*
+    Sending…, Sent and Not sent ride the text's line by the mention chip's rule: a flex box whose
+    words alone set its baseline, so they sit on the text's baseline, and whose mark is centred on
+    the words by the box. Lifted a set pixel instead, the state sat off the line in other fonts.
+*/
 .chat-cm-state {
     display: inline-flex;
     align-items: center;
     gap: 3px;
     margin-left: 8px;
-    vertical-align: 1px;
+}
+
+.chat-cm-state-words {
+    align-self: baseline;
+}
+
+.chat-cm-state.is-failed {
+    gap: 4px;
+    font-weight: 700;
+    color: var(--chat-danger-ink);
 }
 
 .chat-cm-text.is-jumbo .chat-cm-edited,
@@ -1029,7 +992,6 @@
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { messageForError } from "../errors.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, Reaction, SystemKind, TimelineMessage } from "../types.partial";
 
@@ -1180,8 +1142,6 @@
     });
 
     const emit = defineEmits<{
-        (e: "retry", localId: string): void,
-        (e: "discard", localId: string): void,
         (e: "openThread", rootId: number): void,
         (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void
@@ -1316,9 +1276,6 @@
 
     /** The meta sits under a group's last bubble, and under any send still going or failed. */
     const isMetaShown = computed((): boolean => isLastOfGroup.value || !!props.pending);
-
-    /** Why a send refused for good ended, said in place of a retry that could only be refused again. */
-    const refusalSentence = computed((): string => props.pending?.refusal ? messageForError(props.pending.refusal) : "");
 
     const isEditedUnder = computed((): boolean => isEdited.value && !isMetaShown.value);
 
@@ -1543,18 +1500,6 @@
     // #endregion Computed Values
 
     // #region Event Handlers
-
-    function onRetry(): void {
-        if (props.pending) {
-            emit("retry", props.pending.localId);
-        }
-    }
-
-    function onDiscard(): void {
-        if (props.pending) {
-            emit("discard", props.pending.localId);
-        }
-    }
 
     /** Asks for the author's card beside the name or face pressed. */
     function onAuthor(event: MouseEvent): void {

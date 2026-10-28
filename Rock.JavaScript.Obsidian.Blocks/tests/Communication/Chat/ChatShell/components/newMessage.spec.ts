@@ -552,15 +552,20 @@ describe("the first message", () => {
         expect(w.get("[data-testid='nd-hint']").text()).toBe("You can send more once the conversation starts.");
     });
 
-    test("failed: Not sent., with Try again and Delete", async () => {
+    // As in a conversation: the message is marked where Sending… was, and the choices wait in the
+    // strip over the composer.
+    test("failed: Not sent under the message, with Try again and Delete over the composer", async () => {
         const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "draft", phase: "failed" }) });
 
         const pending = w.get("[data-testid='nd-pending']");
-        expect(pending.text()).toContain("Not sent.");
-        await pending.get("[data-testid='nd-retry']").trigger("click");
-        expect(pending.get("[data-testid='nd-retry']").text()).toBe("Try again");
-        await pending.get("[data-testid='nd-discard']").trigger("click");
-        expect(pending.get("[data-testid='nd-discard']").text()).toBe("Delete");
+        expect(pending.get("[data-testid='nd-phase']").text()).toBe("Not sent");
+        expect(pending.find(".chat-fail-mark").exists()).toBe(true);
+        expect(pending.findAll("button")).toHaveLength(0);
+
+        const strip = w.get("[data-testid='composer-failed']");
+        expect(strip.get("[data-testid='composer-failed-lead']").text()).toBe("Your message wasn't sent");
+        await strip.get("[data-testid='composer-failed-retry']").trigger("click");
+        await strip.get("[data-testid='composer-failed-discard']").trigger("click");
 
         expect(w.emitted("retry")).toHaveLength(1);
         expect(w.emitted("discard")).toHaveLength(1);
@@ -666,8 +671,7 @@ describe("what a screen reader is told", () => {
     test.each([
         ["asking", "Starting your conversation…"],
         ["waiting", "Still setting it up…"],
-        ["trying", "Sending…"],
-        ["failed", "Your message was not sent. Try again or delete it."]
+        ["trying", "Sending…"]
     ] as const)("each phase of the first message is told as it comes: %s", async (phase, words) => {
         const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello" }) });
 
@@ -676,6 +680,19 @@ describe("what a screen reader is told", () => {
 
         expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
     });
+});
+
+// A failure is said once, assertively, by the strip that offers its choices, as in a conversation;
+// the view's own polite line says nothing over it.
+test("a first message that fails is said by the composer's strip, not the view's line", async () => {
+    const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "trying" }) });
+    await settle();
+
+    await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "draft", phase: "failed" }) });
+    await settle();
+
+    expect(w.get("[data-testid='composer-failed-announcement']").text()).toBe("Your message wasn't sent.");
+    expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
 });
 
 describe("the conversation found", () => {

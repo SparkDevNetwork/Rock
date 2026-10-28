@@ -754,3 +754,34 @@ describe("the thread's action bar", () => {
         }
     });
 });
+
+// A reply that failed is marked on its row; the strip over the reply composer speaks for this
+// thread's failed replies alone, and its buttons reach the drawer's owner one reply at a time.
+describe("the person's failed replies", () => {
+    const failed = (localId: string, extra: Record<string, unknown> = {}): Record<string, unknown> =>
+        ({ localId, channelId: "c1", body: localId, status: "failed", errorCode: "rpc.transport", reason: "You're offline.", parentId: 40, isShownInChannel: false, ...extra });
+    const refusal = { code: "authz.no_mention_all_right", severity: "permission", text: "You can't mention everyone in this channel." };
+
+    test("are counted in the reply composer's strip, this thread's only", () => {
+        const w = draw({ pending: [failed("a"), failed("b"), failed("elsewhere", { parentId: 99 }), failed("plain", { parentId: null })] });
+
+        expect(w.get("[data-testid='composer-failed-lead']").text()).toBe("2 messages weren't sent");
+        expect(w.get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
+    });
+
+    test("Try again resends each that can go, oldest first, and Delete drops each", async () => {
+        const w = draw({ pending: [failed("a"), failed("refused", { refusal, reason: refusal.text }), failed("b")] });
+
+        await w.get("[data-testid='composer-failed-retry']").trigger("click");
+        expect(w.emitted("retry")).toEqual([["a"], ["b"]]);
+
+        await w.get("[data-testid='composer-failed-discard']").trigger("click");
+        expect(w.emitted("discard")).toEqual([["a"], ["refused"], ["b"]]);
+    });
+
+    test("draw no strip while every reply is on its way", () => {
+        const w = draw({ pending: [failed("a", { status: "sending", errorCode: null })] });
+
+        expect(w.find("[data-testid='composer-failed']").exists()).toBe(false);
+    });
+});

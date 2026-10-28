@@ -105,14 +105,10 @@
                     <!-- The first message on its way, in the Conversational look its conversation will have. -->
                     <div v-if="pendingPhase" class="chat-nd-pend" data-testid="nd-pending">
                         <div class="chat-nd-bubble">{{ pendingText }}</div>
-                        <div v-if="pendingPhase === 'failed'" class="chat-nd-meta is-failed">
-                            <Icon name="alert" size="xs" />
-                            <span>Not sent.</span>
-                            <button type="button" class="chat-nd-link" data-testid="nd-retry" @click="emit('retry')">Try again</button>
-                            <button type="button" class="chat-nd-link is-quiet" data-testid="nd-discard" @click="emit('discard')">Delete</button>
-                        </div>
-                        <div v-else class="chat-nd-meta" data-testid="nd-phase">
-                            <template v-if="pendingPhase === 'asking'"><span class="chat-spinner"></span>Starting your conversation…</template>
+                        <!-- Not sent where Sending… was; what to do about it waits over the composer. -->
+                        <div class="chat-nd-meta" :class="{ 'is-failed': pendingPhase === 'failed' }" data-testid="nd-phase">
+                            <template v-if="pendingPhase === 'failed'"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>Not sent</template>
+                            <template v-else-if="pendingPhase === 'asking'"><span class="chat-spinner"></span>Starting your conversation…</template>
                             <template v-else-if="pendingPhase === 'waiting'"><Icon name="clock" size="xs" />Still setting it up…</template>
                             <template v-else><Icon name="clock" size="xs" />Sending…</template>
                         </div>
@@ -144,6 +140,9 @@
                           :isTextKeptOnSend="isTextKeptOnSend(draft)"
                           :emojiSource="emojiSource"
                           conversationKey="new-message"
+                          :sendFailure="pendingPhase === 'failed' ? draftFailure : null"
+                          @retryFailed="emit('retry')"
+                          @discardFailed="emit('discard')"
                           @vue:mounted="onComposerMounted"
                           @send="onSend"
                           @update:text="onText"
@@ -456,7 +455,8 @@
 }
 
 .chat-nd-meta.is-failed {
-    font-weight: 600;
+    gap: 4px;
+    font-weight: 700;
     color: var(--chat-danger-ink);
 }
 
@@ -464,22 +464,6 @@
     width: 10px;
     height: 10px;
     border-width: 1.5px;
-}
-
-.chat-nd-link {
-    padding: 0;
-    font-weight: 700;
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    background: none;
-    border: 0;
-}
-
-/* Delete is the quieter of the two, so Try again reads as the way forward. */
-.chat-nd-link.is-quiet {
-    font-weight: 600;
-    color: var(--chat-muted);
 }
 
 /* The refusal sits at the top of the composer, inside its gutter. */
@@ -579,6 +563,7 @@
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
+    import { SendFailure } from "../composables/useSend.partial";
     import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -741,13 +726,18 @@
 
     let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
-    /** What each phase of the first message says to a screen reader, as its line under the message reads. */
-    const phaseWords: Record<NonNullable<DraftPhase>, string> = {
+    /**
+     * What each phase of the first message on its way says to a screen reader, as its line under
+     * the message reads. A failure is said by the composer's strip that offers its choices.
+     */
+    const phaseWords: Record<Exclude<NonNullable<DraftPhase>, "failed">, string> = {
         asking: "Starting your conversation…",
         waiting: "Still setting it up…",
-        trying: "Sending…",
-        failed: "Your message was not sent. Try again or delete it."
+        trying: "Sending…"
     };
+
+    /** The first message failed with nothing more said: one message, which can be tried again. */
+    const draftFailure: SendFailure = { count: 1, reason: null, canRetry: true };
 
     /** Counts the text typed, so an answer for text the person has since changed is dropped. */
     let searchCount = 0;
@@ -988,7 +978,9 @@
             return;
         }
 
-        announce(phaseWords[phase]);
+        if (phase !== "failed") {
+            announce(phaseWords[phase]);
+        }
     });
 
     // A chip's remove button goes with its chip, and a browser drops focus from it to the page, so
