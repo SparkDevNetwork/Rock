@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-thread': isThread, 'is-phone': isPhone }">
+    <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-thread': isThread, 'is-phone': isPhone }" @dragover="onDragOver" @drop="onDrop">
         <!--
             The person's failed sends here, each marked Not sent on its message: what happened, the
             reason and the choices, by the box they type in. Over a locked box too, so a send that
@@ -41,6 +41,10 @@
         </div>
 
         <template v-else>
+            <!-- The files waiting to go with the next send, each uploading as it was picked. -->
+            <Attachments v-if="tray" :tray="tray" />
+            <span v-if="isTextAsked" class="chat-composer-note" data-testid="composer-text-required">An announcement needs a message with its files.</span>
+
             <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
                 <Icon name="reply" size="sm" />
                 <span class="chat-composer-quote-main">
@@ -50,7 +54,7 @@
                 <IconButton icon="x" icon-size="sm" label="Cancel quote" @click="emit('cancelQuote')" />
             </div>
 
-            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit" @focusin="onBoxFocusIn" @focusout="onBoxFocusOut">
+            <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit" @focusin="onBoxFocusIn" @focusout="onBoxFocusOut" @paste.capture="onPaste">
                 <IconButton ref="emojiButton"
                             icon="smile"
                             label="Add emoji"
@@ -61,6 +65,22 @@
                             :disabled="isDisabled"
                             data-testid="composer-emoji"
                             @click="onEmojiClick" />
+                <template v-if="tray">
+                    <IconButton icon="paperclip"
+                                label="Attach files"
+                                tooltip="Attach"
+                                :disabled="isDisabled"
+                                data-testid="composer-attach"
+                                @click="fileInput?.click()" />
+                    <input ref="fileInput"
+                           type="file"
+                           multiple
+                           class="chat-sr-only"
+                           tabindex="-1"
+                           aria-hidden="true"
+                           data-testid="composer-file-input"
+                           @change="onFilesPicked" />
+                </template>
                 <ChipEditor ref="editor"
                             :text="text"
                             :pieces="mentions"
@@ -354,6 +374,13 @@
     color: var(--chat-text);
 }
 
+/* Why files alone cannot go here, over the box. */
+.chat-composer-note {
+    padding: 0 14px;
+    font-size: 12px;
+    color: var(--chat-warning-ink);
+}
+
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
 .chat-composer-count {
     margin-left: auto;
@@ -416,8 +443,10 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import Attachments from "./attachments.partial.obs";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
+    import { AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
@@ -553,6 +582,21 @@
         lastFailure: {
             type: Object as PropType<SendFailureNews | null>,
             default: null
+        },
+
+        /**
+         * The files waiting to go with the next send from this box, uploading as they are picked;
+         * null where files cannot go, which offers no way to attach one.
+         */
+        tray: {
+            type: Object as PropType<AttachmentTray | null>,
+            default: null
+        },
+
+        /** Whether a send here must carry text, as an announcement must: files alone do not go. */
+        isTextRequired: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -595,6 +639,7 @@
     const isEmojiOpen = ref(false);
 
     const boxElement = ref<HTMLFormElement>();
+    const fileInput = ref<HTMLInputElement>();
     const stripElement = ref<HTMLElement>();
     const lockedElement = ref<HTMLElement>();
 
@@ -684,8 +729,23 @@
         return left < 0 ? { text: `${(-left).toLocaleString()} over the limit`, tone: "over" } : { text: `${left.toLocaleString()} left`, tone: "warn" };
     });
 
-    /** Whether there is something to send, which turns the send button to the church's fill. */
-    const isReady = computed((): boolean => props.text.trim() !== "");
+    /** Whether files wait in the tray. */
+    const hasFiles = computed((): boolean => (props.tray?.files.length ?? 0) > 0);
+
+    /** Whether the text is blank, files waiting, and the place takes no files alone, which the box says. */
+    const isTextAsked = computed((): boolean => props.isTextRequired && hasFiles.value && props.text.trim() === "");
+
+    /**
+     * Whether there is something to send, which turns the send button to the church's fill: text,
+     * or files alone where they may go; and every file waiting is up, since the send names them.
+     */
+    const isReady = computed((): boolean => {
+        if (hasFiles.value && !isTrayReady(props.tray as AttachmentTray)) {
+            return false;
+        }
+
+        return props.text.trim() !== "" || (hasFiles.value && !props.isTextRequired);
+    });
 
     /** The emoji button, which the picker is placed above and hands focus back to. */
     const emojiAnchor = computed((): HTMLElement | null => emojiButton.value?.buttonElement ?? null);
@@ -709,7 +769,7 @@
      * that cannot make a send key makes no row, so the box keeps the text instead.
      */
     function onSubmit(): void {
-        if (props.text.trim() === "") {
+        if (!isReady.value) {
             return;
         }
 
@@ -754,6 +814,50 @@
     function onDiscardFailed(): void {
         emit("discardFailed");
         void moveFocusOn();
+    }
+
+    /** Files chosen in the browser's picker go into the tray; the picker is cleared so the same file can be chosen again. */
+    function onFilesPicked(): void {
+        const input = fileInput.value;
+        if (props.tray && input?.files?.length) {
+            props.tray.add(Array.from(input.files));
+        }
+        if (input) {
+            input.value = "";
+        }
+    }
+
+    /** A drag carrying files may be dropped here, where files can go. */
+    function onDragOver(event: DragEvent): void {
+        if (props.tray && !isClosed.value && event.dataTransfer?.types?.includes("Files")) {
+            event.preventDefault();
+        }
+    }
+
+    /** Files dropped on the composer go into the tray rather than the browser opening them. */
+    function onDrop(event: DragEvent): void {
+        const files = event.dataTransfer?.files;
+        if (!props.tray || isClosed.value || !files?.length) {
+            return;
+        }
+
+        event.preventDefault();
+        props.tray.add(Array.from(files));
+    }
+
+    /**
+     * Pasted files, a copied photo above all, go into the tray. Taken before the editor sees the
+     * paste, which would otherwise keep only its text.
+     */
+    function onPaste(event: ClipboardEvent): void {
+        const files = event.clipboardData?.files;
+        if (!props.tray || !files?.length) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        props.tray.add(Array.from(files));
     }
 
     /** The emoji button opens the picker, or closes it when it is already open. */
