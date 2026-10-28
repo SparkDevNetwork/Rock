@@ -1311,6 +1311,14 @@ describe("the action bar", () => {
         return mounted;
     }
 
+    /** Four messages from Anna in a channel, the second as given, with the feed's own props. */
+    function drawCase(second: Partial<TimelineMessage>, feedProps: Record<string, unknown> = {}): VueWrapper {
+        const messages = [1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id), id === 2 ? second : {}));
+        mounted = mount(MessageFeed, { props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel: true, ...feedProps }, attachTo: document.body });
+        jest.advanceTimersByTime(1);
+        return mounted;
+    }
+
     /** Whether the bar on screen is playing its entrance. */
     function isEntering(w: VueWrapper): boolean {
         return bars(w)[0]?.classList.contains("chat-tools-enter-active") ?? false;
@@ -1484,6 +1492,69 @@ describe("the action bar", () => {
         await settle();
 
         expect(barOn(w)).toBeNull();
+    });
+
+    // Whether a message offers a bar is one rule, the row's: a message that offers none is not a
+    // place the bar can be, so resting on it shows nothing and counts for nothing.
+    test.each([
+        ["a deleted message", { deleted_at: at(14, 50), body: null }, {}],
+        ["a hidden message", { visibility: "hidden", visibility_notice: "Hidden by a moderator.", body: null }, {}],
+        ["a removed message", { visibility: "removed", visibility_notice: "Removed by Cedar Hill staff.", body: null }, {}],
+        ["a message open in the editor", {}, { editingId: 2 }]
+    ] as Array<[string, Partial<TimelineMessage>, Record<string, unknown>]>)("%s offers no bar, so the next message's bar still waits for the rest", async (_what, second, feedProps) => {
+        const w = drawCase(second, feedProps);
+
+        expect(w.find("[data-hot-id='2']").exists()).toBe(false);
+        await w.get("[data-message-id='2']").trigger("pointerover");
+        await wait(1000);
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBeNull();
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("a room the person is previewing offers no bar on any message", async () => {
+        const w = drawCase({}, { isPreviewing: true });
+
+        expect(w.findAll("[data-hot-id]")).toHaveLength(0);
+        await w.get("[data-message-id='2']").trigger("pointerover");
+        await wait(1000);
+        expect(bars(w)).toHaveLength(0);
+    });
+
+    test("goes at once when its message opens in the editor, and the next message's bar waits for the rest", async () => {
+        const w = drawFour(true);
+        await pointTo(w, 2);
+        await wait(150);
+
+        await w.setProps({ editingId: 2 });
+        await settle();
+        expect(barOn(w)).toBeNull();
+
+        await pointTo(w, 3);
+        expect(barOn(w)).toBeNull();
+        await wait(150);
+        expect(barOn(w)).toBe(3);
+    });
+
+    test("a send on its way or failed offers no bar", async () => {
+        const messages = [1, 2].map(id => message(id, me, at(14, 40 + id)));
+        const pending: PendingMessage[] = [
+            { localId: "local-1", channelId: "c1", body: "On my way", status: "sending", errorCode: null },
+            { localId: "local-2", channelId: "c1", body: "Still here", status: "failed", errorCode: null }
+        ];
+        mounted = mount(MessageFeed, { props: { pending, personAliasGuid: me, timeline: timeline(messages), isChannel: true }, attachTo: document.body });
+
+        const rows = mounted.findAll("[data-testid='pending-row']");
+        expect(rows).toHaveLength(2);
+        for (const row of rows) {
+            expect(row.attributes("data-hot-id")).toBeUndefined();
+            await row.trigger("pointerover");
+            await wait(1000);
+            expect(bars(mounted)).toHaveLength(0);
+        }
     });
 
     // The bar is one element for the feed's life, so its first show, the first in a conversation

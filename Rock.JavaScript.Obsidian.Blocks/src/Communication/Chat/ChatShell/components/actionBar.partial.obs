@@ -318,7 +318,7 @@ img.chat-tool-glyph {
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
-    import { PendingMessage, ReactionFavorite, TimelineMessage } from "../types.partial";
+    import { ReactionFavorite, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -328,15 +328,13 @@ img.chat-tool-glyph {
     // #endregion Types
 
     const props = defineProps({
-        /** The stored message, carrying the actions the server listed on it. */
+        /**
+         * The stored message the column docks the bar on, carrying the actions the server listed on
+         * it; null while it is on none. Its row lends the bar a dock only while the message can be
+         * acted on, so the bar draws for any message it is given.
+         */
         message: {
             type: Object as PropType<TimelineMessage | null>,
-            default: null
-        },
-
-        /** The person's own row still sending, or failed, which no action applies to yet. */
-        pending: {
-            type: Object as PropType<PendingMessage | null>,
             default: null
         },
 
@@ -347,18 +345,6 @@ img.chat-tool-glyph {
 
         /** Inside the thread drawer, where Reply in thread has no place. */
         isInThread: {
-            type: Boolean,
-            default: false
-        },
-
-        /** A room the person has not joined, where they may read but not act. */
-        isPreviewing: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The message is open in the editor, which takes the bar's place. */
-        isEditing: {
             type: Boolean,
             default: false
         },
@@ -451,18 +437,6 @@ img.chat-tool-glyph {
 
     // #region Computed Values
 
-    /** Whether anything can be done to the message: stored, live, shown, not a system line, and the person may act here. */
-    const canAct = computed((): boolean => {
-        const message = props.message;
-        if (!message || props.pending || props.isEditing || props.isPreviewing) {
-            return false;
-        }
-
-        const isLive = !message.deleted_at && (message.visibility ?? "visible") === "visible";
-        const isSystemLine = message.message_type === "system" && !(message.blocks && message.blocks.length > 0);
-        return isLive && !isSystemLine;
-    });
-
     /** The picker is up beside this bar's More reactions. */
     const isPickerOpen = computed((): boolean => !!props.pickerAnchor && !!barElement.value?.contains(props.pickerAnchor));
 
@@ -472,7 +446,7 @@ img.chat-tool-glyph {
      */
     const isHeld = computed((): boolean => isMenuOpen.value || isPickerOpen.value);
 
-    const isDrawn = computed((): boolean => canAct.value && (props.isShown || isHeld.value));
+    const isDrawn = computed((): boolean => !!props.message && (props.isShown || isHeld.value));
 
     /** The first three favorites, or the first alone where the column is narrow. */
     const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, isNarrow.value ? 1 : 3));
@@ -715,20 +689,13 @@ img.chat-tool-glyph {
 
     // #region Watchers
 
-    // The column moves the one bar from message to message, or takes it off a message that went:
-    // the arrows start again from the first tool, the tip of the last message's quick reaction
-    // goes, and a menu left open on a message taken away holds nothing.
+    // The column moves the one bar from message to message, or takes it off one that can no longer
+    // be acted on, deleted or opened in the editor: the arrows start again from the first tool, the
+    // tip of the last message's quick reaction goes, and a menu left open there holds nothing.
     watch(() => props.message?.id, () => {
         activeTool.value = null;
         isMenuOpen.value = false;
         hideTip();
-    });
-
-    // A message that can no longer be acted on, deleted or opened in the editor, lets go of its hold.
-    watch(canAct, isAble => {
-        if (!isAble) {
-            isMenuOpen.value = false;
-        }
     });
 
     // Placed each time it shows or moves to another message, since the message may have moved since
