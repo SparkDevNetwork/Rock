@@ -900,15 +900,22 @@ export function createChatShell(options: ShellOptions): ChatShell {
         holdText: (channelId, text) => drafts.append(quoteKey(channelId), text)
     });
 
-    // A sidebar read is a snapshot taken some time after it is asked for. Each read takes the next
-    // generation, and only the newest asked for may land; every change that arrives while it is
-    // out is applied at once and kept here, then replayed over its answer, which may predate it.
-    // Null while no read is out.
+    // A sidebar read is a snapshot taken some time after it is asked for, so only the newest asked
+    // for may land. One read is out at a time: an ask while one is out overtakes it, so its answer
+    // is dropped, and one more read follows it however many ask meanwhile, since every ask says
+    // only "read again" and one later read answers them all. Each overtaking ask moves the
+    // generation on. Every change that arrives while a read is out is applied at once and kept
+    // here, then replayed over its answer, which may predate it. Null while no read is out.
     let sidebarGeneration = 0;
 
-    // The newest read's answer, which a read it overtook answers with, so a caller waiting on the
-    // sidebar, the page load above all, always gets the sidebar that landed.
-    let newestSidebarRead: Promise<SidebarRow[]> | null = null;
+    /** The sidebar read out, which settles with its rows, or null once a later ask overtook it. */
+    let sidebarRead: Promise<SidebarRow[] | null> | null = null;
+
+    // What the newest ask answers with: the read out, or the one queued behind it. A read that was
+    // overtaken answers with it too, so a caller waiting on the sidebar, the page load above all,
+    // always gets the sidebar that landed.
+    let sidebarAnswer: Promise<SidebarRow[]> = Promise.resolve([]);
+    let isSidebarQueued = false;
     let sidebarJournal: Array<{ event: string, payload: unknown } | { channelId: string, result: MarkReadResult, sentAt: number | undefined }> | null = null;
 
     /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
@@ -938,25 +945,53 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }
 
     /**
-     * Fetches the sidebar and replaces the rows with it. A read a newer one overtook answers with
-     * the newer one's sidebar.
+     * Fetches the sidebar and replaces the rows with it, or, while a read is out, has one more read
+     * follow it. A read a newer ask overtook answers with the newer one's sidebar.
      */
     function loadSidebar(): Promise<SidebarRow[]> {
-        const read = readSidebar();
-        newestSidebarRead = read;
-        return read;
+        if (isSidebarQueued) {
+            return sidebarAnswer;
+        }
+
+        const overtaken = sidebarRead;
+        if (overtaken === null) {
+            sidebarAnswer = startSidebarRead();
+            return sidebarAnswer;
+        }
+
+        isSidebarQueued = true;
+        sidebarGeneration++;
+        const next = (): Promise<SidebarRow[]> | SidebarRow[] => {
+            isSidebarQueued = false;
+            return isStopped ? channels.rows : startSidebarRead();
+        };
+        sidebarAnswer = overtaken.then(next, next);
+        return sidebarAnswer;
     }
 
-    /** One sidebar read, which lands only if no newer read was asked for meanwhile. */
-    async function readSidebar(): Promise<SidebarRow[]> {
-        const generation = ++sidebarGeneration;
+    /** Sends one sidebar read, the only one out until it settles. */
+    function startSidebarRead(): Promise<SidebarRow[]> {
+        const read = readSidebar();
+        sidebarRead = read;
+        const settled = (): void => {
+            if (sidebarRead === read) {
+                sidebarRead = null;
+            }
+        };
+        read.then(settled, settled);
+        return read.then(rows => rows ?? sidebarAnswer);
+    }
+
+    /** One sidebar read, which lands unless a later ask overtook it, and then answers null. */
+    async function readSidebar(): Promise<SidebarRow[] | null> {
+        const generation = sidebarGeneration;
         sidebarJournal = [];
         const result = await call("chat_get_bootstrap", { p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
         if (isStopped) {
             return channels.rows;
         }
-        if (generation !== sidebarGeneration && newestSidebarRead) {
-            return newestSidebarRead;
+        if (generation !== sidebarGeneration) {
+            return null;
         }
         const journal = sidebarJournal;
         sidebarJournal = null;
@@ -1234,6 +1269,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // A room's facts change with its members and with its own name, description or kind.
                     if (event === "membership.changed" || event === "channel.updated") {
                         rooms.roomChanged(typeof changed === "string" ? changed : null);
+                        members.roomChanged(typeof changed === "string" ? changed : null);
                     }
                     if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
                         recheck();

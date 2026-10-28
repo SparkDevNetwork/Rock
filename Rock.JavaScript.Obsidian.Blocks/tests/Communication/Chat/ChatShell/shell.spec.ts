@@ -139,7 +139,8 @@ function build(options: {
     emojiCalls: Array<Record<string, unknown>>,
     deviceAnswer: { value: { status: number, body: unknown } },
     exchangeSettings: { value: Record<string, unknown> },
-    heldExchange: { value: Deferred<void> | null }
+    heldExchange: { value: Deferred<void> | null },
+    memberCalls: Array<Record<string, unknown>>
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -179,6 +180,8 @@ function build(options: {
     const deviceAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: {} } };
     const exchangeSettings = { value: { limits: platformLimits, ...(options.pushSettings ? { push: options.pushSettings } : {}) } as Record<string, unknown> };
     const heldExchange: { value: Deferred<void> | null } = { value: null };
+    // Every roster page asked; each answers with nobody.
+    const memberCalls: Array<Record<string, unknown>> = [];
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -264,6 +267,10 @@ function build(options: {
                 channelReads.push(body.p_channel_id);
                 return fakeResponse(200, channelFacts[body.p_channel_id] ?? memberFacts(body.p_channel_id));
             }
+            if (url.endsWith("/rest/v1/rpc/chat_list_members")) {
+                memberCalls.push(body);
+                return fakeResponse(200, { members: [] });
+            }
             if (url.endsWith("/rest/v1/rpc/chat_list_directory")) {
                 directoryCalls.push(body);
                 return fakeResponse(200, { channels: [], total: 0 });
@@ -342,7 +349,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -663,11 +670,13 @@ describe("the page load", () => {
 
         personal(h, "membership.changed", { channel_id: channelB });
         await settle();
-        expect(h.heldBootstraps.value).toHaveLength(2);
+        // the newer read is asked once the one out answers
+        expect(h.heldBootstraps.value).toHaveLength(1);
 
         h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [] }));
         await settle();
         expect(h.shell.state.isOpening).toBe(true);
+        expect(h.heldBootstraps.value).toHaveLength(2);
 
         h.heldBootstraps.value[1].resolve(fakeResponse(200, { channels: [{ channel_id: channelB } as SidebarRow] }));
         await settle();
@@ -2349,18 +2358,64 @@ describe("the live sidebar", () => {
             askReload(h);
             askReload(h);
             await settle();
-            expect(h.heldBootstraps.value).toHaveLength(2);
+            expect(h.heldBootstraps.value).toHaveLength(1);
+
+            const older = snapshot();
+            older.channels[1] = sidebarRow(channelB, { name: "Stale" });
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, older));
+            await settle();
+            expect(rowOf(h, channelB)?.name).toBe("Room");
 
             const newer = snapshot();
             newer.channels[1] = sidebarRow(channelB, { name: "Renamed" });
             newer.me.unread_mentions = [];
             h.heldBootstraps.value[1].resolve(fakeResponse(200, newer));
             await settle();
-            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
-            await settle();
 
             expect(rowOf(h, channelB)?.name).toBe("Renamed");
             expect(h.shell.mentions.state.hasDot).toBe(false);
+        });
+
+        test("reloads asked while one is out make one more read once it answers, however many", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+            askReload(h);
+            askReload(h);
+            personal(h, "channel.updated", { channel_id: dmD, id: "5e0000c1-0000-4000-8000-000000000000" });
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(1);
+
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(2);
+
+            const newer = snapshot();
+            newer.channels[1] = sidebarRow(channelB, { name: "Renamed" });
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, newer));
+            await settle();
+
+            expect(h.heldBootstraps.value).toHaveLength(2);
+            expect(rowOf(h, channelB)?.name).toBe("Renamed");
+        });
+
+        test("a change that arrives while the read that follows is out is replayed over its answer", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            askReload(h);
+            await settle();
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(2);
+
+            personal(h, "channel.unread", { channel_id: channelB, message_id: 11, id: "5e0000c2-0000-4000-8000-000000000000" });
+            await settle();
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, snapshot()));
+            await settle();
+
+            expect(rowOf(h, channelB)).toEqual(expect.objectContaining({ is_unread: true, last_message_id: 11 }));
         });
 
         test("nothing lands once the shell stops, neither the answer nor a rejoin's wait", async () => {
@@ -2452,6 +2507,48 @@ describe("the live sidebar", () => {
             expect(h.counts.mints).toBe(before.mints);
             expect(h.channelReads).toEqual([channelA, channelA]);
             expect(h.shell.channels.rows.find(r => r.channel_id === channelA)?.name).toBe("Trail crew");
+        });
+
+        test("a group that loses a person elsewhere becomes a two-person conversation in place, its row, facts and open roster read again", async () => {
+            const h = await startedLive();
+            const ben = { person_alias_guid: "ben-okafor", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+            const cara = { person_alias_guid: "cara-lin", nick_name: "Cara", last_name: "Lin", avatar_url: null };
+            const group = snapshot();
+            group.channels = group.channels.map(row => row.channel_id === dmD ? { ...row, title: "Ben and Cara", room_kind: "group", dm_people: [ben, cara], dm_other_count: 2 } : row);
+            h.bootstrap.value = group;
+            personal(h, "channel.updated", { channel_id: dmD, id: "5e0000f4-0000-4000-8000-000000000000" });
+            await settle();
+            const toGroup = h.shell.selectChannel(dmD);
+            await settle();
+            answerHistory(h, dmD, 11);
+            await toGroup;
+            void h.shell.members.open(dmD);
+            await settle();
+            const row = rowOf(h, dmD);
+            const reads = { facts: h.channelReads.length, roster: h.memberCalls.length };
+            expect(row).toEqual(expect.objectContaining({ title: "Ben and Cara", room_kind: "group" }));
+
+            h.bootstrap.value = snapshot();
+            personal(h, "channel.updated", { channel_id: dmD, id: "5e0000f5-0000-4000-8000-000000000000" });
+            await settle();
+
+            expect(h.shell.state.activeChannelId).toBe(dmD);
+            expect(rowOf(h, dmD)).toEqual(expect.objectContaining({ title: "Ben Okafor", room_kind: "person", dm_other_count: 1 }));
+            expect(h.channelReads.slice(reads.facts)).toEqual([dmD]);
+            expect(h.memberCalls.slice(reads.roster)).toEqual([expect.objectContaining({ p_channel_id: dmD, p_after: null })]);
+        });
+
+        test("a change to another room leaves an open members panel as it is", async () => {
+            const h = await startedLive();
+            void h.shell.members.open(channelA);
+            await settle();
+            const asked = h.memberCalls.length;
+
+            personal(h, "channel.updated", { channel_id: channelB, id: "5e0000f6-0000-4000-8000-000000000000" });
+            personal(h, "membership.changed", { channel_id: channelB, id: "5e0000f7-0000-4000-8000-000000000000" });
+            await settle();
+
+            expect(h.memberCalls).toHaveLength(asked);
         });
 
         test("the directory asks chat_list_directory with the church's campus limit and the chosen filters", async () => {

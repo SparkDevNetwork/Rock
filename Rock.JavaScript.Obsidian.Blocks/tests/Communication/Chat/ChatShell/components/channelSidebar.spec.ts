@@ -382,6 +382,31 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
+    test("a group that gains a person keeps its row, its title and faces changing in place with no flash", async () => {
+        const w = mountSidebar({ rows: [team, dmGroup] });
+        const before = rowOf(w, dmGroup.channel_id).element;
+
+        const dee = { person_alias_guid: "dee", nick_name: "Dee", last_name: null, avatar_url: null };
+        await w.setProps({ rows: [team, { ...dmGroup, dm_people: [...(dmGroup.dm_people ?? []), dee], dm_other_count: 3, title: "Anna, Dee and Marcus" }] });
+        await nextTick();
+
+        expect(rowOf(w, dmGroup.channel_id).element).toBe(before);
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-name']").text()).toBe("Anna, Dee and Marcus");
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+
+    test("a group that loses a person becomes a two-person row in place, the person's face for the group's", async () => {
+        const w = mountSidebar({ rows: [team, dmGroup] });
+        const before = rowOf(w, dmGroup.channel_id).element;
+
+        await w.setProps({ rows: [team, { ...dmGroup, dm_people: [dmGroup.dm_people![1]], dm_other_count: 1, room_kind: "person", title: "Marcus Reed" }] });
+        await nextTick();
+
+        expect(rowOf(w, dmGroup.channel_id).element).toBe(before);
+        expect(rowOf(w, dmGroup.channel_id).get("[data-testid='row-name']").text()).toBe("Marcus Reed");
+        expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+
     test("flashes only the room the person stars, which moves up into Starred", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [team, youth, prayer] });
