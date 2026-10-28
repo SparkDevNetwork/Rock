@@ -98,12 +98,37 @@ namespace Rock.Blocks.Communication
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The message shown when the requested person is someone the current person may not manage.
+        /// </summary>
+        private static readonly string NotAuthorizedMessage = "You are not authorized to manage other people's communication preferences.";
+
+        /// <summary>
+        /// The person requested by the person context or the PersonId page parameter, once loaded.
+        /// </summary>
+        private Person _requestedPerson;
+
+        /// <summary>
+        /// Whether <see cref="_requestedPerson" /> has already been loaded on this request.
+        /// </summary>
+        private bool _isRequestedPersonLoaded;
+
+        #endregion Fields
+
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             var box = new CustomBlockBox<CommunicationListSubscribeBag, CommunicationListSubscribeOptionsBag>();
+
+            if ( IsRequestedPersonUnauthorized() )
+            {
+                box.ErrorMessage = NotAuthorizedMessage;
+                return box;
+            }
 
             var person = GetPerson();
 
@@ -118,24 +143,58 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets the person whose subscriptions should be managed.
+        /// Gets the person whose subscriptions should be managed. A requested person other
+        /// than the current person is only used when the current person can edit this block.
         /// </summary>
-        /// <returns>The resolved person, or null if no person could be determined.</returns>
+        /// <returns>The resolved person, or null if no person could be determined or it is not allowed.</returns>
         private Person GetPerson()
         {
-            var person = RequestContext.GetContextEntity<Person>();
-            if ( person != null )
+            if ( IsRequestedPersonUnauthorized() )
             {
-                return person;
+                return null;
             }
 
-            var key = PageParameter( PageParameterKey.PersonId );
-            if ( key.IsNotNullOrWhiteSpace() )
+            return GetRequestedPerson() ?? RequestContext.CurrentPerson;
+        }
+
+        /// <summary>
+        /// Gets the person requested by the person context or the PersonId page parameter.
+        /// </summary>
+        /// <returns>The requested person, or null if none was requested.</returns>
+        private Person GetRequestedPerson()
+        {
+            if ( _isRequestedPersonLoaded )
             {
-                return new PersonService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+                return _requestedPerson;
             }
 
-            return RequestContext.CurrentPerson;
+            _isRequestedPersonLoaded = true;
+            _requestedPerson = RequestContext.GetContextEntity<Person>();
+
+            if ( _requestedPerson == null )
+            {
+                var key = PageParameter( PageParameterKey.PersonId );
+                if ( key.IsNotNullOrWhiteSpace() )
+                {
+                    _requestedPerson = new PersonService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+                }
+            }
+
+            return _requestedPerson;
+        }
+
+        /// <summary>
+        /// Determines whether a person other than the current person was requested and the
+        /// current person is not authorized to edit this block.
+        /// </summary>
+        /// <returns><c>true</c> if the requested person is not allowed; otherwise, <c>false</c>.</returns>
+        private bool IsRequestedPersonUnauthorized()
+        {
+            var requestedPerson = GetRequestedPerson();
+
+            return requestedPerson != null
+                && requestedPerson.Id != RequestContext.CurrentPerson?.Id
+                && !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -366,6 +425,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult UpdateSubscription( CommunicationListSubscribeRequestBag bag )
         {
+            if ( IsRequestedPersonUnauthorized() )
+            {
+                return ActionBadRequest( NotAuthorizedMessage );
+            }
+
             var person = GetPerson();
             if ( person == null )
             {
@@ -464,6 +528,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult UpdateCommunicationPreference( CommunicationListPreferenceRequestBag bag )
         {
+            if ( IsRequestedPersonUnauthorized() )
+            {
+                return ActionBadRequest( NotAuthorizedMessage );
+            }
+
             var person = GetPerson();
             if ( person == null )
             {
