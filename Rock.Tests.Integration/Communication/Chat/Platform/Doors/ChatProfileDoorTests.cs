@@ -299,6 +299,50 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void ThePagesMergeFieldsAreMadeOnlyWhenTheTemplateRuns()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var viewer = scene.AddChatPerson( "Viewer" );
+                var target = AddReachablePerson( scene, "Target" );
+                var hidden = AddReachablePerson( scene, "Hidden" );
+                SetProfilePublic( hidden, false );
+
+                var made = 0;
+                Func<IDictionary<string, object>> fields = () =>
+                {
+                    made++;
+                    return new Dictionary<string, object>();
+                };
+
+                Details( scene, viewer, scene.Alias( target ), fields );
+                Assert.AreEqual( 0, made, "no template" );
+
+                scene.Configuration.ProfileCardLavaTemplate = "<p>{{ Person.LastName }}</p>";
+                Details( scene, viewer, scene.Alias( hidden ), fields );
+                Details( scene, viewer, Guid.NewGuid(), fields );
+                Assert.AreEqual( 0, made, "someone not shown, and nobody at all" );
+
+                Assert.AreEqual( "<p>Target</p>", Details( scene, viewer, scene.Alias( target ), fields ).LavaHtml );
+                Assert.AreEqual( 1, made, "once, for the template that ran" );
+            }
+        }
+
+        [TestMethod]
+        public void AnImageLoadsOnlyFromTheChurchsOwnSite()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var viewer = scene.AddChatPerson( "Viewer" );
+                var target = AddReachablePerson( scene, "Target" );
+                var host = new Uri( GlobalAttributesCache.Value( "PublicApplicationRoot" ) ).Host;
+                scene.Configuration.ProfileCardLavaTemplate = $"<img src=\"/GetImage.ashx?id=1\"><img src=\"https://{host}/a.png\"><img src=\"https://a.example/pixel.png\"><img src=\"//a.example/pixel.png\">";
+
+                Assert.AreEqual( $"<img src=\"/GetImage.ashx?id=1\"><img src=\"https://{host}/a.png\">", Details( scene, viewer, scene.Alias( target ) ).LavaHtml );
+            }
+        }
+
+        [TestMethod]
         public void ACommandRunsOnlyWhenTheChurchEnabledIt()
         {
             using ( var scene = new ChatDoorScene() )
@@ -387,9 +431,15 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 var inOffRoom = fixture.AddPerson( "InOffRoom" );
                 fixture.AddMember( offRoom, inOffRoom );
 
+                // A group that was a channel once and has chat turned off since keeps its mark.
+                var stampedOffRoom = fixture.AddChannel( fixture.SharedGroupTypeId, "StampedOff", g => g.IsChatEnabledOverride = false );
+                SetChannelMark( stampedOffRoom );
+                var inStampedOffRoom = fixture.AddPerson( "InStampedOffRoom" );
+                fixture.AddMember( stampedOffRoom, inStampedOffRoom );
+
                 var nobody = fixture.AddPerson( "Nobody" );
 
-                var people = new[] { marked, administrator, inactiveAdministrator, banned, inUnmarkedRoom, archivedMember, inOffRoom, nobody };
+                var people = new[] { marked, administrator, inactiveAdministrator, banned, inUnmarkedRoom, archivedMember, inOffRoom, inStampedOffRoom, nobody };
                 var expected = new Dictionary<int, bool>
                 {
                     [marked] = true,
@@ -399,6 +449,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                     [inUnmarkedRoom] = true,
                     [archivedMember] = false,
                     [inOffRoom] = false,
+                    [inStampedOffRoom] = true,
                     [nobody] = false
                 };
 
@@ -424,15 +475,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #region Helpers
 
-        private static ChatProfileDetailsBag Details( ChatDoorScene scene, int viewerId, Guid personAliasGuid )
+        private static ChatProfileDetailsBag Details( ChatDoorScene scene, int viewerId, Guid personAliasGuid, Func<IDictionary<string, object>> mergeFields = null )
         {
             using ( ChatSyncProjectionFixture.InsideRequest() )
             using ( var rockContext = new RockContext() )
             {
                 var viewer = new PersonService( rockContext ).Get( viewerId );
-                var mergeFields = LavaHelper.GetCommonMergeFields( null, viewer );
 
-                return ChatDoorHelper.GetProfileDetails( viewer, personAliasGuid, scene.Configuration, mergeFields, rockContext );
+                return ChatDoorHelper.GetProfileDetails( viewer, personAliasGuid, scene.Configuration, mergeFields ?? ( () => LavaHelper.GetCommonMergeFields( null, viewer ) ), rockContext );
             }
         }
 
@@ -497,6 +547,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                     IsUnlisted = isUnlisted
                 } );
                 rockContext.SaveChanges();
+            }
+        }
+
+        private static void SetChannelMark( Guid groupGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [Group] SET [ChatChannelFirstEnabledDateTime] = @p1 WHERE [Guid] = @p0", groupGuid, RockDateTime.Now.AddDays( -30 ) );
             }
         }
 
