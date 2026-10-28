@@ -468,7 +468,8 @@
     import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import SettingSwitch, { SwitchNote } from "../ui/settingSwitch.partial.obs";
+    import { Note } from "../ui/settingNote.partial.obs";
+    import SettingSwitch from "../ui/settingSwitch.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { meTitles } from "../composables/usePrefs.partial";
@@ -520,7 +521,7 @@
 
         /** On the person's own card, why their switch's last save failed, with Try again. */
         ownDetailsNote: {
-            type: Object as PropType<SwitchNote | null>,
+            type: Object as PropType<Note | null>,
             default: null
         }
     });
