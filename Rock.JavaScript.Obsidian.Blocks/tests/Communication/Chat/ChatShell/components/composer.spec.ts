@@ -622,3 +622,69 @@ describe("the composer's counter", () => {
         expect(wrapper.get("[data-testid='composer-count']").text()).toBe("");
     });
 });
+
+// A thread's reply can also go to the conversation. The choice is the chat's own switch, the one
+// Chat settings draws, at its small size in the foot line, named by the words beside it, and a
+// press on the words toggles it as a label does. It is per message: each send turns it off.
+describe("the reply composer's Also send switch", () => {
+    function alsoSwitch(wrapper: VueWrapper): ReturnType<VueWrapper["get"]> {
+        return wrapper.get("[data-testid='composer-also'] [role='switch']");
+    }
+
+    test("is the chat's small switch, off, named by the words beside it", () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+        const control = alsoSwitch(wrapper);
+
+        expect(wrapper.find("[data-testid='composer-also'] input").exists()).toBe(false);
+        expect(control.element.tagName).toBe("BUTTON");
+        expect(control.attributes("type")).toBe("button");
+        expect(control.classes()).toEqual(expect.arrayContaining(["chat-switch", "is-sm"]));
+        expect(control.attributes("aria-checked")).toBe("false");
+        // the label around it gives it its name
+        expect(wrapper.get("[data-testid='composer-also']").element.tagName).toBe("LABEL");
+        expect(wrapper.get("[data-testid='composer-also']").text().replace(/\s+/g, " ").trim()).toBe("Also send to young-adults");
+        expect(wrapper.get("[data-testid='composer-also'] b").text()).toBe("young-adults");
+    });
+
+    test("turns on and off from the switch, and the reply carries the choice", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+
+        await alsoSwitch(wrapper).trigger("click");
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("true");
+        await alsoSwitch(wrapper).trigger("click");
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("false");
+        await alsoSwitch(wrapper).trigger("click");
+
+        await type(wrapper, "Count me in");
+        await wrapper.get("form").trigger("submit");
+
+        expect(wrapper.emitted("send")).toEqual([["Count me in", true]]);
+    });
+
+    test("turns off again after each send", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+        await alsoSwitch(wrapper).trigger("click");
+        await type(wrapper, "Count me in");
+        await wrapper.get("form").trigger("submit");
+
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("false");
+
+        await type(wrapper, "And Ben");
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")?.[1]).toEqual(["And Ben", false]);
+    });
+
+    test("a press on the words toggles it, as a label does", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
+
+        await wrapper.get("[data-testid='composer-also'] b").trigger("click");
+
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("true");
+    });
+
+    test("a direct message's thread names the conversation", () => {
+        const wrapper = mountComposer({ props: { isThread: true, title: "Anna Reyes" } });
+
+        expect(wrapper.get("[data-testid='composer-also']").text().replace(/\s+/g, " ").trim()).toBe("Also send to the conversation");
+    });
+});

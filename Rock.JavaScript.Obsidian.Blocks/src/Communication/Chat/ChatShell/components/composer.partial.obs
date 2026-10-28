@@ -54,8 +54,10 @@
             </form>
 
             <div class="chat-composer-foot">
+                <!-- The label names the switch and passes a press on its words to it. -->
                 <label v-if="isThread" class="chat-composer-also" data-testid="composer-also">
-                    <input v-model="isAlsoSent" type="checkbox"> {{ alsoText }}
+                    <Switch size="sm" :isOn="isAlsoSent" @click="isAlsoSent = !isAlsoSent" />
+                    <span>Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
                 </label>
                 <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
@@ -231,20 +233,18 @@
 
 .chat-composer-also {
     display: inline-flex;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
     margin: 0;
+    font-size: 12px;
     font-weight: 500;
     color: var(--chat-text-2);
     cursor: pointer;
 }
 
-/* Rock's theme nudges a checkbox down and sizes it; here it sits on the label's line at 15px. */
-.chat-composer-also input {
-    width: 15px;
-    height: 15px;
-    margin: 0;
-    accent-color: var(--chat-brand);
+.chat-composer-also b {
+    font-weight: 600;
+    color: var(--chat-text);
 }
 
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
@@ -300,6 +300,7 @@
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Switch from "../ui/switch.partial.obs";
 
     const props = defineProps({
         isDisabled: {
@@ -472,8 +473,8 @@
         return props.title ? `Message ${props.title}` : "";
     });
 
-    /** A channel is named, plain, as everywhere else; a direct message's people are "the conversation". */
-    const alsoText = computed((): string => props.isChannel && props.title ? `Also send to ${props.title}` : "Also send to the conversation");
+    /** A channel is named, plain, as everywhere else; a direct message's people are "the conversation", so null. */
+    const alsoName = computed((): string | null => props.isChannel && props.title ? props.title : null);
 
     const quoteTitle = computed((): string => {
         if (props.isQuoteOwn) {

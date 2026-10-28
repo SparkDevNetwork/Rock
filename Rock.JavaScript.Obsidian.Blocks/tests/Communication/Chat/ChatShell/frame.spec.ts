@@ -1433,7 +1433,7 @@ describe("the thread drawer", () => {
         await settle();
 
         const input = w.get("[data-testid='frame-panel'] [data-testid='composer-input']");
-        await w.get("[data-testid='frame-panel'] [data-testid='composer-also'] input").setValue(true);
+        await w.get("[data-testid='frame-panel'] [data-testid='composer-also'] [role='switch']").trigger("click");
         // typed as a browser types into the editor: the text, then input
         input.element.textContent = "Count me in";
         input.element.dispatchEvent(new Event("input", { bubbles: true }));

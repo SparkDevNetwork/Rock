@@ -10,16 +10,11 @@
                 @retry="switchElement?.focus()">
         <template #default="{ ids }">
             <!-- The words beside a switch toggle it too, as a label would. -->
-            <button ref="switchElement"
-                    type="button"
-                    class="chat-switch"
-                    role="switch"
-                    :aria-checked="isOn ? 'true' : 'false'"
+            <Switch ref="switchElement"
+                    :isOn="isOn"
                     :aria-labelledby="ids.title ?? undefined"
                     :aria-describedby="describedBy(ids)"
-                    @click.stop="onToggle">
-                <span class="chat-switch-knob"></span>
-            </button>
+                    @click.stop="onToggle" />
         </template>
     </SettingRow>
 </template>
@@ -28,56 +23,12 @@
 .chat-set-row {
     cursor: pointer;
 }
-
-/* The switch: the line's color off and the church's fill on, its knob sliding across. */
-.chat-switch {
-    position: relative;
-    flex: none;
-    width: 36px;
-    height: 20px;
-    padding: 0;
-    background: var(--chat-line-strong);
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-switch:hover {
-    background: color-mix(in srgb, var(--chat-line-strong) 80%, var(--chat-text));
-}
-
-.chat-switch[aria-checked="true"] {
-    background: var(--chat-brand-fill);
-}
-
-.chat-switch[aria-checked="true"]:hover {
-    background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
-}
-
-.chat-switch:focus-visible {
-    outline-offset: 3px;
-}
-
-.chat-switch-knob {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    background: var(--chat-knob);
-    border-radius: 50%;
-    box-shadow: var(--chat-shadow-knob);
-    transition: transform var(--chat-t-base) var(--chat-ease-in);
-}
-
-.chat-switch[aria-checked="true"] .chat-switch-knob {
-    transform: translateX(16px);
-}
 </style>
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
     import SettingRow, { RowIds, RowNote } from "./settingRow.partial.obs";
+    import Switch from "./switch.partial.obs";
 
     /** A line under a switch's words: what a change means, or a failed save's sentence with Try again. */
     export type SwitchNote = RowNote;
@@ -123,7 +74,7 @@
 
     // #region Values
 
-    const switchElement = ref<HTMLButtonElement>();
+    const switchElement = ref<InstanceType<typeof Switch>>();
 
     // #endregion Values
 
