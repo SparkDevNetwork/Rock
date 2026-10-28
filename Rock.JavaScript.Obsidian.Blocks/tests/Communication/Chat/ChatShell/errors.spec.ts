@@ -157,6 +157,10 @@ describe("classifyRealtimeMessage", () => {
             .toEqual({ code: "rt.too_many_connections", severity: "quota" });
     });
 
+    test("a socket closed with a server reason it does not know is unknown, so access is checked again", () => {
+        expect(classifyRealtimeMessage("socket closed: 1008 (SomeNewServerWord)", true)).toEqual({ code: "rt.unknown", severity: "unknown" });
+    });
+
     test("words it does not know are unknown, never passed through", () => {
         expect(classifyRealtimeMessage("Something Realtime has never said", true)).toEqual({ code: "rt.unknown", severity: "unknown" });
     });
