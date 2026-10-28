@@ -76,6 +76,8 @@
                     <MessageRow v-else-if="item.kind !== 'group'"
                                 :message="item.message"
                                 :personAliasGuid="personAliasGuid"
+                                :personName="personName"
+                                :personPhotoUrl="personPhotoUrl"
                                 :organizationName="organizationName"
                                 :isChannel="isChannel"
                                 :isPhone="isPhone"

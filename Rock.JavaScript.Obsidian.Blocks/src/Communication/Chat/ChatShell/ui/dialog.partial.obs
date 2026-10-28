@@ -3,7 +3,7 @@
     <Transition leave-active-class="is-leaving">
         <div v-if="isOpen"
              class="chat-modal"
-             :class="{ 'is-sheet': isSettings && isPhone }"
+             :class="{ 'is-sheet': isPhone }"
              data-testid="dialog-scrim"
              @mousedown.self="onScrimDown"
              @click.self="onScrimClick">
@@ -145,7 +145,7 @@
     scrollbar-width: thin;
 }
 
-/* On a phone a settings dialog rises from the bottom as a sheet. */
+/* On a phone a dialog that asks for it rises from the bottom as a sheet. */
 .chat-modal.is-sheet {
     place-items: end stretch;
     padding: 0;
@@ -344,7 +344,7 @@
             default: false
         },
 
-        /** Whether the chat is in its phone layout, where a settings dialog is a sheet from the bottom. */
+        /** Whether the dialog rises from the bottom as a sheet, as one does on a phone. */
         isPhone: {
             type: Boolean,
             default: false

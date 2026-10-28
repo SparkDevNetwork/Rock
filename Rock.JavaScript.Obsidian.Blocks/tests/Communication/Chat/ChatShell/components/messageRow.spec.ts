@@ -1126,15 +1126,15 @@ describe("the phone's action sheet", () => {
     });
 });
 
-/** What the shell hands every row of the reactions: the favorites, who reacted, the picker's message. */
-function host(favorites: unknown[], reactorNames: jest.Mock = jest.fn(async () => null)): Record<string, unknown> {
-    return { favorites, reactorNames, pickerAnchor: null };
+/** What the shell hands every row of the reactions: the favorites, the full list of who reacted, the picker's message. */
+function host(favorites: unknown[], listReactors: jest.Mock = jest.fn(async () => null), pickerAnchor: HTMLElement | null = null): Record<string, unknown> {
+    return { favorites, listReactors, pickerAnchor };
 }
 
 const heart = { code: "heart", count: 3, mine: true, emoji: "❤️", image_url: null, label: "red heart" };
 
 // The reactions row under a message, in both looks: the chips the message carries, a press asking
-// the shell to toggle the reader's reaction, and the names the shell holds behind each tooltip.
+// the shell to toggle the reader's reaction, and who reacted behind each chip's card.
 describe("the reactions row", () => {
     test.each([["a direct message", false], ["a channel", true]] as const)("draws the message's chips in %s, and a press asks to react", async (_kind, isChannel) => {
         const target = message({ reactions: [heart] } as Partial<TimelineMessage>);
@@ -1177,16 +1177,31 @@ describe("the reactions row", () => {
     test("is drawn but not pressable for a person previewing the room", () => {
         const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), isPreviewing: true, reactionHost: host([]) });
 
-        expect(w.get("[data-testid='reaction-chip']").attributes("disabled")).toBeDefined();
+        expect(w.get("[data-testid='reaction-chip']").attributes("aria-disabled")).toBe("true");
     });
 
-    test("asks the shell who reacted for this message", async () => {
-        const reactorNames = jest.fn(async () => ["Anna Reyes"]);
-        const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), reactionHost: host([], reactorNames) });
-        const loader = (w.findComponent({ name: "messageReactions.partial" }).props() as { loadReactorNames: (reaction: unknown) => Promise<unknown> }).loadReactorNames;
+    test("asks the shell for the full list of who reacted to this message", async () => {
+        const page = { reactors: [], has_more: false };
+        const listReactors = jest.fn(async () => page);
+        const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), reactionHost: host([], listReactors) });
+        const list = (w.findComponent({ name: "messageReactions.partial" }).props() as { listReactors: (code: string | null, after: unknown) => Promise<unknown> }).listReactors;
 
-        await expect(loader(heart)).resolves.toEqual(["Anna Reyes"]);
-        expect(reactorNames).toHaveBeenCalledWith(42, heart);
+        await expect(list("heart", null)).resolves.toBe(page);
+        expect(listReactors).toHaveBeenCalledWith(42, "heart", null);
+    });
+
+    test("names the reader for the chips' cards, and keeps the cards away while the picker is open", () => {
+        const w = draw({
+            message: message({ reactions: [heart] } as Partial<TimelineMessage>),
+            personAliasGuid: "a0000001-0000-4000-8000-000000000000",
+            personName: "Jordan Ellis",
+            personPhotoUrl: "https://rock.example.org/jordan.jpg",
+            reactionHost: host([], undefined, document.createElement("div"))
+        });
+        const props = w.findComponent({ name: "messageReactions.partial" }).props() as { reader: unknown, isCardDisabled: boolean };
+
+        expect(props.reader).toEqual({ personAliasGuid: "a0000001-0000-4000-8000-000000000000", name: "Jordan Ellis", photoUrl: "https://rock.example.org/jordan.jpg" });
+        expect(props.isCardDisabled).toBe(true);
     });
 
     // The page adds a message's first reaction in place, so the row must already hold its

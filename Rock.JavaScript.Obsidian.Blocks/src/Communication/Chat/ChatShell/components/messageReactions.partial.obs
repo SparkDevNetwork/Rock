@@ -11,7 +11,7 @@
         -->
         <slot />
         <template v-if="isChipsDrawn">
-            <button v-for="reaction in reactions"
+            <button v-for="(reaction, index) in reactions"
                     :key="reaction.code"
                     type="button"
                     class="chat-rx"
@@ -20,12 +20,18 @@
                     :data-code="reaction.code"
                     :aria-pressed="reaction.mine ? 'true' : 'false'"
                     :aria-label="chipLabel(reaction)"
-                    :disabled="isPreviewing"
-                    @mouseenter="onChipEnter($event, reaction.code)"
-                    @mouseleave="onPointerLeave"
-                    @pointerdown="onPointerDown"
-                    @focus="onChipFocus($event, reaction.code)"
+                    :aria-describedby="`${uid}-who-${index}`"
+                    :aria-disabled="isPreviewing ? 'true' : undefined"
+                    @pointerenter="onChipEnter($event, reaction)"
+                    @pointerleave="onPointerLeave"
+                    @pointerdown="onChipPointerDown($event, reaction.code)"
+                    @pointermove="onChipPointerMove"
+                    @pointerup="cancelLongPress"
+                    @pointercancel="cancelLongPress"
+                    @contextmenu="onChipContextMenu"
+                    @focus="onChipFocus($event, reaction)"
                     @blur="onBlur"
+                    @keydown="onAnchorKeydown"
                     @click="onChipClick(reaction.code)"
                     @animationend.self="onPopEnd(reaction.code)">
                 <img v-if="reaction.image_url" class="chat-rx-e is-image" :src="reaction.image_url" alt="" />
@@ -38,6 +44,11 @@
                       aria-hidden="true"
                       @animationend="onRollEnd(reaction.code)">{{ reaction.count }}</span>
             </button>
+            <!-- Who reacted with each chip in one sentence, the chip's description to a screen reader. -->
+            <span v-for="(reaction, index) in reactions"
+                  :id="`${uid}-who-${index}`"
+                  :key="`who-${reaction.code}`"
+                  class="chat-sr-only">{{ whoReactedLine(reaction, reader) }}</span>
             <button v-if="isAddDrawn"
                     ref="addElement"
                     type="button"
@@ -50,15 +61,30 @@
             </button>
             <!--
                 Out of the chips, since a chip lifted on hover is a transformed box and would hold a
-                fixed tip to its own width; drawn in the chat's root, where the feed's faded edges
-                cannot fade or cut it, and in the row where there is no root.
+                fixed card to its own width; drawn in the chat's root, where the feed's faded edges
+                cannot fade or cut it, and in the row where there is no root. The full list's dialog
+                covers that root, which is the chat's frame.
             -->
             <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-                <span v-if="isTipShown && tipReaction"
-                      ref="tipElement"
-                      class="chat-tip"
-                      role="tooltip"
-                      :style="floatingStyles">{{ tipText }}</span>
+                <div v-if="isTipShown && tipReaction"
+                     ref="tipElement"
+                     class="chat-rx-card-place"
+                     :style="floatingStyles"
+                     @pointerenter="onTipPointerEnter"
+                     @pointerleave="onTipPointerLeave"
+                     @focusout="onTipFocusOut"
+                     @keydown="onTipKeydown">
+                    <ReactionCard :reaction="tipReaction" :reader="reader" @seeAll="onSeeAll" />
+                </div>
+            </Teleport>
+            <Teleport v-if="listCode !== null || isListMounted" :to="listHost ?? 'body'" :disabled="!listHost">
+                <ReactorsList :isOpen="listCode !== null"
+                              :reactions="reactions"
+                              :code="listOpenedOn"
+                              :reader="reader"
+                              :listReactors="listReactors"
+                              :isPhone="isPhone"
+                              @close="listCode = null" />
             </Teleport>
         </template>
     </div>
@@ -101,18 +127,32 @@
     border-color: var(--chat-reaction-mine-line);
 }
 
-/* A person previewing the room sees who reacted but cannot press, so nothing answers the pointer. */
-.chat-rx:disabled {
+/*
+    A person previewing the room sees who reacted but cannot press, so a press draws nothing. The
+    chip stays enabled to the pointer and the keyboard, which is how its card is reached.
+*/
+.chat-rx[aria-disabled="true"] {
     cursor: default;
 }
 
-.chat-rx:disabled:hover {
+.chat-rx[aria-disabled="true"]:hover {
     border-color: var(--chat-line);
     transform: none;
 }
 
-.chat-rx:disabled[aria-pressed="true"]:hover {
+.chat-rx[aria-disabled="true"][aria-pressed="true"]:hover {
     border-color: var(--chat-reaction-mine-line);
+}
+
+/* A long press opens who reacted, so the phone's own callout and selection stay out of it. */
+.chat-rx {
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* The card's place in the chat's root, over the feed and its bars. */
+.chat-rx-card-place {
+    z-index: 1060;
 }
 
 .chat-rx-e {
@@ -222,19 +262,24 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, useSlots, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "../ui/icon.partial.obs";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
-    import { reactorLine } from "../composables/useReactions.partial";
-    import { Reaction, TimelineMessage } from "../types.partial";
+    import ReactionCard from "./reactionCard.partial.obs";
+    import ReactorsList from "./reactorsList.partial.obs";
+    import { tokenDuration } from "../ui/brand.partial";
+    import { preloadPhotos } from "../ui/face.partial";
+    import { focusQuietly, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { ReactionReader, whoReactedLine } from "../composables/useReactions.partial";
+    import { Reaction, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
-        /** The message, which carries its reactions in the order they are drawn. */
+        /** The message, which carries its reactions in the order they are drawn, each with its newest three. */
         message: {
             type: Object as PropType<TimelineMessage>,
             required: true
         },
 
-        /** A room the person has not joined: the chips are drawn but cannot be pressed. */
+        /** A room the person has not joined: the chips are drawn and show who reacted, but cannot be pressed. */
         isPreviewing: {
             type: Boolean,
             default: false
@@ -246,16 +291,28 @@
             default: false
         },
 
-        /** A phone, where the action sheet reacts and there is no add chip. */
+        /** A phone, where the action sheet reacts, there is no add chip, and the full list is a sheet. */
         isPhone: {
             type: Boolean,
             default: false
         },
 
-        /** Who reacted with one emoji, "You" for the reader; null when they cannot be had. */
-        loadReactorNames: {
-            type: Function as PropType<(reaction: Reaction) => Promise<string[] | null>>,
+        /** The reader, whom a chip's card names "You". */
+        reader: {
+            type: Object as PropType<ReactionReader>,
             required: true
+        },
+
+        /** A page of who reacted to the message, with one emoji or, for null, every emoji. */
+        listReactors: {
+            type: Function as PropType<(code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>>,
+            required: true
+        },
+
+        /** Whether a chip's card is kept away for now, as while the picker covers the message. */
+        isCardDisabled: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -268,28 +325,41 @@
 
     // #region Values
 
+    const uid = `chat-rx-${newGuid()}`;
+
+    /** How far, in pixels, a finger may move before a press stops being a long press. */
+    const longPressSlopPx = 8;
+
     const addElement = ref<HTMLButtonElement>();
 
-    /** The chip the tip belongs to: one tip for the row, moved to whichever chip the pointer rests on. */
+    /** The chip the card belongs to: one card for the row, moved to whichever chip the pointer rests on. */
     const tipAnchor = ref<HTMLElement>();
     const tipCode = ref<string | null>(null);
 
-    /** The chat's root, which the tip is drawn in; null where the row is drawn alone. */
+    /** The chat's root, which the card is drawn in; null where the row is drawn alone. */
     const tipHost = computed(() => overlayHostOf(tipAnchor.value));
 
-    /** Who reacted with the tip's emoji, once they arrive; null shows the count line meanwhile. */
-    const tipNames = ref<string[] | null>(null);
+    /** The emoji the full list is open on, null while it is closed; it stays mounted once opened so it can leave. */
+    const listCode = ref<string | null>(null);
+    const listOpenedOn = ref("");
+    const isListMounted = ref(false);
+    const listHost = ref<HTMLElement | null>(null);
 
-    /** Counts each request, so names that arrive after the tip moved on are dropped. */
-    let namesRequest = 0;
+    /** A touch held on a chip, which opens the full list once it has been held long enough. */
+    let longPress: { timer: number, x: number, y: number } | null = null;
+
+    /** Set once a long press opened the list, so the click its release makes does not also toggle. */
+    let isClickSwallowed = false;
 
     // Chips animate only on a change seen here, never as a page draws them.
     const popping = ref(new Set<string>());
     const rolling = ref(new Set<string>());
 
-    // A reaction tip shows sooner than the rest, as people skim a row of them.
-    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur } =
-        useTooltip(tipAnchor, () => false, { token: "--chat-d-tip-delay-rx", fallbackMs: 350 });
+    // A reaction card shows sooner than a tip, as people skim a row of chips, and holds See all.
+    const {
+        tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur,
+        onAnchorKeydown, onTipPointerEnter, onTipPointerLeave, onTipFocusOut, onTipKeydown
+    } = useTooltip(tipAnchor, () => props.isCardDisabled || listCode.value !== null, { token: "--chat-d-tip-delay-rx", fallbackMs: 350 }, true);
 
     // #endregion Values
 
@@ -309,34 +379,87 @@
 
     const tipReaction = computed((): Reaction | null => reactions.value.find(reaction => reaction.code === tipCode.value) ?? null);
 
-    // The names are the newest few; the chip's own count says how many more there are.
-    const tipText = computed((): string => tipReaction.value ? reactorLine(tipReaction.value, tipNames.value?.slice(0, 3) ?? null) : "");
-
     // #endregion Computed Values
 
     // #region Event Handlers
 
-    function onChipEnter(event: MouseEvent, code: string): void {
-        tipAnchor.value = event.currentTarget as HTMLElement;
-        tipCode.value = code;
+    /** A pointer that can hover rests on a chip; a finger cannot, and holds a chip instead. */
+    function onChipEnter(event: PointerEvent, reaction: Reaction): void {
+        if (event.pointerType === "touch") {
+            return;
+        }
+
+        aimCard(event.currentTarget as HTMLElement, reaction);
         onPointerEnter();
     }
 
-    function onChipFocus(event: FocusEvent, code: string): void {
-        tipAnchor.value = event.currentTarget as HTMLElement;
-        tipCode.value = code;
+    function onChipFocus(event: FocusEvent, reaction: Reaction): void {
+        aimCard(event.currentTarget as HTMLElement, reaction);
         onFocus();
+    }
+
+    function onChipPointerDown(event: PointerEvent, code: string): void {
+        onPointerDown();
+        cancelLongPress();
+        isClickSwallowed = false;
+
+        if (event.pointerType === "mouse") {
+            return;
+        }
+
+        const chip = event.currentTarget as HTMLElement;
+        const holdMs = tokenDuration(chip, "--chat-d-long-press", 450);
+        longPress = {
+            x: event.clientX,
+            y: event.clientY,
+            timer: window.setTimeout(() => {
+                longPress = null;
+                isClickSwallowed = true;
+                openList(code, chip);
+            }, holdMs)
+        };
+    }
+
+    function onChipPointerMove(event: PointerEvent): void {
+        if (longPress && Math.hypot(event.clientX - longPress.x, event.clientY - longPress.y) > longPressSlopPx) {
+            cancelLongPress();
+        }
+    }
+
+    /** A held chip opens the list, never the phone's own menu. */
+    function onChipContextMenu(event: Event): void {
+        if (longPress || isClickSwallowed) {
+            event.preventDefault();
+        }
     }
 
     function onChipClick(code: string): void {
         hideTip();
 
-        // A disabled chip takes no click in a browser; this holds when one is sent anyway.
+        // The release of a long press that opened the list is not a press of the chip.
+        if (isClickSwallowed) {
+            isClickSwallowed = false;
+            return;
+        }
+
+        // A previewer's chip says it cannot be pressed; this holds a press to that.
         if (props.isPreviewing) {
             return;
         }
 
         emit("toggle", code);
+    }
+
+    /** See all on the card: the list opens on the card's chip, which focus comes back to. */
+    function onSeeAll(): void {
+        const chip = tipAnchor.value;
+        const code = tipCode.value;
+        hideTip();
+
+        if (chip && code) {
+            focusQuietly(chip);
+            openList(code, chip);
+        }
     }
 
     function onAddClick(): void {
@@ -356,6 +479,31 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Puts the one card on a chip, and starts fetching the faces it will draw, so they are in by
+     * the time the pointer has rested.
+     */
+    function aimCard(chip: HTMLElement, reaction: Reaction): void {
+        tipAnchor.value = chip;
+        tipCode.value = reaction.code;
+        preloadPhotos([props.reader.photoUrl, ...(reaction.reactors ?? []).map(reactor => reactor.avatar_url)]);
+    }
+
+    function openList(code: string, chip: HTMLElement): void {
+        hideTip();
+        listHost.value = overlayHostOf(chip);
+        listOpenedOn.value = code;
+        isListMounted.value = true;
+        listCode.value = code;
+    }
+
+    function cancelLongPress(): void {
+        if (longPress) {
+            window.clearTimeout(longPress.timer);
+            longPress = null;
+        }
+    }
 
     /**
      * A thread pill alone keeps the row, so a tombstone's thread can still be opened. Read on each
@@ -389,38 +537,11 @@
 
     // #region Watchers
 
-    /*
-        Names are asked for only once the tip is shown, so a pointer passing over a row asks for
-        nothing; the store behind the call holds them per chip, so a second rest costs no call.
-        The one tip moves between chips without hiding, by the pointer or by Tab, so the names
-        follow the chip it shows on and what that chip carries, not only whether it shows.
-    */
-    const tipSubject = computed((): string | null => isTipShown.value && tipReaction.value
-        ? `${tipReaction.value.code}:${tipReaction.value.count}:${tipReaction.value.mine}`
-        : null);
-
-    watch(tipSubject, subject => {
-        const reaction = tipReaction.value;
-        const request = ++namesRequest;
-        tipNames.value = null;
-
-        if (!subject || !reaction) {
-            // A chip taken away under its tip leaves nothing to name, so the tip goes with it.
-            if (isTipShown.value) {
-                hideTip();
-            }
-            return;
+    // A chip taken away under its card, or the picker opening over it, takes the card with it.
+    watch(() => !tipReaction.value || props.isCardDisabled, isGone => {
+        if (isGone && isTipShown.value) {
+            hideTip();
         }
-
-        props.loadReactorNames(reaction)
-            .then(names => {
-                if (request === namesRequest) {
-                    tipNames.value = names;
-                }
-            })
-            .catch(() => {
-                // The count line stays, which is still true.
-            });
     });
 
     /*

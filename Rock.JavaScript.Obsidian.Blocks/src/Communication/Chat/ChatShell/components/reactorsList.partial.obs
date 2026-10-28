@@ -1,0 +1,408 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Dialog :isOpen="isOpen"
+            title="Reactions"
+            isSettings
+            :isPhone="isPhone"
+            @close="emit('close')">
+        <template #tools>
+            <IconButton icon="x" label="Close" data-testid="reactors-close" @click="emit('close')" />
+        </template>
+
+        <div class="chat-rl-tabs" role="tablist" aria-label="Which reactions" @keydown="onTabKeydown">
+            <button v-for="option in tabs"
+                    :id="`${uid}-tab-${option.key}`"
+                    :key="option.key"
+                    type="button"
+                    role="tab"
+                    class="chat-rl-tab"
+                    data-testid="reactors-tab"
+                    :data-code="option.code ?? undefined"
+                    :aria-selected="tab === option.key ? 'true' : 'false'"
+                    :aria-controls="`${uid}-tabpanel`"
+                    :aria-label="option.label"
+                    :tabindex="tab === option.key ? 0 : -1"
+                    :data-autofocus="tab === option.key ? '' : undefined"
+                    @click="chooseTab(option.key)">
+                <template v-if="option.code === null">All</template>
+                <img v-else-if="option.imageUrl" class="chat-rl-e is-image" :src="option.imageUrl" alt="" />
+                <span v-else class="chat-rl-e" aria-hidden="true">{{ option.emoji }}</span>
+                <span class="chat-rl-n" aria-hidden="true">{{ option.count }}</span>
+            </button>
+        </div>
+
+        <div :id="`${uid}-tabpanel`"
+             ref="listElement"
+             class="chat-rl-list"
+             role="tabpanel"
+             :aria-labelledby="`${uid}-tab-${tab}`"
+             :aria-busy="shown.isLoading ? 'true' : 'false'"
+             data-testid="reactors-list"
+             @scroll="onScroll">
+            <div v-for="row in rows"
+                 :key="row.key"
+                 class="chat-rl-row"
+                 data-testid="reactors-row">
+                <Avatar :people="[row.face]" :size="28" />
+                <span class="chat-rl-name">{{ row.label }}</span>
+                <template v-if="tab === allTab && row.glyph">
+                    <img v-if="row.glyph.image_url" class="chat-rl-e is-image is-end" :src="row.glyph.image_url" :alt="row.glyph.label" />
+                    <span v-else class="chat-rl-e is-end" :aria-label="row.glyph.label">{{ row.glyph.emoji }}</span>
+                </template>
+            </div>
+            <!-- Rows held for the people still on their way, by the count, so nothing moves when they land. -->
+            <div v-for="index in reservedCount"
+                 :key="`reserved-${index}`"
+                 class="chat-rl-row"
+                 aria-hidden="true"
+                 data-testid="reactors-reserved">
+                <span class="chat-skeleton chat-rl-sk-face"></span>
+                <span class="chat-skeleton chat-rl-sk-name"></span>
+            </div>
+            <div v-if="shown.isFailed" class="chat-rl-err" role="status" data-testid="reactors-error">
+                <span>Couldn't load everyone who reacted.</span>
+                <button type="button" class="chat-rl-retry" @click="loadMore(tab)">Try again</button>
+            </div>
+        </div>
+    </Dialog>
+</template>
+
+<style scoped>
+.chat-rl-tabs {
+    display: flex;
+    gap: 2px;
+    margin: -10px -12px 0;
+    padding: 0 4px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--chat-line);
+    scrollbar-width: none;
+}
+
+.chat-rl-tab {
+    display: inline-flex;
+    flex: none;
+    gap: 5px;
+    align-items: center;
+    height: 34px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    transition: color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-rl-tab:hover {
+    color: var(--chat-text);
+}
+
+.chat-rl-tab[aria-selected="true"] {
+    color: var(--chat-text);
+    border-bottom-color: var(--chat-brand);
+}
+
+.chat-rl-e {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.chat-rl-e.is-image {
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+}
+
+.chat-rl-e.is-end {
+    margin-left: auto;
+    font-size: 16px;
+}
+
+/* Its own scroller, held to a height, so the next page is asked for as its end comes near. */
+.chat-rl-list {
+    max-height: min(320px, 55vh);
+    padding: 6px 0 0;
+    margin: 0 -12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+.chat-rl-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 13.5px;
+    color: var(--chat-text);
+    border-radius: var(--chat-r-item);
+}
+
+.chat-rl-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-rl-sk-face {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.chat-rl-sk-name {
+    width: 120px;
+    height: 12px;
+}
+
+.chat-rl-err {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--chat-muted);
+}
+
+.chat-rl-retry {
+    padding: 0;
+    font-weight: 600;
+    color: var(--chat-brand-ink);
+    background: none;
+    border: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, reactive, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Dialog from "../ui/dialog.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
+    import { personFace, personName } from "../ui/face.partial";
+    import { ReactionReader } from "../composables/useReactions.partial";
+    import { EmojiGlyph, Reaction, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
+
+    // #region Types
+
+    /** One tab's people as far as they are loaded. */
+    type TabList = {
+        reactors: Reactor[];
+        hasMore: boolean;
+        isLoading: boolean;
+        isFailed: boolean;
+    };
+
+    type Tab = {
+        key: string;
+        code: string | null;
+        emoji: string | null;
+        imageUrl: string | null;
+        count: number;
+        label: string;
+    };
+
+    type Row = {
+        key: string;
+        label: string;
+        face: AvatarPerson;
+        glyph: EmojiGlyph | null;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The message's chips, which order the tabs and give each its first people at once. */
+        reactions: {
+            type: Array as PropType<Reaction[]>,
+            required: true
+        },
+
+        /** The emoji whose tab the list opens on. */
+        code: {
+            type: String,
+            required: true
+        },
+
+        reader: {
+            type: Object as PropType<ReactionReader>,
+            required: true
+        },
+
+        /** A page of who reacted to the message, with one emoji or, for null, every emoji. */
+        listReactors: {
+            type: Function as PropType<(code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>>,
+            required: true
+        },
+
+        /** A phone, where the list rises as a sheet. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    // #region Values
+
+    const uid = `chat-rl-${newGuid()}`;
+
+    /** The key of the tab of every emoji, which no code can be. */
+    const allTab = "*";
+
+    /** The most rows held for people on their way: what the list shows before it scrolls. */
+    const reservedLimit = 8;
+
+    /** How near the list's end, in pixels, the next page is asked for. */
+    const pageAheadPx = 80;
+
+    const listElement = ref<HTMLElement>();
+    const tab = ref<string>(allTab);
+    const lists = reactive(new Map<string, TabList>());
+
+    /** Counts each opening, so a page asked for before the list closed never lands in the next. */
+    let opening = 0;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const tabs = computed((): Tab[] => [
+        { key: allTab, code: null, emoji: null, imageUrl: null, count: props.reactions.reduce((sum, reaction) => sum + reaction.count, 0), label: "All" },
+        ...props.reactions.map((reaction): Tab => ({ key: reaction.code, code: reaction.code, emoji: reaction.emoji, imageUrl: reaction.image_url, count: reaction.count, label: reaction.label }))
+    ].map(option => ({ ...option, label: `${option.label}, ${option.count}` })));
+
+    const shown = computed((): TabList => lists.get(tab.value) ?? { reactors: [], hasMore: false, isLoading: false, isFailed: false });
+
+    const rows = computed((): Row[] => shown.value.reactors.map(reactor => {
+        const isReader = reactor.person_alias_guid === props.reader.personAliasGuid || reactor.reactor_person_alias_guid === props.reader.personAliasGuid;
+        const glyph = props.reactions.find(reaction => reaction.code === reactor.code) ?? null;
+
+        return {
+            key: `${reactor.reactor_person_alias_guid}/${reactor.code}`,
+            label: isReader ? "You" : personName(reactor),
+            face: isReader ? { name: props.reader.name, photoUrl: props.reader.photoUrl } : personFace(reactor),
+            glyph
+        };
+    }));
+
+    const reservedCount = computed((): number => {
+        const list = shown.value;
+        if (!list.hasMore || list.isFailed) {
+            return 0;
+        }
+
+        const expected = tabs.value.find(option => option.key === tab.value)?.count ?? 0;
+        return Math.min(Math.max(expected - list.reactors.length, 1), reservedLimit);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function chooseTab(key: string): void {
+        tab.value = key;
+        if (listElement.value) {
+            listElement.value.scrollTop = 0;
+        }
+        startTab(key);
+    }
+
+    /** The tablist's own keys: the arrows move between tabs, Home and End go to the ends. */
+    function onTabKeydown(event: KeyboardEvent): void {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+            return;
+        }
+
+        event.preventDefault();
+        const keys = tabs.value.map(option => option.key);
+        const at = keys.indexOf(tab.value);
+        const next = event.key === "Home" ? 0
+            : event.key === "End" ? keys.length - 1
+                : (at + (event.key === "ArrowRight" ? 1 : keys.length - 1)) % keys.length;
+        chooseTab(keys[next]);
+        document.getElementById(`${uid}-tab-${keys[next]}`)?.focus();
+    }
+
+    function onScroll(): void {
+        const list = listElement.value;
+        if (list && list.scrollTop + list.clientHeight >= list.scrollHeight - pageAheadPx) {
+            loadMore(tab.value);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * A tab's list the first time it shows. An emoji's starts from the people its chip carries,
+     * drawn at once, the rest asked for after them; every emoji's starts empty.
+     */
+    function startTab(key: string): void {
+        if (lists.has(key)) {
+            return;
+        }
+
+        const chip = props.reactions.find(reaction => reaction.code === key);
+        const carried = (chip?.reactors ?? []).map((reactor): Reactor => ({ ...reactor, code: key }));
+        lists.set(key, { reactors: carried, hasMore: key === allTab || (chip?.count ?? 0) > carried.length, isLoading: false, isFailed: false });
+        loadMore(key);
+    }
+
+    /** Asks for a tab's next page, after the last person it holds, unless one is out or none is left. */
+    async function loadMore(key: string): Promise<void> {
+        const list = lists.get(key);
+        if (!list || list.isLoading || (!list.hasMore && !list.isFailed)) {
+            return;
+        }
+
+        const asked = opening;
+        const last = list.reactors[list.reactors.length - 1];
+        list.isLoading = true;
+        list.isFailed = false;
+
+        const page = await props.listReactors(key === allTab ? null : key, last ? { reacted_at: last.reacted_at, reactor_person_alias_guid: last.reactor_person_alias_guid, code: last.code } : null);
+        if (asked !== opening) {
+            return;
+        }
+
+        list.isLoading = false;
+        if (!page) {
+            list.isFailed = true;
+            return;
+        }
+
+        list.reactors.push(...page.reactors);
+        list.hasMore = page.has_more;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Each opening starts from what the chips carry now, on the chip it was opened from.
+    watch(() => props.isOpen, isOpen => {
+        opening++;
+        lists.clear();
+        if (isOpen) {
+            tab.value = props.code;
+            startTab(props.code);
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>
