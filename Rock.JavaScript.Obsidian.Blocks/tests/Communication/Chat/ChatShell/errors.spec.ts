@@ -22,8 +22,10 @@ import {
     classifyPlatformError,
     classifyRealtimeMessage,
     classifyRealtimeStatus,
+    isUnreached,
     messageForError,
-    messageOrOffline
+    messageOrOffline,
+    offlineSentence
 } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 
 describe("classifyPlatformError", () => {
@@ -214,5 +216,25 @@ describe("messageOrOffline", () => {
 
     test("an ended session says so", () => {
         expect(messageOrOffline({ code: "auth.expired", severity: "session" }, "You're offline.")).toBe("Your chat session has ended. Refresh the page to continue.");
+    });
+
+    test("a Rock door that never answered is offline too", () => {
+        expect(messageOrOffline({ code: "door.unreachable", severity: "failed" }, "You're offline.")).toBe("You're offline.");
+    });
+
+    test("with no sentence of the place's own, says the one offline sentence", () => {
+        expect(messageOrOffline({ code: "rpc.transport", severity: "failed" })).toBe(offlineSentence);
+        expect(offlineSentence).toBe("You're offline. Try again when you're back.");
+    });
+});
+
+// One rule for a call that reached nothing, the platform or Rock's door before it, so every place
+// that tells the person they are offline tells it for the same failures.
+describe("isUnreached", () => {
+    test("is a call that never reached the platform or Rock's door, and nothing else", () => {
+        expect(isUnreached({ code: "rpc.transport", severity: "failed" })).toBe(true);
+        expect(isUnreached({ code: "door.unreachable", severity: "failed" })).toBe(true);
+        expect(isUnreached({ code: "door.unavailable", severity: "permission" })).toBe(false);
+        expect(isUnreached({ code: "rpc.unknown", severity: "unknown" })).toBe(false);
     });
 });

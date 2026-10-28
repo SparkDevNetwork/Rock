@@ -199,7 +199,8 @@ function fakeShell(): Record<string, unknown> {
         timelines: {
             state: timelineOf
         },
-        sender: { pending: () => [], retry: jest.fn(), discard: jest.fn() },
+        // the latest failure, as the sender tells it, held so a test can say a send just failed
+        sender: { pending: () => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last },
         // the real drafts, on a storage that outlives the block as a browser's does
         drafts: createDrafts({
             storage: {
@@ -592,6 +593,9 @@ function entryFor(element: Element): ResizeObserverEntry {
 
 let wrapper: VueWrapper | null = null;
 
+/** The sender's latest failure, as the fake shell's sender answers it. */
+const mockFailureNews = reactive<{ last: { localId: string, count: number } | null }>({ last: null });
+
 /** The rules a component's styles give under reduced motion, selector and body, read from its source. */
 function reducedMotionRules(relativePath: string): Array<{ selector: string, body: string }> {
     const source = readFileSync(join(__dirname, relativePath), "utf8");
@@ -697,6 +701,7 @@ afterEach(() => {
     mockOlderAnswers.length = 0;
     mockTimelines.clear();
     mockStorage.clear();
+    mockFailureNews.last = null;
     resetConfig();
     FakeResizeObserver.all = [];
     document.body.innerHTML = "";
@@ -1103,7 +1108,7 @@ describe("the conversation's failed sends", () => {
         expect(strip.get("[data-testid='composer-failed-reason']").text()).toBe("You do not have access to that.");
     });
 
-    test("Try again resends each that can go, and Delete drops each, the thread's own left alone", async () => {
+    test("Try again asks the sender for each that can go, in one go so they land in order, and Delete drops each, the thread's own left alone", async () => {
         const w = await mountBlock(1200);
         (mockShell!.sender as { pending: () => unknown[] }).pending = sends;
         await openRow(w, team.channel_id);
@@ -1112,8 +1117,84 @@ describe("the conversation's failed sends", () => {
         await strip.get("[data-testid='composer-failed-retry']").trigger("click");
         await strip.get("[data-testid='composer-failed-discard']").trigger("click");
 
-        expect((mockShell!.sender as { retry: jest.Mock }).retry.mock.calls).toEqual([["l1"]]);
+        expect((mockShell!.sender as { retryAll: jest.Mock }).retryAll.mock.calls).toEqual([[["l1"]]]);
         expect((mockShell!.sender as { discard: jest.Mock }).discard.mock.calls).toEqual([["l1"], ["l3"]]);
+    });
+
+    /** Every failure said aloud on the page, by any strip. */
+    function saidAloud(w: VueWrapper): string[] {
+        return w.findAll("[data-testid='composer-failed-announcement']").map(region => region.text()).filter(text => text !== "");
+    }
+
+    // A reply also sent to the conversation is drawn in both feeds, but its failure is one: the
+    // drawer speaks for it while open on its thread, else the conversation does.
+    describe("a reply also sent to the conversation", () => {
+        const reply = { localId: "r1", channelId: team.channel_id, body: "Count me in", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back.", parentId: 40, isShownInChannel: true };
+
+        async function openThreadWith(w: VueWrapper): Promise<void> {
+            await openRow(w, team.channel_id);
+            timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 1, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+            await settle();
+            await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+            await settle();
+        }
+
+        test("failing with its thread open has one strip, the drawer's, and is said once", async () => {
+            const w = await mountBlock(1200);
+            await openThreadWith(w);
+
+            (mockShell!.sender as { pending: () => unknown[] }).pending = () => [reply];
+            mockFailureNews.last = { localId: "r1", count: 1 };
+            await settle();
+
+            expect(w.findAll("[data-testid='composer-failed']")).toHaveLength(1);
+            expect(w.find("[data-testid='frame-panel'] [data-testid='composer-failed']").exists()).toBe(true);
+            expect(saidAloud(w)).toEqual(["Your message wasn't sent. You're offline. Try again when you're back."]);
+
+            // the drawer's Try again asks for it alone, and Delete in one place cannot drop it from another
+            await w.get("[data-testid='frame-panel'] [data-testid='composer-failed-retry']").trigger("click");
+            expect((mockShell!.sender as { retryAll: jest.Mock }).retryAll.mock.calls).toEqual([[["r1"]]]);
+        });
+
+        test("goes to the conversation's strip once its thread closes, without being said again", async () => {
+            const w = await mountBlock(1200);
+            await openThreadWith(w);
+            (mockShell!.sender as { pending: () => unknown[] }).pending = () => [reply];
+            mockFailureNews.last = { localId: "r1", count: 1 };
+            await settle();
+
+            await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
+            await settle();
+
+            // the closing drawer may still be drawn as its column narrows; the conversation now has it
+            expect(w.find("[data-testid='frame-main'] [data-testid='composer-failed']").exists()).toBe(true);
+            expect(w.get("[data-testid='frame-main'] [data-testid='composer-failed-announcement']").text()).toBe("");
+        });
+    });
+
+    test("moving between two rooms with failures shows each room's own and says neither again", async () => {
+        const failures = [
+            { localId: "t1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back." },
+            { localId: "a1", channelId: dmAnna.channel_id, body: "See you", status: "failed", errorCode: "authz.not_member", refusal: { code: "authz.not_member", severity: "permission" }, reason: "You're not in this conversation." }
+        ];
+        const w = await mountBlock(1200);
+        (mockShell!.sender as { pending: (channelId: string) => unknown[] }).pending = (channelId: string) => failures.filter(row => row.channelId === channelId);
+        mockFailureNews.last = { localId: "a1", count: 2 };
+
+        await openRow(w, team.channel_id);
+        expect(w.get("[data-testid='frame-main'] [data-testid='composer-failed-reason']").text()).toBe("You're offline. Try again when you're back.");
+        expect(w.findAll("[data-testid='frame-main'] [data-testid='composer-failed'] button").map(button => button.text())).toEqual(["Try again", "Delete"]);
+
+        await openRow(w, dmAnna.channel_id);
+        expect(w.get("[data-testid='frame-main'] [data-testid='composer-failed-reason']").text()).toBe("You're not in this conversation.");
+        expect(w.findAll("[data-testid='frame-main'] [data-testid='composer-failed'] button").map(button => button.text())).toEqual(["Delete"]);
+
+        // a failure in the room not on screen is said by none
+        mockFailureNews.last = { localId: "t1", count: 3 };
+        await settle();
+        await openRow(w, team.channel_id);
+
+        expect(saidAloud(w)).toEqual([]);
     });
 });
 

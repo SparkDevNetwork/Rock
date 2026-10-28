@@ -3,33 +3,38 @@
     <div class="chat-composer" :class="{ 'is-channel': isChannel, 'is-thread': isThread, 'is-phone': isPhone }">
         <!--
             The person's failed sends here, each marked Not sent on its message: what happened, the
-            newest reason and the choices, by the box they type in. Over a locked box too, so a
-            send that cannot go can still be deleted.
+            reason and the choices, by the box they type in. Over a locked box too, so a send that
+            cannot go can still be deleted; Try again waits for the box to open. Its going gives
+            back the space it held smoothly, so the feed above does not jump.
         -->
-        <div v-if="sendFailure" class="chat-composer-failed" data-testid="composer-failed">
-            <span class="chat-composer-failed-text">
-                <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
-                <b data-testid="composer-failed-lead">{{ failedLead }}</b>
-                <span v-if="sendFailure.reason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ sendFailure.reason }}</span>
-            </span>
-            <span class="chat-composer-failed-acts">
-                <button v-if="sendFailure.canRetry"
-                        type="button"
-                        class="chat-ls-btn is-retry"
-                        data-testid="composer-failed-retry"
-                        @click="onRetryFailed"><Icon name="refresh" size="xs" />Try again</button>
-                <button type="button"
-                        class="chat-ls-btn"
-                        data-testid="composer-failed-discard"
-                        @click="onDiscardFailed"><Icon name="trash" size="xs" />{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</button>
-            </span>
-        </div>
+        <Transition name="chat-strip">
+            <div v-if="sendFailure" ref="stripElement" class="chat-composer-failed-wrap">
+                <div class="chat-composer-failed" data-testid="composer-failed">
+                    <span class="chat-composer-failed-text">
+                        <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
+                        <b data-testid="composer-failed-lead">{{ failedLead }}</b>
+                        <span v-if="sendFailure.reason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ sendFailure.reason }}</span>
+                    </span>
+                    <span class="chat-composer-failed-acts">
+                        <button v-if="sendFailure.canRetry && !isClosed"
+                                type="button"
+                                class="chat-ls-btn is-retry"
+                                data-testid="composer-failed-retry"
+                                @click="onRetryFailed"><Icon name="refresh" size="xs" />Try again</button>
+                        <button type="button"
+                                class="chat-ls-btn"
+                                data-testid="composer-failed-discard"
+                                @click="onDiscardFailed"><Icon name="trash" size="xs" />{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</button>
+                    </span>
+                </div>
+            </div>
+        </Transition>
 
         <!-- A failure said once as it happens; keyed, so the same words are read again for the next one. -->
         <span class="chat-sr-only" aria-live="assertive" data-testid="composer-failed-announcement"><span v-if="failedAnnouncement" :key="failedAnnouncement.count">{{ failedAnnouncement.text }}</span></span>
 
         <!-- A paused service, or a room the person cannot post in, in the server's own words. -->
-        <div v-if="isLocked || lockedReason" class="chat-composer-locked" data-testid="composer-locked">
+        <div v-if="isClosed" ref="lockedElement" class="chat-composer-locked" tabindex="-1" data-testid="composer-locked">
             <Icon name="lock" />
             <span>{{ lockedReason || "Sending is paused for maintenance." }}</span>
         </div>
@@ -129,6 +134,30 @@
 
 .chat-composer.is-phone {
     padding: 0 10px 10px;
+}
+
+/*
+ * The strip's holder, one grid row that gives the strip's height back as it leaves; the bottom
+ * margin takes back the column's gap with it.
+ */
+.chat-composer-failed-wrap {
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+.chat-composer-failed-wrap > .chat-composer-failed {
+    min-height: 0;
+}
+
+.chat-strip-leave-active {
+    overflow: hidden;
+    transition: grid-template-rows var(--chat-t-base) var(--chat-ease-out), margin-bottom var(--chat-t-base) var(--chat-ease-out), opacity var(--chat-t-fast) var(--chat-ease-out);
+}
+
+.chat-strip-leave-to {
+    grid-template-rows: 0fr;
+    margin-bottom: -6px;
+    opacity: 0;
 }
 
 /* The failed sends' strip: a soft danger card over the box, rising into place as it appears. */
@@ -351,6 +380,11 @@
     border-radius: var(--chat-r-bar);
 }
 
+/* Focus lands here only from the strip's buttons, to say why the box is not there. */
+.chat-composer-locked:focus {
+    outline: 0;
+}
+
 .chat-composer-locked :deep(.chat-ic) {
     color: var(--chat-icon);
 }
@@ -366,14 +400,24 @@
     .chat-composer-failed {
         animation-name: chat-crossfade;
     }
+
+    /* The strip only fades as it goes, and gives its space back once gone. */
+    .chat-strip-leave-active {
+        transition: opacity var(--chat-t-fast) var(--chat-ease-out);
+    }
+
+    .chat-strip-leave-to {
+        grid-template-rows: 1fr;
+        margin-bottom: 0;
+    }
 }
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
-    import { canMakeSendKey, SendFailure, textAfterSend } from "../composables/useSend.partial";
+    import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -499,6 +543,15 @@
         sendFailure: {
             type: Object as PropType<SendFailure | null>,
             default: null
+        },
+
+        /**
+         * The latest send to fail anywhere, which the strip says aloud when it holds that send: a
+         * failure is said once, as it happens, by the one strip that holds it then.
+         */
+        lastFailure: {
+            type: Object as PropType<SendFailureNews | null>,
+            default: null
         }
     });
 
@@ -541,6 +594,8 @@
     const isEmojiOpen = ref(false);
 
     const boxElement = ref<HTMLFormElement>();
+    const stripElement = ref<HTMLElement>();
+    const lockedElement = ref<HTMLElement>();
 
     /** The @ query the caret ends, or null when it ends none. */
     const mentionQuery = ref<string | null>(null);
@@ -588,6 +643,9 @@
         const text = quote.pieces?.length ? quote.pieces.map(piece => piece.text).join("") : quote.body ?? "";
         return text.replace(/\s+/g, " ").trim();
     });
+
+    /** Whether the locked bar stands in the box's place, so nothing can be sent from here. */
+    const isClosed = computed((): boolean => props.isLocked || !!props.lockedReason);
 
     /** The strip's first line: one message, or how many. */
     const failedLead = computed((): string => {
@@ -660,16 +718,28 @@
 
     /**
      * Try again and Delete each take the strip's buttons away, as the sends go back to sending or
-     * go, so focus goes on to the box rather than being lost with them.
+     * go, so focus goes on rather than being lost with them: to the box, which says when it takes
+     * no typing yet; else to what is left of the strip; else to the lock's line in the box's place.
      */
+    async function moveFocusOn(): Promise<void> {
+        await nextTick();
+        if (editor.value) {
+            editor.value.focus();
+            return;
+        }
+
+        const left = stripElement.value?.querySelector<HTMLButtonElement>("button");
+        (left ?? lockedElement.value)?.focus();
+    }
+
     function onRetryFailed(): void {
         emit("retryFailed");
-        editor.value?.focus();
+        void moveFocusOn();
     }
 
     function onDiscardFailed(): void {
         emit("discardFailed");
-        editor.value?.focus();
+        void moveFocusOn();
     }
 
     /** The emoji button opens the picker, or closes it when it is already open. */
@@ -738,18 +808,22 @@
 
     // #region Watchers
 
-    // A failure is said as it happens: one appearing, or another joining it, in the place the box
-    // was already typing into. Failures already there when the box opens or comes back to a room
-    // were said when they happened, so moving between rooms says nothing.
-    watch(() => [props.sendFailure, props.conversationKey] as const, ([failure, key], [previous, previousKey]) => {
-        if (key !== previousKey || !failure) {
-            failedAnnouncement.value = null;
-            return;
-        }
-
-        if (!previous || failure.count > previous.count) {
+    // A failure is said as it happens, by the strip holding it then. One already there when the
+    // box opens, comes back to a room or takes it over from the thread's strip was said when it
+    // happened, or in a place not on screen, so moving between places says nothing.
+    watch(() => props.lastFailure?.count, () => {
+        const failure = props.sendFailure;
+        const news = props.lastFailure;
+        if (failure && news && failure.localIds.includes(news.localId)) {
             const text = failure.reason ? `${failedLead.value}. ${failure.reason}` : `${failedLead.value}.`;
             failedAnnouncement.value = { text, count: (failedAnnouncement.value?.count ?? 0) + 1 };
+        }
+    });
+
+    // What was said in one place is not left to be read in the next.
+    watch(() => [props.sendFailure === null, props.conversationKey] as const, ([isNone, key], [, previousKey]) => {
+        if (isNone || key !== previousKey) {
+            failedAnnouncement.value = null;
         }
     });
 

@@ -20,7 +20,9 @@
 // The box is the chip editor, an editable element marked data-testid="composer-input". A test
 // types into it as a browser does, drawing the lines and firing input, and reads back the wire
 // text it holds, a mention as its token.
-import { mount, VueWrapper } from "@vue/test-utils";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
@@ -713,7 +715,7 @@ describe("the reply composer's Also send switch", () => {
 // A failure is said aloud once, assertively, when it happens; a strip already there when the
 // person comes back to the room, or opens the box, is not said again.
 describe("the composer's strip for a failed send", () => {
-    const offline = { count: 1, reason: "You're offline.", canRetry: true };
+    const offline = { count: 1, reason: "You're offline.", canRetry: true, localIds: ["k1"] };
 
     function strip(wrapper: VueWrapper): ReturnType<VueWrapper["get"]> {
         return wrapper.get("[data-testid='composer-failed']");
@@ -744,20 +746,20 @@ describe("the composer's strip for a failed send", () => {
     });
 
     test("a failure that said nothing has no reason line", () => {
-        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: null, canRetry: true } } });
+        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: null, canRetry: true, localIds: ["k1"] } } });
 
         expect(strip(wrapper).find("[data-testid='composer-failed-reason']").exists()).toBe(false);
     });
 
     test("several are counted, and its buttons act on them all", () => {
-        const wrapper = mountComposer({ props: { sendFailure: { count: 3, reason: "You're offline.", canRetry: true } } });
+        const wrapper = mountComposer({ props: { sendFailure: { count: 3, reason: "You're offline.", canRetry: true, localIds: ["k1", "k2", "k3"] } } });
 
         expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("3 messages weren't sent");
         expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Try again", "Delete all"]);
     });
 
     test("a send refused for good shows its sentence and Delete alone", () => {
-        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: "You can't mention everyone in this channel.", canRetry: false } } });
+        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: "You can't mention everyone in this channel.", canRetry: false, localIds: ["k1"] } } });
 
         expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You can't mention everyone in this channel.");
         expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Delete"]);
@@ -767,29 +769,76 @@ describe("the composer's strip for a failed send", () => {
         const wrapper = mountComposer({ props: { sendFailure: offline }, attachTo: document.body });
 
         await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
+        await flushPromises();
         expect(wrapper.emitted("retryFailed")).toHaveLength(1);
         expect(document.activeElement).toBe(editorOf(wrapper));
 
         await strip(wrapper).get("[data-testid='composer-failed-discard']").trigger("click");
+        await flushPromises();
         expect(wrapper.emitted("discardFailed")).toHaveLength(1);
         expect(document.activeElement).toBe(editorOf(wrapper));
         wrapper.unmount();
     });
 
-    test("stays over a locked box, so a failed send can still be deleted", () => {
-        const wrapper = mountComposer({ props: { isLocked: true, sendFailure: offline } });
+    test("stays over a locked box with Delete alone, so a failed send can still be deleted and nothing is tried that cannot go", () => {
+        const locked = mountComposer({ props: { isLocked: true, sendFailure: offline } });
+        const refused = mountComposer({ props: { lockedReason: "You can't post in this conversation.", sendFailure: offline } });
 
-        expect(wrapper.find("[data-testid='composer-locked']").exists()).toBe(true);
-        expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Try again", "Delete"]);
+        expect(locked.find("[data-testid='composer-locked']").exists()).toBe(true);
+        expect(strip(locked).findAll("button").map(button => button.text())).toEqual(["Delete"]);
+        expect(strip(refused).findAll("button").map(button => button.text())).toEqual(["Delete"]);
     });
 
-    test("says a new failure aloud once, assertively", async () => {
+    // The box is not there to take focus over a locked composer, and takes none while a new
+    // conversation starts, so focus goes where the person can carry on rather than to the page.
+    test("over a locked box, Delete leaves focus on the lock's line once the strip goes", async () => {
+        const wrapper = mountComposer({
+            props: { isLocked: true, sendFailure: offline, onDiscardFailed: () => wrapper.setProps({ sendFailure: null }) },
+            attachTo: document.body
+        });
+
+        await strip(wrapper).get("[data-testid='composer-failed-discard']").trigger("click");
+        await flushPromises();
+
+        expect(document.activeElement).toBe(wrapper.get("[data-testid='composer-locked']").element);
+        wrapper.unmount();
+    });
+
+    test("over a locked box, Delete leaves focus on what is left of the strip while it stays", async () => {
+        const wrapper = mountComposer({ props: { isLocked: true, sendFailure: { ...offline, count: 2, localIds: ["k1", "k2"] } }, attachTo: document.body });
+
+        await strip(wrapper).get("[data-testid='composer-failed-discard']").trigger("click");
+        await flushPromises();
+
+        expect(document.activeElement).toBe(strip(wrapper).get("[data-testid='composer-failed-discard']").element);
+        wrapper.unmount();
+    });
+
+    test("while the box takes no typing, Try again leaves focus on the box, which says it is unavailable", async () => {
+        const wrapper = mountComposer({
+            props: { sendFailure: offline, onRetryFailed: () => wrapper.setProps({ sendFailure: null, isDisabled: true }) },
+            attachTo: document.body
+        });
+
+        await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
+        await flushPromises();
+
+        expect(document.activeElement).toBe(editorOf(wrapper));
+        expect(editorOf(wrapper).getAttribute("aria-disabled")).toBe("true");
+        // a browser focuses an element that is not editable only when it carries a tab index
+        expect(editorOf(wrapper).getAttribute("tabindex")).toBe("-1");
+        wrapper.unmount();
+    });
+
+    // A failure is said once, as it happens: the sender names the message whose try just failed,
+    // and the strip holding that message says it.
+    test("says a failure aloud once, assertively, as it happens here", async () => {
         const wrapper = mountComposer({ props: { conversationKey: "c1" } });
         const region = wrapper.get("[data-testid='composer-failed-announcement']");
         expect(region.attributes("aria-live")).toBe("assertive");
         expect(announced(wrapper)).toBe("");
 
-        await wrapper.setProps({ sendFailure: offline });
+        await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 1 } });
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
 
         // the same failures again, as another send of the room changes, say nothing new
@@ -797,17 +846,17 @@ describe("the composer's strip for a failed send", () => {
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
 
         // a second failure is said
-        await wrapper.setProps({ sendFailure: { count: 2, reason: null, canRetry: true } });
+        await wrapper.setProps({ sendFailure: { count: 2, reason: null, canRetry: true, localIds: ["k1", "k2"] }, lastFailure: { localId: "k2", count: 2 } });
         expect(announced(wrapper)).toBe("2 messages weren't sent.");
     });
 
     test("says a failure again when a try again fails", async () => {
         const wrapper = mountComposer({ props: { conversationKey: "c1" } });
-        await wrapper.setProps({ sendFailure: offline });
+        await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 1 } });
         const first = wrapper.get("[data-testid='composer-failed-announcement'] span").element;
 
         await wrapper.setProps({ sendFailure: null });
-        await wrapper.setProps({ sendFailure: offline });
+        await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 2 } });
 
         // drawn afresh, so a screen reader reads the same words again
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
@@ -815,12 +864,46 @@ describe("the composer's strip for a failed send", () => {
     });
 
     test("does not say failures already there when the box opens or the person comes back to the room", async () => {
-        const wrapper = mountComposer({ props: { conversationKey: "c1", sendFailure: offline } });
+        const wrapper = mountComposer({ props: { conversationKey: "c1", sendFailure: offline, lastFailure: { localId: "k1", count: 1 } } });
         expect(announced(wrapper)).toBe("");
 
         await wrapper.setProps({ conversationKey: "c2", sendFailure: null });
         await wrapper.setProps({ conversationKey: "c1", sendFailure: offline });
 
         expect(announced(wrapper)).toBe("");
+    });
+
+    test("does not say a failure another strip already said, when it comes to this one", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "c1", lastFailure: { localId: "k1", count: 1 } } });
+
+        // the thread's drawer closed, and the reply it held failed is now this strip's
+        await wrapper.setProps({ sendFailure: offline });
+
+        expect(announced(wrapper)).toBe("");
+    });
+
+    test("does not say a failure that happened in another place", async () => {
+        const wrapper = mountComposer({ props: { conversationKey: "c1", sendFailure: offline, lastFailure: { localId: "k1", count: 1 } } });
+
+        await wrapper.setProps({ lastFailure: { localId: "elsewhere", count: 2 } });
+
+        expect(announced(wrapper)).toBe("");
+    });
+
+    // Its going takes the space it held back smoothly, so the feed above does not jump.
+    test("leaves through its own exit, which only fades under reduced motion", async () => {
+        const wrapper = mountComposer({ props: { sendFailure: offline }, global: { stubs: { transition: false } } });
+
+        await wrapper.setProps({ sendFailure: null });
+
+        const leaving = wrapper.find("[data-testid='composer-failed']");
+        expect(leaving.exists()).toBe(true);
+        expect(leaving.element.parentElement?.classList.contains("chat-strip-leave-active")).toBe(true);
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
+        expect(style).toMatch(/\.chat-strip-leave-active\s*\{[^}]*grid-template-rows var\(--chat-t-base\)/);
+        expect(reduced).toMatch(/\.chat-strip-leave-to\s*\{[^}]*grid-template-rows: 1fr/);
     });
 });

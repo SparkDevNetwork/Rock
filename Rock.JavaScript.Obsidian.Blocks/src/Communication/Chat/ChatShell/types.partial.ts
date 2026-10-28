@@ -778,7 +778,7 @@ export type PendingMessage = {
 
     /**
      * Why the last try failed, in words the person can read, where anything was said: a refusal's
-     * sentence, "You're offline." when nothing could be reached, or the server's own sentence.
+     * sentence, the offline sentence when nothing could be reached, or the server's own sentence.
      */
     reason?: string;
 

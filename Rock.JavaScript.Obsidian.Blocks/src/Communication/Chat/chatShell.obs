@@ -159,6 +159,7 @@
                               :mentionSource="mentionSourceFor(activeRow)"
                               :conversationKey="activeChannelId"
                               :sendFailure="conversationFailure"
+                              :lastFailure="shell.sender.lastFailure()"
                               @retryFailed="onRetryFailed(conversationSends)"
                               @discardFailed="onDiscardFailed(conversationSends)"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
@@ -313,6 +314,7 @@
                                   :root="drawnThread.root"
                                   :replies="drawnThread.replies"
                                   :pending="shell.sender.pending(drawnThread.channelId)"
+                                  :lastFailure="shell.sender.lastFailure()"
                                   :sentKeys="shell.sender.sentKeys"
                                   :isFollowing="drawnThread.following"
                                   :followError="drawerFollowError"
@@ -702,7 +704,7 @@
     import { useJump } from "./ChatShell/composables/useJump.partial";
     import { FollowError, ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
-    import { failedSends, isInConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./ChatShell/composables/useSend.partial";
+    import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./ChatShell/composables/useSend.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { joinNames } from "./ChatShell/stores/channelStore.partial";
@@ -970,8 +972,15 @@
         shell.value.drafts.focus(place ?? null);
     });
 
-    /** The person's sends the open conversation draws, still going or failed; a reply only when also sent there. */
-    const conversationSends = computed((): PendingMessage[] => activeChannelId.value ? shell.value.sender.pending(activeChannelId.value).filter(isInConversation) : []);
+    /**
+     * The person's sends, still going or failed, whose failure the conversation's strip speaks
+     * for: those it draws, a reply only when also sent there and not while the drawer is open on
+     * its thread and in view, whose own strip has it then.
+     */
+    const conversationSends = computed((): PendingMessage[] => {
+        const openRootId = panelKind.value === "thread" && !isPanelHidden.value ? drawnThread.value?.rootId ?? null : null;
+        return activeChannelId.value ? shell.value.sender.pending(activeChannelId.value).filter(row => isOwnedByConversation(row, openRootId)) : [];
+    });
 
     /** What the conversation's failed sends come to, for the strip over its composer. */
     const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
@@ -1274,13 +1283,14 @@
         shell.value.reactions.recordRecent(code);
     }
 
-    function onRetry(localId: string): void {
-        void shell.value.sender.retry(localId);
+    /** Try again on a strip: its failed sends, oldest first, which the sender sends one at a time in that order. */
+    function onRetry(localIds: string[]): void {
+        void shell.value.sender.retryAll(localIds);
     }
 
     /** Try again on the conversation's strip. */
     function onRetryFailed(sends: PendingMessage[]): void {
-        retryableSends(sends).forEach(row => onRetry(row.localId));
+        onRetry(retryableSends(sends).map(row => row.localId));
     }
 
     /** Delete on the conversation's strip. */

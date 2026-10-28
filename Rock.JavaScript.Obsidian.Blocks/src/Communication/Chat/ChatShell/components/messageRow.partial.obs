@@ -94,7 +94,7 @@
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
                     <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
-                    <span v-else-if="state === 'failed'" class="chat-cm-state is-failed"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span><span class="chat-cm-state-words" data-testid="message-state">Not sent</span></span>
+                    <span v-else-if="state === 'failed'" class="chat-cm-state is-failed" :title="failedReason ?? undefined"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span><span class="chat-cm-state-words" data-testid="message-state">Not sent</span><span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span></span>
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
                     <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
                 </div>
@@ -165,10 +165,11 @@
                 </template>
             </MessageReactions>
             <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
-            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
+            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" :title="state === 'failed' ? failedReason ?? undefined : undefined" data-testid="message-meta">
                 <template v-if="state === 'failed'">
                     <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
                     <span data-testid="message-state">Not sent</span>
+                    <span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span>
                 </template>
                 <template v-else-if="state === 'sending'">
                     <Icon name="clock" size="xs" />
@@ -1214,6 +1215,13 @@
         : { kind: "message", text: props.pending?.body ?? "" });
 
     const isBlockPost = computed((): boolean => Array.isArray(props.message?.blocks) && (props.message?.blocks?.length ?? 0) > 0);
+
+    /**
+     * Why a failed send failed, where anything was said. The strip over the composer says one
+     * reason for all of a place's failures, so each message keeps its own on its marker, for a
+     * screen reader and a pointer resting on it.
+     */
+    const failedReason = computed((): string | null => props.pending?.status === "failed" ? props.pending.reason ?? null : null);
 
     const state = computed((): RowState => {
         if (props.pending) {

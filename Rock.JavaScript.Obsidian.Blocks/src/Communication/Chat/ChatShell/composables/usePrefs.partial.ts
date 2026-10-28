@@ -30,7 +30,7 @@
 // reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { messageOrOffline } from "../errors.partial";
+import { messageOrOffline, offlineSentence } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError, SidebarRow } from "../types.partial";
 import { Note } from "../ui/settingNote.partial.obs";
@@ -197,7 +197,6 @@ const meFields: Record<MeKey, keyof MeSettings> = {
     reaction_push: "reaction_push"
 };
 
-const offlineSentence = "You're offline. Try again when you're back.";
 const noDoorSentence = "That setting can't be changed right now.";
 const leavesListSentence = "It leaves your list when you open another conversation.";
 
@@ -234,7 +233,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
     /** A refusal in the server's own words; a lost connection says so. */
     function refusalText(error: ChatError): string {
-        return messageOrOffline(error, offlineSentence);
+        return messageOrOffline(error);
     }
 
     /** A refusal's note under its control, with Try again asking the same change once more. */
@@ -373,14 +372,15 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 notes.star = { kind: "info", text: "Starred, so it's back in your list." };
             }
 
-            // Star and hide are one save's two halves, so they share one newest, and what is known
-            // saved is always both of them, whichever the patch wrote.
+            // Star and hide are one save's two halves, so they share one newest, and each save asks
+            // for both: the newest then lands what is shown whatever an older one still out does.
             const was = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };
+            const value = { ...was, ...patch };
             await save<RowPrefs>(`${channelId}:sidebar`, {
                 was,
-                value: { ...was, ...patch },
+                value,
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
-                ask: () => askRoom(channelId, patch),
+                ask: () => askRoom(channelId, value),
                 refused: text => {
                     if (isFromMenu) {
                         dependencies.notify({ code: "starred", text, icon: "alert" });
@@ -411,11 +411,12 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             }
 
             const was = { is_favorite: row.is_favorite, hidden: row.hidden ?? false };
+            const value = { ...was, ...patch };
             await save<RowPrefs>(`${channelId}:sidebar`, {
                 was,
-                value: { ...was, ...patch },
+                value,
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
-                ask: () => askRoom(channelId, patch),
+                ask: () => askRoom(channelId, value),
                 refused: text => {
                     delete notes.star;
                     notes.hide = refusalNote(text, () => prefs.setHidden(channelId, isHidden));
