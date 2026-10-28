@@ -779,10 +779,11 @@
     The panel column's one entrance. A panel that opens with its first page waterfalls in: each row
     the panel marks rises from the rise, a little after the row above it, so a fresh list reads as
     arriving rather than blinking. The panel host marks its body entering for that first page only,
-    so a live arrival, a later page or a filter is simply there. Under reduced motion the rise and
-    the stagger are 0, leaving one short fade.
+    and marks settled a row drawn after it began, so a live arrival, a later page or a filter is
+    simply there while the first page goes on rising. Under reduced motion the rise and the
+    stagger are 0, leaving one short fade.
 */
-.chat-shell .chat-panel-body.is-entering .chat-enter {
+.chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled]) {
     animation: chat-enter var(--chat-t-msg) var(--chat-ease-in) both;
     animation-delay: calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger));
 }

@@ -28,8 +28,12 @@
 
         <slot name="top" />
 
-        <!-- Entering while the first page waterfalls in; the chat's sheet plays each marked row's rise from it. -->
-        <div class="chat-panel-body"
+        <!--
+            Entering while the first page waterfalls in; the chat's sheet plays each marked row's
+            rise from it, all but a row marked settled, drawn after the entrance began.
+        -->
+        <div ref="bodyElement"
+             class="chat-panel-body"
              :class="{ 'is-entering': isEntering }"
              data-chat-scroller
              @animationend="onAnimationEnd">
@@ -108,7 +112,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import IconButton from "./iconButton.partial.obs";
 
     const props = defineProps({
@@ -159,14 +163,19 @@
 
     // #region Values
 
-    /** The rows rising in the entrance under way, or null when none is. */
-    const entering = ref<ReadonlySet<string> | null>(null);
+    const bodyElement = ref<HTMLElement>();
+
+    /** Whether an entrance is under way. */
+    const isEntering = ref(false);
 
     /** Whether the next rows drawn are a first page, which is so from the open and after each load from nothing. */
     let isAwaitingFirstPage = true;
 
-    /** How many of the entering rows have still to finish rising. */
-    let rising = 0;
+    /**
+     * The first page's rows still to finish rising, read once they are drawn; null until then. A
+     * row is its drawn element, since the rows are the panel's and the host knows them only so.
+     */
+    let rising: Set<Element> | null = null;
 
     // #endregion Values
 
@@ -175,16 +184,15 @@
     /** A phone always leaves by the chevron; a wide block shows one only when there is somewhere to go back to. */
     const isBackShown = computed((): boolean => props.isPhone || props.backLabel !== null);
 
-    const isEntering = computed((): boolean => entering.value !== null);
-
     // #endregion Computed Values
 
     // #region Event Handlers
 
-    /** The mark goes once every row has risen, so no row's own later motion is held under it. */
+    /** A first-page row has risen. */
     function onAnimationEnd(event: AnimationEvent): void {
-        if (entering.value && event.animationName === "chat-enter" && --rising <= 0) {
-            entering.value = null;
+        if (rising && event.animationName === "chat-enter" && event.target instanceof Element) {
+            rising.delete(event.target);
+            endWhenRisen();
         }
     }
 
@@ -198,6 +206,38 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Reads the drawn rows while an entrance is under way. The first page's rows are the ones
+     * rising; a row drawn after them, a live arrival, a later page or a filter cleared, is marked
+     * settled so it does not rise, and the rows already rising keep rising. A first-page row gone,
+     * as a filter or a removal takes it, no longer holds the entrance.
+     */
+    function readRows(): void {
+        if (!isEntering.value || !bodyElement.value) {
+            return;
+        }
+
+        const rows = Array.from(bodyElement.value.querySelectorAll(".chat-enter"));
+        if (!rising) {
+            rows.forEach(row => row.removeAttribute("data-chat-settled"));
+            rising = new Set(rows);
+        }
+        else {
+            const first = rising;
+            rows.filter(row => !first.has(row)).forEach(row => row.setAttribute("data-chat-settled", ""));
+            rising = new Set(Array.from(first).filter(row => row.isConnected));
+        }
+        endWhenRisen();
+    }
+
+    /** The mark goes once every first-page row has risen or gone, so no row's own later motion is held under it. */
+    function endWhenRisen(): void {
+        if (rising && rising.size === 0) {
+            rising = null;
+            isEntering.value = false;
+        }
+    }
 
     /** Back to where the panel was opened from when it has a back label, else closed. */
     function leave(): void {
@@ -213,28 +253,26 @@
 
     // #region Watchers
 
-    // Only a first page enters. Read before the render, so a row added after it mounts with the
-    // mark already gone and does not rise; a removed one ends it too, as a filter or a removal
-    // changes the list under it.
+    // Only a first page enters. Read before the render, so the first page's rows are drawn under
+    // the mark.
     watch(() => props.entranceKeys, keys => {
         if (keys === null) {
             isAwaitingFirstPage = true;
-            entering.value = null;
+            isEntering.value = false;
+            rising = null;
             return;
         }
 
         if (isAwaitingFirstPage) {
             isAwaitingFirstPage = false;
-            rising = keys.length;
-            entering.value = keys.length > 0 ? new Set(keys) : null;
-            return;
-        }
-
-        const drawn = entering.value;
-        if (drawn && (keys.length !== drawn.size || keys.some(key => !drawn.has(key)))) {
-            entering.value = null;
+            isEntering.value = keys.length > 0;
+            rising = null;
         }
     }, { immediate: true });
+
+    // The rows are read after each render, before it is painted.
+    onMounted(readRows);
+    watch(() => props.entranceKeys, readRows, { flush: "post" });
 
     // #endregion Watchers
 </script>

@@ -716,12 +716,16 @@ describe("the thread's entrance", () => {
         expect(w.get("[data-testid='thread-divider']").classes()).toContain("chat-enter");
     });
 
-    test("a reply that arrives after the thread opened ends the entrance", async () => {
+    test("a reply that arrives after the thread opened does not rise in, and the rest go on rising", async () => {
         const w = draw({ root: rootWith(1), replies: replies(1).map(r => ({ ...r, person_alias_guid: anna, sender_nick_name: "Anna", sender_last_name: "Reyes" })) });
         expect(entered(w).isEntering).toBe(true);
 
+        const before = w.findAll(".chat-enter").length;
         await w.setProps({ replies: [...replies(1).map(r => ({ ...r, person_alias_guid: anna, sender_nick_name: "Anna", sender_last_name: "Reyes" })), message(60, { parent_id: 40, person_alias_guid: ben, sender_nick_name: "Ben", sender_last_name: "Okafor" })] });
-        expect(entered(w).isEntering).toBe(false);
+        expect(entered(w).isEntering).toBe(true);
+        const settledRows = w.findAll(".chat-enter").filter(e => e.attributes("data-chat-settled") !== undefined);
+        expect(settledRows.length).toBe(w.findAll(".chat-enter").length - before);
+        expect(settledRows.length).toBeGreaterThan(0);
     });
 });
 

@@ -556,11 +556,12 @@ describe("the list's entrance", () => {
         expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
     });
 
-    test("a thread that moves in live, or a refresh's new row, does not rise in", async () => {
+    test("a thread that moves in live, or a refresh's new row, does not rise in, and the first page's rows go on rising", async () => {
         const w = draw({ rows: [row(40), row(41)] });
 
         await w.setProps({ rows: [row(43), row(40), row(41)] });
-        expect(entered(w).isEntering).toBe(false);
+        expect(entered(w).isEntering).toBe(true);
+        expect(w.findAll("[data-testid='thread-row']").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([true, false, false]);
     });
 
     test("the other tab's first page rises in as the list's own", async () => {
