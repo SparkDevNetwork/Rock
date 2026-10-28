@@ -1038,11 +1038,22 @@ describe("the composer's files", () => {
     test("a paste from Word or Excel, its rich text beside a picture of it, is left to the editor", async () => {
         const { wrapper, tray } = trayed();
 
-        const pasted = pasteOf([picked("image.png", "image/png")], { "text/plain": "Q3 totals", "text/html": "<table><tr><td>Q3 totals</td></tr></table>" });
+        const pasted = pasteOf([picked("image.png", "image/png")], { "text/plain": "Q3 totals", "text/html": "<table><tr><td>Q3 totals</td></tr></table>", "text/rtf": "{\\rtf1 Q3 totals}" });
         wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
         await settle();
 
         expect(tray.files).toEqual([]);
+    });
+
+    test("a picture copied from a web page, which also puts its markup on the clipboard, is attached", async () => {
+        const { wrapper, tray } = trayed();
+
+        const pasted = pasteOf([picked("image.png", "image/png")], { "text/html": "<img src=\"https://example.org/image.png\">" });
+        wrapper.get("[data-testid='composer-input']").element.dispatchEvent(pasted);
+        await settle();
+
+        expect(tray.files.map(f => f.name)).toEqual(["image.png"]);
+        expect(pasted.defaultPrevented).toBe(true);
     });
 
     test("a file copied from a file manager, which also puts its name as plain text, is attached", async () => {

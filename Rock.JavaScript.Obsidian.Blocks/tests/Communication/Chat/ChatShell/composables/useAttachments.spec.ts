@@ -65,6 +65,8 @@ describe("attachment previews", () => {
 
     test("the words are the wire contract's, so the platform and this client say the same", () => {
         const contractPath = resolve(__dirname, "../../../../../../Rock/Communication/Chat/Platform/Contract/chat-wire-contract.json");
+        // the contract's own key, as the platform writes it
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const contract = JSON.parse(readFileSync(contractPath, "utf8")) as { attachment_previews?: unknown };
 
         expect(contract.attachment_previews).toEqual(attachmentPreviewWords);

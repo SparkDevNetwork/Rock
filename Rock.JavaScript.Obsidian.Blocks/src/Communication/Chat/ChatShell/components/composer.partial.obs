@@ -831,15 +831,15 @@
 
     /**
      * Pasted files, a copied photo above all, go into the tray. Taken before the editor sees the
-     * paste, which would otherwise keep only its text. A paste that carries rich text is left to
-     * the editor: Word and Excel put a picture of what was copied beside its formatted text, and
-     * the text is what was meant. Plain text alone does not, since a file manager puts a copied
-     * file's name beside it.
+     * paste, which would otherwise keep only its text. A paste that carries RTF is left to the
+     * editor: Word and Excel put a picture of what was copied beside its formatted text, and the
+     * text is what was meant. Other text beside a file does not hold it back: a browser copying
+     * a picture puts its markup beside it, and a file manager a copied file's name.
      */
     function onPaste(event: ClipboardEvent): void {
         const files = event.clipboardData?.files;
-        const types = Array.from(event.clipboardData?.types ?? []);
-        if (!props.tray || !files?.length || types.includes("text/html") || types.includes("text/rtf")) {
+        const isOfficeCopy = Array.from(event.clipboardData?.types ?? []).includes("text/rtf");
+        if (!props.tray || !files?.length || isOfficeCopy) {
             return;
         }
 
