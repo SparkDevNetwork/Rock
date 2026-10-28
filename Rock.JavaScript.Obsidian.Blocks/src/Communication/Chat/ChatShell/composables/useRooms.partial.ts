@@ -494,6 +494,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     // Each card opened or closed moves this on, so a person read for a card no longer open never lands.
     let cardGeneration = 0;
+    // Each refresh of the open card moves this on, so of quick changes of the person's own switch
+    // only the newest refresh's reads land, the platform's and Rock's alike.
+    let cardRefresh = 0;
     let cardWaitTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Rock's answer for each person showing details this visit, by alias in lower case, so a card
@@ -1191,7 +1194,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             state.card = { ...card, rock: { kind: "loading" } };
 
             const generation = cardGeneration;
-            const isCurrent = (): boolean => !isStopped && generation === cardGeneration && !!state.card;
+            const refresh = ++cardRefresh;
+            const isCurrent = (): boolean => !isStopped && generation === cardGeneration && refresh === cardRefresh && !!state.card;
             void saved.catch(() => undefined).then(() => {
                 if (!isCurrent()) {
                     return;

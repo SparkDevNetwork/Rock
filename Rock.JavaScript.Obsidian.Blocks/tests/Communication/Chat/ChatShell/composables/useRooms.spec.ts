@@ -1824,6 +1824,27 @@ describe("the profile card's details from Rock", () => {
         expect(s.rooms.state.card?.person?.details).toEqual({ badge_keys: ["serving"] });
     });
 
+    test("only the newest save's platform read is drawn, however the answers arrive", async () => {
+        const s = setup();
+        s.rooms.openCard(anna, team);
+        s.detailsCalls[0].answer.resolve({ isShown: false });
+        s.personCalls[0].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
+        await settle();
+
+        s.rooms.refreshCardDetails(Promise.resolve());
+        await settle();
+        s.rooms.refreshCardDetails(Promise.resolve());
+        await settle();
+        expect(s.personCalls).toHaveLength(3);
+
+        s.personCalls[2].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: null }) });
+        await settle();
+        s.personCalls[1].answer.resolve({ ok: true, person: profile(anna, "Anna", { is_self: true, details: { badge_keys: ["serving"] } }) });
+        await settle();
+
+        expect(s.rooms.state.card?.person?.details).toBeNull();
+    });
+
     test("a failed read after the save keeps the person the card already shows", async () => {
         const s = setup();
         s.rooms.openCard(anna, team);
