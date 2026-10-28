@@ -411,6 +411,7 @@
       "authz.not_readable",
       "authz.sender_not_allowed",
       "rpc.attachment_count",
+      "rpc.attachment_empty",
       "rpc.attachment_missing",
       "rpc.attachment_size",
       "rpc.attachment_type",
