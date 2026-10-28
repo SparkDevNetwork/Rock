@@ -242,14 +242,15 @@ describe("the sheet's reactions", () => {
         expect(w.emitted("close")).toHaveLength(1);
     });
 
-    test("the plus asks for the full picker for the message", async () => {
+    // The sheet has already offered six quick reactions, so its plus skips the picker's quick tray.
+    test("the plus asks for the full picker for the message, past the quick tray", async () => {
         const target = message();
         const w = await open({ message: target });
         const plus = reactions(w)[6];
 
         await plus.trigger("click");
 
-        expect(w.emitted("openPicker")?.[0]?.[0]).toBe(target);
+        expect(w.emitted("openPicker")?.[0]).toEqual([target, plus.element, "full"]);
         expect(w.emitted("react")).toBeUndefined();
     });
 });

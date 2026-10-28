@@ -20,17 +20,18 @@
 // replaces the shell while the rows and the picker stay; the shell's reactions hold only the
 // reactions themselves. The frame draws the picker and decides when another view closes it.
 
-import { computed, ComputedRef, reactive, Ref, shallowRef, ShallowRef } from "vue";
-import { PickerSource } from "../components/emojiPicker.partial.obs";
+import { computed, ComputedRef, reactive, Ref, shallowReactive, shallowRef, ShallowRef } from "vue";
+import { PickerSource, PickerStep } from "../components/emojiPicker.partial.obs";
 import { ChatShell } from "../shell.partial";
 import { TimelineMessage } from "../types.partial";
 import { ReactionHost } from "./useReactions.partial";
 
 /**
  * The reaction picker while it is open: the message it reacts to, by id, what it is placed beside,
- * and the control that opened it, which is the anchor unless that control can leave with a choice.
+ * the control that opened it, which is the anchor unless that control can leave with a choice, and
+ * where it opens: the quick tray, or the full picker for a control that offered quick reactions.
  */
-export type ReactionPicker = { key: number, channelId: string, messageId: number, anchor: HTMLElement, opener: HTMLElement };
+export type ReactionPicker = { key: number, channelId: string, messageId: number, anchor: HTMLElement, opener: HTMLElement, startsOn: PickerStep };
 
 /** The open picker, what the rows and every emoji picker read, and the ways to open, close and choose. */
 export type ReactionPickerHost = {
@@ -49,8 +50,8 @@ export type ReactionPickerHost = {
     /** The emoji the reader reacted to the picker's message with, which the picker marks as theirs. */
     pickerMine: ComputedRef<string[]>;
 
-    /** Opens the picker for a message; asked again by what opened it, it closes instead. */
-    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement) => void;
+    /** Opens the picker for a message, on its quick tray unless told; asked again by what opened it, it closes instead. */
+    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, startsOn?: PickerStep) => void;
 
     closeReactionPicker: () => void;
 
@@ -69,14 +70,18 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
     const reactionPicker = shallowRef<ReactionPicker | null>(null);
     let reactionPickerCount = 0;
 
+    // The open picker's anchor by its message, which every row asks about its own message alone: a
+    // reactive map tracks each message apart, so opening or closing the picker wakes the rows of
+    // that message and leaves the rest of the feed still. One reference read by every row would
+    // redraw every row's bar on each open and close.
+    const anchorsByMessage = shallowReactive(new Map<number, HTMLElement>());
+
     const reactionHost = reactive<ReactionHost>({
         get favorites() {
             return shell.value.reactions.favorites;
         },
         reactorNames: (messageId, reaction) => shell.value.reactions.reactorNames(messageId, reaction),
-        get pickerAnchor() {
-            return reactionPicker.value?.anchor ?? null;
-        }
+        pickerAnchorOf: messageId => anchorsByMessage.get(messageId) ?? null
     });
 
     const emojiSource = computed((): PickerSource => ({
@@ -113,10 +118,11 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
     }
 
     /**
-     * Opens the reaction picker for a message, closing any other first, and fetches the catalog it
-     * draws. The control that opened the picker toggles it, as a press on More reactions does again.
+     * Opens the reaction picker for a message, closing any other first. The shell fetches the
+     * catalog once the first conversation is drawn; asking here too covers a fetch that failed.
+     * The control that opened the picker toggles it, as a press on More reactions does again.
      */
-    function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement, opener: HTMLElement = anchor): void {
+    function openReactionPicker(channelId: string, message: TimelineMessage, anchor: HTMLElement, opener: HTMLElement = anchor, startsOn: PickerStep = "tray"): void {
         const isSameOpener = reactionPicker.value?.opener === opener;
         closeReactionPicker();
         if (isSameOpener) {
@@ -124,12 +130,19 @@ export function useReactionPicker(shell: Readonly<Ref<ChatShell>>, churchName: s
         }
 
         opener.setAttribute("aria-expanded", "true");
-        reactionPicker.value = { key: ++reactionPickerCount, channelId, messageId: message.id, anchor, opener };
+        reactionPicker.value = { key: ++reactionPickerCount, channelId, messageId: message.id, anchor, opener, startsOn };
+        anchorsByMessage.set(message.id, anchor);
         void shell.value.reactions.loadCatalog();
     }
 
     function closeReactionPicker(): void {
-        reactionPicker.value?.opener.setAttribute("aria-expanded", "false");
+        const picker = reactionPicker.value;
+        if (!picker) {
+            return;
+        }
+
+        picker.opener.setAttribute("aria-expanded", "false");
+        anchorsByMessage.delete(picker.messageId);
         reactionPicker.value = null;
     }
 

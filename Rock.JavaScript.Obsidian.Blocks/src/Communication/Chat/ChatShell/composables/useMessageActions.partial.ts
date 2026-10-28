@@ -24,6 +24,7 @@
 // client only keeps from offering what would be refused.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
+import { PickerStep } from "../components/emojiPicker.partial.obs";
 import { messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
@@ -43,15 +44,16 @@ export type ActionNotice = {
 /**
  * What a message's bar, menu, sheet, editor, reactions or block button asks for, with the message
  * it was asked on. A block's button passes onSettled, so it stays busy until its action has
- * answered; a request for the picker passes what it is placed beside, and so does a request for
- * a person's card, made from the author's name or face or a chip, which names no message.
+ * answered; a request for the picker passes what it is placed beside, and where it starts when
+ * the control asking has offered the quick reactions already; so does a request for a person's
+ * card, made from the author's name or face or a chip, which names no message.
  */
 export type MessageActionRequest =
     | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit", message: TimelineMessage }
     | { kind: "saveEdit", message: TimelineMessage, body: string }
     | { kind: "server", message: TimelineMessage, action: MessageAction, onSettled?: () => void }
     | { kind: "react", message: TimelineMessage, code: string }
-    | { kind: "openPicker", message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement }
+    | { kind: "openPicker", message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, startsOn?: PickerStep }
     | { kind: "person", personAliasGuid: string, anchor: HTMLElement };
 
 /** What the actions reach outside themselves. */
@@ -223,7 +225,7 @@ export type MessageRowRequests = {
         delete: (message: TimelineMessage) => void;
         serverAction: (action: MessageAction) => void;
         react: (message: TimelineMessage, code: string) => void;
-        openPicker: (message: TimelineMessage, anchor: HTMLElement) => void;
+        openPicker: (message: TimelineMessage, anchor: HTMLElement, startsOn?: PickerStep) => void;
     };
 
     reactions: { toggle: (code: string) => void, openPicker: (opener: HTMLElement) => void };
@@ -262,7 +264,7 @@ export function messageRowRequests(place: MessageRowPlace): MessageRowRequests {
             delete: (message: TimelineMessage): void => place.request({ kind: "delete", message }),
             serverAction: (action: MessageAction): void => about(message => ({ kind: "server", message, action })),
             react: (message: TimelineMessage, code: string): void => place.request({ kind: "react", message, code }),
-            openPicker: (message: TimelineMessage, anchor: HTMLElement): void => place.request({ kind: "openPicker", message, anchor: place.pickerAnchor(anchor) })
+            openPicker: (message: TimelineMessage, anchor: HTMLElement, startsOn?: PickerStep): void => place.request({ kind: "openPicker", message, anchor: place.pickerAnchor(anchor), ...(startsOn ? { startsOn } : {}) })
         },
         reactions: {
             toggle: (code: string): void => about(message => ({ kind: "react", message, code })),

@@ -127,12 +127,14 @@ export type Reactions = {
 
 /**
  * What a message row reads of the reactions: the favorites its bar and sheet draw, who reacted
- * for a chip's tooltip, and what the open picker is placed beside, so the bar holding it stays.
+ * for a chip's tooltip, and what the open picker is placed beside when it is open on the row's
+ * own message, so the bar holding it stays. Asked by message, so the picker opening reaches the
+ * rows of its message and no other.
  */
 export type ReactionHost = {
     favorites: ReactionFavorite[];
     reactorNames: Reactions["reactorNames"];
-    pickerAnchor: HTMLElement | null;
+    pickerAnchorOf: (messageId: number) => HTMLElement | null;
 };
 
 /** How many recently used emoji the picker shows. */

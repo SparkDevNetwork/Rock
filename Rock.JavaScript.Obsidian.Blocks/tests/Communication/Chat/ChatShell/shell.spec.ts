@@ -136,6 +136,7 @@ function build(options: {
     prefsCalls: Array<Record<string, unknown>>,
     prefsAnswer: { value: { status: number, body: unknown } },
     deviceCalls: Array<{ name: string, body: Record<string, unknown> }>,
+    emojiCalls: Array<Record<string, unknown>>,
     deviceAnswer: { value: { status: number, body: unknown } },
     exchangeSettings: { value: Record<string, unknown> },
     heldExchange: { value: Deferred<void> | null }
@@ -174,6 +175,7 @@ function build(options: {
     const prefsAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: { channel: null, me: {} } } };
     // Every device register and unregister asked, and what an unregister answers.
     const deviceCalls: Array<{ name: string, body: Record<string, unknown> }> = [];
+    const emojiCalls: Array<Record<string, unknown>> = [];
     const deviceAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: {} } };
     const exchangeSettings = { value: { limits: platformLimits, ...(options.pushSettings ? { push: options.pushSettings } : {}) } as Record<string, unknown> };
     const heldExchange: { value: Deferred<void> | null } = { value: null };
@@ -270,6 +272,10 @@ function build(options: {
                 prefsCalls.push(body);
                 return fakeResponse(prefsAnswer.value.status, prefsAnswer.value.body);
             }
+            if (url.endsWith("/rest/v1/rpc/chat_list_emojis")) {
+                emojiCalls.push(body);
+                return fakeResponse(200, { emojis: [] });
+            }
             if (url.endsWith("/rest/v1/rpc/chat_get_person")) {
                 personCalls.push(body);
                 return fakeResponse(personAnswer.value.status, personAnswer.value.body);
@@ -336,7 +342,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, deviceAnswer, exchangeSettings, heldExchange,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -1754,6 +1760,22 @@ describe("reactions", () => {
         await settle();
 
         expect(h.shell.reactions.favorites).toEqual([thumbsUp]);
+    });
+
+    // The picker's quick tray draws a recent from the catalog by its glyph, and its full picker
+    // the categories, so the catalog is on hand before the first open rather than fetched by it.
+    test("the emoji catalog is fetched once, after the first conversation is on screen", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        expect(h.emojiCalls).toHaveLength(0);
+
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.emojiCalls).toHaveLength(1);
+        expect(h.shell.reactions.state.catalog).toEqual([]);
     });
 
     test.each(["reaction.added", "reaction.removed"])("%s on a channel topic moves the chip of the message it names", async event => {

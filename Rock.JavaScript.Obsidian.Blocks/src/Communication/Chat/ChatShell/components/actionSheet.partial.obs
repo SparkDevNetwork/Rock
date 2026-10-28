@@ -192,6 +192,7 @@ img.chat-sheet-glyph {
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref, toRaw, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
+    import { PickerStep } from "./emojiPicker.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
@@ -243,7 +244,7 @@ img.chat-sheet-glyph {
         (e: "delete", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
-        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, startsOn: PickerStep): void;
         (e: "close"): void;
     }>();
 
@@ -333,8 +334,9 @@ img.chat-sheet-glyph {
     }
 
     /**
-     * The plus asks for the full picker. The sheet closes under it, so the row places the picker
-     * on the message rather than on this button.
+     * The plus asks for the full picker, past its quick tray, which would only offer again the
+     * quick reactions the sheet has just shown. The sheet closes under it, so the row places the
+     * picker on the message rather than on this button.
      */
     function onMoreReactions(event: MouseEvent): void {
         const message = props.message;
@@ -345,7 +347,7 @@ img.chat-sheet-glyph {
 
         // The message itself, not the props' view of it, so the host finds the very message it holds.
         emit("close");
-        emit("openPicker", toRaw(message), anchor);
+        emit("openPicker", toRaw(message), anchor, "full");
     }
 
     // #endregion Event Handlers
