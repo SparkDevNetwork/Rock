@@ -33,7 +33,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
-import { isOfflineFailure, offlineSentence } from "../errors.partial";
+import { failedWords, isOfflineFailure, offlineWords } from "../errors.partial";
 import { ChannelStore, startedTitle } from "../stores/channelStore.partial";
 import { ChannelFacts, ChatError, ChatPerson, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
 import type { MemberRights } from "./useMembers.partial";
@@ -48,7 +48,7 @@ export const directorySearchPause = 200;
 const refusedSentence = "You can't join this channel.";
 
 /** What a Join says when Rock answered without its door's result while the connection held. */
-const failedSentence = "Couldn't join. Try again in a moment.";
+const joinFailed = failedWords("Couldn't join.");
 
 /** What Leave says when the page has no door to ask. */
 const leaveRefusedSentence = "You can't leave this conversation right now.";
@@ -722,7 +722,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
      * pressed again, since nothing the door decided stands in the way.
      */
     function failJoin(channelId: string, kind: "offline" | "failed"): void {
-        const text = kind === "offline" ? offlineSentence : failedSentence;
+        const text = kind === "offline" ? offlineWords.alone : joinFailed.alone;
         state.joins[channelId] = { kind: "failed", text };
         announce(text);
     }

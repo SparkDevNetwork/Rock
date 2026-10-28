@@ -531,7 +531,7 @@
     import { failureNote } from "../composables/saveRule.partial";
     import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs } from "../composables/usePrefs.partial";
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
-    import { failedWords, finalWords, offlineSentence, offlineWords } from "../errors.partial";
+    import { failedWords, finalWords, offlineWords } from "../errors.partial";
     import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
@@ -835,7 +835,7 @@
             return leaveFailed.alone;
         }
 
-        return state.kind === "offline" ? offlineSentence : null;
+        return state.kind === "offline" ? offlineWords.alone : null;
     });
 
     /** What leaving means for this room: a public channel can be joined again, a private one or a group cannot. */

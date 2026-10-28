@@ -557,6 +557,7 @@
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
     import { SendFailure, SendFailureNews } from "../composables/useSend.partial";
+    import { failedWords } from "../errors.partial";
     import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
@@ -830,7 +831,7 @@
                 rows = await props.search(text);
             }
             catch (error) {
-                failure = error instanceof Error && error.message ? error.message : "People could not be searched. Try again.";
+                failure = error instanceof Error && error.message ? error.message : failedWords("People could not be searched.").alone;
             }
             if (thisSearch !== searchCount) {
                 return;

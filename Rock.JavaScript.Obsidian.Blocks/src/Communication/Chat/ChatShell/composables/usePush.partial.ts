@@ -30,6 +30,7 @@
 // again; an unregister that fails keeps the cookie, so the next load asks again.
 import { ChatSettings } from "./useSession.partial";
 import { CallResult } from "../platformCall.partial";
+import { failedWords } from "../errors.partial";
 import { ChatError } from "../types.partial";
 
 /** What push reaches outside itself. */
@@ -250,7 +251,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         return {
             code: "push.unregister_failed",
             severity: "failed",
-            text: (result && !result.ok ? result.error.text : null) ?? "Notifications couldn't be turned off on this browser. Try again in a moment."
+            text: (result && !result.ok ? result.error.text : null) ?? failedWords("Notifications couldn't be turned off on this browser.").alone
         };
     }
 

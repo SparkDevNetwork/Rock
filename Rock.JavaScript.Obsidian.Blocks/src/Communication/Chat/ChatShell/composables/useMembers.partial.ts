@@ -31,7 +31,7 @@
 // their own words, which are shown as they come.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { isOfflineFailure, offlineSentence } from "../errors.partial";
+import { failedWords, isOfflineFailure, offlineWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
 import { joinNames } from "../stores/channelStore.partial";
 import { ChatError, PersonRow, RosterMember, RosterPage } from "../types.partial";
@@ -887,9 +887,8 @@ export function createMembers(dependencies: MembersDependencies): Members {
             state.successorRefusal = null;
 
             const firstName = target.nick_name || fullNameOf(target);
-            const unreachedText = (): string => isOfflineFailure(null, isOffline())
-                ? offlineSentence
-                : `Couldn't remove ${firstName}. Try again in a moment.`;
+            const removeFailed = failedWords(`Couldn't remove ${firstName}.`);
+            const unreachedText = (): string => isOfflineFailure(null, isOffline()) ? offlineWords.alone : removeFailed.alone;
             const refuse = (text: string, isStale = false): void => {
                 const isAskedInDialog = !!replacement && state.confirming?.person_alias_guid === personAliasGuid;
                 if (isAskedInDialog) {
@@ -933,7 +932,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
             if (answer.code !== "ok") {
                 // The person was gone before the door looked: the row is stale and leaves once read.
-                refuse(answer.message || `Couldn't remove ${firstName}. Try again in a moment.`, answer.code === "door.not_member");
+                refuse(answer.message || removeFailed.alone, answer.code === "door.not_member");
                 return;
             }
 
@@ -1018,9 +1017,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            const unreachedText = (): string => isOfflineFailure(null, isOffline())
-                ? offlineSentence
-                : "Couldn't add people. Try again in a moment.";
+            const unreachedText = (): string => isOfflineFailure(null, isOffline()) ? offlineWords.alone : failedWords("Couldn't add people.").alone;
             state.adding.refusal = null;
             const door = dependencies.doors?.addMembers;
             if (!door || isOfflineFailure(null, isOffline())) {

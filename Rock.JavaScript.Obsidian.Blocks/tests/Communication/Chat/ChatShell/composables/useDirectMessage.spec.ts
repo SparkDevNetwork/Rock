@@ -116,6 +116,13 @@ describe("the picker", () => {
         expect(dm.error).toBeNull();
     });
 
+    test("a search that failed with no sentence of the server's asks to try again in the client's one wording", async () => {
+        const { dependencies } = setup({ search: async () => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }) });
+        const dm = createDirectMessages(dependencies);
+
+        await expect(dm.search("pe")).rejects.toThrow("People could not be searched. Try again in a moment.");
+    });
+
     test("takes at most the people the platform's limits allow besides the person", () => {
         const { dependencies } = setup();
         const dm = createDirectMessages(dependencies);

@@ -42,6 +42,7 @@
 // are read to show in place, so the person sees what they would be continuing; new people get a
 // draft.
 import { reactive, toRaw } from "vue";
+import { failedWords } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
 import { defaultRetryDelay } from "./useHistory.partial";
@@ -629,7 +630,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         // there; one who left it is told in the toast, and the text waits for their next draft.
         if (!channelId) {
             setPhase(message, "refused");
-            const reason = answer.message ?? "The conversation could not be started. Try again.";
+            const reason = answer.message ?? failedWords("The conversation could not be started.").alone;
             if (isOnScreen(message)) {
                 draft.status = "draft";
                 state.error = reason;
@@ -801,7 +802,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             if (!result.ok) {
                 // Nothing is known, so nothing can be sent until the people change or are chosen again.
                 state.lookup = { status: "waiting", channelId: null, isSlow: false };
-                state.error = result.error.text ?? "The conversation could not be looked up. Try again.";
+                state.error = result.error.text ?? failedWords("The conversation could not be looked up.").alone;
                 return;
             }
 
@@ -871,7 +872,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             // is for the conversation.
             const result = await dependencies.search(query);
             if (!result.ok) {
-                throw new Error(result.error.text ?? "People could not be searched. Try again.");
+                throw new Error(result.error.text ?? failedWords("People could not be searched.").alone);
             }
 
             return result.people;
@@ -911,7 +912,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             state.error = null;
             const result = await dependencies.findConversation(people.map(p => p.person_alias_guid));
             if (!result.ok) {
-                state.error = result.error.text ?? "The conversation could not be opened. Try again.";
+                state.error = result.error.text ?? failedWords("The conversation could not be opened.").alone;
                 return;
             }
 

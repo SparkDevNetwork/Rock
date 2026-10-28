@@ -26,6 +26,7 @@ import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communicati
 import { ChatPersonSettingResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatPersonSettingResultBag";
 import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
 import { DoorResult } from "./composables/useDirectMessage.partial";
+import { failedWords } from "./errors.partial";
 import { ChatShell, createChatShell, PlatformClientLike, ShellOptions } from "./shell.partial";
 
 /** What the block hands in once, for every shell it builds. */
@@ -168,7 +169,7 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
                 code: "door.unavailable",
                 channelGuid: null,
                 isPending: false,
-                message: result.errorMessage ?? "The conversation could not be started. Try again.",
+                message: result.errorMessage ?? failedWords("The conversation could not be started.").alone,
                 personAliasGuid: null
             };
         },
