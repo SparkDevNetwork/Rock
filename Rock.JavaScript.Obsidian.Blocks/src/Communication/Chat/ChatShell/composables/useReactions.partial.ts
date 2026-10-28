@@ -162,6 +162,16 @@ export type WhoReacted = {
     isMoreShown: boolean;
 };
 
+/** One message's presses still out, and what has happened to it since the first was made. */
+type Outstanding = {
+    count: number;
+    isCrossed: boolean;
+    isMoved: boolean;
+};
+
+/** How much of a message an answer to a press lays: the whole list, the pressed chip, or only the reader's mark on it. */
+type AnswerScope = "whole" | "chip" | "mark";
+
 /** How many recently used emoji the picker shows. */
 const recentLimit = 8;
 
@@ -186,10 +196,17 @@ const reactorsPageSize = 50;
 export function whoReacted(reaction: Reaction, reader: ReactionReader): WhoReacted {
     const carried = reaction.reactors ?? [];
 
-    // The reader may have reacted under an alias other than the session's.
+    // The reader may have reacted under an alias other than the session's, and while a merge
+    // settles one person can be carried under two aliases, so each person is named once.
+    const named = new Set<string>();
     const others = carried
         .filter(reactor => reactor.person_alias_guid !== reader.personAliasGuid && reactor.reactor_person_alias_guid !== reader.personAliasGuid)
         .filter(reactor => personName(reactor) !== "")
+        .filter(reactor => {
+            const isFirst = !named.has(reactor.person_alias_guid);
+            named.add(reactor.person_alias_guid);
+            return isFirst;
+        })
         .map((reactor): CardPerson => ({ key: reactor.person_alias_guid, label: personName(reactor), face: personFace(reactor) }));
 
     const you: CardPerson = { key: reader.personAliasGuid, label: "You", face: { name: reader.name, photoUrl: reader.photoUrl } };
@@ -314,6 +331,26 @@ function layChip(message: TimelineMessage, code: string, chip: Reaction | undefi
 }
 
 /**
+ * Lays only the reader's mark from an answer's chip over a copy of a message, keeping the copy's
+ * count and faces, which an event newer than the answer has moved. A chip the copy no longer has
+ * is laid whole, as the answer counts it.
+ *
+ * @param message The copy.
+ * @param code The emoji.
+ * @param chip The answer's chip of it, if any.
+ * @param place Where a new chip goes among the rest.
+ */
+function layMark(message: TimelineMessage, code: string, chip: Reaction | undefined, place: (reactions: Reaction[], code: string) => number): void {
+    const held = message.reactions?.find(reaction => reaction.code === code);
+    if (held) {
+        held.mine = chip?.mine ?? false;
+    }
+    else if (chip) {
+        layChip(message, code, chip, place);
+    }
+}
+
+/**
  * Draws a chip of one reaction on a copy of a message that has none of that emoji.
  *
  * @param message The copy.
@@ -360,10 +397,12 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     const presses = new Map<string, { turn: number, out: number, confirmed: boolean }>();
     let toggleTurn = 0;
 
-    // The presses of each message still out, and whether two were ever out at once. Crossing
-    // answers can come back in either order and each lists the message as the server counted it
-    // then, so while presses cross an answer speaks only for its own emoji.
-    const outstanding = new Map<number, { count: number, isCrossed: boolean }>();
+    // The presses of each message still out, whether two were ever out at once, and whether an
+    // event for the message landed while one was. An answer lists the message as the server
+    // counted it then: crossing answers can come back in either order, so while presses cross an
+    // answer speaks only for its own emoji; and an event may be newer than the answer, so after
+    // one an answer speaks only for the reader's mark, the event's counts and faces kept.
+    const outstanding = new Map<number, Outstanding>();
 
     /** The conversation's copy of a message, if its timeline holds it. */
     function timelineCopy(channelId: string, messageId: number): TimelineMessage | undefined {
@@ -421,7 +460,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
     /**
      * What a reaction event does to a copy of its message, by who reacted; null for a payload
-     * that names no message or emoji.
+     * that names no message or emoji. A press of the message still out is told the event came.
      */
     function eventChange(event: "reaction.added" | "reaction.removed", payload: unknown): { messageId: number, apply: (copy: TimelineMessage) => void } | null {
         const reaction = payload as Partial<ReactionEvent> | null;
@@ -433,6 +472,12 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         const emoji: EmojiGlyph = { code: reaction.code, emoji: reaction.emoji ?? null, image_url: reaction.image_url ?? null, label: reaction.label ?? reaction.code };
         const isReaders = reaction.person_alias_guid === dependencies.personAliasGuid;
         const reactors = Array.isArray(reaction.reactors) ? reaction.reactors : null;
+
+        // An answer to a press still out may have been read before this event.
+        const pending = outstanding.get(reaction.message_id);
+        if (pending) {
+            pending.isMoved = true;
+        }
 
         return {
             messageId: reaction.message_id,
@@ -511,21 +556,23 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
     /**
      * Lays an answer over every copy, each copy its own chips so no two share one: the whole list,
-     * or while presses of the message cross, only the pressed emoji's chip.
+     * only the pressed emoji's chip, or only the reader's mark on it, by the answer's scope.
      */
-    function applyAnswer(channelId: string, messageId: number, code: string, reactions: Reaction[], isWhole: boolean): void {
+    function applyAnswer(channelId: string, messageId: number, code: string, reactions: Reaction[], scope: AnswerScope): void {
         const chip = reactions.find(reaction => reaction.code === code);
-        const apply = isWhole
+        const apply = scope === "whole"
             ? (copy: TimelineMessage): void => {
                 copy.reactions = reactions.map(reaction => ({ ...reaction }));
             }
-            : (copy: TimelineMessage): void => layChip(copy, code, chip, placeOf);
+            : scope === "chip"
+                ? (copy: TimelineMessage): void => layChip(copy, code, chip, placeOf)
+                : (copy: TimelineMessage): void => layMark(copy, code, chip, placeOf);
 
         change(channelId, messageId, apply);
 
         // A message the conversation is still reloading is not held yet, but its next page may
         // have been read before this answer, so the answer is recorded all the same.
-        if (isWhole && !timelineCopy(channelId, messageId)) {
+        if (scope === "whole" && !timelineCopy(channelId, messageId)) {
             dependencies.timelines.recordReactions(messageId, reactions);
         }
     }
@@ -543,7 +590,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         press.turn = turn;
         press.out++;
         presses.set(key, press);
-        const pending = outstanding.get(messageId) ?? { count: 0, isCrossed: false };
+        const pending = outstanding.get(messageId) ?? { count: 0, isCrossed: false, isMoved: false };
         pending.isCrossed ||= pending.count > 0;
         pending.count++;
         outstanding.set(messageId, pending);
@@ -564,7 +611,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         if (press.out === 0) {
             presses.delete(key);
         }
-        const isWhole = !pending.isCrossed;
+        const scope: AnswerScope = pending.isMoved ? "mark" : pending.isCrossed ? "chip" : "whole";
         pending.count -= 1;
         if (pending.count === 0) {
             outstanding.delete(messageId);
@@ -584,7 +631,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
         const answer = result.data as Partial<ReactionAnswer> | null;
         if (isNewest && Array.isArray(answer?.reactions)) {
-            applyAnswer(channelId, messageId, emoji.code, answer.reactions, isWhole);
+            applyAnswer(channelId, messageId, emoji.code, answer.reactions, scope);
         }
     }
 
