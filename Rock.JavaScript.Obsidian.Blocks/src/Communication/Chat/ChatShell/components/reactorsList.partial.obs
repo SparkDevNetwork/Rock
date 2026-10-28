@@ -2,7 +2,7 @@
 <template>
     <Dialog :isOpen="isOpen"
             title="Reactions"
-            isSettings
+            isPanel
             :isPhone="isPhone"
             @close="emit('close')">
         <template #tools>

@@ -80,6 +80,18 @@ afterEach(() => {
     document.body.innerHTML = "";
 });
 
+describe("the dialog", () => {
+    test("is a panel: its title and Close in a head, the list under it, no actions row", () => {
+        const w = draw({});
+
+        const dialog = w.get("[role='dialog']");
+        expect(dialog.classes()).toContain("is-panel");
+        expect(dialog.get(".chat-dialog-head").text()).toContain("Reactions");
+        expect(dialog.get(".chat-dialog-head [data-testid='reactors-close']").exists()).toBe(true);
+        expect(dialog.find(".chat-dialog-actions").exists()).toBe(false);
+    });
+});
+
 describe("the tabs", () => {
     test("are every emoji first, then one per chip in chip order with its count, opened on the chip's own", () => {
         const w = draw({});

@@ -2,7 +2,7 @@
 <template>
     <Dialog :isOpen="isOpen"
             :title="kind === 'channel' ? 'Channel details' : 'Conversation details'"
-            isSettings
+            isPanel
             :isPhone="isPhone"
             @close="emit('close')">
         <template #tools>

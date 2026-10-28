@@ -82,6 +82,7 @@ describe("the dialog", () => {
 
         const dialog = w.get("[role='dialog']");
         expect(document.getElementById(dialog.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Chat settings");
+        expect(dialog.classes()).toContain("is-panel");
 
         await w.get("[data-testid='settings-close']").trigger("click");
         expect(w.emitted("close")).toHaveLength(1);
