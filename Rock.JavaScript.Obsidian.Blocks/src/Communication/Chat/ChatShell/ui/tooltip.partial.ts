@@ -73,15 +73,16 @@ const hoverGrace: TooltipDelay = { token: "--chat-d-hover-grace", fallbackMs: 22
 const tabbableSelector = "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true'], [tabindex='0']";
 
 /**
- * Whether an element is drawn, which one under display:none, or hidden itself, is not, though it
- * still matches the keyboard's selector.
+ * Whether an element is drawn for the keyboard, though it still matches the keyboard's selector:
+ * not one under display:none, or hidden itself, nor one in an inert part, as a phone's panes
+ * behind the front one are, or in a part hidden from assistive technology.
  *
  * @param element The element.
  *
  * @returns Whether it is drawn.
  */
 function isDrawn(element: HTMLElement): boolean {
-    if (getComputedStyle(element).visibility === "hidden") {
+    if (getComputedStyle(element).visibility === "hidden" || element.closest("[inert], [aria-hidden='true']")) {
         return false;
     }
 

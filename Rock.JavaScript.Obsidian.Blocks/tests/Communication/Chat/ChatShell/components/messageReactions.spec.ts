@@ -431,6 +431,31 @@ describe("a chip's card from the keyboard", () => {
         expect(document.activeElement).toBe(after);
     });
 
+    // A phone's panes behind the front one are inert, and a part hidden from assistive technology
+    // is not where a keyboard user is: Tab never lands in either.
+    test("Tab past See all skips what is inert or hidden from assistive technology", async () => {
+        jest.useFakeTimers();
+        const host = document.createElement("div");
+        document.body.append(host);
+        const inert = document.createElement("div");
+        inert.setAttribute("inert", "");
+        inert.innerHTML = "<button type='button'>Behind</button>";
+        const ariaHidden = document.createElement("div");
+        ariaHidden.setAttribute("aria-hidden", "true");
+        ariaHidden.innerHTML = "<span><button type='button'>Unheard</button></span>";
+        const after = document.createElement("button");
+        after.type = "button";
+        document.body.append(inert, ariaHidden, after);
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, isPhone: true, message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]) }, attachTo: host });
+        await focusCard(wrapper);
+        await chips(wrapper)[0].trigger("keydown", { key: "Tab" });
+
+        document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+        await settle();
+
+        expect(document.activeElement).toBe(after);
+    });
+
     test("the chip that holds the card says so, and names it", async () => {
         jest.useFakeTimers();
         const w = mountRow({ message: message([pray(12, false, [person(anna, "Anna", "Reyes")]), heart(1)]) });
