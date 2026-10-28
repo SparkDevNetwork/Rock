@@ -264,7 +264,7 @@
                                   :isLoading="threadList.isLoading"
                                   :isRefreshing="threadList.isRefreshing"
                                   :error="threadList.error"
-                                  :followError="shell.threads.state.followError"
+                                  :followError="listFollowError"
                                   :channelId="threadList.channelId ?? activeChannelId ?? ''"
                                   :kind="activeKind ?? 'channel'"
                                   :roomTitles="roomTitles"
@@ -314,7 +314,7 @@
                                   :pending="shell.sender.pending(drawnThread.channelId)"
                                   :sentKeys="shell.sender.sentKeys"
                                   :isFollowing="drawnThread.following"
-                                  :followError="shell.threads.state.followError?.rootId === drawnThread.rootId ? shell.threads.state.followError : null"
+                                  :followError="drawerFollowError"
                                   :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
                                   :isChannel="threadKind === 'channel'"
                                   :isDirectMessage="threadKind === 'person'"
@@ -693,7 +693,7 @@
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useJump } from "./ChatShell/composables/useJump.partial";
-    import { ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
+    import { FollowError, ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { FeedLayout } from "./ChatShell/feedLayout.partial";
@@ -937,6 +937,16 @@
      */
     const conversationDraft = computed((): ComposerDraft | null => conversationQuoteKey.value ? shell.value.drafts.of(conversationQuoteKey.value) : null);
     const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
+
+    /**
+     * A refused follow change is said once, by the drawer while it holds that thread, the drawer
+     * it went back from included, and otherwise by the list's row.
+     */
+    const drawerFollowError = computed((): FollowError | null => {
+        const error = shell.value.threads.state.followError;
+        return error && error.rootId === drawnThread.value?.rootId ? error : null;
+    });
+    const listFollowError = computed((): FollowError | null => drawerFollowError.value ? null : shell.value.threads.state.followError);
 
     /** The box focus is in, if either. */
     const focusedComposer = ref<"conversation" | "thread" | null>(null);

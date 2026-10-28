@@ -62,6 +62,7 @@
         <SettingGroup v-if="canRename" class="chat-rn-grp" label="Conversation name" :labelFor="renameId">
             <div class="chat-rn">
                 <input :id="renameId"
+                       ref="renameElement"
                        v-model="draftName"
                        class="chat-rn-in"
                        data-testid="rename-input"
@@ -81,7 +82,7 @@
         </SettingGroup>
         <template v-if="canRename">
             <!-- A failed rename keeps the name typed, so Save beside it is its Try again. -->
-            <SettingNote v-if="renameNote" :id="`${renameId}-note`" class="chat-rd-note" :note="renameNote" data-testid="rename-note" />
+            <SettingNote v-if="renameNote" :id="`${renameId}-note`" class="chat-rd-note" :note="renameNote" data-testid="rename-note" @retry="onRenameRetry" />
             <SettingNote v-else-if="countText" :id="`${renameId}-note`" class="chat-rd-note" :note="{ kind: 'info', text: countText }" data-testid="rename-count" />
             <p :id="`${renameId}-help`" class="chat-rd-cap" data-testid="rename-help">Everyone here sees it. Blank shows everyone's names.</p>
         </template>
@@ -712,6 +713,7 @@
     /** The Leave row, whose own element takes focus back when the confirm is cancelled. */
     const leaveRow = ref<{ $el: HTMLElement } | null>(null);
     const leaveCancelElement = ref<HTMLButtonElement>();
+    const renameElement = ref<HTMLInputElement>();
 
     /** The rooms' announcement count as the dialog opened, so only news said since is read here. */
     const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
@@ -894,6 +896,12 @@
         const next = (at + step + notifyOptions.value.length) % notifyOptions.value.length;
         notifyElements.value[next]?.focus();
         onNotify(notifyOptions.value[next].value);
+    }
+
+    /** Try again takes its button away, so the name it asked again takes focus. */
+    async function onRenameRetry(): Promise<void> {
+        await nextTick();
+        renameElement.value?.focus();
     }
 
     function onRename(): void {

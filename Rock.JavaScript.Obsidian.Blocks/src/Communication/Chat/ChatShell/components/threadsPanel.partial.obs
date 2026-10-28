@@ -136,7 +136,8 @@
                                      class="chat-ls-rowerr"
                                      role="alert"
                                      :note="drawn.error"
-                                     data-testid="thread-row-error" />
+                                     data-testid="thread-row-error"
+                                     @retry="onFollowRetry(drawn.rootId)" />
                     </li>
                 </ul>
                 <div v-if="hasMore" ref="endElement" class="chat-ls-endmark" aria-hidden="true"></div>
@@ -594,6 +595,16 @@
     /** The bell changes at once, so a second press while the first is out asks again. */
     function onFollow(row: DrawnRow): void {
         emit("follow", row.rootId, !row.isFollowing);
+    }
+
+    /** Try again takes its button away, so the bell it asked again takes focus, its row the tab stop. */
+    async function onFollowRetry(rootId: number): Promise<void> {
+        roveId.value = rootId;
+        await nextTick();
+        listElement.value?.querySelector<HTMLElement>(`[data-testid='thread-row-open'][data-root-id='${rootId}']`)
+            ?.closest(".chat-ls-row")
+            ?.querySelector<HTMLElement>("[data-testid='thread-row-follow']")
+            ?.focus();
     }
 
     /** The tablist's own keys: either arrow flips between the two tabs, Home and End go to the ends. */

@@ -33,6 +33,7 @@ import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/comp
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
+import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
 
 // #region Stand-ins
@@ -1910,6 +1911,21 @@ describe("following a thread", () => {
         threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
         await settle();
         expect(w.findComponent(ThreadDrawerComponent).props("followError")).toEqual({ rootId: 40, isFollowing: false, text: "No." });
+    });
+
+    // A refusal is said once, where it was made: the list the drawer goes back to leaves it unsaid.
+    test("the list the drawer goes back to does not say the drawer's refusal again, and says its other rows'", async () => {
+        const w = await openDrawer();
+        threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
+        await settle();
+
+        w.findComponent(ThreadDrawerComponent).vm.$emit("back");
+        await settle();
+        expect(w.findComponent(ThreadsPanelComponent).props("followError")).toBeNull();
+
+        threadsOf().state.followError = { rootId: 99, isFollowing: true, text: "Not now." };
+        await settle();
+        expect(w.findComponent(ThreadsPanelComponent).props("followError")).toEqual({ rootId: 99, isFollowing: true, text: "Not now." });
     });
 });
 

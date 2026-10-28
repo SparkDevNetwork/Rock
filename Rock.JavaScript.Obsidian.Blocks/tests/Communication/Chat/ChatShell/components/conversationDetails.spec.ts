@@ -736,6 +736,22 @@ describe("the conversation name", () => {
         expect(w.emitted("rename")).toEqual([["Trail crew"]]);
     });
 
+    // Try again takes its button away as the name is saved again, so focus goes to the name.
+    test("Try again leaves focus in the name it asked again", async () => {
+        const w = mountGroup();
+        await w.get("[data-testid='rename-input']").setValue("Trail crew");
+        await w.setProps({ rename: { kind: "saving" } });
+        await w.setProps({ rename: { kind: "failed" } });
+
+        const retry = w.get("[data-testid='rename-note'] [data-testid='note-retry']");
+        (retry.element as HTMLElement).focus();
+        await retry.trigger("click");
+        await w.setProps({ rename: { kind: "saving" } });
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='rename-input']").element);
+    });
+
     test("is not offered in a group the person is not in, which Rock's door says", () => {
         const w = mountGroup({ facts: groupFacts({ is_member: false }), canRename: false });
 
