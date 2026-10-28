@@ -3,6 +3,8 @@
     <TabbedBar v-model="selectedTab" :tabs="tabs" type="pills" />
 
     <div class="tabbed-content mt-4">
+        <NotificationBox v-if="validationError?.message" alertType="info" v-html="validationError.message"></NotificationBox>
+
         <div v-if="selectedTab == 'Basic Settings'">
 
             <div class="row">
@@ -118,7 +120,6 @@
                              label="Body CSS Class"
                              help="The CSS class to add to the body tag (if theme and layout supports it)." />
                     <fieldset>
-                        <NotificationBox v-if="validationError" alertType="info" v-html="validationError?.message"></NotificationBox>
                         <TextBox v-model="pageRoute"
                                  textMode="multiLine"
                                  :rows="3"
