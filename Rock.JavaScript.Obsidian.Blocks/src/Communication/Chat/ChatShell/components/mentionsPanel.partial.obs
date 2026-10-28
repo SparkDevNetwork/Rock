@@ -147,6 +147,8 @@
 
 /* The author's face carries the @ in a small brand disc at its corner. */
 .chat-ls-at {
+    --chat-ic-size: 8px;
+    --chat-ic-stroke: 2.8;
     position: absolute;
     right: -5px;
     bottom: -5px;
@@ -158,12 +160,6 @@
     background: var(--chat-brand-fill);
     border-radius: 50%;
     box-shadow: 0 0 0 2px var(--chat-surface);
-}
-
-.chat-ls-at :deep(.chat-ic) {
-    width: 8px;
-    height: 8px;
-    stroke-width: 2.8;
 }
 
 /* Three lines here rather than the list's two: a mention is read for what it asks of the reader. */
@@ -196,9 +192,11 @@
     border-radius: var(--chat-r-full);
 }
 
+.chat-ls-inthread {
+    --chat-ic-size: 13px;
+}
+
 .chat-ls-inthread :deep(.chat-ic) {
-    width: 13px;
-    height: 13px;
     color: var(--chat-icon);
 }
 
@@ -238,6 +236,7 @@
 }
 
 .chat-ls-endnote {
+    --chat-ic-size: 13px;
     display: inline-flex;
     gap: 5px;
     align-items: center;
@@ -245,10 +244,6 @@
     color: var(--chat-muted);
 }
 
-.chat-ls-endnote :deep(.chat-ic) {
-    width: 13px;
-    height: 13px;
-}
 </style>
 
 <script setup lang="ts">

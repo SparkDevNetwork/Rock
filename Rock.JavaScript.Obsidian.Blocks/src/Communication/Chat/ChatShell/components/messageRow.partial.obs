@@ -600,6 +600,7 @@
 
 /* "Replied to a thread", in the quote label's recipe, over the bubble's side or the text column. */
 .chat-thread-label {
+    --chat-ic-size: 12px;
     display: inline-flex;
     gap: 4px;
     align-items: center;
@@ -614,8 +615,6 @@
 }
 
 .chat-thread-label :deep(.chat-ic) {
-    width: 12px;
-    height: 12px;
     color: var(--chat-icon);
 }
 

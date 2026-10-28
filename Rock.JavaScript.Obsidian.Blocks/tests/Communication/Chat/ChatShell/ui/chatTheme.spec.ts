@@ -780,8 +780,8 @@ describe("the components' own styles", () => {
         expect(declared(".chat-all-mark", "color")).toBe(normalize("var(--chat-brand-ink)"));
         expect(declared(".chat-all-mark", "background")).toBe(normalize("var(--chat-brand-tint)"));
         expect(declared(".chat-all-mark", "box-shadow")).toBe(normalize("inset 0 0 0 1px var(--chat-brand-line)"));
-        expect(declared(".chat-shell .chat-all-mark .chat-ic", "width")).toBe(normalize("calc(var(--chat-all-mark-s, 18px) * 11 / 18)"));
-        expect(declared(".chat-shell .chat-all-mark .chat-ic", "height")).toBe(normalize("calc(var(--chat-all-mark-s, 18px) * 11 / 18)"));
+        // The glyph's share of the disc, set on the mark for the icon it holds to read.
+        expect(declared(".chat-all-mark", "--chat-ic-size")).toBe(normalize("calc(var(--chat-all-mark-s, 18px) * 11 / 18)"));
 
         // The @all chip is a person's chip with the mark for a face: no color of its own.
         expect(declared(".chat-mn.is-all", "color")).toBe("");

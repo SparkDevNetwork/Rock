@@ -139,17 +139,13 @@
 }
 
 .chat-tools :deep(.chat-tool) {
+    --chat-ic-size: 16px;
     position: relative;
     width: 28px;
     height: 28px;
     color: var(--chat-icon);
     border-radius: var(--chat-r-tool);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-tools :deep(.chat-tool .chat-ic) {
-    width: 16px;
-    height: 16px;
 }
 
 .chat-tools :deep(.chat-tool:hover) {
@@ -173,9 +169,8 @@
     align-items: center;
 }
 
-.chat-tools :deep(.chat-tool.is-add .chat-ic) {
-    width: 18px;
-    height: 18px;
+.chat-tools :deep(.chat-tool.is-add) {
+    --chat-ic-size: 18px;
 }
 
 /* A quick reaction is a wider tool around its glyph, and only the glyph moves: it grows on hover and gives on a press. */

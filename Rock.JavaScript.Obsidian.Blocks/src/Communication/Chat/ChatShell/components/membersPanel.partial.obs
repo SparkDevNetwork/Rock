@@ -579,6 +579,7 @@
 }
 
 .chat-mb-state-ic {
+    --chat-ic-size: 22px;
     display: grid;
     place-items: center;
     width: 52px;
@@ -588,11 +589,6 @@
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
     border-radius: 16px;
-}
-
-.chat-mb-state-ic :deep(.chat-ic) {
-    width: 22px;
-    height: 22px;
 }
 
 .chat-mb-state h4 {

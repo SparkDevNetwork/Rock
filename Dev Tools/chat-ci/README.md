@@ -25,6 +25,9 @@ a hex, `rgb()`, `rgba()`, `hsl()`, `hsla()` or named color, a number of `ms` or 
 in a style block, an inline style or a style written from script. The chat draws all of those from
 its token sheet, `RockWeb/Styles/Blocks/Communication/Chat/chat.css`, so dark mode and a church's color reach every screen; that
 sheet and `brand.partial.ts`, which computes the church color's tokens, are the two files exempt.
+It also refuses a rule outside the icon component, the token sheet included, that sets an icon's
+width, height or stroke width: such a rule weighs the same as the icon's own and wins or loses by the
+order the built styles load in, so a caller sets `--chat-ic-size` or `--chat-ic-stroke` on what holds the icon instead.
 
 `check-contract.mjs` fails when Rock's vendored wire contract differs by a byte from the platform's, read from `CHAT_PLATFORM_CONTRACT` or else a platform checkout beside this repository; with neither, it says it skipped and passes.
 

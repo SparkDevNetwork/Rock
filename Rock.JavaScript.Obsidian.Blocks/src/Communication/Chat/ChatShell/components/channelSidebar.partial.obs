@@ -545,6 +545,7 @@
 }
 
 .chat-cs-slot {
+    --chat-ic-size: 16px;
     display: grid;
     flex: none;
     place-items: center;
@@ -552,11 +553,6 @@
     height: 20px;
     color: var(--chat-icon);
     border-radius: var(--chat-r-sm);
-}
-
-.chat-cs-slot :deep(.chat-ic) {
-    width: 16px;
-    height: 16px;
 }
 
 .chat-row.is-cs .chat-row-name {
@@ -592,9 +588,8 @@
 }
 
 /* Its search mark is the small icon in the channel's 20px slot, not a channel's 16px one. */
-.chat-row.is-browse .chat-cs-slot :deep(.chat-ic) {
-    width: 15px;
-    height: 15px;
+.chat-row.is-browse .chat-cs-slot {
+    --chat-ic-size: 15px;
 }
 
 /*
@@ -646,6 +641,7 @@
 }
 
 .chat-side-empty-ic {
+    --chat-ic-size: 26px;
     display: grid;
     place-items: center;
     width: 48px;
@@ -653,11 +649,6 @@
     color: var(--chat-muted);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-empty);
-}
-
-.chat-side-empty-ic .chat-ic {
-    width: 26px;
-    height: 26px;
 }
 
 .chat-side-empty b {

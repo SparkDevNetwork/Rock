@@ -226,6 +226,54 @@ test('it refuses a comment beside a template root and passes one inside it', () 
   assert.match(hits[0], /comment beside the template's root/);
 });
 
+test('it refuses an icon sized by a rule of its caller, in a component or the token sheet', () => {
+  // Two rules of one specificity fight by the order the built styles load in, which no test sees:
+  // the icon's own size won that fight once and drew a group mark's glyph too large. A caller
+  // sizes an icon through the custom properties the icon reads, never against its rules.
+  const component = [
+    '<style scoped>',
+    '.chat-row :deep(.chat-ic) {',
+    '    width: 16px;',
+    '    height: 16px;',
+    '    color: var(--chat-icon);',
+    '}',
+    '.chat-row {',
+    '    --chat-ic-size: 16px;',
+    '    --chat-ic-stroke: 2.2;',
+    '}',
+    '.chat-row > .chat-ic { margin-top: 2px; }',
+    '</style>',
+  ].join('\n');
+  const sheet = [
+    '.chat-shell .chat-badge .chat-ic {',
+    '    stroke-width: 2.2;',
+    '}',
+    '.chat-badge {',
+    '    --chat-ic-size: 12px;',
+    '}',
+  ].join('\n');
+
+  const componentHits = scan(`${shell}/components/example.partial.obs`, component);
+  const sheetHits = scan('RockWeb/Styles/Blocks/Communication/Chat/chat.css', sheet);
+
+  assert.deepEqual(linesOf(componentHits), [3, 4], componentHits.join(' | '));
+  assert.match(componentHits[0], /--chat-ic-size/);
+  assert.deepEqual(linesOf(sheetHits), [2], sheetHits.join(' | '));
+});
+
+test('the icon itself may size its own drawing', () => {
+  const icon = [
+    '<style scoped>',
+    '.chat-ic {',
+    '    width: var(--chat-ic-size, 18px);',
+    '    stroke-width: var(--chat-ic-stroke, 1.75);',
+    '}',
+    '</style>',
+  ].join('\n');
+
+  assert.deepEqual(scan(`${shell}/ui/icon.partial.obs`, icon), []);
+});
+
 test('run on the red fixtures, it names each hole a whole-string check would miss', () => {
   const result = run('--root', 'check-styles-fixtures/red');
 
@@ -291,6 +339,7 @@ test('it reads the chat block and every file under its folder', () => {
   assert.ok(files.includes('Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs'), files.join('\n'));
   assert.ok(files.includes(`${shell}/components/messageRow.partial.obs`), files.join('\n'));
   assert.ok(files.includes(`${shell}/composables/useSend.partial.ts`), files.join('\n'));
+  assert.ok(files.includes('RockWeb/Styles/Blocks/Communication/Chat/chat.css'), files.join('\n'));
 });
 
 test('the chat files in this branch are clean today', () => {

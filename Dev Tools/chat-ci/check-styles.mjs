@@ -15,7 +15,12 @@
 // without the region it is read whole. A stylesheet anywhere else in the gate's reach is read
 // whole, as a style block.
 //
-//   node check-styles.mjs                checks the chat block and everything under its folder
+// It also refuses a rule outside the icon that sets an icon's width, height or stroke width,
+// the token sheet included. Such a rule and the icon's own size rule weigh the same, so which one
+// draws is decided by the order the built styles load in, which no test sees; a caller sizes an
+// icon through --chat-ic-size and --chat-ic-stroke, which the icon reads.
+//
+//   node check-styles.mjs                checks the chat block, everything under its folder and the token sheet
 //   node check-styles.mjs --root <dir>   checks every component under a folder, which is how the
 //                                        test proves the gate bites on its fixtures
 import { readdirSync, readFileSync } from 'node:fs';
@@ -27,12 +32,20 @@ const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const chatFolder = 'Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat';
 const chatBlock = `${chatFolder}/chatShell.obs`;
 const shellFolder = `${chatFolder}/ChatShell`;
+const tokenSheet = 'RockWeb/Styles/Blocks/Communication/Chat/chat.css';
 
 /** Where literals may live, by file name: the whole file, or only the region named. */
 const exempt = new Map([
   ['chat.css', null],
   ['brand.partial.ts', 'Color arithmetic'],
 ]);
+
+/** The one file whose rules size an icon's drawing. */
+const iconOwner = 'icon.partial.obs';
+
+/** A selector that reaches an icon's drawing, and the properties only the icon sets on it. */
+const ICON = /\.chat-ic(?![\w-])/;
+const ICON_SIZE = /^(width|height|min-width|min-height|max-width|max-height|stroke-width)$/;
 
 /**
  * The text with an exempt region's characters blanked and its line breaks kept, so the rest is
@@ -127,20 +140,25 @@ function scriptLiteral(content) {
  * Walks a style block's declarations, skipping selectors and at-rule preludes, so an id selector
  * that happens to read as hex is never taken for a color. Reports the line each literal is on.
  */
-function scanCss(file, text, start, end, hits) {
+function scanCss(file, text, start, end, hits, { isLiteralAllowed = false, isIconOwner = false } = {}) {
   const css = text.slice(start, end).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
   const stack = [];
   let segmentStart = 0;
+  let selector = '';
 
   const declaration = (from, to) => {
     const body = css.slice(from, to);
     const colon = body.indexOf(':');
     if (colon < 0) return;
+    const property = body.slice(0, colon).trim().toLowerCase();
     const value = body.slice(colon + 1);
-    const found = cssLiteral(value);
+    const valueOffset = from + colon + 1 + value.search(/\S|$/);
+    const found = isLiteralAllowed ? null : cssLiteral(value);
     if (found) {
-      const valueOffset = from + colon + 1 + value.search(/\S|$/);
       hits.push(`${file}:${lineAt(text, start + valueOffset)}: ${found}`);
+    }
+    if (!isIconOwner && ICON.test(selector) && ICON_SIZE.test(property)) {
+      hits.push(`${file}:${lineAt(text, start + valueOffset)}: an icon's ${property} set against the icon's own rules; set --chat-ic-size or --chat-ic-stroke on what holds it`);
     }
   };
 
@@ -148,7 +166,9 @@ function scanCss(file, text, start, end, hits) {
     const c = css[i];
     if (c === '{') {
       const prelude = css.slice(segmentStart, i).trim();
-      stack.push(prelude.startsWith('@') && !/^@(font-face|page)/.test(prelude) ? 'group' : 'rule');
+      const isGroup = prelude.startsWith('@') && !/^@(font-face|page)/.test(prelude);
+      stack.push(isGroup ? 'group' : 'rule');
+      if (!isGroup) selector = prelude;
       segmentStart = i + 1;
     } else if (c === '}') {
       if (stack[stack.length - 1] === 'rule') declaration(segmentStart, i);
@@ -233,19 +253,25 @@ function scanTemplate(file, text, start, end, hits) {
   }
 }
 
-/** Every literal a chat file holds that it should take from the token sheet, as `file:line: what`. */
+/**
+ * Every literal a chat file holds that it should take from the token sheet, and every icon it
+ * sizes against the icon's own rules, as `file:line: what`.
+ */
 export function scan(file, text) {
   const name = basename(file);
-  if (exempt.has(name)) {
-    if (exempt.get(name) === null) return [];
+  // A file exempt whole may hold literals, but sizes an icon by the same rule as any other.
+  const isLiteralAllowed = exempt.has(name) && exempt.get(name) === null;
+  if (exempt.has(name) && !isLiteralAllowed) {
     text = withoutRegion(text, exempt.get(name));
   }
+  const cssRules = { isLiteralAllowed, isIconOwner: name === iconOwner };
 
   const hits = [];
   if (file.endsWith('.css')) {
-    scanCss(file, text, 0, text.length, hits);
+    scanCss(file, text, 0, text.length, hits, cssRules);
     return hits;
   }
+  if (isLiteralAllowed) return hits;
   if (file.endsWith('.ts')) {
     scanScript(file, text, 0, text.length, hits);
     return hits;
@@ -253,7 +279,7 @@ export function scan(file, text) {
 
   for (const match of text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)) {
     const start = match.index + match[0].indexOf('>') + 1;
-    scanCss(file, text, start, start + match[1].length, hits);
+    scanCss(file, text, start, start + match[1].length, hits, cssRules);
   }
   for (const match of text.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)) {
     const start = match.index + match[0].indexOf('>') + 1;
@@ -280,11 +306,12 @@ function walk(folder) {
 }
 
 /**
- * The files the gate reads: the chat block and everything under its folder. The folder is walked
- * rather than listed from git, so a component is held to the rule before it is first committed.
+ * The files the gate reads: the chat block, everything under its folder and the token sheet. The
+ * folder is walked rather than listed from git, so a component is held to the rule before it is
+ * first committed.
  */
 export function styleFiles() {
-  return [chatBlock, ...walk(resolve(repoRoot, shellFolder))].sort();
+  return [chatBlock, tokenSheet, ...walk(resolve(repoRoot, shellFolder))].sort();
 }
 
 const args = process.argv.slice(2);
@@ -300,9 +327,9 @@ if (invokedDirectly) {
   }
 
   if (hits.length > 0) {
-    console.error('style literals or root comments in chat components:');
+    console.error('style literals, root comments or icon sizes in chat components:');
     for (const hit of hits) console.error(`  ${hit}`);
-    console.error('\nName a value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token; move a root comment inside the root.');
+    console.error('\nName a value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token; move a root comment inside the root; size an icon with --chat-ic-size and --chat-ic-stroke on what holds it.');
     process.exit(1);
   }
 

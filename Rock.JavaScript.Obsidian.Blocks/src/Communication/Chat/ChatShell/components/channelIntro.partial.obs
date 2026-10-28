@@ -38,6 +38,7 @@
 }
 
 .chat-intro-mark {
+    --chat-ic-size: 20px;
     display: grid;
     place-items: center;
     width: 40px;
@@ -45,11 +46,6 @@
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-intro);
-}
-
-.chat-intro-mark :deep(.chat-ic) {
-    width: 20px;
-    height: 20px;
 }
 
 /* Rock's theme styles every heading, so this one states its whole face. */

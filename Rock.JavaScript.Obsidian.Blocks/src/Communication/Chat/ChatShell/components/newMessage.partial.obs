@@ -195,6 +195,7 @@
 }
 
 .chat-nd-hdr-ic {
+    --chat-ic-size: 19px;
     display: grid;
     flex: none;
     place-items: center;
@@ -203,11 +204,6 @@
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-hdr-ic);
-}
-
-.chat-nd-hdr-ic :deep(.chat-ic) {
-    width: 19px;
-    height: 19px;
 }
 
 .chat-nd-hdr-title {
@@ -326,6 +322,7 @@
 }
 
 .chat-nd-empty-ic {
+    --chat-ic-size: 26px;
     display: grid;
     place-items: center;
     width: 56px;
@@ -333,11 +330,6 @@
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-dialog);
-}
-
-.chat-nd-empty-ic :deep(.chat-ic) {
-    width: 26px;
-    height: 26px;
 }
 
 .chat-nd-look {

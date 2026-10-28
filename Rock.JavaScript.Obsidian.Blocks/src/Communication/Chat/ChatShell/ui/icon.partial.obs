@@ -10,28 +10,34 @@
 </template>
 
 <style scoped>
-/* One stroke set, 24 units square, drawn in the color of the text around it. */
+/*
+    One stroke set, 24 units square, drawn in the color of the text around it, at the size it is
+    given. What holds an icon may draw it at another size by setting --chat-ic-size, and another
+    stroke by --chat-ic-stroke, which these rules read before their own. A rule of the holder's
+    on the icon itself would weigh the same as these and win or lose by the order the built styles
+    load in, so the icon is only ever sized here.
+*/
 .chat-ic {
     flex: none;
-    width: 18px;
-    height: 18px;
+    width: var(--chat-ic-size, 18px);
+    height: var(--chat-ic-size, 18px);
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.75;
+    stroke-width: var(--chat-ic-stroke, 1.75);
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
 .chat-ic.is-sm {
-    width: 15px;
-    height: 15px;
+    width: var(--chat-ic-size, 15px);
+    height: var(--chat-ic-size, 15px);
 }
 
 /* A thin stroke breaks up at 13px, so the smallest size draws heavier. */
 .chat-ic.is-xs {
-    width: 13px;
-    height: 13px;
-    stroke-width: 2;
+    width: var(--chat-ic-size, 13px);
+    height: var(--chat-ic-size, 13px);
+    stroke-width: var(--chat-ic-stroke, 2);
 }
 
 .chat-ic .is-filled {
@@ -59,7 +65,7 @@
             required: true
         },
 
-        /** The drawn size: 18px, 15px or 13px. */
+        /** The drawn size: 18px, 15px or 13px, unless what holds the icon sets --chat-ic-size. */
         size: {
             type: String as PropType<"md" | "sm" | "xs">,
             default: "md"

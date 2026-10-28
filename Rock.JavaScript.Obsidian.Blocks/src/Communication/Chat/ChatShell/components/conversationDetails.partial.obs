@@ -210,6 +210,7 @@
 }
 
 .chat-rd-mark {
+    --chat-ic-size: 22px;
     display: grid;
     flex: none;
     place-items: center;
@@ -218,11 +219,6 @@
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-lg);
-}
-
-.chat-rd-mark :deep(.chat-ic) {
-    width: 22px;
-    height: 22px;
 }
 
 /* The leaders' faces in a pile, ringed by the sheet in the group's own color. */

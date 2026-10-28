@@ -68,9 +68,11 @@
     }
 }
 
+.chat-tsum {
+    --chat-ic-size: 14px;
+}
+
 .chat-tsum :deep(.chat-ic) {
-    width: 14px;
-    height: 14px;
     color: var(--chat-icon);
 }
 

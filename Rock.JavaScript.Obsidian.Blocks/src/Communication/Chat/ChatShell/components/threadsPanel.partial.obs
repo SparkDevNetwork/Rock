@@ -260,16 +260,12 @@
 }
 
 .chat-ls-fol {
+    --chat-ic-size: 12px;
     display: inline-flex;
     gap: 3px;
     align-items: center;
     font-weight: 600;
     color: var(--chat-brand-ink);
-}
-
-.chat-ls-fol :deep(.chat-ic) {
-    width: 12px;
-    height: 12px;
 }
 
 .chat-ls-fol.is-off {
@@ -304,6 +300,7 @@
 
 /* The follow toggle takes the time's place where the row is pointed at, focused, off or busy. */
 .chat-ls-row :deep(.chat-ls-follow) {
+    --chat-ic-size: 16px;
     position: absolute;
     top: 5px;
     right: 6px;
@@ -313,11 +310,6 @@
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-ls-row :deep(.chat-ls-follow .chat-ic) {
-    width: 16px;
-    height: 16px;
 }
 
 .chat-ls-row:hover :deep(.chat-ls-follow),
