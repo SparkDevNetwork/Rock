@@ -314,6 +314,10 @@ export type AttachmentTray = {
     retry: (localId: string) => void;
 };
 
+export function canAttach(_limits: AttachmentLimits): boolean {
+    return false;
+}
+
 /**
  * Whether a tray's files can go: every one is up. A file still going, or failed, holds the send.
  *

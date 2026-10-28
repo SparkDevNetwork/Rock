@@ -19,7 +19,7 @@
 // batches, each link kept until shortly before it expires.
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { attachmentPreviewWords, attachmentsPreview, createAttachments, declaredType, formatFileSize, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
+import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { fakeCodec, harness, limits, picked, projectUrl, publishableKey, settle, tenant, token } from "../attachmentFakes";
 
@@ -446,5 +446,14 @@ describe("uploading again", () => {
         h.requests[1].respond(403);
 
         expect(await again).toBeNull();
+    });
+});
+
+describe("canAttach", () => {
+    test("files are offered only once the platform has answered its limits for them", () => {
+        expect(canAttach(limits)).toBe(true);
+        expect(canAttach({ ...limits, attachment_types: [] })).toBe(false);
+        expect(canAttach({ ...limits, attachment_max_files: 0 })).toBe(false);
+        expect(canAttach({ ...limits, attachment_max_bytes: 0 })).toBe(false);
     });
 });
