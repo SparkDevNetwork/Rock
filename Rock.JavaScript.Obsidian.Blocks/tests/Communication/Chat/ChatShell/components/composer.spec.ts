@@ -715,7 +715,7 @@ describe("the reply composer's Also send switch", () => {
 // A failure is said aloud once, assertively, when it happens; a strip already there when the
 // person comes back to the room, or opens the box, is not said again.
 describe("the composer's strip for a failed send", () => {
-    const offline = { count: 1, reason: "You're offline.", canRetry: true, localIds: ["k1"] };
+    const offline = { count: 1, reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true }, canRetry: true, localIds: ["k1"] };
 
     function strip(wrapper: VueWrapper): ReturnType<VueWrapper["get"]> {
         return wrapper.get("[data-testid='composer-failed']");
@@ -752,16 +752,25 @@ describe("the composer's strip for a failed send", () => {
     });
 
     test("several are counted, and its buttons act on them all", () => {
-        const wrapper = mountComposer({ props: { sendFailure: { count: 3, reason: "You're offline.", canRetry: true, localIds: ["k1", "k2", "k3"] } } });
+        const wrapper = mountComposer({ props: { sendFailure: { count: 3, reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true }, canRetry: true, localIds: ["k1", "k2", "k3"] } } });
 
         expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("3 messages weren't sent");
         expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Try again", "Delete all"]);
     });
 
     test("a send refused for good shows its sentence and Delete alone", () => {
-        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: "You can't mention everyone in this channel.", canRetry: false, localIds: ["k1"] } } });
+        const wrapper = mountComposer({ props: { sendFailure: { count: 1, reason: { alone: "You can't mention everyone in this channel.", besideRetry: "You can't mention everyone in this channel.", canRetry: false }, canRetry: false, localIds: ["k1"] } } });
 
         expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You can't mention everyone in this channel.");
+        expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Delete"]);
+    });
+
+    // Beside Try again the button asks, so the reason only says what happened; where the box is
+    // locked and Try again waits, the reason says when to try again itself.
+    test("its reason asks to try again only where the strip offers no Try again", () => {
+        const wrapper = mountComposer({ props: { sendFailure: offline, isLocked: true } });
+
+        expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You're offline. Try again when you're back.");
         expect(strip(wrapper).findAll("button").map(button => button.text())).toEqual(["Delete"]);
     });
 

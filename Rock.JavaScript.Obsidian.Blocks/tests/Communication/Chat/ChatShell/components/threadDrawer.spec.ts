@@ -49,7 +49,7 @@
 //          a back label says otherwise)
 //
 // The toggle changes at once; a refused change comes back as followError, shown under the header
-// with Try again. Only an unfollow is toasted, from useThreads' unfollowNotice, once it lands.
+// with Try again where another try can pass. Only an unfollow is toasted, from useThreads' unfollowNotice, once it lands.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
@@ -415,17 +415,26 @@ describe("the Follow toggle", () => {
     });
 
     test("a refused change shows its sentence and Try again under the header, said at once, and Try again asks it again with focus on the toggle", async () => {
-        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { isFollowing: false, text: "You're no longer in this channel." } });
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { isFollowing: false, failure: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } } });
         await nextTick();
 
         const error = w.get("[data-testid='thread-follow-error']");
-        expect(plain(error.text())).toBe("You're no longer in this channel. Try again");
+        expect(plain(error.text())).toBe("You're offline. Try again");
         expect(error.attributes("role")).toBe("alert");
 
         await error.get("[data-testid='note-retry']").trigger("click");
 
         expect(w.emitted("follow")).toEqual([[false]]);
         expect(document.activeElement).toBe(w.get("[data-testid='thread-follow']").element);
+    });
+
+    test("a refusal another try cannot pass shows its sentence under the header with no Try again", async () => {
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { isFollowing: false, failure: { alone: "You're no longer in this channel.", besideRetry: "You're no longer in this channel.", canRetry: false } } });
+        await nextTick();
+
+        const error = w.get("[data-testid='thread-follow-error']");
+        expect(plain(error.text())).toBe("You're no longer in this channel.");
+        expect(error.find("[data-testid='note-retry']").exists()).toBe(false);
     });
 
     test("shows no refusal while there is none", () => {
@@ -852,7 +861,7 @@ describe("the thread's action bar", () => {
 // thread's failed replies alone, and its buttons reach the drawer's owner one reply at a time.
 describe("the person's failed replies", () => {
     const failed = (localId: string, extra: Record<string, unknown> = {}): Record<string, unknown> =>
-        ({ localId, channelId: "c1", body: localId, status: "failed", errorCode: "rpc.transport", reason: "You're offline.", parentId: 40, isShownInChannel: false, ...extra });
+        ({ localId, channelId: "c1", body: localId, status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true }, parentId: 40, isShownInChannel: false, ...extra });
     const refusal = { code: "authz.no_mention_all_right", severity: "permission", text: "You can't mention everyone in this channel." };
 
     test("are counted in the reply composer's strip, this thread's only", () => {
@@ -863,7 +872,7 @@ describe("the person's failed replies", () => {
     });
 
     test("Try again asks for each that can go, oldest first, in one go so they are sent in turn, and Delete drops each", async () => {
-        const w = draw({ pending: [failed("a"), failed("refused", { refusal, reason: refusal.text }), failed("b")] });
+        const w = draw({ pending: [failed("a"), failed("refused", { refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } }), failed("b")] });
 
         await w.get("[data-testid='composer-failed-retry']").trigger("click");
         expect(w.emitted("retry")).toEqual([[["a", "b"]]]);

@@ -18,13 +18,17 @@
 // switches, and a thread's follow. The control is the feedback: a change shows at once and a save
 // that lands shows nothing more, so a change is seamless. Only the newest save of a setting says
 // how it went, so quick changes never flicker through older answers; a refusal puts the control
-// back to the last value known saved, and its owner shows why with Try again.
+// back to the last value known saved, and its owner shows why, with Try again where another try
+// can pass.
+import { failedWords } from "../errors.partial";
+import { FailureWords } from "../types.partial";
+import { Note } from "../ui/settingNote.partial.obs";
 
 /** What a save that failed without the server's words says, as a call that threw. */
-export const saveFailedSentence = "Couldn't save. Try again in a moment.";
+export const saveFailed: FailureWords = failedWords("Couldn't save.");
 
-/** How a save went: landed, with what the server read back, or refused in a sentence. */
-export type SaveOutcome = { isSaved: true, data?: unknown } | { isSaved: false, text: string };
+/** How a save went: landed, with what the server read back, or refused in words. */
+export type SaveOutcome = { isSaved: true, data?: unknown } | { isSaved: false, failure: FailureWords };
 
 /** One change to a setting. */
 export type SaveChange<T> = {
@@ -43,8 +47,8 @@ export type SaveChange<T> = {
     /** The newest save landed, with what the server read back. */
     landed?: (data: unknown) => void;
 
-    /** The newest save was refused, with the sentence to show beside the control. */
-    refused: (text: string) => void;
+    /** The newest save was refused, with the words to show beside the control. */
+    refused: (failure: FailureWords) => void;
 };
 
 /** The save rule an owner of settings holds. */
@@ -95,7 +99,7 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
                 outcome = await change.ask();
             }
             catch {
-                outcome = { isSaved: false, text: saveFailedSentence };
+                outcome = { isSaved: false, failure: saveFailed };
             }
             if (isStopped()) {
                 return false;
@@ -115,7 +119,7 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
 
                 track.isRefused = true;
                 change.show(track.saved as T);
-                change.refused(outcome.text);
+                change.refused(outcome.failure);
                 return false;
             }
 
@@ -128,4 +132,19 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
 
         isOut: (key: string): boolean => (tracks.get(key)?.out ?? 0) > 0
     };
+}
+
+/**
+ * A refused change as the note under its control: Try again, asking the same change once more,
+ * only where another try can pass, and then a sentence that leaves the asking to the button.
+ *
+ * @param failure Why the change was refused.
+ * @param retry Asks the same change again.
+ *
+ * @returns The note.
+ */
+export function failureNote(failure: FailureWords, retry: () => void): Note {
+    return failure.canRetry
+        ? { kind: "error", text: failure.besideRetry, retry }
+        : { kind: "error", text: failure.alone };
 }

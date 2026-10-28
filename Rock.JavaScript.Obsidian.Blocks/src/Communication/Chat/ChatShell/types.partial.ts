@@ -778,9 +778,9 @@ export type PendingMessage = {
 
     /**
      * Why the last try failed, in words the person can read, where anything was said: a refusal's
-     * sentence, the offline sentence when nothing could be reached, or the server's own sentence.
+     * sentence, being offline when nothing could be reached, or the server's own sentence.
      */
-    reason?: string;
+    reason?: FailureWords;
 
     /**
      * Set on a direct message's first message, whose conversation the platform may not hold yet,
@@ -809,4 +809,20 @@ export type ChatError = {
 
     /** The kind of room a lost read was from, so the sentence calls a conversation a conversation. */
     roomKind?: RoomKind | null;
+};
+
+/**
+ * A failure in words for the two places it is told: alone, where the sentence asks the person to
+ * try again in its own words where that can help, and beside a Try again, where the button asks
+ * and the sentence only says what happened, so the two never say it twice.
+ */
+export type FailureWords = {
+    /** The sentence where nothing beside it offers to try again. */
+    alone: string;
+
+    /** The sentence beside a Try again. */
+    besideRetry: string;
+
+    /** Whether asking the same again can pass, which is when a Try again is offered at all. */
+    canRetry: boolean;
 };

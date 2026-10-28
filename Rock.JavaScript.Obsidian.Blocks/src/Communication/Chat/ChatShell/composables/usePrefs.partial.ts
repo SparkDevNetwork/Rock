@@ -22,20 +22,21 @@
 // Star and hide pull against each other, so hiding unstars and starring unhides in the same patch.
 // The control is the feedback: a save that lands shows nothing more, so a change is seamless. A
 // save that fails puts the control back to the last value known saved and puts the server's
-// sentence under it with Try again, said aloud at once. Each save has a number; only the newest
-// save of a setting says how it went, so quick changes never flicker through older answers.
+// sentence under it, with Try again where another try can pass, said aloud at once. Each save has a
+// number; only the newest save of a setting says how it went, so quick changes never flicker
+// through older answers.
 // A sidebar load while a room's save is out leaves that setting as the person chose it, as the
 // person's own switches are left; its own answer settles it. Another device sees a change at its
 // next load. Once stopped, nothing more is asked and no answer
 // reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { isOfflineFailure, messageOrOffline, offlineSentence } from "../errors.partial";
+import { failureWords, finalWords, isOfflineFailure, offlineWords } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
-import { ChatError, SidebarRow } from "../types.partial";
+import { ChatError, FailureWords, SidebarRow } from "../types.partial";
 import { Note } from "../ui/settingNote.partial.obs";
 import { ActionNotice } from "./useMessageActions.partial";
-import { createSaveRule, SaveChange, saveFailedSentence, SaveOutcome } from "./saveRule.partial";
+import { createSaveRule, failureNote, SaveChange, saveFailed, SaveOutcome } from "./saveRule.partial";
 
 /** What chat_set_prefs answered, through the shell's one call path. */
 export type PrefsCallResult = { ok: true, data: unknown } | { ok: false, error: ChatError };
@@ -232,22 +233,22 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
     }
 
     /** A refusal in the server's own words; a lost connection says so. */
-    function refusalText(error: ChatError): string {
-        return messageOrOffline(error, offlineSentence, dependencies.isOffline());
+    function refusalWords(error: ChatError): FailureWords {
+        return failureWords(error, dependencies.isOffline());
     }
 
-    /** A refusal's note under its control, with Try again asking the same change once more. */
-    function refusalNote(text: string, retry: () => Promise<void>): Note {
-        return { kind: "error", text, retry: () => void retry() };
+    /** A refusal's note under its control, with Try again asking the same change once more where that can pass. */
+    function refusalNote(failure: FailureWords, retry: () => Promise<void>): Note {
+        return failureNote(failure, () => void retry());
     }
 
     /** Saves a setting by the one save rule; a refusal is said at once, wherever it is shown. */
     async function save<T>(key: string, change: SaveChange<T>): Promise<void> {
         await rule.save(key, {
             ...change,
-            refused: text => {
-                change.refused(text);
-                announce(`Not saved. ${text}`, true);
+            refused: failure => {
+                change.refused(failure);
+                announce(`Not saved. ${failure.alone}`, true);
             }
         });
     }
@@ -255,7 +256,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
     /** A room's patch through chat_set_prefs, as the save rule asks it. */
     async function askRoom(channelId: string, patch: Record<string, boolean | string | null>): Promise<SaveOutcome> {
         const result = await dependencies.setPrefs(channelId, patch);
-        return result.ok ? { isSaved: true, data: result.data } : { isSaved: false, text: refusalText(result.error) };
+        return result.ok ? { isSaved: true, data: result.data } : { isSaved: false, failure: refusalWords(result.error) };
     }
 
     /** One of the person's own switches through the save rule. */
@@ -269,8 +270,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 state.me[field] = shown;
             },
             ask,
-            refused: text => {
-                state.meNotes[key] = refusalNote(text, () => prefs.setSwitch(key, value));
+            refused: failure => {
+                state.meNotes[key] = refusalNote(failure, () => prefs.setSwitch(key, value));
             }
         });
     }
@@ -345,12 +346,12 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                         announce(notifyWords[mode].toast);
                     }
                 },
-                refused: text => {
+                refused: failure => {
                     if (isFromMenu) {
-                        dependencies.notify({ code: "notify-mode", text, icon: "alert" });
+                        dependencies.notify({ code: "notify-mode", text: failure.alone, icon: "alert" });
                     }
                     else {
-                        room(channelId).notes.notify = refusalNote(text, () => prefs.setNotifyMode(channelId, mode, false));
+                        room(channelId).notes.notify = refusalNote(failure, () => prefs.setNotifyMode(channelId, mode, false));
                     }
                 }
             });
@@ -381,13 +382,13 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 value,
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
                 ask: () => askRoom(channelId, value),
-                refused: text => {
+                refused: failure => {
                     if (isFromMenu) {
-                        dependencies.notify({ code: "starred", text, icon: "alert" });
+                        dependencies.notify({ code: "starred", text: failure.alone, icon: "alert" });
                     }
                     else {
                         delete notes.hide;
-                        notes.star = refusalNote(text, () => prefs.setStarred(channelId, isStarred, false));
+                        notes.star = refusalNote(failure, () => prefs.setStarred(channelId, isStarred, false));
                     }
                 }
             });
@@ -417,9 +418,9 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 value,
                 show: shown => dependencies.channels.applyPrefs(channelId, shown),
                 ask: () => askRoom(channelId, value),
-                refused: text => {
+                refused: failure => {
                     delete notes.star;
-                    notes.hide = refusalNote(text, () => prefs.setHidden(channelId, isHidden));
+                    notes.hide = refusalNote(failure, () => prefs.setHidden(channelId, isHidden));
                 }
             });
         },
@@ -432,7 +433,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             const door = dependencies.savePersonSetting;
             await saveMe(setting, value, async (): Promise<SaveOutcome> => {
                 if (!door) {
-                    return { isSaved: false, text: noDoorSentence };
+                    return { isSaved: false, failure: finalWords(noDoorSentence) };
                 }
 
                 // Pending has saved too: Rock holds it and the platform hears of it shortly.
@@ -443,10 +444,11 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
                 // Rock answering without its door decided nothing; the person may ask again.
                 if (answer.code === "door.unavailable") {
-                    return { isSaved: false, text: isOfflineFailure(null, dependencies.isOffline()) ? offlineSentence : saveFailedSentence };
+                    return { isSaved: false, failure: isOfflineFailure(null, dependencies.isOffline()) ? offlineWords : saveFailed };
                 }
 
-                return { isSaved: false, text: answer.message?.trim() || noDoorSentence };
+                // Rock's door decided: the same value would be refused again.
+                return { isSaved: false, failure: finalWords(answer.message?.trim() || noDoorSentence) };
             });
         },
 
@@ -457,7 +459,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
             await saveMe("reaction_push", value, async (): Promise<SaveOutcome> => {
                 const result = await dependencies.setPrefs(null, { reaction_push: value });
-                return result.ok ? { isSaved: true } : { isSaved: false, text: refusalText(result.error) };
+                return result.ok ? { isSaved: true } : { isSaved: false, failure: refusalWords(result.error) };
             });
         },
 

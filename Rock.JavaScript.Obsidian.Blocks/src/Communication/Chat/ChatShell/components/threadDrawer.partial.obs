@@ -316,6 +316,7 @@
     import PanelHost from "../ui/panelHost.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { failureNote } from "../composables/saveRule.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
@@ -617,10 +618,10 @@
 
     const followElement = ref<HTMLButtonElement>();
 
-    /** A refused follow change as its note, with Try again asking the same change once more. */
+    /** A refused follow change as its note, with Try again asking the same change once more where that can pass. */
     const followNote = computed((): Note | null => {
         const failed = props.followError;
-        return failed ? { kind: "error", text: failed.text, retry: () => emit("follow", failed.isFollowing) } : null;
+        return failed ? failureNote(failed.failure, () => emit("follow", failed.isFollowing)) : null;
     });
 
     /** Ties Follow to the sentence that says what following means, once per drawer. */

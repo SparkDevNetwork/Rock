@@ -22,6 +22,9 @@ import {
     classifyPlatformError,
     classifyRealtimeMessage,
     classifyRealtimeStatus,
+    failedWords,
+    failureWords,
+    finalWords,
     isOfflineFailure,
     isUnreached,
     messageForError,
@@ -273,5 +276,52 @@ describe("isOfflineFailure", () => {
     test("a place that knows the connection says its failures by it", () => {
         expect(messageOrOffline(transport, offlineSentence, true)).toBe(offlineSentence);
         expect(messageOrOffline(transport, offlineSentence, false)).toBe("Something went wrong in chat. Try again in a moment.");
+    });
+});
+
+// A failure is said in two places: alone, where it asks the person to try again in its own words,
+// and beside a Try again, where the button asks and the sentence only says what happened. Try
+// again is offered only where another ask can pass: never in read only or maintenance, without a
+// right, or once the session has ended.
+describe("failureWords", () => {
+    const transport = { code: "rpc.transport", severity: "failed" as const };
+
+    test("a failure with no sentence of the server's says it went wrong, asking to try again only where it stands alone", () => {
+        expect(failureWords({ code: "rpc.unknown", severity: "unknown" })).toEqual({
+            alone: "Something went wrong in chat. Try again in a moment.",
+            besideRetry: "Something went wrong in chat.",
+            canRetry: true
+        });
+    });
+
+    test("being offline says so, and when to try again only where it stands alone", () => {
+        expect(failureWords(transport, true)).toEqual({ alone: offlineSentence, besideRetry: "You're offline.", canRetry: true });
+    });
+
+    test("the server's own sentence is said as it is, in both places", () => {
+        expect(failureWords({ code: "rpc.busy", severity: "failed", text: "Chat is busy." })).toEqual({ alone: "Chat is busy.", besideRetry: "Chat is busy.", canRetry: true });
+    });
+
+    test("read only and maintenance offer no Try again, which cannot help until the service opens", () => {
+        const readOnly = failureWords({ code: "rpc.read_only", severity: "failed", text: "Chat is read-only right now. You can read messages but not send them." });
+        const maintenance = failureWords({ code: "rpc.maintenance", severity: "failed" });
+
+        expect(readOnly).toEqual({ alone: "Chat is read-only right now. You can read messages but not send them.", besideRetry: "Chat is read-only right now. You can read messages but not send them.", canRetry: false });
+        expect(maintenance.canRetry).toBe(false);
+        expect(maintenance.alone).not.toMatch(/Try again in a moment/);
+    });
+
+    test("a refusal for want of a right or an ended session offers no Try again", () => {
+        expect(failureWords({ code: "authz.not_member", severity: "permission" }).canRetry).toBe(false);
+        expect(failureWords({ code: "auth.expired", severity: "session" }).canRetry).toBe(false);
+    });
+
+    test("a place's own words for a failure it may ask again, and for a refusal that is final", () => {
+        expect(failedWords("Couldn't save.")).toEqual({ alone: "Couldn't save. Try again in a moment.", besideRetry: "Couldn't save.", canRetry: true });
+        expect(finalWords("This conversation can't be renamed right now.")).toEqual({
+            alone: "This conversation can't be renamed right now.",
+            besideRetry: "This conversation can't be renamed right now.",
+            canRetry: false
+        });
     });
 });

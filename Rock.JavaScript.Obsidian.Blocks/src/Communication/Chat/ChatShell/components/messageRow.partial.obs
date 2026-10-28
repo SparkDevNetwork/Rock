@@ -1220,7 +1220,7 @@
      * reason for all of a place's failures, so each message keeps its own on its marker, for a
      * screen reader and a pointer resting on it.
      */
-    const failedReason = computed((): string | null => props.pending?.status === "failed" ? props.pending.reason ?? null : null);
+    const failedReason = computed((): string | null => props.pending?.status === "failed" ? props.pending.reason?.alone ?? null : null);
 
     const state = computed((): RowState => {
         if (props.pending) {

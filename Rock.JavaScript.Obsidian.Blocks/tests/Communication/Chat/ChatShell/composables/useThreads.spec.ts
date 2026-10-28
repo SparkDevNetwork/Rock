@@ -36,7 +36,7 @@
 //       state: {
 //           list: { tab: "channel" | "all", channelId: string | null, rows: ThreadListRow[], hasMore: boolean,
 //                   isLoading: boolean, isRefreshing: boolean, error: ChatError | null },
-//           followError: { rootId: number, isFollowing: boolean, text: string } | null,   the newest
+//           followError: { rootId: number, isFollowing: boolean, failure: { alone, besideRetry, canRetry } } | null,   the newest
 //                   refused follow change: the change asked and why, for Try again
 //           thread: { channelId: string, rootId: number, root: TimelineMessage | null,
 //                     replies: TimelineMessage[] (oldest first), following: boolean, readCursor: number | null,
@@ -961,7 +961,7 @@ describe("following", () => {
         expect(await threads.follow(40, false)).toBe(false);
 
         expect(threads.state.list.rows[0].following).toBe(true);
-        expect(threads.state.followError).toEqual({ rootId: 40, isFollowing: false, text: "You're offline. Try again when you're back." });
+        expect(threads.state.followError).toEqual({ rootId: 40, isFollowing: false, failure: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } });
     });
 
     test("a change that reached nothing while the connection holds is not called offline", async () => {
@@ -972,7 +972,7 @@ describe("following", () => {
 
         await threads.follow(40, false);
 
-        expect(threads.state.followError?.text).toBe("Something went wrong in chat. Try again in a moment.");
+        expect(threads.state.followError?.failure).toEqual({ alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true });
     });
 
     test("a refusal carries the server's own sentence when it has one", async () => {
@@ -983,7 +983,7 @@ describe("following", () => {
 
         await threads.follow(40, false);
 
-        expect(threads.state.followError?.text).toBe("You're no longer in this channel.");
+        expect(threads.state.followError?.failure.alone).toBe("You're no longer in this channel.");
     });
 
     test("the newest change refused after an older one landed goes back to the older one", async () => {

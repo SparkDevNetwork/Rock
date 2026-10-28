@@ -25,7 +25,7 @@
 //
 //   props: tab: "channel" | "all", rows: ThreadListRow[] (chat_list_threads' rows), isLoading: boolean,
 //          isRefreshing: boolean, error: ChatError | null (the list's), followError: { rootId: number,
-//          isFollowing: boolean, text: string } | null (the newest refused follow), channelId: string (the open
+//          isFollowing: boolean, failure: { alone, besideRetry, canRetry } } | null (the newest refused follow), channelId: string (the open
 //          conversation), kind: "channel" | "person" | "group" (the open conversation's),
 //          roomTitles: Record<string, string> (each conversation's title by channel id, as the
 //          header shows it), roomKinds: Record<string, "channel" | "person" | "group">,
@@ -379,17 +379,25 @@ describe("following from a row", () => {
     });
 
     test("a refused change shows its sentence and Try again on its row only, said at once", () => {
-        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 40, isFollowing: false, text: "You're no longer in this channel." } });
+        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 40, isFollowing: false, failure: { alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true } } });
 
         const [failed, other] = rowsOf(w);
         const error = failed.get("[data-testid='thread-row-error']");
-        expect(plain(error.text())).toBe("You're no longer in this channel. Try again");
+        expect(plain(error.text())).toBe("Something went wrong in chat. Try again");
         expect(error.attributes("role")).toBe("alert");
         expect(other.find("[data-testid='thread-row-error']").exists()).toBe(false);
     });
 
+    test("a refusal another try cannot pass shows its sentence alone, with no Try again", () => {
+        const w = draw({ rows: [row(40)], followError: { rootId: 40, isFollowing: false, failure: { alone: "You're no longer in this channel.", besideRetry: "You're no longer in this channel.", canRetry: false } } });
+
+        const error = w.get("[data-testid='thread-row-error']");
+        expect(plain(error.text())).toBe("You're no longer in this channel.");
+        expect(error.find("[data-testid='note-retry']").exists()).toBe(false);
+    });
+
     test("Try again asks the refused change again", async () => {
-        const w = draw({ rows: [row(40)], followError: { rootId: 40, isFollowing: false, text: "You're offline. Try again when you're back." } });
+        const w = draw({ rows: [row(40)], followError: { rootId: 40, isFollowing: false, failure: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } } });
 
         await w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").trigger("click");
 
@@ -399,7 +407,7 @@ describe("following from a row", () => {
     // Try again takes its button away as the change is asked again, so focus goes to the bell it
     // asked again, and that row holds the list's tab stop.
     test("Try again leaves focus on the row's bell it asked again", async () => {
-        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 30, isFollowing: false, text: "No." } });
+        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 30, isFollowing: false, failure: { alone: "No.", besideRetry: "No.", canRetry: true } } });
 
         (w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").element as HTMLElement).focus();
         await w.get("[data-testid='thread-row-error'] [data-testid='note-retry']").trigger("click");

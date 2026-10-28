@@ -19,9 +19,10 @@
 // reaction switch through it too with no room, and the two privacy switches through Rock's
 // SavePersonSetting door. Hiding unstars and starring unhides in the same one patch. A save that
 // lands shows nothing more; one that fails puts the control back to the last value saved, with the
-// server's own sentence and Try again under it, said aloud. A change made from the header's menu
-// says so in a toast instead. An answer to a save the person has since changed again moves nothing
-// but what is known saved, and once stopped no answer reaches the screen.
+// server's own sentence and, where another try can pass, Try again under it, said aloud. A change
+// made from the header's menu says so in a toast instead. An answer to a save the person has
+// since changed again moves nothing but what is known saved, and once stopped no answer reaches
+// the screen.
 //
 // The fakes answer in the platform's and the door's own shapes: chat_set_prefs's
 // {channel: {channel_id, is_favorite, hidden, notify_mode, notify_mode_effective}, me: {...}},
@@ -206,7 +207,7 @@ describe("a room's notify mode", () => {
         await settle();
 
         expect(rowOf(s, team)?.notify_mode).toBe("all");
-        expect(s.prefs.roomOf(team).notes.notify).toEqual({ kind: "error", text: readOnlySentence, retry: expect.any(Function) });
+        expect(s.prefs.roomOf(team).notes.notify).toEqual({ kind: "error", text: readOnlySentence });
         expect(s.prefs.state.announcement).toEqual({ text: `Not saved. ${readOnlySentence}`, isAssertive: true, count: expect.any(Number) });
     });
 
@@ -214,7 +215,7 @@ describe("a room's notify mode", () => {
         const s = setup();
 
         void s.prefs.setNotifyMode(team, "silent", false);
-        s.prefCalls[0].answer.resolve(refused());
+        s.prefCalls[0].answer.resolve(refused("rpc.busy", "Chat is busy."));
         await settle();
 
         s.prefs.roomOf(team).notes.notify?.retry?.();
@@ -400,7 +401,7 @@ describe("star and hide", () => {
         expect(rowOf(s, team)?.is_favorite).toBe(true);
         expect(rowOf(s, team)?.hidden).toBeFalsy();
         // The note said with the change gives way to the refusal.
-        expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "error", text: readOnlySentence, retry: expect.any(Function) });
+        expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "error", text: readOnlySentence });
     });
 
     // The star in the header shows it, so only a refusal is toasted.
@@ -430,7 +431,7 @@ describe("star and hide", () => {
         s.prefCalls[0].answer.resolve(refused("rpc.transport", null));
         await settle();
 
-        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "You're offline. Try again when you're back.", retry: expect.any(Function) });
+        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "You're offline.", retry: expect.any(Function) });
     });
 
     test("a call that reached nothing while the connection holds is not called offline", async () => {
@@ -440,7 +441,7 @@ describe("star and hide", () => {
         s.prefCalls[0].answer.resolve(refused("rpc.transport", null));
         await settle();
 
-        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "Something went wrong in chat. Try again in a moment.", retry: expect.any(Function) });
+        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "Something went wrong in chat.", retry: expect.any(Function) });
     });
 
     // Star and hide are one save's two halves, so what is known saved is both of them.
@@ -484,7 +485,7 @@ describe("star and hide", () => {
         await settle();
 
         expect(rowOf(s, team)?.is_favorite).toBe(false);
-        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "Couldn't save. Try again in a moment.", retry: expect.any(Function) });
+        expect(s.prefs.roomOf(team).notes.star).toEqual({ kind: "error", text: "Couldn't save.", retry: expect.any(Function) });
 
         // Nothing is out, so the next load is taken as read.
         s.prefs.setRooms([sidebarRow(team, { is_favorite: true }), sidebarRow(prayer, { name: "Prayer" })]);
@@ -631,7 +632,7 @@ describe("the person's own switches", () => {
         await settle();
 
         expect(s.prefs.state.me.show_profile_details).toBe(true);
-        expect(s.prefs.state.meNotes.profile_details).toEqual({ kind: "error", text: "Chat is not available to you right now.", retry: expect.any(Function) });
+        expect(s.prefs.state.meNotes.profile_details).toEqual({ kind: "error", text: "Chat is not available to you right now." });
         expect(s.prefs.state.announcement?.text).toBe("Not saved. Chat is not available to you right now.");
     });
 
@@ -644,14 +645,14 @@ describe("the person's own switches", () => {
         await settle();
 
         expect(s.prefs.state.me.is_open_dm_allowed).toBe(false);
-        expect(s.prefs.state.meNotes.open_dm).toEqual({ kind: "error", text: "Couldn't save. Try again in a moment.", retry: expect.any(Function) });
+        expect(s.prefs.state.meNotes.open_dm).toEqual({ kind: "error", text: "Couldn't save.", retry: expect.any(Function) });
 
         s.offline.value = true;
         void s.prefs.setPersonSetting("open_dm", true);
         s.doorCalls[1].answer.resolve(door("door.unavailable"));
         await settle();
 
-        expect(s.prefs.state.meNotes.open_dm).toEqual({ kind: "error", text: "You're offline. Try again when you're back.", retry: expect.any(Function) });
+        expect(s.prefs.state.meNotes.open_dm).toEqual({ kind: "error", text: "You're offline.", retry: expect.any(Function) });
     });
 
     test("a page with no door refuses a privacy switch and leaves it as it was", async () => {

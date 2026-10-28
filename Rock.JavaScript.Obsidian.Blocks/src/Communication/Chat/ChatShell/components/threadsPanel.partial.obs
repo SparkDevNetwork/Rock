@@ -379,6 +379,7 @@
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
+    import { failureNote } from "../composables/saveRule.partial";
     import { messageDisplay } from "../composables/useHistory.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
@@ -766,7 +767,7 @@
             isUnread: row.has_unread,
             isFollowing,
             isOff: !isFollowing && props.tab === "all",
-            error: followError && followError.rootId === rootId ? { kind: "error", text: followError.text, retry: () => emit("follow", rootId, followError.isFollowing) } : null,
+            error: followError && followError.rootId === rootId ? failureNote(followError.failure, () => emit("follow", rootId, followError.isFollowing)) : null,
             label
         };
     }

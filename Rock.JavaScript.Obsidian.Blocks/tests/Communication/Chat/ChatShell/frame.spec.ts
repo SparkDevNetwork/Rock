@@ -1091,9 +1091,9 @@ describe("the reader's own send in a channel", () => {
 // composer: a reply shown only in its thread is the thread's, so it is neither counted nor sent.
 describe("the conversation's failed sends", () => {
     const sends = (): unknown[] => [
-        { localId: "l1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport", reason: "You're offline." },
+        { localId: "l1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } },
         { localId: "l2", channelId: team.channel_id, body: "Count me in", status: "failed", errorCode: "rpc.transport", parentId: 40, isShownInChannel: false },
-        { localId: "l3", channelId: team.channel_id, body: "@all lunch", status: "failed", errorCode: "authz.no_mention_all_right", refusal: { code: "authz.no_mention_all_right", severity: "permission" }, reason: "You do not have access to that." },
+        { localId: "l3", channelId: team.channel_id, body: "@all lunch", status: "failed", errorCode: "authz.no_mention_all_right", refusal: { code: "authz.no_mention_all_right", severity: "permission" }, reason: { alone: "You do not have access to that.", besideRetry: "You do not have access to that.", canRetry: false } },
         { localId: "l4", channelId: team.channel_id, body: "Still going", status: "sending", errorCode: null }
     ];
 
@@ -1129,7 +1129,7 @@ describe("the conversation's failed sends", () => {
     // A reply also sent to the conversation is drawn in both feeds, but its failure is one: the
     // drawer speaks for it while open on its thread, else the conversation does.
     describe("a reply also sent to the conversation", () => {
-        const reply = { localId: "r1", channelId: team.channel_id, body: "Count me in", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back.", parentId: 40, isShownInChannel: true };
+        const reply = { localId: "r1", channelId: team.channel_id, body: "Count me in", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true }, parentId: 40, isShownInChannel: true };
 
         async function openThreadWith(w: VueWrapper): Promise<void> {
             await openRow(w, team.channel_id);
@@ -1149,7 +1149,7 @@ describe("the conversation's failed sends", () => {
 
             expect(w.findAll("[data-testid='composer-failed']")).toHaveLength(1);
             expect(w.find("[data-testid='frame-panel'] [data-testid='composer-failed']").exists()).toBe(true);
-            expect(saidAloud(w)).toEqual(["Your message wasn't sent. You're offline. Try again when you're back."]);
+            expect(saidAloud(w)).toEqual(["Your message wasn't sent. You're offline."]);
 
             // the drawer's Try again asks for it alone, and Delete in one place cannot drop it from another
             await w.get("[data-testid='frame-panel'] [data-testid='composer-failed-retry']").trigger("click");
@@ -1174,15 +1174,15 @@ describe("the conversation's failed sends", () => {
 
     test("moving between two rooms with failures shows each room's own and says neither again", async () => {
         const failures = [
-            { localId: "t1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back." },
-            { localId: "a1", channelId: dmAnna.channel_id, body: "See you", status: "failed", errorCode: "authz.not_member", refusal: { code: "authz.not_member", severity: "permission" }, reason: "You're not in this conversation." }
+            { localId: "t1", channelId: team.channel_id, body: "On my way", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } },
+            { localId: "a1", channelId: dmAnna.channel_id, body: "See you", status: "failed", errorCode: "authz.not_member", refusal: { code: "authz.not_member", severity: "permission" }, reason: { alone: "You're not in this conversation.", besideRetry: "You're not in this conversation.", canRetry: false } }
         ];
         const w = await mountBlock(1200);
         (mockShell!.sender as { pending: (channelId: string) => unknown[] }).pending = (channelId: string) => failures.filter(row => row.channelId === channelId);
         mockFailureNews.last = { localId: "a1", count: 2 };
 
         await openRow(w, team.channel_id);
-        expect(w.get("[data-testid='frame-main'] [data-testid='composer-failed-reason']").text()).toBe("You're offline. Try again when you're back.");
+        expect(w.get("[data-testid='frame-main'] [data-testid='composer-failed-reason']").text()).toBe("You're offline.");
         expect(w.findAll("[data-testid='frame-main'] [data-testid='composer-failed'] button").map(button => button.text())).toEqual(["Try again", "Delete"]);
 
         await openRow(w, dmAnna.channel_id);
@@ -2022,28 +2022,28 @@ describe("following a thread", () => {
     test("the drawer is handed its own thread's refusal only", async () => {
         const w = await openDrawer();
 
-        threadsOf().state.followError = { rootId: 99, isFollowing: false, text: "No." };
+        threadsOf().state.followError = { rootId: 99, isFollowing: false, failure: { alone: "No.", besideRetry: "No.", canRetry: true } };
         await settle();
         expect(w.findComponent(ThreadDrawerComponent).props("followError")).toBeNull();
 
-        threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
+        threadsOf().state.followError = { rootId: 40, isFollowing: false, failure: { alone: "No.", besideRetry: "No.", canRetry: true } };
         await settle();
-        expect(w.findComponent(ThreadDrawerComponent).props("followError")).toEqual({ rootId: 40, isFollowing: false, text: "No." });
+        expect(w.findComponent(ThreadDrawerComponent).props("followError")).toEqual({ rootId: 40, isFollowing: false, failure: { alone: "No.", besideRetry: "No.", canRetry: true } });
     });
 
     // A refusal is said once, where it was made: the list the drawer goes back to leaves it unsaid.
     test("the list the drawer goes back to does not say the drawer's refusal again, and says its other rows'", async () => {
         const w = await openDrawer();
-        threadsOf().state.followError = { rootId: 40, isFollowing: false, text: "No." };
+        threadsOf().state.followError = { rootId: 40, isFollowing: false, failure: { alone: "No.", besideRetry: "No.", canRetry: true } };
         await settle();
 
         w.findComponent(ThreadDrawerComponent).vm.$emit("back");
         await settle();
         expect(w.findComponent(ThreadsPanelComponent).props("followError")).toBeNull();
 
-        threadsOf().state.followError = { rootId: 99, isFollowing: true, text: "Not now." };
+        threadsOf().state.followError = { rootId: 99, isFollowing: true, failure: { alone: "Not now.", besideRetry: "Not now.", canRetry: true } };
         await settle();
-        expect(w.findComponent(ThreadsPanelComponent).props("followError")).toEqual({ rootId: 99, isFollowing: true, text: "Not now." });
+        expect(w.findComponent(ThreadsPanelComponent).props("followError")).toEqual({ rootId: 99, isFollowing: true, failure: { alone: "Not now.", besideRetry: "Not now.", canRetry: true } });
     });
 });
 

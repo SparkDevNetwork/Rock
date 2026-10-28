@@ -30,10 +30,10 @@
 // the answer is lost. A key stands for one text from its first try, since that try may have been
 // stored with its answer lost; changed words are a new message under a new key.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
-import { ChatError, DisplayPiece, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
+import { ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { isOfflineFailure, messageForError, offlineSentence } from "../errors.partial";
+import { failureWords, finalWords, isOfflineFailure, messageForError, offlineWords } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 import { ChatSettings, readOnlySentence } from "./useSession.partial";
 
@@ -96,18 +96,18 @@ export function isFinalRefusal(error: ChatError, isFirstMessage: boolean): boole
  * @param isFinal Whether the same text can only be refused again.
  * @param isConnectionLost Whether the live connection is lost, where the sender is told.
  *
- * @returns The sentence, or null.
+ * @returns The words, or null.
  */
-function failureReason(error: ChatError, isFinal: boolean, isConnectionLost: boolean | undefined): string | null {
+function failureReason(error: ChatError, isFinal: boolean, isConnectionLost: boolean | undefined): FailureWords | null {
     if (isFinal) {
-        return messageForError(error);
+        return finalWords(messageForError(error));
     }
 
     if (isOfflineFailure(error, isConnectionLost)) {
-        return offlineSentence;
+        return offlineWords;
     }
 
-    return error.text || error.severity === "session" ? messageForError(error) : null;
+    return error.text || error.severity === "session" ? failureWords(error) : null;
 }
 
 /** What the strip over a composer says for the person's failed sends in the place it types into. */
@@ -120,7 +120,7 @@ export type SendFailure = {
      * for good can only be deleted and the person must read why, else the newest failure's. Each
      * message's own reason is also on its Not sent marker.
      */
-    reason: string | null;
+    reason: FailureWords | null;
 
     /** Whether any of them can be tried again; one refused for good offers only Delete. */
     canRetry: boolean;

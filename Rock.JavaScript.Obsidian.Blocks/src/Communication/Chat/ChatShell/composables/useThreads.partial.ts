@@ -30,12 +30,13 @@
 //
 // Following saves by the one save rule the person's settings use: the bell changes at once
 // everywhere the thread is drawn, the newest change wins, and a refusal puts it back with the
-// reason and Try again.
+// reason, and Try again where another try can pass.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
 import {
     ChatError,
+    FailureWords,
     FollowThreadAnswer,
     MarkThreadReadAnswer,
     MessageCreatedEvent,
@@ -50,7 +51,7 @@ import { applyMessageChange, Timelines, withSendKey } from "./useHistory.partial
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
-import { messageOrOffline, offlineSentence } from "../errors.partial";
+import { failureWords } from "../errors.partial";
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
@@ -76,7 +77,7 @@ export type ThreadListState = {
 };
 
 /** The newest refused follow change: the thread, the change asked, which Try again asks again, and why. */
-export type FollowError = { rootId: number, isFollowing: boolean, text: string };
+export type FollowError = { rootId: number, isFollowing: boolean, failure: FailureWords };
 
 /** The open thread as the drawer draws it. */
 export type OpenThreadState = {
@@ -611,7 +612,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 show: following => showFollowing(rootId, following),
                 ask: async (): Promise<SaveOutcome> => {
                     const result = await dependencies.call("chat_follow_thread", { p_root_id: rootId, p_follow: isFollowing });
-                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, text: messageOrOffline(result.error, offlineSentence, dependencies.isOffline?.()) };
+                    return result.ok ? { isSaved: true, data: result } : { isSaved: false, failure: failureWords(result.error, dependencies.isOffline?.()) };
                 },
                 landed: data => {
                     const answer = body<FollowThreadAnswer>(data as Extract<CallResult, { ok: true }>);
@@ -628,8 +629,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                         lastSaved = Math.max(lastSaved ?? 0, answer.read_cursor);
                     }
                 },
-                refused: text => {
-                    state.followError = { rootId, isFollowing, text };
+                refused: failure => {
+                    state.followError = { rootId, isFollowing, failure };
                 }
             });
         },

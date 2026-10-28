@@ -84,7 +84,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back." }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }
         ]);
         expect(timelines.state(channel).messages).toEqual([]);
     });
@@ -102,7 +102,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: "You're offline. Try again when you're back." }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }
         ]);
         sender.discard("local-1");
         expect(sender.pending(channel)).toEqual([]);
@@ -390,7 +390,7 @@ describe("a send into a room the person has not joined", () => {
                 status: "failed",
                 errorCode: "door.not_allowed",
                 refusal: { code: "door.not_allowed", severity: "permission", text: "You can't join this channel." },
-                reason: "You can't join this channel."
+                reason: { alone: "You can't join this channel.", besideRetry: "You can't join this channel.", canRetry: false }
             }
         ]);
     });
@@ -1145,7 +1145,7 @@ describe("a failed send's reason", () => {
 
         await sender.send(channel, "hello");
 
-        expect(sender.pending(channel)[0].reason).toBe(reason);
+        expect(sender.pending(channel)[0].reason?.alone).toBe(reason);
     });
 
     test("nothing reached while the connection is lost is the person offline", async () => {
@@ -1153,7 +1153,7 @@ describe("a failed send's reason", () => {
 
         await sender.send(channel, "hello");
 
-        expect(sender.pending(channel)[0].reason).toBe("You're offline. Try again when you're back.");
+        expect(sender.pending(channel)[0].reason).toEqual({ alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true });
     });
 
     test("nothing reached while the connection holds is not called offline", async () => {
@@ -1198,27 +1198,27 @@ describe("sendFailure", () => {
     });
 
     test("one failed send that can be tried again, with its reason", () => {
-        expect(sendFailure([row("a", { reason: "You're offline." }), row("b", { status: "sending", errorCode: null })]))
-            .toEqual({ count: 1, reason: "You're offline.", canRetry: true, localIds: ["a"] });
+        expect(sendFailure([row("a", { reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }), row("b", { status: "sending", errorCode: null })]))
+            .toEqual({ count: 1, reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true }, canRetry: true, localIds: ["a"] });
     });
 
     test("several, counted, with the newest one's reason", () => {
-        expect(sendFailure([row("a", { reason: "You're offline." }), row("b")])).toEqual({ count: 2, reason: null, canRetry: true, localIds: ["a", "b"] });
+        expect(sendFailure([row("a", { reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }), row("b")])).toEqual({ count: 2, reason: null, canRetry: true, localIds: ["a", "b"] });
     });
 
     test("one refused for good offers no Try again and says why", () => {
-        expect(sendFailure([row("a", { refusal, reason: refusal.text })])).toEqual({ count: 1, reason: refusal.text, canRetry: false, localIds: ["a"] });
+        expect(sendFailure([row("a", { refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } })])).toEqual({ count: 1, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false }, canRetry: false, localIds: ["a"] });
     });
 
     test("any one that can pass keeps Try again beside one refused for good", () => {
-        expect(sendFailure([row("a"), row("b", { refusal, reason: refusal.text })])).toEqual({ count: 2, reason: refusal.text, canRetry: true, localIds: ["a", "b"] });
+        expect(sendFailure([row("a"), row("b", { refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } })])).toEqual({ count: 2, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false }, canRetry: true, localIds: ["a", "b"] });
     });
 
     // A refusal can only be deleted, so the person must read why; a newer failure that can pass
     // keeps its own reason on its marker.
     test("a refusal's sentence over a newer failure's, said or not", () => {
-        expect(sendFailure([row("a", { refusal, reason: refusal.text }), row("b")])?.reason).toBe(refusal.text);
-        expect(sendFailure([row("a", { refusal, reason: refusal.text }), row("b", { reason: "You're offline." })])?.reason).toBe(refusal.text);
+        expect(sendFailure([row("a", { refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } }), row("b")])?.reason?.alone).toBe(refusal.text);
+        expect(sendFailure([row("a", { refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } }), row("b", { reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } })])?.reason?.alone).toBe(refusal.text);
     });
 });
 
@@ -1297,7 +1297,7 @@ describe("retryAll", () => {
         expect(await sender.retryAll(["local-1", "local-2", "local-3"])).toBe(false);
 
         expect(sent.slice(3)).toEqual(["one", "two"]);
-        expect(sender.pending(channel).map(r => [r.body, r.status, r.reason])).toEqual([
+        expect(sender.pending(channel).map(r => [r.body, r.status, r.reason?.alone])).toEqual([
             ["two", "failed", "You're offline. Try again when you're back."],
             ["three", "failed", "You're offline. Try again when you're back."]
         ]);

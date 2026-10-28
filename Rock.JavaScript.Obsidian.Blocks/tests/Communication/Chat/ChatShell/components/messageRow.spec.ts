@@ -853,7 +853,7 @@ describe("a failed send's row", () => {
     }
 
     test.each([["a direct message", false], ["a channel", true]] as const)("a send refused for good is marked Not sent like any other in %s", (_kind, isChannel) => {
-        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal, reason: refusal.text }), isOwn: true, isChannel, position: "single" });
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: refusal.code, refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } }), isOwn: true, isChannel, position: "single" });
 
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
         // the strip shows the sentence; the row keeps it only for a screen reader and a hover
@@ -867,7 +867,7 @@ describe("a failed send's row", () => {
     // where a screen reader reads the marker and a pointer rests on it: no reason is shown nowhere.
     test.each([["a direct message", false], ["a channel", true]] as const)("a failed send's own reason rides its Not sent marker in %s", (_kind, isChannel) => {
         const reason = "You're offline. Try again when you're back.";
-        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport", reason }), isOwn: true, isChannel, position: "single" });
+        const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport", reason: { alone: reason, besideRetry: "You're offline.", canRetry: true } }), isOwn: true, isChannel, position: "single" });
         const marker = wrapper.get("[data-testid='message-state']").element.parentElement as HTMLElement;
 
         expect(marker.getAttribute("title")).toBe(reason);

@@ -702,14 +702,15 @@ describe("the conversation name", () => {
         expect(w.get("[data-testid='rename-count']").text()).toBe("95 of 100 characters");
     });
 
-    test("shows a refusal's sentence under the field, with Save offered again", async () => {
+    test("shows a refusal's sentence under the field, with Save offered again and no Try again, which the same name cannot pass", async () => {
         const w = mountGroup();
         await w.get("[data-testid='rename-input']").setValue("Trail crew");
         await w.setProps({ rename: { kind: "saving" } });
 
         await w.setProps({ rename: { kind: "refused", text: "Chat is read only for a few minutes while Cedar Hill updates it. Try again soon." } });
 
-        expect(plain(w.get("[data-testid='rename-note']").text())).toBe("Chat is read only for a few minutes while Cedar Hill updates it. Try again soon. Try again");
+        expect(plain(w.get("[data-testid='rename-note']").text())).toBe("Chat is read only for a few minutes while Cedar Hill updates it. Try again soon.");
+        expect(w.find("[data-testid='rename-note'] [data-testid='note-retry']").exists()).toBe(false);
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeUndefined();
         expect((w.get("[data-testid='rename-input']").element as HTMLInputElement).value).toBe("Trail crew");
     });
@@ -721,7 +722,7 @@ describe("the conversation name", () => {
 
         await w.setProps({ rename: { kind: "failed" } });
 
-        expect(plain(w.get("[data-testid='rename-note']").text())).toBe("Couldn't save the name. Try again in a moment. Try again");
+        expect(plain(w.get("[data-testid='rename-note']").text())).toBe("Couldn't save the name. Try again");
         expect(w.get("[data-testid='rename-note']").attributes("data-kind")).toBe("error");
         expect(w.get("[data-testid='rename-save']").attributes("disabled")).toBeUndefined();
 

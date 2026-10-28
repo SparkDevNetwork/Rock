@@ -14,10 +14,10 @@
                     <span class="chat-composer-failed-text">
                         <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
                         <b data-testid="composer-failed-lead">{{ failedLead }}</b>
-                        <span v-if="sendFailure.reason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ sendFailure.reason }}</span>
+                        <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
                     </span>
                     <span class="chat-composer-failed-acts">
-                        <button v-if="sendFailure.canRetry && !isClosed"
+                        <button v-if="isRetryOffered"
                                 type="button"
                                 class="chat-ls-btn is-retry"
                                 data-testid="composer-failed-retry"
@@ -648,6 +648,19 @@
     /** Whether the locked bar stands in the box's place, so nothing can be sent from here. */
     const isClosed = computed((): boolean => props.isLocked || !!props.lockedReason);
 
+    /** Whether the strip offers Try again: one of its sends can pass, and the box is open to send it. */
+    const isRetryOffered = computed((): boolean => !!props.sendFailure?.canRetry && !isClosed.value);
+
+    /** Why, in the words for beside Try again where the strip offers it, so the two never both ask. */
+    const failedReason = computed((): string | null => {
+        const reason = props.sendFailure?.reason;
+        if (!reason) {
+            return null;
+        }
+
+        return isRetryOffered.value ? reason.besideRetry : reason.alone;
+    });
+
     /** The strip's first line: one message, or how many. */
     const failedLead = computed((): string => {
         const count = props.sendFailure?.count ?? 0;
@@ -816,7 +829,7 @@
         const failure = props.sendFailure;
         const news = props.lastFailure;
         if (failure && news && failure.localIds.includes(news.localId)) {
-            const text = failure.reason ? `${failedLead.value}. ${failure.reason}` : `${failedLead.value}.`;
+            const text = failedReason.value ? `${failedLead.value}. ${failedReason.value}` : `${failedLead.value}.`;
             failedAnnouncement.value = { text, count: (failedAnnouncement.value?.count ?? 0) + 1 };
         }
     });

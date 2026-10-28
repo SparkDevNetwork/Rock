@@ -20,7 +20,7 @@
 // A released client is in use for years while the platform keeps adding codes, so a code from
 // any family is kept, and the sentence the server writes for it travels with it: a code this
 // client was never built to know still reaches the person as something they can read.
-import { ChatError } from "./types.partial";
+import { ChatError, FailureWords } from "./types.partial";
 
 /**
  * An error as the platform's API returns it: our code in message, the reason in details, and the
@@ -104,29 +104,103 @@ export function classifyPlatformError(error: PlatformErrorLike | unknown): ChatE
  * @returns The sentence.
  */
 export function messageForError(error: ChatError): string {
-    if (error.code === "rt.read_revoked") {
-        // A direct message or group conversation is never called a channel; a room of unknown
-        // kind keeps the channel's wording, which is what most rooms are.
-        return error.roomKind === "person" || error.roomKind === "group"
-            ? "You no longer have access to this conversation."
-            : "You no longer have access to this channel.";
-    }
-
-    if (error.severity === "session") {
-        return "Your chat session has ended. Refresh the page to continue.";
-    }
-
-    if (isSentence(error.text, error.code)) {
-        return error.text;
-    }
-
-    return error.severity === "permission"
-        ? "You do not have access to that."
-        : "Something went wrong in chat. Try again in a moment.";
+    return answeredWords(error).alone;
 }
+
+/** What asks the person to try a failure again where no Try again stands beside it. */
+const tryAgainLater = "Try again in a moment.";
 
 /** What a change says when it could not be made because the person is offline, wherever it was asked. */
 export const offlineSentence = "You're offline. Try again when you're back.";
+
+/** Being offline, which another try can pass once the person is back. */
+export const offlineWords: FailureWords = { alone: offlineSentence, besideRetry: "You're offline.", canRetry: true };
+
+/**
+ * Whether asking the same again can pass. Read only and maintenance refuse every change until the
+ * service opens, which its banner says; a refusal for want of a right is answered the same each
+ * time; and an ended session needs the page refreshed.
+ *
+ * @param error The classified failure.
+ *
+ * @returns True when a Try again can help.
+ */
+function canRetry(error: ChatError): boolean {
+    if (error.code === "rpc.read_only" || error.code === "rpc.maintenance") {
+        return false;
+    }
+
+    return error.severity !== "permission" && error.severity !== "session";
+}
+
+/**
+ * A failure of a call that was answered, in words. The few codes this client acts on itself keep
+ * its own sentence; any other shows the server's when it sent one.
+ *
+ * @param error The classified failure.
+ *
+ * @returns The words.
+ */
+function answeredWords(error: ChatError): FailureWords {
+    if (error.code === "rt.read_revoked") {
+        // A direct message or group conversation is never called a channel; a room of unknown
+        // kind keeps the channel's wording, which is what most rooms are.
+        return finalWords(error.roomKind === "person" || error.roomKind === "group"
+            ? "You no longer have access to this conversation."
+            : "You no longer have access to this channel.");
+    }
+
+    if (error.severity === "session") {
+        return finalWords("Your chat session has ended. Refresh the page to continue.");
+    }
+
+    const retry = canRetry(error);
+    if (isSentence(error.text, error.code)) {
+        return { alone: error.text, besideRetry: error.text, canRetry: retry };
+    }
+
+    if (error.severity === "permission") {
+        return finalWords("You do not have access to that.");
+    }
+
+    return retry ? failedWords("Something went wrong in chat.") : finalWords("Something went wrong in chat.");
+}
+
+/**
+ * A failure in words, wherever it is told: being offline where nothing was reached and the
+ * connection is lost, else what the call was answered with.
+ *
+ * @param error The classified failure.
+ * @param isConnectionLost Whether the shell's live connection is lost, where the place knows it.
+ *
+ * @returns The words.
+ */
+export function failureWords(error: ChatError, isConnectionLost?: boolean): FailureWords {
+    return isOfflineFailure(error, isConnectionLost) ? offlineWords : answeredWords(error);
+}
+
+/**
+ * A place's own words for a failure that another try can pass, as "Couldn't save.": alone, it
+ * also asks the person to try again in a moment.
+ *
+ * @param whatFailed What failed, in a sentence that does not ask anything.
+ *
+ * @returns The words.
+ */
+export function failedWords(whatFailed: string): FailureWords {
+    return { alone: `${whatFailed} ${tryAgainLater}`, besideRetry: whatFailed, canRetry: true };
+}
+
+/**
+ * A refusal that another try would only meet again, in the words given, with no Try again.
+ *
+ * @param sentence Why it was refused.
+ *
+ * @returns The words.
+ */
+export function finalWords(sentence: string): FailureWords {
+    return { alone: sentence, besideRetry: sentence, canRetry: false };
+}
 
 /**
  * Whether a call reached nothing: not the platform, nor Rock's door in front of it.
