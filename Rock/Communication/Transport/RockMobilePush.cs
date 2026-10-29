@@ -468,26 +468,29 @@ namespace Rock.Communication.Transport
 
             var data = GetPushNotificationData( emailMessage.OpenAction, emailMessage.Data, null );
             var notification = new FirebaseAdmin.Messaging.Notification();
+            AndroidConfig androidConfig = null;
 
             if ( title.IsNotNullOrWhiteSpace() || message.IsNotNullOrWhiteSpace() )
             {
                 notification.Title = title;
                 notification.Body = message;
+
+                // Android config. Only sent when there is something to show, since
+                // Android displays any message carrying an Android notification block,
+                // so a silent badge update would otherwise show as a blank notification.
+                androidConfig = new AndroidConfig
+                {
+                    Notification = new AndroidNotification
+                    {
+                        ClickAction = "Rock.Mobile.Main",
+                        Sound = sound ?? string.Empty,
+                    }
+                };
             }
             else
             {
                 data.AddOrReplace( "silent", "true" );
             }
-
-            // Android config
-            var androidConfig = new AndroidConfig
-            {
-                Notification = new AndroidNotification
-                {
-                    ClickAction = "Rock.Mobile.Main",
-                    Sound = sound ?? string.Empty,
-                }
-            };
 
             // iOS config
             var apnsConfig = new ApnsConfig
