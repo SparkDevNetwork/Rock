@@ -314,6 +314,17 @@ namespace Rock.Storage.AssetStorage
 
                 // Retrieve reference to a blob named "myblob".
                 CloudBlockBlob blockBlob = container.GetBlockBlobReference( asset.Key );
+
+                /*
+                    10/29/2026 - MSE
+
+                    Azure stores a blob uploaded without a content type as application/octet-stream, which makes
+                    browsers download images and PDFs instead of displaying them. Set the type from the file name.
+
+                    Reason: Assets uploaded to Azure Cloud Storage must be served with the correct Content-Type.
+                    https://github.com/SparkDevNetwork/Rock/issues/7112
+                 */
+                blockBlob.Properties.ContentType = System.Web.MimeMapping.GetMimeMapping( GetNameFromKey( asset.Key ) );
                 blockBlob.UploadFromStream( asset.AssetStream );
                 return true;
             }
