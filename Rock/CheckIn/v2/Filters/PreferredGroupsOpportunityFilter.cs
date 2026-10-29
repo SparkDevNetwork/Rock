@@ -15,13 +15,15 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Rock.CheckIn.v2.Filters
 {
     /// <summary>
     /// Handles preferred group filtering. If any groups are marked as preferred
-    /// then all non-preferred groups are removed. This should happen after all
+    /// then the non-preferred groups are removed, but only for the schedules
+    /// that the preferred groups are available on. This should happen after all
     /// other normal filtering is applied.
     /// </summary>
     internal class PreferredGroupsOpportunityFilter : OpportunityFilter
@@ -29,26 +31,55 @@ namespace Rock.CheckIn.v2.Filters
         /// <inheritdoc/>
         public override void FilterGroups( OpportunityCollection opportunities )
         {
-            var openLocations = opportunities.Locations
+            var openLocationIds = new HashSet<string>( opportunities.Locations
                 .Where( l => !l.IsClosed )
-                .Select( l => l.Id )
-                .ToList();
+                .Select( l => l.Id ) );
 
-            // Only look for preferred groups if there are any open locations.
-            // Otherwise, we might end up removing all other groups and then
-            // a later filter would remove the location because it is closed
-            // and prevent check-in.
-            var preferredGroups = opportunities.Groups
-                .Where( g => g.IsPreferredGroup == true
-                    && g.Locations.Union( g.OverflowLocations ).Any( l => openLocations.Contains( l.LocationId ) ) )
-                .ToList();
+            /*
+                10/29/2026 - MSE
 
-            // If we have any preferred groups then we need to remove all
-            // non-preferred grous.
-            if ( preferredGroups.Count > 0 )
+                A preferred group only takes priority on the schedules where it
+                is actually available. Previously, if any preferred group had an
+                open location then every non-preferred group was removed outright,
+                which also removed them from schedules the preferred group is not
+                offered on and left the person with no options for those services.
+                So we now only remove the location and schedule pairs of the
+                non-preferred groups that share a schedule with a preferred group,
+                the same way DuplicateCheckInOpportunityFilter prunes by schedule.
+
+                Only look for preferred groups that have an open location (per
+                schedule). Otherwise, we might end up removing all other groups
+                and then a later filter would remove the location because it is
+                closed and prevent check-in.
+
+                Reason: Prefer Enrolled Groups must not eliminate groups on
+                schedules where the enrolled group is not available (#7067).
+            */
+            var preferredScheduleIds = new HashSet<string>( opportunities.Groups
+                .Where( g => g.IsPreferredGroup )
+                .SelectMany( g => g.Locations.Union( g.OverflowLocations ) )
+                .Where( l => openLocationIds.Contains( l.LocationId ) )
+                .Select( l => l.ScheduleId ) );
+
+            // If there are no preferred groups then there is nothing to remove.
+            if ( preferredScheduleIds.Count == 0 )
             {
-                opportunities.Groups.RemoveAll( g => !g.IsPreferredGroup );
+                return;
             }
+
+            // Remove the non-preferred group locations for the schedules that
+            // have a preferred group available.
+            foreach ( var group in opportunities.Groups.Where( g => !g.IsPreferredGroup ) )
+            {
+                group.Locations.RemoveAll( l => preferredScheduleIds.Contains( l.ScheduleId ) );
+                group.OverflowLocations.RemoveAll( l => preferredScheduleIds.Contains( l.ScheduleId ) );
+            }
+
+            // Remove any non-preferred groups that no longer have anywhere to
+            // be checked into.
+            opportunities.Groups.RemoveAll( g => !g.IsPreferredGroup
+                && g.Locations.Count == 0
+                && g.OverflowLocations.Count == 0 );
         }
     }
 }
