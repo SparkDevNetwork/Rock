@@ -1239,6 +1239,34 @@ namespace Rock.Communication
         }
 
         /// <summary>
+        /// Converts a Reply-To header value into the value saved on the communication record. The header
+        /// can contain several addresses, with or without display names, so it is parsed as a list.
+        /// </summary>
+        /// <param name="replyTo">The Reply-To header value, for example <c>a@x.com,"Name" &lt;b@y.com&gt;</c>.</param>
+        /// <returns>A comma separated list of distinct plain email addresses. If the value cannot be parsed the
+        /// exception is logged and the original value is returned.</returns>
+        internal static string GetReplyToAddressesForCommunicationRecord( string replyTo )
+        {
+            if ( replyTo.IsNullOrWhiteSpace() )
+            {
+                return replyTo;
+            }
+
+            try
+            {
+                var mailAddresses = new MailAddressCollection();
+                mailAddresses.Add( replyTo );
+
+                return string.Join( ",", mailAddresses.Select( a => a.Address ).Distinct( StringComparer.OrdinalIgnoreCase ) );
+            }
+            catch ( FormatException ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return replyTo;
+            }
+        }
+
+        /// <summary>
         /// Handles the email send response.
         /// </summary>
         /// <param name="rockMessageRecipient">The rock message recipient.</param>
@@ -1282,19 +1310,20 @@ namespace Rock.Communication
                     Reason: When Rock replaces FromEmail with organization email for unsafe senders, the
                     communication record should save the original sender's email in ReplyToEmail field.
                 */
+                /*
+                    10/29/2026 - MSE
+
+                    The Reply-To value is a header string that can hold several addresses, such as the original
+                    Reply-To plus the unsafe sender in display-name form. MailAddress only parses a single address,
+                    so it threw a FormatException (logged on every send) and the malformed value was stored.
+                    Parse it as a list and store distinct plain addresses instead. The header sent to the
+                    transport is not changed.
+
+                    Reason: Fix Reply-To parsing for the communication record (GitHub #7119).
+                */
                 if ( !string.IsNullOrWhiteSpace( recipientEmailMessage.ReplyToEmail ) )
                 {
-                    var replyToEmail = recipientEmailMessage.ReplyToEmail;
-                    try
-                    {
-                        replyToEmail = new System.Net.Mail.MailAddress( replyToEmail ).Address;
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex );
-                    }
-
-                    transaction.ReplyTo = replyToEmail;
+                    transaction.ReplyTo = GetReplyToAddressesForCommunicationRecord( recipientEmailMessage.ReplyToEmail );
                 }
 
                 if ( recipientEmailMessage.CreateCommunicationRecordImmediately )
