@@ -552,7 +552,7 @@
     }
 }
 
-/* The first load's reveal: content fades in, and the feed lifts into place as a room switch does. */
+/* The first load's reveal: content fades in, and the feed fades and lifts into place as a room switch does. */
 @keyframes chat-reveal-in {
     from {
         opacity: 0;
@@ -561,6 +561,7 @@
 
 @keyframes chat-reveal-lift {
     from {
+        opacity: 0;
         transform: translateY(var(--chat-reveal-lift));
     }
 }

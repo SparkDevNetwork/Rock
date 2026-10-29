@@ -1,15 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <span class="chat-channel-mark" :class="{ 'has-image': isImageShown, 'is-letter': isLetterShown }" :style="isLetterShown ? { '--chat-av-hue': String(avatarHue(tileName!)) } : undefined" aria-hidden="true">
-        <!-- Decorative: the channel's name is always drawn beside its mark. -->
+        <!--
+            Decorative: the channel's name is always drawn beside its mark. A tile's letter is its
+            base layer, so the photo fades in over it through the image reveal rather than into an
+            empty box; a mark with no tile name has the photo alone, or its glyph.
+        -->
+        <span v-if="isLetterShown" class="chat-channel-mark-letter" data-testid="channel-mark-letter">{{ letter }}</span>
         <img v-if="isImageShown"
+             v-reveal="reveal"
              class="chat-channel-mark-image"
+             :class="{ 'is-over': isLetterShown }"
              data-testid="channel-mark-image"
              :src="imageUrl!"
              alt=""
              @error="failedUrl = imageUrl" />
-        <span v-else-if="isLetterShown" class="chat-channel-mark-letter" data-testid="channel-mark-letter">{{ letter }}</span>
-        <Icon v-else :name="isPublic ? 'hash' : 'lock'" :size="iconSize" />
+        <Icon v-else-if="!isLetterShown" :name="isPublic ? 'hash' : 'lock'" :size="iconSize" />
     </span>
 </template>
 
@@ -22,12 +28,24 @@
     object-fit: cover;
     border-radius: inherit;
 }
+
+/* Over a tile's letter: the photo covers it exactly once revealed, and the letter shows until then. */
+.chat-channel-mark.is-letter {
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-channel-mark-image.is-over {
+    position: absolute;
+    inset: 0;
+}
 </style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import { avatarHue } from "./brand.partial";
     import Icon from "./icon.partial.obs";
+    import { useImageReveal, vReveal } from "./imageReveal.partial";
 
     const props = defineProps({
         /** Whether the channel is open to anyone who may join, which draws a hash rather than a lock. */
@@ -61,6 +79,9 @@
 
     // #region Values
 
+    // Marks drawn in the same frame fade their photos in together once decoded.
+    const reveal = useImageReveal({ isShared: true });
+
     /**
      * The image that failed to load, so a broken one gives way to the letter, hash or lock; kept by its
      * address so a new image is tried again rather than staying on the glyph.
@@ -73,8 +94,8 @@
 
     const isImageShown = computed((): boolean => !!props.imageUrl && props.imageUrl !== failedUrl.value);
 
-    /** A tile with no image to show draws a letter; a mark without a tile name draws the glyph. */
-    const isLetterShown = computed((): boolean => !isImageShown.value && !!props.tileName && letter.value !== "");
+    /** A tile always draws its letter, under any image; a mark without a tile name draws the glyph. */
+    const isLetterShown = computed((): boolean => !!props.tileName && letter.value !== "");
 
     /** The name's first letter, upper case, kept whole outside the basic plane. */
     const letter = computed((): string => (Array.from((props.tileName ?? "").trim())[0] ?? "").toUpperCase());

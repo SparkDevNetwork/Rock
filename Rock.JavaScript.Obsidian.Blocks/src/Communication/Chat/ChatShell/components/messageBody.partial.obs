@@ -33,7 +33,7 @@
                           class="chat-av chat-mn-av"
                           :data-initial="piece.photoUrl ? undefined : piece.initial"
                           :style="{ '--chat-av-hue': piece.hue }"
-                          aria-hidden="true"><img v-if="piece.photoUrl" class="chat-av-photo" :src="piece.photoUrl" alt="" /></span><span class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
+                          aria-hidden="true"><img v-if="piece.photoUrl" v-reveal="reveal" class="chat-av-photo" :src="piece.photoUrl" alt="" /></span><span class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
                     <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
                     <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
                     <template v-else>{{ piece.text }}</template>
@@ -141,6 +141,7 @@ button.chat-mn {
     import { computed, PropType, ref } from "vue";
     import Icon from "../ui/icon.partial.obs";
     import { avatarHue } from "../ui/brand.partial";
+    import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
     import { isActionCall } from "../composables/useMessageActions.partial";
     import { isRoomMention } from "../composables/useHistory.partial";
     import { MessageAction } from "../types.partial";
@@ -239,6 +240,9 @@ button.chat-mn {
     }>();
 
     // #region Values
+
+    // The mention chips' photos are faces, so they arrive with the others drawn in the same frame.
+    const reveal = useImageReveal({ isShared: true });
 
     /** The buttons whose action is out, by block and button index, each held until it answers. */
     const busyKeys = ref(new Set<string>());

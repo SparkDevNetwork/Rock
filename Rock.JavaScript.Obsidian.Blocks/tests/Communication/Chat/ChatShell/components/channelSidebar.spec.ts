@@ -487,12 +487,13 @@ describe("a row's look, by the room's kind", () => {
 describe("a channel's tile", () => {
     const pictured = row({ channel_id: "c0000010-0000-4000-8000-000000000000", name: "Greeters", is_public: true, icon_url: "https://church.example/GetImage.ashx?guid=team" });
 
-    test("shows the channel's own image as its tile", () => {
+    // The letter tile is always the base layer, so the photo fades in over it and never into an empty box.
+    test("shows the channel's own image over its letter tile", () => {
         const w = mountSidebar({ rows: [pictured, team] });
         const image = rowOf(w, pictured.channel_id).get(".chat-ch-tile [data-testid='channel-mark-image']");
 
         expect(image.attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
-        expect(rowOf(w, pictured.channel_id).find("[data-testid='channel-mark-letter']").exists()).toBe(false);
+        expect(rowOf(w, pictured.channel_id).get("[data-testid='channel-mark-letter']").text()).toBe("G");
     });
 
     test("shows its first letter on the colour of its name's hue when it has no image", () => {

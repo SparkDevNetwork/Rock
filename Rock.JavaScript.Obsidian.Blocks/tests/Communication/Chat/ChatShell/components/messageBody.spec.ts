@@ -324,6 +324,22 @@ describe("a mention chip's face", () => {
         expect(face.attributes("data-initial")).toBeUndefined();
     });
 
+    test("is revealed once decoded, not painted as it loads", () => {
+        const body = draw({
+            text: "raw",
+            pieces: [
+                { type: "mention", text: "@Lee Leader", person_alias_guid: "a0000007-0000-4000-8000-000000000000", nick_name: "Lee", last_name: "Leader", avatar_url: "https://photos.example/lee.jpg" }
+            ]
+        });
+        const image = body.get("[data-testid='piece-mention'] .chat-mn-av img");
+
+        expect(image.classes()).toContain("chat-img-hold");
+
+        image.element.dispatchEvent(new Event("load"));
+
+        expect(image.classes()).not.toContain("chat-img-hold");
+    });
+
     test("is the person's initial when they have no photo", () => {
         const body = draw({
             text: "raw",

@@ -18,7 +18,8 @@
 // show together, once all are decoded or at the cap after the first; a cached image shows at once
 // without a fade; a rejected decode falls back to the load event; a stopped tracker writes nothing
 // and leaves no timer; and the page's hold signal delays every reveal.
-import { ref } from "vue";
+import { computed, nextTick, ref } from "vue";
+import { createPageReveal, faceGraceMs } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { createImageReveal, imageHoldClass, imageInClass } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
 
 type Decode = { resolve: () => void, reject: () => void };
@@ -352,5 +353,68 @@ describe("the image reveal", () => {
         await settle();
 
         expect(settled).toBe(true);
+    });
+});
+
+// The page's grace and the batch's cap are two clocks, so on the first load the page governs: a
+// face decoded at any time inside the grace shows with the release, never at the batch's later cap.
+describe("the image reveal under the page's reveal", () => {
+    test("faces decoded at 100ms and 200ms both show at the release, with no fade, before the batch cap could fire", async () => {
+        const page = createPageReveal({ kind: "channel" });
+        const hold = computed(() => !page.state.isReleased);
+        const reveal = createImageReveal({ isShared: true, hold, reportDecode: decoded => page.holdFace(decoded) });
+        const early = makeImage();
+        const later = makeImage();
+
+        reveal.track(early.img);
+        reveal.track(later.img);
+        page.sidebarAnswered();
+        page.historyAnswered();
+        page.factsAnswered();
+        await nextTick();
+
+        jest.advanceTimersByTime(100);
+        early.decode.resolve();
+        await settle();
+        expect(page.state.isReleased).toBe(false);
+
+        jest.advanceTimersByTime(100);
+        later.decode.resolve();
+        await settle();
+
+        // The last held face decoded inside the grace, so the page released with both faces shown.
+        expect(page.state.isReleased).toBe(true);
+        for (const { img } of [early, later]) {
+            expect(isHidden(img)).toBe(false);
+            expect(isFading(img)).toBe(false);
+        }
+
+        page.stop();
+        reveal.stop();
+    });
+
+    test("a face past the grace shows on its own through the batch once the page has gone", async () => {
+        const page = createPageReveal({ kind: "channel" });
+        const hold = computed(() => !page.state.isReleased);
+        const reveal = createImageReveal({ isShared: true, hold, reportDecode: decoded => page.holdFace(decoded) });
+        const slow = makeImage();
+
+        reveal.track(slow.img);
+        page.sidebarAnswered();
+        page.historyAnswered();
+        page.factsAnswered();
+        await nextTick();
+        jest.advanceTimersByTime(faceGraceMs);
+        expect(page.state.isReleased).toBe(true);
+        expect(isHidden(slow.img)).toBe(true);
+
+        slow.decode.resolve();
+        await settle();
+
+        expect(isHidden(slow.img)).toBe(false);
+        expect(isFading(slow.img)).toBe(true);
+
+        page.stop();
+        reveal.stop();
     });
 });

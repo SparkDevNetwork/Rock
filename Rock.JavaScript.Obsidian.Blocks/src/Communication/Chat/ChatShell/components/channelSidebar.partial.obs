@@ -22,8 +22,14 @@
                         @click="emit('newMessage')" />
         </div>
 
-        <nav class="chat-side-list" aria-label="Conversations" :aria-busy="loadState === 'loading' ? 'true' : undefined">
-            <!-- The first load's veil over the list, which the frame supplies. -->
+        <nav class="chat-side-list"
+             aria-label="Conversations"
+             :aria-busy="loadState === 'loading' || isVeiled ? 'true' : undefined"
+             :inert="isVeiled || undefined">
+            <!--
+                The first load's veil over the list, which the frame supplies. The rows under it are
+                out of reach until it goes; the search and compose above are the frame's own.
+            -->
             <slot name="veil" />
             <!--
                 Still loading, not empty: rows of a conversation's size, so nothing jumps when they
@@ -783,6 +789,12 @@
 
         /** Whether the block is drawn one pane at a time, as on a phone. */
         isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the first load's veil is over the list: its rows are unreachable and busy until it goes. */
+        isVeiled: {
             type: Boolean,
             default: false
         },

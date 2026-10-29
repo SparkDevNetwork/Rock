@@ -116,6 +116,17 @@ describe("the card", () => {
         expect(w.get("[data-testid='profile-name']").text()).toBe("Anna Reyes");
     });
 
+    test("draws the person's photo through the image reveal, hidden until decoded", () => {
+        const w = mountCard(profile({ avatar_url: "https://photos.example/anna.jpg" }));
+        const photo = w.get("img.chat-av-photo");
+
+        expect(photo.classes()).toContain("chat-img-hold");
+
+        photo.element.dispatchEvent(new Event("load"));
+
+        expect(photo.classes()).not.toContain("chat-img-hold");
+    });
+
     test("takes focus as it opens", async () => {
         const opener = document.createElement("button");
         document.body.appendChild(opener);

@@ -1078,6 +1078,60 @@ describe("with nothing open", () => {
             expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
         });
 
+        test("ends the column's reveal on the feed's own lift or on a cancelled animation, never depending on one event", async () => {
+            const ended = (name: string, type = "animationend"): AnimationEvent => Object.assign(new Event(type, { bubbles: true }), { animationName: name }) as AnimationEvent;
+            const w = await mountLoading();
+            revealOf().isMainRevealed = true;
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).toContain("is-revealing");
+
+            // the feed is the one child the reveal lifts, and it may be the only one that ends
+            w.get("[data-testid='frame-conversation']").element.dispatchEvent(ended("chat-reveal-lift"));
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+        });
+
+        test("ends the column's reveal when its animations are cancelled", async () => {
+            const w = await mountLoading();
+            revealOf().isMainRevealed = true;
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).toContain("is-revealing");
+
+            const cancelled = Object.assign(new Event("animationcancel", { bubbles: true }), { animationName: "chat-reveal-in" });
+            w.get("[data-testid='frame-conversation']").element.dispatchEvent(cancelled);
+            await settle();
+
+            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+        });
+
+        test("ends the column's reveal when another room is opened, which takes its own rise", async () => {
+            const w = await mountLoading();
+            revealOf().isMainRevealed = true;
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).toContain("is-revealing");
+
+            (mockShell!.state as { activeChannelId: string | null }).activeChannelId = "c0000009-0000-4000-8000-000000000000";
+            await settle();
+
+            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+        });
+
+        test("keeps the veiled list out of reach and busy until it is revealed, as the column is", async () => {
+            const w = await mountLoading();
+            const list = (): ReturnType<typeof w.get> => w.get("[data-testid='frame-sidebar'] .chat-side-list");
+
+            expect(list().attributes("inert")).toBeDefined();
+            expect(list().attributes("aria-busy")).toBe("true");
+            // the search and compose are the frame's own and stay live
+            expect(w.get("[data-testid='sidebar-top']").attributes("inert")).toBeUndefined();
+
+            revealOf().isSidebarRevealed = true;
+            await settle();
+
+            expect(list().attributes("inert")).toBeUndefined();
+            expect(list().attributes("aria-busy")).toBeUndefined();
+        });
+
         test("never runs a reveal for a frame that was drawn revealed", async () => {
             const w = await mountBlock(1200);
 

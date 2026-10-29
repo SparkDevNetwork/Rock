@@ -88,11 +88,29 @@ describe("a channel's mark", () => {
         expect(plain.get("[data-testid='channel-mark-letter']").text()).toBe("W");
     });
 
-    test("with a tile name and an image, shows the image, and the letter once it fails", async () => {
+    // The letter is the tile's base layer whatever happens to the image, so a photo arrives over it
+    // rather than replacing it, and never pops into an empty box.
+    test("with a tile name and an image, keeps the letter under the image, and the letter alone once the image fails", async () => {
         const w = mount(ChannelMark, { props: { isPublic: true, imageUrl: picture, tileName: "Greeters" } });
 
-        expect(w.find("[data-testid='channel-mark-letter']").exists()).toBe(false);
-        await w.get("[data-testid='channel-mark-image']").trigger("error");
         expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("G");
+        expect(w.classes()).toContain("is-letter");
+        expect(w.get("[data-testid='channel-mark-image']").attributes("src")).toBe(picture);
+
+        await w.get("[data-testid='channel-mark-image']").trigger("error");
+        expect(w.find("[data-testid='channel-mark-image']").exists()).toBe(false);
+        expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("G");
+    });
+
+    test("the image stays hidden until decoded, then shows through the image reveal", () => {
+        const w = mount(ChannelMark, { props: { isPublic: true, imageUrl: picture, tileName: "Greeters" } });
+        const image = w.get("[data-testid='channel-mark-image']");
+
+        expect(image.classes()).toContain("chat-img-hold");
+
+        image.element.dispatchEvent(new Event("load"));
+
+        expect(image.classes()).not.toContain("chat-img-hold");
+        expect(image.classes()).toContain("chat-img-in");
     });
 });

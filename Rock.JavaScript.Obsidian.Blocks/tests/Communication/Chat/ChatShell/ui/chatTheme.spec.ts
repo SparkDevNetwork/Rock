@@ -921,4 +921,16 @@ describe("the components' own styles", () => {
             expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-link", "color")).toBe(normalize("var(--chat-brand-ink)"));
         });
     });
+
+    // The feed is lifted by the reveal, and a rule with more weight than the one fading the column's
+    // other parts would otherwise leave it lifting without fading: one animation does both.
+    test("the first load's reveal gives the feed one animation that both fades and lifts", () => {
+        const shellPath = resolve(components, "../../chatShell.obs");
+        const frames = normalize(keyframesBody(sheetPath, "chat-reveal-lift") ?? "");
+
+        expect(frames).toContain("opacity:0");
+        expect(frames).toContain(normalize("transform: translateY(var(--chat-reveal-lift))"));
+        expect(declarationOf(shellPath, ".chat-frame-under.is-revealing :deep(.chat-feed)", "animation")).toBe(normalize("chat-reveal-lift var(--chat-d-reveal) var(--chat-ease-in) both"));
+        expect(declarationOf(shellPath, ".chat-frame-under.is-revealing > *", "animation")).toBe(normalize("chat-reveal-in var(--chat-d-reveal) var(--chat-ease-in) both"));
+    });
 });
