@@ -1016,4 +1016,10 @@ describe("the grouped list's measures", () => {
     test("rounds Chat settings' Turn on and Turn off as pills too", () => {
         expect(bodyOf("components/chatSettings.partial.obs", ".chat-ms-btn")).toMatch(/border-radius:\s*var\(--chat-r-full\);/);
     });
+
+    // The shared field rule sets font: inherit at the same weight as a plain class, so the rename
+    // size has to out-weigh it rather than win by load order.
+    test("sets the rename field's size by a selector heavier than the shared field's", () => {
+        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-rn .chat-rn-in")).toMatch(/font-size:\s*13\.5px;/);
+    });
 });

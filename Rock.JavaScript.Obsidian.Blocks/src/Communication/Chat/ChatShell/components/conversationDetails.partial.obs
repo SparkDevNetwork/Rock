@@ -427,7 +427,8 @@
     padding: 6px 6px 6px 14px;
 }
 
-.chat-rn-in {
+/* Under .chat-rn so the size out-weighs the shared field's font: inherit, not by load order. */
+.chat-rn .chat-rn-in {
     height: 32px;
     font-size: 13.5px;
 }
