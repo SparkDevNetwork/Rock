@@ -1337,6 +1337,7 @@ namespace Rock.Financial
 
             var today = RockDateTime.Today;
             var tomorrow = today.AddDays( 1 );
+            var createdDocuments = new List<Document>();
 
             foreach ( var documentPersonId in documentPersonIds )
             {
@@ -1438,9 +1439,24 @@ namespace Rock.Financial
                 var documentService = new DocumentService( rockContext );
 
                 documentService.Add( document );
+                createdDocuments.Add( document );
             }
 
             rockContext.SaveChanges();
+
+            // Make sure the associated BinaryFiles are using the Document Entity for security.
+            if ( createdDocuments.Any() )
+            {
+                var documentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT );
+
+                foreach ( var createdDocument in createdDocuments )
+                {
+                    createdDocument.BinaryFile.ParentEntityTypeId = documentEntityTypeId;
+                    createdDocument.BinaryFile.ParentEntityId = createdDocument.Id;
+                }
+
+                rockContext.SaveChanges();
+            }
 
             return new FinancialStatementGeneratorUploadGivingStatementResult
             {
