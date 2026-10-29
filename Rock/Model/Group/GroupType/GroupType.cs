@@ -245,7 +245,8 @@ namespace Rock.Model
         /// <para>
         /// <see cref="AlreadyEnrolledMatchingLogic.PreferEnrolledGroups"/> will
         /// additionally then filter out any non-preferred groups if the person
-        /// is a member of any preferred groups.
+        /// is a member of any preferred groups, but only for the schedules
+        /// where a preferred group is available.
         /// </para>
         /// </summary>
         [DataMember]
