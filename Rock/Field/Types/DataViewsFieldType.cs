@@ -50,6 +50,12 @@ namespace Rock.Field.Types
         protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
 
         /// <summary>
+        /// Entity Type Key. This is the key the Obsidian client uses (ListItemBag JSON),
+        /// it is never persisted. See <see cref="ENTITY_TYPE_NAME_KEY"/> for the stored value.
+        /// </summary>
+        private const string ENTITY_TYPE_KEY = "entityType";
+
+        /// <summary>
         /// Display Persisted Only Key
         /// </summary>
         protected const string DISPLAY_PERSISTED_ONLY_KEY = "displayPersistedOnly";
@@ -117,6 +123,74 @@ namespace Rock.Field.Types
             }
 
             return string.Empty;
+        }
+
+        /*
+            10/29/2026 - MSE
+
+            The Obsidian Data Views field reads and writes the entity type under the
+            "entityType" key as ListItemBag JSON, but the value stored in the database
+            (and read by the WebForms control and C# attribute declarations such as
+            [DataViewsField( EntityTypeName = "Rock.Model.Person" )]) is the plain
+            entity type name under the "entityTypeName" key. Without a conversion the
+            client never sees the entity type and the picker is not filtered.
+
+            Reason: Client key (entityType) differs from the storage key (entityTypeName).
+        */
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( !privateConfigurationValues.TryGetValue( ENTITY_TYPE_KEY, out var entityTypeJson ) )
+            {
+                return privateConfigurationValues;
+            }
+
+            // Obsidian posts the entity type as ListItemBag JSON ("{}" or "null"
+            // when cleared). Persist the plain name and drop the Obsidian-only key.
+            privateConfigurationValues.Remove( ENTITY_TYPE_KEY );
+
+            var entityTypeGuid = entityTypeJson.FromJsonOrNull<ListItemBag>()?.Value.AsGuidOrNull();
+            var entityType = entityTypeGuid.HasValue ? EntityTypeCache.Get( entityTypeGuid.Value ) : null;
+
+            privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType?.Name ?? string.Empty;
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage == ConfigurationValueUsage.View || !publicConfigurationValues.TryGetValue( ENTITY_TYPE_NAME_KEY, out var entityTypeName ) )
+            {
+                return publicConfigurationValues;
+            }
+
+            // The Obsidian client only understands the entityType key, so the
+            // plain text name is not sent to it.
+            publicConfigurationValues.Remove( ENTITY_TYPE_NAME_KEY );
+
+            // A value already saved by the Obsidian editor wins over the plain name.
+            if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_KEY ) || entityTypeName.IsNullOrWhiteSpace() )
+            {
+                return publicConfigurationValues;
+            }
+
+            var entityType = EntityTypeCache.Get( entityTypeName, false );
+            if ( entityType != null )
+            {
+                publicConfigurationValues[ENTITY_TYPE_KEY] = new ListItemBag()
+                {
+                    Text = entityType.FriendlyName,
+                    Value = entityType.Guid.ToString()
+                }.ToCamelCaseJson( false, true );
+            }
+
+            return publicConfigurationValues;
         }
 
         #endregion
