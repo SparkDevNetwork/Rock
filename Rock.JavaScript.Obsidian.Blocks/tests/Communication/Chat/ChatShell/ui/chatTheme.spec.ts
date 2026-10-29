@@ -323,7 +323,6 @@ const namedLiterals: Named[] = [
     // Durations.
     { name: "d-flash", value: "2.2s" },
     { name: "d-row-flash", value: "1.2s" },
-    { name: "d-rx-pop", value: "340ms" },
     { name: "d-roll", value: "220ms" },
     { name: "d-badge-in", value: "260ms" },
     { name: "d-pop-remove", value: "130ms" },
@@ -694,6 +693,35 @@ describe("the components' own styles", () => {
         const reducedFrames = normalize(keyframesBody(reactionsPath, reducedName) ?? "");
         expect(reducedFrames).toContain("opacity:0");
         expect(reducedFrames).not.toContain("transform");
+    });
+
+    // A new chip or thread pill is a small delight, so it pops over the chips' own base time on the
+    // spring curve; the sheet holds no separate, longer pop time.
+    test("a new reaction and a new thread pill pop over the base time on the spring curve", () => {
+        const reactionsPath = resolve(components, "messageReactions.partial.obs");
+        const summaryPath = resolve(components, "threadSummary.partial.obs");
+        for (const [path, selector] of [[reactionsPath, ".chat-rx.is-popping"], [summaryPath, ".chat-tsum.is-popping"]]) {
+            expect(declarationOf(path, selector, "animation")).toContain(normalize("var(--chat-t-base) var(--chat-ease-spring)"));
+        }
+
+        expect(readFileSync(sheetPath, "utf8")).not.toContain("--chat-d-rx-pop");
+    });
+
+    // A ring in the page's color around a chip or pill reads as a white edge outside its outline.
+    test("a reaction chip and the thread pill paint nothing outside their outline", () => {
+        for (const [file, selector] of [["messageReactions.partial.obs", ".chat-rx"], ["threadSummary.partial.obs", ".chat-tsum"]]) {
+            expect(declarationOf(resolve(components, file), selector, "box-shadow")).toBe("");
+        }
+    });
+
+    // The work surface pads its zone by the medium spacing on every side, and the block lives
+    // inside the zone's own clipped panel, so it cannot reach past that padding itself: it asks the
+    // padding off pages that hold it, and then gives back only the spacing that remains.
+    test("the chat shell takes the work surface's padding off and fills the room it leaves", () => {
+        const source = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/chatShell.obs"), "utf8");
+        expect(normalize(source)).toContain(normalize(":global(.full-work-surface:has(.chat-shell)) {\n    padding: 0;"));
+        expect(normalize(source)).toContain(normalize("- 2 * var(--spacing-medium, 16px) - 1px"));
+        expect(source).not.toMatch(/border-radius|box-shadow/);
     });
 
     // The one list entrance, written once in the sheet: a row the panel host marks rises from the
