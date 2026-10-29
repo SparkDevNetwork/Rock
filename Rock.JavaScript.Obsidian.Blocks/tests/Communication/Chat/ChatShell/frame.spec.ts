@@ -182,7 +182,7 @@ function fakeShell(): Record<string, unknown> {
     });
 
     const threads = fakeThreads();
-    const mentions = fakeMentions(state);
+    const mentions = fakeMentions();
     const rooms = fakeRooms();
 
     mockShell = {
@@ -487,9 +487,9 @@ function fakeThreads(): Record<string, unknown> {
  * The mentions the shell holds, as useMentions' createMentions answers them, reduced to state the
  * block reads and calls it makes. A jump marks its row as the one opened and goes where
  * createMentions' jump goes: a reply's thread through the frame's view, else its conversation,
- * opened as the shell opens one, and the message landed on through the frame's view.
+ * where the frame's landing opens it and lands on the message.
  */
-function fakeMentions(shellState: { activeChannelId: string | null }): Record<string, unknown> {
+function fakeMentions(): Record<string, unknown> {
     const state = reactive({
         picker: { query: null as string | null, people: [] as unknown[], isAllOffered: false },
         inbox: { rows: [] as MentionRow[], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [] as number[], currentId: null as number | null },
@@ -512,9 +512,7 @@ function fakeMentions(shellState: { activeChannelId: string | null }): Record<st
                 return;
             }
 
-            shellState.activeChannelId = row.channel_id;
-            await nextTick();
-            mockShellOptions?.mentionViews?.land(row.message.id);
+            await mockShellOptions?.mentionViews?.landInConversation(row.channel_id, row.message.id);
         }),
         setUnread: jest.fn(),
         applyPersonalEvent: jest.fn(),
@@ -2026,6 +2024,7 @@ describe("mentions", () => {
     test("a channel mention's row lands on the message in its conversation, the inbox staying beside it", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
+        timelineOf(dmAnna.channel_id).messages.push(storedMessage(30));
         const row = mention(dmAnna.channel_id, 30);
         await openInbox(w, [row]);
 
@@ -2041,6 +2040,7 @@ describe("mentions", () => {
     test("on a phone, a channel mention's row closes the inbox and shows the conversation", async () => {
         const w = await mountBlock(390);
         await openRow(w, team.channel_id);
+        timelineOf(dmAnna.channel_id).messages.push(storedMessage(30));
         await openInbox(w, [mention(dmAnna.channel_id, 30)]);
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
 

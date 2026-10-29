@@ -29,8 +29,8 @@
 // church and person. A browser that refuses its storage still works, the dot then showing for any
 // unread mention. The dot is any mention by name still unread where it lives and newer than the
 // last visit; reading the conversation or opening the thread drops it, and channel.mention raises
-// it. A jump to a channel mention opens the conversation and fetches at most two older pages
-// before it says the message is too far back.
+// it. A jump to a channel mention lands on it in its conversation as every landing does, and says
+// the message is too far back when the landing ran out of pages still looking.
 //
 // Once stopped, nothing more is fetched and no answer still on its way reaches the screen.
 //
@@ -40,11 +40,9 @@
 //       call: (name, args) => Promise<CallResult>,         the shell's call path
 //       tenantId: string, personAliasGuid: string,         who the last visit is kept for
 //       storage: () => Pick<Storage, "getItem" | "setItem">,   may throw, as may each method
-//       timelines: Pick<Timelines, "state" | "loadOlder">, where a jump looks for its message
-//       openChannel: (channelId) => Promise<boolean>,      puts a conversation on screen
-//       activeChannelId: () => string | null,              the conversation on screen now
 //       readCursor: (channelId) => number | null,          the sidebar row's read position
-//       land: (messageId) => void,                         scrolls to and flashes a held message
+//       landInConversation: (channelId, messageId) => Promise<"held" | "more" | "stop">,
+//                                                          opens the conversation and lands; "more" ran out still looking
 //       openThread: (channelId, rootId, messageId) => Promise<void>,
 //       toast: (notice: { code, text, icon }) => void
 //   }): Mentions
@@ -76,9 +74,8 @@
 //   warm(channel): asks a conversation's opening people ahead of its first @.
 //   forgetPeople(): forgets every conversation's held people, as a resync does.
 import { createMentions, mentionAskShared, mentionHeldAge, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
-import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
-import { HistoryPage, MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
 
@@ -190,30 +187,18 @@ function memoryStorage(): Pick<Storage, "getItem" | "setItem"> & { items: Map<st
     };
 }
 
-/** A conversation's history: ids 100 down to 1, the newest page first, ten to a page. */
-function fetchPage(_channelId: string, options: { limit: number, beforeId?: number }): Promise<HistoryPage> {
-    const top = options.beforeId !== undefined ? options.beforeId - 1 : 100;
-    const ids: number[] = [];
-    for (let id = top; id > top - 10 && id > 0; id--) {
-        ids.push(id);
-    }
-    return Promise.resolve({ messages: ids.map(id => message(id)), read_cursor: 100, unread_count: 0, has_more: top - 10 > 0 });
-}
-
 type Harness = {
     mentions: ReturnType<typeof createMentions>,
     calls: Call[],
     answers: Record<string, Array<CallResult | Deferred<CallResult>>>,
     callsTo: (name: string) => Call[],
     storage: ReturnType<typeof memoryStorage>,
-    timelines: ReturnType<typeof createTimelines>,
-    opened: string[],
-    landed: number[],
+    landings: Array<[string, number]>,
+
+    /** How the next landing ends, or a deferred the test answers by hand. */
+    landingAnswer: { value: "held" | "more" | "stop" | Deferred<"held" | "more" | "stop"> },
     threads: Array<[string, number, number]>,
     toasts: Array<{ code: string, text: string, icon: string }>,
-
-    /** The conversation on screen, which the test can change as the person would. */
-    active: { channelId: string | null },
 
     /** Each sidebar row's read position, by channel. */
     readCursors: Map<string, number>
@@ -228,12 +213,10 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
     const calls: Call[] = [];
     const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
     const storage = options.storage ?? memoryStorage();
-    const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage });
-    const opened: string[] = [];
-    const landed: number[] = [];
+    const landings: Array<[string, number]> = [];
+    const landingAnswer: Harness["landingAnswer"] = { value: "held" };
     const threads: Array<[string, number, number]> = [];
     const toasts: Array<{ code: string, text: string, icon: string }> = [];
-    const active: { channelId: string | null } = { channelId: null };
     const readCursors = new Map<string, number>();
 
     const refusing: Pick<Storage, "getItem" | "setItem"> = {
@@ -263,17 +246,11 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
             }
             return options.storageThrows === "methods" ? refusing : storage;
         },
-        timelines,
-        openChannel: async channelId => {
-            opened.push(channelId);
-            active.channelId = channelId;
-            await timelines.loadNewest(channelId);
-            return true;
-        },
-        activeChannelId: () => active.channelId,
         readCursor: channelId => readCursors.get(channelId) ?? null,
-        land: messageId => {
-            landed.push(messageId);
+        landInConversation: async (channelId, messageId) => {
+            landings.push([channelId, messageId]);
+            const answer = landingAnswer.value;
+            return typeof answer === "string" ? answer : answer.promise;
         },
         openThread: async (channelId, rootId, messageId) => {
             threads.push([channelId, rootId, messageId]);
@@ -289,12 +266,10 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
         answers,
         callsTo: name => calls.filter(c => c.name === name),
         storage,
-        timelines,
-        opened,
-        landed,
+        landings,
+        landingAnswer,
         threads,
         toasts,
-        active,
         readCursors
     };
 }
@@ -1244,34 +1219,44 @@ describe("the header's dot", () => {
 });
 
 describe("a jump from the inbox", () => {
-    test("opens the conversation of a channel mention and lands on the message", async () => {
+    test("lands on a channel mention in its conversation", async () => {
         const h = setup();
 
         await h.mentions.jump(mentionRow(95, "2026-10-18T09:00:00Z", { channel_id: otherChannel }));
 
-        expect(h.opened).toEqual([otherChannel]);
-        expect(h.landed).toEqual([95]);
+        expect(h.landings).toEqual([[otherChannel, 95]]);
         expect(h.toasts).toEqual([]);
     });
 
-    test("fetches an older page for a mention just past the newest", async () => {
+    test("says the message is too far back when the landing ran out of pages still looking", async () => {
         const h = setup();
-
-        await h.mentions.jump(mentionRow(85, "2026-10-18T09:00:00Z"));
-
-        expect(h.landed).toEqual([85]);
-        expect(h.toasts).toEqual([]);
-    });
-
-    test("past two older pages, stays at the newest and says the message is too far back", async () => {
-        const h = setup();
+        h.landingAnswer.value = "more";
 
         await h.mentions.jump(mentionRow(5, "2026-10-18T09:00:00Z"));
 
-        expect(h.landed).toEqual([]);
         expect(h.toasts.map(t => t.text)).toEqual(["That message is too far back to jump to."]);
-        // the newest page and two older ones, ten each
-        expect(h.timelines.state(channel).messages.length).toBe(30);
+    });
+
+    test("says nothing when the landing stopped, as when the person opened another conversation or asked for another landing", async () => {
+        const h = setup();
+        h.landingAnswer.value = "stop";
+
+        await h.mentions.jump(mentionRow(5, "2026-10-18T09:00:00Z"));
+
+        expect(h.toasts).toEqual([]);
+    });
+
+    test("says nothing once stopped, however the landing ends", async () => {
+        const h = setup();
+        const landing = deferred<"held" | "more" | "stop">();
+        h.landingAnswer.value = landing;
+
+        const jumping = h.mentions.jump(mentionRow(5, "2026-10-18T09:00:00Z"));
+        h.mentions.stop();
+        landing.resolve("more");
+        await jumping;
+
+        expect(h.toasts).toEqual([]);
     });
 
     test("opens the thread of a reply at the reply, leaving the conversation alone", async () => {
@@ -1280,58 +1265,8 @@ describe("a jump from the inbox", () => {
         await h.mentions.jump(mentionRow(55, "2026-10-18T09:00:00Z", { parent_id: 30 }));
 
         expect(h.threads).toEqual([[channel, 30, 55]]);
-        expect(h.opened).toEqual([]);
+        expect(h.landings).toEqual([]);
         expect(h.mentions.state.inbox.currentId).toBe(55);
-    });
-
-    describe("overtaken by the person opening another conversation", () => {
-        /** Holds each older page the jump asks for until the test lets it through. */
-        function holdOlderPages(h: Harness): Array<Deferred<void>> {
-            const held: Array<Deferred<void>> = [];
-            const loadOlder = h.timelines.loadOlder.bind(h.timelines);
-            h.timelines.loadOlder = async (channelId: string): Promise<void> => {
-                const gate = deferred<void>();
-                held.push(gate);
-                await gate.promise;
-                await loadOlder(channelId);
-            };
-            return held;
-        }
-
-        test("never lands in the conversation now on screen, even once the page holding the message comes", async () => {
-            const h = setup();
-            const held = holdOlderPages(h);
-
-            const jumping = h.mentions.jump(mentionRow(85, "2026-10-18T09:00:00Z"));
-            await settle();
-            expect(held).toHaveLength(1);
-
-            h.active.channelId = otherChannel;
-            held[0].resolve();
-            await jumping;
-
-            expect(h.landed).toEqual([]);
-            expect(h.toasts).toEqual([]);
-            expect(held).toHaveLength(1);
-        });
-
-        test("never says a message is too far back over the conversation now on screen", async () => {
-            const h = setup();
-            const held = holdOlderPages(h);
-
-            const jumping = h.mentions.jump(mentionRow(5, "2026-10-18T09:00:00Z"));
-            await settle();
-            held[0].resolve();
-            await settle();
-            expect(held).toHaveLength(2);
-
-            h.active.channelId = otherChannel;
-            held[1].resolve();
-            await jumping;
-
-            expect(h.landed).toEqual([]);
-            expect(h.toasts).toEqual([]);
-        });
     });
 
     test("marks the row it opened as the current one", async () => {

@@ -785,7 +785,7 @@
         invokeBlockAction,
         // Called only after the frame below is set up, so the landings they reach are there.
         mentionViews: {
-            land: messageId => landOnMention(messageId),
+            landInConversation: (channelId, messageId) => landInConversation(channelId, messageId),
             openThread: (channelId, rootId, messageId) => openThreadFromMentions(channelId, rootId, messageId)
         }
     });
@@ -882,7 +882,7 @@
         }
     });
 
-    const { landingReplyId, landingMessageId, landOnReply, onJump } = useJump({
+    const { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation } = useJump({
         shell,
         activeChannelId,
         isPhone,
@@ -1519,14 +1519,6 @@
         return row
             ? { canMention: row.can_mention, people: picker.people, isAllOffered: picker.isAllOffered, isAwaitingAnswer: picker.isAwaitingAnswer, isAwaitingFirstAnswer: picker.isAwaitingFirstAnswer }
             : null;
-    }
-
-    /** Lands on a mention in the open conversation, again even when it was the last landed on. */
-    function landOnMention(messageId: number): void {
-        landingMessageId.value = null;
-        void nextTick(() => {
-            landingMessageId.value = messageId;
-        });
     }
 
     /** A message id the worker posted as a string, or null when it is not one. */

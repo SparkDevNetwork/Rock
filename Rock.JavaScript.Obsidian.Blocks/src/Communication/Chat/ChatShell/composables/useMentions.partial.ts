@@ -29,8 +29,7 @@
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
 import { ChannelMentionEvent, ChatError, MentionListPage, MentionPerson, MentionRow, MentionSearchAnswer, SidebarRow, UnreadMention } from "../types.partial";
-import { Timelines } from "./useHistory.partial";
-import { LandingCheck, loadUntilHeld } from "./useJump.partial";
+import { LandingCheck } from "./useJump.partial";
 import { PlatformLimits } from "./useSession.partial";
 
 /**
@@ -124,23 +123,17 @@ export type MentionsDependencies = {
     /** The device's storage, which may be missing or refuse every read and write. */
     storage: () => Pick<Storage, "getItem" | "setItem">;
 
-    /** The channel timelines a jump looks for its message in. */
-    timelines: Pick<Timelines, "state" | "loadOlder">;
-
     /** The platform's limits, from the latest token exchange: how many rows a page of the inbox holds. */
     limits: () => Pick<PlatformLimits, "mention_page_size">;
-
-    /** Opens a conversation; resolves true once it is on screen. */
-    openChannel: (channelId: string) => Promise<boolean>;
-
-    /** The conversation on screen now, or null. */
-    activeChannelId: () => string | null;
 
     /** How far the person has read a conversation, from its sidebar row; null when unknown. */
     readCursor: (channelId: string) => number | null;
 
-    /** Scrolls the open conversation to a message it holds and flashes it. */
-    land: (messageId: number) => void;
+    /**
+     * Opens a conversation and lands on a message in it, as every landing does; "more" when the
+     * pages a landing fetches ran out still looking.
+     */
+    landInConversation: (channelId: string, messageId: number) => Promise<LandingCheck>;
 
     /** Opens a thread at a reply. */
     openThread: (channelId: string, rootId: number, messageId: number) => Promise<void>;
@@ -482,47 +475,6 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         Object.assign(state.inbox, { rows: [], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [], currentId: null });
     }
 
-    /**
-     * Lands on a channel mention in its conversation, fetching at most two older pages as any
-     * landing does; past them the conversation stays at the newest and says so.
-     */
-    async function jumpInConversation(row: MentionRow): Promise<void> {
-        const isOpen = await dependencies.openChannel(row.channel_id);
-        if (!isOpen) {
-            return;
-        }
-
-        // Opening another conversation meanwhile ends the jump: it must not land or warn there.
-        const isOnScreen = (): boolean => !isStopped && dependencies.activeChannelId() === row.channel_id;
-        const messageId = row.message.id;
-        let oldestSeen: number | undefined;
-        // written inside the check, so it is declared wide rather than narrowed to its first value
-        let lastCheck = "stop" as LandingCheck;
-        await loadUntilHeld(() => {
-            const timeline = dependencies.timelines.state(row.channel_id);
-            const oldest = timeline.messages[0]?.id;
-            if (!isOnScreen() || oldest === undefined) {
-                return lastCheck = "stop";
-            }
-
-            if (timeline.messages.some(message => message.id === messageId)) {
-                dependencies.land(messageId);
-                return lastCheck = "held";
-            }
-
-            // A failed page moved nothing, and one already past the message without it means the
-            // conversation no longer shows it, as when it was deleted: neither is too far back.
-            const isStuck = oldest === oldestSeen || oldest < messageId;
-            oldestSeen = oldest;
-            return lastCheck = isStuck || !timeline.hasMore ? "stop" : "more";
-        }, () => dependencies.timelines.loadOlder(row.channel_id));
-
-        // Still looking once the pages ran out: the message is older than a jump fetches.
-        if (lastCheck === "more" && isOnScreen()) {
-            dependencies.toast(tooFarBackNotice);
-        }
-    }
-
     // #endregion The inbox
 
     return {
@@ -691,7 +643,11 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
                 return;
             }
 
-            await jumpInConversation(row);
+            // Past the pages a landing fetches the conversation stays at the newest, and says so.
+            const check = await dependencies.landInConversation(row.channel_id, row.message.id);
+            if (check === "more" && !isStopped) {
+                dependencies.toast(tooFarBackNotice);
+            }
         },
 
         setUnread: (entries): void => {

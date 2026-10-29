@@ -151,9 +151,9 @@ export type ShellOptions = {
 
     /**
      * How a jump from the mentions inbox reaches the frame's views, which the shell cannot see:
-     * landing on a message in the open conversation, and opening a thread at a reply.
+     * landing on a message in its conversation, and opening a thread at a reply.
      */
-    mentionViews?: Pick<MentionsDependencies, "land" | "openThread">;
+    mentionViews?: Pick<MentionsDependencies, "landInConversation" | "openThread">;
 
     /** A fresh request for one upload to Storage; the browser's own when not given. */
     newUploadRequest?: () => XMLHttpRequest;
@@ -722,16 +722,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
             return options.storage;
         },
-        timelines,
         limits: () => session.settings().limits,
-        // A jump opens its conversation as a sidebar row does, and one already open stays as it is.
-        openChannel: async channelId => {
-            directMessages.close();
-            return channelId === state.activeChannelId || await open(channelId) === "opened";
-        },
-        activeChannelId: () => state.activeChannelId,
         readCursor: channelId => channels.rows.find(row => row.channel_id === channelId)?.read_cursor ?? null,
-        land: messageId => options.mentionViews?.land(messageId),
+        landInConversation: async (channelId, messageId) => options.mentionViews?.landInConversation(channelId, messageId) ?? "stop",
         openThread: async (channelId, rootId, messageId) => options.mentionViews?.openThread(channelId, rootId, messageId),
         toast: notice => options.notify?.(notice)
     });
@@ -1195,6 +1188,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
     /** Counts opens, so an open that a later one has replaced stops touching anything. */
     let openCount = 0;
 
+    /** The open asked for last and the room it opens, which selecting that room again waits for. */
+    let lastOpen: { channelId: string, outcome: Promise<OpenOutcome> } | null = null;
+
+    /**
+     * Opens a channel, keeping the open as the last one asked for, so a second ask for the same
+     * room while it loads waits for this open rather than finding it on screen with nothing in it.
+     */
+    function open(channelId: string, isPageLoad: boolean = false): Promise<OpenOutcome> {
+        const outcome = runOpen(channelId, isPageLoad);
+        lastOpen = { channelId, outcome };
+        return outcome;
+    }
+
     /**
      * Opens a channel: lets go of the one being left and saves its position without waiting,
      * then joins and fetches together. A person can open channels faster than the platform
@@ -1204,7 +1210,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * @param isPageLoad Whether the first load is opening this room, which then decides what a
      * refusal means for the reveal; a room the person chose answers it for itself.
      */
-    async function open(channelId: string, isPageLoad: boolean = false): Promise<OpenOutcome> {
+    async function runOpen(channelId: string, isPageLoad: boolean): Promise<OpenOutcome> {
         const thisOpen = ++openCount;
         const isCurrent = (): boolean => thisOpen === openCount;
 
@@ -1466,6 +1472,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             directMessages.close();
             if (channelId !== state.activeChannelId) {
                 await open(channelId);
+            }
+            else if (lastOpen?.channelId === channelId) {
+                await lastOpen.outcome;
             }
         },
 
