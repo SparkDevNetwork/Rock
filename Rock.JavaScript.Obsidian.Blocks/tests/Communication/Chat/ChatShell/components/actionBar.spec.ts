@@ -36,7 +36,7 @@
 //       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first three are quick
 //       pickerAnchor: HTMLElement | null   what the open picker is placed beside; the bar holding it stays
 //   }
-//   emits: replyInThread(messageId), quote(message), edit(message), copy(message),
+//   emits: replyInThread(message), quote(message), edit(message), copy(message),
 //          delete(message), serverAction(action), react(message, code), openPicker(message, anchor),
 //          holdChange(isHeld)
 //
@@ -208,14 +208,14 @@ describe("the bar's tools", () => {
         expect(toolLabels(w)).toEqual([...reactionLabels, "Quote", "More actions"]);
     });
 
-    test("ask to reply in thread with the message's id, and to quote the message", async () => {
+    test("ask to reply in thread and to quote, each with the message", async () => {
         const target = message();
         const w = await shown({ message: target });
 
         await w.get("[data-testid='action-bar'] button[aria-label='Reply in thread']").trigger("click");
         await w.get("[data-testid='action-bar'] button[aria-label='Quote']").trigger("click");
 
-        expect(w.emitted("replyInThread")).toEqual([[42]]);
+        expect(w.emitted("replyInThread")).toEqual([[target]]);
         expect(w.emitted("quote")).toEqual([[target]]);
     });
 });

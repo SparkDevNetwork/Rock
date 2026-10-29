@@ -30,7 +30,7 @@ import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
 import { ChatError, DisplayPiece, MessageAction, TimelineMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
-import { Threads } from "./useThreads.partial";
+import { Threads, ThreadPlace, threadPlaceOf } from "./useThreads.partial";
 
 export type { MessageAction } from "../types.partial";
 
@@ -205,7 +205,8 @@ export type MessageRowPlace = {
 
     request: (request: MessageActionRequest) => void;
 
-    openThread: (rootId: number) => void;
+    /** Opens a thread, at a reply when the place names one. */
+    openThread: (place: ThreadPlace) => void;
 
     /** Where a picker asked for by a control is placed, for a control that may leave with its sheet. */
     pickerAnchor: (anchor: HTMLElement) => HTMLElement;
@@ -218,7 +219,7 @@ export type MessageRowPlace = {
 export type MessageRowRequests = {
     /** The bar's and the sheet's choices, one set for both. */
     actions: {
-        replyInThread: (messageId: number) => void;
+        replyInThread: (message: TimelineMessage) => void;
         quote: (message: TimelineMessage) => void;
         edit: (message: TimelineMessage) => void;
         copy: (message: TimelineMessage) => void;
@@ -238,8 +239,9 @@ export type MessageRowRequests = {
 /**
  * What a message row hands its bar and sheet, its reaction chips, its editor and its block
  * buttons: each choice as one request about the row's message, so every way of acting on a
- * message asks in the same words. Reply in thread opens the drawer on the root, as its thread
- * pill does. A chip's add opens the picker on the message rather than on itself, since a choice
+ * message asks in the same words. Reply in thread opens the thread the message belongs to: its
+ * own as a root, as its thread pill does, or its root's as a reply, landed on it, as its
+ * "Replied to a thread" label does. A chip's add opens the picker on the message rather than on itself, since a choice
  * that takes the last chip away takes the add chip with it; focus comes back to it.
  *
  * @param place Where the requests go, and the row's places a picker is set beside.
@@ -257,7 +259,7 @@ export function messageRowRequests(place: MessageRowPlace): MessageRowRequests {
 
     return {
         actions: {
-            replyInThread: (messageId: number): void => place.openThread(messageId),
+            replyInThread: (message: TimelineMessage): void => place.openThread(threadPlaceOf(message)),
             quote: (message: TimelineMessage): void => place.request({ kind: "quote", message }),
             edit: (message: TimelineMessage): void => place.request({ kind: "edit", message }),
             copy: (message: TimelineMessage): void => place.request({ kind: "copy", message }),

@@ -30,7 +30,7 @@ import { PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/tooltip.partial";
 import { ReplyLanding, ThreadOrigin } from "./useJump.partial";
-import { OpenThreadState } from "./useThreads.partial";
+import { OpenThreadState, ThreadPlace } from "./useThreads.partial";
 
 /** What the panel column can hold: the threads list, the mentions inbox, the members panel, or one thread in its drawer. */
 export type PanelKind = "threads" | "mentions" | "members" | "thread";
@@ -121,7 +121,7 @@ export type Frame = {
 
     openThreadFromList: (rootId: number, channelId: string) => void;
 
-    onOpenThread: (rootId: number) => void;
+    onOpenThread: (place: ThreadPlace) => void;
 
     onThreadBack: () => Promise<void>;
 
@@ -339,10 +339,13 @@ export function useFrame(dependencies: FrameDependencies): Frame {
         void openThreadDrawer(channelId, rootId, "threads");
     }
 
-    /** A thread pill, or the "Replied to a thread" label over a reply, in the open conversation. */
-    function onOpenThread(rootId: number): void {
+    /**
+     * A message's thread, from its thread pill, the "Replied to a thread" label over a reply or its
+     * Reply in thread, in the open conversation: at the reply when the message is one.
+     */
+    function onOpenThread(place: ThreadPlace): void {
         if (activeChannelId.value) {
-            void openThreadDrawer(activeChannelId.value, rootId, null);
+            void dependencies.landOnReply({ channelId: activeChannelId.value, ...place });
         }
     }
 
