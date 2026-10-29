@@ -304,8 +304,8 @@
                 title="Foreign Key"
                 field="foreignKey"
                 :hideOnScreen="true" />
-        <ButtonColumn name="showModal"
-                      tooltip="Link to Person"
+        <ButtonColumn v-if="config.isAddEnabled"
+                      name="showModal"
                       iconClass="ti ti-user"
                       @click="onShowModal"
                       :excludeFromExport="true" />
