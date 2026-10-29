@@ -33,7 +33,7 @@ namespace Rock.Tasks
         {
             using ( var rockContext = new RockContext() )
             {
-                var sql = $@"
+                var sql = @"
 DECLARE @batchId INT
 DECLARE @batchSize INT
 DECLARE @results INT
@@ -43,8 +43,8 @@ DECLARE @workflowTypeId INT
 SET @results = 1
 SET @batchSize = 10000
 SET @batchId = 0
-SET @prefix = '{message.Prefix}'
-SET @workflowTypeId = {message.WorkflowTypeId}
+SET @prefix = @PrefixValue
+SET @workflowTypeId = @WorkflowTypeIdValue
 
 -- when 0 rows returned, exit the loop
 WHILE (@results > 0)
@@ -61,7 +61,9 @@ WHILE (@results > 0)
 		SET @batchId = @batchId + @batchSize
 	END
 ";
-                var result = rockContext.Database.ExecuteSqlCommand( sql );
+                var result = rockContext.Database.ExecuteSqlCommand( sql,
+                    new SqlParameter( "@PrefixValue", message.Prefix ?? string.Empty ),
+                    new SqlParameter( "@WorkflowTypeIdValue", message.WorkflowTypeId ) );
             }
         }
 
