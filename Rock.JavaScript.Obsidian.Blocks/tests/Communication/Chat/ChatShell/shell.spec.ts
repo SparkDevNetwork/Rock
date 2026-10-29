@@ -20,6 +20,7 @@
 // however the earlier opens and saves settle.
 import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
+import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
@@ -469,7 +470,9 @@ describe("createChatShell", () => {
         expect(h.shell.state.activeChannelId).toBe(channelC);
         expect(h.joined[h.joined.length - 1]).toBe(channelTopic(tenant, channelC));
         expect(h.removed).not.toContain(channelTopic(tenant, channelC));
-        expect(Object.values(h.stored)).toEqual([channelC]);
+        // the remembered channel, and its look beside it
+        expect(h.stored[rememberedChannelKey(tenant, person)]).toBe(channelC);
+        expect(Object.keys(h.stored).sort()).toEqual([rememberedChannelKey(tenant, person), `${rememberedChannelKey(tenant, person)}:kind`]);
     });
 
     test("what is seen in the channel on screen is saved against that channel", async () => {
@@ -745,6 +748,117 @@ describe("the page load", () => {
 
         expect(h.shell.state.activeChannelId).toBeNull();
         expect(h.shell.state.isOpening).toBe(false);
+    });
+});
+
+// The first screen is revealed once, when the sidebar, the opening room's first page and its facts
+// have all answered; the shell owns the answers, the reveal owns the rule (see the page reveal).
+describe("the page load's reveal", () => {
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("shows nothing revealed while the opening room's first page is out, and everything when it lands", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        expect(h.shell.channels.loadState).toBe("loaded");
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(false);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("at the ceiling reveals the sidebar that arrived, and the column when its first page lands", async () => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        jest.advanceTimersByTime(revealCeilingMs);
+
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a first visit with nothing to open reveals the column", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = { channels: [] };
+
+        await h.shell.start();
+
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a first page that fails reveals at once, the sidebar that arrived with it", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        h.history[channelA][0].resolve(fakeResponse(500, { message: "down" }));
+        await starting;
+
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a sidebar that fails reveals the list at once, with its Try again line", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+
+        await h.shell.start();
+
+        expect(h.shell.channels.loadState).toBe("failed");
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+    });
+
+    test("draws the look of the room opened last, a channel's on a first visit", async () => {
+        const key = rememberedChannelKey(tenant, person);
+
+        expect(build().shell.reveal.state.kind).toBe("channel");
+        expect(build({ stored: { [`${key}:kind`]: "direct" } }).shell.reveal.state.kind).toBe("direct");
+    });
+
+    test("remembers a direct message's look beside its id once its facts are in", async () => {
+        const h = build();
+        h.channelFacts[channelA] = memberFacts(channelA, { channel_type: "dm" });
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        const key = rememberedChannelKey(tenant, person);
+        expect(h.stored[key]).toBe(channelA);
+        expect(h.stored[`${key}:kind`]).toBe("direct");
+    });
+
+    test("stopped mid-load reveals nothing later and leaves no reveal timer", async () => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        await h.shell.stop();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        jest.advanceTimersByTime(revealCeilingMs * 2);
+
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(false);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+        expect(h.shell.reveal.state.isSkeletonShown).toBe(false);
     });
 });
 

@@ -187,6 +187,12 @@ function fakeShell(): Record<string, unknown> {
 
     mockShell = {
         state,
+        // revealed from the start, so a test that is not about the first load sees the frame as it is after it
+        reveal: {
+            state: reactive({ kind: "channel", isSkeletonShown: false, isSidebarRevealed: true, isMainRevealed: true }),
+            holdFace: jest.fn(),
+            stop: jest.fn()
+        },
         // every row listed, as the store lists them with no direct message waiting for its first message
         channels: reactive({
             rows: [team, dmAnna],
@@ -976,13 +982,108 @@ describe("with nothing open", () => {
         expect(w.get("[data-testid='frame-main']").text()).toContain("Choose a conversation.");
     });
 
-    test("while the page load is still choosing, says chat is opening rather than asking for a conversation", async () => {
+    test("while the page load is still choosing, asks for no conversation and has no loading line of its own", async () => {
         const w = await mountBlock(1200);
         (mockShell!.state as { isOpening: boolean }).isOpening = true;
         await settle();
 
-        expect(w.get("[data-testid='frame-main']").text()).toContain("Opening chat");
+        expect(w.get("[data-testid='frame-main']").text()).not.toContain("Opening chat");
         expect(w.get("[data-testid='frame-main']").text()).not.toContain("Choose a conversation.");
+    });
+
+    describe("the first load's reveal", () => {
+        type RevealState = { kind: string, isSkeletonShown: boolean, isSidebarRevealed: boolean, isMainRevealed: boolean };
+        const revealOf = (): RevealState => (mockShell!.reveal as { state: RevealState }).state;
+
+        async function mountLoading(): Promise<VueWrapper> {
+            const w = await mountBlock(1200);
+            Object.assign(revealOf(), { isSidebarRevealed: false, isMainRevealed: false });
+            await settle();
+            return w;
+        }
+
+        test("stands the frame at mount, a veil over the list and over the column until each is revealed", async () => {
+            const w = await mountLoading();
+
+            expect(w.get("[data-testid='frame-sidebar'] [data-testid='page-veil']").attributes("data-region")).toBe("sidebar");
+            expect(w.get("[data-testid='frame-main'] [data-testid='page-veil']").attributes("data-region")).toBe("main");
+            expect(w.find("[data-testid='sidebar-top']").exists()).toBe(true);
+            expect(w.get("[data-testid='frame-main']").attributes("aria-busy")).toBe("true");
+            expect(w.get("[data-testid='frame-conversation']").attributes("inert")).toBeDefined();
+        });
+
+        test("draws no marks while the wait runs, and draws them once it is spent", async () => {
+            const w = await mountLoading();
+
+            expect(w.findAll("[data-testid='page-veil'] i.chat-skeleton")).toHaveLength(0);
+
+            revealOf().isSkeletonShown = true;
+            await settle();
+
+            expect(w.find("[data-testid='frame-sidebar'] [data-testid='veil-marks']").exists()).toBe(true);
+            expect(w.findAll("[data-testid='frame-main'] [data-testid='veil-row']")).toHaveLength(5);
+        });
+
+        test("shapes the column's marks for the room opened last: a channel's flat rows, a direct message's bubbles", async () => {
+            const w = await mountLoading();
+            revealOf().isSkeletonShown = true;
+            await settle();
+
+            const main = (): ReturnType<typeof w.get> => w.get("[data-testid='frame-main'] [data-testid='page-veil']");
+            expect(main().attributes("data-look")).toBe("channel");
+            expect(main().find(".chat-veil-text").exists()).toBe(true);
+            expect(main().find(".chat-veil-bubble").exists()).toBe(false);
+
+            revealOf().kind = "direct";
+            await settle();
+
+            expect(main().attributes("data-look")).toBe("direct");
+            expect(main().find(".chat-veil-bubble").exists()).toBe(true);
+            expect(main().find(".chat-veil-text").exists()).toBe(false);
+        });
+
+        test("takes each veil away when its own region is revealed, the column's content then in reach", async () => {
+            const w = await mountLoading();
+
+            revealOf().isSidebarRevealed = true;
+            await settle();
+
+            expect(w.find("[data-testid='frame-sidebar'] [data-testid='page-veil']").exists()).toBe(false);
+            expect(w.find("[data-testid='frame-main'] [data-testid='page-veil']").exists()).toBe(true);
+
+            revealOf().isMainRevealed = true;
+            await settle();
+
+            expect(w.find("[data-testid='page-veil']").exists()).toBe(false);
+            expect(w.get("[data-testid='frame-main']").attributes("aria-busy")).toBeUndefined();
+            expect(w.get("[data-testid='frame-conversation']").attributes("inert")).toBeUndefined();
+        });
+
+        test("runs the column's reveal until its fade ends, so a later room's feed keeps its own rise", async () => {
+            const w = await mountLoading();
+            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+
+            revealOf().isMainRevealed = true;
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).toContain("is-revealing");
+
+            // a row's own animation ending inside the column says nothing about the reveal
+            const ended = (name: string): AnimationEvent => Object.assign(new Event("animationend", { bubbles: true }), { animationName: name }) as AnimationEvent;
+            w.get("[data-testid='frame-conversation']").element.dispatchEvent(ended("chat-enter"));
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).toContain("is-revealing");
+
+            w.get("[data-testid='frame-conversation']").element.dispatchEvent(ended("chat-reveal-in"));
+            await settle();
+            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+        });
+
+        test("never runs a reveal for a frame that was drawn revealed", async () => {
+            const w = await mountBlock(1200);
+
+            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+            expect(w.find("[data-testid='page-veil']").exists()).toBe(false);
+        });
     });
 
     test("draws the sidebar's loading rows until its first page has arrived", async () => {

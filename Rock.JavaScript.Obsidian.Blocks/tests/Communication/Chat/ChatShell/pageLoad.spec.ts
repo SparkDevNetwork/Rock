@@ -18,13 +18,19 @@
 // never history after the sidebar. A link wins; else the channel this browser last opened for
 // this person; else, only on a first visit, the sidebar's first row.
 import {
+    createPageReveal,
+    faceGraceMs,
     openChannel,
     OpenOutcome,
     readRememberedChannel,
+    readRememberedKind,
     rememberedChannelKey,
+    revealCeilingMs,
+    skeletonWaitMs,
     startPageLoad,
     StorageLike,
-    writeRememberedChannel
+    writeRememberedChannel,
+    writeRememberedKind
 } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { SidebarRow } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -224,5 +230,224 @@ describe("startPageLoad", () => {
         h.sidebar.resolve([]);
 
         expect(await loading).toBeNull();
+    });
+});
+
+// The first screen is drawn once: the frame stands at mount, and every region crossfades in
+// together when the first screen is ready, or at the ceiling for whatever has arrived.
+describe("the page reveal", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    /** Every gate has answered. */
+    function answerAll(reveal: ReturnType<typeof createPageReveal>): void {
+        reveal.sidebarAnswered();
+        reveal.historyAnswered();
+        reveal.factsAnswered();
+    }
+
+    test("shows nothing revealed before the sidebar, the first page and the facts have all answered", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+
+        reveal.historyAnswered();
+        reveal.factsAnswered();
+        jest.advanceTimersByTime(revealCeilingMs - 1);
+
+        expect(reveal.state.isSidebarRevealed).toBe(false);
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        reveal.sidebarAnswered();
+
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("reveals every region in the same tick once the first screen is ready", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.sidebarAnswered();
+        reveal.historyAnswered();
+
+        expect(reveal.state.isSidebarRevealed).toBe(false);
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        reveal.factsAnswered();
+
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("holds the reveal for a first-screen face still decoding, but no longer than the grace", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.holdFace(new Promise(() => undefined));
+        answerAll(reveal);
+
+        jest.advanceTimersByTime(faceGraceMs - 1);
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        jest.advanceTimersByTime(1);
+        expect(reveal.state.isMainRevealed).toBe(true);
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+    });
+
+    test("reveals at once when the held faces decode inside the grace", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        let decoded: () => void = () => undefined;
+        reveal.holdFace(new Promise<void>(resolve => {
+            decoded = resolve;
+        }));
+        answerAll(reveal);
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        decoded();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("at the ceiling reveals what has arrived and lets a late region reveal itself on landing", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.sidebarAnswered();
+
+        jest.advanceTimersByTime(revealCeilingMs);
+
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        reveal.historyAnswered();
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        reveal.factsAnswered();
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a failure reveals what has arrived at once, without the face grace", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.holdFace(new Promise(() => undefined));
+        reveal.sidebarAnswered();
+
+        reveal.failed();
+
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+        expect(reveal.state.isMainRevealed).toBe(false);
+    });
+
+    test("nothing to open answers the first page and the facts together", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.sidebarAnswered();
+
+        reveal.nothingToOpen();
+
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("draws no skeleton marks under the wait, and draws them after it", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+
+        jest.advanceTimersByTime(skeletonWaitMs - 1);
+        expect(reveal.state.isSkeletonShown).toBe(false);
+
+        jest.advanceTimersByTime(1);
+        expect(reveal.state.isSkeletonShown).toBe(true);
+    });
+
+    test("a load that is ready inside the wait never draws the marks", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        answerAll(reveal);
+
+        jest.advanceTimersByTime(skeletonWaitMs * 2);
+
+        expect(reveal.state.isSkeletonShown).toBe(false);
+    });
+
+    test("takes the remembered room's look, which the skeleton's shape follows", () => {
+        expect(createPageReveal({ kind: "direct" }).state.kind).toBe("direct");
+        expect(createPageReveal({ kind: "channel" }).state.kind).toBe("channel");
+    });
+
+    test("stopped mid-load leaves no timer and takes no late answer", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        let decoded: () => void = () => undefined;
+        reveal.holdFace(new Promise<void>(resolve => {
+            decoded = resolve;
+        }));
+        reveal.sidebarAnswered();
+        reveal.historyAnswered();
+        reveal.factsAnswered();
+
+        reveal.stop();
+
+        expect(jest.getTimerCount()).toBe(0);
+
+        decoded();
+        await Promise.resolve();
+        await Promise.resolve();
+        reveal.sidebarAnswered();
+        reveal.failed();
+        jest.advanceTimersByTime(revealCeilingMs * 2);
+
+        expect(reveal.state.isSidebarRevealed).toBe(false);
+        expect(reveal.state.isMainRevealed).toBe(false);
+        expect(reveal.state.isSkeletonShown).toBe(false);
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("stopped before any answer leaves no timer either", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+
+        reveal.stop();
+
+        expect(jest.getTimerCount()).toBe(0);
+    });
+});
+
+describe("the remembered room's look", () => {
+    function memory(): StorageLike {
+        const values = new Map<string, string>();
+        return { getItem: key => values.get(key) ?? null, setItem: (key, value) => void values.set(key, value) };
+    }
+
+    const key = rememberedChannelKey(tenant, alias);
+
+    test("is a channel's until a direct message is remembered", () => {
+        const storage = memory();
+        expect(readRememberedKind(storage, key)).toBe("channel");
+
+        writeRememberedKind(storage, key, "direct");
+        expect(readRememberedKind(storage, key)).toBe("direct");
+
+        writeRememberedKind(storage, key, "channel");
+        expect(readRememberedKind(storage, key)).toBe("channel");
+    });
+
+    test("is kept beside the channel's id, which still reads as before", () => {
+        const storage = memory();
+        writeRememberedChannel(storage, key, remembered);
+        writeRememberedKind(storage, key, "direct");
+
+        expect(readRememberedChannel(storage, key)).toBe(remembered);
+    });
+
+    test("reads as a channel's when storage is blocked or holds something else", () => {
+        const blocked: StorageLike = {
+            getItem: () => {
+                throw new Error("blocked");
+            },
+            setItem: () => {
+                throw new Error("blocked");
+            }
+        };
+        expect(readRememberedKind(blocked, key)).toBe("channel");
+        expect(readRememberedKind(null, key)).toBe("channel");
+        expect(() => writeRememberedKind(blocked, key, "direct")).not.toThrow();
+
+        const odd = memory();
+        odd.setItem(`${key}:kind`, "nonsense");
+        expect(readRememberedKind(odd, key)).toBe("channel");
     });
 });

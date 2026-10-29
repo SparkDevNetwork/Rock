@@ -43,7 +43,14 @@
                                 @newMessage="openMainView('newdm')"
                                 @browse="openMainView('directory')"
                                 @settings="isSettingsOpen = true"
-                                @retry="shell.channels.retryLoad" />
+                                @retry="shell.channels.retryLoad">
+                    <template #veil>
+                        <PageVeil region="sidebar"
+                                  :isRevealed="shell.reveal.state.isSidebarRevealed"
+                                  :isMarksShown="shell.reveal.state.isSkeletonShown"
+                                  :kind="shell.reveal.state.kind" />
+                    </template>
+                </ChannelSidebar>
             </div>
 
             <section class="chat-frame-main"
@@ -52,18 +59,26 @@
                      :data-look="look ?? undefined"
                      :aria-hidden="isConversationHidden ? 'true' : undefined"
                      :inert="isConversationHidden || undefined"
+                     :aria-busy="shell.reveal.state.isMainRevealed ? undefined : 'true'"
                      :style="isConversationGone ? goneStyle : undefined">
+                <!-- The first load's veil: the column's frame from mount, until the first screen is ready. -->
+                <PageVeil region="main"
+                          :isRevealed="shell.reveal.state.isMainRevealed"
+                          :isMarksShown="shell.reveal.state.isSkeletonShown"
+                          :kind="shell.reveal.state.kind" />
                 <!--
                     The conversation stays laid out under a full view, so its place in the feed
                     survives, and is out of reach until the view closes. Drawn as no box of its own,
                     so the column lays its parts out as before.
                 -->
                 <div class="chat-frame-under"
+                     :class="{ 'is-revealing': isRevealing }"
                      data-testid="frame-conversation"
+                     @animationend="onRevealAnimationEnd"
                      @dragover="onConversationDragOver"
                      @drop="onConversationDrop"
                      :aria-hidden="mainView ? 'true' : undefined"
-                     :inert="!!mainView || undefined">
+                     :inert="!!mainView || !shell.reveal.state.isMainRevealed || undefined">
                     <ChatHeader :title="activeTitle"
                                 :subtitle="activeSubtitle"
                                 :facts="activeFacts"
@@ -134,7 +149,7 @@
                                  @messageAction="onMessageAction($event, null)" />
                     <!-- With the first sidebar failed there is nothing to choose; the sidebar says why. -->
                     <div v-else class="chat-shell-empty" data-testid="main-empty" :aria-busy="shell.state.isOpening ? 'true' : undefined">
-                        {{ shell.state.isOpening ? "Opening chat…" : shell.channels.loadState === "failed" ? "" : "Choose a conversation." }}
+                        {{ shell.state.isOpening || shell.channels.loadState === "failed" ? "" : "Choose a conversation." }}
                     </div>
 
                     <!-- A channel the person is previewing has the join bar in the composer's place. -->
@@ -627,6 +642,19 @@
     display: contents;
 }
 
+/*
+    The first screen's reveal: the column's parts fade in as the veil fades out, and the feed
+    lifts a little as a room switch lifts it. Only while the reveal runs, so a feed drawn for
+    a later room keeps its own rise.
+*/
+.chat-frame-under.is-revealing > * {
+    animation: chat-reveal-in var(--chat-d-reveal) var(--chat-ease-in) both;
+}
+
+.chat-frame-under.is-revealing :deep(.chat-feed) {
+    animation: chat-reveal-lift var(--chat-d-reveal) var(--chat-ease-in) both;
+}
+
 /* A full view over the conversation, which stays laid out and inert underneath. */
 .chat-main-view {
     position: absolute;
@@ -688,6 +716,7 @@
     import BirthdatePrompt from "./ChatShell/components/birthdatePrompt.partial.obs";
     import ChannelDirectory from "./ChatShell/components/channelDirectory.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
+    import PageVeil from "./ChatShell/components/pageVeil.partial.obs";
     import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
     import ChatSettings from "./ChatShell/components/chatSettings.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
@@ -712,6 +741,7 @@
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { ComposerDraft } from "./ChatShell/composables/useDrafts.partial";
     import { attachmentViewsKey, AttachmentTray, canAttach } from "./ChatShell/composables/useAttachments.partial";
+    import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
@@ -780,6 +810,15 @@
 
     // Every row's files read the session's local copies and links through this, which follows the
     // shell when it is built again, so a row never holds a session that has gone.
+    // Faces drawn on the first screen join its reveal. The shell is rebuilt after a birthdate answer,
+    // so the reveal is read through it each time.
+    provide(pageRevealKey, {
+        get state() {
+            return shell.value.reveal.state;
+        },
+        holdFace: decoded => shell.value.reveal.holdFace(decoded)
+    });
+
     provide(attachmentViewsKey, {
         previewOf: id => shell.value.attachments.previewOf(id),
         links: {
@@ -1112,6 +1151,22 @@
     function onJoin(): void {
         if (activeChannelId.value) {
             void shell.value.rooms.join(activeChannelId.value);
+        }
+    }
+
+    /** The column's reveal is under way until its fade ends, which is what the feed's lift runs on. */
+    const isRevealing = ref(false);
+
+    watch(() => shell.value.reveal.state.isMainRevealed, isRevealed => {
+        if (isRevealed) {
+            isRevealing.value = true;
+        }
+    });
+
+    /** The reveal's fade has ended; a row's own animation ending inside the column says nothing about it. */
+    function onRevealAnimationEnd(event: AnimationEvent): void {
+        if (event.animationName === "chat-reveal-in") {
+            isRevealing.value = false;
         }
     }
 

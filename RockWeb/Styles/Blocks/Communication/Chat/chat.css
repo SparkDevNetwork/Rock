@@ -208,6 +208,17 @@
     --chat-d-spin: .7s;
     --chat-d-refresh-spin: .8s;
     --chat-d-skeleton: 1.6s;
+
+    /*
+        The first load: one crossfade of every region over --chat-d-reveal, the skeleton going out over
+        --chat-d-skel-out. The wait before the marks draw and the ceiling on the reveal are read by
+        script (pageLoad), which keeps their figures; all four are estimates to measure on the sandbox.
+    */
+    --chat-d-reveal: 240ms;
+    --chat-d-skel-out: 160ms;
+    --chat-d-skel-wait: 150ms;
+    --chat-d-reveal-ceiling: 2.5s;
+    --chat-reveal-lift: 6px;
     --chat-d-tip-delay: 500ms;
     --chat-d-tip-delay-rx: 350ms;
     --chat-d-long-press: 450ms;
@@ -391,6 +402,8 @@
         --chat-d-stagger: 0ms;
         --chat-d-row-collapse: 0ms;
         --chat-d-fd-pop: 0ms;
+        --chat-d-reveal: 140ms;
+        --chat-reveal-lift: 0px;
     }
 
     .chat-shell .chat-skeleton {
@@ -501,6 +514,24 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+/* The first load's reveal: content fades in, and the feed lifts into place as a room switch does. */
+@keyframes chat-reveal-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-reveal-lift {
+    from {
+        transform: translateY(var(--chat-reveal-lift));
+    }
+}
+
+/* The first load's veil is laid over the list. */
+.chat-side-list {
+    position: relative;
 }
 
 @keyframes chat-skeleton-pulse {

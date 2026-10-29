@@ -19,6 +19,11 @@
 // time to the first message is sign-in plus one history call. The channel that opens is the one
 // a link names, else the last one this browser opened for this person, else, only on a first
 // visit, the sidebar's first row once it arrives.
+//
+// What the person sees meanwhile is one thing, owned here: the frame stands at mount, and its
+// regions crossfade in together once the first screen is ready, rather than each popping in as
+// its own answer lands.
+import { InjectionKey, reactive } from "vue";
 import { SidebarRow } from "./types.partial";
 
 /** The part of browser storage the shell uses. */
@@ -72,6 +77,280 @@ export function writeRememberedChannel(storage: StorageLike | null, key: string,
     catch {
         // Intentionally ignored: storage blocked or full only loses the memory.
     }
+}
+
+/**
+ * The look the first screen's skeleton takes: a channel's (mark, title and description, flat
+ * rows) or a direct message's (face and name, bubbles).
+ */
+export type RoomLook = "channel" | "direct";
+
+/**
+ * The key beside the remembered channel that holds its look, so a reload draws the right
+ * skeleton before anything is known. A key of its own keeps the channel's key reading as it
+ * always has.
+ *
+ * @param channelKey The remembered channel's key.
+ *
+ * @returns The key.
+ */
+function rememberedKindKey(channelKey: string): string {
+    return `${channelKey}:kind`;
+}
+
+/**
+ * Reads the remembered room's look. A first visit, blocked storage or a value this reader does
+ * not know draws a channel's.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey The remembered channel's key.
+ *
+ * @returns The look.
+ */
+export function readRememberedKind(storage: StorageLike | null, channelKey: string): RoomLook {
+    try {
+        return storage?.getItem(rememberedKindKey(channelKey)) === "direct" ? "direct" : "channel";
+    }
+    catch {
+        // Intentionally ignored: storage blocked by the browser only loses the memory.
+        return "channel";
+    }
+}
+
+/**
+ * Remembers the room's look. Storage that is blocked or missing only loses the memory.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey The remembered channel's key.
+ * @param kind The look.
+ */
+export function writeRememberedKind(storage: StorageLike | null, channelKey: string, kind: RoomLook): void {
+    try {
+        storage?.setItem(rememberedKindKey(channelKey), kind);
+    }
+    catch {
+        // Intentionally ignored: storage blocked or full only loses the memory.
+    }
+}
+
+/**
+ * How long a first load waits before drawing the skeleton's marks. An estimate to measure on the
+ * sandbox: a load faster than this never shows them, so a quick load does not flash grey.
+ */
+export const skeletonWaitMs = 150;
+
+/**
+ * How long the faces of the first screen get to decode once its data is in, before the reveal
+ * goes without them. An estimate to measure on the sandbox; a face later than this fades in on
+ * its own.
+ */
+export const faceGraceMs = 250;
+
+/**
+ * How long after mount the reveal waits at most for the first screen's data. An estimate to
+ * measure on the sandbox: past it, whatever has arrived is revealed and a region still waiting
+ * keeps its skeleton and crossfades in when its data lands.
+ */
+export const revealCeilingMs = 2500;
+
+/** What the first load shows. */
+export type PageRevealState = {
+    /** The look the skeleton draws, from the room opened last. */
+    kind: RoomLook;
+
+    /** Whether the skeleton's marks are drawn: the first load has run past the wait. */
+    isSkeletonShown: boolean;
+
+    /** Whether the sidebar's list has been revealed over its skeleton. */
+    isSidebarRevealed: boolean;
+
+    /** Whether the conversation's column (header, feed and composer) has been revealed. */
+    isMainRevealed: boolean;
+};
+
+/**
+ * The first load's reveal. The block is ready when the sidebar has answered, the opening room's
+ * first page has answered and its facts have answered (or there is nothing to open), after which
+ * the faces on the first screen get a short grace to decode; then every region is revealed in
+ * one tick, which the frame draws as one crossfade. The ceiling and a failure release it early:
+ * what has arrived is revealed, and a region still waiting is revealed on its own when it lands.
+ * Sign-in comes first without being tracked: nothing here can answer before it.
+ *
+ * Once stopped, every timer is gone and every later answer is refused, so a load that outlives
+ * the page writes nothing.
+ */
+export type PageReveal = {
+    /** What the frame draws. */
+    state: PageRevealState;
+
+    /** The sidebar answered, with rows or a failure. */
+    sidebarAnswered: () => void;
+
+    /** The opening room's first page answered, or the room was refused. */
+    historyAnswered: () => void;
+
+    /** The opening room's facts answered, or were refused. */
+    factsAnswered: () => void;
+
+    /** The page load found no room to open, so the column has nothing more to wait for. */
+    nothingToOpen: () => void;
+
+    /** Something failed: whatever has arrived is revealed now, without the face grace. */
+    failed: () => void;
+
+    /**
+     * Holds the reveal for a face on the first screen that is still decoding, up to the grace.
+     * Ignored once the reveal has been released.
+     *
+     * @param decoded Settles when the face has decoded, or failed to.
+     */
+    holdFace: (decoded: Promise<unknown>) => void;
+
+    /** Cancels every timer and refuses every later answer. */
+    stop: () => void;
+};
+
+/** What the frame offers to what draws images: the reveal's state and the face hold. */
+export type PageRevealView = Pick<PageReveal, "state" | "holdFace">;
+
+/**
+ * Provided by the block, so a face on the first screen joins the reveal: inject it (it may be
+ * absent where a component is drawn alone), read `state` to hold the face's own fade until its
+ * region is revealed, and call `holdFace` with the decode so the reveal waits for it, within the
+ * grace. A face drawn after the reveal has been released is not held.
+ */
+export const pageRevealKey: InjectionKey<PageRevealView> = Symbol("chatPageReveal");
+
+/**
+ * Creates the first load's reveal; the ceiling and the skeleton's wait run from now.
+ *
+ * @param options The look to draw before anything is known.
+ *
+ * @returns The reveal.
+ */
+export function createPageReveal(options: { kind: RoomLook }): PageReveal {
+    const state = reactive<PageRevealState>({
+        kind: options.kind,
+        isSkeletonShown: false,
+        isSidebarRevealed: false,
+        isMainRevealed: false
+    });
+
+    const answered = { sidebar: false, history: false, facts: false };
+    let isStopped = false;
+    let isReleased = false;
+    let isGraceOn = false;
+    let heldFaces = 0;
+    let graceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function clearTimer(timer: ReturnType<typeof setTimeout> | null): null {
+        if (timer !== null) {
+            clearTimeout(timer);
+        }
+        return null;
+    }
+
+    // The marks wait so a load that is quick never shows them.
+    let skeletonTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+        skeletonTimer = null;
+        state.isSkeletonShown = !(state.isSidebarRevealed && state.isMainRevealed);
+    }, skeletonWaitMs);
+
+    let ceilingTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+        ceilingTimer = null;
+        release();
+    }, revealCeilingMs);
+
+    /** Reveals every region that has its data, once the reveal is released. */
+    function reveal(): void {
+        if (!isReleased) {
+            return;
+        }
+
+        state.isSidebarRevealed ||= answered.sidebar;
+        state.isMainRevealed ||= answered.history && answered.facts;
+
+        if (state.isSidebarRevealed && state.isMainRevealed) {
+            // Nothing is left to wait for or to draw.
+            skeletonTimer = clearTimer(skeletonTimer);
+            ceilingTimer = clearTimer(ceilingTimer);
+            state.isSkeletonShown = false;
+        }
+    }
+
+    function release(): void {
+        graceTimer = clearTimer(graceTimer);
+        isReleased = true;
+        reveal();
+    }
+
+    /** With every answer in, releases once the held faces have decoded or the grace is spent. */
+    function startGrace(): void {
+        if (isGraceOn || isReleased) {
+            return;
+        }
+
+        isGraceOn = true;
+        if (heldFaces === 0) {
+            release();
+            return;
+        }
+
+        graceTimer = setTimeout(() => {
+            graceTimer = null;
+            release();
+        }, faceGraceMs);
+    }
+
+    function answer(gate: keyof typeof answered): void {
+        if (isStopped) {
+            return;
+        }
+
+        answered[gate] = true;
+        if (isReleased) {
+            reveal();
+        }
+        else if (answered.sidebar && answered.history && answered.facts) {
+            startGrace();
+        }
+    }
+
+    return {
+        state,
+        sidebarAnswered: () => answer("sidebar"),
+        historyAnswered: () => answer("history"),
+        factsAnswered: () => answer("facts"),
+        nothingToOpen: (): void => {
+            answer("history");
+            answer("facts");
+        },
+        failed: (): void => {
+            if (!isStopped) {
+                release();
+            }
+        },
+        holdFace: (decoded: Promise<unknown>): void => {
+            if (isStopped || isReleased) {
+                return;
+            }
+
+            heldFaces++;
+            const settled = (): void => {
+                heldFaces--;
+                if (!isStopped && isGraceOn && heldFaces === 0) {
+                    release();
+                }
+            };
+            decoded.then(settled, settled);
+        },
+        stop: (): void => {
+            isStopped = true;
+            skeletonTimer = clearTimer(skeletonTimer);
+            ceilingTimer = clearTimer(ceilingTimer);
+            graceTimer = clearTimer(graceTimer);
+        }
+    };
 }
 
 /** How opening a channel went. Superseded: the person opened another before this one finished. */
